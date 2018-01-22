@@ -13,7 +13,7 @@ setup(
     long_description="",
     author="Jin Hyun Cheong, Nathaniel Hanes, Luke Chang ",
     author_email='jcheong0428@gmail.com',
-    url='https://github.com/jcheong0428/feat',
+    url='https://github.com/cosanlab/feat',
     packages=find_packages(include=['feat']),
     include_package_data=True,
     install_requires=requirements,
