@@ -7,6 +7,10 @@
 
 Facial Expression Analysis Toolbox
 
+## Google DOCS for development
+https://docs.google.com/document/d/1cqbDp5dkMtnWWdFtAowLGf_l1zhnGmvb8JcOxNsn8dc/edit?usp=sharing
+
+
 ## Installation
 `pip install git+https://github.com/cosanlab/feat`
 
