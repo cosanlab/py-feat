@@ -1,6 +1,6 @@
 # FEAT  
 <!---
-[![Build Status](https://travis-ci.org/ejolly/feat.svg?branch=master)](https://travis-ci.org/ejolly/feat)
+[![Build Status](https://travis-ci.org/ejolly/feat.svg?branch=master)](https://travis-ci.com/cosanlab/feat)
 [![Package version](https://img.shields.io/pypi/v/feat.svg)](https://pypi.python.org/pypi/feat)
 
 --->
@@ -8,7 +8,7 @@
 Facial Expression Analysis Toolbox
 
 ## Installation
-`pip install git+https://github.com/ejolly/feat`
+`pip install git+https://github.com/cosanlab/feat`
 
 
 ## [Documentation](https://feat.readthedocs.io/en/latest/index.html)
