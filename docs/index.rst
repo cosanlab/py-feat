@@ -8,7 +8,7 @@ Installation
 
 .. code-block:: python
 
-    pip install git+https://github.com/ejolly/feat
+    pip install git+https://github.com/cosanlab/feat
 
 .. toctree::
    :maxdepth: 2
