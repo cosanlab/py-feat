@@ -11,10 +11,6 @@ with open("nltools/version.py") as f:
     exec(f.read(), version)
 __version__ = version['__version__'],
 
-"""
-Add init code here for example:
-"""
-
-__all__ = ["data.py",]
+__all__ = ['data',]
 
 from .data import (Fex)
