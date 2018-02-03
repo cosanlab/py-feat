@@ -7,8 +7,8 @@ import pytest
 import pandas as pd
 import numpy as np
 from os.path import join, exists
-from feat.data import Fex
 from .utils import get_test_data_path
+from feat.data import Fex, _check_if_fex
 
 def test_fex(tmpdir):
     imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness',
@@ -37,7 +37,7 @@ def test_fex(tmpdir):
     assert isinstance(fex, Fex)
 
     # Test initializing with pandas
-    data = pd.read_csv(file)
+    data = pd.read_csv(filename)
     fex = Fex(data)
     assert isinstance(fex, Fex)
 
