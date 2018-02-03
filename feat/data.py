@@ -14,7 +14,7 @@ class Fex(object):
                            'AU15', 'AU17', 'AU18', 'AU20', 'AU23', 'AU24', 'AU25', 'AU26', 'AU28',
                            'AU43', 'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
         if data is None:
-            self.data = pd.DataFrame(columns=data_column_names)
+            self.data = pd.DataFrame(columns=imotions_columns)
         elif isinstance(data, six.string_types):
             data = pd.read_csv(data, index_col=False)
             if _check_if_fex(data, imotions_columns):
