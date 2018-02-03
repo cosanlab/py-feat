@@ -8,17 +8,21 @@ from copy import deepcopy
 
 class Fex(object):
     def __init__(self, data=None, sampling_freq=None, features=None, *args, **kwargs):
-
+        imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness',
+                           'Confusion', 'Frustration', 'Neutral', 'Positive', 'Negative', 'AU1',
+                           'AU2', 'AU4', 'AU5', 'AU6', 'AU7', 'AU9', 'AU10', 'AU12', 'AU14',
+                           'AU15', 'AU17', 'AU18', 'AU20', 'AU23', 'AU24', 'AU25', 'AU26', 'AU28',
+                           'AU43', 'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
         if data is None:
             self.data = pd.DataFrame(columns=data_column_names)
-        elif _check_if_fex(data):
-            self.data = data
         elif isinstance(data, six.string_types):
-            data = pd.read_csv(data)
-            if _check_if_fex(data):
+            data = pd.read_csv(data, index_col=False)
+            if _check_if_fex(data, imotions_columns):
                 self.data = data
             else:
                 raise ValueError('File is not an iMotions csv file.')
+        elif _check_if_fex(data, imotions_columns):
+            self.data = data
 
         self.sampling_freq = sampling_freq
 
@@ -35,31 +39,6 @@ class Fex(object):
                 raise ValueError("Make sure features is a pandas data frame.")
         else:
             self.features = pd.DataFrame()
-
-    def _check_if_fex(data):
-        '''Check if data is a facial expression dataframe from iMotions
-
-        Notes: can eventually make this an importer of different data types
-
-        Args:
-            data: (pd.DataFrame) must have columns from iMotions
-
-        Returns:
-            boolean
-
-        '''
-        imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness',
-                   'Confusion', 'Frustration', 'Neutral', 'Positive', 'Negative', 'AU1',
-                   'AU2', 'AU4', 'AU5', 'AU6', 'AU7', 'AU9', 'AU10', 'AU12', 'AU14',
-                   'AU15', 'AU17', 'AU18', 'AU20', 'AU23', 'AU24', 'AU25', 'AU26', 'AU28',
-                   'AU43', 'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
-        if ~isinstance(data, pd.DataFrame):
-            raise ValueError('Data must be a pandas instance.')
-
-        if imotions_columns == data.columns:
-            return True
-        else:
-            return False
 
     def __len__(self):
         return self.data.shape[0]
@@ -89,4 +68,25 @@ class Fex(object):
         out.features = out.features.sum()
         return out
 
-        
+def _check_if_fex(data, column_list):
+    '''Check if data is a facial expression dataframe from iMotions
+
+    Notes: can eventually make this an importer of different data types
+
+    Args:
+        data: (pd.DataFrame) must have columns from iMotions
+        column_list: (list) list of column names that file should contain
+
+    Returns:
+        boolean
+
+    '''
+
+    if isinstance(data, pd.DataFrame):
+        if len(set(data.columns)-set(column_list)) > 0:
+            raise ValueError('Data as too many variables (e.g., more than standard iMotions File.')
+        if len(set(column_list)-set(data.columns)) > 0:
+            raise ValueError('Missing several imotions columns')
+        return True
+    else:
+        return False
