@@ -29,7 +29,6 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-  - tox
   - coverage run --source feat -m py.test
 
 after_success:
