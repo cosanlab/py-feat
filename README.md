@@ -1,9 +1,6 @@
 # FEAT  
-<!---
-[![Build Status](https://travis-ci.org/ejolly/feat.svg?branch=master)](https://travis-ci.com/cosanlab/feat)
-[![Package version](https://img.shields.io/pypi/v/feat.svg)](https://pypi.python.org/pypi/feat)
-
---->
+[![Build Status](https://api.travis-ci.org/cosanlab/feat.svg?branch=master)](https://travis-ci.org/cosanlab/feat/)
+[![Coverage Status](https://coveralls.io/repos/github/cosanlab/feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/feat?branch=master)
 
 Facial Expression Analysis Toolbox
 
