@@ -7,7 +7,7 @@ with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 version = {}
-with open("nltools/version.py") as f:
+with open("feat/version.py") as f:
     exec(f.read(), version)
 
 extra_setuptools_args = dict(
