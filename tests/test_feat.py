@@ -3,10 +3,12 @@
 
 """Tests for `feat` package."""
 
+import pytest
 import pandas as pd
 import numpy as np
-import os
-import pytest
+from os.path import join, exists
+from feat.data import Fex
+from .utils import get_test_data_path
 
 def test_fex(tmpdir):
     imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness',
@@ -15,8 +17,8 @@ def test_fex(tmpdir):
                    'AU15', 'AU17', 'AU18', 'AU20', 'AU23', 'AU24', 'AU25', 'AU26', 'AU28',
                    'AU43', 'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
 
-    file = os.path.join(str(tmpdir),'Tests','iMotions_Test.csv')
-    data = pd.read_csv(file)
+    filename = join(get_test_data_path(), 'iMotions_Test.csv')
+    data = pd.read_csv(filename)
 
 
     # Check if file is missing columns
@@ -31,7 +33,7 @@ def test_fex(tmpdir):
         _check_if_fex(data_bad, imotions_columns)
 
     # Test loading file
-    fex = Fex(file)
+    fex = Fex(filename)
     assert isinstance(fex, Fex)
 
     # Test initializing with pandas
