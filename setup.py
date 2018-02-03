@@ -6,9 +6,17 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
+version = {}
+with open("nltools/version.py") as f:
+    exec(f.read(), version)
+
+extra_setuptools_args = dict(
+    tests_require=['pytest']
+)
+
 setup(
     name='feat',
-    version='0.0.1',
+    version=version['__version__'],
     description="Facial Expression Analysis Toolbox",
     long_description="",
     author="Jin Hyun Cheong, Nathaniel Hanes, Luke Chang ",
@@ -19,7 +27,7 @@ setup(
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='feat',
+    keywords=['feat','face','facial expression','emotion'],
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -32,5 +40,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    test_suite='tests'
+    test_suite='tests',
+    **extra_setuptools_args
 )

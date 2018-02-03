@@ -6,14 +6,15 @@ from __future__ import absolute_import
 
 __author__ = """Jin Hyun Cheong, Nathaniel Hanes, Luke Chang """
 __email__ = 'jcheong0428@gmail.com'
-__version__ = '0.0.1'
+version = {}
+with open("nltools/version.py") as f:
+    exec(f.read(), version)
+__version__ = version['__version__'],
 
 """
 Add init code here for example:
-
-__all__ = ["functions.py","classes.py"]
-
-from .functions import (func_1, func_2)
-from .classes import MyClass
-
 """
+
+__all__ = ["data.py",]
+
+from .data import (Fex)
