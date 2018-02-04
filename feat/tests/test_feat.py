@@ -9,6 +9,7 @@ import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
 from feat.data import Fex, _check_if_fex
+from feat.utils import read_facet
 from nltools.data import Adjacency
 
 def test_fex(tmpdir):
@@ -18,20 +19,23 @@ def test_fex(tmpdir):
                    'AU15', 'AU17', 'AU18', 'AU20', 'AU23', 'AU24', 'AU25', 'AU26', 'AU28',
                    'AU43', 'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
 
-    filename = join(get_test_data_path(), 'iMotions_Test.csv')
-    dat = Fex(pd.read_csv(filename), sampling_freq=30)
+    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    dat = Fex(read_facet(filename), sampling_freq=30)
 
     # Test length
-    assert len(dat)==51
+    assert len(dat)==519
 
     # Test Downsample
-    assert len(dat.downsample(target=10))==6
+    assert len(dat.downsample(target=10))==52
 
     # Test upsample
     assert len(dat.upsample(target=60,target_type='hz'))==(len(dat)-1)*2
 
+    # Test interpolation
+    assert np.sum(dat.interpolate(method='linear').isnull().sum()==0) == len(dat.columns)
+
     # Test distance
-    d = dat.distance()
+    d = dat.interpolate(method='linear').distance()
     assert isinstance(d, Adjacency)
     assert d.square_shape()[0]==len(dat)
 
@@ -48,25 +52,3 @@ def test_fex(tmpdir):
     assert isinstance(dat.clean(), Fex)
     assert dat.clean().columns is dat.columns
     assert dat.clean().sampling_freq == dat.sampling_freq
-
-    
-    # # Check if file is missing columns
-    # data_bad = data.iloc[:,0:10]
-    # with pytest.raises(Exception):
-    #     _check_if_fex(data_bad, imotions_columns)
-    #
-    # # Check if file has too many columns
-    # data_bad = data.copy()
-    # data_bad['Test'] = 0
-    # with pytest.raises(Exception):
-    #     _check_if_fex(data_bad, imotions_columns)
-    #
-    # # Test loading file
-    # fex = Fex(filename)
-    # assert isinstance(fex, Fex)
-    #
-    # # Test initializing with pandas
-    # data = pd.read_csv(filename)
-    # fex = Fex(data)
-    # assert isinstance(fex, Fex)
-    #
