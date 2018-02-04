@@ -72,4 +72,5 @@ target/
 .python-version
 
 # Jupyter
+_Notebooks/
 *.ipynb_checkpoints
