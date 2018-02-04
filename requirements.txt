@@ -2,3 +2,5 @@ pandas>=0.20
 numpy>=1.9
 seaborn>=0.7.0
 matplotlib>=2.1
+nltools>=0.3.6
+scikit-learn>=0.18.1
