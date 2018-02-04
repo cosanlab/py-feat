@@ -43,28 +43,58 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='mean'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
 
-    # # Check if file is missing columns
-    # data_bad = data.iloc[:,0:10]
-    # with pytest.raises(Exception):
-    #     _check_if_fex(data_bad, imotions_columns)
-    #
-    # # Check if file has too many columns
-    # data_bad = data.copy()
-    # data_bad['Test'] = 0
-    # with pytest.raises(Exception):
-    #     _check_if_fex(data_bad, imotions_columns)
-    #
-    # # Test loading file
-    # fex = Fex(filename)
-    # assert isinstance(fex, Fex)
-    #
-    # # Test initializing with pandas
-    # data = pd.read_csv(filename)
-    # fex = Fex(data)
-    # assert isinstance(fex, Fex)
-    #
+    # Test clean
+    assert isinstance(dat.clean(), Fex)
+    assert dat.clean().columns is dat.columns
+    assert dat.clean().sampling_freq == dat.sampling_freq
 
-    # For iMotions-FACET data file
+    # Test Decompose
+    n_components = 3
+    dat = dat.interpolate(method='linear')
+    stats = dat.decompose(algorithm='pca', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='ica', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    new_dat = dat+100
+    stats = new_dat.decompose(algorithm='nnmf', axis=1,
+                              n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='fa', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='pca', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='ica', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    new_dat = dat+100
+    stats = new_dat.decompose(algorithm='nnmf', axis=0,
+                              n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='fa', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+
+    # For OpenFace data file
     filename = join(get_test_data_path(), 'OpenFace_Test.csv')
     dat = Fex(read_openface(filename), sampling_freq=30)
 
@@ -93,3 +123,53 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='median'), Fex)
     assert isinstance(dat.baseline(baseline='mean'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
+
+    # Test clean
+    assert isinstance(dat.clean(), Fex)
+    assert dat.clean().columns is dat.columns
+    assert dat.clean().sampling_freq == dat.sampling_freq
+
+    # Test Decompose
+    n_components = 3
+    dat = dat.interpolate(method='linear')
+    stats = dat.decompose(algorithm='pca', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='ica', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    new_dat = dat+100
+    stats = new_dat.decompose(algorithm='nnmf', axis=1,
+                              n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='fa', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='pca', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='ica', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    new_dat = dat+100
+    stats = new_dat.decompose(algorithm='nnmf', axis=0,
+                              n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='fa', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
