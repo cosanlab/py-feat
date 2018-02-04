@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
-from feat.data import Fex, _check_if_fex
+from feat.data import Fex, _check_if_fex, Facet
 from feat.utils import read_facet
 from nltools.data import Adjacency
 
@@ -49,6 +49,11 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='median'), Fex)
     assert isinstance(dat.baseline(baseline='mean'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
+
+    # Test facet subclass
+    facet = Facet(filename=filename,sampling_freq=30)
+    facet.read_file()
+    assert len(facet)==519
 
     # # Check if file is missing columns
     # data_bad = data.iloc[:,0:10]
