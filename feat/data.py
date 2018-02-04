@@ -10,6 +10,7 @@ from nltools.data import Adjacency, design_matrix
 from nltools.stats import (downsample,
                            upsample,
                            transform_pairwise)
+from nltools.utils import (set_decomposition_algorithm)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
 from nilearn.signal import clean
@@ -94,18 +95,21 @@ class Fex(DataFrame):
                 raise ValueError('Make sure Fex objects have the same '
                                  'sampling frequency')
             out.data = out.data.append(data.data, ignore_index=True)
-            out.features = out.features.append(data.features, ignore_index=True)
-            # Need to check if features match
+            if self.features:
+                if out.features.shape[1]==data.features[1]:
+                    out.features = out.features.append(data.features, ignore_index=True)
+                else:
+                    raise ValueError('Different number of features in new dataset.')
         return out
 
     def regress(self):
-        pass
+        NotImplemented
 
     def ttest(self, threshold_dict=None):
-        pass
+        NotImplemented
 
     def predict(self, *args, **kwargs):
-        pass
+        NotImplemented
 
     def downsample(self, target, **kwargs):
         """ Downsample Fex columns. Relies on nltools.stats.downsample,
@@ -243,37 +247,39 @@ class Fex(DataFrame):
                                 columns=self.columns),
                     sampling_freq=self.sampling_freq)
 
-    # def decompose(self, algorithm='pca', axis='voxels', n_components=None,
-    #               *args, **kwargs):
-    #     ''' Decompose Brain_Data object
-    #
-    #     Args:
-    #         algorithm: (str) Algorithm to perform decomposition
-    #                     types=['pca','ica','nnmf','fa']
-    #         axis: dimension to decompose ['voxels','images']
-    #         n_components: (int) number of components. If None then retain
-    #                     as many as possible.
-    #     Returns:
-    #         output: a dictionary of decomposition parameters
-    #     '''
-    #
-    #     out = {}
-    #     out['decomposition_object'] = set_decomposition_algorithm(
-    #                                                 algorithm=algorithm,
-    #                                                 n_components=n_components,
-    #                                                 *args, **kwargs)
-    #     if axis is 'images':
-    #         out['decomposition_object'].fit(self.data.T)
-    #         out['components'] = self.empty()
-    #         out['components'].data = out['decomposition_object'].transform(
-    #                                                             self.data.T).T
-    #         out['weights'] = out['decomposition_object'].components_.T
-    #     if axis is 'voxels':
-    #         out['decomposition_object'].fit(self.data)
-    #         out['weights'] = out['decomposition_object'].transform(self.data)
-    #         out['components'] = self.empty()
-    #         out['components'].data = out['decomposition_object'].components_
-    #     return out
+    def decompose(self, algorithm='pca', axis=0, n_components=None,
+                  *args, **kwargs):
+        ''' Decompose Fex instance
+
+        Args:
+            algorithm: (str) Algorithm to perform decomposition
+                        types=['pca','ica','nnmf','fa']
+            axis: dimension to decompose [0,1]
+            n_components: (int) number of components. If None then retain
+                        as many as possible.
+
+        Returns:
+            output: a dictionary of decomposition parameters
+
+        '''
+
+        out = {}
+        out['decomposition_object'] = set_decomposition_algorithm(
+                                                    algorithm=algorithm,
+                                                    n_components=n_components,
+                                                    *args, **kwargs)
+        if axis is 'images':
+            out['decomposition_object'].fit(self.data.T)
+            out['components'] = self.empty()
+            out['components'].data = out['decomposition_object'].transform(
+                                                                self.data.T).T
+            out['weights'] = out['decomposition_object'].components_.T
+        if axis is 'voxels':
+            out['decomposition_object'].fit(self.data)
+            out['weights'] = out['decomposition_object'].transform(self.data)
+            out['components'] = self.empty()
+            out['components'].data = out['decomposition_object'].components_
+        return out
 
 def _check_if_fex(data, column_list):
     '''Check if data is a facial expression dataframe from iMotions
