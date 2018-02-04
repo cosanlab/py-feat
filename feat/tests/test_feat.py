@@ -9,37 +9,20 @@ import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
 from feat.data import Fex, _check_if_fex
+from feat.utils import read_facet
 from nltools.data import Adjacency
 
 def test_fex(tmpdir):
-    imotions_columns = ['StudyName', 'ExportDate', 'Name', 'Age', 'Gender', 'StimulusName',
-       'SlideType', 'EventSource', 'Timestamp', 'MediaTime', 'PostMarker',
-       'Annotation', 'FrameNo', 'FrameTime', 'NoOfFaces', 'FaceRect X',
-       'FaceRect Y', 'FaceRect Width', 'FaceRect Height', 'Joy Evidence',
-       'Joy Intensity', 'Anger Evidence', 'Anger Intensity',
-       'Surprise Evidence', 'Surprise Intensity', 'Fear Evidence',
-       'Fear Intensity', 'Contempt Evidence', 'Contempt Intensity',
-       'Disgust Evidence', 'Disgust Intensity', 'Sadness Evidence',
-       'Sadness Intensity', 'Confusion Evidence', 'Confusion Intensity',
-       'Frustration Evidence', 'Frustration Intensity', 'Neutral Evidence',
-       'Neutral Intensity', 'Positive Evidence', 'Positive Intensity',
-       'Negative Evidence', 'Negative Intensity', 'AU1 Evidence',
-       'AU2 Evidence', 'AU4 Evidence', 'AU5 Evidence', 'AU6 Evidence',
-       'AU7 Evidence', 'AU9 Evidence', 'AU10 Evidence', 'AU12 Evidence',
-       'AU14 Evidence', 'AU15 Evidence', 'AU17 Evidence', 'AU18 Evidence',
-       'AU20 Evidence', 'AU23 Evidence', 'AU24 Evidence', 'AU25 Evidence',
-       'AU26 Evidence', 'AU28 Evidence', 'AU43 Evidence',
-       'HasGlasses Probability', 'IsMale Probability', 'Yaw Degrees',
-       'Pitch Degrees', 'Roll Degrees', 'LEFT_EYE_LATERAL X',
-       'LEFT_EYE_LATERAL Y', 'LEFT_EYE_PUPIL X', 'LEFT_EYE_PUPIL Y',
-       'LEFT_EYE_MEDIAL X', 'LEFT_EYE_MEDIAL Y', 'RIGHT_EYE_MEDIAL X',
-       'RIGHT_EYE_MEDIAL Y', 'RIGHT_EYE_PUPIL X', 'RIGHT_EYE_PUPIL Y',
-       'RIGHT_EYE_LATERAL X', 'RIGHT_EYE_LATERAL Y', 'NOSE_TIP X',
-       'NOSE_TIP Y', '7 X', '7 Y', 'LiveMarker', 'KeyStroke', 'MarkerText',
-       'SceneType', 'SceneOutput', 'SceneParent']
+    imotions_columns = ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
+                  'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
+                  'Neutral Evidence','Positive Evidence','Negative Evidence','AU1 Evidence','AU2 Evidence',
+                  'AU4 Evidence','AU5 Evidence','AU6 Evidence','AU7 Evidence','AU9 Evidence','AU10 Evidence',
+                  'AU12 Evidence','AU14 Evidence','AU15 Evidence','AU17 Evidence','AU18 Evidence','AU20 Evidence',
+                  'AU23 Evidence','AU24 Evidence','AU25 Evidence','AU26 Evidence','AU28 Evidence','AU43 Evidence',
+                  'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
 
     filename = join(get_test_data_path(), 'iMotions_Test.txt')
-    dat = Fex(pd.read_csv(filename,skiprows=5, sep='\t'), sampling_freq=30)
+    dat = Fex(read_facet(filename), sampling_freq=30)
 
     # Test length
     assert len(dat)==519
