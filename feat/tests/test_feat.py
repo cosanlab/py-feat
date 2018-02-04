@@ -52,3 +52,48 @@ def test_fex(tmpdir):
     assert isinstance(dat.clean(), Fex)
     assert dat.clean().columns is dat.columns
     assert dat.clean().sampling_freq == dat.sampling_freq
+
+    # Test Decompose
+    n_components = 3
+    dat = dat.interpolate(method='linear')
+    stats = dat.decompose(algorithm='pca', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='ica', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    new_dat = dat+100
+    stats = new_dat.decompose(algorithm='nnmf', axis=1,
+                              n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='fa', axis=1,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='pca', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='ica', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    new_dat = dat+100
+    stats = new_dat.decompose(algorithm='nnmf', axis=0,
+                              n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
+
+    stats = dat.decompose(algorithm='fa', axis=0,
+                          n_components=n_components)
+    assert n_components == stats['components'].shape[1]
+    assert n_components == stats['weights'].shape[1]
