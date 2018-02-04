@@ -1,3 +1,4 @@
+from __future__ import division
 '''
     FEAT Utils Class
     ==========================================
@@ -12,7 +13,7 @@ __all__ = ['read_facet','read_affdex','read_affectiva','read_openface']
 __author__ = ["Jin Hyun Cheong"]
 
 
-from __future__ import division
+
 import os
 import numpy as np 
 import pandas as pd 
