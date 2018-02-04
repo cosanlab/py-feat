@@ -9,6 +9,7 @@ import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
 from feat.data import Fex, _check_if_fex
+from nltools.data import Adjacency
 
 def test_fex(tmpdir):
     imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness',
@@ -18,40 +19,43 @@ def test_fex(tmpdir):
                    'AU43', 'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
 
     filename = join(get_test_data_path(), 'iMotions_Test.csv')
-    data = pd.read_csv(filename)
-
-
-    # Check if file is missing columns
-    data_bad = data.iloc[:,0:10]
-    with pytest.raises(Exception):
-        _check_if_fex(data_bad, imotions_columns)
-
-    # Check if file has too many columns
-    data_bad = data.copy()
-    data_bad['Test'] = 0
-    with pytest.raises(Exception):
-        _check_if_fex(data_bad, imotions_columns)
-
-    # Test loading file
-    fex = Fex(filename)
-    assert isinstance(fex, Fex)
-
-    # Test initializing with pandas
-    data = pd.read_csv(filename)
-    fex = Fex(data)
-    assert isinstance(fex, Fex)
-
-    # Test Mean
-    assert isinstance(fex.mean(), Fex)
-
-    # Test Std
-    assert isinstance(fex.std(), Fex)
-
-    # Test Sum
-    assert isinstance(fex.sum(), Fex)
-
-    # Test Copy
-    assert isinstance(fex.copy(), Fex)
+    dat = Fex(pd.read_csv(filename), sampling_freq=30)
 
     # Test length
-    assert len(fex)==51
+    assert len(dat)==51
+
+    # Test Downsample
+    assert len(dat.downsample(target=10))==6
+
+    # Test upsample
+    assert len(dat.upsample(target=60,target_type='hz'))==(len(dat)-1)*2
+
+    # Test distance
+    d = dat.distance()
+    assert isinstance(d, Adjacency)
+    assert d.square_shape()[0]==len(dat)
+
+    # Test Copy
+    assert isinstance(dat.copy(), Fex)
+    assert dat.copy().sampling_freq==dat.sampling_freq
+
+    # # Check if file is missing columns
+    # data_bad = data.iloc[:,0:10]
+    # with pytest.raises(Exception):
+    #     _check_if_fex(data_bad, imotions_columns)
+    #
+    # # Check if file has too many columns
+    # data_bad = data.copy()
+    # data_bad['Test'] = 0
+    # with pytest.raises(Exception):
+    #     _check_if_fex(data_bad, imotions_columns)
+    #
+    # # Test loading file
+    # fex = Fex(filename)
+    # assert isinstance(fex, Fex)
+    #
+    # # Test initializing with pandas
+    # data = pd.read_csv(filename)
+    # fex = Fex(data)
+    # assert isinstance(fex, Fex)
+    #
