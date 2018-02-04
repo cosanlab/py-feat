@@ -38,7 +38,7 @@ def test_fex(tmpdir):
        'NOSE_TIP Y', '7 X', '7 Y', 'LiveMarker', 'KeyStroke', 'MarkerText',
        'SceneType', 'SceneOutput', 'SceneParent']
 
-    filename = join(get_test_data_path(), 'iMotions_Test.csv')
+    filename = join(get_test_data_path(), 'iMotions_Test.txt')
     dat = Fex(pd.read_csv(filename,skiprows=5, sep='\t'), sampling_freq=30)
 
     # Test length
