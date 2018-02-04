@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 import six
+import abc
 from copy import deepcopy
 from nltools.data import Adjacency, design_matrix
 from nltools.stats import (downsample,
@@ -12,6 +13,7 @@ from nltools.stats import (downsample,
                            transform_pairwise)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
+from feat.utils import read_facet
 
 class FexSeries(Series):
 
@@ -37,15 +39,17 @@ class Fex(DataFrame):
         always return a new design matrix instance.
 
     Args:
+        filepath: path to file
         sampling_freq (float, optional): sampling rate of each row in Hz;
                                          defaults to None
         features (pd.Dataframe, optional): features that correspond to each
                                           Fex row
     """
-
-    _metadata = ['sampling_freq', 'features']
+    __metaclass__  = abc.ABCMeta
+    _metadata = ['filename','sampling_freq', 'features']
 
     def __init__(self, *args, **kwargs):
+        self.filename = kwargs.pop('filename', None)
         self.sampling_freq = kwargs.pop('sampling_freq', None)
         self.features = kwargs.pop('features', False)
         super(Fex, self).__init__(*args, **kwargs)
@@ -66,6 +70,11 @@ class Fex(DataFrame):
     @property
     def _constructor_sliced(self):
         return FexSeries
+
+    @abc.abstractmethod 
+    def read_file(self, *args, **kwargs):
+        """ Loads file into FEX class """
+
 
     # @classmethod
     # def from_file(cls, filename, **kwargs):
@@ -232,3 +241,16 @@ def _check_if_fex(data, column_list):
         return True
     else:
         return False
+
+class Facet(Fex):
+    def read_file(self, *args, **kwargs):
+        super(Fex, self).__init__(read_facet(self.filename, *args, **kwargs), *args, **kwargs)
+    
+class Affdex(Fex):
+    def read_file(self, *args, **kwargs):
+        # super(Fex, self).__init__(read_affdex(self.filename, *args, **kwargs), *args, **kwargs)
+        return
+class Openface(Fex):    
+    def read_file(self, *args, **kwargs):
+        # super(Fex, self).__init__(read_openface(self.filename, *args, **kwargs), *args, **kwargs)
+        return
