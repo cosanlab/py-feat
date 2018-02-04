@@ -45,6 +45,11 @@ def test_fex(tmpdir):
     assert isinstance(dat.copy(), Fex)
     assert dat.copy().sampling_freq==dat.sampling_freq
 
+    # Test baseline
+    assert isinstance(dat.baseline(baseline='median'), Fex)
+    assert isinstance(dat.baseline(baseline='mean'), Fex)
+    assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
+
     # # Check if file is missing columns
     # data_bad = data.iloc[:,0:10]
     # with pytest.raises(Exception):
