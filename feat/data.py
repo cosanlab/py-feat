@@ -179,11 +179,11 @@ class Fex(DataFrame):
 
         out = self.copy()
         if baseline is 'median':
-            return out-out.median()
+            return Fex(out-out.median(), sampling_freq=out.sampling_freq)
         elif baseline is 'mean':
-            return out-out.mean()
+            return Fex(out-out.mean(), sampling_freq=out.sampling_freq)
         elif isinstance(baseline, (Series, FexSeries)):
-            return out-baseline
+            return Fex(out-baseline, sampling_freq=out.sampling_freq)
         elif isinstance(baseline, (Fex, DataFrame)):
             raise ValueError('Must pass in a FexSeries not a Fex Instance.')
         else:
