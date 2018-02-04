@@ -33,8 +33,11 @@ def test_fex(tmpdir):
     # Test upsample
     assert len(dat.upsample(target=60,target_type='hz'))==(len(dat)-1)*2
 
+    # Test interpolation
+    assert np.sum(dat.interpolate(method='linear').isnull().sum()==0) == len(dat.columns)
+
     # Test distance
-    d = dat.distance()
+    d = dat.interpolate(method='linear').distance()
     assert isinstance(d, Adjacency)
     assert d.square_shape()[0]==len(dat)
 
