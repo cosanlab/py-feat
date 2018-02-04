@@ -9,35 +9,29 @@ import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
 from feat.data import Fex, _check_if_fex
-from feat.utils import read_facet
 from nltools.data import Adjacency
 
 def test_fex(tmpdir):
-    imotions_columns = ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
-                  'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
-                  'Neutral Evidence','Positive Evidence','Negative Evidence','AU1 Evidence','AU2 Evidence',
-                  'AU4 Evidence','AU5 Evidence','AU6 Evidence','AU7 Evidence','AU9 Evidence','AU10 Evidence',
-                  'AU12 Evidence','AU14 Evidence','AU15 Evidence','AU17 Evidence','AU18 Evidence','AU20 Evidence',
-                  'AU23 Evidence','AU24 Evidence','AU25 Evidence','AU26 Evidence','AU28 Evidence','AU43 Evidence',
-                  'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
+    imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness',
+                   'Confusion', 'Frustration', 'Neutral', 'Positive', 'Negative', 'AU1',
+                   'AU2', 'AU4', 'AU5', 'AU6', 'AU7', 'AU9', 'AU10', 'AU12', 'AU14',
+                   'AU15', 'AU17', 'AU18', 'AU20', 'AU23', 'AU24', 'AU25', 'AU26', 'AU28',
+                   'AU43', 'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
 
-    filename = join(get_test_data_path(), 'iMotions_Test.txt')
-    dat = Fex(read_facet(filename), sampling_freq=30)
+    filename = join(get_test_data_path(), 'iMotions_Test.csv')
+    dat = Fex(pd.read_csv(filename), sampling_freq=30)
 
     # Test length
-    assert len(dat)==519
+    assert len(dat)==51
 
     # Test Downsample
-    assert len(dat.downsample(target=10))==52
+    assert len(dat.downsample(target=10))==6
 
     # Test upsample
     assert len(dat.upsample(target=60,target_type='hz'))==(len(dat)-1)*2
 
-    # Test interpolation
-    assert np.sum(dat.interpolate(method='linear').isnull().sum()==0) == len(dat.columns)
-
     # Test distance
-    d = dat.interpolate(method='linear').distance()
+    d = dat.distance()
     assert isinstance(d, Adjacency)
     assert d.square_shape()[0]==len(dat)
 
@@ -50,6 +44,12 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='mean'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
 
+    # Test clean
+    assert isinstance(dat.clean(), Fex)
+    assert dat.clean().columns is dat.columns
+    assert dat.clean().sampling_freq == dat.sampling_freq
+
+    
     # # Check if file is missing columns
     # data_bad = data.iloc[:,0:10]
     # with pytest.raises(Exception):

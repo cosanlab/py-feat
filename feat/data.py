@@ -12,6 +12,7 @@ from nltools.stats import (downsample,
                            transform_pairwise)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
+from nilearn.signal import clean
 
 class FexSeries(Series):
 
@@ -49,13 +50,14 @@ class Fex(DataFrame):
         self.sampling_freq = kwargs.pop('sampling_freq', None)
         self.features = kwargs.pop('features', False)
         super(Fex, self).__init__(*args, **kwargs)
-        imotions_columns = ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
-                  'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
-                  'Neutral Evidence','Positive Evidence','Negative Evidence','AU1 Evidence','AU2 Evidence',
-                  'AU4 Evidence','AU5 Evidence','AU6 Evidence','AU7 Evidence','AU9 Evidence','AU10 Evidence',
-                  'AU12 Evidence','AU14 Evidence','AU15 Evidence','AU17 Evidence','AU18 Evidence','AU20 Evidence',
-                  'AU23 Evidence','AU24 Evidence','AU25 Evidence','AU26 Evidence','AU28 Evidence','AU43 Evidence',
-                  'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
+        imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt',
+                            'Disgust', 'Sadness', 'Confusion', 'Frustration',
+                            'Neutral', 'Positive', 'Negative', 'AU1', 'AU2',
+                            'AU4', 'AU5', 'AU6', 'AU7', 'AU9', 'AU10', 'AU12',
+                            'AU14', 'AU15', 'AU17', 'AU18', 'AU20', 'AU23',
+                            'AU24', 'AU25', 'AU26', 'AU28', 'AU43',
+                            'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees',
+                            'Roll Degrees']
         # if not set(imotions_columns).issubset(self):
         #     raise ValueError('Missing key facial expression features.')
 
@@ -66,27 +68,6 @@ class Fex(DataFrame):
     @property
     def _constructor_sliced(self):
         return FexSeries
-
-    # @classmethod
-    # def from_file(cls, filename, **kwargs):
-    #     """Alternate constructor to create a ``GeoDataFrame`` from a file.
-    #     Can load a ``GeoDataFrame`` from a file in any format recognized by
-    #     `fiona`. See http://toblerity.org/fiona/manual.html for details.
-    #     Parameters
-    #     ----------
-    #     filename : str
-    #         File path or file handle to read from. Depending on which kwargs
-    #         are included, the content of filename may vary. See
-    #         http://toblerity.org/fiona/README.html#usage for usage details.
-    #     kwargs : key-word arguments
-    #         These arguments are passed to fiona.open, and can be used to
-    #         access multi-layer data, data stored within archives (zip files),
-    #         etc.
-    #     Examples
-    #     --------
-    #     >>> df = geopandas.GeoDataFrame.from_file('nybb.shp')
-    #     """
-    #     return geopandas.io.file.read_file(filename, **kwargs)
 
     def info(self):
         """Print class meta data.
@@ -136,6 +117,7 @@ class Fex(DataFrame):
             kwargs: additional inputs to nltools.stats.downsample
 
         """
+
         df_ds = downsample(self, sampling_freq=self.sampling_freq,
                            target=target, **kwargs)
         if self.features:
@@ -156,8 +138,7 @@ class Fex(DataFrame):
             kwargs: additional inputs to nltools.stats.upsample
 
         """
-        print(self.sampling_freq, type(self.sampling_freq))
-        print(target, type(target))
+
         df_us = upsample(self, sampling_freq=self.sampling_freq,
                          target=target, target_type=target_type, **kwargs)
         if self.features:
@@ -208,7 +189,91 @@ class Fex(DataFrame):
         else:
             raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
 
+    def clean(self, detrend=True, standardize=True, confounds=None,
+              low_pass=None, high_pass=None, ensure_finite=False,
+              *args, **kwargs):
 
+        """ Clean Time Series signal
+
+            This function wraps nilearn functionality and can filter, denoise,
+            detrend, etc.
+
+            See http://nilearn.github.io/modules/generated/nilearn.signal.clean.html
+
+            This function can do several things on the input signals, in
+            the following order:
+                - detrend
+                - standardize
+                - remove confounds
+                - low- and high-pass filter
+
+            Args:
+                confounds: (numpy.ndarray, str or list of Confounds timeseries)
+                            Shape must be (instant number, confound number),
+                            or just (instant number,). The number of time
+                            instants in signals and confounds must be identical
+                            (i.e. signals.shape[0] == confounds.shape[0]). If a
+                            string is provided, it is assumed to be the name of
+                            a csv file containing signals as columns, with an
+                            optional one-line header. If a list is provided,
+                            all confounds are removed from the input signal,
+                            as if all were in the same array.
+
+                low_pass: (float) low pass cutoff frequencies in Hz.
+                high_pass: (float) high pass cutoff frequencies in Hz.
+                detrend: (bool) If detrending should be applied on timeseries
+                         (before confound removal)
+                standardize: (bool) If True, returned signals are set to unit
+                             variance.
+                ensure_finite: (bool) If True, the non-finite values
+                               (NANs and infs) found in the data will be
+                               replaced by zeros.
+            Returns:
+                cleaned Fex instance
+
+        """
+        return Fex(pd.DataFrame(clean(self.values, detrend=detrend,
+                                      standardize=standardize,
+                                      confounds=confounds,
+                                      low_pass=low_pass,
+                                      high_pass=high_pass,
+                                      ensure_finite=ensure_finite,
+                                      t_r=1/self.sampling_freq,
+                                      *args, **kwargs),
+                                columns=self.columns),
+                    sampling_freq=self.sampling_freq)
+
+    # def decompose(self, algorithm='pca', axis='voxels', n_components=None,
+    #               *args, **kwargs):
+    #     ''' Decompose Brain_Data object
+    #
+    #     Args:
+    #         algorithm: (str) Algorithm to perform decomposition
+    #                     types=['pca','ica','nnmf','fa']
+    #         axis: dimension to decompose ['voxels','images']
+    #         n_components: (int) number of components. If None then retain
+    #                     as many as possible.
+    #     Returns:
+    #         output: a dictionary of decomposition parameters
+    #     '''
+    #
+    #     out = {}
+    #     out['decomposition_object'] = set_decomposition_algorithm(
+    #                                                 algorithm=algorithm,
+    #                                                 n_components=n_components,
+    #                                                 *args, **kwargs)
+    #     if axis is 'images':
+    #         out['decomposition_object'].fit(self.data.T)
+    #         out['components'] = self.empty()
+    #         out['components'].data = out['decomposition_object'].transform(
+    #                                                             self.data.T).T
+    #         out['weights'] = out['decomposition_object'].components_.T
+    #     if axis is 'voxels':
+    #         out['decomposition_object'].fit(self.data)
+    #         out['weights'] = out['decomposition_object'].transform(self.data)
+    #         out['components'] = self.empty()
+    #         out['components'].data = out['decomposition_object'].components_
+    #     return out
 
 def _check_if_fex(data, column_list):
     '''Check if data is a facial expression dataframe from iMotions
