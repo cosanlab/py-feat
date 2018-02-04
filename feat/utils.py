@@ -15,13 +15,13 @@ __author__ = ["Jin Hyun Cheong"]
 
 
 import os
-import numpy as np 
-import pandas as pd 
+import numpy as np
+import pandas as pd
 
 def read_facet(facetfile, features=None):
     '''
-    This function reads in an iMotions-FACET exported facial expression file. 
-    Args: 
+    This function reads in an iMotions-FACET exported facial expression file.
+    Args:
         features: If a list of column names are passed, those are returned. Otherwise, default returns the following features:
         ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
                   'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
@@ -31,9 +31,9 @@ def read_facet(facetfile, features=None):
                   'AU23 Evidence','AU24 Evidence','AU25 Evidence','AU26 Evidence','AU28 Evidence','AU43 Evidence',
                   'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
 
-    Returns: 
+    Returns:
         dataframe of processed facial expressions
-    
+
     '''
 
     d = pd.read_csv(facetfile, skiprows=5, sep='\t')
