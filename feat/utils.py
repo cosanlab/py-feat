@@ -39,12 +39,12 @@ def read_facet(facetfile, features=None):
 
     # Check if features argument is passed and return only those features, else return basic emotion/AU features
     if isinstance(features,list):
-    	try:
-    		d = d[features]
-    	except:
-    		raise KeyError([features,'not in facetfile'])
-	elif isinstance(features, type(None)):
-		features = ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
+        try:
+            d = d[features]
+        except:
+            raise KeyError([features,'not in facetfile'])
+    elif isinstance(features, type(None)):
+        features = ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
                   'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
                   'Neutral Evidence','Positive Evidence','Negative Evidence','AU1 Evidence','AU2 Evidence',
                   'AU4 Evidence','AU5 Evidence','AU6 Evidence','AU7 Evidence','AU9 Evidence','AU10 Evidence',
