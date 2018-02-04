@@ -184,6 +184,31 @@ class Fex(DataFrame):
         return Adjacency(pairwise_distances(self, metric=method, **kwargs),
                          matrix_type='Distance')
 
+    def baseline(self, baseline='median'):
+        ''' Reference a Fex object to a baseline.
+
+            Args:
+                method: {median, mean, Fex object}. Will subtract baseline
+                        from Fex object (e.g., mean, median).  If passing a Fex
+                        object, it will treat that as the baseline.
+
+            Returns:
+                Fex object
+        '''
+
+        out = self.copy()
+        if baseline is 'median':
+            return out-out.median()
+        elif baseline is 'mean':
+            return out-out.mean()
+        elif isinstance(baseline, (Series, FexSeries)):
+            return out-baseline
+        elif isinstance(baseline, (Fex, DataFrame)):
+            raise ValueError('Must pass in a FexSeries not a Fex Instance.')
+        else:
+            raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
+
+
 
 def _check_if_fex(data, column_list):
     '''Check if data is a facial expression dataframe from iMotions
