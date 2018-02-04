@@ -247,7 +247,7 @@ class Fex(DataFrame):
                                 columns=self.columns),
                     sampling_freq=self.sampling_freq)
 
-    def decompose(self, algorithm='pca', axis=0, n_components=None,
+    def decompose(self, algorithm='pca', axis=1, n_components=None,
                   *args, **kwargs):
         ''' Decompose Fex instance
 
@@ -268,17 +268,15 @@ class Fex(DataFrame):
                                                     algorithm=algorithm,
                                                     n_components=n_components,
                                                     *args, **kwargs)
-        if axis is 'images':
-            out['decomposition_object'].fit(self.data.T)
-            out['components'] = self.empty()
-            out['components'].data = out['decomposition_object'].transform(
-                                                                self.data.T).T
-            out['weights'] = out['decomposition_object'].components_.T
-        if axis is 'voxels':
-            out['decomposition_object'].fit(self.data)
-            out['weights'] = out['decomposition_object'].transform(self.data)
-            out['components'] = self.empty()
-            out['components'].data = out['decomposition_object'].components_
+        com_names = ['c%s' % str(x+1) for x in range(n_components)]
+        if axis == 0:
+            out['decomposition_object'].fit(self.T)
+            out['components'] = Fex(pd.DataFrame(out['decomposition_object'].transform(self.T), index=self.columns, columns=com_names), sampling_freq=None)
+            out['weights'] = Fex(pd.DataFrame(out['decomposition_object'].components_.T,index=self.index,columns=com_names), sampling_freq=self.sampling_freq)
+        if axis == 1:
+            out['decomposition_object'].fit(self)
+            out['components'] = Fex(pd.DataFrame(out['decomposition_object'].transform(self), columns=com_names), sampling_freq=self.sampling_freq)
+            out['weights'] = Fex(pd.DataFrame(out['decomposition_object'].components_, index=com_names, columns=self.columns), sampling_freq=None).T
         return out
 
 def _check_if_fex(data, column_list):
