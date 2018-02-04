@@ -49,14 +49,31 @@ class Fex(DataFrame):
         self.sampling_freq = kwargs.pop('sampling_freq', None)
         self.features = kwargs.pop('features', False)
         super(Fex, self).__init__(*args, **kwargs)
-        imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt',
-                            'Disgust', 'Sadness', 'Confusion', 'Frustration',
-                            'Neutral', 'Positive', 'Negative', 'AU1', 'AU2',
-                            'AU4', 'AU5', 'AU6', 'AU7', 'AU9', 'AU10', 'AU12',
-                            'AU14', 'AU15', 'AU17', 'AU18', 'AU20', 'AU23',
-                            'AU24', 'AU25', 'AU26', 'AU28', 'AU43',
-                            'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees',
-                            'Roll Degrees']
+        imotions_columns = ['StudyName', 'ExportDate', 'Name', 'Age', 'Gender', 'StimulusName',
+       'SlideType', 'EventSource', 'Timestamp', 'MediaTime', 'PostMarker',
+       'Annotation', 'FrameNo', 'FrameTime', 'NoOfFaces', 'FaceRect X',
+       'FaceRect Y', 'FaceRect Width', 'FaceRect Height', 'Joy Evidence',
+       'Joy Intensity', 'Anger Evidence', 'Anger Intensity',
+       'Surprise Evidence', 'Surprise Intensity', 'Fear Evidence',
+       'Fear Intensity', 'Contempt Evidence', 'Contempt Intensity',
+       'Disgust Evidence', 'Disgust Intensity', 'Sadness Evidence',
+       'Sadness Intensity', 'Confusion Evidence', 'Confusion Intensity',
+       'Frustration Evidence', 'Frustration Intensity', 'Neutral Evidence',
+       'Neutral Intensity', 'Positive Evidence', 'Positive Intensity',
+       'Negative Evidence', 'Negative Intensity', 'AU1 Evidence',
+       'AU2 Evidence', 'AU4 Evidence', 'AU5 Evidence', 'AU6 Evidence',
+       'AU7 Evidence', 'AU9 Evidence', 'AU10 Evidence', 'AU12 Evidence',
+       'AU14 Evidence', 'AU15 Evidence', 'AU17 Evidence', 'AU18 Evidence',
+       'AU20 Evidence', 'AU23 Evidence', 'AU24 Evidence', 'AU25 Evidence',
+       'AU26 Evidence', 'AU28 Evidence', 'AU43 Evidence',
+       'HasGlasses Probability', 'IsMale Probability', 'Yaw Degrees',
+       'Pitch Degrees', 'Roll Degrees', 'LEFT_EYE_LATERAL X',
+       'LEFT_EYE_LATERAL Y', 'LEFT_EYE_PUPIL X', 'LEFT_EYE_PUPIL Y',
+       'LEFT_EYE_MEDIAL X', 'LEFT_EYE_MEDIAL Y', 'RIGHT_EYE_MEDIAL X',
+       'RIGHT_EYE_MEDIAL Y', 'RIGHT_EYE_PUPIL X', 'RIGHT_EYE_PUPIL Y',
+       'RIGHT_EYE_LATERAL X', 'RIGHT_EYE_LATERAL Y', 'NOSE_TIP X',
+       'NOSE_TIP Y', '7 X', '7 Y', 'LiveMarker', 'KeyStroke', 'MarkerText',
+       'SceneType', 'SceneOutput', 'SceneParent']
         # if not set(imotions_columns).issubset(self):
         #     raise ValueError('Missing key facial expression features.')
 
