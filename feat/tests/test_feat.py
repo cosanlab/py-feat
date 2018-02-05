@@ -55,6 +55,10 @@ def test_fex(tmpdir):
     facet.read_file()
     assert len(facet)==519
 
+    # Test if a method returns subclass.
+    facet = facet.downsample(target=10,target_type='hz')
+    assert isinstance(facet,Facet)
+
     # # Check if file is missing columns
     # data_bad = data.iloc[:,0:10]
     # with pytest.raises(Exception):
