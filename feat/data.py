@@ -45,7 +45,7 @@ class Fex(DataFrame):
         features (pd.Dataframe, optional): features that correspond to each
                                           Fex row
     """
-    __metaclass__  = abc.ABCMeta
+    # __metaclass__  = abc.ABCMeta
     _metadata = ['filename','sampling_freq', 'features']
 
     def __init__(self, *args, **kwargs):
@@ -74,6 +74,7 @@ class Fex(DataFrame):
     @abc.abstractmethod 
     def read_file(self, *args, **kwargs):
         """ Loads file into FEX class """
+        pass
 
 
     # @classmethod
@@ -153,7 +154,7 @@ class Fex(DataFrame):
                                      target=target, **kwargs)
         else:
             ds_features = self.features
-        return Fex(df_ds, sampling_freq=target, features=ds_features)
+        return self.__class__(df_ds, sampling_freq=target, features=ds_features)
 
     def upsample(self, target, target_type='hz', **kwargs):
         """ Upsample Fex columns. Relies on nltools.stats.upsample,
@@ -176,7 +177,7 @@ class Fex(DataFrame):
                                    **kwargs)
         else:
             us_features = self.features
-        return Fex(df_us, sampling_freq=target, features=us_features)
+        return self.__class__(df_us, sampling_freq=target, features=us_features)
 
     def distance(self, method='euclidean', **kwargs):
         """ Calculate distance between rows within a Fex() instance.
