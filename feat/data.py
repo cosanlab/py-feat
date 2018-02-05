@@ -74,7 +74,7 @@ class Fex(DataFrame):
     def _constructor_sliced(self):
         return FexSeries
 
-    @abc.abstractmethod 
+    @abc.abstractmethod
     def read_file(self, *args, **kwargs):
         """ Loads file into FEX class """
         pass
@@ -335,25 +335,24 @@ def _check_if_fex(data, column_list):
         return False
 
 class Facet(Fex):
-    """ 
-    Facet is a subclass of Fex. 
-    You can use the Facet subclass to load iMotions-FACET data files. 
-    It will also have Facet specific methods. 
+    """
+    Facet is a subclass of Fex.
+    You can use the Facet subclass to load iMotions-FACET data files.
+    It will also have Facet specific methods.
     """
     def read_file(self, *args, **kwargs):
         super(Fex, self).__init__(read_facet(self.filename, *args, **kwargs), *args, **kwargs)
-    
+
 class Affdex(Fex):
     def read_file(self, *args, **kwargs):
         # super(Fex, self).__init__(read_affdex(self.filename, *args, **kwargs), *args, **kwargs)
-        return
+        pass
 
-class Openface(Fex):    
-    """ 
-    Openface is a subclass of Fex. 
-    You can use the Openface subclass to load Openface data files. 
-    It will also have Openface specific methods. 
+class Openface(Fex):
+    """
+    Openface is a subclass of Fex.
+    You can use the Openface subclass to load Openface data files.
+    It will also have Openface specific methods.
     """
     def read_file(self, *args, **kwargs):
         super(Fex, self).__init__(read_openface(self.filename, *args, **kwargs), *args, **kwargs)
-        return
