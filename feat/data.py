@@ -14,7 +14,7 @@ from nltools.stats import (downsample,
 from nltools.utils import (set_decomposition_algorithm)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
-from feat.utils import read_facet
+from feat.utils import read_facet, read_openface
 from nilearn.signal import clean
 
 class FexSeries(Series):
@@ -335,6 +335,11 @@ def _check_if_fex(data, column_list):
         return False
 
 class Facet(Fex):
+    """ 
+    Facet is a subclass of Fex. 
+    You can use the Facet subclass to load iMotions-FACET data files. 
+    It will also have Facet specific methods. 
+    """
     def read_file(self, *args, **kwargs):
         super(Fex, self).__init__(read_facet(self.filename, *args, **kwargs), *args, **kwargs)
     
@@ -342,7 +347,13 @@ class Affdex(Fex):
     def read_file(self, *args, **kwargs):
         # super(Fex, self).__init__(read_affdex(self.filename, *args, **kwargs), *args, **kwargs)
         return
+
 class Openface(Fex):    
+    """ 
+    Openface is a subclass of Fex. 
+    You can use the Openface subclass to load Openface data files. 
+    It will also have Openface specific methods. 
+    """
     def read_file(self, *args, **kwargs):
-        # super(Fex, self).__init__(read_openface(self.filename, *args, **kwargs), *args, **kwargs)
+        super(Fex, self).__init__(read_openface(self.filename, *args, **kwargs), *args, **kwargs)
         return
