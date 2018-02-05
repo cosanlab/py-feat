@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
-from feat.data import Fex, _check_if_fex
+from feat.data import Fex, _check_if_fex, Facet
 from feat.utils import read_facet, read_openface
 from nltools.data import Adjacency
 
@@ -43,6 +43,35 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='mean'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
 
+    # Test facet subclass
+    facet = Facet(filename=filename,sampling_freq=30)
+    facet.read_file()
+    assert len(facet)==519
+
+    # Test if a method returns subclass.
+    facet = facet.downsample(target=10,target_type='hz')
+    assert isinstance(facet,Facet)
+
+    # # Check if file is missing columns
+    # data_bad = data.iloc[:,0:10]
+    # with pytest.raises(Exception):
+    #     _check_if_fex(data_bad, imotions_columns)
+    #
+    # # Check if file has too many columns
+    # data_bad = data.copy()
+    # data_bad['Test'] = 0
+    # with pytest.raises(Exception):
+    #     _check_if_fex(data_bad, imotions_columns)
+    #
+    # # Test loading file
+    # fex = Fex(filename)
+    # assert isinstance(fex, Fex)
+    #
+    # # Test initializing with pandas
+    # data = pd.read_csv(filename)
+    # fex = Fex(data)
+    # assert isinstance(fex, Fex)
+    #
     # Test clean
     assert isinstance(dat.clean(), Fex)
     assert dat.clean().columns is dat.columns
