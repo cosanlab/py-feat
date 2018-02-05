@@ -55,16 +55,6 @@ class Fex(DataFrame):
         self.sampling_freq = kwargs.pop('sampling_freq', None)
         self.features = kwargs.pop('features', False)
         super(Fex, self).__init__(*args, **kwargs)
-        imotions_columns = ['Joy', 'Anger', 'Surprise', 'Fear', 'Contempt',
-                            'Disgust', 'Sadness', 'Confusion', 'Frustration',
-                            'Neutral', 'Positive', 'Negative', 'AU1', 'AU2',
-                            'AU4', 'AU5', 'AU6', 'AU7', 'AU9', 'AU10', 'AU12',
-                            'AU14', 'AU15', 'AU17', 'AU18', 'AU20', 'AU23',
-                            'AU24', 'AU25', 'AU26', 'AU28', 'AU43',
-                            'NoOfFaces', 'Yaw Degrees', 'Pitch Degrees',
-                            'Roll Degrees']
-        # if not set(imotions_columns).issubset(self):
-        #     raise ValueError('Missing key facial expression features.')
 
     @property
     def _constructor(self):
@@ -78,29 +68,6 @@ class Fex(DataFrame):
     def read_file(self, *args, **kwargs):
         """ Loads file into FEX class """
         pass
-
-
-    # @classmethod
-    # def from_file(cls, filename, **kwargs):
-    #     """Alternate constructor to create a ``GeoDataFrame`` from a file.
-    #     Can load a ``GeoDataFrame`` from a file in any format recognized by
-    #     `fiona`. See http://toblerity.org/fiona/manual.html for details.
-    #     Parameters
-    #     ----------
-    #     filename : str
-    #         File path or file handle to read from. Depending on which kwargs
-    #         are included, the content of filename may vary. See
-    #         http://toblerity.org/fiona/README.html#usage for usage details.
-    #     kwargs : key-word arguments
-    #         These arguments are passed to fiona.open, and can be used to
-    #         access multi-layer data, data stored within archives (zip files),
-    #         etc.
-    #     Examples
-    #     --------
-    #     >>> df = geopandas.GeoDataFrame.from_file('nybb.shp')
-    #     """
-    #     return geopandas.io.file.read_file(filename, **kwargs)
-
 
     def info(self):
         """Print class meta data.
@@ -310,29 +277,6 @@ class Fex(DataFrame):
             out['components'] = Fex(pd.DataFrame(out['decomposition_object'].transform(self), columns=com_names), sampling_freq=self.sampling_freq)
             out['weights'] = Fex(pd.DataFrame(out['decomposition_object'].components_, index=com_names, columns=self.columns), sampling_freq=None).T
         return out
-
-def _check_if_fex(data, column_list):
-    '''Check if data is a facial expression dataframe from iMotions
-
-    Notes: can eventually make this an importer of different data types
-
-    Args:
-        data: (pd.DataFrame) must have columns from iMotions
-        column_list: (list) list of column names that file should contain
-
-    Returns:
-        boolean
-
-    '''
-
-    if isinstance(data, (pd.DataFrame, Fex)):
-        if len(set(list(data.columns))-set(column_list)) > 0:
-            raise ValueError('Data as too many variables (e.g., more than standard iMotions File.')
-        if len(set(column_list)-set(list(data.columns))) > 0:
-            raise ValueError('Missing several imotions columns')
-        return True
-    else:
-        return False
 
 class Facet(Fex):
     """
