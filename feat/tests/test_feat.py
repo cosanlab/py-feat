@@ -11,12 +11,19 @@ from .utils import get_test_data_path
 from feat.data import Fex, Facet, Openface
 from feat.utils import read_facet, read_openface
 from nltools.data import Adjacency
+import unittest
 
 def test_fex(tmpdir):
     # For iMotions-FACET data file
     filename = join(get_test_data_path(), 'iMotions_Test.txt')
     dat = Fex(read_facet(filename), sampling_freq=30)
 
+    # Test KeyError
+    class MyTestCase(unittest.TestCase):
+        def test1(self):
+            with self.assertRaises(KeyError):
+                Fex(read_facet(filename, features=['NotHere']), sampling_freq=30)
+    
     # Test length
     assert len(dat)==519
 
@@ -49,6 +56,13 @@ def test_fex(tmpdir):
     facet.read_file()
     assert len(facet)==519
 
+    # Test Bag Of Temporal Features Extraction
+    facet_filled = facet.fillna(0)
+    assert isinstance(facet_filled,Facet)
+    assert isinstance(facet_filled.extract_boft(), Facet)
+    filters, histograms = 8, 12
+    assert facet_filled.extract_boft().shape[1]==facet.columns.shape[0] * filters * histograms
+
     # Test if a method returns subclass.
     facet = facet.downsample(target=10,target_type='hz')
     assert isinstance(facet,Facet)
@@ -58,10 +72,18 @@ def test_fex(tmpdir):
     # For OpenFace data file
     filename = join(get_test_data_path(), 'OpenFace_Test.csv')
     openface = Fex(read_openface(filename), sampling_freq=30)
+    
+    # Test KeyError
+    class MyTestCase(unittest.TestCase):
+        def test1(self):
+            with self.assertRaises(KeyError):
+                Fex(read_openface(filename, features=['NotHere']), sampling_freq=30)
+    
 
     # Test length
     assert len(openface)==100
 
+    # Test loading from filename
     openface = Openface(filename=filename, sampling_freq = 30)
     openface.read_file()
 
@@ -130,4 +152,5 @@ def test_fex(tmpdir):
                           n_components=n_components)
     assert n_components == stats['components'].shape[1]
     assert n_components == stats['weights'].shape[1]
+
 
