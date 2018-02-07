@@ -278,16 +278,73 @@ class Fex(DataFrame):
             out['weights'] = self.__class__(pd.DataFrame(out['decomposition_object'].components_, index=com_names, columns=self.columns), sampling_freq=None).T
         return out
 
+    def extract_mean(self, by=[], *args, **kwargs):
+        """ Extract mean of each feature
+        Args:
+            by: List of string(s) specifying the columns that means
+                will be extracted along (e.g. subject, trial, etc.). Defaults
+                to an empty list, which returns means across all observations.
+        Returns:
+            mean: list of means for each feature
+
+
+        """
+        assert not isinstance(by, str), "'by' must be a list"
+        if len(by)>0:
+            feats = pd.DataFrame(self.groupby(by).mean())
+        else:
+            feats = pd.DataFrame(self.mean()).transpose()
+            feats.columns = 'mean_' + feats.columns
+        return self.__class__(feats)
+
+    def extract_min(self, by=[], *args, **kwargs):
+        """ Extract minimum of each feature
+        Args:
+            by: List of string(s) specifying the columns that minimums
+                will be extracted along (e.g. subject, trial, etc.). Defaults
+                to an empty list, which returns minimums across all observations.
+        Returns:
+            min: list of minimum values for each feature
+
+
+        """
+        assert not isinstance(by, str), "'by' must be a list"
+        if len(by)>0:
+            feats = pd.DataFrame(self.groupby(by).min())
+        else:
+            feats = pd.DataFrame(self.min()).transpose()
+        feats.columns = 'min_' + feats.columns
+        return self.__class__(feats)
+
+    def extract_max(self, by=[], *args, **kwargs):
+        """ Extract maximum of each feature
+        Args:
+            by: List of string(s) specifying the columns that maximums
+                will be extracted along (e.g. subject, trial, etc.). Defaults
+                to an empty list, which returns maximums across all observations.
+        Returns:
+            max: list of maximum values for each feature
+
+
+        """
+        assert not isinstance(by, str), "'by' must be a list"
+        if len(by)>0:
+            feats = pd.DataFrame(self.groupby(by).max())
+        else:
+            feats = pd.DataFrame(self.max()).transpose()
+        feats.columns = 'max_' + feats.columns
+        return self.__class__(feats)
+
     def extract_boft(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
         """ Extract Bag of Temporal features
-        Args: 
+        Args:
             min_freq: maximum frequency of temporal filters
             max_freq: minimum frequency of temporal filters
             bank: number of temporal filter banks, filters are on exponential scale
 
         Returns:
             wavs: list of Morlet wavelets with corresponding freq
-            hzs:  list of hzs for each Morlet wavelet   
+            hzs:  list of hzs for each Morlet wavelet
 
 
         """
