@@ -23,7 +23,7 @@ def test_fex(tmpdir):
         def test1(self):
             with self.assertRaises(KeyError):
                 Fex(read_facet(filename, features=['NotHere']), sampling_freq=30)
-    
+
     # Test length
     assert len(dat)==519
 
@@ -63,22 +63,27 @@ def test_fex(tmpdir):
     filters, histograms = 8, 12
     assert facet_filled.extract_boft().shape[1]==facet.columns.shape[0] * filters * histograms
 
+    # Test mean, min, and max Features Extraction
+    assert isinstance(facet_filled.extract_mean(), Facet)
+    assert isinstance(facet_filled.extract_min(), Facet)
+    assert isinstance(facet_filled.extract_max(), Facet)
+
     # Test if a method returns subclass.
     facet = facet.downsample(target=10,target_type='hz')
     assert isinstance(facet,Facet)
 
-    ### Test Openface importer and subclass ### 
-    
+    ### Test Openface importer and subclass ###
+
     # For OpenFace data file
     filename = join(get_test_data_path(), 'OpenFace_Test.csv')
     openface = Fex(read_openface(filename), sampling_freq=30)
-    
+
     # Test KeyError
     class MyTestCase(unittest.TestCase):
         def test1(self):
             with self.assertRaises(KeyError):
                 Fex(read_openface(filename, features=['NotHere']), sampling_freq=30)
-    
+
 
     # Test length
     assert len(openface)==100
@@ -97,7 +102,7 @@ def test_fex(tmpdir):
     data_bad = dat.iloc[:,0:10]
     with pytest.raises(Exception):
         _check_if_fex(data_bad, imotions_columns)
-    
+
     # Check if file has too many columns
     data_bad = dat.copy()
     data_bad['Test'] = 0
@@ -152,5 +157,3 @@ def test_fex(tmpdir):
                           n_components=n_components)
     assert n_components == stats['components'].shape[1]
     assert n_components == stats['weights'].shape[1]
-
-
