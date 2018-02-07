@@ -194,7 +194,7 @@ def read_openface(openfacefile, features=None):
 
 
 
-def wavelet(freq,num_cyc=3,duration=60,sampling_rate=30.,plot=False):
+def wavelet(freq,num_cyc=3,duration=60,sampling_rate=30.):
     """ Create a complex Morlet wavelet by windowing a cosine function by a Gaussian.
         All formulae taken from Cohen, 2014 Chaps 12 + 13
     
@@ -218,12 +218,7 @@ def wavelet(freq,num_cyc=3,duration=60,sampling_rate=30.,plot=False):
     gaus = np.exp(-time**2./(2. * sd**2.))
 
     wav = sin * gaus
-    if plot:
-        f = plt.figure(figsize=(8,6));
-        plt.plot(time,np.real(wav),color='steelblue',label='Real component');
-        plt.plot(time,np.imag(wav),color='tomato',linestyle='--',label='Imaginary componenet');
-        plt.axvline(x=0,color='k');
-        plt.legend(fontsize=16);
+    
     return np.real(wav)
 
 def calc_hist_auc(vals, hist_range=None):
