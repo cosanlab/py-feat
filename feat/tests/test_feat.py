@@ -49,6 +49,13 @@ def test_fex(tmpdir):
     facet.read_file()
     assert len(facet)==519
 
+    # Test Bag Of Temporal Features Extraction
+    facet_filled = facet.fillna(0)
+    assert isinstance(facet_filled,Facet)
+    assert isinstance(facet_filled.extract_boft(), Facet)
+    filters, histograms = 8, 12
+    assert facet_filled.extract_boft().shape[1]==facet.columns.shape[0] * filters * histograms
+
     # Test if a method returns subclass.
     facet = facet.downsample(target=10,target_type='hz')
     assert isinstance(facet,Facet)
@@ -130,4 +137,5 @@ def test_fex(tmpdir):
                           n_components=n_components)
     assert n_components == stats['components'].shape[1]
     assert n_components == stats['weights'].shape[1]
+
 
