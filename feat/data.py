@@ -14,7 +14,7 @@ from nltools.stats import (downsample,
 from nltools.utils import (set_decomposition_algorithm)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
-from feat.utils import read_facet, read_openface
+from feat.utils import read_facet, read_openface, wavelet, calc_hist_auc
 from nilearn.signal import clean
 
 class FexSeries(Series):
@@ -58,7 +58,7 @@ class Fex(DataFrame):
 
     @property
     def _constructor(self):
-        return Fex
+        return self.__class__
 
     @property
     def _constructor_sliced(self):
@@ -182,11 +182,11 @@ class Fex(DataFrame):
 
         out = self.copy()
         if baseline is 'median':
-            return Fex(out-out.median(), sampling_freq=out.sampling_freq)
+            return self.__class__(out-out.median(), sampling_freq=out.sampling_freq)
         elif baseline is 'mean':
-            return Fex(out-out.mean(), sampling_freq=out.sampling_freq)
+            return self.__class__(out-out.mean(), sampling_freq=out.sampling_freq)
         elif isinstance(baseline, (Series, FexSeries)):
-            return Fex(out-baseline, sampling_freq=out.sampling_freq)
+            return self.__class__(out-baseline, sampling_freq=out.sampling_freq)
         elif isinstance(baseline, (Fex, DataFrame)):
             raise ValueError('Must pass in a FexSeries not a Fex Instance.')
         else:
@@ -235,7 +235,7 @@ class Fex(DataFrame):
                 cleaned Fex instance
 
         """
-        return Fex(pd.DataFrame(clean(self.values, detrend=detrend,
+        return self.__class__(pd.DataFrame(clean(self.values, detrend=detrend,
                                       standardize=standardize,
                                       confounds=confounds,
                                       low_pass=low_pass,
@@ -270,13 +270,58 @@ class Fex(DataFrame):
         com_names = ['c%s' % str(x+1) for x in range(n_components)]
         if axis == 0:
             out['decomposition_object'].fit(self.T)
-            out['components'] = Fex(pd.DataFrame(out['decomposition_object'].transform(self.T), index=self.columns, columns=com_names), sampling_freq=None)
-            out['weights'] = Fex(pd.DataFrame(out['decomposition_object'].components_.T,index=self.index,columns=com_names), sampling_freq=self.sampling_freq)
+            out['components'] = self.__class__(pd.DataFrame(out['decomposition_object'].transform(self.T), index=self.columns, columns=com_names), sampling_freq=None)
+            out['weights'] = self.__class__(pd.DataFrame(out['decomposition_object'].components_.T,index=self.index,columns=com_names), sampling_freq=self.sampling_freq)
         if axis == 1:
             out['decomposition_object'].fit(self)
-            out['components'] = Fex(pd.DataFrame(out['decomposition_object'].transform(self), columns=com_names), sampling_freq=self.sampling_freq)
-            out['weights'] = Fex(pd.DataFrame(out['decomposition_object'].components_, index=com_names, columns=self.columns), sampling_freq=None).T
+            out['components'] = self.__class__(pd.DataFrame(out['decomposition_object'].transform(self), columns=com_names), sampling_freq=self.sampling_freq)
+            out['weights'] = self.__class__(pd.DataFrame(out['decomposition_object'].components_, index=com_names, columns=self.columns), sampling_freq=None).T
         return out
+
+    def extract_boft(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
+        """ Extract Bag of Temporal features
+        Args: 
+            min_freq: maximum frequency of temporal filters
+            max_freq: minimum frequency of temporal filters
+            bank: number of temporal filter banks, filters are on exponential scale
+
+        Returns:
+            wavs: list of Morlet wavelets with corresponding freq
+            hzs:  list of hzs for each Morlet wavelet   
+
+
+        """
+        # First generate the wavelets
+        target_hz = self.sampling_freq
+        freqs = np.geomspace(min_freq,max_freq,bank)
+        wavs, hzs = [],[]
+        for i, f in enumerate(freqs):
+            wav = wavelet(f,sampling_rate=target_hz)
+            wavs.append(wav)
+            hzs.append(str(np.round(freqs[i],2)))
+        wavs = np.array(wavs)[::-1,:]
+        hzs = np.array(hzs)[::-1]
+        # # check asymptotes at lowest freq
+        # asym = wavs[-1,:10].sum()
+        # if asym > .001:
+        #     print("Lowest frequency asymptotes at %2.8f " %(wavs[-1,:10].sum()))
+
+        # Convolve data with wavelets
+        Feats2Use = self.columns
+        feats = pd.DataFrame()
+        for feat in Feats2Use:
+            _d = self[[feat]].T
+            assert _d.isnull().sum().any()==0, "Data contains NaNs. Cannot convolve. "
+            for iw, cm in enumerate(wavs):
+                convolved = np.apply_along_axis(lambda m: np.convolve(m, cm,mode='full'),axis=1,arr=_d.as_matrix())
+                # Extract bin features.
+                out = pd.DataFrame(convolved.T).apply(calc_hist_auc,args=(None))
+                colnames = ['pos'+str(i)+'_hz_'+hzs[iw]+'_'+feat for i in range(6)]
+                colnames.extend(['neg'+str(i)+'_hz_'+hzs[iw]+'_'+feat for i in range(6)])
+                out = out.T
+                out.columns = colnames
+                feats = pd.concat([feats, out], axis=1)
+        return self.__class__(feats)
 
 class Facet(Fex):
     """
