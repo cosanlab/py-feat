@@ -17,6 +17,9 @@ __author__ = ["Jin Hyun Cheong"]
 import os
 import numpy as np
 import pandas as pd
+from scipy import signal
+from scipy.integrate import simps
+import pywt
 
 def read_facet(facetfile, features=None):
     '''
@@ -188,3 +191,77 @@ def read_openface(openfacefile, features=None):
        'AU20_c', 'AU23_c', 'AU25_c', 'AU26_c', 'AU28_c', 'AU45_c']
         d = d[features]
     return d
+
+
+
+def wavelet(freq,num_cyc=3,duration=60,sampling_rate=30.,plot=False):
+    """ Create a complex Morlet wavelet by windowing a cosine function by a Gaussian.
+        All formulae taken from Cohen, 2014 Chaps 12 + 13
+    
+        Args:
+            freq: (float) desired frequence of wavelet
+            num_cyc: (float) number of wavelet cycles/gaussian taper (default: 3)
+            duration (int) the expected duration of wavelet (default: 60)
+            sampling_rate: (float) sampling rate of signal this will be convolved with
+            plot: (bool) whether to plot the wavelet or not  
+        Returns:
+        wav: (ndarray) real component of wavelet
+    """
+    endpt = duration / 2.
+    time = np.arange(-endpt,endpt,1./sampling_rate)
+
+    #Cosine component
+    sin = np.exp(2 * np.pi * 1j * freq * time)
+
+    #Gaussian component
+    sd = num_cyc/(2 * np.pi * freq) #standard deviation
+    gaus = np.exp(-time**2./(2. * sd**2.))
+
+    wav = sin * gaus
+    if plot:
+        f = plt.figure(figsize=(8,6));
+        plt.plot(time,np.real(wav),color='steelblue',label='Real component');
+        plt.plot(time,np.imag(wav),color='tomato',linestyle='--',label='Imaginary componenet');
+        plt.axvline(x=0,color='k');
+        plt.legend(fontsize=16);
+    return np.real(wav)
+
+def calc_hist_auc(vals, hist_range=None):
+    """
+    This function follows the bag of temporal feature analysis as described in 
+    Bartlett, M. S., Littlewort, G. C., Frank, M. G., & Lee, K. (2014). 
+    Automatic decoding of facial movements reveals deceptive pain expressions. 
+    Current Biology, 24(7), 738-743.
+    The function receives convolved data, squares the values, 
+    finds 0 crossings to calculate the AUC(area under the curve)
+    and generates a 6 exponentially-spaced-bin histogram for each data.
+    
+    Args: 
+
+    Returns:
+
+
+    """
+    #Square values
+    vals = [elem**2 if elem > 0 else -1*elem**2 for elem in vals]
+    #Get 0 crossings
+    crossings = np.where(np.diff(np.sign(vals)))[0]
+    pos,neg = [],[]
+    for i in range(len(crossings)):
+        if i == 0:
+            cross = vals[:crossings[i]]
+        elif i == len(crossings)-1:
+            cross = vals[crossings[i]:]
+        else:
+            cross = vals[crossings[i]:crossings[i+1]]
+        if cross:
+            auc = simps(cross)
+            if auc > 0:
+                pos.append(auc) 
+            elif auc < 0:
+                neg.append(np.abs(auc)) 
+    if not hist_range:
+        hist_range = np.logspace(0,5,7) # bartlett 10**0~ 10**5
+
+    out = pd.Series(np.hstack([np.histogram(pos,hist_range)[0], np.histogram(neg,hist_range)[0]]))
+    return out
