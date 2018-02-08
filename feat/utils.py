@@ -24,23 +24,29 @@ import pywt
 def read_facet(facetfile, features=None):
     '''
     This function reads in an iMotions-FACET exported facial expression file.
+    Also for iMotions-FACET versions below 6, Confusion and Frustration do not exist so are not returned.
+
     Args:
-        features: If a list of column names are passed, those are returned. Otherwise, default returns the following features:
-        ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
-                  'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
-                  'Neutral Evidence','Positive Evidence','Negative Evidence','AU1 Evidence','AU2 Evidence',
-                  'AU4 Evidence','AU5 Evidence','AU6 Evidence','AU7 Evidence','AU9 Evidence','AU10 Evidence',
-                  'AU12 Evidence','AU14 Evidence','AU15 Evidence','AU17 Evidence','AU18 Evidence','AU20 Evidence',
-                  'AU23 Evidence','AU24 Evidence','AU25 Evidence','AU26 Evidence','AU28 Evidence','AU43 Evidence',
-                  'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
+        features: If a list of iMotion-FACET column names are passed, those are returned. 
+        Otherwise, default columns are returned in the following format:['Timestamp','FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight',
+        'Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration',
+        'Neutral','Positive','Negative','AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10',
+        'AU12','AU14','AU15','AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43',
+        'Yaw', 'Pitch', 'Roll']. 
+        Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
 
     Returns:
         dataframe of processed facial expressions
-
     '''
+    # Check iMotions Version
+    versionstr = ''
+    with open(facetfile,'r') as f: 
+        studyname = f.readline().replace('\t','').replace('\n','')
+        studydate = f.readline().replace('\t','').replace('\n','')
+        versionstr = f.readline().replace('\t','').replace('\n','')
+    versionnum = int(versionstr.split(' ')[-1].split('.')[0])
 
     d = pd.read_csv(facetfile, skiprows=5, sep='\t')
-
     # Check if features argument is passed and return only those features, else return basic emotion/AU features
     if isinstance(features,list):
         try:
@@ -48,14 +54,20 @@ def read_facet(facetfile, features=None):
         except:
             raise KeyError([features,'not in facetfile'])
     elif isinstance(features, type(None)):
-        features = ['Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
+        features = ['Timestamp','FaceRect X','FaceRect Y','FaceRect Width','FaceRect Height','Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
                   'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
                   'Neutral Evidence','Positive Evidence','Negative Evidence','AU1 Evidence','AU2 Evidence',
                   'AU4 Evidence','AU5 Evidence','AU6 Evidence','AU7 Evidence','AU9 Evidence','AU10 Evidence',
                   'AU12 Evidence','AU14 Evidence','AU15 Evidence','AU17 Evidence','AU18 Evidence','AU20 Evidence',
                   'AU23 Evidence','AU24 Evidence','AU25 Evidence','AU26 Evidence','AU28 Evidence','AU43 Evidence',
                   'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
+        if versionnum < 6:
+            features.remove('Confusion Evidence')
+            features.remove('Frustration Evidence')
         d = d[features]
+        d.columns = [col.replace(' Evidence','') for col in d.columns]
+        d.columns = [col.replace(' Degrees','') for col in d.columns]
+        d.columns = [col.replace(' ','') for col in d.columns]
     return d
 
 def read_openface(openfacefile, features=None):
