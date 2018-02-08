@@ -14,7 +14,11 @@ from nltools.data import Adjacency
 import unittest
 
 def test_fex(tmpdir):
-    # For iMotions-FACET data file
+    # For iMotions-FACET data files
+    # test reading iMotions file < version 6
+    dat = Fex(read_facet(join(get_test_data_path(), 'iMotions_Test_v2.txt')), sampling_freq=30)
+
+    # test reading iMotions file > version 6
     filename = join(get_test_data_path(), 'iMotions_Test.txt')
     dat = Fex(read_facet(filename), sampling_freq=30)
 
