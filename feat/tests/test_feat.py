@@ -60,6 +60,9 @@ def test_fex(tmpdir):
     facet.read_file()
     assert len(facet)==519
 
+    # Test PSPI calculation
+    assert len(facet.calc_pspi()) == len(facet)
+
     # Test Bag Of Temporal Features Extraction
     facet_filled = facet.fillna(0)
     assert isinstance(facet_filled,Facet)
@@ -96,8 +99,12 @@ def test_fex(tmpdir):
     openface = Openface(filename=filename, sampling_freq = 30)
     openface.read_file()
 
+    # Test length? 
     assert len(openface)==100
 
+    # Test PSPI calculation b/c diff from facet
+    assert len(openface.calc_pspi()) == len(openface)
+    
     # Test if a method returns subclass.
     openface = openface.downsample(target=10,target_type='hz')
     assert isinstance(openface,Openface)
