@@ -69,6 +69,23 @@ class Fex(DataFrame):
         """ Loads file into FEX class """
         pass
 
+    @abc.abstractmethod
+    def calc_pspi(self, *args, **kwargs):
+        """ Calculates PSPI (Prkachin and Solomon Pain Intensity) levels which is metric of pain as a linear combination of facial action units(AU).
+        The included AUs are brow lowering (AU4), eye tightening (AU6,7), eye closure(AU43,45), nose wrinkling (AU9) and lip raise (AU10).
+        Originally PSPI is calculated based on AU intensity scale of 1-5 but for Facet data it is in Evidence units.
+        
+        Citation:
+        Prkachin and Solomon, (2008) The structure, reliability and validity of pain expression: Evidence from Patients with shoulder pain, Pain, vol 139, non 2 pp 267-274 
+
+        Formula: 
+        PSPI = AU4 + max(AU6, AU7) + max(AU9, AU10) + AU43 (or AU45 for Openface)
+
+        Return:
+            PSPI calculated at each frame.
+        """
+        pass
+
     def info(self):
         """Print class meta data.
 
@@ -389,6 +406,10 @@ class Facet(Fex):
     def read_file(self, *args, **kwargs):
         super(Fex, self).__init__(read_facet(self.filename, *args, **kwargs), *args, **kwargs)
 
+    def calc_pspi(self, *args, **kwargs):
+        out = self['AU4'] + self[['AU6','AU7']].max(axis=1) + self[['AU9','AU10']].max(axis=1) + self['AU43']
+        return out 
+
 class Affdex(Fex):
     def read_file(self, *args, **kwargs):
         # super(Fex, self).__init__(read_affdex(self.filename, *args, **kwargs), *args, **kwargs)
@@ -402,3 +423,7 @@ class Openface(Fex):
     """
     def read_file(self, *args, **kwargs):
         super(Fex, self).__init__(read_openface(self.filename, *args, **kwargs), *args, **kwargs)
+
+    def calc_pspi(self, *args, **kwargs):
+        out = self['AU04_r'] + self[['AU06_r','AU07_r']].max(axis=1) + self[['AU09_r','AU10_r']].max(axis=1) + self['AU45_r']
+        return out 
