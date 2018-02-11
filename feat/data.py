@@ -46,15 +46,23 @@ class Fex(DataFrame):
                                          defaults to None
         features (pd.Dataframe, optional): features that correspond to each
                                           Fex row
+        sessions: Unique values indicating rows associated with a specific
+                  session (e.g., trial, subject, etc). Must be a 1D array of
+                  n_samples elements; defaults to None
     """
     # __metaclass__  = abc.ABCMeta
-    _metadata = ['filename','sampling_freq', 'features']
+    _metadata = ['filename', 'sampling_freq', 'features', 'sessions']
 
     def __init__(self, *args, **kwargs):
         self.filename = kwargs.pop('filename', None)
         self.sampling_freq = kwargs.pop('sampling_freq', None)
-        self.features = kwargs.pop('features', False)
+        self.features = kwargs.pop('features', None)
+        self.sessions = kwargs.pop('sessions', None)
         super(Fex, self).__init__(*args, **kwargs)
+        if self.sessions is not None:
+            if not len(self.sessions) == len(self):
+                raise ValueError('Make sure sessions is same length as data.')
+            self.sessions = np.array(self.sessions)
 
     @property
     def _constructor(self):
@@ -74,11 +82,11 @@ class Fex(DataFrame):
         """ Calculates PSPI (Prkachin and Solomon Pain Intensity) levels which is metric of pain as a linear combination of facial action units(AU).
         The included AUs are brow lowering (AU4), eye tightening (AU6,7), eye closure(AU43,45), nose wrinkling (AU9) and lip raise (AU10).
         Originally PSPI is calculated based on AU intensity scale of 1-5 but for Facet data it is in Evidence units.
-        
-        Citation:
-        Prkachin and Solomon, (2008) The structure, reliability and validity of pain expression: Evidence from Patients with shoulder pain, Pain, vol 139, non 2 pp 267-274 
 
-        Formula: 
+        Citation:
+        Prkachin and Solomon, (2008) The structure, reliability and validity of pain expression: Evidence from Patients with shoulder pain, Pain, vol 139, non 2 pp 267-274
+
+        Formula:
         PSPI = AU4 + max(AU6, AU7) + max(AU9, AU10) + AU43 (or AU45 for Openface)
 
         Return:
@@ -90,13 +98,34 @@ class Fex(DataFrame):
         """Print class meta data.
 
         """
-        return '%s.%s(sampling_freq=%s, shape=%s, features_shape=%s)' % (
+        if self.features is not None:
+            features = self.features.shape
+        else:
+            features = self.features
+
+        if self.sessions is not None:
+            sessions = len(np.unique(self.sessions))
+        else:
+            sessions = self.sessions
+
+        return '%s.%s(sampling_freq=%s, shape=%s, n_sessions=%s, features_shape=%s)' % (
             self.__class__.__module__,
             self.__class__.__name__,
             self.sampling_freq,
             self.shape,
-            self.features.shape,
+            sessions,
+            features,
             )
+
+    def itersessions(self):
+        ''' Iterate over Fex sessions as (session, series) pairs.
+
+        Returns:
+            it: a generator that iterates over the sessions of the fex instance
+
+        '''
+        for x in np.unique(self.sessions):
+            yield x, self.loc[self.sessions==x, :]
 
     def append(self, data):
         '''Append a new Fex object to an existing object'''
@@ -111,7 +140,7 @@ class Fex(DataFrame):
                 raise ValueError('Make sure Fex objects have the same '
                                  'sampling frequency')
             out.data = out.data.append(data.data, ignore_index=True)
-            if self.features:
+            if self.features is not None:
                 if out.features.shape[1]==data.features[1]:
                     out.features = out.features.append(data.features, ignore_index=True)
                 else:
@@ -140,7 +169,7 @@ class Fex(DataFrame):
 
         df_ds = downsample(self, sampling_freq=self.sampling_freq,
                            target=target, **kwargs)
-        if self.features:
+        if self.features is not None:
             ds_features = downsample(self.features,
                                      sampling_freq=self.sampling_freq,
                                      target=target, **kwargs)
@@ -161,7 +190,7 @@ class Fex(DataFrame):
 
         df_us = upsample(self, sampling_freq=self.sampling_freq,
                          target=target, target_type=target_type, **kwargs)
-        if self.features:
+        if self.features is not None:
             us_features = upsample(self.features,
                                    sampling_freq=self.sampling_freq,
                                    target=target, target_type=target_type,
@@ -211,7 +240,7 @@ class Fex(DataFrame):
 
     def clean(self, detrend=True, standardize=True, confounds=None,
               low_pass=None, high_pass=None, ensure_finite=False,
-              *args, **kwargs):
+              ignore_sessions=False, *args, **kwargs):
 
         """ Clean Time Series signal
 
@@ -226,6 +255,8 @@ class Fex(DataFrame):
                 - standardize
                 - remove confounds
                 - low- and high-pass filter
+
+            If Fex.sessions is not None, sessions will be cleaned separately.
 
             Args:
                 confounds: (numpy.ndarray, str or list of Confounds timeseries)
@@ -248,10 +279,18 @@ class Fex(DataFrame):
                 ensure_finite: (bool) If True, the non-finite values
                                (NANs and infs) found in the data will be
                                replaced by zeros.
+                ignore_sessions: (bool) If True, will ignore Fex.sessions
+                                 information. Otherwise, method will be applied
+                                 separately to each unique session.
             Returns:
                 cleaned Fex instance
 
         """
+        if self.sessions is not None:
+            if ignore_sessions:
+                sessions=None
+            else:
+                sessions = self.sessions
         return self.__class__(pd.DataFrame(clean(self.values, detrend=detrend,
                                       standardize=standardize,
                                       confounds=confounds,
@@ -259,6 +298,7 @@ class Fex(DataFrame):
                                       high_pass=high_pass,
                                       ensure_finite=ensure_finite,
                                       t_r=1/self.sampling_freq,
+                                      sessions=sessions,
                                       *args, **kwargs),
                                 columns=self.columns),
                     sampling_freq=self.sampling_freq)
@@ -352,6 +392,31 @@ class Fex(DataFrame):
         feats.columns = 'max_' + feats.columns
         return self.__class__(feats)
 
+    def extract_wavelet(self, freq, num_cyc=3, mode='complex'):
+        ''' Function to use perform feature extraction by convolving with a
+            complex wavelet
+
+            Args:
+                freq: (float) frequency to extract
+                num_cyc: (float) number of cycles for wavelet
+                mode: (str) feature to extract, e.g.,
+                            ['complex','filtered','phase','magnitude','power']
+            Returns:
+                convolved: (Fex instance)
+        '''
+        wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
+        convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}))
+        if mode is 'complex':
+            return convolved
+        elif mode is 'filtered':
+            return np.real(convolved)
+        elif mode is 'phase':
+            return np.angle(convolved)
+        elif mode is 'magnitude':
+            return np.abs(convolved)
+        elif mode is 'power':
+            return np.abs(convolved)**2
+
     def extract_boft(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
         """ Extract Bag of Temporal features
         Args:
@@ -370,7 +435,7 @@ class Fex(DataFrame):
         freqs = np.geomspace(min_freq,max_freq,bank)
         wavs, hzs = [],[]
         for i, f in enumerate(freqs):
-            wav = wavelet(f,sampling_rate=target_hz)
+            wav = wavelet(f, sampling_rate=target_hz)
             wavs.append(wav)
             hzs.append(str(np.round(freqs[i],2)))
         wavs = np.array(wavs)[::-1,:]
@@ -387,7 +452,7 @@ class Fex(DataFrame):
             _d = self[[feat]].T
             assert _d.isnull().sum().any()==0, "Data contains NaNs. Cannot convolve. "
             for iw, cm in enumerate(wavs):
-                convolved = np.apply_along_axis(lambda m: np.convolve(m, cm,mode='full'),axis=1,arr=_d.as_matrix())
+                convolved = np.apply_along_axis(lambda m: np.convolve(m, cm, mode='full'),axis=1,arr=_d.as_matrix())
                 # Extract bin features.
                 out = pd.DataFrame(convolved.T).apply(calc_hist_auc,args=(None))
                 colnames = ['pos'+str(i)+'_hz_'+hzs[iw]+'_'+feat for i in range(6)]
@@ -408,7 +473,7 @@ class Facet(Fex):
 
     def calc_pspi(self, *args, **kwargs):
         out = self['AU4'] + self[['AU6','AU7']].max(axis=1) + self[['AU9','AU10']].max(axis=1) + self['AU43']
-        return out 
+        return out
 
 class Affdex(Fex):
     def read_file(self, *args, **kwargs):
@@ -426,4 +491,4 @@ class Openface(Fex):
 
     def calc_pspi(self, *args, **kwargs):
         out = self['AU04_r'] + self[['AU06_r','AU07_r']].max(axis=1) + self[['AU09_r','AU10_r']].max(axis=1) + self['AU45_r']
-        return out 
+        return out
