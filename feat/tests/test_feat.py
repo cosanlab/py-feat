@@ -20,7 +20,9 @@ def test_fex(tmpdir):
 
     # test reading iMotions file > version 6
     filename = join(get_test_data_path(), 'iMotions_Test.txt')
-    dat = Fex(read_facet(filename), sampling_freq=30)
+    df = read_facet(filename)
+    sessions = np.array([[x]*10 for x in range(round(len(df)/10))]).flatten()[:-1]
+    dat = Fex(df, sampling_freq=30, sessions=sessions)
 
     # Test KeyError
     class MyTestCase(unittest.TestCase):
@@ -30,6 +32,12 @@ def test_fex(tmpdir):
 
     # Test length
     assert len(dat)==519
+
+    # Test Info
+    assert isinstance(dat.info(), str)
+
+    # Test sessions generator
+    assert len(np.unique(dat.sessions))==len([x for x in dat.itersessions()])
 
     # Test Downsample
     assert len(dat.downsample(target=10))==52
@@ -91,7 +99,6 @@ def test_fex(tmpdir):
             with self.assertRaises(KeyError):
                 Fex(read_openface(filename, features=['NotHere']), sampling_freq=30)
 
-
     # Test length
     assert len(openface)==100
 
@@ -99,12 +106,12 @@ def test_fex(tmpdir):
     openface = Openface(filename=filename, sampling_freq = 30)
     openface.read_file()
 
-    # Test length? 
+    # Test length?
     assert len(openface)==100
 
     # Test PSPI calculation b/c diff from facet
     assert len(openface.calc_pspi()) == len(openface)
-    
+
     # Test if a method returns subclass.
     openface = openface.downsample(target=10,target_type='hz')
     assert isinstance(openface,Openface)
