@@ -75,6 +75,21 @@ def test_fex(tmpdir):
     # Test PSPI calculation
     assert len(facet.calc_pspi()) == len(facet)
 
+    # Test wavelet
+    dat = dat.interpolate()
+    f = .5; num_cyc=3
+    wavelet = dat.extract_wavelet(freq=f, num_cyc=num_cyc, ignore_sessions=True)
+    assert wavelet.sampling_freq == dat.sampling_freq
+    assert len(wavelet) == len(dat)
+    wavelet = dat.extract_wavelet(freq=f, num_cyc=num_cyc, ignore_sessions=False)
+    assert wavelet.sampling_freq == dat.sampling_freq
+    assert len(wavelet) == len(dat)
+    assert np.array_equal(wavelet.sessions,dat.sessions)
+    for i in ['filtered','phase','magnitude','power']:
+        wavelet = dat.extract_wavelet(freq=f, num_cyc=num_cyc, ignore_sessions=True, mode=i)
+        assert wavelet.sampling_freq == dat.sampling_freq
+        assert len(wavelet) == len(dat)
+
     # Test Bag Of Temporal Features Extraction
     facet_filled = facet.fillna(0)
     assert isinstance(facet_filled,Facet)
