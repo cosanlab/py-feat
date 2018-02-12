@@ -470,16 +470,17 @@ class Fex(DataFrame):
         if ignore_sessions:
             feats = pd.DataFrame(self.max()).transpose()
             feats.columns = 'max_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                  features=self.features,
-                                  sessions=self.sessions)
+            return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
-            feats = pd.DataFrame()
-            for k,v in self.itersessions():
-                feats = feats.append(pd.Series(v.max(), name=k))
-            feats.columns = 'max_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                  sessions=np.unique(self.sessions))
+            if self.sessions is None:
+                raise ValueError('Fex instance does not have sessions attribute.')
+            else:
+                feats = pd.DataFrame()
+                for k,v in self.itersessions():
+                    feats = feats.append(pd.Series(v.max(), name=k))
+                feats.columns = 'max_' + feats.columns
+                return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                      sessions=np.unique(self.sessions))
 
     def extract_wavelet(self, freq, num_cyc=3, mode='complex', ignore_sessions=False):
         ''' Function to use perform feature extraction by convolving with a
