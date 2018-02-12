@@ -91,7 +91,7 @@ def test_fex(tmpdir):
         assert len(wavelet) == len(dat)
 
     # Test Bag Of Temporal Features Extraction
-    # facet_filled = facet.fillna(0)
+    facet_filled = facet.fillna(0)
     # assert isinstance(facet_filled,Facet)
     # assert isinstance(facet_filled.extract_boft(), Facet)
     # filters, histograms = 8, 12
