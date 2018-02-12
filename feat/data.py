@@ -17,6 +17,7 @@ from sklearn.utils import check_random_state
 from feat.utils import read_facet, read_openface, wavelet, calc_hist_auc
 from nilearn.signal import clean
 from pandas.core.index import Index
+from scipy.signal import convolve
 
 class FexSeries(Series):
 
@@ -183,22 +184,34 @@ class Fex(DataFrame):
         for x in np.unique(self.sessions):
             yield x, self.loc[self.sessions==x, :]
 
-    def append(self, data):
-        '''Append a new Fex object to an existing object'''
-        if not isinstance(data, Fex):
+    def append(self, data, session_id=None):
+        ''' Append a new Fex object to an existing object
+
+        Args:
+            data: (Fex) Fex instance to append
+            session_id: session label
+
+        Returns:
+            Fex instance
+        '''
+        if not isinstance(data, self.__class__):
             raise ValueError('Make sure data is a Fex instance.')
 
         if self.empty:
             out = data.copy()
+            if session_id is not None:
+                out.sessions = np.repeat(session_id, len(data))
         else:
             out = self.copy()
             if out.sampling_freq!=data.sampling_freq:
                 raise ValueError('Make sure Fex objects have the same '
                                  'sampling frequency')
-            out.data = out.data.append(data.data, ignore_index=True)
+            out = self.__class__(pd.concat([self, data], axis=0, ignore_index=True), sampling_freq=self.sampling_freq, features=self.features)
+            if session_id is not None:
+                out.sessions = np.hstack([self.sessions, np.repeat(session_id, len(data))])
             if self.features is not None:
-                if out.features.shape[1]==data.features[1]:
-                    out.features = out.features.append(data.features, ignore_index=True)
+                if self.features.shape[1]==data.features[1]:
+                    out.features = self.features.append(data.features, ignore_index=True)
                 else:
                     raise ValueError('Different number of features in new dataset.')
         return out
@@ -448,7 +461,7 @@ class Fex(DataFrame):
         feats.columns = 'max_' + feats.columns
         return self.__class__(feats)
 
-    def extract_wavelet(self, freq, num_cyc=3, mode='complex'):
+    def extract_wavelet(self, freq, num_cyc=3, mode='complex', ignore_sessions=False):
         ''' Function to use perform feature extraction by convolving with a
             complex wavelet
 
@@ -461,18 +474,36 @@ class Fex(DataFrame):
                 convolved: (Fex instance)
         '''
         wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
-        convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
+        if ignore_sessions:
+            convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq, features=self.features)
+        else:
+            convolved = self.__class__(sampling_freq=self.sampling_freq)
+            for k,v in self.itersessions():
+                session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq, features=self.features)
+                convolved = convolved.append(session, session_id=k)
         if mode is 'complex':
             return convolved
         elif mode is 'filtered':
-            return np.real(convolved)
+            return self.__class__(np.real(convolved),
+                                  sampling_freq=convolved.sampling_freq,
+                                  features=convolved.features,
+                                  sessions=convolved.sessions)
         elif mode is 'phase':
-            return np.angle(convolved)
+            return self.__class__(np.angle(convolved),
+                                  sampling_freq=convolved.sampling_freq,
+                                  features=convolved.features,
+                                  sessions=convolved.sessions)
         elif mode is 'magnitude':
-            return np.abs(convolved)
+            return self.__class__(np.abs(convolved),
+                                  sampling_freq=convolved.sampling_freq,
+                                  features=convolved.features,
+                                  sessions=convolved.sessions)
         elif mode is 'power':
-            return np.abs(convolved)**2
-
+            return self.__class__(np.abs(convolved)**2,
+                                  sampling_freq=convolved.sampling_freq,
+                                  features=convolved.features,
+                                  sessions=convolved.sessions)
+                                  
     def extract_boft(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
         """ Extract Bag of Temporal features
         Args:
