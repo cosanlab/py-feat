@@ -458,26 +458,28 @@ class Fex(DataFrame):
                               features=self.features,
                               sessions=self.sessions)
 
-    def extract_max(self, by=[], *args, **kwargs):
+    def extract_max(self, ignore_sessions=False, *args, **kwargs):
         """ Extract maximum of each feature
         Args:
-            by: List of string(s) specifying the columns that maximums
-                will be extracted along (e.g. subject, trial, etc.). Defaults
-                to an empty list, which returns maximums across all observations.
+            ignore_sessions: (bool) ignore sessions or extract separately
+                                    by sessions if available.
         Returns:
             max: list of maximum values for each feature
 
-
         """
-        assert not isinstance(by, str), "'by' must be a list"
-        if len(by)>0:
-            feats = pd.DataFrame(self.groupby(by).max())
-        else:
+        if ignore_sessions:
             feats = pd.DataFrame(self.max()).transpose()
-        feats.columns = 'max_' + feats.columns
-        return self.__class__(feats, sampling_freq=self.sampling_freq,
-                              features=self.features,
-                              sessions=self.sessions)
+            feats.columns = 'max_' + feats.columns
+            return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                  features=self.features,
+                                  sessions=self.sessions)
+        else:
+            feats = pd.DataFrame()
+            for k,v in self.itersessions():
+                feats = feats.append(pd.Series(v.max(), name=k))
+            feats.columns = 'max_' + feats.columns
+            return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                  sessions=np.unique(self.sessions))
 
     def extract_wavelet(self, freq, num_cyc=3, mode='complex', ignore_sessions=False):
         ''' Function to use perform feature extraction by convolving with a
@@ -488,6 +490,8 @@ class Fex(DataFrame):
                 num_cyc: (float) number of cycles for wavelet
                 mode: (str) feature to extract, e.g.,
                             ['complex','filtered','phase','magnitude','power']
+                ignore_sessions: (bool) ignore sessions or extract separately
+                                        by sessions if available.
             Returns:
                 convolved: (Fex instance)
         '''
