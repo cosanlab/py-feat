@@ -21,7 +21,7 @@ def test_fex(tmpdir):
     # test reading iMotions file > version 6
     filename = join(get_test_data_path(), 'iMotions_Test.txt')
     df = read_facet(filename)
-    sessions = np.array([[x]*10 for x in range(round(len(df)/10))]).flatten()[:-1]
+    sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
 
     # Test KeyError
