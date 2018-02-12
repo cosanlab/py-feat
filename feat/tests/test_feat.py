@@ -39,6 +39,10 @@ def test_fex(tmpdir):
     # Test sessions generator
     assert len(np.unique(dat.sessions))==len([x for x in dat.itersessions()])
 
+    # Test metadata propagation
+    assert dat['Joy'].sampling_freq == dat.sampling_freq
+    assert dat.iloc[:,0].sampling_freq == dat.sampling_freq
+
     # Test Downsample
     assert len(dat.downsample(target=10))==52
 
