@@ -16,6 +16,7 @@ from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
 from feat.utils import read_facet, read_openface, wavelet, calc_hist_auc
 from nilearn.signal import clean
+from pandas.core.index import Index
 
 class FexSeries(Series):
 
@@ -25,6 +26,12 @@ class FexSeries(Series):
     Fex class, i.e. how slicing is typically handled in pandas.
     All methods should be called on Fex below.
     """
+    _metadata = ['name', 'sampling_freq', 'sessions']
+
+    def __init__(self, *args, **kwargs):
+        self.sampling_freq = kwargs.pop('sampling_freq', None)
+        self.sessions = kwargs.pop('sessions', None)
+        super(FexSeries, self).__init__(*args, **kwargs)
 
     @property
     def _constructor(self):
@@ -41,7 +48,7 @@ class Fex(DataFrame):
         always return a new design matrix instance.
 
     Args:
-        filepath: path to file
+        filepath: (str) path to file
         sampling_freq (float, optional): sampling rate of each row in Hz;
                                          defaults to None
         features (pd.Dataframe, optional): features that correspond to each
@@ -64,6 +71,11 @@ class Fex(DataFrame):
                 raise ValueError('Make sure sessions is same length as data.')
             self.sessions = np.array(self.sessions)
 
+        # Set _metadata attributes on series: Kludgy solution
+        for k in self:
+            self[k].sampling_freq = self.sampling_freq
+            self[k].sessions = self.sessions
+
     @property
     def _constructor(self):
         return self.__class__
@@ -71,6 +83,50 @@ class Fex(DataFrame):
     @property
     def _constructor_sliced(self):
         return FexSeries
+
+    def _ixs(self, i, axis=0):
+        """ Override indexing to ensure Fex._metadata is propogated correctly
+            when integer indexing
+
+        i : int, slice, or sequence of integers
+        axis : int
+        """
+        result = super(self.__class__, self)._ixs(i, axis=axis)
+
+        # Override columns
+        if axis == 1:
+            """
+            Notes
+            -----
+            If slice passed, the resulting data will be a view
+            """
+
+            label = self.columns[i]
+            if isinstance(i, slice):
+                # need to return view
+                lab_slice = slice(label[0], label[-1])
+                return self.loc[:, lab_slice]
+            else:
+                if isinstance(label, Index):
+                    return self._take(i, axis=1, convert=True)
+
+                index_len = len(self.index)
+
+                # if the values returned are not the same length
+                # as the index (iow a not found value), iget returns
+                # a 0-len ndarray. This is effectively catching
+                # a numpy error (as numpy should really raise)
+                values = self._data.iget(i)
+
+                if index_len and not len(values):
+                    values = np.array([np.nan] * index_len, dtype=object)
+                result = self._constructor_sliced(
+                    values, index=self.index, name=label, fastpath=True,
+                    sampling_freq=self.sampling_freq, sessions=self.sessions)
+
+                # this is a cached value, mark it so
+                result._set_as_cached(label, self)
+        return result
 
     @abc.abstractmethod
     def read_file(self, *args, **kwargs):
@@ -405,7 +461,7 @@ class Fex(DataFrame):
                 convolved: (Fex instance)
         '''
         wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
-        convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}))
+        convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
         if mode is 'complex':
             return convolved
         elif mode is 'filtered':
@@ -428,14 +484,13 @@ class Fex(DataFrame):
             wavs: list of Morlet wavelets with corresponding freq
             hzs:  list of hzs for each Morlet wavelet
 
-
         """
         # First generate the wavelets
         target_hz = self.sampling_freq
-        freqs = np.geomspace(min_freq,max_freq,bank)
+        freqs = np.geomspace(min_freq, max_freq,bank)
         wavs, hzs = [],[]
         for i, f in enumerate(freqs):
-            wav = wavelet(f, sampling_rate=target_hz)
+            wav = wavelet(f, sampling_freq=target_hz)
             wavs.append(wav)
             hzs.append(str(np.round(freqs[i],2)))
         wavs = np.array(wavs)[::-1,:]
