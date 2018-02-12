@@ -1,3 +1,5 @@
+from __future__ import division
+
 """Class definitions."""
 
 import os
@@ -210,7 +212,7 @@ class Fex(DataFrame):
             if session_id is not None:
                 out.sessions = np.hstack([self.sessions, np.repeat(session_id, len(data))])
             if self.features is not None:
-                if self.features.shape[1]==data.features[1]:
+                if self.features.shape[1]==data.features.shape[1]:
                     out.features = self.features.append(data.features, ignore_index=True)
                 else:
                     raise ValueError('Different number of features in new dataset.')
@@ -361,16 +363,18 @@ class Fex(DataFrame):
             else:
                 sessions = self.sessions
         return self.__class__(pd.DataFrame(clean(self.values, detrend=detrend,
-                                      standardize=standardize,
-                                      confounds=confounds,
-                                      low_pass=low_pass,
-                                      high_pass=high_pass,
-                                      ensure_finite=ensure_finite,
-                                      t_r=1/self.sampling_freq,
-                                      sessions=sessions,
-                                      *args, **kwargs),
-                                columns=self.columns),
-                    sampling_freq=self.sampling_freq)
+                                                 standardize=standardize,
+                                                 confounds=confounds,
+                                                 low_pass=low_pass,
+                                                 high_pass=high_pass,
+                                                 ensure_finite=ensure_finite,
+                                                 t_r=1./np.float(self.sampling_freq),
+                                                 sessions=sessions,
+                                                 *args, **kwargs),
+                                        columns=self.columns),
+                                sampling_freq=self.sampling_freq,
+                                features=self.features,
+                                sessions=self.sessions)
 
     def decompose(self, algorithm='pca', axis=1, n_components=None,
                   *args, **kwargs):
@@ -397,10 +401,18 @@ class Fex(DataFrame):
         if axis == 0:
             out['decomposition_object'].fit(self.T)
             out['components'] = self.__class__(pd.DataFrame(out['decomposition_object'].transform(self.T), index=self.columns, columns=com_names), sampling_freq=None)
-            out['weights'] = self.__class__(pd.DataFrame(out['decomposition_object'].components_.T,index=self.index,columns=com_names), sampling_freq=self.sampling_freq)
+            out['weights'] = self.__class__(pd.DataFrame(out['decomposition_object'].components_.T,
+                                                        index=self.index,columns=com_names),
+                                            sampling_freq=self.sampling_freq,
+                                            features=self.features,
+                                            sessions=self.sessions)
         if axis == 1:
             out['decomposition_object'].fit(self)
-            out['components'] = self.__class__(pd.DataFrame(out['decomposition_object'].transform(self), columns=com_names), sampling_freq=self.sampling_freq)
+            out['components'] = self.__class__(pd.DataFrame(out['decomposition_object'].transform(self),
+                                                            columns=com_names),
+                                               sampling_freq=self.sampling_freq,
+                                               features=self.features,
+                                               sessions=self.sessions)
             out['weights'] = self.__class__(pd.DataFrame(out['decomposition_object'].components_, index=com_names, columns=self.columns), sampling_freq=None).T
         return out
 
@@ -421,7 +433,9 @@ class Fex(DataFrame):
         else:
             feats = pd.DataFrame(self.mean()).transpose()
             feats.columns = 'mean_' + feats.columns
-        return self.__class__(feats)
+        return self.__class__(feats, sampling_freq=self.sampling_freq,
+                              features=self.features,
+                            sessions=self.sessions)
 
     def extract_min(self, by=[], *args, **kwargs):
         """ Extract minimum of each feature
@@ -440,26 +454,33 @@ class Fex(DataFrame):
         else:
             feats = pd.DataFrame(self.min()).transpose()
         feats.columns = 'min_' + feats.columns
-        return self.__class__(feats)
+        return self.__class__(feats, sampling_freq=self.sampling_freq,
+                              features=self.features,
+                              sessions=self.sessions)
 
-    def extract_max(self, by=[], *args, **kwargs):
+    def extract_max(self, ignore_sessions=False, *args, **kwargs):
         """ Extract maximum of each feature
         Args:
-            by: List of string(s) specifying the columns that maximums
-                will be extracted along (e.g. subject, trial, etc.). Defaults
-                to an empty list, which returns maximums across all observations.
+            ignore_sessions: (bool) ignore sessions or extract separately
+                                    by sessions if available.
         Returns:
             max: list of maximum values for each feature
 
-
         """
-        assert not isinstance(by, str), "'by' must be a list"
-        if len(by)>0:
-            feats = pd.DataFrame(self.groupby(by).max())
-        else:
+        if ignore_sessions:
             feats = pd.DataFrame(self.max()).transpose()
-        feats.columns = 'max_' + feats.columns
-        return self.__class__(feats)
+            feats.columns = 'max_' + feats.columns
+            return self.__class__(feats, sampling_freq=self.sampling_freq)
+        else:
+            if self.sessions is None:
+                raise ValueError('Fex instance does not have sessions attribute.')
+            else:
+                feats = pd.DataFrame()
+                for k,v in self.itersessions():
+                    feats = feats.append(pd.Series(v.max(), name=k))
+                feats.columns = 'max_' + feats.columns
+                return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                      sessions=np.unique(self.sessions))
 
     def extract_wavelet(self, freq, num_cyc=3, mode='complex', ignore_sessions=False):
         ''' Function to use perform feature extraction by convolving with a
@@ -470,12 +491,14 @@ class Fex(DataFrame):
                 num_cyc: (float) number of cycles for wavelet
                 mode: (str) feature to extract, e.g.,
                             ['complex','filtered','phase','magnitude','power']
+                ignore_sessions: (bool) ignore sessions or extract separately
+                                        by sessions if available.
             Returns:
                 convolved: (Fex instance)
         '''
         wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
         if ignore_sessions:
-            convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq, features=self.features)
+            convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq, features=self.features, sessions=self.sessions)
         else:
             convolved = self.__class__(sampling_freq=self.sampling_freq)
             for k,v in self.itersessions():
@@ -503,7 +526,7 @@ class Fex(DataFrame):
                                   sampling_freq=convolved.sampling_freq,
                                   features=convolved.features,
                                   sessions=convolved.sessions)
-                                  
+
     def extract_boft(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
         """ Extract Bag of Temporal features
         Args:
@@ -546,7 +569,9 @@ class Fex(DataFrame):
                 out = out.T
                 out.columns = colnames
                 feats = pd.concat([feats, out], axis=1)
-        return self.__class__(feats)
+        return self.__class__(feats, sampling_freq=self.sampling_freq,
+                              features=self.features,
+                              sessions=self.sessions)
 
 class Facet(Fex):
     """
