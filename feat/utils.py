@@ -27,12 +27,12 @@ def read_facet(facetfile, features=None):
     Also for iMotions-FACET versions below 6, Confusion and Frustration do not exist so are not returned.
 
     Args:
-        features: If a list of iMotion-FACET column names are passed, those are returned. 
+        features: If a list of iMotion-FACET column names are passed, those are returned.
         Otherwise, default columns are returned in the following format:['Timestamp','FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight',
         'Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration',
         'Neutral','Positive','Negative','AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10',
         'AU12','AU14','AU15','AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43',
-        'Yaw', 'Pitch', 'Roll']. 
+        'Yaw', 'Pitch', 'Roll'].
         Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
 
     Returns:
@@ -40,7 +40,7 @@ def read_facet(facetfile, features=None):
     '''
     # Check iMotions Version
     versionstr = ''
-    with open(facetfile,'r') as f: 
+    with open(facetfile,'r') as f:
         studyname = f.readline().replace('\t','').replace('\n','')
         studydate = f.readline().replace('\t','').replace('\n','')
         versionstr = f.readline().replace('\t','').replace('\n','')
@@ -204,23 +204,22 @@ def read_openface(openfacefile, features=None):
         d = d[features]
     return d
 
+def wavelet(freq, num_cyc=3, sampling_freq=30.):
+    """ Create a complex Morlet wavelet by windowing a cosine function by a
+        Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13
 
-
-def wavelet(freq,num_cyc=3,duration=60,sampling_rate=30.):
-    """ Create a complex Morlet wavelet by windowing a cosine function by a Gaussian.
-        All formulae taken from Cohen, 2014 Chaps 12 + 13
-    
         Args:
             freq: (float) desired frequence of wavelet
-            num_cyc: (float) number of wavelet cycles/gaussian taper (default: 3)
-            duration (int) the expected duration of wavelet (default: 60)
-            sampling_rate: (float) sampling rate of signal this will be convolved with
-            plot: (bool) whether to plot the wavelet or not  
+            num_cyc: (float) number of wavelet cycles/gaussian taper. Note that
+                     smaller cycles give greater temporal precision and that larger
+                     values give greater frequency precision; (default: 3)
+            sampling_freq: (float) sampling frequency of original signal.
+
         Returns:
-        wav: (ndarray) real component of wavelet
+            wav: (ndarray) complex wavelet
     """
-    endpt = duration / 2.
-    time = np.arange(-endpt,endpt,1./sampling_rate)
+    dur = (1/freq)*num_cyc
+    time = np.arange(-dur, dur, 1./sampling_freq)
 
     #Cosine component
     sin = np.exp(2 * np.pi * 1j * freq * time)
@@ -229,21 +228,19 @@ def wavelet(freq,num_cyc=3,duration=60,sampling_rate=30.):
     sd = num_cyc/(2 * np.pi * freq) #standard deviation
     gaus = np.exp(-time**2./(2. * sd**2.))
 
-    wav = sin * gaus
-    
-    return np.real(wav)
+    return sin * gaus
 
 def calc_hist_auc(vals, hist_range=None):
     """
-    This function follows the bag of temporal feature analysis as described in 
-    Bartlett, M. S., Littlewort, G. C., Frank, M. G., & Lee, K. (2014). 
-    Automatic decoding of facial movements reveals deceptive pain expressions. 
+    This function follows the bag of temporal feature analysis as described in
+    Bartlett, M. S., Littlewort, G. C., Frank, M. G., & Lee, K. (2014).
+    Automatic decoding of facial movements reveals deceptive pain expressions.
     Current Biology, 24(7), 738-743.
-    The function receives convolved data, squares the values, 
+    The function receives convolved data, squares the values,
     finds 0 crossings to calculate the AUC(area under the curve)
     and generates a 6 exponentially-spaced-bin histogram for each data.
-    
-    Args: 
+
+    Args:
 
     Returns:
 
@@ -264,9 +261,9 @@ def calc_hist_auc(vals, hist_range=None):
         if cross:
             auc = simps(cross)
             if auc > 0:
-                pos.append(auc) 
+                pos.append(auc)
             elif auc < 0:
-                neg.append(np.abs(auc)) 
+                neg.append(np.abs(auc))
     if not hist_range:
         hist_range = np.logspace(0,5,7) # bartlett 10**0~ 10**5
 
