@@ -416,29 +416,34 @@ class Fex(DataFrame):
             out['weights'] = self.__class__(pd.DataFrame(out['decomposition_object'].components_, index=com_names, columns=self.columns), sampling_freq=None).T
         return out
 
-    def extract_mean(self, by=[], *args, **kwargs):
+    def extract_mean(self, ignore_sessions=False, *args, **kwargs):
         """ Extract mean of each feature
+        
         Args:
-            by: List of string(s) specifying the columns that means
-                will be extracted along (e.g. subject, trial, etc.). Defaults
-                to an empty list, which returns means across all observations.
+            ignore_sessions: (bool) ignore sessions or extract separately
+                                    by sessions if available.
         Returns:
-            mean: list of means for each feature
-
+            Fex: mean values for each feature
 
         """
-        assert not isinstance(by, str), "'by' must be a list"
-        if len(by)>0:
-            feats = pd.DataFrame(self.groupby(by).mean())
-        else:
+        if ignore_sessions:
             feats = pd.DataFrame(self.mean()).transpose()
             feats.columns = 'mean_' + feats.columns
-        return self.__class__(feats, sampling_freq=self.sampling_freq,
-                              features=self.features,
-                            sessions=self.sessions)
+            return self.__class__(feats, sampling_freq=self.sampling_freq)
+        else:
+            if self.sessions is None:
+                raise ValueError('Fex instance does not have sessions attribute.')
+            else:
+                feats = pd.DataFrame()
+                for k,v in self.itersessions():
+                    feats = feats.append(pd.Series(v.mean(), name=k))
+                feats.columns = 'mean_' + feats.columns
+                return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                      sessions=np.unique(self.sessions))
 
     def extract_min(self, ignore_sessions=False, *args, **kwargs):
         """ Extract minimum of each feature
+
         Args:
             ignore_sessions: (bool) ignore sessions or extract separately
                                     by sessions if available.
@@ -463,6 +468,7 @@ class Fex(DataFrame):
 
     def extract_max(self, ignore_sessions=False, *args, **kwargs):
         """ Extract maximum of each feature
+
         Args:
             ignore_sessions: (bool) ignore sessions or extract separately
                                     by sessions if available.
