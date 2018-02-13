@@ -437,26 +437,29 @@ class Fex(DataFrame):
                               features=self.features,
                             sessions=self.sessions)
 
-    def extract_min(self, by=[], *args, **kwargs):
+    def extract_min(self, ignore_sessions=False, *args, **kwargs):
         """ Extract minimum of each feature
         Args:
-            by: List of string(s) specifying the columns that minimums
-                will be extracted along (e.g. subject, trial, etc.). Defaults
-                to an empty list, which returns minimums across all observations.
+            ignore_sessions: (bool) ignore sessions or extract separately
+                                    by sessions if available.
         Returns:
-            min: list of minimum values for each feature
-
+            Fex: (Fex) minimum values for each feature
 
         """
-        assert not isinstance(by, str), "'by' must be a list"
-        if len(by)>0:
-            feats = pd.DataFrame(self.groupby(by).min())
-        else:
+        if ignore_sessions:
             feats = pd.DataFrame(self.min()).transpose()
-        feats.columns = 'min_' + feats.columns
-        return self.__class__(feats, sampling_freq=self.sampling_freq,
-                              features=self.features,
-                              sessions=self.sessions)
+            feats.columns = 'min_' + feats.columns
+            return self.__class__(feats, sampling_freq=self.sampling_freq)
+        else:
+            if self.sessions is None:
+                raise ValueError('Fex instance does not have sessions attribute.')
+            else:
+                feats = pd.DataFrame()
+                for k,v in self.itersessions():
+                    feats = feats.append(pd.Series(v.min(), name=k))
+                feats.columns = 'min_' + feats.columns
+                return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                      sessions=np.unique(self.sessions))
 
     def extract_max(self, ignore_sessions=False, *args, **kwargs):
         """ Extract maximum of each feature
@@ -464,7 +467,7 @@ class Fex(DataFrame):
             ignore_sessions: (bool) ignore sessions or extract separately
                                     by sessions if available.
         Returns:
-            max: list of maximum values for each feature
+            fex: (Fex) maximum values for each feature
 
         """
         if ignore_sessions:
