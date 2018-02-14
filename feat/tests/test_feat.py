@@ -132,7 +132,7 @@ def test_fex(tmpdir):
     dat2 = dat.loc[:,['Positive','Negative']].interpolate()
     n_bank=4
     out = dat2.extract_multi_wavelet(min_freq=.1, max_freq=2, bank=n_bank, mode='power', ignore_sessions=False)
-    assert n_bank*self.shape[1] == out.shape[1]
+    assert n_bank * dat2.shape[1] == out.shape[1]
     assert len(out) == len(dat2)
     assert np.array_equal(out.sessions, dat2.sessions)
     assert out.sampling_freq == dat2.sampling_freq
