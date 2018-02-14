@@ -562,16 +562,14 @@ class Fex(DataFrame):
         '''
         wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
         if self.sessions is None:
-            print(self.shape, self.sessions.shape, len(self.sessions), len(self))
-            convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq, features=self.features)
+            convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
         else:
             if ignore_sessions:
-                print(self.shape, self.sessions.shape, len(self.sessions), len(self))
-                convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq, features=self.features, sessions=self.sessions)
+                convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
             else:
                 convolved = self.__class__(sampling_freq=self.sampling_freq)
                 for k,v in self.itersessions():
-                    session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq, features=self.features)
+                    session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq)
                     convolved = convolved.append(session, session_id=k)
         if mode is 'complex':
             convolved = convolved
@@ -612,7 +610,10 @@ class Fex(DataFrame):
         out = []
         for f in np.geomspace(min_freq, max_freq, bank):
             out.append(self.extract_wavelet(f, *args, **kwargs))
-        return self.__class__(pd.concat(out, axis=1))
+        return self.__class__(pd.concat(out, axis=1),
+                              sampling_freq=self.sampling_freq,
+                              features=self.features,
+                              sessions=self.sessions)
 
     def extract_boft(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
         """ Extract Bag of Temporal features
