@@ -66,6 +66,15 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='median'), Fex)
     assert isinstance(dat.baseline(baseline='mean'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
+    assert isinstance(dat.baseline(baseline='median', ignore_sessions=True), Fex)
+    assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True), Fex)
+    assert isinstance(dat.baseline(baseline=dat.mean(), ignore_sessions=True), Fex)
+    assert isinstance(dat.baseline(baseline='median', normalize='pct'), Fex)
+    assert isinstance(dat.baseline(baseline='mean', normalize='pct'), Fex)
+    assert isinstance(dat.baseline(baseline=dat.mean(), normalize='pct'), Fex)
+    assert isinstance(dat.baseline(baseline='median', ignore_sessions=True, normalize='pct'), Fex)
+    assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True, normalize='pct'), Fex)
+    assert isinstance(dat.baseline(baseline=dat.mean(), ignore_sessions=True, normalize='pct'), Fex)
 
     # Test extract_max
     dat_max = dat.extract_max(ignore_sessions=False)
