@@ -207,12 +207,11 @@ class Fex(DataFrame):
             if self.sampling_freq != data.sampling_freq:
                 raise ValueError('Make sure Fex objects have the same '
                                  'sampling frequency')
-            out = self.__class__(pd.concat([self, data],
-                                           axis=axis,
-                                           ignore_index=True),
-                                 sampling_freq=self.sampling_freq)
-
             if axis==0:
+                out = self.__class__(pd.concat([self, data],
+                                               axis=axis,
+                                               ignore_index=True),
+                                     sampling_freq=self.sampling_freq)
                 if session_id is not None:
                     out.sessions = np.hstack([self.sessions, np.repeat(session_id, len(data))])
                 if self.features is not None:
@@ -226,6 +225,8 @@ class Fex(DataFrame):
                 elif data.features is not None:
                     out = data.features
             elif axis==1:
+                out = self.__class__(pd.concat([self, data], axis=axis),
+                                     sampling_freq=self.sampling_freq)
                 if self.sessions is not None:
                     if data.sessions is not None:
                         if np.array_equal(self.sessions, data.sessions):
@@ -518,6 +519,31 @@ class Fex(DataFrame):
                 feats.columns = 'max_' + feats.columns
                 return self.__class__(feats, sampling_freq=self.sampling_freq,
                                       sessions=np.unique(self.sessions))
+
+    def extract_summary(self, mean=None, max=None, min=None,
+                        ignore_sessions=False, *args, **kwargs):
+        """ Extract summary of multiple features
+
+        Args:
+            mean: (bool) extract mean of features
+            max: (bool) extract max of features
+            min: (bool) extract min of features
+            ignore_sessions: (bool) ignore sessions or extract separately
+                                    by sessions if available.
+
+        Returns:
+            fex: (Fex) maximum values for each feature
+
+        """
+
+        out = self.__class__()
+        if mean is not None:
+            out = out.append(self.extract_mean(*args, **kwargs), axis=1)
+        if max is not None:
+            out = out.append(self.extract_max(*args, **kwargs), axis=1)
+        if min is not None:
+            out = out.append(self.extract_min(*args, **kwargs), axis=1)
+        return out
 
     def extract_wavelet(self, freq, num_cyc=3, mode='complex',
                         ignore_sessions=False):
