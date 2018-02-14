@@ -314,30 +314,63 @@ class Fex(DataFrame):
         return Adjacency(pairwise_distances(self, metric=method, **kwargs),
                          matrix_type='Distance')
 
-    def baseline(self, baseline='median'):
+    def baseline(self, baseline='median', normalize=None,
+                 ignore_sessions=False):
         ''' Reference a Fex object to a baseline.
 
             Args:
-                method: {median, mean, Fex object}. Will subtract baseline
+                method: {median, mean, FexSeries instance}. Will subtract baseline
                         from Fex object (e.g., mean, median).  If passing a Fex
                         object, it will treat that as the baseline.
-
+                normalize: (str). Can normalize results of baseline.
+                            Values can be [None, 'db','pct']; default None.
+                ignore_sessions: (bool) If True, will ignore Fex.sessions
+                                 information. Otherwise, method will be applied
+                                 separately to each unique session.
             Returns:
                 Fex object
         '''
 
-        out = self.copy()
-        if baseline is 'median':
-            return self.__class__(out-out.median(), sampling_freq=out.sampling_freq)
-        elif baseline is 'mean':
-            return self.__class__(out-out.mean(), sampling_freq=out.sampling_freq)
-        elif isinstance(baseline, (Series, FexSeries)):
-            return self.__class__(out-baseline, sampling_freq=out.sampling_freq)
-        elif isinstance(baseline, (Fex, DataFrame)):
-            raise ValueError('Must pass in a FexSeries not a Fex Instance.')
+        if self.sessions is None or ignore_sessions:
+            out = self.copy()
+            if baseline is 'median':
+                baseline = out.median()
+            elif baseline is 'mean':
+                baseline = out.mean()
+            elif isinstance(baseline, (Series, FexSeries)):
+                baseline = baseline
+            elif isinstance(baseline, (Fex, DataFrame)):
+                raise ValueError('Must pass in a FexSeries not a FexSeries Instance.')
+            else:
+                raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
+            if normalize == 'db':
+                out = 10*np.log10(out - baseline)/baseline
+            if normalize == 'pct':
+                out = 100*(out - baseline)/baseline
+            else:
+                out = out - baseline
         else:
-            raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
-
+            out = self.__class__(sampling_freq=self.sampling_freq)
+            for k,v in self.itersessions():
+                if baseline is 'median':
+                    baseline = v.median()
+                elif baseline is 'mean':
+                    baseline = v.mean()
+                elif isinstance(baseline, (Series, FexSeries)):
+                    baseline = baseline
+                elif isinstance(baseline, (Fex, DataFrame)):
+                    raise ValueError('Must pass in a FexSeries not a FexSeries Instance.')
+                else:
+                    raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
+                if normalize == 'db':
+                    out = out.append(10*np.log10(v-baseline)/baseline, session_id=k)
+                if normalize == 'pct':
+                    out = out.append(100*(v-baseline)/baseline, session_id=k)
+                else:
+                    out = out.append(v-baseline, session_id=k)
+        return self.__class__(out, sampling_freq=self.sampling_freq,
+                             features=self.features, sessions=self.sessions)
+                             
     def clean(self, detrend=True, standardize=True, confounds=None,
               low_pass=None, high_pass=None, ensure_finite=False,
               ignore_sessions=False, *args, **kwargs):
@@ -455,20 +488,18 @@ class Fex(DataFrame):
             Fex: mean values for each feature
 
         """
-        if ignore_sessions:
+
+        if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.mean()).transpose()
             feats.columns = 'mean_' + feats.columns
             return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
-            if self.sessions is None:
-                raise ValueError('Fex instance does not have sessions attribute.')
-            else:
-                feats = pd.DataFrame()
-                for k,v in self.itersessions():
-                    feats = feats.append(pd.Series(v.mean(), name=k))
-                feats.columns = 'mean_' + feats.columns
-                return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                      sessions=np.unique(self.sessions))
+            feats = pd.DataFrame()
+            for k,v in self.itersessions():
+                feats = feats.append(pd.Series(v.mean(), name=k))
+            feats.columns = 'mean_' + feats.columns
+            return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                  sessions=np.unique(self.sessions))
 
     def extract_min(self, ignore_sessions=False, *args, **kwargs):
         """ Extract minimum of each feature
@@ -480,20 +511,18 @@ class Fex(DataFrame):
             Fex: (Fex) minimum values for each feature
 
         """
-        if ignore_sessions:
+
+        if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.min()).transpose()
             feats.columns = 'min_' + feats.columns
             return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
-            if self.sessions is None:
-                raise ValueError('Fex instance does not have sessions attribute.')
-            else:
-                feats = pd.DataFrame()
-                for k,v in self.itersessions():
-                    feats = feats.append(pd.Series(v.min(), name=k))
-                feats.columns = 'min_' + feats.columns
-                return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                      sessions=np.unique(self.sessions))
+            feats = pd.DataFrame()
+            for k,v in self.itersessions():
+                feats = feats.append(pd.Series(v.min(), name=k))
+            feats.columns = 'min_' + feats.columns
+            return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                  sessions=np.unique(self.sessions))
 
     def extract_max(self, ignore_sessions=False, *args, **kwargs):
         """ Extract maximum of each feature
@@ -505,20 +534,18 @@ class Fex(DataFrame):
             fex: (Fex) maximum values for each feature
 
         """
-        if ignore_sessions:
+
+        if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.max()).transpose()
             feats.columns = 'max_' + feats.columns
             return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
-            if self.sessions is None:
-                raise ValueError('Fex instance does not have sessions attribute.')
-            else:
-                feats = pd.DataFrame()
-                for k,v in self.itersessions():
-                    feats = feats.append(pd.Series(v.max(), name=k))
-                feats.columns = 'max_' + feats.columns
-                return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                      sessions=np.unique(self.sessions))
+            feats = pd.DataFrame()
+            for k,v in self.itersessions():
+                feats = feats.append(pd.Series(v.max(), name=k))
+            feats.columns = 'max_' + feats.columns
+            return self.__class__(feats, sampling_freq=self.sampling_freq,
+                                  sessions=np.unique(self.sessions))
 
     def extract_summary(self, mean=None, max=None, min=None,
                         ignore_sessions=False, *args, **kwargs):
@@ -561,16 +588,13 @@ class Fex(DataFrame):
                 convolved: (Fex instance)
         '''
         wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
-        if self.sessions is None:
+        if self.sessions is None or ignore_sessions:
             convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
         else:
-            if ignore_sessions:
-                convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
-            else:
-                convolved = self.__class__(sampling_freq=self.sampling_freq)
-                for k,v in self.itersessions():
-                    session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq)
-                    convolved = convolved.append(session, session_id=k)
+            convolved = self.__class__(sampling_freq=self.sampling_freq)
+            for k,v in self.itersessions():
+                session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq)
+                convolved = convolved.append(session, session_id=k)
         if mode is 'complex':
             convolved = convolved
         elif mode is 'filtered':
