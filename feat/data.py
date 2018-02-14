@@ -370,7 +370,7 @@ class Fex(DataFrame):
                     out = out.append(v-baseline, session_id=k)
         return self.__class__(out, sampling_freq=self.sampling_freq,
                              features=self.features, sessions=self.sessions)
-                             
+
     def clean(self, detrend=True, standardize=True, confounds=None,
               low_pass=None, high_pass=None, ensure_finite=False,
               ignore_sessions=False, *args, **kwargs):
@@ -490,7 +490,7 @@ class Fex(DataFrame):
         """
 
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.mean()).transpose()
+            feats = pd.DataFrame(self.mean()).T
             feats.columns = 'mean_' + feats.columns
             return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
@@ -513,7 +513,7 @@ class Fex(DataFrame):
         """
 
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.min()).transpose()
+            feats = pd.DataFrame(self.min()).T
             feats.columns = 'min_' + feats.columns
             return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
@@ -536,7 +536,7 @@ class Fex(DataFrame):
         """
 
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.max()).transpose()
+            feats = pd.DataFrame(self.max()).T
             feats.columns = 'max_' + feats.columns
             return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
@@ -559,17 +559,20 @@ class Fex(DataFrame):
                                     by sessions if available.
 
         Returns:
-            fex: (Fex) maximum values for each feature
+            fex: (Fex)
 
         """
 
-        out = self.__class__()
+        out = self.__class__(sampling_freq=self.sampling_freq)
         if mean is not None:
-            out = out.append(self.extract_mean(*args, **kwargs), axis=1)
+            out = out.append(self.extract_mean(ignore_sessions=ignore_sessions,
+                                               *args, **kwargs), axis=1)
         if max is not None:
-            out = out.append(self.extract_max(*args, **kwargs), axis=1)
+            out = out.append(self.extract_max(ignore_sessions=ignore_sessions,
+                                               *args, **kwargs), axis=1)
         if min is not None:
-            out = out.append(self.extract_min(*args, **kwargs), axis=1)
+            out = out.append(self.extract_min(ignore_sessions=ignore_sessions,
+                                               *args, **kwargs), axis=1)
         return out
 
     def extract_wavelet(self, freq, num_cyc=3, mode='complex',
