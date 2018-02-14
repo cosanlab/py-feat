@@ -319,7 +319,7 @@ class Fex(DataFrame):
         ''' Reference a Fex object to a baseline.
 
             Args:
-                method: {median, mean, FexSeries instance}. Will subtract baseline
+                method: {'median', 'mean', 'begin', FexSeries instance}. Will subtract baseline
                         from Fex object (e.g., mean, median).  If passing a Fex
                         object, it will treat that as the baseline.
                 normalize: (str). Can normalize results of baseline.
@@ -327,6 +327,7 @@ class Fex(DataFrame):
                 ignore_sessions: (bool) If True, will ignore Fex.sessions
                                  information. Otherwise, method will be applied
                                  separately to each unique session.
+
             Returns:
                 Fex object
         '''
@@ -337,6 +338,8 @@ class Fex(DataFrame):
                 baseline = out.median()
             elif baseline is 'mean':
                 baseline = out.mean()
+            elif baseline is 'begin':
+                baseline = out.iloc[0,:]
             elif isinstance(baseline, (Series, FexSeries)):
                 baseline = baseline
             elif isinstance(baseline, (Fex, DataFrame)):
@@ -356,6 +359,8 @@ class Fex(DataFrame):
                     baseline = v.median()
                 elif baseline is 'mean':
                     baseline = v.mean()
+                elif baseline is 'begin':
+                    baseline = v.iloc[0,:]
                 elif isinstance(baseline, (Series, FexSeries)):
                     baseline = baseline
                 elif isinstance(baseline, (Fex, DataFrame)):
