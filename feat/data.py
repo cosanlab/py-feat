@@ -186,13 +186,13 @@ class Fex(DataFrame):
         for x in np.unique(self.sessions):
             yield x, self.loc[self.sessions==x, :]
 
-    def append(self, data, session_id=None):
+    def append(self, data, session_id=None, axis=0):
         ''' Append a new Fex object to an existing object
 
         Args:
             data: (Fex) Fex instance to append
             session_id: session label
-
+            axis: ([0,1]) Axis to append. Rows=0, Cols=1
         Returns:
             Fex instance
         '''
@@ -204,18 +204,47 @@ class Fex(DataFrame):
             if session_id is not None:
                 out.sessions = np.repeat(session_id, len(data))
         else:
-            out = self.copy()
-            if out.sampling_freq!=data.sampling_freq:
+            if self.sampling_freq != data.sampling_freq:
                 raise ValueError('Make sure Fex objects have the same '
                                  'sampling frequency')
-            out = self.__class__(pd.concat([self, data], axis=0, ignore_index=True), sampling_freq=self.sampling_freq, features=self.features)
-            if session_id is not None:
-                out.sessions = np.hstack([self.sessions, np.repeat(session_id, len(data))])
-            if self.features is not None:
-                if self.features.shape[1]==data.features.shape[1]:
-                    out.features = self.features.append(data.features, ignore_index=True)
-                else:
-                    raise ValueError('Different number of features in new dataset.')
+            if axis==0:
+                out = self.__class__(pd.concat([self, data],
+                                               axis=axis,
+                                               ignore_index=True),
+                                     sampling_freq=self.sampling_freq)
+                if session_id is not None:
+                    out.sessions = np.hstack([self.sessions, np.repeat(session_id, len(data))])
+                if self.features is not None:
+                    if data.features is not None:
+                        if self.features.shape[1]==data.features.shape[1]:
+                            out.features = self.features.append(data.features, ignore_index=True)
+                        else:
+                            raise ValueError('Different number of features in new dataset.')
+                    else:
+                        out.features = self.features
+                elif data.features is not None:
+                    out = data.features
+            elif axis==1:
+                out = self.__class__(pd.concat([self, data], axis=axis),
+                                     sampling_freq=self.sampling_freq)
+                if self.sessions is not None:
+                    if data.sessions is not None:
+                        if np.array_equal(self.sessions, data.sessions):
+                            out.sessions = self.sessions
+                        else:
+                            raise ValueError('Both sessions must be identical.')
+                    else:
+                        out.sessions = self.sessions
+                elif data.sessions is not None:
+                    out.sessions = data.sessions
+                if self.features is not None:
+                    out.features = self.features
+                    if data.features is not None:
+                        out.features.append(data.features, axis=1, ignore_index=True)
+                elif data.features is not None:
+                    out.features = data.features
+            else:
+                raise ValueError('Axis must be 1 or 0.')
         return out
 
     def regress(self):
@@ -418,7 +447,7 @@ class Fex(DataFrame):
 
     def extract_mean(self, ignore_sessions=False, *args, **kwargs):
         """ Extract mean of each feature
-        
+
         Args:
             ignore_sessions: (bool) ignore sessions or extract separately
                                     by sessions if available.
@@ -491,9 +520,35 @@ class Fex(DataFrame):
                 return self.__class__(feats, sampling_freq=self.sampling_freq,
                                       sessions=np.unique(self.sessions))
 
-    def extract_wavelet(self, freq, num_cyc=3, mode='complex', ignore_sessions=False):
-        ''' Function to use perform feature extraction by convolving with a
-            complex wavelet
+    def extract_summary(self, mean=None, max=None, min=None,
+                        ignore_sessions=False, *args, **kwargs):
+        """ Extract summary of multiple features
+
+        Args:
+            mean: (bool) extract mean of features
+            max: (bool) extract max of features
+            min: (bool) extract min of features
+            ignore_sessions: (bool) ignore sessions or extract separately
+                                    by sessions if available.
+
+        Returns:
+            fex: (Fex) maximum values for each feature
+
+        """
+
+        out = self.__class__()
+        if mean is not None:
+            out = out.append(self.extract_mean(*args, **kwargs), axis=1)
+        if max is not None:
+            out = out.append(self.extract_max(*args, **kwargs), axis=1)
+        if min is not None:
+            out = out.append(self.extract_min(*args, **kwargs), axis=1)
+        return out
+
+    def extract_wavelet(self, freq, num_cyc=3, mode='complex',
+                        ignore_sessions=False):
+        ''' Perform feature extraction by convolving with a complex morlet
+            wavelet
 
             Args:
                 freq: (float) frequency to extract
@@ -506,35 +561,59 @@ class Fex(DataFrame):
                 convolved: (Fex instance)
         '''
         wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
-        if ignore_sessions:
-            convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq, features=self.features, sessions=self.sessions)
+        if self.sessions is None:
+            convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
         else:
-            convolved = self.__class__(sampling_freq=self.sampling_freq)
-            for k,v in self.itersessions():
-                session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq, features=self.features)
-                convolved = convolved.append(session, session_id=k)
+            if ignore_sessions:
+                convolved = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in self.iteritems()}), sampling_freq=self.sampling_freq)
+            else:
+                convolved = self.__class__(sampling_freq=self.sampling_freq)
+                for k,v in self.itersessions():
+                    session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq)
+                    convolved = convolved.append(session, session_id=k)
         if mode is 'complex':
-            return convolved
+            convolved = convolved
         elif mode is 'filtered':
-            return self.__class__(np.real(convolved),
-                                  sampling_freq=convolved.sampling_freq,
-                                  features=convolved.features,
-                                  sessions=convolved.sessions)
+            convolved = np.real(convolved)
         elif mode is 'phase':
-            return self.__class__(np.angle(convolved),
-                                  sampling_freq=convolved.sampling_freq,
-                                  features=convolved.features,
-                                  sessions=convolved.sessions)
+            convolved = np.angle(convolved)
         elif mode is 'magnitude':
-            return self.__class__(np.abs(convolved),
-                                  sampling_freq=convolved.sampling_freq,
-                                  features=convolved.features,
-                                  sessions=convolved.sessions)
+            convolved = np.abs(convolved)
         elif mode is 'power':
-            return self.__class__(np.abs(convolved)**2,
-                                  sampling_freq=convolved.sampling_freq,
-                                  features=convolved.features,
-                                  sessions=convolved.sessions)
+            convolved = np.abs(convolved)**2
+        else:
+            raise ValueError("Mode must be ['complex','filtered','phase',"
+                             "'magnitude','power']")
+        convolved = self.__class__(convolved, sampling_freq=self.sampling_freq,
+                                   features=self.features,
+                                   sessions=self.sessions)
+        convolved.columns = 'f' + '%s' % round(freq, 2) + '_' + mode + '_' + self.columns
+        return convolved
+
+    def extract_multi_wavelet(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
+        ''' Convolve with a bank of morlet wavelets. Wavelets are equally
+            spaced from min to max frequency. See extract_wavelet for more
+            information and options.
+
+            Args:
+                min_freq: (float) minimum frequency to extract
+                max_freq: (float) maximum frequency to extract
+                bank: (int) size of wavelet bank
+                num_cyc: (float) number of cycles for wavelet
+                mode: (str) feature to extract, e.g.,
+                            ['complex','filtered','phase','magnitude','power']
+                ignore_sessions: (bool) ignore sessions or extract separately
+                                        by sessions if available.
+            Returns:
+                convolved: (Fex instance)
+        '''
+        out = []
+        for f in np.geomspace(min_freq, max_freq, bank):
+            out.append(self.extract_wavelet(f, *args, **kwargs))
+        return self.__class__(pd.concat(out, axis=1),
+                              sampling_freq=self.sampling_freq,
+                              features=self.features,
+                              sessions=self.sessions)
 
     def extract_boft(self, min_freq=.06, max_freq=.66, bank=8, *args, **kwargs):
         """ Extract Bag of Temporal features
