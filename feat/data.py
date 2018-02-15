@@ -552,7 +552,7 @@ class Fex(DataFrame):
             return self.__class__(feats, sampling_freq=self.sampling_freq,
                                   sessions=np.unique(self.sessions))
 
-    def extract_summary(self, mean=None, max=None, min=None,
+    def extract_summary(self, mean=False, max=False, min=False,
                         ignore_sessions=False, *args, **kwargs):
         """ Extract summary of multiple features
 
@@ -569,13 +569,13 @@ class Fex(DataFrame):
         """
 
         out = self.__class__(sampling_freq=self.sampling_freq)
-        if mean is not None:
+        if mean:
             out = out.append(self.extract_mean(ignore_sessions=ignore_sessions,
                                                *args, **kwargs), axis=1)
-        if max is not None:
+        if max:
             out = out.append(self.extract_max(ignore_sessions=ignore_sessions,
                                                *args, **kwargs), axis=1)
-        if min is not None:
+        if min:
             out = out.append(self.extract_min(ignore_sessions=ignore_sessions,
                                                *args, **kwargs), axis=1)
         return out
