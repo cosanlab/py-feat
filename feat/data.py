@@ -605,6 +605,33 @@ class Fextractor:
             self.extracted_features.append(fex_object.__class__(feats, sampling_freq=fex_object.sampling_freq,
                                             sessions=np.unique(fex_object.sessions)))
 
+    def summary(self, fex_object, mean=False, max=False, min=False,
+                        ignore_sessions=False, *args, **kwargs):
+        """ Extract summary of multiple features
+        Args:
+            fex_object: (Fex) Fex instance to extract features from.
+            mean: (bool) extract mean of features
+            max: (bool) extract max of features
+            min: (bool) extract min of features
+            ignore_sessions: (bool) ignore sessions or extract separately
+                                    by sessions if available.
+        Returns:
+            fex: (Fex)
+        """
+
+        out = self.__class__(sampling_freq=self.sampling_freq)
+        if mean:
+            out = out.append(self.mean(fex_object=fex_object,ignore_sessions=ignore_sessions,
+                                               *args, **kwargs), axis=1)
+        if max:
+            out = out.append(self.max(fex_object=fex_object,ignore_sessions=ignore_sessions,
+                                               *args, **kwargs), axis=1)
+        if min:
+            out = out.append(self.min(fex_object=fex_object,ignore_sessions=ignore_sessions,
+                                               *args, **kwargs), axis=1)
+        self.extracted_features.append(fex_object.__class__(out, sampling_freq=fex_object.sampling_freq,
+                                        sessions=np.unique(fex_object.sessions)))
+
     def wavelet(self, fex_object, freq, num_cyc=3, mode='complex',
                         multi=False, ignore_sessions=False):
         ''' Perform feature extraction by convolving with a complex morlet
