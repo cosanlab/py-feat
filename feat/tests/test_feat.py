@@ -5,6 +5,7 @@
 
 import pytest
 import pandas as pd
+from pandas import DataFrame, Series
 import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
