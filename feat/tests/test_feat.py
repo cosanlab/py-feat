@@ -76,21 +76,43 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True, normalize='pct'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean(), ignore_sessions=True, normalize='pct'), Fex)
 
-    # Test Fextractor class
-    extractor = Fextractor()
-    # Test each extraction method
-    extractor.mean(fex_object=dat)
-    extractor.max(fex_object=dat)
-    extractor.min(fex_object=dat)
-    #extractor.boft(fex_object=dat, min_freq=.01, max_freq=.20, bank=1)
-    extractor.multi_wavelet(fex_object=dat)
-    extractor.wavelet(fex_object=dat, freq=.5)
-    # Test Fextracor merge method
-    newdat = extractor.merge(out_format='long')
-    assert newdat['sessions'].nunique()==52
-    assert isinstance(newdat, DataFrame)
-    assert len(extractor.merge(out_format='long'))==24960
-    assert len(extractor.merge(out_format='wide'))==52
+    # Test extract_max
+    dat_max = dat.extract_max(ignore_sessions=False)
+    assert isinstance(dat_max, Fex)
+    assert dat_max.sampling_freq==dat.sampling_freq
+    assert len(dat_max) ==len(np.unique(dat.sessions))
+    dat_max = dat.extract_max(ignore_sessions=True)
+    assert len(dat_max)==1
+    assert dat_max.shape[1]==dat.shape[1]
+    assert dat_max.sampling_freq==dat.sampling_freq
+
+    # Test extract_min
+    dat_min = dat.extract_min(ignore_sessions=False)
+    assert isinstance(dat_min, Fex)
+    assert dat_min.sampling_freq==dat.sampling_freq
+    assert len(dat_min) ==len(np.unique(dat.sessions))
+    dat_min = dat.extract_min(ignore_sessions=True)
+    assert len(dat_min)==1
+    assert dat_min.shape[1]==dat.shape[1]
+    assert dat_min.sampling_freq==dat.sampling_freq
+
+    # Test extract_mean
+    dat_mean = dat.extract_mean(ignore_sessions=False)
+    assert isinstance(dat_mean, Fex)
+    assert dat_mean.sampling_freq==dat.sampling_freq
+    assert len(dat_mean) ==len(np.unique(dat.sessions))
+    dat_mean = dat.extract_mean(ignore_sessions=True)
+    assert len(dat_mean)==1
+    assert dat_mean.shape[1]==dat.shape[1]
+    assert dat_mean.sampling_freq==dat.sampling_freq
+
+    # Test summary
+    dat2 = dat.loc[:,['Positive','Negative']].interpolate()
+    out = dat2.extract_summary(min=True, max=True, mean=True)
+    assert len(out) == len(np.unique(dat2.sessions))
+    assert np.array_equal(out.sessions, np.unique(dat2.sessions))
+    assert out.sampling_freq == dat2.sampling_freq
+    assert dat2.shape[1]*3 == out.shape[1]
 
     # Test facet subclass
     facet = Facet(filename=filename,sampling_freq=30)
