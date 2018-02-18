@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
-from feat.data import Fex, Facet, Openface
+from feat.data import Fex, Facet, Openface, Fextractor
 from feat.utils import read_facet, read_openface
 from nltools.data import Adjacency
 import unittest
