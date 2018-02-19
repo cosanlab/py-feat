@@ -14,7 +14,7 @@ from feat.utils import read_facet, read_openface
 from nltools.data import Adjacency
 import unittest
 
-def test_fex(tmpdir):
+def test_fex():
     # For iMotions-FACET data files
     # test reading iMotions file < version 6
     dat = Fex(read_facet(join(get_test_data_path(), 'iMotions_Test_v2.txt')), sampling_freq=30)
@@ -25,11 +25,13 @@ def test_fex(tmpdir):
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
 
+    # Test Session ValueError
+    with pytest.raises(ValueError):
+        Fex(df, sampling_freq=30, sessions=sessions[:10])
+
     # Test KeyError
-    class MyTestCase(unittest.TestCase):
-        def test1(self):
-            with self.assertRaises(KeyError):
-                Fex(read_facet(filename, features=['NotHere']), sampling_freq=30)
+    with pytest.raises(KeyError):
+        Fex(read_facet(filename, features=['NotHere']), sampling_freq=30)
 
     # Test length
     assert len(dat)==519
@@ -66,6 +68,7 @@ def test_fex(tmpdir):
     # Test baseline
     assert isinstance(dat.baseline(baseline='median'), Fex)
     assert isinstance(dat.baseline(baseline='mean'), Fex)
+    assert isinstance(dat.baseline(baseline='begin'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
     assert isinstance(dat.baseline(baseline='median', ignore_sessions=True), Fex)
     assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True), Fex)
@@ -76,108 +79,20 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='median', ignore_sessions=True, normalize='pct'), Fex)
     assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True, normalize='pct'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean(), ignore_sessions=True, normalize='pct'), Fex)
+    # Test ValueError
+    with pytest.raises(ValueError):
+        dat.baseline(baseline='BadValue')
 
-    # Test facet subclass
-    facet = Facet(filename=filename,sampling_freq=30)
-    facet.read_file()
-    assert len(facet)==519
-
-    # Test PSPI calculation
-    assert len(facet.calc_pspi()) == len(facet)
-
-    # Test Fextractor class
-    extractor = Fextractor()
-    dat = dat.interpolate() # interpolate data to get rid of NAs
-    f = .5; num_cyc=3 # for wavelet extraction
-    # Test each extraction method
-    extractor.mean(fex_object=dat)
-    extractor.max(fex_object=dat)
-    extractor.min(fex_object=dat)
-    #extractor.boft(fex_object=dat, min_freq=.01, max_freq=.20, bank=1)
-    extractor.multi_wavelet(fex_object=dat)
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc)
-    # Test Fextracor merge method
-    newdat = extractor.merge(out_format='long')
-    assert newdat['sessions'].nunique()==52
-    assert isinstance(newdat, DataFrame)
-    assert len(extractor.merge(out_format='long'))==24960
-    assert len(extractor.merge(out_format='wide'))==52
-
-    # Test wavelet extraction
-    extractor = Fextractor()
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=False)
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True)
-    wavelet = extractor.extracted_features[0] # ignore_sessions = False
-    assert wavelet.sampling_freq == dat.sampling_freq
-    assert len(wavelet) == len(dat)
-    wavelet = extractor.extracted_features[1] # ignore_sessions = True
-    assert wavelet.sampling_freq == dat.sampling_freq
-    assert len(wavelet) == len(dat)
-    assert np.array_equal(wavelet.sessions,dat.sessions)
-    for i in ['filtered','phase','magnitude','power']:
-        extractor = Fextractor()
-        extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True, mode=i)
-        wavelet = extractor.extracted_features[0]
-        assert wavelet.sampling_freq == dat.sampling_freq
-        assert len(wavelet) == len(dat)
-
-    # Test multi wavelet
+    # Test summary
     dat2 = dat.loc[:,['Positive','Negative']].interpolate()
-    n_bank=4
-    extractor = Fextractor()
-    extractor.multi_wavelet(fex_object=dat2, min_freq=.1, max_freq=2, bank=n_bank, mode='power', ignore_sessions=False)
-    out = extractor.extracted_features[0]
-    assert n_bank * dat2.shape[1] == out.shape[1]
-    assert len(out) == len(dat2)
-    assert np.array_equal(out.sessions, dat2.sessions)
+    out = dat2.extract_summary(min=True, max=True, mean=True)
+    assert len(out) == len(np.unique(dat2.sessions))
+    assert np.array_equal(out.sessions, np.unique(dat2.sessions))
     assert out.sampling_freq == dat2.sampling_freq
-
-    # Test Bag Of Temporal Features Extraction
-    facet_filled = facet.fillna(0)
-    assert isinstance(facet_filled,Facet)
-    extractor = Fextractor()
-    extractor.boft(facet_filled)
-    assert isinstance(extractor.extracted_features[0], DataFrame)
-    filters, histograms = 8, 12
-    assert extractor.extracted_features[0].shape[1]==facet.columns.shape[0] * filters * histograms
-
-    # Test mean, min, and max Features Extraction
-    # assert isinstance(facet_filled.extract_mean(), Facet)
-    # assert isinstance(facet_filled.extract_min(), Facet)
-    # assert isinstance(facet_filled.extract_max(), Facet)
-
-    # Test if a method returns subclass.
-    facet = facet.downsample(target=10,target_type='hz')
-    assert isinstance(facet,Facet)
-
-    ### Test Openface importer and subclass ###
-
-    # For OpenFace data file
-    filename = join(get_test_data_path(), 'OpenFace_Test.csv')
-    openface = Fex(read_openface(filename), sampling_freq=30)
-
-    # Test KeyError
-    class MyTestCase(unittest.TestCase):
-        def test1(self):
-            with self.assertRaises(KeyError):
-                Fex(read_openface(filename, features=['NotHere']), sampling_freq=30)
-
-    # Test length
-    assert len(openface)==100
-
-    # Test loading from filename
-    openface = Openface(filename=filename, sampling_freq = 30)
-    openface.read_file()
-
-    # Test length?
-    assert len(openface)==100
-
-    # Test PSPI calculation b/c diff from facet
-    assert len(openface.calc_pspi()) == len(openface)
-
-    # Test if a method returns subclass.
-    openface = openface.downsample(target=10,target_type='hz')
-    assert isinstance(openface,Openface)
+    assert dat2.shape[1]*3 == out.shape[1]
+    out = dat2.extract_summary(min=True, max=True, mean=True,ignore_sessions=True)
+    assert len(out) == 1
+    assert dat2.shape[1]*3 == out.shape[1]
 
     # Check if file is missing columns
     data_bad = dat.iloc[:,0:10]
@@ -238,3 +153,121 @@ def test_fex(tmpdir):
                           n_components=n_components)
     assert n_components == stats['components'].shape[1]
     assert n_components == stats['weights'].shape[1]
+
+def test_facet_subclass():
+    # Test facet subclass
+    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    facet = Facet(filename=filename,sampling_freq=30)
+    facet.read_file()
+    assert len(facet)==519
+
+    # Test PSPI calculation
+    assert len(facet.calc_pspi()) == len(facet)
+
+    # Test if a method returns subclass.
+    facet = facet.downsample(target=10,target_type='hz')
+    assert isinstance(facet,Facet)
+
+def test_fextractor():
+    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    df = read_facet(filename)
+    sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
+    dat = Fex(df, sampling_freq=30, sessions=sessions)
+
+    # Test Fextractor class
+    extractor = Fextractor()
+    dat = dat.interpolate() # interpolate data to get rid of NAs
+    f = .5; num_cyc=3 # for wavelet extraction
+    # Test each extraction method
+    extractor.mean(fex_object=dat)
+    extractor.max(fex_object=dat)
+    extractor.min(fex_object=dat)
+    #extractor.boft(fex_object=dat, min_freq=.01, max_freq=.20, bank=1)
+    extractor.multi_wavelet(fex_object=dat)
+    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc)
+    # Test ValueError
+    with pytest.raises(ValueError):
+        extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc,mode='BadValue')
+    # Test Fextracor merge method
+    newdat = extractor.merge(out_format='long')
+    assert newdat['sessions'].nunique()==52
+    assert isinstance(newdat, DataFrame)
+    assert len(extractor.merge(out_format='long'))==24960
+    assert len(extractor.merge(out_format='wide'))==52
+
+    # Test summary method
+    extractor = Fextractor()
+    dat2 = dat.loc[:,['Positive','Negative']].interpolate()
+    extractor.summary(fex_object=dat2, min=True, max=True, mean=True)
+    # [Pos, Neg] * [mean, max, min] + ['sessions']
+    assert extractor.merge(out_format='wide').shape[1]==dat2.shape[1]*3+1
+
+    # Test wavelet extraction
+    extractor = Fextractor()
+    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=False)
+    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True)
+    wavelet = extractor.extracted_features[0] # ignore_sessions = False
+    assert wavelet.sampling_freq == dat.sampling_freq
+    assert len(wavelet) == len(dat)
+    wavelet = extractor.extracted_features[1] # ignore_sessions = True
+    assert wavelet.sampling_freq == dat.sampling_freq
+    assert len(wavelet) == len(dat)
+    assert np.array_equal(wavelet.sessions,dat.sessions)
+    for i in ['filtered','phase','magnitude','power']:
+        extractor = Fextractor()
+        extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True, mode=i)
+        wavelet = extractor.extracted_features[0]
+        assert wavelet.sampling_freq == dat.sampling_freq
+        assert len(wavelet) == len(dat)
+
+    # Test multi wavelet
+    dat2 = dat.loc[:,['Positive','Negative']].interpolate()
+    n_bank=4
+    extractor = Fextractor()
+    extractor.multi_wavelet(fex_object=dat2, min_freq=.1, max_freq=2, bank=n_bank, mode='power', ignore_sessions=False)
+    out = extractor.extracted_features[0]
+    assert n_bank * dat2.shape[1] == out.shape[1]
+    assert len(out) == len(dat2)
+    assert np.array_equal(out.sessions, dat2.sessions)
+    assert out.sampling_freq == dat2.sampling_freq
+
+    # Test Bag Of Temporal Features Extraction
+    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    facet = Facet(filename=filename,sampling_freq=30)
+    facet.read_file()
+    facet_filled = facet.fillna(0)
+    assert isinstance(facet_filled,Facet)
+    extractor = Fextractor()
+    extractor.boft(facet_filled)
+    assert isinstance(extractor.extracted_features[0], DataFrame)
+    filters, histograms = 8, 12
+    assert extractor.extracted_features[0].shape[1]==facet.columns.shape[0] * filters * histograms
+
+
+
+### Test Openface importer and subclass ###
+def test_openface():
+    # For OpenFace data file
+    filename = join(get_test_data_path(), 'OpenFace_Test.csv')
+    openface = Fex(read_openface(filename), sampling_freq=30)
+
+    # Test KeyError
+    with pytest.raises(KeyError):
+        Fex(read_openface(filename, features=['NotHere']), sampling_freq=30)
+
+    # Test length
+    assert len(openface)==100
+
+    # Test loading from filename
+    openface = Openface(filename=filename, sampling_freq = 30)
+    openface.read_file()
+
+    # Test length?
+    assert len(openface)==100
+
+    # Test PSPI calculation b/c diff from facet
+    assert len(openface.calc_pspi()) == len(openface)
+
+    # Test if a method returns subclass.
+    openface = openface.downsample(target=10,target_type='hz')
+    assert isinstance(openface,Openface)
