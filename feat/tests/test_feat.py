@@ -25,11 +25,13 @@ def test_fex():
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
 
+    # Test Session ValueError
+    with pytest.raises(ValueError):
+        Fex(df, sampling_freq=30, sessions=sessions[:10])
+
     # Test KeyError
-    class MyTestCase(unittest.TestCase):
-        def test1(self):
-            with self.assertRaises(KeyError):
-                Fex(read_facet(filename, features=['NotHere']), sampling_freq=30)
+    with pytest.raises(KeyError):
+        Fex(read_facet(filename, features=['NotHere']), sampling_freq=30)
 
     # Test length
     assert len(dat)==519
@@ -66,6 +68,7 @@ def test_fex():
     # Test baseline
     assert isinstance(dat.baseline(baseline='median'), Fex)
     assert isinstance(dat.baseline(baseline='mean'), Fex)
+    assert isinstance(dat.baseline(baseline='begin'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean()), Fex)
     assert isinstance(dat.baseline(baseline='median', ignore_sessions=True), Fex)
     assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True), Fex)
@@ -76,6 +79,9 @@ def test_fex():
     assert isinstance(dat.baseline(baseline='median', ignore_sessions=True, normalize='pct'), Fex)
     assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True, normalize='pct'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean(), ignore_sessions=True, normalize='pct'), Fex)
+    # Test ValueError
+    with pytest.raises(ValueError):
+        dat.baseline(baseline='BadValue')
 
     # Test summary
     dat2 = dat.loc[:,['Positive','Negative']].interpolate()
@@ -83,6 +89,9 @@ def test_fex():
     assert len(out) == len(np.unique(dat2.sessions))
     assert np.array_equal(out.sessions, np.unique(dat2.sessions))
     assert out.sampling_freq == dat2.sampling_freq
+    assert dat2.shape[1]*3 == out.shape[1]
+    out = dat2.extract_summary(min=True, max=True, mean=True,ignore_sessions=True)
+    assert len(out) == 1
     assert dat2.shape[1]*3 == out.shape[1]
 
     # Check if file is missing columns
@@ -176,6 +185,9 @@ def test_fextractor():
     #extractor.boft(fex_object=dat, min_freq=.01, max_freq=.20, bank=1)
     extractor.multi_wavelet(fex_object=dat)
     extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc)
+    # Test ValueError
+    with pytest.raises(ValueError):
+        extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc,mode='BadValue')
     # Test Fextracor merge method
     newdat = extractor.merge(out_format='long')
     assert newdat['sessions'].nunique()==52
@@ -187,7 +199,7 @@ def test_fextractor():
     extractor = Fextractor()
     dat2 = dat.loc[:,['Positive','Negative']].interpolate()
     extractor.summary(fex_object=dat2, min=True, max=True, mean=True)
-    # [Pos, Neg] * [mean, max, min] + ['sessions'] 
+    # [Pos, Neg] * [mean, max, min] + ['sessions']
     assert extractor.merge(out_format='wide').shape[1]==dat2.shape[1]*3+1
 
     # Test wavelet extraction
@@ -240,10 +252,8 @@ def test_openface():
     openface = Fex(read_openface(filename), sampling_freq=30)
 
     # Test KeyError
-    class MyTestCase(unittest.TestCase):
-        def test1(self):
-            with self.assertRaises(KeyError):
-                Fex(read_openface(filename, features=['NotHere']), sampling_freq=30)
+    with pytest.raises(KeyError):
+        Fex(read_openface(filename, features=['NotHere']), sampling_freq=30)
 
     # Test length
     assert len(openface)==100
