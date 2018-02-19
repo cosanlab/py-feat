@@ -736,10 +736,10 @@ class Fextractor:
         freqs = np.geomspace(min_freq, max_freq,bank)
         wavs, hzs = [],[]
         for i, f in enumerate(freqs):
-            wav = wavelet(f, sampling_freq=target_hz)
+            wav = np.real(wavelet(f, sampling_freq=target_hz))
             wavs.append(wav)
             hzs.append(str(np.round(freqs[i],2)))
-        wavs = np.array(wavs)[::-1,:]
+        wavs = np.array(wavs)[::-1]
         hzs = np.array(hzs)[::-1]
         # # check asymptotes at lowest freq
         # asym = wavs[-1,:10].sum()
