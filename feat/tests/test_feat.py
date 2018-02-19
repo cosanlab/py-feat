@@ -134,10 +134,10 @@ def test_fex(tmpdir):
 
     # Test Bag Of Temporal Features Extraction
     facet_filled = facet.fillna(0)
-    # assert isinstance(facet_filled,Facet)
-    # assert isinstance(facet_filled.extract_boft(), Facet)
-    # filters, histograms = 8, 12
-    # assert facet_filled.extract_boft().shape[1]==facet.columns.shape[0] * filters * histograms
+    assert isinstance(facet_filled,Facet)
+    assert isinstance(facet_filled.extract_boft(), Facet)
+    filters, histograms = 8, 12
+    assert facet_filled.extract_boft().shape[1]==facet.columns.shape[0] * filters * histograms
 
     # Test mean, min, and max Features Extraction
     # assert isinstance(facet_filled.extract_mean(), Facet)
