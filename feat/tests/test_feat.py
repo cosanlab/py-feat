@@ -5,10 +5,11 @@
 
 import pytest
 import pandas as pd
+from pandas import DataFrame, Series
 import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
-from feat.data import Fex, Facet, Openface
+from feat.data import Fex, Facet, Openface, Fextractor
 from feat.utils import read_facet, read_openface
 from nltools.data import Adjacency
 import unittest
@@ -76,44 +77,6 @@ def test_fex(tmpdir):
     assert isinstance(dat.baseline(baseline='mean', ignore_sessions=True, normalize='pct'), Fex)
     assert isinstance(dat.baseline(baseline=dat.mean(), ignore_sessions=True, normalize='pct'), Fex)
 
-    # Test extract_max
-    dat_max = dat.extract_max(ignore_sessions=False)
-    assert isinstance(dat_max, Fex)
-    assert dat_max.sampling_freq==dat.sampling_freq
-    assert len(dat_max) ==len(np.unique(dat.sessions))
-    dat_max = dat.extract_max(ignore_sessions=True)
-    assert len(dat_max)==1
-    assert dat_max.shape[1]==dat.shape[1]
-    assert dat_max.sampling_freq==dat.sampling_freq
-
-    # Test extract_min
-    dat_min = dat.extract_min(ignore_sessions=False)
-    assert isinstance(dat_min, Fex)
-    assert dat_min.sampling_freq==dat.sampling_freq
-    assert len(dat_min) ==len(np.unique(dat.sessions))
-    dat_min = dat.extract_min(ignore_sessions=True)
-    assert len(dat_min)==1
-    assert dat_min.shape[1]==dat.shape[1]
-    assert dat_min.sampling_freq==dat.sampling_freq
-
-    # Test extract_mean
-    dat_mean = dat.extract_mean(ignore_sessions=False)
-    assert isinstance(dat_mean, Fex)
-    assert dat_mean.sampling_freq==dat.sampling_freq
-    assert len(dat_mean) ==len(np.unique(dat.sessions))
-    dat_mean = dat.extract_mean(ignore_sessions=True)
-    assert len(dat_mean)==1
-    assert dat_mean.shape[1]==dat.shape[1]
-    assert dat_mean.sampling_freq==dat.sampling_freq
-
-    # Test summary
-    dat2 = dat.loc[:,['Positive','Negative']].interpolate()
-    out = dat2.extract_summary(min=True, max=True, mean=True)
-    assert len(out) == len(np.unique(dat2.sessions))
-    assert np.array_equal(out.sessions, np.unique(dat2.sessions))
-    assert out.sampling_freq == dat2.sampling_freq
-    assert dat2.shape[1]*3 == out.shape[1]
-
     # Test facet subclass
     facet = Facet(filename=filename,sampling_freq=30)
     facet.read_file()
@@ -122,25 +85,48 @@ def test_fex(tmpdir):
     # Test PSPI calculation
     assert len(facet.calc_pspi()) == len(facet)
 
-    # Test wavelet
-    dat = dat.interpolate()
-    f = .5; num_cyc=3
-    wavelet = dat.extract_wavelet(freq=f, num_cyc=num_cyc, ignore_sessions=True)
+    # Test Fextractor class
+    extractor = Fextractor()
+    dat = dat.interpolate() # interpolate data to get rid of NAs
+    f = .5; num_cyc=3 # for wavelet extraction
+    # Test each extraction method
+    extractor.mean(fex_object=dat)
+    extractor.max(fex_object=dat)
+    extractor.min(fex_object=dat)
+    #extractor.boft(fex_object=dat, min_freq=.01, max_freq=.20, bank=1)
+    extractor.multi_wavelet(fex_object=dat)
+    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc)
+    # Test Fextracor merge method
+    newdat = extractor.merge(out_format='long')
+    assert newdat['sessions'].nunique()==52
+    assert isinstance(newdat, DataFrame)
+    assert len(extractor.merge(out_format='long'))==24960
+    assert len(extractor.merge(out_format='wide'))==52
+
+    # Test wavelet extraction
+    extractor = Fextractor()
+    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=False)
+    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True)
+    wavelet = extractor.extracted_features[0] # ignore_sessions = False
     assert wavelet.sampling_freq == dat.sampling_freq
     assert len(wavelet) == len(dat)
-    wavelet = dat.extract_wavelet(freq=f, num_cyc=num_cyc, ignore_sessions=False)
+    wavelet = extractor.extracted_features[1] # ignore_sessions = True
     assert wavelet.sampling_freq == dat.sampling_freq
     assert len(wavelet) == len(dat)
     assert np.array_equal(wavelet.sessions,dat.sessions)
     for i in ['filtered','phase','magnitude','power']:
-        wavelet = dat.extract_wavelet(freq=f, num_cyc=num_cyc, ignore_sessions=True, mode=i)
+        extractor = Fextractor()
+        extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True, mode=i)
+        wavelet = extractor.extracted_features[0]
         assert wavelet.sampling_freq == dat.sampling_freq
         assert len(wavelet) == len(dat)
 
     # Test multi wavelet
     dat2 = dat.loc[:,['Positive','Negative']].interpolate()
     n_bank=4
-    out = dat2.extract_multi_wavelet(min_freq=.1, max_freq=2, bank=n_bank, mode='power', ignore_sessions=False)
+    extractor = Fextractor()
+    extractor.multi_wavelet(fex_object=dat2, min_freq=.1, max_freq=2, bank=n_bank, mode='power', ignore_sessions=False)
+    out = extractor.extracted_features[0]
     assert n_bank * dat2.shape[1] == out.shape[1]
     assert len(out) == len(dat2)
     assert np.array_equal(out.sessions, dat2.sessions)
@@ -149,9 +135,11 @@ def test_fex(tmpdir):
     # Test Bag Of Temporal Features Extraction
     facet_filled = facet.fillna(0)
     assert isinstance(facet_filled,Facet)
-    assert isinstance(facet_filled.extract_boft(), Facet)
+    extractor = Fextractor()
+    extractor.boft(facet_filled)
+    assert isinstance(extractor.extracted_features[0], DataFrame)
     filters, histograms = 8, 12
-    assert facet_filled.extract_boft().shape[1]==facet.columns.shape[0] * filters * histograms
+    assert extractor.extracted_features[0].shape[1]==facet.columns.shape[0] * filters * histograms
 
     # Test mean, min, and max Features Extraction
     # assert isinstance(facet_filled.extract_mean(), Facet)
