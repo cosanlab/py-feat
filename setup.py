@@ -23,6 +23,7 @@ setup(
     author_email='jcheong0428@gmail.com',
     url='https://github.com/cosanlab/feat',
     packages=find_packages(exclude=['feat/tests']),
+    package_data = {'feat': ['resources/*']},
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
