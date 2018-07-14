@@ -6,8 +6,7 @@ import os
 import numpy as np
 from sklearn.cross_decomposition.pls_ import PLSRegression
 import matplotlib.pyplot as plt
-import pickle
-from feat.utils import get_resource_path
+from feat.utils import load_pickled_model
 import warnings
 
 __all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', '_predict']
@@ -149,7 +148,7 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
     '''
 
     if model is None:
-        model = pickle.load(open(os.path.join(get_resource_path(), 'pls.pkl'),'rb'))
+        model = load_pickled_model()
     else:
         if not isinstance(model, PLSRegression):
             raise ValueError('make sure that model is a PLSRegression instance')
@@ -194,7 +193,7 @@ def _predict(au, model=None):
     '''
 
     if model is None:
-        model = pickle.load(open(os.path.join(get_resource_path(), 'pls.pkl'),'rb'))
+        model = load_pickled_model()
     else:
         if not isinstance(model, PLSRegression):
             raise ValueError('make sure that model is a PLSRegression instance')

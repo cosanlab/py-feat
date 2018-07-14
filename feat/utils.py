@@ -9,7 +9,8 @@ from __future__ import division
 
 '''
 
-__all__ = ['get_resource_path','read_facet','read_affdex','read_affectiva','read_openface']
+__all__ = ['get_resource_path','load_pickled_model','read_facet',
+           'read_affdex','read_affectiva','read_openface']
 __author__ = ["Jin Hyun Cheong"]
 
 
@@ -20,10 +21,25 @@ import pandas as pd
 from scipy import signal
 from scipy.integrate import simps
 import pywt
+import pickle
 
 def get_resource_path():
     """ Get path to feat resource directory. """
     return os.path.join(os.path.dirname(__file__), 'resources')
+
+def load_pickled_model(file_name=None):
+    if file_name is None:
+        file_name = os.path.join(get_resource_path(), 'pls_python27.pkl')
+    try:
+        with open(file_name, 'rb') as f:
+            model = pickle.load(f)
+    except UnicodeDecodeError as e:
+        with open(file_name, 'rb') as f:
+            model = pickle.load(f, encoding='latin1')
+    except Exception as e:
+        print('Unable to load data ', file_name, ':', e)
+        raise
+    return model
 
 def read_facet(facetfile, features=None):
     '''
