@@ -9,7 +9,7 @@ from __future__ import division
 
 '''
 
-__all__ = ['read_facet','read_affdex','read_affectiva','read_openface']
+__all__ = ['get_resource_path','read_facet','read_affdex','read_affectiva','read_openface']
 __author__ = ["Jin Hyun Cheong"]
 
 
@@ -20,6 +20,10 @@ import pandas as pd
 from scipy import signal
 from scipy.integrate import simps
 import pywt
+
+def get_resource_path():
+    """ Get path to feat resource directory. """
+    return os.path.join(os.path.dirname(__file__), 'resources')
 
 def read_facet(facetfile, features=None):
     '''

@@ -2,9 +2,13 @@ from __future__ import division
 
 """Plotting Functions"""
 
+import os
 import numpy as np
 from sklearn.cross_decomposition.pls_ import PLSRegression
 import matplotlib.pyplot as plt
+import pickle
+from feat.utils import get_resource_path
+import warnings
 
 __all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', '_predict']
 __author__ = ["Sophie Byrne", "Luke Chang"]
@@ -89,8 +93,7 @@ def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1,
                       *args, **kwargs)
 
     if ax is None:
-        plt.figure(figsize=(4,5))
-        ax = plt.gca()
+        ax = _create_empty_figure()
 
     ax.add_line(face_outline)
     ax.add_line(eye_l)
@@ -123,8 +126,7 @@ def draw_vectorfield(reference, target, color='r', scale=1, width=.007,
         curry.append(target[1, i] - reference[1, i])
 
         if ax is None:
-            plt.figure(figsize=(4,5))
-            ax = plt.gca()
+            ax = _create_empty_figure()
 
     ax.quiver(reference[0,:],reference[1,:],currx, curry,
               color=color, width=width, angles='xy',
@@ -147,17 +149,21 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
     '''
 
     if model is None:
-        raise ValueError('make sure that model is a PLSRegression instance')
+        model = pickle.load(open(os.path.join(get_resource_path(), 'pls.pkl'),'rb'))
+    else:
+        if not isinstance(model, PLSRegression):
+            raise ValueError('make sure that model is a PLSRegression instance')
 
     if au is None:
-        raise ValueError('au vector must be len(17).')
+        au = np.ones(17)
+        warnings.warn("Don't forget to pass an 'au' vector of len(17), "
+                      "using neutral as default")
 
     landmarks = _predict(au, model)
     currx, curry = ([landmarks[x,:] for x in range(2)])
 
     if ax is None:
-        plt.figure(figsize=(4,5))
-        ax = plt.gca()
+        ax = _create_empty_figure()
 
     draw_lineface(currx, curry, color=color, linewidth=linewidth,
                   linestyle=linestyle, ax=ax, *args, **kwargs)
@@ -175,20 +181,23 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
 
-def _predict(au, model):
+def _predict(au, model=None):
     ''' Helper function to predict landmarks from au given a sklearn model
 
         Args:
             au: vector of 17 action unit intensities
-            model: sklearn pls object
+            model: sklearn pls object (uses pretrained model by default)
 
         Returns:
             landmarks: Array of landmarks (2,68)
 
     '''
 
-    if not isinstance(pls, PLSRegression):
-        raise ValueError('make sure that model is a PLSRegression instance')
+    if model is None:
+        model = pickle.load(open(os.path.join(get_resource_path(), 'pls.pkl'),'rb'))
+    else:
+        if not isinstance(model, PLSRegression):
+            raise ValueError('make sure that model is a PLSRegression instance')
 
     if len(au) != 17:
         raise ValueError('au vector must be len(17).')
@@ -199,3 +208,13 @@ def _predict(au, model):
     landmarks = np.reshape(model.predict(au), (2,68))
     landmarks[1,:] = -1*landmarks[1,:] # this might not generalize to other models
     return landmarks
+
+def _create_empty_figure(figsize=(4,5), xlim=[25,172], ylim=[-240,-50]):
+    '''Create an empty figure'''
+    plt.figure(figsize=figsize)
+    ax = plt.gca()
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.axes.get_xaxis().set_visible(False)
+    ax.axes.get_yaxis().set_visible(False)
+    return ax
