@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from feat.plotting import plot_face, draw_lineface, draw_vectorfield, _predict
+from feat.plotting import plot_face, draw_lineface, draw_vectorfield, predict
 import matplotlib
 matplotlib.use('TkAgg')
 
