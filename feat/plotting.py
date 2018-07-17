@@ -137,7 +137,7 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
 
         Args:
             model: sklearn PLSRegression instance
-            au: vector of action units (len(17))
+            au: vector of action units (same length as model.n_components)
             vectorfield: (dict) {'target':target_array,'reference':reference_array}
             ax: matplotlib axis handle
             color: matplotlib color
@@ -154,7 +154,7 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
             raise ValueError('make sure that model is a PLSRegression instance')
 
     if au is None:
-        au = np.zeros(len(model.x_mean_))
+        au = np.zeros(model.n_components)
         warnings.warn("Don't forget to pass an 'au' vector, using neutral as default")
 
     landmarks = predict(au, model)
@@ -197,8 +197,8 @@ def predict(au, model=None):
         if not isinstance(model, PLSRegression):
             raise ValueError('make sure that model is a PLSRegression instance')
 
-    if len(au) != len(model.x_mean_):
-        raise ValueError('au vector must be same length as model.x_mean_.')
+    if len(au) != model.n_components:
+        raise ValueError('au vector must be same length as model.n_components.')
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
