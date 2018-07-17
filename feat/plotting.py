@@ -154,9 +154,9 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
             raise ValueError('make sure that model is a PLSRegression instance')
 
     if au is None:
-        au = np.ones(model.n_components)
-        warnings.warn("Don't forget to pass an 'au' vector of len(17), "
-                      "using neutral as default")
+        au = np.ones(len(model.x_mean_))
+        raise ValueError('au vector must be same length as model.x_mean_.')
+                warnings.warn("Don't forget to pass an 'au' vector, using neutral as default")
 
     landmarks = predict(au, model)
     currx, curry = ([landmarks[x,:] for x in range(2)])
@@ -184,7 +184,7 @@ def predict(au, model=None):
     ''' Helper function to predict landmarks from au given a sklearn model
 
         Args:
-            au: vector of 17 action unit intensities
+            au: vector of action unit intensities 
             model: sklearn pls object (uses pretrained model by default)
 
         Returns:
@@ -198,8 +198,8 @@ def predict(au, model=None):
         if not isinstance(model, PLSRegression):
             raise ValueError('make sure that model is a PLSRegression instance')
 
-    if len(au) != model.n_components:
-        raise ValueError('au vector must be len(17).')
+    if len(au) != len(model.x_mean_):
+        raise ValueError('au vector must be same length as model.x_mean_.')
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
