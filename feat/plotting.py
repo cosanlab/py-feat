@@ -198,8 +198,8 @@ def predict(au, model=None):
         if not isinstance(model, PLSRegression):
             raise ValueError('make sure that model is a PLSRegression instance')
 
-    if len(au) != model.n_components:
-        raise ValueError('au vector must be len(17).')
+    if len(au) != len(model.x_mean_):
+        raise ValueError('au vector must be same length as model.x_mean_.')
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
