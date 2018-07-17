@@ -197,7 +197,7 @@ def predict(au, model=None):
         if not isinstance(model, PLSRegression):
             raise ValueError('make sure that model is a PLSRegression instance')
 
-    if len(au) != len(model.x_mean_):	+    if len(au) != model.n_components:
+    if len(au) != len(model.x_mean_):
         raise ValueError('au vector must be same length as model.x_mean_.')
 
     if len(au.shape) == 1:
