@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from feat.utils import load_pickled_model
 import warnings
 
-__all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', '_predict']
+__all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', 'predict']
 __author__ = ["Sophie Byrne", "Luke Chang"]
 
 def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1,
@@ -154,11 +154,11 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
             raise ValueError('make sure that model is a PLSRegression instance')
 
     if au is None:
-        au = np.ones(17)
+        au = np.ones(model.n_components)
         warnings.warn("Don't forget to pass an 'au' vector of len(17), "
                       "using neutral as default")
 
-    landmarks = _predict(au, model)
+    landmarks = predict(au, model)
     currx, curry = ([landmarks[x,:] for x in range(2)])
 
     if ax is None:
@@ -180,7 +180,7 @@ def plot_face(model=None, au=None, vectorfield=None, ax=None, color='k', linewid
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
 
-def _predict(au, model=None):
+def predict(au, model=None):
     ''' Helper function to predict landmarks from au given a sklearn model
 
         Args:
@@ -198,7 +198,7 @@ def _predict(au, model=None):
         if not isinstance(model, PLSRegression):
             raise ValueError('make sure that model is a PLSRegression instance')
 
-    if len(au) != 17:
+    if len(au) != model.n_components:
         raise ValueError('au vector must be len(17).')
 
     if len(au.shape) == 1:
