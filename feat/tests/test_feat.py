@@ -10,7 +10,7 @@ import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
 from feat.data import Fex, Facet, Openface, Fextractor
-from feat.utils import read_facet, read_openface
+from feat.utils import read_facet, read_openface, read_affectiva
 from nltools.data import Adjacency
 import unittest
 
@@ -271,3 +271,8 @@ def test_openface():
     # Test if a method returns subclass.
     openface = openface.downsample(target=10,target_type='hz')
     assert isinstance(openface,Openface)
+
+def test_affectiva():
+    filename = join(get_test_data_path(), 'sample_affectiva-api-app_output.json')
+    affdex = read_affectiva(filename)
+    assert affdex.shape[1]==32
