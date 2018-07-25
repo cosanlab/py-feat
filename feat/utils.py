@@ -221,8 +221,38 @@ def read_openface(openfacefile, features=None):
        'AU01_c', 'AU02_c', 'AU04_c', 'AU05_c', 'AU06_c', 'AU07_c',
        'AU09_c', 'AU10_c', 'AU12_c', 'AU14_c', 'AU15_c', 'AU17_c',
        'AU20_c', 'AU23_c', 'AU25_c', 'AU26_c', 'AU28_c', 'AU45_c']
-        d = d[features]
+        try:
+            d = d[features]
+        except:
+            pass
     return d
+
+def read_affectiva(affectivafile):
+    '''
+    This function reads in affectiva file processed through
+    the https://github.com/cosanlab/affectiva-api-app.
+    Args:
+        affectivafile: file to read
+    '''
+    d = pd.read_json(affectivafile, lines=True)
+    rep_dict = { 'anger':'Anger','attention':'Attention','contempt':'Contempt','disgust':'Disgust','engagement':'Engagement',
+            'fear':'Fear','joy':'Joy','sadness':'Sadness','smirk':'Smirk','surprise':'Surprise','valence':'Valence',
+    'browFurrow': "AU04", "smile":'AU12',
+       'browRaise':'AU02', 'cheekRaise':'AU06', 'chinRaise':'AU17', 'dimpler':'AU14',
+        'eyeClosure':'AU43', 'eyeWiden':'AU05',
+       'innerBrowRaise':'AU01', 'jawDrop': 'AU26',
+      'lidTighten':'AU07', 'lipCornerDepressor':'AU15',
+       'lipPress':'AU24', 'lipPucker':'AU18', 'lipStretch':'AU20', 'lipSuck':'AU28', 'mouthOpen':'AU25',
+       'noseWrinkle':'AU9', 'upperLipRaise':'AU10'}
+    new_cols = []
+    for col in d.columns:
+        try:
+            new_cols.append(rep_dict[col])
+        except:
+            new_cols.append(col)
+    d.columns = new_cols
+    return d
+
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.):
     """ Create a complex Morlet wavelet by windowing a cosine function by a
