@@ -708,8 +708,7 @@ class Facet(Fex):
 
 class Affdex(Fex):
     def read_file(self, *args, **kwargs):
-        # super(Fex, self).__init__(read_affdex(self.filename, *args, **kwargs), *args, **kwargs)
-        pass
+        super(Fex, self).__init__(read_affectiva(self.filename, *args, **kwargs), *args, **kwargs)
 
 class Openface(Fex):
     """
