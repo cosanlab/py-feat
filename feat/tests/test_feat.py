@@ -274,5 +274,5 @@ def test_openface():
 
 def test_affectiva():
     filename = join(get_test_data_path(), 'sample_affectiva-api-app_output.json')
-    affdex = read_affectiva(filename)
+    affdex = Fex(read_affectiva(filename), sampling_freq=1)
     assert affdex.shape[1]==32
