@@ -10,18 +10,16 @@ from __future__ import division
 '''
 
 __all__ = ['get_resource_path','load_pickled_model','read_facet',
-           'read_affdex','read_affectiva','read_openface']
+           'read_affdex','read_affectiva','read_openface', 'softmax',
+           'registration','neutral']
 __author__ = ["Jin Hyun Cheong"]
 
 
 
-import os
-import numpy as np
-import pandas as pd
+import os, glob, math, pywt, pickle
+import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
-import pywt
-import pickle
 
 def get_resource_path():
     """ Get path to feat resource directory. """
@@ -319,3 +317,81 @@ def calc_hist_auc(vals, hist_range=None):
 
     out = pd.Series(np.hstack([np.histogram(pos,hist_range)[0], np.histogram(neg,hist_range)[0]]))
     return out
+
+def softmax(x):
+    '''
+    Softmax function to change log likelihood evidence values to probabilities.
+    Use with Evidence values from FACET.
+
+    Args:
+        x: value to softmax
+    '''
+    return 1./(1+10.**-(x))
+
+### Functions for face registration ###
+neutral = np.array([[37.514994071403564, 118.99554304280198], [38.347467261268164, 135.93119298564565], [40.77550102890035, 152.83280452855092],
+           [44.109285817364565, 169.1279402172728], [49.982831719005134, 184.53328583541997], [59.18894827224358, 198.01613609507382],
+           [70.41509055106278, 209.2829929016551], [83.65962787515429, 217.8257797774197], [98.6747861407431, 220.00636721799012],
+           [113.36502269321642, 217.35622273914575], [126.09720342342395, 208.61554139570768], [137.37278216681938, 197.26636201144768],
+           [146.15109522110836, 183.95054534968338], [151.7203254679301, 168.70328047716666], [154.90171533762026, 152.54959546525106],
+           [157.01705755745184, 136.0791940145902], [157.81240022435486, 119.28714731581948], [45.87342275811805, 109.05187535227455],
+           [53.83702202368147, 101.43275042887998], [65.61231530318975, 99.44649503101734], [77.49003981781006, 101.34627038289048],
+           [88.31833069100318, 105.66229287035226], [108.80512997829634, 105.18583248508406], [120.180518838434, 100.84850879934683],
+           [131.6712265255873, 99.22426247038426], [142.8040873694427, 101.39810664193074], [150.0927107560624, 108.74640334130906],
+           [98.93955016899183, 117.16643104438056], [99.01139789533919, 128.44882090731443], [99.09059391932496, 139.71335180079416],
+           [99.22411612922204, 151.32196734885628], [85.97238779261347, 158.19140086045783], [92.2064468619444, 160.61659751751895],
+           [98.67862473703293, 162.56437315387998], [105.26853264390792, 160.62509055875418], [111.14227856687825, 158.32687793454852],
+           [59.22833204018989, 118.63189570941351], [66.08746862218415, 114.39263501569359], [74.66886627073309, 114.59919005618073],
+           [81.80683310969295, 120.00819188630955], [74.34426159695313, 121.7055175900537], [65.7237769427475, 121.82223252349223],
+           [114.7522889881524, 119.90654628204749], [122.29832379941683, 114.26349216485505], [130.61954432603773, 114.38399042631573],
+           [137.03708638863128, 118.48489574810866], [131.21518765419418, 121.51217888800802], [122.97461037812238, 121.56526096419978],
+           [75.39827955150834, 179.4070640864827], [84.55991401346533, 176.2145796986134], [92.90235587470646, 174.4243211955652],
+           [98.56534031739243, 176.0653659731581], [104.97777372929698, 174.45766843787231], [113.1125749468363, 176.39970964033202],
+           [121.19973608809934, 179.19790184992027], [113.16310623913299, 185.69051008752652], [105.26365304952049, 188.31443911070232],
+           [98.41771871303214, 188.9656394139811], [92.2240282658315, 188.38538897373022], [84.05109731022314, 185.74954657843966],
+           [79.18422925303048, 179.8065722186372], [92.7172317110304, 179.5201781895618], [98.52973444977067, 180.1630365496041],
+           [105.05932172975814, 179.42368920844928], [117.43706438358437, 179.7109259873213], [104.90869094557993, 180.32984591574524],
+           [98.35933953480642, 181.15981769637827], [92.49485174856926, 180.48994809345996]])
+
+def registration(face_lms, neutral= neutral, method = 'fullface'):
+    '''
+    Affine registration of face landmarks to neutral face.
+
+    Args:
+        face_lms(array): face landmarks to register with shape (n,136).
+                         Columns 0~67 are x coordinates and 68~136 are y coordinates
+        neutral(array): target neutral face array that face_lm will be registered
+        method(str or list): If string, register to all landmarks ('fullface', default),
+                    or inner parts of face nose,mouth,eyes, and brows ('inner').
+                    If list, pass landmarks to register to e.g. [27, 28, 29, 30, 36, 39, 42, 45]
+    Return:
+        registered_lms: registered landmarks in shape (n,136)
+    '''
+    assert(type(face_lms)==np.ndarray), TypeError('face_lms must be type np.ndarray')
+    assert(face_lms.ndim==2), ValueError('face_lms must be shape (n, 136)')
+    assert(face_lms.shape[1]==136), ValueError('Must have 136 landmarks')
+    registered_lms =[]
+    for row in face_lms:
+        face = [row[:68],row[68:]]
+        face = np.array(face).T
+    #   Rotate face
+        primary = np.array(face)
+        secondary = np.array(neutral)
+        n = primary.shape[0]
+        pad = lambda x: np.hstack([x, np.ones((x.shape[0], 1))])
+        unpad = lambda x: x[:, :-1]
+        X1, Y1 = pad(primary), pad(secondary)
+        if type(method)==str:
+            if method == 'fullface':
+                A, res, rank, s = np.linalg.lstsq(X1, Y1,rcond=None)
+            elif method == 'inner':
+                A, res, rank, s = np.linalg.lstsq(X1[17:, :], Y1[17:, :],rcond=None)
+            else:
+                raise ValueError("method is either 'fullface' or 'inner'")
+        elif type(method)==list:
+            A, res, rank, s = np.linalg.lstsq(X1[method], Y1[method],rcond=None)
+        else:
+            raise TypeError("method is string ('fullface','inner') or list of landmarks")
+        transform = lambda x: unpad(np.dot(pad(x), A))
+        registered_lms.append(transform(primary).T.reshape(1,136).ravel())
+    return np.array(registered_lms)
