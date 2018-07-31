@@ -3,6 +3,7 @@ from __future__ import division
 """Class definitions."""
 
 import os
+from os.path import join
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
@@ -17,7 +18,8 @@ from nltools.stats import (downsample,
 from nltools.utils import (set_decomposition_algorithm)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
-from feat.utils import read_facet, read_openface, wavelet, calc_hist_auc
+from feat.utils import read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
+from feat.plotting import plot_face
 from nilearn.signal import clean
 from pandas.core.index import Index
 from scipy.signal import convolve
@@ -706,9 +708,85 @@ class Facet(Fex):
         out = self['AU4'] + self[['AU6','AU7']].max(axis=1) + self[['AU9','AU10']].max(axis=1) + self['AU43']
         return out
 
+    def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
+              linestyle='-', gaze = None, *args, **kwargs):
+        """ Plot facial representation of data
+        Args:
+            row_n: the row of data to use
+            model: sklearn PLSRegression instance
+            vectorfield: (dict) {'target':target_array,'reference':reference_array}
+            muscles: (dict) {'muscle': color} 
+            ax: matplotlib axis handle
+            color: matplotlib color
+            linewidth: matplotlib linewidth
+            linestyle: matplotlib linestyle
+            gaze: array of gaze vectors (len(4))
+
+
+        """
+        feats = ['AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10', 'AU12','AU14','AU15',
+                 'AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43']
+        if (row_n > len(self)):
+            raise ValueError("Row number out of range.")
+        try:
+            au = []
+            for feat in feats:
+                aun = self[feat]
+                au.append(aun.copy()[row_n])
+            au = np.array(au)
+            if model is None:
+                filename = join(get_resource_path(), 'facet.h5')
+                model = load_h5(filename)
+            if muscles is not None:
+                muscles['facet'] = 1
+            plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+                      linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+        except Exception as e:
+            print('Unable to plot data:', e)
+
+
 class Affdex(Fex):
     def read_file(self, *args, **kwargs):
         super(Fex, self).__init__(read_affectiva(self.filename, *args, **kwargs), *args, **kwargs)
+
+    def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
+              linestyle='-', gaze = None, *args, **kwargs):
+        """ Plot facial representation of data
+        Args:
+            row_n: the row of data to use
+            model: sklearn PLSRegression instance
+            vectorfield: (dict) {'target':target_array,'reference':reference_array}
+            muscles: (dict) {'muscle': color} 
+            ax: matplotlib axis handle
+            color: matplotlib color
+            linewidth: matplotlib linewidth
+            linestyle: matplotlib linestyle
+            gaze: array of gaze vectors (len(4))
+
+
+        """
+        feats = ["innerBrowRaise", "browRaise", "browFurrow", "eyeWiden",
+                 "cheekRaise",  "lidTighten", "noseWrinkle", "upperLipRaise"]
+        feats2 = ["dimpler", "lipCornerDepressor", "chinRaise", "lipStretch",
+                 "lipPress","mouthOpen","jawDrop", "eyeWiden"]
+        if (row_n > len(self)):
+            raise ValueError("Row number out of range.")
+
+        try:
+            au = []
+            for feat in feats:
+                aun = self[feat]
+                au.append(aun.copy()[row_n])
+            au.append(0)
+            for feat in feats2:
+                aun = self[feat]
+                au.append(aun.copy()[row_n])
+            au = np.array(au+[0,0,0])
+            plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+                      linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+        except Exception as e:
+            print('Unable to plot data:', e)
+
 
 class Openface(Fex):
     """
@@ -722,6 +800,48 @@ class Openface(Fex):
     def calc_pspi(self, *args, **kwargs):
         out = self['AU04_r'] + self[['AU06_r','AU07_r']].max(axis=1) + self[['AU09_r','AU10_r']].max(axis=1) + self['AU45_r']
         return out
+
+    def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
+              linestyle='-', gaze=False, *args, **kwargs):
+        """ Plot facial representation of data
+        Args:
+            row_n: the row of data to use
+            model: sklearn PLSRegression instance
+            vectorfield: (dict) {'target':target_array,'reference':reference_array}
+            muscles: (dict) {'muscle': color} 
+            ax: matplotlib axis handle
+            color: matplotlib color
+            linewidth: matplotlib linewidth
+            linestyle: matplotlib linestyle
+            gaze: (bool) whether to draw gaze based on data
+            
+
+        """
+        feats = ['AU01_r', 'AU02_r', 'AU04_r', 'AU05_r', 'AU06_r',
+       'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r',
+       'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r']
+        if (row_n > len(self)):
+            raise ValueError("Row number out of range.")
+        try:
+            au = []
+            for feat in feats:
+                aun = self[feat]
+                au.append(aun.copy()[row_n])
+            au = np.array(au+[0,0,0])
+
+            if gaze:
+                gaze_dat = ['gaze_0_x', 'gaze_0_y', 'gaze_1_x', 'gaze_1_y']
+                gaze = []
+                [gaze.append(self[gaze_dat[i]][row_n]) for i in range(4)]
+            else:
+                gaze = None
+
+            plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+                      linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+        except Exception as e:
+            print('Unable to plot data:', e)
+
+
 
 class Fextractor:
 
