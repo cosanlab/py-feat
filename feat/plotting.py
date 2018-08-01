@@ -427,8 +427,9 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
             raise ValueError('make sure that model is a PLSRegression instance')
 
     if au is None:
-        au = np.zeros(len(model.x_mean_))
-        warnings.warn("Don't forget to pass an 'au' vector, using neutral as default")
+        au = np.ones(20)
+        warnings.warn("Don't forget to pass an 'au' vector of len(20), "
+                      "using neutral as default")
 
     if (len(model.coef_) == 23):
         au = np.concatenate((au,np.array([0,0,0])))
@@ -483,8 +484,8 @@ def predict(au, model=None):
     elif not isinstance(model, PLSRegression):
         raise ValueError('make sure that model is a PLSRegression instance')
 
-    if len(au) != len(model.x_mean_):
-        raise ValueError('au vector must be same length as model.x_mean_.')
+    if len(au) != len(model.coef_):
+        raise ValueError('au vector must be len(', len(model.coef_), ').')
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
