@@ -11,12 +11,13 @@ from __future__ import division
 
 __all__ = ['get_resource_path','load_pickled_model','read_facet',
            'read_affdex','read_affectiva','read_openface', 'softmax',
-           'registration','neutral']
+           'registration','neutral','load_h5']
 __author__ = ["Jin Hyun Cheong"]
 
 
 
-import os, glob, math, pywt, pickle
+import os, glob, math, pywt, pickle, h5py
+from sklearn.cross_decomposition.pls_ import PLSRegression
 import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
