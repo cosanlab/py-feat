@@ -9,8 +9,6 @@ from feat.utils import load_h5
 import warnings
 import seaborn as sns
 import matplotlib.colors as colors
-import math
-
 
 __all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', 'draw_muscles', 'get_heat', 'predict']
 __author__ = ["Sophie Byrne", "Luke Chang"]
