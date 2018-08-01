@@ -243,12 +243,13 @@ def read_openface(openfacefile, features=None):
             pass
     return d
 
-def read_affectiva(affectivafile):
+def read_affectiva(affectivafile,orig_cols = False):
     '''
     This function reads in affectiva file processed through
     the https://github.com/cosanlab/affectiva-api-app.
     Args:
         affectivafile: file to read
+        orig_cols: If True, convert original colnames to FACS names
     '''
     d = pd.read_json(affectivafile, lines=True)
     rep_dict = { 'anger':'Anger','attention':'Attention','contempt':'Contempt','disgust':'Disgust','engagement':'Engagement',
@@ -260,13 +261,14 @@ def read_affectiva(affectivafile):
       'lidTighten':'AU07', 'lipCornerDepressor':'AU15',
        'lipPress':'AU24', 'lipPucker':'AU18', 'lipStretch':'AU20', 'lipSuck':'AU28', 'mouthOpen':'AU25',
        'noseWrinkle':'AU9', 'upperLipRaise':'AU10'}
-    new_cols = []
-    for col in d.columns:
-        try:
-            new_cols.append(rep_dict[col])
-        except:
-            new_cols.append(col)
-    d.columns = new_cols
+    if not orig_cols:
+        new_cols = []
+        for col in d.columns:
+            try:
+                new_cols.append(rep_dict[col])
+            except:
+                new_cols.append(col)
+        d.columns = new_cols
     return d
 
 
