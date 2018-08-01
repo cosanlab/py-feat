@@ -363,7 +363,7 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
     ax.add_patch(eye_l)
     ax.add_patch(eye_r)
     ax.add_patch(mouth)
-
+    return ax
 
 
 def get_heat(muscle, au, log):
@@ -463,7 +463,7 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
     ax.set_ylim((-240,-50))
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
-
+    return ax
 
 def predict(au, model=None):
     ''' Helper function to predict landmarks from au given a sklearn model
