@@ -715,7 +715,7 @@ class Facet(Fex):
             row_n: the row of data to use
             model: sklearn PLSRegression instance
             vectorfield: (dict) {'target':target_array,'reference':reference_array}
-            muscles: (dict) {'muscle': color} 
+            muscles: (dict) {'muscle': color}
             ax: matplotlib axis handle
             color: matplotlib color
             linewidth: matplotlib linewidth
@@ -756,7 +756,7 @@ class Affdex(Fex):
             row_n: the row of data to use
             model: sklearn PLSRegression instance
             vectorfield: (dict) {'target':target_array,'reference':reference_array}
-            muscles: (dict) {'muscle': color} 
+            muscles: (dict) {'muscle': color}
             ax: matplotlib axis handle
             color: matplotlib color
             linewidth: matplotlib linewidth
@@ -808,14 +808,12 @@ class Openface(Fex):
             row_n: the row of data to use
             model: sklearn PLSRegression instance
             vectorfield: (dict) {'target':target_array,'reference':reference_array}
-            muscles: (dict) {'muscle': color} 
+            muscles: (dict) {'muscle': color}
             ax: matplotlib axis handle
             color: matplotlib color
             linewidth: matplotlib linewidth
             linestyle: matplotlib linestyle
             gaze: (bool) whether to draw gaze based on data
-            
-
         """
         feats = ['AU01_r', 'AU02_r', 'AU04_r', 'AU05_r', 'AU06_r',
        'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r',
@@ -832,7 +830,8 @@ class Openface(Fex):
             if gaze:
                 gaze_dat = ['gaze_0_x', 'gaze_0_y', 'gaze_1_x', 'gaze_1_y']
                 gaze = []
-                [gaze.append(self[gaze_dat[i]][row_n]) for i in range(4)]
+                for i in range(4):
+                    gaze.append(self[gaze_dat[i]][row_n])
             else:
                 gaze = None
 
