@@ -9,8 +9,9 @@ def assert_plot_shape(ax):
     assert ax.get_ylim()==(-240.0, -50.0)
     assert ax.get_xlim()==(25.0, 172.0)
 
-au = np.ones(17)
-au2 = np.ones(17)*3
+feature_length = 20
+au = np.ones(feature_length)
+au2 = np.ones(feature_length)*3
 
 def testpredict():
     landmarks = predict(au)
@@ -31,9 +32,9 @@ def test_draw_vectorfield():
     assert_plot_shape(plt.gca())
     plt.close()
     with pytest.raises(ValueError):
-        draw_vectorfield(reference=predict(au).reshape(4,34), target=predict(au=au2))
+        draw_vectorfield(reference=predict(au).reshape(4,2*feature_length), target=predict(au=au2))
     with pytest.raises(ValueError):
-        draw_vectorfield(reference=predict(au), target=predict(au=au2).reshape(4,34))
+        draw_vectorfield(reference=predict(au), target=predict(au=au2).reshape(4,2*feature_length))
 
 def test_plot_face():
     plot_face()
