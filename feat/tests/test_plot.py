@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from os.path import join
+from .utils import get_test_data_path
+from feat.data import Fex, Facet, Openface, Affdex
+from feat.utils import read_facet, read_openface, read_affectiva
 from feat.plotting import plot_face, draw_lineface, draw_vectorfield, predict
 import matplotlib
 import pytest
@@ -37,6 +41,26 @@ def test_draw_vectorfield():
         draw_vectorfield(reference=predict(au), target=predict(au=au2).reshape(4,2*feature_length))
 
 def test_plot_face():
+    # test plotting method
+    fx = Facet(filename=join(get_test_data_path(), 'iMotions_Test.txt'),sampling_freq=30)
+    fx.read_file()
+    ax = fx.plot(row_n=0)
+    assert_plot_shape(ax)
+    plt.close()
+
+    fx = Openface(filename=join(get_test_data_path(), 'OpenFace_Test.csv'),sampling_freq=30)
+    fx.read_file()
+    ax = fx.plot(row_n=0)
+    assert_plot_shape(ax)
+    plt.close()
+
+    fx = Affdex(filename=join(get_test_data_path(), 'sample_affectiva-api-app_output.json'),sampling_freq=30)
+    fx.read_file(orig_cols=True)
+    ax = fx.plot(row_n=0)
+    assert_plot_shape(ax)
+    plt.close()
+
+    # test plot in util
     plot_face()
     assert_plot_shape(plt.gca())
     plt.close()
