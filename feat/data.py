@@ -140,6 +140,11 @@ class Fex(DataFrame):
         pass
 
     @abc.abstractmethod
+    def plot(self, *args, **kwargs):
+        """ Plots face file """
+        pass
+
+    @abc.abstractmethod
     def calc_pspi(self, *args, **kwargs):
         """ Calculates PSPI (Prkachin and Solomon Pain Intensity) levels which is metric of pain as a linear combination of facial action units(AU).
         The included AUs are brow lowering (AU4), eye tightening (AU6,7), eye closure(AU43,45), nose wrinkling (AU9) and lip raise (AU10).
@@ -739,15 +744,16 @@ class Facet(Fex):
                 model = load_h5(filename)
             if muscles is not None:
                 muscles['facet'] = 1
-            plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+            ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
                       linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+            return ax
         except Exception as e:
             print('Unable to plot data:', e)
 
 
 class Affdex(Fex):
-    def read_file(self, *args, **kwargs):
-        super(Fex, self).__init__(read_affectiva(self.filename, *args, **kwargs), *args, **kwargs)
+    def read_file(self, orig_cols=False, *args, **kwargs):
+        super(Fex, self).__init__(read_affectiva(self.filename, orig_cols), *args, **kwargs)
 
     def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
               linestyle='-', gaze = None, *args, **kwargs):
@@ -782,8 +788,9 @@ class Affdex(Fex):
                 aun = self[feat]
                 au.append(aun.copy()[row_n])
             au = np.array(au+[0,0,0])
-            plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+            ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
                       linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+            return ax
         except Exception as e:
             print('Unable to plot data:', e)
 
@@ -835,8 +842,9 @@ class Openface(Fex):
             else:
                 gaze = None
 
-            plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+            ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
                       linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+            return ax
         except Exception as e:
             print('Unable to plot data:', e)
 
