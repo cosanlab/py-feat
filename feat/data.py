@@ -752,8 +752,8 @@ class Facet(Fex):
 
 
 class Affdex(Fex):
-    def read_file(self, *args, **kwargs):
-        super(Fex, self).__init__(read_affectiva(self.filename, *args, **kwargs))
+    def read_file(self, orig_cols=False, *args, **kwargs):
+        super(Fex, self).__init__(read_affectiva(self.filename, orig_cols, *args, **kwargs), *args, **kwargs)
 
     def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
               linestyle='-', gaze = None, *args, **kwargs):
