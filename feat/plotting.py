@@ -339,7 +339,7 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
         del kwargs['all']
     else:
         for key in muscles:
-            if key in args:
+            if key in kwargs:
                 todraw[key] = kwargs[key]
                 del kwargs[key]
     for muscle in todraw:
