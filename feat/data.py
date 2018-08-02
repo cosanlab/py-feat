@@ -740,8 +740,7 @@ class Facet(Fex):
                 au.append(aun.copy()[row_n])
             au = np.array(au)
             if model is None:
-                filename = join(get_resource_path(), 'facet.h5')
-                model = load_h5(filename)
+                model = load_h5('facet.h5')
             if muscles is not None:
                 muscles['facet'] = 1
             ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
@@ -771,10 +770,10 @@ class Affdex(Fex):
 
 
         """
-        feats = ["innerBrowRaise", "browRaise", "browFurrow", "eyeWiden",
-                 "cheekRaise",  "lidTighten", "noseWrinkle", "upperLipRaise"]
-        feats2 = ["dimpler", "lipCornerDepressor", "chinRaise", "lipStretch",
-                 "lipPress","mouthOpen","jawDrop", "eyeWiden"]
+        feats = ["AU01", "AU02", "AU04", "AU05",
+                 "AU06",  "AU07", "AU9", "AU10", "AU12",
+                 "AU14", "AU15", "AU17", "AU20",
+                 "AU24","AU25","AU26", "AU43"]
         if (row_n > len(self)):
             raise ValueError("Row number out of range.")
 
@@ -782,11 +781,7 @@ class Affdex(Fex):
             au = []
             for feat in feats:
                 aun = self[feat]
-                au.append(aun.copy()[row_n])
-            au.append(0)
-            for feat in feats2:
-                aun = self[feat]
-                au.append(aun.copy()[row_n])
+                au.append(aun.copy()[row_n]/20)
             au = np.array(au+[0,0,0])
             ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
                       linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
@@ -822,6 +817,7 @@ class Openface(Fex):
             linestyle: matplotlib linestyle
             gaze: (bool) whether to draw gaze based on data
         """
+        print('here')
         feats = ['AU01_r', 'AU02_r', 'AU04_r', 'AU05_r', 'AU06_r',
        'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r',
        'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r']
