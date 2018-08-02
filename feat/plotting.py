@@ -425,7 +425,7 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
             raise ValueError('make sure that model is a PLSRegression instance')
 
     if au is None:
-        au = np.ones(20)
+        au = np.zeros(20)
         warnings.warn("Don't forget to pass an 'au' vector of len(20), "
                       "using neutral as default")
 
