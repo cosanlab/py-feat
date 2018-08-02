@@ -9,6 +9,7 @@ from feat.utils import load_h5
 import warnings
 import seaborn as sns
 import matplotlib.colors as colors
+from collections import OrderedDict
 
 __all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', 'draw_muscles', 'get_heat', 'predict']
 __author__ = ["Sophie Byrne", "Luke Chang"]
@@ -272,7 +273,7 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                             [currx[39] + width / 5, curry[39]], [currx[39] + width / 6, curry[39] - width / 5],
                             [currx[39], curry[39] - width/2], [currx[40], curry[40] - width/2],
                             [currx[41], curry[41] - width/2], [currx[36], curry[36] - width/2],
-                            [currx[36] - width / 6, curry[36] - width / 5], [currx[36] - width / 5, curry[36]]])
+                            [currx[36] - width / 6, curry[36] - width / 5], [currx[36] - width / 5, curry[36]]], color = 'r')
 
     width2 = (curry[38] - curry[2])/1.5
     orb_oc_l_outer = plt.Polygon([[currx[39] + width / 2, curry[39]],
@@ -305,17 +306,25 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                             [currx[5], curry[57]]], color = 'r')
     bucc_r = plt.Polygon([[currx[54], curry[54]], [currx[11], curry[52]],
                             [currx[11], curry[57]]], color = 'r')
-    muscles = {'bucc_l': bucc_l, 'bucc_r': bucc_r, 'masseter_l': masseter_l,
+    muscles = {'bucc_l': bucc_l, 'bucc_r': bucc_r,'masseter_l': masseter_l,
                'masseter_r': masseter_r, 'temporalis_l': temporalis_l,'temporalis_r': temporalis_r,
                'dep_lab_inf_l': dep_lab_inf_l, 'dep_lab_inf_r': dep_lab_inf_r, 'dep_ang_or_l': dep_ang_or_l,
                'dep_ang_or_r': dep_ang_or_r, 'mentalis_l': mentalis_l, 'mentalis_r': mentalis_r,
-               'risorius_l': risorius_l, 'risorius_r': risorius_r, 'frontalis_l': frontalis_l,
-               'frontalis_r': frontalis_r, 'frontalis_inner_l': frontalis_inner_l, 'frontalis_inner_r': frontalis_inner_r,
-               'cor_sup_l': cor_sup_l, 'cor_sup_r': cor_sup_r, 'orb_oc_l_outer': orb_oc_l_outer,
+               'risorius_l': risorius_l, 'risorius_r': risorius_r, 'frontalis_l': frontalis_l, 
+               'frontalis_inner_l': frontalis_inner_l, 'frontalis_r': frontalis_r, 'frontalis_inner_r': frontalis_inner_r,
+                'cor_sup_r': cor_sup_r, 'orb_oc_l_outer': orb_oc_l_outer,
                'orb_oc_r_outer': orb_oc_r_outer,'lev_lab_sup_l': lev_lab_sup_l, 'lev_lab_sup_r': lev_lab_sup_r,
                'lev_lab_sup_an_l': lev_lab_sup_an_l, 'lev_lab_sup_an_r': lev_lab_sup_an_r, 'zyg_maj_l': zyg_maj_l,
                'zyg_maj_r': zyg_maj_r, 'orb_oc_l': orb_oc_l, 'orb_oc_r': orb_oc_r, 'orb_oc_l_inner': orb_oc_l_inner,
-               'orb_oc_r_inner': orb_oc_r_inner, 'orb_oris_l': orb_oris_l, 'orb_oris_u': orb_oris_u, }
+               'orb_oc_r_inner': orb_oc_r_inner, 'orb_oris_l': orb_oris_l, 'orb_oris_u': orb_oris_u, 
+               'orb_oc_l': orb_oc_l, 'cor_sup_l': cor_sup_l}
+    
+    muscle_names = ['bucc_l', 'bucc_r', 'masseter_l', 'masseter_r', 'temporalis_l', 'temporalis_r',
+               'dep_lab_inf_l', 'dep_lab_inf_r', 'dep_ang_or_l', 'dep_ang_or_r', 'mentalis_l', 'mentalis_r',
+               'risorius_l', 'risorius_r', 'frontalis_l', 'frontalis_inner_l', 'frontalis_r', 'frontalis_inner_r',
+               'cor_sup_r','orb_oc_l_outer', 'orb_oc_r_outer','lev_lab_sup_l', 'lev_lab_sup_r',
+               'lev_lab_sup_an_l','lev_lab_sup_an_r', 'zyg_maj_l', 'zyg_maj_r','orb_oc_l', 'orb_oc_r', 'orb_oc_l',
+               'orb_oc_l_inner', 'orb_oc_r_inner','orb_oris_l','orb_oris_u', 'cor_sup_l']
     todraw = {}
     facet = False
 
@@ -334,20 +343,22 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
     if au is None:
         au = np.zeros(20)
     if 'all' in kwargs:
-        for key in muscles:
-            todraw[key] = kwargs['all']
+        for muscle in muscle_names:
+            todraw[muscle] = kwargs['all']
         del kwargs['all']
     else:
-        for key in muscles:
-            if key in kwargs:
-                todraw[key] = kwargs[key]
-                del kwargs[key]
-    for muscle in todraw:
+        for muscle in muscle_names:
+            if muscle in kwargs:
+                todraw[muscle] = kwargs[muscle]
+                del kwargs[muscle]
+    for muscle in muscle_names:
+      if muscle in todraw: 
         if todraw[muscle] == 'heatmap':
-            muscles[muscle].set_color(get_heat(muscle, au, facet))
+          muscles[muscle].set_color(get_heat(muscle, au, facet))
         else:
-            muscles[muscle].set_color(todraw[muscle])
+          muscles[muscle].set_color(todraw[muscle])
         ax.add_patch(muscles[muscle], *args, **kwargs)
+    
     eye_l = plt.Polygon([[currx[36], curry[36]], [currx[37], curry[37]],
                         [currx[38], curry[38]], [currx[39], curry[39]],
                         [currx[40], curry[40]], [currx[41], curry[41]]], color='w')
@@ -360,6 +371,7 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                         [currx[62], curry[62]], [currx[63], curry[63]],
                         [currx[64], curry[64]], [currx[65], curry[65]],
                             [currx[66], curry[66]], [currx[67], curry[67]]], color='w')
+
     ax.add_patch(eye_l)
     ax.add_patch(eye_r)
     ax.add_patch(mouth)
