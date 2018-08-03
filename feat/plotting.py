@@ -430,6 +430,7 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
 
         Returns:
     '''
+
     if model is None:
         model = load_h5()
     else:
@@ -445,7 +446,6 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
         au = np.concatenate((au,np.array([0,0,0])))
 
     landmarks = predict(au, model)
-
     currx, curry = ([landmarks[x,:] for x in range(2)])
 
     if ax is None:
