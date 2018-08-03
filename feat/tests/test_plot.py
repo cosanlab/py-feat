@@ -65,13 +65,13 @@ def test_plot_face():
     assert_plot_shape(plt.gca())
     plt.close()
 
-    plot_face(au=au, vectorfield={'target':predict(au2)})
+    plot_face(au=au, vectorfield={'reference':predict(au2)})
     assert_plot_shape(plt.gca())
     plt.close()
 
     with pytest.raises(ValueError):
-        plot_face(model=au, au=au, vectorfield={'target':predict(au2)})
+        plot_face(model=au, au=au, vectorfield={'reference':predict(au2)})
     with pytest.raises(ValueError):
         plot_face(model=au, au=au, vectorfield=[])
     with pytest.raises(ValueError):
-        plot_face(model=au, au=au, vectorfield={'notarget':predict(au2)})
+        plot_face(model=au, au=au, vectorfield={'noreference':predict(au2)})
