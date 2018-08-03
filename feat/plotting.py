@@ -25,6 +25,7 @@ def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, 
             color: matplotlib line color
             linestyle: matplotlib linestyle
             linewidth: matplotlib linewidth
+            gaze: array (len(5)) of gaze vectors (fifth value is whether to draw vectors) 
     '''
 
     face_outline = plt.Line2D([currx[0], currx[1], currx[2], currx[3], currx[4],
@@ -93,12 +94,12 @@ def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, 
                       color=color, linestyle=linestyle, linewidth=linewidth,
                       *args, **kwargs)
     if gaze is None:
-        gaze = [0,0,0,0]
+        gaze = [0,0,0,0,0]
 
     else:
-        if len(gaze) != 4:
+        if len(gaze) != 5:
             raise ValueError('gaze must be len(4).')
-        gaze = [gaze[0], gaze[1]/2, gaze[2], gaze[3]/2]
+        gaze = [gaze[0], gaze[1]/2, gaze[2], gaze[3]/2, gaze[4]]
 
     x = (currx[37] + currx[38] + currx[41] + currx[40]) / 4
     y = (curry[37] + curry[38] + curry[40] + curry[41]) / 4
@@ -124,6 +125,10 @@ def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, 
     ax.add_line(lips2)
     ax.add_line(nose1)
     ax.add_line(nose2)
+    if gaze[4] == 1: 
+        ax.quiver([x, x1], [y, y1], [10*gaze[0], 10*gaze[2]], [-10*gaze[1], -10*gaze[3]],
+                  color='r', width=.005, angles='xy',
+                  scale_units='xy', scale=1)
 
 def draw_vectorfield(reference, target, color='r', scale=1, width=.007,
                      ax=None, *args, **kwargs):
@@ -456,8 +461,8 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
             raise ValueError('muscles must be a dictionary ')
         draw_muscles(currx, curry, ax=ax, au=au, **muscles)
 
-    if gaze is not None and len((gaze)) != 4:
-        warnings.warn("Don't forget to pass a 'gaze' vector of len(4), "
+    if gaze is not None and len((gaze)) != 5:
+        warnings.warn("Don't forget to pass a 'gaze' vector of len(5), "
                       "using neutral as default")
         gaze = None
 
