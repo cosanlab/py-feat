@@ -770,7 +770,13 @@ class Affdex(Fex):
 
 
         """
-        feats = ["AU01", "AU02", "AU04", "AU05",
+        if "AU01" not in self: 
+            feats = ["innerBrowRaise", "browRaise", "browFurrow", "eyeWiden",
+                 "cheekRaise",  "lidTighten", "noseWrinkle", "upperLipRaise",
+                 "smile", "dimpler", "lipCornerDepressor", "chinRaise", "lipStretch",
+                 "lipPress","mouthOpen","jawDrop", "eyeClosure"]
+        else:
+            feats = ["AU01", "AU02", "AU04", "AU05",
                  "AU06",  "AU07", "AU9", "AU10", "AU12",
                  "AU14", "AU15", "AU17", "AU20",
                  "AU24","AU25","AU26", "AU43"]
@@ -817,7 +823,6 @@ class Openface(Fex):
             linestyle: matplotlib linestyle
             gaze: (bool) whether to draw gaze based on data
         """
-        print('here')
         feats = ['AU01_r', 'AU02_r', 'AU04_r', 'AU05_r', 'AU06_r',
        'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r',
        'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r']
