@@ -466,11 +466,11 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
     if vectorfield is not None:
         if not isinstance(vectorfield, dict):
             raise ValueError('vectorfield must be a dictionary ')
-        if 'target' not in vectorfield:
-            raise ValueError("vectorfield must contain 'target' key")
-        target = vectorfield['target']
-        del vectorfield['target']
-        draw_vectorfield(landmarks, target, ax=ax, **vectorfield)
+        if 'reference' not in vectorfield:
+            raise ValueError("vectorfield must contain 'reference' key")
+        reference = vectorfield['reference']
+        del vectorfield['reference']
+        draw_vectorfield(reference, landmarks, ax=ax, **vectorfield)
     ax.set_xlim([25,172])
     ax.set_ylim((-240,-50))
     ax.axes.get_xaxis().set_visible(False)
