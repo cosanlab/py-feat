@@ -725,7 +725,7 @@ class Facet(Fex):
             color: matplotlib color
             linewidth: matplotlib linewidth
             linestyle: matplotlib linestyle
-            gaze: array of gaze vectors (len(4))
+            gaze: array of gaze vectors (len(5))
 
 
         """
@@ -766,7 +766,7 @@ class Affdex(Fex):
             color: matplotlib color
             linewidth: matplotlib linewidth
             linestyle: matplotlib linestyle
-            gaze: array of gaze vectors (len(4))
+            gaze: array of gaze vectors (len(5))
 
 
         """
@@ -810,7 +810,7 @@ class Openface(Fex):
         return out
 
     def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
-              linestyle='-', gaze=False, *args, **kwargs):
+              linestyle='-', gaze=False, gaze_vecs = False, *args, **kwargs):
         """ Plot facial representation of data
         Args:
             row_n: the row of data to use
@@ -840,6 +840,10 @@ class Openface(Fex):
                 gaze = []
                 for i in range(4):
                     gaze.append(self[gaze_dat[i]][row_n])
+                if gaze_vecs: 
+                    gaze.append(1)
+                else: 
+                    gaze.append(0) 
             else:
                 gaze = None
 
