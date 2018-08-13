@@ -11,12 +11,13 @@ from __future__ import division
 
 __all__ = ['get_resource_path','load_pickled_model','read_facet',
            'read_affdex','read_affectiva','read_openface', 'softmax',
-           'registration','neutral']
+           'registration','neutral','load_h5']
 __author__ = ["Jin Hyun Cheong"]
 
 
 
-import os, glob, math, pywt, pickle
+import os, math, pywt, pickle, h5py
+from sklearn.cross_decomposition.pls_ import PLSRegression
 import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
@@ -37,6 +38,23 @@ def load_pickled_model(file_name=None):
     except Exception as e:
         print('Unable to load data ', file_name, ':', e)
         raise
+    return model
+
+def load_h5(file_name='blue.h5'):
+    try:
+        hf = h5py.File(os.path.join(get_resource_path(), file_name), 'r')
+        d1 = hf.get('coef')
+        d2 = hf.get('x_mean')
+        d3 = hf.get('y_mean')
+        d4 = hf.get('x_std')
+        model = PLSRegression(len(d1))
+        model.coef_ = np.array(d1)
+        model.x_mean_ = np.array(d2)
+        model.y_mean_ = np.array(d3)
+        model.x_std_ = np.array(d4)
+        hf.close()
+    except Exception as e:
+        print('Unable to load data ', file_name, ':', e)
     return model
 
 def read_facet(facetfile, features=None):
@@ -225,12 +243,13 @@ def read_openface(openfacefile, features=None):
             pass
     return d
 
-def read_affectiva(affectivafile):
+def read_affectiva(affectivafile,orig_cols = False):
     '''
     This function reads in affectiva file processed through
     the https://github.com/cosanlab/affectiva-api-app.
     Args:
         affectivafile: file to read
+        orig_cols: If True, convert original colnames to FACS names
     '''
     d = pd.read_json(affectivafile, lines=True)
     rep_dict = { 'anger':'Anger','attention':'Attention','contempt':'Contempt','disgust':'Disgust','engagement':'Engagement',
@@ -242,13 +261,14 @@ def read_affectiva(affectivafile):
       'lidTighten':'AU07', 'lipCornerDepressor':'AU15',
        'lipPress':'AU24', 'lipPucker':'AU18', 'lipStretch':'AU20', 'lipSuck':'AU28', 'mouthOpen':'AU25',
        'noseWrinkle':'AU9', 'upperLipRaise':'AU10'}
-    new_cols = []
-    for col in d.columns:
-        try:
-            new_cols.append(rep_dict[col])
-        except:
-            new_cols.append(col)
-    d.columns = new_cols
+    if not orig_cols:
+        new_cols = []
+        for col in d.columns:
+            try:
+                new_cols.append(rep_dict[col])
+            except:
+                new_cols.append(col)
+        d.columns = new_cols
     return d
 
 
