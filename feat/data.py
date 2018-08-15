@@ -97,7 +97,7 @@ class Fex(DataFrame):
         i : int, slice, or sequence of integers
         axis : int
         """
-        result = super(self.__class__, self)._ixs(i, axis=axis)
+        result = super()._ixs(i, axis=axis)
 
         # Override columns
         if axis == 1:
@@ -770,7 +770,7 @@ class Affdex(Fex):
 
 
         """
-        if "AU01" not in self: 
+        if "AU01" not in self:
             feats = ["innerBrowRaise", "browRaise", "browFurrow", "eyeWiden",
                  "cheekRaise",  "lidTighten", "noseWrinkle", "upperLipRaise",
                  "smile", "dimpler", "lipCornerDepressor", "chinRaise", "lipStretch",
@@ -840,10 +840,10 @@ class Openface(Fex):
                 gaze = []
                 for i in range(4):
                     gaze.append(self[gaze_dat[i]][row_n])
-                if gaze_vecs: 
+                if gaze_vecs:
                     gaze.append(1)
-                else: 
-                    gaze.append(0) 
+                else:
+                    gaze.append(0)
             else:
                 gaze = None
 
