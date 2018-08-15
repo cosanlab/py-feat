@@ -97,7 +97,7 @@ class Fex(DataFrame):
         i : int, slice, or sequence of integers
         axis : int
         """
-        result = super(self.__class__, self)._ixs(i, axis=axis)
+        result = super()._ixs(i, axis=axis)
 
         # Override columns
         if axis == 1:
