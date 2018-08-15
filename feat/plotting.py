@@ -471,7 +471,7 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
         if 'reference' not in vectorfield:
             raise ValueError("vectorfield must contain 'reference' key")
         if 'target' not in vectorfield.keys():
-            vectofield['target'] = landmarks
+            vectorfield['target'] = landmarks
         draw_vectorfield(ax=ax, **vectorfield)
     ax.set_xlim([25,172])
     ax.set_ylim((-240,-50))
@@ -497,6 +497,8 @@ def predict(au, model=None):
         raise ValueError('make sure that model is a PLSRegression instance')
 
     if len(au) != len(model.x_mean_):
+        print(au)
+        print(len(model.x_mean_))
         raise ValueError('au vector must be len(', len(model.x_mean_), ').')
 
     if len(au.shape) == 1:
