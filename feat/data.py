@@ -770,7 +770,7 @@ class Affdex(Fex):
 
 
         """
-        if "AU01" not in self: 
+        if "AU01" not in self:
             feats = ["innerBrowRaise", "browRaise", "browFurrow", "eyeWiden",
                  "cheekRaise",  "lidTighten", "noseWrinkle", "upperLipRaise",
                  "smile", "dimpler", "lipCornerDepressor", "chinRaise", "lipStretch",
@@ -840,10 +840,10 @@ class Openface(Fex):
                 gaze = []
                 for i in range(4):
                     gaze.append(self[gaze_dat[i]][row_n])
-                if gaze_vecs: 
+                if gaze_vecs:
                     gaze.append(1)
-                else: 
-                    gaze.append(0) 
+                else:
+                    gaze.append(0)
             else:
                 gaze = None
 

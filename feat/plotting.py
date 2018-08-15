@@ -25,7 +25,7 @@ def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, 
             color: matplotlib line color
             linestyle: matplotlib linestyle
             linewidth: matplotlib linewidth
-            gaze: array (len(5)) of gaze vectors (fifth value is whether to draw vectors) 
+            gaze: array (len(4)) of gaze vectors (fifth value is whether to draw vectors)
     '''
 
     face_outline = plt.Line2D([currx[0], currx[1], currx[2], currx[3], currx[4],
@@ -94,12 +94,12 @@ def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, 
                       color=color, linestyle=linestyle, linewidth=linewidth,
                       *args, **kwargs)
     if gaze is None:
-        gaze = [0,0,0,0,0]
+        gaze = [0,0,0,0]
 
     else:
-        if len(gaze) != 5:
+        if len(gaze) != 4:
             raise ValueError('gaze must be len(4).')
-        gaze = [gaze[0], gaze[1]/2, gaze[2], gaze[3]/2, gaze[4]]
+        gaze = [gaze[0], gaze[1]/2, gaze[2], gaze[3]/2]#, gaze[4]]
 
     x = (currx[37] + currx[38] + currx[41] + currx[40]) / 4
     y = (curry[37] + curry[38] + curry[40] + curry[41]) / 4
@@ -125,7 +125,7 @@ def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, 
     ax.add_line(lips2)
     ax.add_line(nose1)
     ax.add_line(nose2)
-    if gaze[4] == 1: 
+    if gaze:
         ax.quiver([x, x1], [y, y1], [10*gaze[0], 10*gaze[2]], [-10*gaze[1], -10*gaze[3]],
                   color='r', width=.005, angles='xy',
                   scale_units='xy', scale=1)
@@ -315,15 +315,15 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                'masseter_r': masseter_r, 'temporalis_l': temporalis_l,'temporalis_r': temporalis_r,
                'dep_lab_inf_l': dep_lab_inf_l, 'dep_lab_inf_r': dep_lab_inf_r, 'dep_ang_or_l': dep_ang_or_l,
                'dep_ang_or_r': dep_ang_or_r, 'mentalis_l': mentalis_l, 'mentalis_r': mentalis_r,
-               'risorius_l': risorius_l, 'risorius_r': risorius_r, 'frontalis_l': frontalis_l, 
+               'risorius_l': risorius_l, 'risorius_r': risorius_r, 'frontalis_l': frontalis_l,
                'frontalis_inner_l': frontalis_inner_l, 'frontalis_r': frontalis_r, 'frontalis_inner_r': frontalis_inner_r,
                 'cor_sup_r': cor_sup_r, 'orb_oc_l_outer': orb_oc_l_outer,
                'orb_oc_r_outer': orb_oc_r_outer,'lev_lab_sup_l': lev_lab_sup_l, 'lev_lab_sup_r': lev_lab_sup_r,
                'lev_lab_sup_an_l': lev_lab_sup_an_l, 'lev_lab_sup_an_r': lev_lab_sup_an_r, 'zyg_maj_l': zyg_maj_l,
                'zyg_maj_r': zyg_maj_r, 'orb_oc_l': orb_oc_l, 'orb_oc_r': orb_oc_r, 'orb_oc_l_inner': orb_oc_l_inner,
-               'orb_oc_r_inner': orb_oc_r_inner, 'orb_oris_l': orb_oris_l, 'orb_oris_u': orb_oris_u, 
+               'orb_oc_r_inner': orb_oc_r_inner, 'orb_oris_l': orb_oris_l, 'orb_oris_u': orb_oris_u,
                'orb_oc_l': orb_oc_l, 'cor_sup_l': cor_sup_l}
-    
+
     muscle_names = ['bucc_l', 'bucc_r', 'masseter_l', 'masseter_r', 'temporalis_l', 'temporalis_r',
                'dep_lab_inf_l', 'dep_lab_inf_r', 'dep_ang_or_l', 'dep_ang_or_r', 'mentalis_l', 'mentalis_r',
                'risorius_l', 'risorius_r', 'frontalis_l', 'frontalis_inner_l', 'frontalis_r', 'frontalis_inner_r',
@@ -357,13 +357,13 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                 todraw[muscle] = kwargs[muscle]
                 del kwargs[muscle]
     for muscle in muscle_names:
-      if muscle in todraw: 
+      if muscle in todraw:
         if todraw[muscle] == 'heatmap':
           muscles[muscle].set_color(get_heat(muscle, au, facet))
         else:
           muscles[muscle].set_color(todraw[muscle])
         ax.add_patch(muscles[muscle], *args, **kwargs)
-    
+
     eye_l = plt.Polygon([[currx[36], curry[36]], [currx[37], curry[37]],
                         [currx[38], curry[38]], [currx[39], curry[39]],
                         [currx[40], curry[40]], [currx[41], curry[41]]], color='w')
@@ -443,12 +443,9 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
             raise ValueError('make sure that model is a PLSRegression instance')
 
     if au is None:
-        au = np.zeros(20)
+        au = np.zeros(len(model.x_mean_))
         warnings.warn("Don't forget to pass an 'au' vector of len(20), "
                       "using neutral as default")
-
-    if (len(model.coef_) == 23):
-        au = np.concatenate((au,np.array([0,0,0])))
 
     landmarks = predict(au, model)
     currx, curry = ([landmarks[x,:] for x in range(2)])
@@ -461,8 +458,8 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
             raise ValueError('muscles must be a dictionary ')
         draw_muscles(currx, curry, ax=ax, au=au, **muscles)
 
-    if gaze is not None and len((gaze)) != 5:
-        warnings.warn("Don't forget to pass a 'gaze' vector of len(5), "
+    if gaze is not None and len((gaze)) != 4:
+        warnings.warn("Don't forget to pass a 'gaze' vector of len(4), "
                       "using neutral as default")
         gaze = None
 
@@ -473,9 +470,9 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
             raise ValueError('vectorfield must be a dictionary ')
         if 'reference' not in vectorfield:
             raise ValueError("vectorfield must contain 'reference' key")
-        reference = vectorfield['reference']
-        del vectorfield['reference']
-        draw_vectorfield(reference, landmarks, ax=ax, **vectorfield)
+        if 'target' not in vectorfield.keys():
+            vectofield['target'] = landmarks
+        draw_vectorfield(ax=ax, **vectorfield)
     ax.set_xlim([25,172])
     ax.set_ylim((-240,-50))
     ax.axes.get_xaxis().set_visible(False)
@@ -499,8 +496,8 @@ def predict(au, model=None):
     elif not isinstance(model, PLSRegression):
         raise ValueError('make sure that model is a PLSRegression instance')
 
-    if len(au) != len(model.coef_):
-        raise ValueError('au vector must be len(', len(model.coef_), ').')
+    if len(au) != len(model.x_mean_):
+        raise ValueError('au vector must be len(', len(model.x_mean_), ').')
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
@@ -508,10 +505,6 @@ def predict(au, model=None):
     landmarks = np.reshape(model.predict(au), (2,68))
     landmarks[1,:] = -1*landmarks[1,:] # this might not generalize to other models
     return landmarks
-
-
-
-
 
 def _create_empty_figure(figsize=(4,5), xlim=[25,172], ylim=[-240,-50]):
     '''Create an empty figure'''
