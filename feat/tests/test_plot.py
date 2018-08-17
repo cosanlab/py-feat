@@ -75,3 +75,11 @@ def test_plot_face():
         plot_face(model=au, au=au, vectorfield=[])
     with pytest.raises(ValueError):
         plot_face(model=au, au=au, vectorfield={'noreference':predict(au2)})
+
+def test_plot_muscle():
+    test_file = join(get_test_data_path(), 'OpenFace_Test.csv')
+    fig, ax = plt.subplots(figsize=(4,5))
+    openface = Openface(read_openface(test_file))
+    ax = openface.plot(12, ax=ax, muscles={'all': "heatmap"}, gaze = None)
+    assert_plot_shape(plt.gca())
+    plt.close()
