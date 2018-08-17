@@ -730,7 +730,7 @@ class Facet(Fex):
 
         """
         feats = ['AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10', 'AU12','AU14','AU15',
-                 'AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43']
+                 'AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43','Pitch','Roll','Yaw']
         if (row_n > len(self)):
             raise ValueError("Row number out of range.")
         try:
