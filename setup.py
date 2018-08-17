@@ -22,8 +22,8 @@ setup(
     author="Jin Hyun Cheong, Nathaniel Hanes, Luke Chang ",
     author_email='jcheong0428@gmail.com',
     url='https://github.com/cosanlab/feat',
-    packages=find_packages(exclude=['feat/tests']),
-    package_data = {'feat': ['resources/*']},
+    packages=['feat'],
+    package_data = {'feat': ['resources/*','tests/*','tests/data/*']},
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
@@ -40,6 +40,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    test_suite='tests',
+    test_suite='feat/tests',
     **extra_setuptools_args
 )
