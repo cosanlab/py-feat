@@ -17,10 +17,10 @@ import unittest
 def test_fex():
     # For iMotions-FACET data files
     # test reading iMotions file < version 6
-    dat = Fex(read_facet(join(get_test_data_path(), 'iMotions_Test_v2.txt')), sampling_freq=30)
+    dat = Fex(read_facet(join(get_test_data_path(), 'iMotions_Test_v5.txt')), sampling_freq=30)
 
     # test reading iMotions file > version 6
-    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
@@ -156,7 +156,7 @@ def test_fex():
 
 def test_facet_subclass():
     # Test facet subclass
-    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
     facet = Facet(filename=filename,sampling_freq=30)
     facet.read_file()
     assert len(facet)==519
@@ -169,7 +169,7 @@ def test_facet_subclass():
     assert isinstance(facet,Facet)
 
 def test_fextractor():
-    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
@@ -232,7 +232,7 @@ def test_fextractor():
     assert out.sampling_freq == dat2.sampling_freq
 
     # Test Bag Of Temporal Features Extraction
-    filename = join(get_test_data_path(), 'iMotions_Test.txt')
+    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
     facet = Facet(filename=filename,sampling_freq=30)
     facet.read_file()
     facet_filled = facet.fillna(0)
@@ -248,7 +248,7 @@ def test_fextractor():
 ### Test Openface importer and subclass ###
 def test_openface():
     # For OpenFace data file
-    filename = join(get_test_data_path(), 'OpenFace_Test.csv')
+    filename = join(get_test_data_path(), 'iMotions_Test_v6.csv')
     openface = Fex(read_openface(filename), sampling_freq=30)
 
     # Test KeyError
