@@ -2,7 +2,7 @@ from __future__ import division
 
 """Class definitions."""
 
-import os
+import os, warnings
 from os.path import join
 import numpy as np
 import pandas as pd
@@ -25,14 +25,13 @@ from pandas.core.index import Index
 from scipy.signal import convolve
 
 class FexSeries(Series):
-
     """
     This is a sub-class of pandas series. While not having additional methods
     of it's own required to retain normal slicing functionality for the
     Fex class, i.e. how slicing is typically handled in pandas.
     All methods should be called on Fex below.
     """
-    _metadata = ['name', 'sampling_freq', 'sessions']
+    _metadata = ['filename', 'sampling_freq', 'features', 'sessions','fex_columns']
 
     def __init__(self, *args, **kwargs):
         self.sampling_freq = kwargs.pop('sampling_freq', None)
@@ -64,18 +63,33 @@ class Fex(DataFrame):
                   n_samples elements; defaults to None
     """
     # __metaclass__  = abc.ABCMeta
-    _metadata = ['filename', 'sampling_freq', 'features', 'sessions']
-
+    _metadata = ['filename', 'sampling_freq', 'features', 'sessions','fex_columns']
+    # def __finalize__(self, other, *args, **kwargs):
+    #     """
+    #     Propagates metdata from other to self.
+    #     Should be called at the end of each function to ensure class and attributes are propagated.
+    #     """
+    #     for name in self._metadata:
+    #         object.__setattr_(self, name , getattr(other, name, None))
+    #     return self
+    #
+    #     DataFrame.__finalize__ = __finalize__
     def __init__(self, *args, **kwargs):
         self.filename = kwargs.pop('filename', None)
         self.sampling_freq = kwargs.pop('sampling_freq', None)
         self.features = kwargs.pop('features', None)
         self.sessions = kwargs.pop('sessions', None)
+        self.fex_columns = kwargs.pop('fex_columns', None)
         super(Fex, self).__init__(*args, **kwargs)
         if self.sessions is not None:
             if not len(self.sessions) == len(self):
                 raise ValueError('Make sure sessions is same length as data.')
             self.sessions = np.array(self.sessions)
+        if (self.fex_columns is None) and (not self._metadata):
+            try:
+                self.fex_columns = self._metadata
+            except:
+                print('Failed to import _metadata to fex_columns')
 
         # Set _metadata attributes on series: Kludgy solution
         for k in self:
@@ -84,7 +98,7 @@ class Fex(DataFrame):
 
     @property
     def _constructor(self):
-        return self.__class__
+        return Fex
 
     @property
     def _constructor_sliced(self):
@@ -165,24 +179,10 @@ class Fex(DataFrame):
         """Print class meta data.
 
         """
-        if self.features is not None:
-            features = self.features.shape
-        else:
-            features = self.features
-
-        if self.sessions is not None:
-            sessions = len(np.unique(self.sessions))
-        else:
-            sessions = self.sessions
-
-        return '%s.%s(sampling_freq=%s, shape=%s, n_sessions=%s, features_shape=%s)' % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.sampling_freq,
-            self.shape,
-            sessions,
-            features,
-            )
+        attr_list = []
+        for name in self._metadata:
+            attr_list.append(name +": "+ str(getattr(self, name, None))+'\n')
+        print(f"{self.__class__}\n" +  "".join(attr_list))
 
     def itersessions(self):
         ''' Iterate over Fex sessions as (session, series) pairs.
@@ -322,6 +322,30 @@ class Fex(DataFrame):
         return Adjacency(pairwise_distances(self, metric=method, **kwargs),
                          matrix_type='Distance')
 
+    def rectification(self, std=3):
+        """ Removes time points when the face position moved
+            more than N standard deviations from the mean.
+
+            Args:
+                std (default 3): standard deviation from mean to remove outlier face locations
+            Returns:
+                data: cleaned FEX object
+
+        """
+        #### TODO: CHECK IF FACET OR FIND WAY TO DO WITH OTHER ONES TOO #####
+        cleaned = deepcopy(self)
+        face_columns = ['FaceRectX','FaceRectY','FaceRectHeight','FaceRectWidth']
+        x_m = self.FaceRectX.mean()
+        x_std = self.FaceRectX.std()
+        y_m = self.FaceRectY.mean()
+        y_std = self.FaceRectY.std()
+        x_bool = (self.FaceRectX>std*x_std+x_m) | (self.FaceRectX<x_m-std*x_std)
+        y_bool = (self.FaceRectY>std*y_std+y_m) | (self.FaceRectY<y_m-std*y_std)
+        xy_bool = x_bool | y_bool
+        cleaned.loc[xy_bool,face_columns+self.fex_columns]=np.nan
+        return cleaned
+
+
     def baseline(self, baseline='median', normalize=None,
                  ignore_sessions=False):
         ''' Reference a Fex object to a baseline.
@@ -434,9 +458,11 @@ class Fex(DataFrame):
         """
         if self.sessions is not None:
             if ignore_sessions:
-                sessions=None
+                sessions = None
             else:
                 sessions = self.sessions
+        else:
+            sessions = None
         return self.__class__(pd.DataFrame(clean(self.values, detrend=detrend,
                                                  standardize=standardize,
                                                  confounds=confounds,

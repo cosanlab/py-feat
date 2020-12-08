@@ -12,7 +12,7 @@ import matplotlib.colors as colors
 from collections import OrderedDict
 
 __all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', 'draw_muscles', 'get_heat', 'predict']
-__author__ = ["Sophie Byrne", "Luke Chang"]
+__author__ = ["Sophie Byrne", "Jin Hyun Cheong", "Luke Chang"]
 
 def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, gaze = None,
                   *args, **kwargs):
@@ -434,6 +434,7 @@ def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, co
             gaze: array of gaze vectors (len(4))
 
         Returns:
+            ax: plot handle
     '''
 
     if model is None:

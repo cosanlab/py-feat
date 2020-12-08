@@ -42,7 +42,7 @@ def test_draw_vectorfield():
 
 def test_plot_face():
     # test plotting method
-    fx = Facet(filename=join(get_test_data_path(), 'iMotions_Test.txt'),sampling_freq=30)
+    fx = Facet(filename=join(get_test_data_path(), 'iMotions_Test_v6.txt'),sampling_freq=30)
     fx.read_file()
     ax = fx.plot(row_n=0)
     assert_plot_shape(ax)

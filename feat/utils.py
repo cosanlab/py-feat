@@ -57,53 +57,56 @@ def load_h5(file_name='blue.h5'):
         print('Unable to load data ', file_name, ':', e)
     return model
 
-def read_facet(facetfile, features=None):
+def read_facet(facetfile, features=None, raw=False):
     '''
     This function reads in an iMotions-FACET exported facial expression file.
-    Also for iMotions-FACET versions below 6, Confusion and Frustration do not exist so are not returned.
+    By default
 
     Args:
+        facetfile: iMotions-FACET file. Files from iMotions 5, 6, and 7 have been tested and supported
         features: If a list of iMotion-FACET column names are passed, those are returned.
-        Otherwise, default columns are returned in the following format:['Timestamp','FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight',
-        'Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration',
-        'Neutral','Positive','Negative','AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10',
-        'AU12','AU14','AU15','AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43',
-        'Yaw', 'Pitch', 'Roll'].
-        Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
-
+                Otherwise, default columns are returned in the following format:['Timestamp','FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight',
+                'Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration',
+                'Neutral','Positive','Negative','AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10',
+                'AU12','AU14','AU15','AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43',
+                'Yaw', 'Pitch', 'Roll'].
+                Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
+        raw (default=False): Set to True to return all columns without processing.
     Returns:
         dataframe of processed facial expressions
     '''
     # Check iMotions Version
     versionstr = ''
-    with open(facetfile,'r') as f:
-        studyname = f.readline().replace('\t','').replace('\n','')
-        studydate = f.readline().replace('\t','').replace('\n','')
-        versionstr = f.readline().replace('\t','').replace('\n','')
-    versionnum = int(versionstr.split(' ')[-1].split('.')[0])
+    try:
+        with open(facetfile,'r') as f:
+            studyname = f.readline().replace('\t','').replace('\n','')
+            studydate = f.readline().replace('\t','').replace('\n','')
+            versionstr = f.readline().replace('\t','').replace('\n','')
+        versionnum = int(versionstr.split(' ')[-1].split('.')[0])
+    except:
+        raise TypeError("Cannot infer version of iMotions-FACET file. Check to make sure this is the raw iMotions-FACET file.")
 
     d = pd.read_csv(facetfile, skiprows=5, sep='\t')
-    # Check if features argument is passed and return only those features, else return basic emotion/AU features
+    # Check if features argument is passed and return only those features, else return all columns
     if isinstance(features,list):
         try:
             d = d[features]
+            if raw:
+                return d
         except:
             raise KeyError([features,'not in facetfile'])
     elif isinstance(features, type(None)):
-        features = ['Timestamp','FaceRect X','FaceRect Y','FaceRect Width','FaceRect Height','Joy Evidence','Anger Evidence','Surprise Evidence','Fear Evidence','Contempt Evidence',
-                  'Disgust Evidence','Sadness Evidence','Confusion Evidence','Frustration Evidence',
-                  'Neutral Evidence','Positive Evidence','Negative Evidence','AU1 Evidence','AU2 Evidence',
-                  'AU4 Evidence','AU5 Evidence','AU6 Evidence','AU7 Evidence','AU9 Evidence','AU10 Evidence',
-                  'AU12 Evidence','AU14 Evidence','AU15 Evidence','AU17 Evidence','AU18 Evidence','AU20 Evidence',
-                  'AU23 Evidence','AU24 Evidence','AU25 Evidence','AU26 Evidence','AU28 Evidence','AU43 Evidence',
-                  'Yaw Degrees', 'Pitch Degrees', 'Roll Degrees']
-        if versionnum < 6:
-            features.remove('Confusion Evidence')
-            features.remove('Frustration Evidence')
-        d = d[features]
-        d.columns = [col.replace(' Evidence','') for col in d.columns]
-        d.columns = [col.replace(' Degrees','') for col in d.columns]
-        d.columns = [col.replace(' ','') for col in d.columns]
+        if raw:
+            return d
+        else:
+            fex_columns = [col.replace(' Evidence','').replace(' Degrees','') for col in d.columns if 'Evidence' in col or 'Degrees' in col]
+            # Remove Intensity as this has been deprecated
+            cols2drop = [col for col in d.columns if "Intensity" in col]
+            d = d.drop(columns=cols2drop)
+            d.columns = [col.replace(' Evidence','') for col in d.columns]
+            d.columns = [col.replace(' Degrees','') for col in d.columns]
+            d.columns = [col.replace(' ','') for col in d.columns]
+            d._metadata = fex_columns
     return d
 
 def read_openface(openfacefile, features=None):
