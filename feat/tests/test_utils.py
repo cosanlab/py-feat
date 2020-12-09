@@ -16,7 +16,7 @@ import unittest
 def test_utils():
     sample = read_openface(join(get_test_data_path(), 'OpenFace_Test.csv'))
     lm_cols = ['x_'+str(i) for i in range(0,68)]+['y_'+str(i) for i in range(0,68)]
-    sample_face = np.array([sample[lm_cols].as_matrix()[0]])
+    sample_face = np.array([sample[lm_cols].values[0]])
     registered_lm = registration(sample_face)
     assert(registered_lm.shape==(1,136))
 
