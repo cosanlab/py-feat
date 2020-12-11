@@ -64,7 +64,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'FEAT'
-copyright = u"2018, Jin Hyun Cheong, Nathaniel Hanes, Luke Chang "
+copyright = u"2019, Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Nathaniel Hanes, Luke Chang "
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -218,7 +218,7 @@ latex_elements = {
 latex_documents = [
     ('index', 'feat.tex',
      u'FEAT Documentation',
-     u'Jin Hyun Cheong, Nathaniel Hanes, Luke Chang ', 'manual'),
+     u'Jin Hyun Cheong, Sophie Byrne, Nathaniel Hanes, Luke Chang ', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -249,7 +249,7 @@ latex_documents = [
 man_pages = [
     ('index', 'feat',
      u'FEAT Documentation',
-     [u'Jin Hyun Cheong, Nathaniel Hanes, Luke Chang '], 1)
+     [u'Jin Hyun Cheong, Sophie Byrne, Nathaniel Hanes, Luke Chang '], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -264,7 +264,7 @@ man_pages = [
 texinfo_documents = [
     ('index', 'feat',
      u'FEAT Documentation',
-     u'Jin Hyun Cheong, Nathaniel Hanes, Luke Chang ',
+     u'Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Nathaniel Hanes, Luke Chang ',
      'feat',
      'One line description of project.',
      'Miscellaneous'),
