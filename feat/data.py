@@ -715,17 +715,17 @@ class Fex(DataFrame):
             _d = self[[feat]].T
             assert _d.isnull().sum().any()==0, "Data contains NaNs. Cannot convolve. "
             for iw, cm in enumerate(wavs):
-                convolved = np.apply_along_axis(lambda m: np.convolve(m, cm, mode='full'),axis=1,arr=_d.as_matrix())
+                convolved = np.apply_along_axis(lambda m: np.convolve(m, cm, mode='full'),axis=1,arr=_d.values)
                 # Extract bin features.
                 out = pd.DataFrame(convolved.T).apply(calc_hist_auc,args=(None))
+                # 6 bins hardcoded from calc_hist_auc
                 colnames = ['pos'+str(i)+'_hz_'+hzs[iw]+'_'+feat for i in range(6)]
                 colnames.extend(['neg'+str(i)+'_hz_'+hzs[iw]+'_'+feat for i in range(6)])
                 out = out.T
                 out.columns = colnames
                 feats = pd.concat([feats, out], axis=1)
         return self.__class__(feats, sampling_freq=self.sampling_freq,
-                              features=self.features,
-                              sessions=self.sessions)
+                              features=self.features)
 class Facet(Fex):
     """
     Facet is a subclass of Fex.
