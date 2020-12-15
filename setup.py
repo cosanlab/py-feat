@@ -59,10 +59,10 @@ def _post_install():
         print("Something went wrong. Model not found in directory.")
 
     print("Downloading landmark detection model.")
-    lbfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml.txt"
+    lbfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"
     wget.download(lbfmodel, get_resource_path())
 
-    if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml.txt")):
+    if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml")):
         print("\nLandmark detection model downloaded successfully.\n")
     else:
         print("Something went wrong. Model not found in directory.")
