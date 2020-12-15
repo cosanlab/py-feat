@@ -8,6 +8,9 @@
 ehthumbs.db
 Thumbs.db
 
+#Ignoreresources folder.
+resources/
+
 # PytestCache
 .pytest_cache/
 
