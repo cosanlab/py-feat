@@ -11,9 +11,9 @@ services:
   - xvfb
 
 # before_script:
-  - "export DISPLAY=:99.0"
+#   - "export DISPLAY=:99.0"
 #   - "sh -e /etc/init.d/xvfb start"
-  - sleep 3
+#   - sleep 3
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
@@ -37,7 +37,6 @@ script:
 
 after_success:
   - coveralls
-  - codecov
 
 # After you create the Github repo and add it to Travis, run the
 # travis_pypi_setup.py script to finish PyPI deployment setup
@@ -49,5 +48,5 @@ deploy:
     secure: PLEASE_REPLACE_ME
   on:
     tags: true
-    repo: ljchang/feat
+    repo: cosanlab/feat
     python: 3.6
