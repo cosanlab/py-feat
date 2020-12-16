@@ -13,13 +13,37 @@ import cv2 as cv
 from feat.utils import get_resource_path, face_rect_to_coords
 
 class Detector(object):
+    def __init__(self, n_jobs=1):
+        """Detector class to detect FEX from images or videos.
 
-    """
-    Detector is a class used to detect faces, facial landmarks, emotions, and action units from images and videos.
-    """
+        Detector is a class used to detect faces, facial landmarks, emotions, and action units from images and videos.
 
-    def __init__(self):
+        Args:
+            n_jobs (int, default=1): Number of processes to use for extraction. 
+        
+        Attributes:
+            info (dict):
+                n_jobs (int): Number of jobs to be used in parallel.
+                face_detection_model (str, default=haarcascade_frontalface_alt.xml): Path to face detection model.
+                face_detection_columns (list): Column names for face detection ouput (x, y, w, h)
+                face_landmark_model (str, default=lbfmodel.yaml): Path to landmark model.
+                face_landmark_columns (list): Column names for face landmark output (x0, y0, x1, y1, ...)
+                emotion_model (str, default=fer_aug_model.h5): Path to emotion detection model.
+                emotion_model_columns (list): Column names for emotion model output
+                mapper (dict): Class names for emotion model output by index.
+                input_shape (dict)
+
+            face_detector: face detector object
+            face_landmark: face_landmark object
+            emotion_model: emotion_model object
+
+        Examples:
+            >> detector = Detector(n_jobs=1)
+            >> detector.detect_image("input.jpg")
+            >> detector.detect_video("input.mp4")
+        """
         self.info = {}
+        self.info['n_jobs'] = n_jobs
         """ LOAD UP THE MODELS """
         print("Loading Face Detection model.")
         face_detection_model_path = cv.data.haarcascades + "haarcascade_frontalface_alt.xml"
@@ -57,11 +81,12 @@ class Detector(object):
             print("Emotion prediction model not found. Please run download_models.py.")
         model = models.load_model(emotion_model_path) # Load model to use.
         (_, img_w, img_h, img_c) = model.layers[0].input_shape # model input shape.
-        self.info["emotion_model"] = emotion_model_path
         self.info["input_shape"] = {"img_w": img_w, "img_h": img_h, "img_c": img_c}
+        self.info["emotion_model"] = emotion_model_path
         self.info["mapper"] = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4: 'sadness', 5: 'surprise', 6: 'neutral'}
         self.emotion_model = model
         emotion_columns = [key for key in self.info["mapper"].values()]
+        self.info['emotion_model_columns'] = emotion_columns
 
         # create empty df for predictions 
         predictions = np.empty((1, len(self.info["mapper"])))
@@ -76,11 +101,20 @@ class Detector(object):
         return self.info[i]
 
     def process_frame(self, frame, counter=0):
-        """
-        Takes a frame from OpenCV and prepares it as a tensor to be predicted by model. 
+        """Helper function to run face detection, landmark detection, and emotion detection on a frame. 
 
-        frame: Image input. 
-        counter: Frame number. Defaults to 0
+        Args:
+            frame (np.array): Numpy array of image, ideally loaded through Pillow.Image
+            counter (int, str, default=0): Index used for the prediction results dataframe.
+
+        Returns:
+            df (dataframe): Prediction results dataframe.
+
+        Example:
+            >> from pil import Image
+            >> frame = Image.open("input.jpg")
+            >> detector = Detector()
+            >> detector.process_frame(np.array(frame))
         """
         try:
             # change image to grayscale
@@ -115,12 +149,16 @@ class Detector(object):
             landmarks_df = self._empty_landmark.reindex(index=[counter])
             return pd.concat([emotion_df, facebox_df, landmarks_df], axis=1)
 
-    def detect_video(self, inputFname, outputFname=None, skip_frames=1, n_jobs=1):
-        """
-        Inputs
+    def detect_video(self, inputFname, outputFname=None, skip_frames=1):
+        """Detects FEX from a video file.
 
-        Outputs
-            df: dataframe with columns 
+        Args:
+            inputFname (str): Path to video file
+            outputFname (str, optional): Path to output file. Defaults to None.
+            skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
+
+        Returns:
+            dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
         self.info['inputFname'] = inputFname
         self.info['outputFname'] = outputFname 
@@ -131,6 +169,7 @@ class Detector(object):
         cap = cv.VideoCapture(inputFname)
 
         # Determine whether to use multiprocessing.
+        n_jobs = self['n_jobs']
         if n_jobs==-1:
             thread_num = cv.getNumberOfCPUs() # get available cpus
         else: 
@@ -174,18 +213,37 @@ class Detector(object):
 
 
     def detect_image(self, inputFname, outputFname=None):
-        """
-        Inputs
+        """Detects FEX from a video file.
 
-        Outputs
-            If outputFname is specified, saves results to file and returns True.
-            If outputFname is not specified, returns the results in a dataframe.
+        Args:
+            inputFname (str, or list of str): Path to image file or a list of paths to image files.
+            outputFname (str, optional): Path to output file. Defaults to None.
+
+        Returns:
+            dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
+        assert type(inputFname)==str or type(inputFname)==list, "inputFname must be a string path to image or list of image paths"
+        if type(inputFname)==str:
+            inputFname = [inputFname]
+        for inputF in inputFname:
+            if not os.path.exists(inputF):
+                raise FileNotFoundError(f"File {inputF} not found.")
         self.info['inputFname'] = inputFname
-        frame = Image.open(inputFname)
-        df = self.process_frame(np.array(frame))
+        
+        init_df = pd.DataFrame(columns=self["output_columns"])
         if outputFname:
-            df.to_csv(outputFname, index=False, header=True)
+            init_df.to_csv(outputFname, index=False, header=True)
+
+        for inputF in inputFname:
+            frame = Image.open(inputF)
+            df = self.process_frame(np.array(frame))
+
+            if outputFname:
+                df.to_csv(outputFname, index=True, header=False, mode='a')
+            else:
+                init_df = pd.concat([init_df, df], axis=0)
+
+        if outputFname:
             return True
         else:
-            return df
+            return init_df
