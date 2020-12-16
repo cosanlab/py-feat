@@ -21,10 +21,12 @@ from sklearn.cross_decomposition.pls_ import PLSRegression
 import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
+import feat
 
 def get_resource_path():
     """ Get path to feat resource directory. """
-    return os.path.join(os.path.dirname(__file__), 'resources')
+    return os.path.join(feat.__path__[0], 'resources') # points to the package folder.
+    # return os.path.join(os.path.dirname(__file__), 'resources')
 
 def load_pickled_model(file_name=None):
     if file_name is None:
