@@ -26,8 +26,8 @@ install:
   - conda info -a
   - conda create -q -n testenv python=$TRAVIS_PYTHON_VERSION pip pytest numpy pandas scipy matplotlib scikit-learn
   - source activate testenv
-  - pip install python-coveralls
-  - pip install -r requirements.txt
+  - pip install --upgrade python-coveralls pytest-cov codecov
+  - pip install -r requirements.txt --upgrade
   - pip install tox-travis
   - python setup.py install
 
@@ -48,5 +48,5 @@ deploy:
     secure: PLEASE_REPLACE_ME
   on:
     tags: true
-    repo: ljchang/feat
+    repo: cosanlab/feat
     python: 3.6
