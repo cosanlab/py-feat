@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `feat` package."""
+
 from feat.detector import Detector
 from feat.utils import get_resource_path
 from .utils import get_test_data_path
