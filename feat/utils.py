@@ -23,6 +23,12 @@ from scipy import signal
 from scipy.integrate import simps
 import feat
 
+def face_rect_to_coords(rectangle):
+    """
+    Takes in a (x, y, w, h) array and transforms it into (x, y, x2, y2)
+    """
+    return [rectangle[0], rectangle[1], rectangle[0]+rectangle[2], rectangle[1]+rectangle[3]]
+    
 def get_resource_path():
     """ Get path to feat resource directory. """
     return os.path.join(feat.__path__[0], 'resources') # points to the package folder.
