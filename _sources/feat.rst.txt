@@ -11,6 +11,14 @@ Subpackages
 Submodules
 ----------
 
+feat\.detector module
+-----------------
+
+.. automodule:: feat.detector
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 feat\.data module
 -----------------
 

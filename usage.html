@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Reference" href="api.html" />
-    <link rel="prev" title="FEAT" href="index.html" /> 
+    <link rel="prev" title="feat.tests package" href="feat.tests.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -94,6 +94,7 @@
             
             
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="feat.html">feat package</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
@@ -166,6 +167,33 @@
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">feat</span>
 </pre></div>
 </div>
+<ol class="arabic simple">
+<li>Detecting FEX features</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.detector</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="s2">&quot;input.png&quot;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="s2">&quot;input.mp4&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Extracting features from FEX</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Code goes here</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Analyzing FEX data</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Code goes here</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li>Visualizing FEX data</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Code goes here</span>
+</pre></div>
+</div>
 </div>
 
 
@@ -179,7 +207,7 @@
         <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="FEAT" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="feat.tests.html" class="btn btn-neutral float-left" title="feat.tests package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

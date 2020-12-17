@@ -3,15 +3,14 @@ API Reference
 
 This reference provides detailed documentation for all the features in FEAT
 
-.. Create autodocs by reading docstrings like this:
-    :mod:`feat.functions`: Module Name
-    -------------------------------------------------------------
-
-    .. automodule:: feat.functions
+.. automodule:: feat.detector
+    :members:
+    
+.. automodule:: feat.data
     :members:
 
-    :mod:`feat.classes`: Visual Rating Scale
-    -------------------------------------------------------------------
+.. automodule:: feat.plotting
+    :members:
 
-    .. autoclass:: feat.classes.MyClass
+.. automodule:: feat.utils
     :members:
