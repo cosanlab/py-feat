@@ -26,6 +26,7 @@ Keyboard shortcuts:
 if __name__ == '__main__':
     import sys
     import argparse
+    import os
     print(__doc__)
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--inputFname", help="str, Path to video.", type=str, default=0)
@@ -39,16 +40,14 @@ if __name__ == '__main__':
         if args.inputFname==0:
             args.outputFname = None
         else:
-            args.outputFname = os.path.splitext(inputFname)[0]+".csv"
+            args.outputFname = os.path.splitext(args.inputFname)[0]+".csv"
     print(f"Processing video {args.inputFname}")        
     print(f"Outputs will be saved to {args.outputFname}")
-
 
 from collections import deque
 from multiprocessing.pool import ThreadPool
 import tensorflow as tf
 from tensorflow.python.keras import optimizers, models
-import os
 import numpy as np, pandas as pd
 from PIL import Image, ImageDraw
 import cv2 as cv
