@@ -29,10 +29,9 @@ python detect_fex.py -i input.mp4 -o output.csv
 or detect in notebok.
 ```python
 from feat.detector import Detector
-detector = Detector(models=['emotion']) #initialize detector class
-detector.process("input.png")
-
-detector.process("input.mp4")
+detector = Detector() 
+out = detector.detect_image("input.png")
+out = detector.detect_video("input.mp4")
 ```
 
 ### 2. Preprocessing FEX data
