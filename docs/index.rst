@@ -12,6 +12,7 @@ Option 1
 Clone the repository  
 
 .. code-block:: python
+
     git clone https://github.com/cosanlab/feat.git  
     cd feat
     python setup.py install
@@ -25,6 +26,7 @@ Option 2
 Verify models have been downloaded.
 
 .. code-block:: python
+
     python download_models.py
 
 
@@ -39,32 +41,7 @@ Verify models have been downloaded.
 :doc:`Usage <usage>`
 -------------------
 
-1. Detecting FEX features
-
-.. code-block:: python
-    from feat.detector import Detector
-    detector = Detector() 
-    out = detector.detect_image("input.png")
-    out = detector.detect_video("input.mp4")
-
-2. Extracting features from FEX 
-
-.. code-block:: python
-    # Code goes here
-
-3. Analyzing FEX data 
-
-.. code-block:: python
-    # Code goes here
-
-4. Visualizing FEX data
-
-.. code-block:: python
-    # Code goes here
-
-
 :doc:`API <api>`
 ----------------
 
-    .. automodule:: feat.data
-    :members:
+
