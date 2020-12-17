@@ -169,6 +169,14 @@ def test_facet_subclass():
     facet = facet.downsample(target=10,target_type='hz')
     assert isinstance(facet,Facet)
 
+    # Testrectification
+    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
+    facet = Facet(filename=filename,sampling_freq=30, fex_columns =['Positive'])
+    facet.read_file()
+    rectified = facet.rectification()
+    assert facet[facet.fex_columns].isna().sum()[0] < rectified[rectified.fex_columns].isna().sum()[0]
+
+
 def test_fextractor():
     filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
