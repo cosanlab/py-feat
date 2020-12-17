@@ -10,7 +10,7 @@ Installation
 
     pip install git+https://github.com/cosanlab/feat
 
-.. automodule:: feat.main
+.. automodule:: feat.data
     :members:
 
 .. toctree::
