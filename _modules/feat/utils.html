@@ -1,0 +1,629 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>feat.utils &mdash; FEAT 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript">
+          var DOCUMENTATION_OPTIONS = {
+              URL_ROOT:'../../',
+              VERSION:'0.0.1',
+              LANGUAGE:'None',
+              COLLAPSE_INDEX:false,
+              FILE_SUFFIX:'.html',
+              HAS_SOURCE:  true,
+              SOURCELINK_SUFFIX: '.txt'
+          };
+      </script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> FEAT
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FEAT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>feat.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for feat.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    FEAT Utils Class</span>
+<span class="sd">    ==========================================</span>
+<span class="sd">    read_facet: read in iMotions-FACET formatted files</span>
+<span class="sd">    read_affdex: read in iMotions-affdex formatted files</span>
+<span class="sd">    read_affectiva: read in affectiva-api formatted files</span>
+<span class="sd">    read_openface: read in openface formatted files</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;get_resource_path&#39;</span><span class="p">,</span><span class="s1">&#39;load_pickled_model&#39;</span><span class="p">,</span><span class="s1">&#39;read_facet&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;read_affdex&#39;</span><span class="p">,</span><span class="s1">&#39;read_affectiva&#39;</span><span class="p">,</span><span class="s1">&#39;read_openface&#39;</span><span class="p">,</span> <span class="s1">&#39;softmax&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;registration&#39;</span><span class="p">,</span><span class="s1">&#39;neutral&#39;</span><span class="p">,</span><span class="s1">&#39;load_h5&#39;</span><span class="p">]</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Jin Hyun Cheong&quot;</span><span class="p">]</span>
+
+
+
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">math</span><span class="o">,</span> <span class="nn">pywt</span><span class="o">,</span> <span class="nn">pickle</span><span class="o">,</span> <span class="nn">h5py</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_decomposition.pls_</span> <span class="k">import</span> <span class="n">PLSRegression</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">signal</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="k">import</span> <span class="n">simps</span>
+<span class="kn">import</span> <span class="nn">feat</span>
+
+<span class="k">def</span> <span class="nf">face_rect_to_coords</span><span class="p">(</span><span class="n">rectangle</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes in a (x, y, w, h) array and transforms it into (x, y, x2, y2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">rectangle</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rectangle</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rectangle</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">rectangle</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rectangle</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">rectangle</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+    
+<div class="viewcode-block" id="get_resource_path"><a class="viewcode-back" href="../../feat.html#feat.utils.get_resource_path">[docs]</a><span class="k">def</span> <span class="nf">get_resource_path</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Get path to feat resource directory. &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feat</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;resources&#39;</span><span class="p">)</span> <span class="c1"># points to the package folder.</span></div>
+    <span class="c1"># return os.path.join(os.path.dirname(__file__), &#39;resources&#39;)</span>
+
+<div class="viewcode-block" id="load_pickled_model"><a class="viewcode-back" href="../../feat.html#feat.utils.load_pickled_model">[docs]</a><span class="k">def</span> <span class="nf">load_pickled_model</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_resource_path</span><span class="p">(),</span> <span class="s1">&#39;pls_python27.pkl&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">UnicodeDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Unable to load data &#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">raise</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="load_h5"><a class="viewcode-back" href="../../feat.html#feat.utils.load_h5">[docs]</a><span class="k">def</span> <span class="nf">load_h5</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;blue.h5&#39;</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">hf</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_resource_path</span><span class="p">(),</span> <span class="n">file_name</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">d1</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;coef&#39;</span><span class="p">)</span>
+        <span class="n">d2</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x_mean&#39;</span><span class="p">)</span>
+        <span class="n">d3</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;y_mean&#39;</span><span class="p">)</span>
+        <span class="n">d4</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x_std&#39;</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d1</span><span class="p">))</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d1</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">x_mean_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">y_mean_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d3</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">x_std_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">d4</span><span class="p">)</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Unable to load data &#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="read_facet"><a class="viewcode-back" href="../../feat.html#feat.utils.read_facet">[docs]</a><span class="k">def</span> <span class="nf">read_facet</span><span class="p">(</span><span class="n">facetfile</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function reads in an iMotions-FACET exported facial expression file.</span>
+<span class="sd">    By default</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        facetfile: iMotions-FACET file. Files from iMotions 5, 6, and 7 have been tested and supported</span>
+<span class="sd">        features: If a list of iMotion-FACET column names are passed, those are returned.</span>
+<span class="sd">                Otherwise, default columns are returned in the following format:[&#39;Timestamp&#39;,&#39;FaceRectX&#39;,&#39;FaceRectY&#39;,&#39;FaceRectWidth&#39;,&#39;FaceRectHeight&#39;,</span>
+<span class="sd">                &#39;Joy&#39;,&#39;Anger&#39;,&#39;Surprise&#39;,&#39;Fear&#39;,&#39;Contempt&#39;, &#39;Disgust&#39;,&#39;Sadness&#39;,&#39;Confusion&#39;,&#39;Frustration&#39;,</span>
+<span class="sd">                &#39;Neutral&#39;,&#39;Positive&#39;,&#39;Negative&#39;,&#39;AU1&#39;,&#39;AU2&#39;, &#39;AU4&#39;,&#39;AU5&#39;,&#39;AU6&#39;,&#39;AU7&#39;,&#39;AU9&#39;,&#39;AU10&#39;,</span>
+<span class="sd">                &#39;AU12&#39;,&#39;AU14&#39;,&#39;AU15&#39;,&#39;AU17&#39;,&#39;AU18&#39;,&#39;AU20&#39;, &#39;AU23&#39;,&#39;AU24&#39;,&#39;AU25&#39;,&#39;AU26&#39;,&#39;AU28&#39;,&#39;AU43&#39;,</span>
+<span class="sd">                &#39;Yaw&#39;, &#39;Pitch&#39;, &#39;Roll&#39;].</span>
+<span class="sd">                Note that these column names are different from the original files which has &#39; Evidence&#39;, &#39; Degrees&#39; appended to each column.</span>
+<span class="sd">        raw (default=False): Set to True to return all columns without processing.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dataframe of processed facial expressions</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Check iMotions Version</span>
+    <span class="n">versionstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">facetfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">studyname</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">studydate</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">versionstr</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">versionnum</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">versionstr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Cannot infer version of iMotions-FACET file. Check to make sure this is the raw iMotions-FACET file.&quot;</span><span class="p">)</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">facetfile</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="c1"># Check if features argument is passed and return only those features, else return all columns</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span><span class="nb">list</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">features</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">raw</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">d</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">([</span><span class="n">features</span><span class="p">,</span><span class="s1">&#39;not in facetfile&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">raw</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fex_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; Evidence&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; Degrees&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s1">&#39;Evidence&#39;</span> <span class="ow">in</span> <span class="n">col</span> <span class="ow">or</span> <span class="s1">&#39;Degrees&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">]</span>
+            <span class="c1"># Remove Intensity as this has been deprecated</span>
+            <span class="n">cols2drop</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;Intensity&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">]</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">cols2drop</span><span class="p">)</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; Evidence&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; Degrees&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">fex_columns</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="read_openface"><a class="viewcode-back" href="../../feat.html#feat.utils.read_openface">[docs]</a><span class="k">def</span> <span class="nf">read_openface</span><span class="p">(</span><span class="n">openfacefile</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function reads in an OpenFace exported facial expression file.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        features: If a list of column names are passed, those are returned. Otherwise, default returns the following features:</span>
+<span class="sd">        [&#39;frame&#39;, &#39;timestamp&#39;, &#39;confidence&#39;, &#39;success&#39;, &#39;gaze_0_x&#39;,</span>
+<span class="sd">       &#39;gaze_0_y&#39;, &#39;gaze_0_z&#39;, &#39;gaze_1_x&#39;, &#39;gaze_1_y&#39;, &#39;gaze_1_z&#39;,</span>
+<span class="sd">       &#39;pose_Tx&#39;, &#39;pose_Ty&#39;, &#39;pose_Tz&#39;, &#39;pose_Rx&#39;, &#39;pose_Ry&#39;, &#39;pose_Rz&#39;,</span>
+<span class="sd">       &#39;x_0&#39;, &#39;x_1&#39;, &#39;x_2&#39;, &#39;x_3&#39;, &#39;x_4&#39;, &#39;x_5&#39;, &#39;x_6&#39;, &#39;x_7&#39;, &#39;x_8&#39;,</span>
+<span class="sd">       &#39;x_9&#39;, &#39;x_10&#39;, &#39;x_11&#39;, &#39;x_12&#39;, &#39;x_13&#39;, &#39;x_14&#39;, &#39;x_15&#39;, &#39;x_16&#39;,</span>
+<span class="sd">       &#39;x_17&#39;, &#39;x_18&#39;, &#39;x_19&#39;, &#39;x_20&#39;, &#39;x_21&#39;, &#39;x_22&#39;, &#39;x_23&#39;, &#39;x_24&#39;,</span>
+<span class="sd">       &#39;x_25&#39;, &#39;x_26&#39;, &#39;x_27&#39;, &#39;x_28&#39;, &#39;x_29&#39;, &#39;x_30&#39;, &#39;x_31&#39;, &#39;x_32&#39;,</span>
+<span class="sd">       &#39;x_33&#39;, &#39;x_34&#39;, &#39;x_35&#39;, &#39;x_36&#39;, &#39;x_37&#39;, &#39;x_38&#39;, &#39;x_39&#39;, &#39;x_40&#39;,</span>
+<span class="sd">       &#39;x_41&#39;, &#39;x_42&#39;, &#39;x_43&#39;, &#39;x_44&#39;, &#39;x_45&#39;, &#39;x_46&#39;, &#39;x_47&#39;, &#39;x_48&#39;,</span>
+<span class="sd">       &#39;x_49&#39;, &#39;x_50&#39;, &#39;x_51&#39;, &#39;x_52&#39;, &#39;x_53&#39;, &#39;x_54&#39;, &#39;x_55&#39;, &#39;x_56&#39;,</span>
+<span class="sd">       &#39;x_57&#39;, &#39;x_58&#39;, &#39;x_59&#39;, &#39;x_60&#39;, &#39;x_61&#39;, &#39;x_62&#39;, &#39;x_63&#39;, &#39;x_64&#39;,</span>
+<span class="sd">       &#39;x_65&#39;, &#39;x_66&#39;, &#39;x_67&#39;, &#39;y_0&#39;, &#39;y_1&#39;, &#39;y_2&#39;, &#39;y_3&#39;, &#39;y_4&#39;, &#39;y_5&#39;,</span>
+<span class="sd">       &#39;y_6&#39;, &#39;y_7&#39;, &#39;y_8&#39;, &#39;y_9&#39;, &#39;y_10&#39;, &#39;y_11&#39;, &#39;y_12&#39;, &#39;y_13&#39;, &#39;y_14&#39;,</span>
+<span class="sd">       &#39;y_15&#39;, &#39;y_16&#39;, &#39;y_17&#39;, &#39;y_18&#39;, &#39;y_19&#39;, &#39;y_20&#39;, &#39;y_21&#39;, &#39;y_22&#39;,</span>
+<span class="sd">       &#39;y_23&#39;, &#39;y_24&#39;, &#39;y_25&#39;, &#39;y_26&#39;, &#39;y_27&#39;, &#39;y_28&#39;, &#39;y_29&#39;, &#39;y_30&#39;,</span>
+<span class="sd">       &#39;y_31&#39;, &#39;y_32&#39;, &#39;y_33&#39;, &#39;y_34&#39;, &#39;y_35&#39;, &#39;y_36&#39;, &#39;y_37&#39;, &#39;y_38&#39;,</span>
+<span class="sd">       &#39;y_39&#39;, &#39;y_40&#39;, &#39;y_41&#39;, &#39;y_42&#39;, &#39;y_43&#39;, &#39;y_44&#39;, &#39;y_45&#39;, &#39;y_46&#39;,</span>
+<span class="sd">       &#39;y_47&#39;, &#39;y_48&#39;, &#39;y_49&#39;, &#39;y_50&#39;, &#39;y_51&#39;, &#39;y_52&#39;, &#39;y_53&#39;, &#39;y_54&#39;,</span>
+<span class="sd">       &#39;y_55&#39;, &#39;y_56&#39;, &#39;y_57&#39;, &#39;y_58&#39;, &#39;y_59&#39;, &#39;y_60&#39;, &#39;y_61&#39;, &#39;y_62&#39;,</span>
+<span class="sd">       &#39;y_63&#39;, &#39;y_64&#39;, &#39;y_65&#39;, &#39;y_66&#39;, &#39;y_67&#39;, &#39;X_0&#39;, &#39;X_1&#39;, &#39;X_2&#39;, &#39;X_3&#39;,</span>
+<span class="sd">       &#39;X_4&#39;, &#39;X_5&#39;, &#39;X_6&#39;, &#39;X_7&#39;, &#39;X_8&#39;, &#39;X_9&#39;, &#39;X_10&#39;, &#39;X_11&#39;, &#39;X_12&#39;,</span>
+<span class="sd">       &#39;X_13&#39;, &#39;X_14&#39;, &#39;X_15&#39;, &#39;X_16&#39;, &#39;X_17&#39;, &#39;X_18&#39;, &#39;X_19&#39;, &#39;X_20&#39;,</span>
+<span class="sd">       &#39;X_21&#39;, &#39;X_22&#39;, &#39;X_23&#39;, &#39;X_24&#39;, &#39;X_25&#39;, &#39;X_26&#39;, &#39;X_27&#39;, &#39;X_28&#39;,</span>
+<span class="sd">       &#39;X_29&#39;, &#39;X_30&#39;, &#39;X_31&#39;, &#39;X_32&#39;, &#39;X_33&#39;, &#39;X_34&#39;, &#39;X_35&#39;, &#39;X_36&#39;,</span>
+<span class="sd">       &#39;X_37&#39;, &#39;X_38&#39;, &#39;X_39&#39;, &#39;X_40&#39;, &#39;X_41&#39;, &#39;X_42&#39;, &#39;X_43&#39;, &#39;X_44&#39;,</span>
+<span class="sd">       &#39;X_45&#39;, &#39;X_46&#39;, &#39;X_47&#39;, &#39;X_48&#39;, &#39;X_49&#39;, &#39;X_50&#39;, &#39;X_51&#39;, &#39;X_52&#39;,</span>
+<span class="sd">       &#39;X_53&#39;, &#39;X_54&#39;, &#39;X_55&#39;, &#39;X_56&#39;, &#39;X_57&#39;, &#39;X_58&#39;, &#39;X_59&#39;, &#39;X_60&#39;,</span>
+<span class="sd">       &#39;X_61&#39;, &#39;X_62&#39;, &#39;X_63&#39;, &#39;X_64&#39;, &#39;X_65&#39;, &#39;X_66&#39;, &#39;X_67&#39;, &#39;Y_0&#39;,</span>
+<span class="sd">       &#39;Y_1&#39;, &#39;Y_2&#39;, &#39;Y_3&#39;, &#39;Y_4&#39;, &#39;Y_5&#39;, &#39;Y_6&#39;, &#39;Y_7&#39;, &#39;Y_8&#39;, &#39;Y_9&#39;,</span>
+<span class="sd">       &#39;Y_10&#39;, &#39;Y_11&#39;, &#39;Y_12&#39;, &#39;Y_13&#39;, &#39;Y_14&#39;, &#39;Y_15&#39;, &#39;Y_16&#39;, &#39;Y_17&#39;,</span>
+<span class="sd">       &#39;Y_18&#39;, &#39;Y_19&#39;, &#39;Y_20&#39;, &#39;Y_21&#39;, &#39;Y_22&#39;, &#39;Y_23&#39;, &#39;Y_24&#39;, &#39;Y_25&#39;,</span>
+<span class="sd">       &#39;Y_26&#39;, &#39;Y_27&#39;, &#39;Y_28&#39;, &#39;Y_29&#39;, &#39;Y_30&#39;, &#39;Y_31&#39;, &#39;Y_32&#39;, &#39;Y_33&#39;,</span>
+<span class="sd">       &#39;Y_34&#39;, &#39;Y_35&#39;, &#39;Y_36&#39;, &#39;Y_37&#39;, &#39;Y_38&#39;, &#39;Y_39&#39;, &#39;Y_40&#39;, &#39;Y_41&#39;,</span>
+<span class="sd">       &#39;Y_42&#39;, &#39;Y_43&#39;, &#39;Y_44&#39;, &#39;Y_45&#39;, &#39;Y_46&#39;, &#39;Y_47&#39;, &#39;Y_48&#39;, &#39;Y_49&#39;,</span>
+<span class="sd">       &#39;Y_50&#39;, &#39;Y_51&#39;, &#39;Y_52&#39;, &#39;Y_53&#39;, &#39;Y_54&#39;, &#39;Y_55&#39;, &#39;Y_56&#39;, &#39;Y_57&#39;,</span>
+<span class="sd">       &#39;Y_58&#39;, &#39;Y_59&#39;, &#39;Y_60&#39;, &#39;Y_61&#39;, &#39;Y_62&#39;, &#39;Y_63&#39;, &#39;Y_64&#39;, &#39;Y_65&#39;,</span>
+<span class="sd">       &#39;Y_66&#39;, &#39;Y_67&#39;, &#39;Z_0&#39;, &#39;Z_1&#39;, &#39;Z_2&#39;, &#39;Z_3&#39;, &#39;Z_4&#39;, &#39;Z_5&#39;, &#39;Z_6&#39;,</span>
+<span class="sd">       &#39;Z_7&#39;, &#39;Z_8&#39;, &#39;Z_9&#39;, &#39;Z_10&#39;, &#39;Z_11&#39;, &#39;Z_12&#39;, &#39;Z_13&#39;, &#39;Z_14&#39;, &#39;Z_15&#39;,</span>
+<span class="sd">       &#39;Z_16&#39;, &#39;Z_17&#39;, &#39;Z_18&#39;, &#39;Z_19&#39;, &#39;Z_20&#39;, &#39;Z_21&#39;, &#39;Z_22&#39;, &#39;Z_23&#39;,</span>
+<span class="sd">       &#39;Z_24&#39;, &#39;Z_25&#39;, &#39;Z_26&#39;, &#39;Z_27&#39;, &#39;Z_28&#39;, &#39;Z_29&#39;, &#39;Z_30&#39;, &#39;Z_31&#39;,</span>
+<span class="sd">       &#39;Z_32&#39;, &#39;Z_33&#39;, &#39;Z_34&#39;, &#39;Z_35&#39;, &#39;Z_36&#39;, &#39;Z_37&#39;, &#39;Z_38&#39;, &#39;Z_39&#39;,</span>
+<span class="sd">       &#39;Z_40&#39;, &#39;Z_41&#39;, &#39;Z_42&#39;, &#39;Z_43&#39;, &#39;Z_44&#39;, &#39;Z_45&#39;, &#39;Z_46&#39;, &#39;Z_47&#39;,</span>
+<span class="sd">       &#39;Z_48&#39;, &#39;Z_49&#39;, &#39;Z_50&#39;, &#39;Z_51&#39;, &#39;Z_52&#39;, &#39;Z_53&#39;, &#39;Z_54&#39;, &#39;Z_55&#39;,</span>
+<span class="sd">       &#39;Z_56&#39;, &#39;Z_57&#39;, &#39;Z_58&#39;, &#39;Z_59&#39;, &#39;Z_60&#39;, &#39;Z_61&#39;, &#39;Z_62&#39;, &#39;Z_63&#39;,</span>
+<span class="sd">       &#39;Z_64&#39;, &#39;Z_65&#39;, &#39;Z_66&#39;, &#39;Z_67&#39;, &#39;p_scale&#39;, &#39;p_rx&#39;, &#39;p_ry&#39;, &#39;p_rz&#39;,</span>
+<span class="sd">       &#39;p_tx&#39;, &#39;p_ty&#39;, &#39;p_0&#39;, &#39;p_1&#39;, &#39;p_2&#39;, &#39;p_3&#39;, &#39;p_4&#39;, &#39;p_5&#39;, &#39;p_6&#39;,</span>
+<span class="sd">       &#39;p_7&#39;, &#39;p_8&#39;, &#39;p_9&#39;, &#39;p_10&#39;, &#39;p_11&#39;, &#39;p_12&#39;, &#39;p_13&#39;, &#39;p_14&#39;, &#39;p_15&#39;,</span>
+<span class="sd">       &#39;p_16&#39;, &#39;p_17&#39;, &#39;p_18&#39;, &#39;p_19&#39;, &#39;p_20&#39;, &#39;p_21&#39;, &#39;p_22&#39;, &#39;p_23&#39;,</span>
+<span class="sd">       &#39;p_24&#39;, &#39;p_25&#39;, &#39;p_26&#39;, &#39;p_27&#39;, &#39;p_28&#39;, &#39;p_29&#39;, &#39;p_30&#39;, &#39;p_31&#39;,</span>
+<span class="sd">       &#39;p_32&#39;, &#39;p_33&#39;, &#39;AU01_r&#39;, &#39;AU02_r&#39;, &#39;AU04_r&#39;, &#39;AU05_r&#39;, &#39;AU06_r&#39;,</span>
+<span class="sd">       &#39;AU07_r&#39;, &#39;AU09_r&#39;, &#39;AU10_r&#39;, &#39;AU12_r&#39;, &#39;AU14_r&#39;, &#39;AU15_r&#39;,</span>
+<span class="sd">       &#39;AU17_r&#39;, &#39;AU20_r&#39;, &#39;AU23_r&#39;, &#39;AU25_r&#39;, &#39;AU26_r&#39;, &#39;AU45_r&#39;,</span>
+<span class="sd">       &#39;AU01_c&#39;, &#39;AU02_c&#39;, &#39;AU04_c&#39;, &#39;AU05_c&#39;, &#39;AU06_c&#39;, &#39;AU07_c&#39;,</span>
+<span class="sd">       &#39;AU09_c&#39;, &#39;AU10_c&#39;, &#39;AU12_c&#39;, &#39;AU14_c&#39;, &#39;AU15_c&#39;, &#39;AU17_c&#39;,</span>
+<span class="sd">       &#39;AU20_c&#39;, &#39;AU23_c&#39;, &#39;AU25_c&#39;, &#39;AU26_c&#39;, &#39;AU28_c&#39;, &#39;AU45_c&#39;]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dataframe of processed facial expressions</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">openfacefile</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+
+    <span class="c1"># Check if features argument is passed and return only those features, else return basic emotion/AU features</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span><span class="nb">list</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">features</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">([</span><span class="n">features</span><span class="p">,</span><span class="s1">&#39;not in openfacefile&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;confidence&#39;</span><span class="p">,</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="s1">&#39;gaze_0_x&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;gaze_0_y&#39;</span><span class="p">,</span> <span class="s1">&#39;gaze_0_z&#39;</span><span class="p">,</span> <span class="s1">&#39;gaze_1_x&#39;</span><span class="p">,</span> <span class="s1">&#39;gaze_1_y&#39;</span><span class="p">,</span> <span class="s1">&#39;gaze_1_z&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;pose_Tx&#39;</span><span class="p">,</span> <span class="s1">&#39;pose_Ty&#39;</span><span class="p">,</span> <span class="s1">&#39;pose_Tz&#39;</span><span class="p">,</span> <span class="s1">&#39;pose_Rx&#39;</span><span class="p">,</span> <span class="s1">&#39;pose_Ry&#39;</span><span class="p">,</span> <span class="s1">&#39;pose_Rz&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_0&#39;</span><span class="p">,</span> <span class="s1">&#39;x_1&#39;</span><span class="p">,</span> <span class="s1">&#39;x_2&#39;</span><span class="p">,</span> <span class="s1">&#39;x_3&#39;</span><span class="p">,</span> <span class="s1">&#39;x_4&#39;</span><span class="p">,</span> <span class="s1">&#39;x_5&#39;</span><span class="p">,</span> <span class="s1">&#39;x_6&#39;</span><span class="p">,</span> <span class="s1">&#39;x_7&#39;</span><span class="p">,</span> <span class="s1">&#39;x_8&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_9&#39;</span><span class="p">,</span> <span class="s1">&#39;x_10&#39;</span><span class="p">,</span> <span class="s1">&#39;x_11&#39;</span><span class="p">,</span> <span class="s1">&#39;x_12&#39;</span><span class="p">,</span> <span class="s1">&#39;x_13&#39;</span><span class="p">,</span> <span class="s1">&#39;x_14&#39;</span><span class="p">,</span> <span class="s1">&#39;x_15&#39;</span><span class="p">,</span> <span class="s1">&#39;x_16&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_17&#39;</span><span class="p">,</span> <span class="s1">&#39;x_18&#39;</span><span class="p">,</span> <span class="s1">&#39;x_19&#39;</span><span class="p">,</span> <span class="s1">&#39;x_20&#39;</span><span class="p">,</span> <span class="s1">&#39;x_21&#39;</span><span class="p">,</span> <span class="s1">&#39;x_22&#39;</span><span class="p">,</span> <span class="s1">&#39;x_23&#39;</span><span class="p">,</span> <span class="s1">&#39;x_24&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_25&#39;</span><span class="p">,</span> <span class="s1">&#39;x_26&#39;</span><span class="p">,</span> <span class="s1">&#39;x_27&#39;</span><span class="p">,</span> <span class="s1">&#39;x_28&#39;</span><span class="p">,</span> <span class="s1">&#39;x_29&#39;</span><span class="p">,</span> <span class="s1">&#39;x_30&#39;</span><span class="p">,</span> <span class="s1">&#39;x_31&#39;</span><span class="p">,</span> <span class="s1">&#39;x_32&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_33&#39;</span><span class="p">,</span> <span class="s1">&#39;x_34&#39;</span><span class="p">,</span> <span class="s1">&#39;x_35&#39;</span><span class="p">,</span> <span class="s1">&#39;x_36&#39;</span><span class="p">,</span> <span class="s1">&#39;x_37&#39;</span><span class="p">,</span> <span class="s1">&#39;x_38&#39;</span><span class="p">,</span> <span class="s1">&#39;x_39&#39;</span><span class="p">,</span> <span class="s1">&#39;x_40&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_41&#39;</span><span class="p">,</span> <span class="s1">&#39;x_42&#39;</span><span class="p">,</span> <span class="s1">&#39;x_43&#39;</span><span class="p">,</span> <span class="s1">&#39;x_44&#39;</span><span class="p">,</span> <span class="s1">&#39;x_45&#39;</span><span class="p">,</span> <span class="s1">&#39;x_46&#39;</span><span class="p">,</span> <span class="s1">&#39;x_47&#39;</span><span class="p">,</span> <span class="s1">&#39;x_48&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_49&#39;</span><span class="p">,</span> <span class="s1">&#39;x_50&#39;</span><span class="p">,</span> <span class="s1">&#39;x_51&#39;</span><span class="p">,</span> <span class="s1">&#39;x_52&#39;</span><span class="p">,</span> <span class="s1">&#39;x_53&#39;</span><span class="p">,</span> <span class="s1">&#39;x_54&#39;</span><span class="p">,</span> <span class="s1">&#39;x_55&#39;</span><span class="p">,</span> <span class="s1">&#39;x_56&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_57&#39;</span><span class="p">,</span> <span class="s1">&#39;x_58&#39;</span><span class="p">,</span> <span class="s1">&#39;x_59&#39;</span><span class="p">,</span> <span class="s1">&#39;x_60&#39;</span><span class="p">,</span> <span class="s1">&#39;x_61&#39;</span><span class="p">,</span> <span class="s1">&#39;x_62&#39;</span><span class="p">,</span> <span class="s1">&#39;x_63&#39;</span><span class="p">,</span> <span class="s1">&#39;x_64&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;x_65&#39;</span><span class="p">,</span> <span class="s1">&#39;x_66&#39;</span><span class="p">,</span> <span class="s1">&#39;x_67&#39;</span><span class="p">,</span> <span class="s1">&#39;y_0&#39;</span><span class="p">,</span> <span class="s1">&#39;y_1&#39;</span><span class="p">,</span> <span class="s1">&#39;y_2&#39;</span><span class="p">,</span> <span class="s1">&#39;y_3&#39;</span><span class="p">,</span> <span class="s1">&#39;y_4&#39;</span><span class="p">,</span> <span class="s1">&#39;y_5&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_6&#39;</span><span class="p">,</span> <span class="s1">&#39;y_7&#39;</span><span class="p">,</span> <span class="s1">&#39;y_8&#39;</span><span class="p">,</span> <span class="s1">&#39;y_9&#39;</span><span class="p">,</span> <span class="s1">&#39;y_10&#39;</span><span class="p">,</span> <span class="s1">&#39;y_11&#39;</span><span class="p">,</span> <span class="s1">&#39;y_12&#39;</span><span class="p">,</span> <span class="s1">&#39;y_13&#39;</span><span class="p">,</span> <span class="s1">&#39;y_14&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_15&#39;</span><span class="p">,</span> <span class="s1">&#39;y_16&#39;</span><span class="p">,</span> <span class="s1">&#39;y_17&#39;</span><span class="p">,</span> <span class="s1">&#39;y_18&#39;</span><span class="p">,</span> <span class="s1">&#39;y_19&#39;</span><span class="p">,</span> <span class="s1">&#39;y_20&#39;</span><span class="p">,</span> <span class="s1">&#39;y_21&#39;</span><span class="p">,</span> <span class="s1">&#39;y_22&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_23&#39;</span><span class="p">,</span> <span class="s1">&#39;y_24&#39;</span><span class="p">,</span> <span class="s1">&#39;y_25&#39;</span><span class="p">,</span> <span class="s1">&#39;y_26&#39;</span><span class="p">,</span> <span class="s1">&#39;y_27&#39;</span><span class="p">,</span> <span class="s1">&#39;y_28&#39;</span><span class="p">,</span> <span class="s1">&#39;y_29&#39;</span><span class="p">,</span> <span class="s1">&#39;y_30&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_31&#39;</span><span class="p">,</span> <span class="s1">&#39;y_32&#39;</span><span class="p">,</span> <span class="s1">&#39;y_33&#39;</span><span class="p">,</span> <span class="s1">&#39;y_34&#39;</span><span class="p">,</span> <span class="s1">&#39;y_35&#39;</span><span class="p">,</span> <span class="s1">&#39;y_36&#39;</span><span class="p">,</span> <span class="s1">&#39;y_37&#39;</span><span class="p">,</span> <span class="s1">&#39;y_38&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_39&#39;</span><span class="p">,</span> <span class="s1">&#39;y_40&#39;</span><span class="p">,</span> <span class="s1">&#39;y_41&#39;</span><span class="p">,</span> <span class="s1">&#39;y_42&#39;</span><span class="p">,</span> <span class="s1">&#39;y_43&#39;</span><span class="p">,</span> <span class="s1">&#39;y_44&#39;</span><span class="p">,</span> <span class="s1">&#39;y_45&#39;</span><span class="p">,</span> <span class="s1">&#39;y_46&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_47&#39;</span><span class="p">,</span> <span class="s1">&#39;y_48&#39;</span><span class="p">,</span> <span class="s1">&#39;y_49&#39;</span><span class="p">,</span> <span class="s1">&#39;y_50&#39;</span><span class="p">,</span> <span class="s1">&#39;y_51&#39;</span><span class="p">,</span> <span class="s1">&#39;y_52&#39;</span><span class="p">,</span> <span class="s1">&#39;y_53&#39;</span><span class="p">,</span> <span class="s1">&#39;y_54&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_55&#39;</span><span class="p">,</span> <span class="s1">&#39;y_56&#39;</span><span class="p">,</span> <span class="s1">&#39;y_57&#39;</span><span class="p">,</span> <span class="s1">&#39;y_58&#39;</span><span class="p">,</span> <span class="s1">&#39;y_59&#39;</span><span class="p">,</span> <span class="s1">&#39;y_60&#39;</span><span class="p">,</span> <span class="s1">&#39;y_61&#39;</span><span class="p">,</span> <span class="s1">&#39;y_62&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;y_63&#39;</span><span class="p">,</span> <span class="s1">&#39;y_64&#39;</span><span class="p">,</span> <span class="s1">&#39;y_65&#39;</span><span class="p">,</span> <span class="s1">&#39;y_66&#39;</span><span class="p">,</span> <span class="s1">&#39;y_67&#39;</span><span class="p">,</span> <span class="s1">&#39;X_0&#39;</span><span class="p">,</span> <span class="s1">&#39;X_1&#39;</span><span class="p">,</span> <span class="s1">&#39;X_2&#39;</span><span class="p">,</span> <span class="s1">&#39;X_3&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_4&#39;</span><span class="p">,</span> <span class="s1">&#39;X_5&#39;</span><span class="p">,</span> <span class="s1">&#39;X_6&#39;</span><span class="p">,</span> <span class="s1">&#39;X_7&#39;</span><span class="p">,</span> <span class="s1">&#39;X_8&#39;</span><span class="p">,</span> <span class="s1">&#39;X_9&#39;</span><span class="p">,</span> <span class="s1">&#39;X_10&#39;</span><span class="p">,</span> <span class="s1">&#39;X_11&#39;</span><span class="p">,</span> <span class="s1">&#39;X_12&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_13&#39;</span><span class="p">,</span> <span class="s1">&#39;X_14&#39;</span><span class="p">,</span> <span class="s1">&#39;X_15&#39;</span><span class="p">,</span> <span class="s1">&#39;X_16&#39;</span><span class="p">,</span> <span class="s1">&#39;X_17&#39;</span><span class="p">,</span> <span class="s1">&#39;X_18&#39;</span><span class="p">,</span> <span class="s1">&#39;X_19&#39;</span><span class="p">,</span> <span class="s1">&#39;X_20&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_21&#39;</span><span class="p">,</span> <span class="s1">&#39;X_22&#39;</span><span class="p">,</span> <span class="s1">&#39;X_23&#39;</span><span class="p">,</span> <span class="s1">&#39;X_24&#39;</span><span class="p">,</span> <span class="s1">&#39;X_25&#39;</span><span class="p">,</span> <span class="s1">&#39;X_26&#39;</span><span class="p">,</span> <span class="s1">&#39;X_27&#39;</span><span class="p">,</span> <span class="s1">&#39;X_28&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_29&#39;</span><span class="p">,</span> <span class="s1">&#39;X_30&#39;</span><span class="p">,</span> <span class="s1">&#39;X_31&#39;</span><span class="p">,</span> <span class="s1">&#39;X_32&#39;</span><span class="p">,</span> <span class="s1">&#39;X_33&#39;</span><span class="p">,</span> <span class="s1">&#39;X_34&#39;</span><span class="p">,</span> <span class="s1">&#39;X_35&#39;</span><span class="p">,</span> <span class="s1">&#39;X_36&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_37&#39;</span><span class="p">,</span> <span class="s1">&#39;X_38&#39;</span><span class="p">,</span> <span class="s1">&#39;X_39&#39;</span><span class="p">,</span> <span class="s1">&#39;X_40&#39;</span><span class="p">,</span> <span class="s1">&#39;X_41&#39;</span><span class="p">,</span> <span class="s1">&#39;X_42&#39;</span><span class="p">,</span> <span class="s1">&#39;X_43&#39;</span><span class="p">,</span> <span class="s1">&#39;X_44&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_45&#39;</span><span class="p">,</span> <span class="s1">&#39;X_46&#39;</span><span class="p">,</span> <span class="s1">&#39;X_47&#39;</span><span class="p">,</span> <span class="s1">&#39;X_48&#39;</span><span class="p">,</span> <span class="s1">&#39;X_49&#39;</span><span class="p">,</span> <span class="s1">&#39;X_50&#39;</span><span class="p">,</span> <span class="s1">&#39;X_51&#39;</span><span class="p">,</span> <span class="s1">&#39;X_52&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_53&#39;</span><span class="p">,</span> <span class="s1">&#39;X_54&#39;</span><span class="p">,</span> <span class="s1">&#39;X_55&#39;</span><span class="p">,</span> <span class="s1">&#39;X_56&#39;</span><span class="p">,</span> <span class="s1">&#39;X_57&#39;</span><span class="p">,</span> <span class="s1">&#39;X_58&#39;</span><span class="p">,</span> <span class="s1">&#39;X_59&#39;</span><span class="p">,</span> <span class="s1">&#39;X_60&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;X_61&#39;</span><span class="p">,</span> <span class="s1">&#39;X_62&#39;</span><span class="p">,</span> <span class="s1">&#39;X_63&#39;</span><span class="p">,</span> <span class="s1">&#39;X_64&#39;</span><span class="p">,</span> <span class="s1">&#39;X_65&#39;</span><span class="p">,</span> <span class="s1">&#39;X_66&#39;</span><span class="p">,</span> <span class="s1">&#39;X_67&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_0&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_3&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_4&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_5&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_6&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_7&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_8&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_9&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_10&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_11&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_12&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_13&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_14&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_15&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_16&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_17&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_18&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_19&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_20&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_21&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_22&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_23&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_24&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_25&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_26&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_27&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_28&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_29&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_30&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_31&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_32&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_33&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_34&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_35&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_36&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_37&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_38&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_39&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_40&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_41&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_42&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_43&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_44&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_45&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_46&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_47&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_48&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_49&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_50&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_51&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_52&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_53&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_54&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_55&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_56&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_57&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_58&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_59&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_60&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_61&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_62&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_63&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_64&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_65&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Y_66&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_67&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_0&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_1&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_2&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_3&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_4&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_5&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_6&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_7&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_8&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_9&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_10&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_11&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_12&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_13&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_14&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_15&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_16&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_17&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_18&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_19&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_20&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_21&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_22&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_23&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_24&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_25&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_26&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_27&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_28&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_29&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_30&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_31&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_32&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_33&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_34&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_35&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_36&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_37&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_38&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_39&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_40&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_41&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_42&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_43&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_44&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_45&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_46&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_47&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_48&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_49&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_50&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_51&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_52&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_53&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_54&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_55&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_56&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_57&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_58&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_59&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_60&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_61&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_62&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_63&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;Z_64&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_65&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_66&#39;</span><span class="p">,</span> <span class="s1">&#39;Z_67&#39;</span><span class="p">,</span> <span class="s1">&#39;p_scale&#39;</span><span class="p">,</span> <span class="s1">&#39;p_rx&#39;</span><span class="p">,</span> <span class="s1">&#39;p_ry&#39;</span><span class="p">,</span> <span class="s1">&#39;p_rz&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;p_tx&#39;</span><span class="p">,</span> <span class="s1">&#39;p_ty&#39;</span><span class="p">,</span> <span class="s1">&#39;p_0&#39;</span><span class="p">,</span> <span class="s1">&#39;p_1&#39;</span><span class="p">,</span> <span class="s1">&#39;p_2&#39;</span><span class="p">,</span> <span class="s1">&#39;p_3&#39;</span><span class="p">,</span> <span class="s1">&#39;p_4&#39;</span><span class="p">,</span> <span class="s1">&#39;p_5&#39;</span><span class="p">,</span> <span class="s1">&#39;p_6&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;p_7&#39;</span><span class="p">,</span> <span class="s1">&#39;p_8&#39;</span><span class="p">,</span> <span class="s1">&#39;p_9&#39;</span><span class="p">,</span> <span class="s1">&#39;p_10&#39;</span><span class="p">,</span> <span class="s1">&#39;p_11&#39;</span><span class="p">,</span> <span class="s1">&#39;p_12&#39;</span><span class="p">,</span> <span class="s1">&#39;p_13&#39;</span><span class="p">,</span> <span class="s1">&#39;p_14&#39;</span><span class="p">,</span> <span class="s1">&#39;p_15&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;p_16&#39;</span><span class="p">,</span> <span class="s1">&#39;p_17&#39;</span><span class="p">,</span> <span class="s1">&#39;p_18&#39;</span><span class="p">,</span> <span class="s1">&#39;p_19&#39;</span><span class="p">,</span> <span class="s1">&#39;p_20&#39;</span><span class="p">,</span> <span class="s1">&#39;p_21&#39;</span><span class="p">,</span> <span class="s1">&#39;p_22&#39;</span><span class="p">,</span> <span class="s1">&#39;p_23&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;p_24&#39;</span><span class="p">,</span> <span class="s1">&#39;p_25&#39;</span><span class="p">,</span> <span class="s1">&#39;p_26&#39;</span><span class="p">,</span> <span class="s1">&#39;p_27&#39;</span><span class="p">,</span> <span class="s1">&#39;p_28&#39;</span><span class="p">,</span> <span class="s1">&#39;p_29&#39;</span><span class="p">,</span> <span class="s1">&#39;p_30&#39;</span><span class="p">,</span> <span class="s1">&#39;p_31&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;p_32&#39;</span><span class="p">,</span> <span class="s1">&#39;p_33&#39;</span><span class="p">,</span> <span class="s1">&#39;AU01_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU02_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU04_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU05_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU06_r&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;AU07_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU09_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU10_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU12_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU14_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU15_r&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;AU17_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU20_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU23_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU25_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU26_r&#39;</span><span class="p">,</span> <span class="s1">&#39;AU45_r&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;AU01_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU02_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU04_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU05_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU06_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU07_c&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;AU09_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU10_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU12_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU14_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU15_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU17_c&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;AU20_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU23_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU25_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU26_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU28_c&#39;</span><span class="p">,</span> <span class="s1">&#39;AU45_c&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">features</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="read_affectiva"><a class="viewcode-back" href="../../feat.html#feat.utils.read_affectiva">[docs]</a><span class="k">def</span> <span class="nf">read_affectiva</span><span class="p">(</span><span class="n">affectivafile</span><span class="p">,</span><span class="n">orig_cols</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function reads in affectiva file processed through</span>
+<span class="sd">    the https://github.com/cosanlab/affectiva-api-app.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        affectivafile: file to read</span>
+<span class="sd">        orig_cols: If True, convert original colnames to FACS names</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">affectivafile</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rep_dict</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;anger&#39;</span><span class="p">:</span><span class="s1">&#39;Anger&#39;</span><span class="p">,</span><span class="s1">&#39;attention&#39;</span><span class="p">:</span><span class="s1">&#39;Attention&#39;</span><span class="p">,</span><span class="s1">&#39;contempt&#39;</span><span class="p">:</span><span class="s1">&#39;Contempt&#39;</span><span class="p">,</span><span class="s1">&#39;disgust&#39;</span><span class="p">:</span><span class="s1">&#39;Disgust&#39;</span><span class="p">,</span><span class="s1">&#39;engagement&#39;</span><span class="p">:</span><span class="s1">&#39;Engagement&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fear&#39;</span><span class="p">:</span><span class="s1">&#39;Fear&#39;</span><span class="p">,</span><span class="s1">&#39;joy&#39;</span><span class="p">:</span><span class="s1">&#39;Joy&#39;</span><span class="p">,</span><span class="s1">&#39;sadness&#39;</span><span class="p">:</span><span class="s1">&#39;Sadness&#39;</span><span class="p">,</span><span class="s1">&#39;smirk&#39;</span><span class="p">:</span><span class="s1">&#39;Smirk&#39;</span><span class="p">,</span><span class="s1">&#39;surprise&#39;</span><span class="p">:</span><span class="s1">&#39;Surprise&#39;</span><span class="p">,</span><span class="s1">&#39;valence&#39;</span><span class="p">:</span><span class="s1">&#39;Valence&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;browFurrow&#39;</span><span class="p">:</span> <span class="s2">&quot;AU04&quot;</span><span class="p">,</span> <span class="s2">&quot;smile&quot;</span><span class="p">:</span><span class="s1">&#39;AU12&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;browRaise&#39;</span><span class="p">:</span><span class="s1">&#39;AU02&#39;</span><span class="p">,</span> <span class="s1">&#39;cheekRaise&#39;</span><span class="p">:</span><span class="s1">&#39;AU06&#39;</span><span class="p">,</span> <span class="s1">&#39;chinRaise&#39;</span><span class="p">:</span><span class="s1">&#39;AU17&#39;</span><span class="p">,</span> <span class="s1">&#39;dimpler&#39;</span><span class="p">:</span><span class="s1">&#39;AU14&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;eyeClosure&#39;</span><span class="p">:</span><span class="s1">&#39;AU43&#39;</span><span class="p">,</span> <span class="s1">&#39;eyeWiden&#39;</span><span class="p">:</span><span class="s1">&#39;AU05&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;innerBrowRaise&#39;</span><span class="p">:</span><span class="s1">&#39;AU01&#39;</span><span class="p">,</span> <span class="s1">&#39;jawDrop&#39;</span><span class="p">:</span> <span class="s1">&#39;AU26&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;lidTighten&#39;</span><span class="p">:</span><span class="s1">&#39;AU07&#39;</span><span class="p">,</span> <span class="s1">&#39;lipCornerDepressor&#39;</span><span class="p">:</span><span class="s1">&#39;AU15&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;lipPress&#39;</span><span class="p">:</span><span class="s1">&#39;AU24&#39;</span><span class="p">,</span> <span class="s1">&#39;lipPucker&#39;</span><span class="p">:</span><span class="s1">&#39;AU18&#39;</span><span class="p">,</span> <span class="s1">&#39;lipStretch&#39;</span><span class="p">:</span><span class="s1">&#39;AU20&#39;</span><span class="p">,</span> <span class="s1">&#39;lipSuck&#39;</span><span class="p">:</span><span class="s1">&#39;AU28&#39;</span><span class="p">,</span> <span class="s1">&#39;mouthOpen&#39;</span><span class="p">:</span><span class="s1">&#39;AU25&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;noseWrinkle&#39;</span><span class="p">:</span><span class="s1">&#39;AU9&#39;</span><span class="p">,</span> <span class="s1">&#39;upperLipRaise&#39;</span><span class="p">:</span><span class="s1">&#39;AU10&#39;</span><span class="p">}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">orig_cols</span><span class="p">:</span>
+        <span class="n">new_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rep_dict</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">new_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">new_cols</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<span class="k">def</span> <span class="nf">wavelet</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">num_cyc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sampling_freq</span><span class="o">=</span><span class="mf">30.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a complex Morlet wavelet by windowing a cosine function by a</span>
+<span class="sd">        Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            freq: (float) desired frequence of wavelet</span>
+<span class="sd">            num_cyc: (float) number of wavelet cycles/gaussian taper. Note that</span>
+<span class="sd">                     smaller cycles give greater temporal precision and that larger</span>
+<span class="sd">                     values give greater frequency precision; (default: 3)</span>
+<span class="sd">            sampling_freq: (float) sampling frequency of original signal.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            wav: (ndarray) complex wavelet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dur</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">freq</span><span class="p">)</span><span class="o">*</span><span class="n">num_cyc</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">dur</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">sampling_freq</span><span class="p">)</span>
+
+    <span class="c1">#Cosine component</span>
+    <span class="n">sin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">freq</span> <span class="o">*</span> <span class="n">time</span><span class="p">)</span>
+
+    <span class="c1">#Gaussian component</span>
+    <span class="n">sd</span> <span class="o">=</span> <span class="n">num_cyc</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq</span><span class="p">)</span> <span class="c1">#standard deviation</span>
+    <span class="n">gaus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">time</span><span class="o">**</span><span class="mf">2.</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">sd</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">sin</span> <span class="o">*</span> <span class="n">gaus</span>
+
+<span class="k">def</span> <span class="nf">calc_hist_auc</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">hist_range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function follows the bag of temporal feature analysis as described in</span>
+<span class="sd">    Bartlett, M. S., Littlewort, G. C., Frank, M. G., &amp; Lee, K. (2014).</span>
+<span class="sd">    Automatic decoding of facial movements reveals deceptive pain expressions.</span>
+<span class="sd">    Current Biology, 24(7), 738-743.</span>
+<span class="sd">    The function receives convolved data, squares the values,</span>
+<span class="sd">    finds 0 crossings to calculate the AUC(area under the curve)</span>
+<span class="sd">    and generates a 6 exponentially-spaced-bin histogram for each data.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">    Returns:</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#Square values</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">elem</span><span class="o">**</span><span class="mi">2</span> <span class="k">if</span> <span class="n">elem</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">elem</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span>
+    <span class="c1">#Get 0 crossings</span>
+    <span class="n">crossings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">vals</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">pos</span><span class="p">,</span><span class="n">neg</span> <span class="o">=</span> <span class="p">[],[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">crossings</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cross</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[:</span><span class="n">crossings</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">crossings</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">cross</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="n">crossings</span><span class="p">[</span><span class="n">i</span><span class="p">]:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cross</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="n">crossings</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span><span class="n">crossings</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">cross</span><span class="p">:</span>
+            <span class="n">auc</span> <span class="o">=</span> <span class="n">simps</span><span class="p">(</span><span class="n">cross</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">auc</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">auc</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">neg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">auc</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">hist_range</span><span class="p">:</span>
+        <span class="n">hist_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">)</span> <span class="c1"># bartlett 10**0~ 10**5</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span><span class="n">hist_range</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">neg</span><span class="p">,</span><span class="n">hist_range</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]))</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="softmax"><a class="viewcode-back" href="../../feat.html#feat.utils.softmax">[docs]</a><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Softmax function to change log likelihood evidence values to probabilities.</span>
+<span class="sd">    Use with Evidence values from FACET.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: value to softmax</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">10.</span><span class="o">**-</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
+
+<span class="c1">### Functions for face registration ###</span>
+<span class="n">neutral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">37.514994071403564</span><span class="p">,</span> <span class="mf">118.99554304280198</span><span class="p">],</span> <span class="p">[</span><span class="mf">38.347467261268164</span><span class="p">,</span> <span class="mf">135.93119298564565</span><span class="p">],</span> <span class="p">[</span><span class="mf">40.77550102890035</span><span class="p">,</span> <span class="mf">152.83280452855092</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">44.109285817364565</span><span class="p">,</span> <span class="mf">169.1279402172728</span><span class="p">],</span> <span class="p">[</span><span class="mf">49.982831719005134</span><span class="p">,</span> <span class="mf">184.53328583541997</span><span class="p">],</span> <span class="p">[</span><span class="mf">59.18894827224358</span><span class="p">,</span> <span class="mf">198.01613609507382</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">70.41509055106278</span><span class="p">,</span> <span class="mf">209.2829929016551</span><span class="p">],</span> <span class="p">[</span><span class="mf">83.65962787515429</span><span class="p">,</span> <span class="mf">217.8257797774197</span><span class="p">],</span> <span class="p">[</span><span class="mf">98.6747861407431</span><span class="p">,</span> <span class="mf">220.00636721799012</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">113.36502269321642</span><span class="p">,</span> <span class="mf">217.35622273914575</span><span class="p">],</span> <span class="p">[</span><span class="mf">126.09720342342395</span><span class="p">,</span> <span class="mf">208.61554139570768</span><span class="p">],</span> <span class="p">[</span><span class="mf">137.37278216681938</span><span class="p">,</span> <span class="mf">197.26636201144768</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">146.15109522110836</span><span class="p">,</span> <span class="mf">183.95054534968338</span><span class="p">],</span> <span class="p">[</span><span class="mf">151.7203254679301</span><span class="p">,</span> <span class="mf">168.70328047716666</span><span class="p">],</span> <span class="p">[</span><span class="mf">154.90171533762026</span><span class="p">,</span> <span class="mf">152.54959546525106</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">157.01705755745184</span><span class="p">,</span> <span class="mf">136.0791940145902</span><span class="p">],</span> <span class="p">[</span><span class="mf">157.81240022435486</span><span class="p">,</span> <span class="mf">119.28714731581948</span><span class="p">],</span> <span class="p">[</span><span class="mf">45.87342275811805</span><span class="p">,</span> <span class="mf">109.05187535227455</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">53.83702202368147</span><span class="p">,</span> <span class="mf">101.43275042887998</span><span class="p">],</span> <span class="p">[</span><span class="mf">65.61231530318975</span><span class="p">,</span> <span class="mf">99.44649503101734</span><span class="p">],</span> <span class="p">[</span><span class="mf">77.49003981781006</span><span class="p">,</span> <span class="mf">101.34627038289048</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">88.31833069100318</span><span class="p">,</span> <span class="mf">105.66229287035226</span><span class="p">],</span> <span class="p">[</span><span class="mf">108.80512997829634</span><span class="p">,</span> <span class="mf">105.18583248508406</span><span class="p">],</span> <span class="p">[</span><span class="mf">120.180518838434</span><span class="p">,</span> <span class="mf">100.84850879934683</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">131.6712265255873</span><span class="p">,</span> <span class="mf">99.22426247038426</span><span class="p">],</span> <span class="p">[</span><span class="mf">142.8040873694427</span><span class="p">,</span> <span class="mf">101.39810664193074</span><span class="p">],</span> <span class="p">[</span><span class="mf">150.0927107560624</span><span class="p">,</span> <span class="mf">108.74640334130906</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">98.93955016899183</span><span class="p">,</span> <span class="mf">117.16643104438056</span><span class="p">],</span> <span class="p">[</span><span class="mf">99.01139789533919</span><span class="p">,</span> <span class="mf">128.44882090731443</span><span class="p">],</span> <span class="p">[</span><span class="mf">99.09059391932496</span><span class="p">,</span> <span class="mf">139.71335180079416</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">99.22411612922204</span><span class="p">,</span> <span class="mf">151.32196734885628</span><span class="p">],</span> <span class="p">[</span><span class="mf">85.97238779261347</span><span class="p">,</span> <span class="mf">158.19140086045783</span><span class="p">],</span> <span class="p">[</span><span class="mf">92.2064468619444</span><span class="p">,</span> <span class="mf">160.61659751751895</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">98.67862473703293</span><span class="p">,</span> <span class="mf">162.56437315387998</span><span class="p">],</span> <span class="p">[</span><span class="mf">105.26853264390792</span><span class="p">,</span> <span class="mf">160.62509055875418</span><span class="p">],</span> <span class="p">[</span><span class="mf">111.14227856687825</span><span class="p">,</span> <span class="mf">158.32687793454852</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">59.22833204018989</span><span class="p">,</span> <span class="mf">118.63189570941351</span><span class="p">],</span> <span class="p">[</span><span class="mf">66.08746862218415</span><span class="p">,</span> <span class="mf">114.39263501569359</span><span class="p">],</span> <span class="p">[</span><span class="mf">74.66886627073309</span><span class="p">,</span> <span class="mf">114.59919005618073</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">81.80683310969295</span><span class="p">,</span> <span class="mf">120.00819188630955</span><span class="p">],</span> <span class="p">[</span><span class="mf">74.34426159695313</span><span class="p">,</span> <span class="mf">121.7055175900537</span><span class="p">],</span> <span class="p">[</span><span class="mf">65.7237769427475</span><span class="p">,</span> <span class="mf">121.82223252349223</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">114.7522889881524</span><span class="p">,</span> <span class="mf">119.90654628204749</span><span class="p">],</span> <span class="p">[</span><span class="mf">122.29832379941683</span><span class="p">,</span> <span class="mf">114.26349216485505</span><span class="p">],</span> <span class="p">[</span><span class="mf">130.61954432603773</span><span class="p">,</span> <span class="mf">114.38399042631573</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">137.03708638863128</span><span class="p">,</span> <span class="mf">118.48489574810866</span><span class="p">],</span> <span class="p">[</span><span class="mf">131.21518765419418</span><span class="p">,</span> <span class="mf">121.51217888800802</span><span class="p">],</span> <span class="p">[</span><span class="mf">122.97461037812238</span><span class="p">,</span> <span class="mf">121.56526096419978</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">75.39827955150834</span><span class="p">,</span> <span class="mf">179.4070640864827</span><span class="p">],</span> <span class="p">[</span><span class="mf">84.55991401346533</span><span class="p">,</span> <span class="mf">176.2145796986134</span><span class="p">],</span> <span class="p">[</span><span class="mf">92.90235587470646</span><span class="p">,</span> <span class="mf">174.4243211955652</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">98.56534031739243</span><span class="p">,</span> <span class="mf">176.0653659731581</span><span class="p">],</span> <span class="p">[</span><span class="mf">104.97777372929698</span><span class="p">,</span> <span class="mf">174.45766843787231</span><span class="p">],</span> <span class="p">[</span><span class="mf">113.1125749468363</span><span class="p">,</span> <span class="mf">176.39970964033202</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">121.19973608809934</span><span class="p">,</span> <span class="mf">179.19790184992027</span><span class="p">],</span> <span class="p">[</span><span class="mf">113.16310623913299</span><span class="p">,</span> <span class="mf">185.69051008752652</span><span class="p">],</span> <span class="p">[</span><span class="mf">105.26365304952049</span><span class="p">,</span> <span class="mf">188.31443911070232</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">98.41771871303214</span><span class="p">,</span> <span class="mf">188.9656394139811</span><span class="p">],</span> <span class="p">[</span><span class="mf">92.2240282658315</span><span class="p">,</span> <span class="mf">188.38538897373022</span><span class="p">],</span> <span class="p">[</span><span class="mf">84.05109731022314</span><span class="p">,</span> <span class="mf">185.74954657843966</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">79.18422925303048</span><span class="p">,</span> <span class="mf">179.8065722186372</span><span class="p">],</span> <span class="p">[</span><span class="mf">92.7172317110304</span><span class="p">,</span> <span class="mf">179.5201781895618</span><span class="p">],</span> <span class="p">[</span><span class="mf">98.52973444977067</span><span class="p">,</span> <span class="mf">180.1630365496041</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">105.05932172975814</span><span class="p">,</span> <span class="mf">179.42368920844928</span><span class="p">],</span> <span class="p">[</span><span class="mf">117.43706438358437</span><span class="p">,</span> <span class="mf">179.7109259873213</span><span class="p">],</span> <span class="p">[</span><span class="mf">104.90869094557993</span><span class="p">,</span> <span class="mf">180.32984591574524</span><span class="p">],</span>
+           <span class="p">[</span><span class="mf">98.35933953480642</span><span class="p">,</span> <span class="mf">181.15981769637827</span><span class="p">],</span> <span class="p">[</span><span class="mf">92.49485174856926</span><span class="p">,</span> <span class="mf">180.48994809345996</span><span class="p">]])</span>
+
+<div class="viewcode-block" id="registration"><a class="viewcode-back" href="../../feat.html#feat.utils.registration">[docs]</a><span class="k">def</span> <span class="nf">registration</span><span class="p">(</span><span class="n">face_lms</span><span class="p">,</span> <span class="n">neutral</span><span class="o">=</span> <span class="n">neutral</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;fullface&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Affine registration of face landmarks to neutral face.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        face_lms(array): face landmarks to register with shape (n,136).</span>
+<span class="sd">                         Columns 0~67 are x coordinates and 68~136 are y coordinates</span>
+<span class="sd">        neutral(array): target neutral face array that face_lm will be registered</span>
+<span class="sd">        method(str or list): If string, register to all landmarks (&#39;fullface&#39;, default),</span>
+<span class="sd">                    or inner parts of face nose,mouth,eyes, and brows (&#39;inner&#39;).</span>
+<span class="sd">                    If list, pass landmarks to register to e.g. [27, 28, 29, 30, 36, 39, 42, 45]</span>
+<span class="sd">    Return:</span>
+<span class="sd">        registered_lms: registered landmarks in shape (n,136)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">face_lms</span><span class="p">)</span><span class="o">==</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;face_lms must be type np.ndarray&#39;</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">face_lms</span><span class="o">.</span><span class="n">ndim</span><span class="o">==</span><span class="mi">2</span><span class="p">),</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;face_lms must be shape (n, 136)&#39;</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">face_lms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="mi">136</span><span class="p">),</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Must have 136 landmarks&#39;</span><span class="p">)</span>
+    <span class="n">registered_lms</span> <span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">face_lms</span><span class="p">:</span>
+        <span class="n">face</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[:</span><span class="mi">68</span><span class="p">],</span><span class="n">row</span><span class="p">[</span><span class="mi">68</span><span class="p">:]]</span>
+        <span class="n">face</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">face</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="c1">#   Rotate face</span>
+        <span class="n">primary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">face</span><span class="p">)</span>
+        <span class="n">secondary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">neutral</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">primary</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pad</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))])</span>
+        <span class="n">unpad</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">X1</span><span class="p">,</span> <span class="n">Y1</span> <span class="o">=</span> <span class="n">pad</span><span class="p">(</span><span class="n">primary</span><span class="p">),</span> <span class="n">pad</span><span class="p">(</span><span class="n">secondary</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">==</span><span class="nb">str</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;fullface&#39;</span><span class="p">:</span>
+                <span class="n">A</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">Y1</span><span class="p">,</span><span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;inner&#39;</span><span class="p">:</span>
+                <span class="n">A</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X1</span><span class="p">[</span><span class="mi">17</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">Y1</span><span class="p">[</span><span class="mi">17</span><span class="p">:,</span> <span class="p">:],</span><span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;method is either &#39;fullface&#39; or &#39;inner&#39;&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">==</span><span class="nb">list</span><span class="p">:</span>
+            <span class="n">A</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X1</span><span class="p">[</span><span class="n">method</span><span class="p">],</span> <span class="n">Y1</span><span class="p">[</span><span class="n">method</span><span class="p">],</span><span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;method is string (&#39;fullface&#39;,&#39;inner&#39;) or list of landmarks&quot;</span><span class="p">)</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">unpad</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">A</span><span class="p">))</span>
+        <span class="n">registered_lms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">primary</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">136</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">registered_lms</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Nathaniel Hanes, Luke Chang 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
