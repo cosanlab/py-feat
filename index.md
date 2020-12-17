@@ -1,37 +1,22 @@
-## Welcome to GitHub Pages
+# FEAT  
+[![Build Status](https://api.travis-ci.org/cosanlab/feat.svg?branch=master)](https://travis-ci.org/cosanlab/feat/)
+[![Coverage Status](https://coveralls.io/repos/github/cosanlab/feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/feat?branch=master)
 
-You can use the [editor on GitHub](https://github.com/cosanlab/feat/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Facial Expression Analysis Toolbox
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Google DOCS for development
+https://docs.google.com/document/d/1cqbDp5dkMtnWWdFtAowLGf_l1zhnGmvb8JcOxNsn8dc/edit?usp=sharing
 
-### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Installation
+`pip install git+https://github.com/cosanlab/feat`
 
-```markdown
-Syntax highlighted code block
 
-# Header 1
-## Header 2
-### Header 3
+## [Documentation](https://feat.readthedocs.io/en/latest/index.html)
+[Short examples](https://paper.dropbox.com/doc/feat_tutorial-JT4sSvNEFA77Hgeo5kVg2) for how to use the toolbox are currently on dropbox papers.  This will eventually be moved to readthedocs.
 
-- Bulleted
-- List
+---------
+#### Credit
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/cosanlab/feat/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) with the following [template](https://github.com/ejolly/cookiecutter-pypackage).
+http://eshinjolly.com/pybest/
