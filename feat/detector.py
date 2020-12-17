@@ -185,7 +185,6 @@ class Detector(object):
             # Consume the queue.
             while len(pending_task) > 0 and pending_task[0].ready():
                 df = pending_task.popleft().get()
-                print(df)
                 # Save to output file.
                 if outputFname:
                     df.to_csv(outputFname, index=True, header=False, mode='a')
