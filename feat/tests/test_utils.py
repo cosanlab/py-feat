@@ -9,7 +9,7 @@ from pandas import DataFrame, Series
 import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
-from feat.utils import read_facet, read_openface, read_affectiva, registration, neutral, softmax
+from feat.utils import read_facet, read_openface, read_affectiva, registration, neutral, softmax, load_h5, load_pickled_model
 from nltools.data import Adjacency
 import unittest
 
@@ -33,3 +33,11 @@ def test_utils():
 
     # Test softmax
     assert(softmax(0) == .5)
+    # Test badfile. 
+    with pytest.raises(Exception):
+        load_h5("badfile.h5")
+
+    # Test loading of pickled model 
+    out = load_pickled_model()
+    with pytest.raises(Exception):
+        load_pickled_model("badfile.pkl")
