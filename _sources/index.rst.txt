@@ -10,6 +10,9 @@ Installation
 
     pip install git+https://github.com/cosanlab/feat
 
+.. automodule:: feat.main
+    :members:
+
 .. toctree::
    :maxdepth: 2
    :hidden:
