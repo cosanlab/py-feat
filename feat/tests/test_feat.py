@@ -7,7 +7,7 @@ import pytest
 import pandas as pd
 from pandas import DataFrame, Series
 import numpy as np
-from os.path import join, exists
+import os
 from .utils import get_test_data_path
 from feat.data import Fex, Facet, Openface, Fextractor
 from feat.utils import read_facet, read_openface, read_affectiva
@@ -17,11 +17,11 @@ import unittest
 def test_fex():
     # For iMotions-FACET data files
     # test reading iMotions file < version 6
-    filename = join(get_test_data_path(), 'iMotions_Test_v5.txt')
+    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v5.txt')
     dat = Fex(read_facet(filename), sampling_freq=30)
 
     # test reading iMotions file > version 6
-    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
+    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
@@ -157,7 +157,7 @@ def test_fex():
 
 def test_facet_subclass():
     # Test facet subclass
-    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
+    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     facet = Facet(filename=filename,sampling_freq=30)
     facet.read_file()
     assert len(facet)==519
@@ -170,7 +170,7 @@ def test_facet_subclass():
     assert isinstance(facet,Facet)
 
 def test_fextractor():
-    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
+    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
@@ -187,7 +187,6 @@ def test_fextractor():
     extractor.max(fex_object=dat)
     extractor.min(fex_object=dat)
     # boft needs a groupby function.
-    # extractor.boft(fex_object=dat, min_freq=.01, max_freq=.20, bank=1)
     extractor.multi_wavelet(fex_object=dat)
     extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc)
     # Test ValueError
@@ -237,23 +236,26 @@ def test_fextractor():
     assert out.sampling_freq == dat2.sampling_freq
 
     # Test Bag Of Temporal Features Extraction
-    filename = join(get_test_data_path(), 'iMotions_Test_v6.txt')
+    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     facet = Facet(filename=filename,sampling_freq=30)
     facet.read_file()
     facet_filled = facet.fillna(0)
+    facet_filled = facet_filled[['Joy', 'Anger',
+       'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness', 'Confusion',
+       'Frustration', 'Neutral', 'Positive', 'Negative']]
     # assert isinstance(facet_filled,Facet)
-    # extractor = Fextractor()
-    # extractor.boft(facet_filled)
-    # assert isinstance(extractor.extracted_features[0], DataFrame)
-    # filters, histograms = 8, 12
-    # assert extractor.extracted_features[0].shape[1]==facet.columns.shape[0] * filters * histograms
+    extractor = Fextractor()
+    extractor.boft(facet_filled)
+    assert isinstance(extractor.extracted_features[0], DataFrame)
+    filters, histograms = 8, 12
+    assert extractor.extracted_features[0].shape[1]==facet_filled.columns.shape[0] * filters * histograms
 
 
 
 ### Test Openface importer and subclass ###
 def test_openface():
     # For OpenFace data file
-    filename = join(get_test_data_path(), 'OpenFace_Test.csv')
+    filename = os.path.join(get_test_data_path(), 'OpenFace_Test.csv')
     openface = Fex(read_openface(filename), sampling_freq=30)
 
     # Test KeyError
@@ -278,6 +280,6 @@ def test_openface():
     assert isinstance(openface,Openface)
 
 def test_affectiva():
-    filename = join(get_test_data_path(), 'sample_affectiva-api-app_output.json')
+    filename = os.path.join(get_test_data_path(), 'sample_affectiva-api-app_output.json')
     affdex = Fex(read_affectiva(filename), sampling_freq=1)
     assert affdex.shape[1]==32
