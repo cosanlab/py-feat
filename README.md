@@ -23,7 +23,16 @@ Verify models have been downloaded
 ### 1. Feature extraction
 Extract emotion predictions from a face video.
 ```python
-python extract_fex.py -i input.mp4 -o output.csv
+python detect_fex.py -i input.mp4 -o output.csv
+```
+
+or detect in notebok.
+```python
+from feat.detector import Detector
+detector = Detector(models=['emotion']) #initialize detector class
+detector.process("input.png")
+
+detector.process("input.mp4")
 ```
 
 ### 2. Preprocessing FEX data
@@ -48,6 +57,16 @@ Visualize FEX.
 ```python
 # Code goes here
 ```
+
+## Methods (to use when writing up paper)
+
+Emotion prediction model
+A deep convolutional neural network was trained on the Facial Expression Recognition database by Carrier et al 2013. 
+- [kaggle notebook](https://www.kaggle.com/jcheong0428/facial-emotion-recognition) adapated from [Gaurav Sharma](https://medium.com/analytics-vidhya/facial-emotion-recognition-fer-using-keras-763df7946a64)
+
+AU prediction model 
+Joint Facial Action Unit Detection and Face Alignment via Adaptive Attention[Shao, Liu, Cai, and Ma, 2020](https://arxiv.org/pdf/2003.08834.pdf)
+
 
 ## Google DOCS for development
 https://docs.google.com/document/d/1cqbDp5dkMtnWWdFtAowLGf_l1zhnGmvb8JcOxNsn8dc/edit?usp=sharing
