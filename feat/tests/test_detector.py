@@ -44,6 +44,7 @@ def test_detector():
     assert detector['n_jobs']==1
     assert type(detector)==Detector
 
+    # Test detect image
     inputFname = os.path.join(get_test_data_path(), "input.jpg")
     out = detector.detect_image(inputFname = inputFname)
     assert type(out) == pd.DataFrame
@@ -56,3 +57,15 @@ def test_detector():
     assert os.path.exists(outputFname)
     out = pd.read_csv(outputFname)
     assert out.happiness.values[0] > 0 
+
+    # Test detect video
+    inputFname = os.path.join(get_test_data_path(), "input.mp4")
+    out = detector.detect_video(inputFname=inputFname)
+    assert len(out)==72
+
+    outputFname = os.path.join(get_test_data_path(), "output.csv")
+    out = detector.detect_video(inputFname=inputFname, outputFname=outputFname)
+    assert out
+    assert os.path.exists(outputFname)
+    out = pd.read_csv(outputFname)
+    assert out.happiness.values.max() > 0
