@@ -915,7 +915,7 @@ class Fextractor:
             ignore_sessions: (bool) ignore sessions or extract separately
                              by sessions if available.
         Returns:
-            fex: (Fex) maximum values for each feature
+            Fex: (Fex) maximum values for each feature
         """
 
         if not isinstance(fex_object, (Fex, DataFrame)):
@@ -1019,8 +1019,7 @@ class Fextractor:
     def merge(self, out_format='long'):
         """ Merge all extracted features to a single dataframe
         Args:
-            format: (str) Output format of merged data. Can be set to 'long' or
-                    'wide'. Defaults to long.
+            format: (str) Output format of merged data. Can be set to 'long' or 'wide'. Defaults to long.
         Returns:
             merged: (DataFrame) DataFrame containing merged features extracted
                     from a Fex instance.
