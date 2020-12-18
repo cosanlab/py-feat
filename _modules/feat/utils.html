@@ -189,7 +189,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">rectangle</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rectangle</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rectangle</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">rectangle</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rectangle</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">rectangle</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
     
-<div class="viewcode-block" id="get_resource_path"><a class="viewcode-back" href="../../index.html#feat.utils.get_resource_path">[docs]</a><span class="k">def</span> <span class="nf">get_resource_path</span><span class="p">():</span>
+<div class="viewcode-block" id="get_resource_path"><a class="viewcode-back" href="../../feat.html#feat.utils.get_resource_path">[docs]</a><span class="k">def</span> <span class="nf">get_resource_path</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; Get path to feat resource directory. &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feat</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;resources&#39;</span><span class="p">)</span> <span class="c1"># points to the package folder.</span></div>
     <span class="c1"># return os.path.join(os.path.dirname(__file__), &#39;resources&#39;)</span>
@@ -225,7 +225,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Unable to load data &#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span></div>
 
-<div class="viewcode-block" id="read_facet"><a class="viewcode-back" href="../../index.html#feat.utils.read_facet">[docs]</a><span class="k">def</span> <span class="nf">read_facet</span><span class="p">(</span><span class="n">facetfile</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="read_facet"><a class="viewcode-back" href="../../feat.html#feat.utils.read_facet">[docs]</a><span class="k">def</span> <span class="nf">read_facet</span><span class="p">(</span><span class="n">facetfile</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function reads in an iMotions-FACET exported facial expression file.</span>
 <span class="sd">    By default</span>
@@ -277,7 +277,7 @@
             <span class="n">d</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">fex_columns</span>
     <span class="k">return</span> <span class="n">d</span></div>
 
-<div class="viewcode-block" id="read_openface"><a class="viewcode-back" href="../../index.html#feat.utils.read_openface">[docs]</a><span class="k">def</span> <span class="nf">read_openface</span><span class="p">(</span><span class="n">openfacefile</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="read_openface"><a class="viewcode-back" href="../../feat.html#feat.utils.read_openface">[docs]</a><span class="k">def</span> <span class="nf">read_openface</span><span class="p">(</span><span class="n">openfacefile</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function reads in an OpenFace exported facial expression file.</span>
 <span class="sd">    Args:</span>
@@ -414,7 +414,7 @@
             <span class="k">pass</span>
     <span class="k">return</span> <span class="n">d</span></div>
 
-<div class="viewcode-block" id="read_affectiva"><a class="viewcode-back" href="../../index.html#feat.utils.read_affectiva">[docs]</a><span class="k">def</span> <span class="nf">read_affectiva</span><span class="p">(</span><span class="n">affectivafile</span><span class="p">,</span><span class="n">orig_cols</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="read_affectiva"><a class="viewcode-back" href="../../feat.html#feat.utils.read_affectiva">[docs]</a><span class="k">def</span> <span class="nf">read_affectiva</span><span class="p">(</span><span class="n">affectivafile</span><span class="p">,</span><span class="n">orig_cols</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function reads in affectiva file processed through</span>
 <span class="sd">    the https://github.com/cosanlab/affectiva-api-app.</span>
@@ -509,7 +509,7 @@
     <span class="n">out</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span><span class="n">hist_range</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">neg</span><span class="p">,</span><span class="n">hist_range</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]))</span>
     <span class="k">return</span> <span class="n">out</span>
 
-<div class="viewcode-block" id="softmax"><a class="viewcode-back" href="../../index.html#feat.utils.softmax">[docs]</a><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="softmax"><a class="viewcode-back" href="../../feat.html#feat.utils.softmax">[docs]</a><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Softmax function to change log likelihood evidence values to probabilities.</span>
 <span class="sd">    Use with Evidence values from FACET.</span>
@@ -544,7 +544,7 @@
            <span class="p">[</span><span class="mf">105.05932172975814</span><span class="p">,</span> <span class="mf">179.42368920844928</span><span class="p">],</span> <span class="p">[</span><span class="mf">117.43706438358437</span><span class="p">,</span> <span class="mf">179.7109259873213</span><span class="p">],</span> <span class="p">[</span><span class="mf">104.90869094557993</span><span class="p">,</span> <span class="mf">180.32984591574524</span><span class="p">],</span>
            <span class="p">[</span><span class="mf">98.35933953480642</span><span class="p">,</span> <span class="mf">181.15981769637827</span><span class="p">],</span> <span class="p">[</span><span class="mf">92.49485174856926</span><span class="p">,</span> <span class="mf">180.48994809345996</span><span class="p">]])</span>
 
-<div class="viewcode-block" id="registration"><a class="viewcode-back" href="../../index.html#feat.utils.registration">[docs]</a><span class="k">def</span> <span class="nf">registration</span><span class="p">(</span><span class="n">face_lms</span><span class="p">,</span> <span class="n">neutral</span><span class="o">=</span> <span class="n">neutral</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;fullface&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="registration"><a class="viewcode-back" href="../../feat.html#feat.utils.registration">[docs]</a><span class="k">def</span> <span class="nf">registration</span><span class="p">(</span><span class="n">face_lms</span><span class="p">,</span> <span class="n">neutral</span><span class="o">=</span> <span class="n">neutral</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;fullface&#39;</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Affine registration of face landmarks to neutral face.</span>
 

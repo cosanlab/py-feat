@@ -1,13 +1,6 @@
 feat package
 ============
 
-Subpackages
------------
-
-.. toctree::
-
-    feat.tests
-
 Submodules
 ----------
 
