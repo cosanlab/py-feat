@@ -36,7 +36,7 @@ class FexSeries(Series):
     def __init__(self, *args, **kwargs):
         self.sampling_freq = kwargs.pop('sampling_freq', None)
         self.sessions = kwargs.pop('sessions', None)
-        super(FexSeries, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def _constructor(self):
@@ -47,13 +47,12 @@ class FexSeries(Series):
         return Fex
 
 class Fex(DataFrame):
-
     """Fex is a class to represent facial expression data. It is essentially
         an enhanced pandas df, with extra attributes and methods. Methods
         always return a new design matrix instance.
 
     Args:
-        filepath: (str) path to file
+        filename: (str) path to file
         sampling_freq (float, optional): sampling rate of each row in Hz;
                                          defaults to None
         features (pd.Dataframe, optional): features that correspond to each
@@ -63,7 +62,9 @@ class Fex(DataFrame):
                   n_samples elements; defaults to None
     """
     # __metaclass__  = abc.ABCMeta
-    _metadata = ['filename', 'sampling_freq', 'features', 'sessions','fex_columns']
+
+    # Need to specify attributes for pandas. 
+    _metadata = ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns', 'design_columns', 'fex_columns', 'filename', 'sampling_freq', 'features', 'sessions', 'detector']
     # def __finalize__(self, other, *args, **kwargs):
     #     """
     #     Propagates metdata from other to self.
@@ -74,27 +75,87 @@ class Fex(DataFrame):
     #     return self
     #
     #     DataFrame.__finalize__ = __finalize__
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):      
+        ### Columns ### 
+        self.au_columns = kwargs.pop('au_columns', None)
+        self.emotion_columns = kwargs.pop('emotion_columns', None)
+        self.facebox_columns = kwargs.pop('facebox_columns', None)
+        self.landmark_columns = kwargs.pop('landmark_columns', None)
+        self.facepose_columns = kwargs.pop('facepose_columns', None)
+        self.gaze_columns = kwargs.pop('gaze_columns', None)
+        self.time_columns = kwargs.pop('time_columns', None)
+        self.design_columns = kwargs.pop('design_columns', None)
+
+        ### Meta data ### 
         self.filename = kwargs.pop('filename', None)
         self.sampling_freq = kwargs.pop('sampling_freq', None)
+        self.detector = kwargs.pop('detector', None)
         self.features = kwargs.pop('features', None)
         self.sessions = kwargs.pop('sessions', None)
-        self.fex_columns = kwargs.pop('fex_columns', None)
-        super(Fex, self).__init__(*args, **kwargs)
+
+        super().__init__(*args, **kwargs)
         if self.sessions is not None:
             if not len(self.sessions) == len(self):
                 raise ValueError('Make sure sessions is same length as data.')
             self.sessions = np.array(self.sessions)
-        if (self.fex_columns is None) and (not self._metadata):
-            try:
-                self.fex_columns = self._metadata
-            except:
-                print('Failed to import _metadata to fex_columns')
+        # if (self.fex_columns is None) and (not self._metadata):
+        #     try:
+        #         self.fex_columns = self._metadata
+        #     except:
+        #         print('Failed to import _metadata to fex_columns')
 
         # Set _metadata attributes on series: Kludgy solution
         for k in self:
             self[k].sampling_freq = self.sampling_freq
             self[k].sessions = self.sessions
+
+    def aus(self):
+        """Returns the Action Units data
+
+        Returns:
+            DataFrame: Action Units data
+        """        
+        return self[self.au_columns]
+
+    def emotions(self):
+        """Returns the emotion data
+
+        Returns:
+            DataFrame: emotion data
+        """        
+        return self[self.emotion_columns]
+
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns:
+            DataFrame: landmark data
+        """        
+        return self[self.landmark_columns]
+
+    def facebox(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """        
+        return self[self.facebox_columns]
+
+    def time(self):
+        """Returns the time data
+
+        Returns:
+            DataFrame: time data
+        """        
+        return self[self.time_columns]
+
+    def design(self):
+        """Returns the design data
+
+        Returns:
+            DataFrame: time data
+        """        
+        return self[self.time_columns]
 
     @property
     def _constructor(self):
@@ -154,7 +215,7 @@ class Fex(DataFrame):
         pass
 
     @abc.abstractmethod
-    def plot(self, *args, **kwargs):
+    def plot_aus(self, *args, **kwargs):
         """ Plots face file """
         pass
 
@@ -183,6 +244,37 @@ class Fex(DataFrame):
         for name in self._metadata:
             attr_list.append(name +": "+ str(getattr(self, name, None))+'\n')
         print(f"{self.__class__}\n" +  "".join(attr_list))
+
+###   Loading functions   ###
+
+    def read_facet(self, filename=None, *args, **kwargs):
+        # Check if filename exists in metadata. 
+        if not filename:
+            try:
+                filename = self.filename
+            except:
+                print("filename must be specified.")
+        result = read_facet(filename, *args, **kwargs)
+        # Replace current object with result object. 
+        return result
+
+    def read_openface(self, filename=None, *args, **kwargs):
+        if not filename:
+            try:
+                filename = self.filename
+            except:
+                print("filename must be specified.")
+        result = read_openface(filename, *args, **kwargs)
+        return result
+
+    def read_affectiva(self, filename=None, *args, **kwargs):
+        if not filename:
+            try:
+                filename = self.filename
+            except:
+                print("filename must be specified.")
+        result = read_affectiva(filename, *args, **kwargs)
+        return result
 
     def itersessions(self):
         ''' Iterate over Fex sessions as (session, series) pairs.
@@ -344,7 +436,6 @@ class Fex(DataFrame):
         xy_bool = x_bool | y_bool
         cleaned.loc[xy_bool,face_columns+self.fex_columns]=np.nan
         return cleaned
-
 
     def baseline(self, baseline='median', normalize=None,
                  ignore_sessions=False):
@@ -726,160 +817,80 @@ class Fex(DataFrame):
                 feats = pd.concat([feats, out], axis=1)
         return self.__class__(feats, sampling_freq=self.sampling_freq,
                               features=self.features)
-class Facet(Fex):
-    """
-    Facet is a subclass of Fex.
-    You can use the Facet subclass to load iMotions-FACET data files.
-    It will also have Facet specific methods.
-    """
-    def read_file(self, *args, **kwargs):
-        super(Fex, self).__init__(read_facet(self.filename, *args, **kwargs), *args, **kwargs)
 
-    def calc_pspi(self, *args, **kwargs):
-        out = self['AU4'] + self[['AU6','AU7']].max(axis=1) + self[['AU9','AU10']].max(axis=1) + self['AU43']
+    def calc_pspi(self):
+        if self.detector == "FACET":
+            pspi_aus = ['AU4', 'AU6', 'AU7', 'AU9', 'AU10', 'AU43']
+            out = self['AU4'] + self[['AU6','AU7']].max(axis=1) + self[['AU9','AU10']].max(axis=1) + self['AU43']
+        if self.detector =='OpenFace':
+            out = self['AU04_r'] + self[['AU06_r','AU07_r']].max(axis=1) + self[['AU09_r','AU10_r']].max(axis=1) + self['AU45_r']
         return out
 
-    def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
-              linestyle='-', gaze = None, *args, **kwargs):
-        """ Plot facial representation of data
-        Args:
-            row_n: the row of data to use
-            model: sklearn PLSRegression instance
-            vectorfield: (dict) {'target':target_array,'reference':reference_array}
-            muscles: (dict) {'muscle': color}
-            ax: matplotlib axis handle
-            color: matplotlib color
-            linewidth: matplotlib linewidth
-            linestyle: matplotlib linestyle
-            gaze: array of gaze vectors (len(5))
+    def plot_aus(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1, linestyle='-', gaze = None, *args, **kwargs):
+        if self.detector == 'FACET':
+            feats = ['AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10', 'AU12','AU14','AU15', 'AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43','Pitch','Roll','Yaw']
+            if (row_n > len(self)):
+                raise ValueError("Row number out of range.")
+            try:
+                au = []
+                for feat in feats:
+                    aun = self[feat]
+                    au.append(aun.copy()[row_n])
+                au = np.array(au)
+                if model is None:
+                    model = load_h5('facet.h5')
+                if muscles is not None:
+                    muscles['facet'] = 1
+                ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,                        linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+                return ax
+            except Exception as e:
+                print('Unable to plot data:', e)
+        if self.detector == "OpenFace":
+            feats = ['AU01_r', 'AU02_r', 'AU04_r', 'AU05_r', 'AU06_r',             'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r',             'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r']
+            if (row_n > len(self)):
+                raise ValueError("Row number out of range.")
+            try:
+                au = []
+                for feat in feats:
+                    aun = self[feat]
+                    au.append(aun.copy()[row_n])
+                au = np.array(au+[0,0,0])
 
-
-        """
-        feats = ['AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10', 'AU12','AU14','AU15',
-                 'AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43','Pitch','Roll','Yaw']
-        if (row_n > len(self)):
-            raise ValueError("Row number out of range.")
-        try:
-            au = []
-            for feat in feats:
-                aun = self[feat]
-                au.append(aun.copy()[row_n])
-            au = np.array(au)
-            if model is None:
-                model = load_h5('facet.h5')
-            if muscles is not None:
-                muscles['facet'] = 1
-            ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
-                      linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
-            return ax
-        except Exception as e:
-            print('Unable to plot data:', e)
-
-
-class Affdex(Fex):
-    def read_file(self, orig_cols=False, *args, **kwargs):
-        super(Fex, self).__init__(read_affectiva(self.filename, orig_cols, *args, **kwargs), *args, **kwargs)
-
-    def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
-              linestyle='-', gaze = None, *args, **kwargs):
-        """ Plot facial representation of data
-        Args:
-            row_n: the row of data to use
-            model: sklearn PLSRegression instance
-            vectorfield: (dict) {'target':target_array,'reference':reference_array}
-            muscles: (dict) {'muscle': color}
-            ax: matplotlib axis handle
-            color: matplotlib color
-            linewidth: matplotlib linewidth
-            linestyle: matplotlib linestyle
-            gaze: array of gaze vectors (len(5))
-
-
-        """
-        if "AU01" not in self:
-            feats = ["innerBrowRaise", "browRaise", "browFurrow", "eyeWiden",
-                 "cheekRaise",  "lidTighten", "noseWrinkle", "upperLipRaise",
-                 "smile", "dimpler", "lipCornerDepressor", "chinRaise", "lipStretch",
-                 "lipPress","mouthOpen","jawDrop", "eyeClosure"]
-        else:
-            feats = ["AU01", "AU02", "AU04", "AU05",
-                 "AU06",  "AU07", "AU9", "AU10", "AU12",
-                 "AU14", "AU15", "AU17", "AU20",
-                 "AU24","AU25","AU26", "AU43"]
-        if (row_n > len(self)):
-            raise ValueError("Row number out of range.")
-
-        try:
-            au = []
-            for feat in feats:
-                aun = self[feat]
-                au.append(aun.copy()[row_n]/20)
-            au = np.array(au+[0,0,0])
-            ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
-                      linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
-            return ax
-        except Exception as e:
-            print('Unable to plot data:', e)
-
-
-class Openface(Fex):
-    """
-    Openface is a subclass of Fex.
-    You can use the Openface subclass to load Openface data files.
-    It will also have Openface specific methods.
-    """
-    def read_file(self, *args, **kwargs):
-        super(Fex, self).__init__(read_openface(self.filename, *args, **kwargs), *args, **kwargs)
-
-    def calc_pspi(self, *args, **kwargs):
-        out = self['AU04_r'] + self[['AU06_r','AU07_r']].max(axis=1) + self[['AU09_r','AU10_r']].max(axis=1) + self['AU45_r']
-        return out
-
-    def plot(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
-              linestyle='-', gaze=False, gaze_vecs = False, *args, **kwargs):
-        """ Plot facial representation of data
-        Args:
-            row_n: the row of data to use
-            model: sklearn PLSRegression instance
-            vectorfield: (dict) {'target':target_array,'reference':reference_array}
-            muscles: (dict) {'muscle': color}
-            ax: matplotlib axis handle
-            color: matplotlib color
-            linewidth: matplotlib linewidth
-            linestyle: matplotlib linestyle
-            gaze: (bool) whether to draw gaze based on data
-        """
-        feats = ['AU01_r', 'AU02_r', 'AU04_r', 'AU05_r', 'AU06_r',
-       'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r',
-       'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r']
-        if (row_n > len(self)):
-            raise ValueError("Row number out of range.")
-        try:
-            au = []
-            for feat in feats:
-                aun = self[feat]
-                au.append(aun.copy()[row_n])
-            au = np.array(au+[0,0,0])
-
-            if gaze:
-                gaze_dat = ['gaze_0_x', 'gaze_0_y', 'gaze_1_x', 'gaze_1_y']
-                gaze = []
-                for i in range(4):
-                    gaze.append(self[gaze_dat[i]][row_n])
-                if gaze_vecs:
-                    gaze.append(1)
+                if gaze:
+                    gaze_dat = ['gaze_0_x', 'gaze_0_y', 'gaze_1_x', 'gaze_1_y']
+                    gaze = []
+                    for i in range(4):
+                        gaze.append(self[gaze_dat[i]][row_n])
+                    if gaze_vecs:
+                        gaze.append(1)
+                    else:
+                        gaze.append(0)
                 else:
-                    gaze.append(0)
+                    gaze = None
+
+                ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+                        linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+                return ax
+            except Exception as e:
+                print('Unable to plot data:', e)
+        if self.detector == "Affectiva":
+            if "AU01" not in self.au_columns:
+                feats = ["innerBrowRaise", "browRaise", "browFurrow", "eyeWiden",  "cheekRaise",  "lidTighten", "noseWrinkle", "upperLipRaise","smile", "dimpler", "lipCornerDepressor", "chinRaise","lipStretch", "lipPress","mouthOpen","jawDrop", "eyeClosure"]
             else:
-                gaze = None
-
-            ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
-                      linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
-            return ax
-        except Exception as e:
-            print('Unable to plot data:', e)
-
-
+                feats = ["AU01", "AU02", "AU04", "AU05", "AU06",  "AU07", "AU09", "AU10", "AU12", "AU14", "AU15", "AU17", "AU20", "AU24","AU25","AU26", "AU43"]
+            if (row_n > len(self)):
+                raise ValueError("Row number out of range.")
+            try:
+                au = []
+                for feat in feats:
+                    aun = self[feat]
+                    au.append(aun.copy()[row_n]/20)
+                au = np.array(au+[0,0,0])
+                ax = plot_face(model=model, au=au, vectorfield=vectorfield, muscles=muscles, ax=ax, color=color,
+                        linewidth=linewidth, linestyle=linestyle, gaze=gaze, *args, **kwargs)
+                return ax
+            except Exception as e:
+                print('Unable to plot data:', e)
 
 class Fextractor:
 
@@ -921,7 +932,6 @@ class Fextractor:
         if not isinstance(fex_object, (Fex, DataFrame)):
             raise ValueError('Must pass in a Fex object.')
         self.extracted_features.append(fex_object.extract_max(ignore_sessions, *args, **kwargs))
-
 
     def min(self, fex_object, ignore_sessions=False, *args, **kwargs):
         """ Extract minimum of each feature
