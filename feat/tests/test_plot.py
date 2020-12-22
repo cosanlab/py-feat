@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os.path import join
 from .utils import get_test_data_path
-from feat.data import Facet, Openface, Affdex
+from feat.data import Fex
 from feat.utils import read_openface, read_affectiva
 from feat.plotting import plot_face, draw_lineface, draw_vectorfield, predict
 import matplotlib
@@ -42,21 +42,21 @@ def test_draw_vectorfield():
 
 def test_plot_face():
     # test plotting method
-    fx = Facet(filename=join(get_test_data_path(), 'iMotions_Test_v6.txt'),sampling_freq=30)
-    fx.read_file()
-    ax = fx.plot(row_n=0)
+    fx = Fex(filename=join(get_test_data_path(), 'iMotions_Test_v6.txt'),sampling_freq=30, detector='FACET')
+    fx = fx.read_file()
+    ax = fx.plot_aus(row_n=0)
     assert_plot_shape(ax)
     plt.close()
 
-    fx = Openface(filename=join(get_test_data_path(), 'OpenFace_Test.csv'),sampling_freq=30)
-    fx.read_file()
-    ax = fx.plot(row_n=0)
+    fx = Fex(filename=join(get_test_data_path(), 'OpenFace_Test.csv'),sampling_freq=30, detector='OpenFace')
+    fx = fx.read_file()
+    ax = fx.plot_aus(row_n=0)
     assert_plot_shape(ax)
     plt.close()
 
-    fx = Affdex(filename=join(get_test_data_path(), 'sample_affectiva-api-app_output.json'),sampling_freq=30)
-    fx.read_file(orig_cols=True)
-    ax = fx.plot(row_n=0)
+    fx = Fex(filename=join(get_test_data_path(), 'sample_affectiva-api-app_output.json'),sampling_freq=30, detector='Affectiva')
+    fx = fx.read_file(orig_cols=False)
+    ax = fx.plot_aus(row_n=0)
     assert_plot_shape(ax)
     plt.close()
 
@@ -79,7 +79,7 @@ def test_plot_face():
 def test_plot_muscle():
     test_file = join(get_test_data_path(), 'OpenFace_Test.csv')
     _, ax = plt.subplots(figsize=(4,5))
-    openface = Openface(read_openface(test_file))
-    ax = openface.plot(12, ax=ax, muscles={'all': "heatmap"}, gaze = None)
+    openface = read_openface(test_file)
+    ax = openface.plot_aus(12, ax=ax, muscles={'all': "heatmap"}, gaze = None)
     assert_plot_shape(plt.gca())
     plt.close()

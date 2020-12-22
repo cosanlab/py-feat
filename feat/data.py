@@ -31,7 +31,7 @@ class FexSeries(Series):
     Fex class, i.e. how slicing is typically handled in pandas.
     All methods should be called on Fex below.
     """
-    _metadata = ['filename', 'sampling_freq', 'features', 'sessions','fex_columns']
+    _metadata = ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns', 'design_columns', 'fex_columns', 'filename', 'sampling_freq', 'features', 'sessions', 'detector']
 
     def __init__(self, *args, **kwargs):
         self.sampling_freq = kwargs.pop('sampling_freq', None)
@@ -45,6 +45,13 @@ class FexSeries(Series):
     @property
     def _constructor_expanddim(self):
         return Fex
+
+    def __finalize__(self, other, method=None, **kwargs):
+        """ propagate metadata from other to self """
+        # NOTE: backported from pandas master (upcoming v0.13)
+        for name in self._metadata:
+            object.__setattr__(self, name, getattr(other, name, None))
+        return self
 
 class Fex(DataFrame):
     """Fex is a class to represent facial expression data. It is essentially
@@ -65,16 +72,29 @@ class Fex(DataFrame):
 
     # Need to specify attributes for pandas. 
     _metadata = ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns', 'design_columns', 'fex_columns', 'filename', 'sampling_freq', 'features', 'sessions', 'detector']
-    # def __finalize__(self, other, *args, **kwargs):
-    #     """
-    #     Propagates metdata from other to self.
-    #     Should be called at the end of each function to ensure class and attributes are propagated.
-    #     """
-    #     for name in self._metadata:
-    #         object.__setattr_(self, name , getattr(other, name, None))
-    #     return self
-    #
-    #     DataFrame.__finalize__ = __finalize__
+
+    def __finalize__(self, other, method=None, **kwargs):
+        """propagate metadata from other to self """
+        self = super().__finalize__(other, method=method, **kwargs)
+        # merge operation: using metadata of the left object
+        if method == "merge":
+            for name in self._metadata:
+                print("self", name, self.au_columns, other.left.au_columns)
+                object.__setattr__(self, name, getattr(other.left, name, None))
+        # concat operation: using metadata of the first object
+        elif method == "concat":
+            for name in self._metadata:
+                object.__setattr__(self, name, getattr(other.objs[0], name, None))
+        # join operation: using metadata of existing. 
+        elif method == "join":
+            for name in self._metadata:
+                print(name, other.left, other.objs[0])
+                if getattr(other.left, name, None): 
+                    object.__setattr__(self, name, getattr(other.left, name, None))
+                if getattr(other.objs[0], name, None):
+                    object.__setattr__(self, name, getattr(other.objs[0], name, None))
+        return self
+
     def __init__(self, *args, **kwargs):      
         ### Columns ### 
         self.au_columns = kwargs.pop('au_columns', None)
@@ -116,46 +136,6 @@ class Fex(DataFrame):
             DataFrame: Action Units data
         """        
         return self[self.au_columns]
-
-    def emotions(self):
-        """Returns the emotion data
-
-        Returns:
-            DataFrame: emotion data
-        """        
-        return self[self.emotion_columns]
-
-    def landmark(self):
-        """Returns the landmark data
-
-        Returns:
-            DataFrame: landmark data
-        """        
-        return self[self.landmark_columns]
-
-    def facebox(self):
-        """Returns the facebox data
-
-        Returns:
-            DataFrame: facebox data
-        """        
-        return self[self.facebox_columns]
-
-    def time(self):
-        """Returns the time data
-
-        Returns:
-            DataFrame: time data
-        """        
-        return self[self.time_columns]
-
-    def design(self):
-        """Returns the design data
-
-        Returns:
-            DataFrame: time data
-        """        
-        return self[self.time_columns]
 
     @property
     def _constructor(self):
@@ -209,32 +189,56 @@ class Fex(DataFrame):
                 result._set_as_cached(label, self)
         return result
 
-    @abc.abstractmethod
+    def emotions(self):
+        """Returns the emotion data
+
+        Returns:
+            DataFrame: emotion data
+        """        
+        return self[self.emotion_columns]
+
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns:
+            DataFrame: landmark data
+        """        
+        return self[self.landmark_columns]
+
+    def facebox(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """        
+        return self[self.facebox_columns]
+
+    def time(self):
+        """Returns the time data
+
+        Returns:
+            DataFrame: time data
+        """        
+        return self[self.time_columns]
+
+    def design(self):
+        """Returns the design data
+
+        Returns:
+            DataFrame: time data
+        """        
+        return self[self.time_columns]
+
     def read_file(self, *args, **kwargs):
         """ Loads file into FEX class """
-        pass
-
-    @abc.abstractmethod
-    def plot_aus(self, *args, **kwargs):
-        """ Plots face file """
-        pass
-
-    @abc.abstractmethod
-    def calc_pspi(self, *args, **kwargs):
-        """ Calculates PSPI (Prkachin and Solomon Pain Intensity) levels which is metric of pain as a linear combination of facial action units(AU).
-        The included AUs are brow lowering (AU4), eye tightening (AU6,7), eye closure(AU43,45), nose wrinkling (AU9) and lip raise (AU10).
-        Originally PSPI is calculated based on AU intensity scale of 1-5 but for Facet data it is in Evidence units.
-
-        Citation:
-        Prkachin and Solomon, (2008) The structure, reliability and validity of pain expression: Evidence from Patients with shoulder pain, Pain, vol 139, non 2 pp 267-274
-
-        Formula:
-        PSPI = AU4 + max(AU6, AU7) + max(AU9, AU10) + AU43 (or AU45 for Openface)
-
-        Return:
-            PSPI calculated at each frame.
-        """
-        pass
+        if self.detector=='FACET':
+            return self.read_facet(self.filename)
+        elif self.detector=='OpenFace':
+            return self.read_openface(self.filename)
+        elif self.detector=='Affectiva':
+            return self.read_affectiva(self.filename)
+        else:
+            print("Must specifiy which detector [FACET, OpenFace, or Affectiva]")
 
     def info(self):
         """Print class meta data.
@@ -245,8 +249,7 @@ class Fex(DataFrame):
             attr_list.append(name +": "+ str(getattr(self, name, None))+'\n')
         print(f"{self.__class__}\n" +  "".join(attr_list))
 
-###   Loading functions   ###
-
+###   Class Methods   ###
     def read_facet(self, filename=None, *args, **kwargs):
         # Check if filename exists in metadata. 
         if not filename:
@@ -255,8 +258,11 @@ class Fex(DataFrame):
             except:
                 print("filename must be specified.")
         result = read_facet(filename, *args, **kwargs)
-        # Replace current object with result object. 
-        return result
+        for name in self._metadata:
+            attr_value = getattr(self, name, None)
+            if attr_value and getattr(result, name, None) == None:
+                setattr(result, name, attr_value)
+        return result 
 
     def read_openface(self, filename=None, *args, **kwargs):
         if not filename:
@@ -265,6 +271,10 @@ class Fex(DataFrame):
             except:
                 print("filename must be specified.")
         result = read_openface(filename, *args, **kwargs)
+        for name in self._metadata:
+            attr_value = getattr(self, name, None)
+            if attr_value and getattr(result, name, None) == None:
+                setattr(result, name, attr_value)
         return result
 
     def read_affectiva(self, filename=None, *args, **kwargs):
@@ -274,6 +284,10 @@ class Fex(DataFrame):
             except:
                 print("filename must be specified.")
         result = read_affectiva(filename, *args, **kwargs)
+        for name in self._metadata:
+            attr_value = getattr(self, name, None)
+            if attr_value and getattr(result, name, None) == None:
+                setattr(result, name, attr_value)
         return result
 
     def itersessions(self):
