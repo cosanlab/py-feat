@@ -233,7 +233,7 @@ def read_openface(openfacefile, features=None):
             pass
     return feat.Fex(d, filename = openfacefile, au_columns = openface_AU_columns, emotion_columns = None, facebox_columns=None, landmark_columns = openface_2d_landmark_columns+openface_3d_landmark_columns, facepose_columns = openface_facepose_columns, gaze_columns = openface_gaze_columns, time_columns = openface_time_columns, detector = "OpenFace")
 
-def read_affectiva(affectivafile,orig_cols = False):
+def read_affectiva(affectivafile, orig_cols = False):
     '''
     This function reads in affectiva file processed through
     the https://github.com/cosanlab/affectiva-api-app.
@@ -252,7 +252,7 @@ def read_affectiva(affectivafile,orig_cols = False):
                 new_cols.append(rep_dict[col])
             except:
                 new_cols.append(col)
-        d.columns = new_cols
+        d.columns = new_cols       
     return feat.Fex(d, filename = affectivafile, au_columns = affectiva_au_columns, emotion_columns = affectiva_emotion_columns, detector="Affectiva")
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.):
