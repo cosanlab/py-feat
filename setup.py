@@ -59,7 +59,7 @@ def _post_install():
             wget.download(fex_emotion_model, get_resource_path())
         except:
             try:
-                fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5"
+                fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
                 wget.download(fex_emotion_model, get_resource_path())
             except:
                 print("FeX emotion model failed to download")
@@ -78,7 +78,7 @@ def _post_install():
             wget.download(lbfmodel, get_resource_path())
         except:
             try:
-                lbfmodel = "https://www.dropbox.com/s/cqune0z1bwf79zy/lbfmodel.yaml"
+                lbfmodel = "https://www.dropbox.com/s/cqune0z1bwf79zy/lbfmodel.yaml?dl=1"
                 wget.download(lbfmodel, get_resource_path())
             except:
                 print("Landmark model failed to download")
