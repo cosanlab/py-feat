@@ -17,7 +17,7 @@ __author__ = ["Jin Hyun Cheong"]
 
 
 import os, math, pywt, pickle, h5py
-from sklearn.cross_decomposition.pls_ import PLSRegression
+from sklearn.cross_decomposition import PLSRegression
 import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
