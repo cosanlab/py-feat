@@ -66,6 +66,13 @@ def test_fex():
     assert isinstance(dat.copy(), Fex)
     assert dat.copy().sampling_freq==dat.sampling_freq
 
+    # Test rectification
+    rectified = df.rectification()
+    assert df[df.au_columns].isna().sum()[0] < rectified[rectified.au_columns].isna().sum()[0]
+    
+    # Test pspi
+    assert len(df.calc_pspi()) == len(df)
+
     # Test baseline
     assert isinstance(dat.baseline(baseline='median'), Fex)
     assert isinstance(dat.baseline(baseline='mean'), Fex)
@@ -237,7 +244,7 @@ def test_fextractor():
     assert extractor.extracted_features[0].shape[1]==facet_filled.columns.shape[0] * filters * histograms
 
 
-### Test Openface importer and subclass ###
+### Test Openface importer ###
 def test_openface():
     # For OpenFace data file
     filename = os.path.join(get_test_data_path(), 'OpenFace_Test.csv')
