@@ -439,17 +439,20 @@ class Fex(DataFrame):
 
         """
         #### TODO: CHECK IF FACET OR FIND WAY TO DO WITH OTHER ONES TOO #####
-        cleaned = deepcopy(self)
-        face_columns = ['FaceRectX','FaceRectY','FaceRectHeight','FaceRectWidth']
-        x_m = self.FaceRectX.mean()
-        x_std = self.FaceRectX.std()
-        y_m = self.FaceRectY.mean()
-        y_std = self.FaceRectY.std()
-        x_bool = (self.FaceRectX>std*x_std+x_m) | (self.FaceRectX<x_m-std*x_std)
-        y_bool = (self.FaceRectY>std*y_std+y_m) | (self.FaceRectY<y_m-std*y_std)
-        xy_bool = x_bool | y_bool
-        cleaned.loc[xy_bool,face_columns+self.fex_columns]=np.nan
-        return cleaned
+        if self.facebox_columns and self.au_columns and self.emotion_columns:
+            cleaned = deepcopy(self)
+            face_columns = self.facebox_columns
+            x_m = self.FaceRectX.mean()
+            x_std = self.FaceRectX.std()
+            y_m = self.FaceRectY.mean()
+            y_std = self.FaceRectY.std()
+            x_bool = (self.FaceRectX>std*x_std+x_m) | (self.FaceRectX<x_m-std*x_std)
+            y_bool = (self.FaceRectY>std*y_std+y_m) | (self.FaceRectY<y_m-std*y_std)
+            xy_bool = x_bool | y_bool
+            cleaned.loc[xy_bool, face_columns + self.au_columns + self.emotion_columns] = np.nan
+            return cleaned
+        else:
+            raise ValueError("Facebox columns need to be defined.")
 
     def baseline(self, baseline='median', normalize=None,
                  ignore_sessions=False):
