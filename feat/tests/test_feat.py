@@ -9,7 +9,7 @@ from pandas import DataFrame, Series
 import numpy as np
 import os
 from .utils import get_test_data_path
-from feat.data import Fex, Facet, Openface, Fextractor
+from feat.data import Fex, Fextractor
 from feat.utils import read_facet, read_openface, read_affectiva
 from nltools.data import Adjacency
 import unittest
@@ -23,6 +23,18 @@ def test_fex():
     # test reading iMotions file > version 6
     filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
+
+    # Test slicing functions.
+    assert df.aus().shape==(519, 20)
+
+    assert df.emotions().shape==(519, 12)
+
+    assert df.facebox().shape==(519,4)
+
+    assert df.time().shape[-1]==4
+
+    assert df.design().shape[-1]==4    
+
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
     dat = dat[['Joy', 'Anger',
@@ -65,6 +77,13 @@ def test_fex():
     # Test Copy
     assert isinstance(dat.copy(), Fex)
     assert dat.copy().sampling_freq==dat.sampling_freq
+
+    # Test rectification
+    rectified = df.rectification()
+    assert df[df.au_columns].isna().sum()[0] < rectified[rectified.au_columns].isna().sum()[0]
+    
+    # Test pspi
+    assert len(df.calc_pspi()) == len(df)
 
     # Test baseline
     assert isinstance(dat.baseline(baseline='median'), Fex)
@@ -155,28 +174,6 @@ def test_fex():
     assert n_components == stats['components'].shape[1]
     assert n_components == stats['weights'].shape[1]
 
-def test_facet_subclass():
-    # Test facet subclass
-    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
-    facet = Facet(filename=filename,sampling_freq=30)
-    facet.read_file()
-    assert len(facet)==519
-
-    # Test PSPI calculation
-    assert len(facet.calc_pspi()) == len(facet)
-
-    # Test if a method returns subclass.
-    facet = facet.downsample(target=10,target_type='hz')
-    assert isinstance(facet,Facet)
-
-    # Testrectification
-    filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
-    facet = Facet(filename=filename,sampling_freq=30, fex_columns =['Positive'])
-    facet.read_file()
-    rectified = facet.rectification()
-    assert facet[facet.fex_columns].isna().sum()[0] < rectified[rectified.fex_columns].isna().sum()[0]
-
-
 def test_fextractor():
     filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
@@ -245,8 +242,8 @@ def test_fextractor():
 
     # Test Bag Of Temporal Features Extraction
     filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
-    facet = Facet(filename=filename,sampling_freq=30)
-    facet.read_file()
+    facet = Fex(filename=filename,sampling_freq=30, detector='FACET')
+    facet = facet.read_file()
     facet_filled = facet.fillna(0)
     facet_filled = facet_filled[['Joy', 'Anger',
        'Surprise', 'Fear', 'Contempt', 'Disgust', 'Sadness', 'Confusion',
@@ -259,8 +256,7 @@ def test_fextractor():
     assert extractor.extracted_features[0].shape[1]==facet_filled.columns.shape[0] * filters * histograms
 
 
-
-### Test Openface importer and subclass ###
+### Test Openface importer ###
 def test_openface():
     # For OpenFace data file
     filename = os.path.join(get_test_data_path(), 'OpenFace_Test.csv')
@@ -274,8 +270,8 @@ def test_openface():
     assert len(openface)==100
 
     # Test loading from filename
-    openface = Openface(filename=filename, sampling_freq = 30)
-    openface.read_file()
+    openface = Fex(filename=filename, sampling_freq = 30, detector='OpenFace')
+    openface = openface.read_file()
 
     # Test length?
     assert len(openface)==100
@@ -283,11 +279,7 @@ def test_openface():
     # Test PSPI calculation b/c diff from facet
     assert len(openface.calc_pspi()) == len(openface)
 
-    # Test if a method returns subclass.
-    openface = openface.downsample(target=10,target_type='hz')
-    assert isinstance(openface,Openface)
-
 def test_affectiva():
     filename = os.path.join(get_test_data_path(), 'sample_affectiva-api-app_output.json')
-    affdex = Fex(read_affectiva(filename), sampling_freq=1)
+    affdex = Fex(read_affectiva(filename), sampling_freq=1, detector="Affectiva")
     assert affdex.shape[1]==32
