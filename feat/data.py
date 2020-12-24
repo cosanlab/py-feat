@@ -85,14 +85,6 @@ class Fex(DataFrame):
         elif method == "concat":
             for name in self._metadata:
                 object.__setattr__(self, name, getattr(other.objs[0], name, None))
-        # join operation: using metadata of existing. 
-        elif method == "join":
-            for name in self._metadata:
-                print(name, other.left, other.objs[0])
-                if getattr(other.left, name, None): 
-                    object.__setattr__(self, name, getattr(other.left, name, None))
-                if getattr(other.objs[0], name, None):
-                    object.__setattr__(self, name, getattr(other.objs[0], name, None))
         return self
 
     def __init__(self, *args, **kwargs):      
@@ -128,14 +120,6 @@ class Fex(DataFrame):
         for k in self:
             self[k].sampling_freq = self.sampling_freq
             self[k].sessions = self.sessions
-
-    def aus(self):
-        """Returns the Action Units data
-
-        Returns:
-            DataFrame: Action Units data
-        """        
-        return self[self.au_columns]
 
     @property
     def _constructor(self):
@@ -189,6 +173,14 @@ class Fex(DataFrame):
                 result._set_as_cached(label, self)
         return result
 
+    def aus(self):
+        """Returns the Action Units data
+
+        Returns:
+            DataFrame: Action Units data
+        """        
+        return self[self.au_columns]
+
     def emotions(self):
         """Returns the emotion data
 
@@ -227,7 +219,7 @@ class Fex(DataFrame):
         Returns:
             DataFrame: time data
         """        
-        return self[self.time_columns]
+        return self[self.design_columns]
 
     def read_file(self, *args, **kwargs):
         """ Loads file into FEX class """

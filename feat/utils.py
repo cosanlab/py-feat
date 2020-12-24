@@ -29,6 +29,7 @@ FACET_EMOTION_COLUMNS = ['Joy','Anger','Surprise','Fear','Contempt', 'Disgust','
 FACET_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
 FACET_TIME_COLUMNS = ['Timestamp', 'MediaTime', 'FrameNo', 'FrameTime']
 FACET_FACEPOSE_COLUMNS = ['Pitch', 'Roll', 'Yaw']
+FACET_DESIGN_COLUMNS = ['StimulusName', 'SlideType', 'EventSource','Annotation']
 
 # OpenFace columns
 landmark_length=68
@@ -150,7 +151,7 @@ def read_facet(facetfile, features=None, raw=False):
             d.columns = [col.replace(' ','') for col in d.columns]
             # d._metadata = fex_columns
     au_columns = [col for col in d.columns if "AU" in col]
-    return feat.Fex(d, filename = facetfile, au_columns = au_columns, emotion_columns = FACET_EMOTION_COLUMNS, facebox_columns = FACET_FACEBOX_COLUMNS, facepose_columns = FACET_FACEPOSE_COLUMNS, time_columns = FACET_TIME_COLUMNS, detector = 'FACET')
+    return feat.Fex(d, filename = facetfile, au_columns = au_columns, emotion_columns = FACET_EMOTION_COLUMNS, facebox_columns = FACET_FACEBOX_COLUMNS, facepose_columns = FACET_FACEPOSE_COLUMNS, time_columns = FACET_TIME_COLUMNS, design_columns=FACET_DESIGN_COLUMNS, detector = 'FACET')
 
 def read_openface(openfacefile, features=None):
     '''
