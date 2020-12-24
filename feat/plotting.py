@@ -3,7 +3,7 @@ from __future__ import division
 """Plotting Functions"""
 
 import numpy as np
-from sklearn.cross_decomposition.pls_ import PLSRegression
+from sklearn.cross_decomposition import PLSRegression
 import matplotlib.pyplot as plt
 from feat.utils import load_h5
 import warnings
