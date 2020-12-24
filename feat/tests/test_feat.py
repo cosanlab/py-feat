@@ -23,6 +23,18 @@ def test_fex():
     # test reading iMotions file > version 6
     filename = os.path.join(get_test_data_path(), 'iMotions_Test_v6.txt')
     df = read_facet(filename)
+
+    # Test slicing functions.
+    assert df.aus().shape==(519, 20)
+
+    assert df.emotions().shape==(519, 12)
+
+    assert df.facebox().shape==(519,4)
+
+    assert df.time().shape[-1]==4
+
+    assert df.design().shape[-1]==4    
+
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
     dat = dat[['Joy', 'Anger',
