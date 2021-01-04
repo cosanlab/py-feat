@@ -15,11 +15,11 @@ extra_setuptools_args = dict(
 )
 
 setup(
-    name='feat',
+    name='py-feat',
     version=version['__version__'],
     description="Facial Expression Analysis Toolbox",
     long_description="",
-    author="Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Nathaniel Hanes, Luke Chang ",
+    author="Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Nathaniel Hanes, Luke Chang ",
     author_email='jcheong0428@gmail.com',
     url='https://github.com/cosanlab/feat',
     packages=find_packages(include=['feat', 'bin/*']),
@@ -32,9 +32,6 @@ setup(
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
