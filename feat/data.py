@@ -6,7 +6,7 @@ import os, warnings
 from os.path import join
 import numpy as np
 import pandas as pd
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, Index
 import six
 import abc
 from copy import deepcopy
@@ -18,10 +18,9 @@ from nltools.stats import (downsample,
 from nltools.utils import (set_decomposition_algorithm)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
-from feat.utils import read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
+from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
 from feat.plotting import plot_face
 from nilearn.signal import clean
-from pandas.core.index import Index
 from scipy.signal import convolve
 
 class FexSeries(Series):
@@ -54,12 +53,13 @@ class FexSeries(Series):
         return self
 
 class Fex(DataFrame):
-    """Fex is a class to represent facial expression data. It is essentially
+    """Fex is a class to represent facial expression (Fex) data. It is essentially
         an enhanced pandas df, with extra attributes and methods. Methods
         always return a new design matrix instance.
 
     Args:
-        filename: (str) path to file
+        filename: (str, optional) path to file
+        detector: (str, optional) name of software used to extract Fex. (Feat, FACET, OpenFace, or Affectiva) 
         sampling_freq (float, optional): sampling rate of each row in Hz;
                                          defaults to None
         features (pd.Dataframe, optional): features that correspond to each
@@ -222,15 +222,21 @@ class Fex(DataFrame):
         return self[self.design_columns]
 
     def read_file(self, *args, **kwargs):
-        """ Loads file into FEX class """
+        """Loads file into FEX class
+
+        Returns:
+            DataFrame: Fex class
+        """        
         if self.detector=='FACET':
             return self.read_facet(self.filename)
         elif self.detector=='OpenFace':
             return self.read_openface(self.filename)
         elif self.detector=='Affectiva':
             return self.read_affectiva(self.filename)
+        elif self.detector=='Feat':
+            return self.read_feat(self.filename)
         else:
-            print("Must specifiy which detector [FACET, OpenFace, or Affectiva]")
+            print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
 
     def info(self):
         """Print class meta data.
@@ -242,6 +248,16 @@ class Fex(DataFrame):
         print(f"{self.__class__}\n" +  "".join(attr_list))
 
 ###   Class Methods   ###
+    def read_feat(self, filename=None, *args, **kwargs):
+        # Check if filename exists in metadata. 
+        if not filename:
+            try:
+                filename = self.filename
+            except:
+                print("filename must be specified.")
+        result = read_feat(filename, *args, **kwargs)
+        return result
+
     def read_facet(self, filename=None, *args, **kwargs):
         # Check if filename exists in metadata. 
         if not filename:
