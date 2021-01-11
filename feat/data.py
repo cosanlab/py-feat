@@ -197,6 +197,24 @@ class Fex(DataFrame):
         """        
         return self[self.landmark_columns]
 
+    def landmark_x(self):
+        """Returns the x landmarks. 
+
+        Returns: 
+            DataFrame: x landmarks.
+        """     
+        x_cols = [col for col in self.landmark_columns if 'x' in col]
+        return self[x_cols]
+
+    def landmark_y(self):
+        """Returns the y landmarks. 
+
+        Returns: 
+            DataFrame: y landmarks.
+        """        
+        y_cols = [col for col in self.landmark_columns if 'y' in col]
+        return self[y_cols]
+
     def facebox(self):
         """Returns the facebox data
 
