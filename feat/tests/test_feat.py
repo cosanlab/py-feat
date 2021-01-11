@@ -14,7 +14,23 @@ from feat.utils import read_facet, read_openface, read_affectiva
 from nltools.data import Adjacency
 import unittest
 
+def test_info(capsys):
+    importantstring = "ThisStringMustBeIncluded"
+    fex = Fex(filename=importantstring)
+    fex.info()
+    captured = capsys.readouterr()
+    assert importantstring in captured.out
+
 def test_fex():
+    with pytest.raises(Exception):
+        fex = Fex().read_feat()
+    with pytest.raises(Exception):
+        fex = Fex().read_facet()
+    with pytest.raises(Exception):
+        fex = Fex().read_openface()
+    with pytest.raises(Exception):
+        fex = Fex().read_affectiva()
+
     # For iMotions-FACET data files
     # test reading iMotions file < version 6
     filename = os.path.join(get_test_data_path(), 'iMotions_Test_v5.txt')
@@ -276,6 +292,10 @@ def test_openface():
     # Test length?
     assert len(openface)==100
 
+    # Test landmark methods
+    assert openface.landmark().shape[1] == 136
+    assert openface.landmark_x().shape[1] == openface.landmark_y().shape[1]
+
     # Test PSPI calculation b/c diff from facet
     assert len(openface.calc_pspi()) == len(openface)
 
@@ -283,3 +303,10 @@ def test_affectiva():
     filename = os.path.join(get_test_data_path(), 'sample_affectiva-api-app_output.json')
     affdex = Fex(read_affectiva(filename), sampling_freq=1, detector="Affectiva")
     assert affdex.shape[1]==32
+
+def test_feat(): 
+    filename = os.path.join(get_test_data_path(), 'output.csv')
+    fex = Fex(filename = filename, detector='Feat')
+    fex.read_file()
+
+   
