@@ -14,8 +14,7 @@ from collections import OrderedDict
 __all__ = ['draw_lineface', 'plot_face', 'draw_vectorfield', 'draw_muscles', 'get_heat', 'predict']
 __author__ = ["Sophie Byrne", "Jin Hyun Cheong", "Luke Chang"]
 
-def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, gaze = None,
-                  *args, **kwargs):
+def draw_lineface(currx, curry, ax=None, color='k', linestyle="-", linewidth=1, gaze = None, *args, **kwargs):
     ''' Plot Line Face
 
         Args:
