@@ -202,7 +202,8 @@ class Fex(DataFrame):
 
         Returns: 
             DataFrame: x landmarks.
-        """     
+        """
+        ######## TODO: NATSORT columns before returning #######     
         x_cols = [col for col in self.landmark_columns if 'x' in col]
         return self[x_cols]
 

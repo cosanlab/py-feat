@@ -28,7 +28,7 @@ import feat
 FEAT_EMOTION_MAPPER = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4: 'sadness', 5: 'surprise', 6: 'neutral'}
 FEAT_EMOTION_COLUMNS = ['anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'neutral']
 FEAT_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
-FACET_TIME_COLUMNS = ['frame']
+FEAT_TIME_COLUMNS = ['frame']
 
 # FACET columns
 FACET_EMOTION_COLUMNS = ['Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration', 'Neutral','Positive','Negative']
@@ -247,7 +247,7 @@ def read_openface(openfacefile, features=None):
             d = d[features]
         except:
             pass
-    return feat.Fex(d, filename = openfacefile, au_columns = openface_AU_columns, emotion_columns = None, facebox_columns=None, landmark_columns = openface_2d_landmark_columns+openface_3d_landmark_columns, facepose_columns = openface_facepose_columns, gaze_columns = openface_gaze_columns, time_columns = openface_time_columns, detector = "OpenFace")
+    return feat.Fex(d, filename = openfacefile, au_columns = openface_AU_columns, emotion_columns = None, facebox_columns=None, landmark_columns = openface_2d_landmark_columns, facepose_columns = openface_facepose_columns, gaze_columns = openface_gaze_columns, time_columns = openface_time_columns, detector = "OpenFace")
 
 def read_affectiva(affectivafile, orig_cols = False):
     '''
