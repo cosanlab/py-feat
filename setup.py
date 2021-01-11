@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import atexit, os, sys
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -13,6 +15,57 @@ with open("feat/version.py") as f:
 extra_setuptools_args = dict(
     tests_require=['pytest']
 )
+
+class CustomInstall(install):
+    def run(self):
+        def _post_install():
+            import wget
+            import os, sys
+
+            def get_resource_path():
+                for p in sys.path:
+                    if os.path.isdir(p) and "feat" in os.listdir(p):
+                        return os.path.join(p, "feat", "resources")
+
+            if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
+                print("Fex model already exists; skipping download.")
+            else:
+                print("Downloading FEX emotion model.")
+                try:
+                    fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/fer_aug_model.h5"
+                    wget.download(fex_emotion_model, get_resource_path())
+                except:
+                    try:
+                        fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
+                        wget.download(fex_emotion_model, get_resource_path())
+                    except:
+                        print("FeX emotion model failed to download")
+
+                if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
+                    print("\nFEX emotion model downloaded successfully.\n")
+                else:
+                    print("Something went wrong. Model not found in directory.")
+
+            if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml")):
+                print("Landmark already exists; skipping download.")
+            else:
+                print("Downloading landmark detection model.")
+                try:
+                    lbfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"
+                    wget.download(lbfmodel, get_resource_path())
+                except:
+                    try:
+                        lbfmodel = "https://www.dropbox.com/s/cqune0z1bwf79zy/lbfmodel.yaml?dl=1"
+                        wget.download(lbfmodel, get_resource_path())
+                    except:
+                        print("Landmark model failed to download")
+
+                if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml")):
+                    print("\nLandmark detection model downloaded successfully.\n")
+                else:
+                    print("Something went wrong. Model not found in directory.")
+        atexit.register(_post_install)
+        install.run(self)
 
 setup(
     name='py-feat',
@@ -39,50 +92,8 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='feat/tests',
+    cmdclass={'install':CustomInstall},
     **extra_setuptools_args
 )
 
-def _post_install():
-    from feat.utils import get_resource_path
-    import wget
-    import os
 
-    if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
-        print("Fex model already exists; skipping download.")
-    else:
-        print("Downloading FEX emotion model.")
-        try:
-            fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/fer_aug_model.h5"
-            wget.download(fex_emotion_model, get_resource_path())
-        except:
-            try:
-                fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
-                wget.download(fex_emotion_model, get_resource_path())
-            except:
-                print("FeX emotion model failed to download")
-
-        if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
-            print("\nFEX emotion model downloaded successfully.\n")
-        else:
-            print("Something went wrong. Model not found in directory.")
-
-    if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml")):
-        print("Landmark already exists; skipping download.")
-    else:
-        print("Downloading landmark detection model.")
-        try:
-            lbfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"
-            wget.download(lbfmodel, get_resource_path())
-        except:
-            try:
-                lbfmodel = "https://www.dropbox.com/s/cqune0z1bwf79zy/lbfmodel.yaml?dl=1"
-                wget.download(lbfmodel, get_resource_path())
-            except:
-                print("Landmark model failed to download")
-
-        if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml")):
-            print("\nLandmark detection model downloaded successfully.\n")
-        else:
-            print("Something went wrong. Model not found in directory.")
-
-_post_install()

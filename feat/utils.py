@@ -24,9 +24,15 @@ from scipy.integrate import simps
 import feat
 
 """ DEFINE IMPORTANT VARIABLES """
+# FEAT columns
+FEAT_EMOTION_MAPPER = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4: 'sadness', 5: 'surprise', 6: 'neutral'}
+FEAT_EMOTION_COLUMNS = ['anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'neutral']
+FEAT_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
+FEAT_TIME_COLUMNS = ['frame']
+
 # FACET columns
 FACET_EMOTION_COLUMNS = ['Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration', 'Neutral','Positive','Negative']
-FACET_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
+FACET_FACEBOX_COLUMNS = FEAT_FACEBOX_COLUMNS
 FACET_TIME_COLUMNS = ['Timestamp', 'MediaTime', 'FrameNo', 'FrameTime']
 FACET_FACEPOSE_COLUMNS = ['Pitch', 'Roll', 'Yaw']
 FACET_DESIGN_COLUMNS = ['StimulusName', 'SlideType', 'EventSource','Annotation']
@@ -101,6 +107,15 @@ def load_h5(file_name='blue.h5'):
     except Exception as e:
         print('Unable to load data ', file_name, ':', e)
     return model
+
+def read_feat(fexfile):
+    """This function reads files extracted using the Detector from the Feat package.
+
+    Args:
+        fexfile: [description]
+    """    
+    d = pd.read_csv(fexfile)
+    return feat.Fex(d, filename = fexfile, au_columns = None, emotion_columns = FEAT_EMOTION_COLUMNS, facebox_columns = FEAT_FACEBOX_COLUMNS, time_columns = FEAT_TIME_COLUMNS, detector = 'Feat')
 
 def read_facet(facetfile, features=None, raw=False):
     """This function reads in an iMotions-FACET exported facial expression file.
@@ -232,7 +247,7 @@ def read_openface(openfacefile, features=None):
             d = d[features]
         except:
             pass
-    return feat.Fex(d, filename = openfacefile, au_columns = openface_AU_columns, emotion_columns = None, facebox_columns=None, landmark_columns = openface_2d_landmark_columns+openface_3d_landmark_columns, facepose_columns = openface_facepose_columns, gaze_columns = openface_gaze_columns, time_columns = openface_time_columns, detector = "OpenFace")
+    return feat.Fex(d, filename = openfacefile, au_columns = openface_AU_columns, emotion_columns = None, facebox_columns=None, landmark_columns = openface_2d_landmark_columns, facepose_columns = openface_facepose_columns, gaze_columns = openface_gaze_columns, time_columns = openface_time_columns, detector = "OpenFace")
 
 def read_affectiva(affectivafile, orig_cols = False):
     '''

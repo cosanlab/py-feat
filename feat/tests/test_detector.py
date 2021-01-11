@@ -4,6 +4,7 @@
 """Tests for `feat` package."""
 
 from feat.detector import Detector
+from feat.data import Fex
 from feat.utils import get_resource_path
 from .utils import get_test_data_path
 import pandas as pd
@@ -47,7 +48,7 @@ def test_detector():
     # Test detect image
     inputFname = os.path.join(get_test_data_path(), "input.jpg")
     out = detector.detect_image(inputFname = inputFname)
-    assert type(out) == pd.DataFrame
+    assert type(out) == Fex
     assert len(out) == 1
     assert out.happiness.values[0] > 0 
 
