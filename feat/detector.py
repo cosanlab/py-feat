@@ -10,7 +10,8 @@ import os
 import numpy as np, pandas as pd
 from PIL import Image, ImageDraw
 import cv2 as cv
-from feat.utils import get_resource_path, face_rect_to_coords
+from feat.data import Fex
+from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS
 
 class Detector(object):
     def __init__(self, n_jobs=1):
@@ -50,7 +51,7 @@ class Detector(object):
         if not os.path.exists(face_detection_model_path):
             print("Face detection model not found. Check haarcascade_frontalface_alt.xml exists in your opencv installation (cv.data).")
         face_cascade = cv.CascadeClassifier(face_detection_model_path)
-        face_detection_columns = ["facebox_x", "facebox_y", "facebox_w", "facebox_h"]
+        face_detection_columns = FEAT_FACEBOX_COLUMNS
         facebox_empty = np.empty((1,4))
         facebox_empty[:] = np.nan
         empty_facebox = pd.DataFrame(facebox_empty, columns = face_detection_columns)
@@ -83,7 +84,7 @@ class Detector(object):
         (_, img_w, img_h, img_c) = model.layers[0].input_shape # model input shape.
         self.info["input_shape"] = {"img_w": img_w, "img_h": img_h, "img_c": img_c}
         self.info["emotion_model"] = emotion_model_path
-        self.info["mapper"] = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4: 'sadness', 5: 'surprise', 6: 'neutral'}
+        self.info["mapper"] = FEAT_EMOTION_MAPPER
         self.emotion_model = model
         emotion_columns = [key for key in self.info["mapper"].values()]
         self.info['emotion_model_columns'] = emotion_columns
@@ -210,7 +211,6 @@ class Detector(object):
         else:
             return init_df
 
-
     def detect_image(self, inputFname, outputFname=None):
         """Detects FEX from a video file.
 
@@ -219,7 +219,7 @@ class Detector(object):
             outputFname (str, optional): Path to output file. Defaults to None.
 
         Returns:
-            dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
+            Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
         assert type(inputFname)==str or type(inputFname)==list, "inputFname must be a string path to image or list of image paths"
         if type(inputFname)==str:
@@ -245,4 +245,4 @@ class Detector(object):
         if outputFname:
             return True
         else:
-            return init_df
+            return Fex(init_df, filename = inputFname, au_columns = None, emotion_columns = FEAT_EMOTION_COLUMNS, facebox_columns = FEAT_FACEBOX_COLUMNS, landmark_columns = openface_2d_landmark_columns, time_columns = FACET_TIME_COLUMNS, detector="Feat")
