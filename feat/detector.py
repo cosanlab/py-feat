@@ -1,3 +1,4 @@
+# %%
 from __future__ import division
 
 """Functions to help detect face, landmarks, emotions, action units from images and videos"""
@@ -12,9 +13,11 @@ from PIL import Image, ImageDraw
 import cv2 as cv
 from feat.data import Fex
 from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS
+import feat.models.JAA_test import JAANet
+
 
 class Detector(object):
-    def __init__(self, n_jobs=1):
+    def __init__(self, face_model='haarcascade', landmark_model='lbf', au_occur_model='jaanet', emotion_model='fer', n_jobs=1):
         """Detector class to detect FEX from images or videos.
 
         Detector is a class used to detect faces, facial landmarks, emotions, and action units from images and videos.
@@ -45,63 +48,92 @@ class Detector(object):
         """
         self.info = {}
         self.info['n_jobs'] = n_jobs
+
         """ LOAD UP THE MODELS """
-        print("Loading Face Detection model.")
-        face_detection_model_path = cv.data.haarcascades + "haarcascade_frontalface_alt.xml"
-        if not os.path.exists(face_detection_model_path):
-            print("Face detection model not found. Check haarcascade_frontalface_alt.xml exists in your opencv installation (cv.data).")
-        face_cascade = cv.CascadeClassifier(face_detection_model_path)
-        face_detection_columns = FEAT_FACEBOX_COLUMNS
-        facebox_empty = np.empty((1,4))
-        facebox_empty[:] = np.nan
-        empty_facebox = pd.DataFrame(facebox_empty, columns = face_detection_columns)
-        self.info["face_detection_model"] = face_detection_model_path
-        self.info["face_detection_columns"] = face_detection_columns
-        self.face_detector = face_cascade
-        self._empty_facebox = empty_facebox
+        print("Loading Face Detection model: ", face_cascade)
+        if face_model == 'haarcascade':
+            self.detect_face = True
+            face_detection_model_path = cv.data.haarcascades + \
+                "haarcascade_frontalface_alt.xml"
+            if not os.path.exists(face_detection_model_path):
+                print("Face detection model not found. Check haarcascade_frontalface_alt.xml exists in your opencv installation (cv.data).")
+            face_cascade = cv.CascadeClassifier(face_detection_model_path)
+            face_detection_columns = FEAT_FACEBOX_COLUMNS
+            facebox_empty = np.empty((1, 4))
+            facebox_empty[:] = np.nan
+            empty_facebox = pd.DataFrame(
+                facebox_empty, columns=face_detection_columns)
+            self.info["face_detection_model"] = face_detection_model_path
+            self.info["face_detection_columns"] = face_detection_columns
+            self.face_detector = face_cascade
+            self._empty_facebox = empty_facebox
+        elif face_model == 'mtcnn':
+            #TODO: Implement initializaton of mtcnn below     
+        self.detect_face = (face_model is not None)
 
-        print("Loading Face Landmark model.")
-        face_landmark = cv.face.createFacemarkLBF()
-        face_landmark_model_path = os.path.join(get_resource_path(), 'lbfmodel.yaml')
-        if not os.path.exists(face_landmark_model_path):
-            print("Face landmark model not found. Please run download_models.py.")
-        face_landmark.loadModel(face_landmark_model_path)
-        face_landmark_columns = np.array([(f'x_{i}',f'y_{i}') for i in range(68)]).reshape(1,136)[0].tolist()
-        landmark_empty = np.empty((1,136))
-        landmark_empty[:] = np.nan
-        empty_landmark = pd.DataFrame(landmark_empty, columns = face_landmark_columns)
-        self.info["face_landmark_model"] = face_landmark_model_path
-        self.info['face_landmark_columns'] = face_landmark_columns
-        self.face_landmark = face_landmark
-        self._empty_landmark = empty_landmark
+        print("Loading Face Landmark model: ", landmark_model)
+        if landmark_model == 'lbf':
+            face_landmark = cv.face.createFacemarkLBF()
+            face_landmark_model_path = os.path.join(
+                get_resource_path(), 'lbfmodel.yaml')
+            if not os.path.exists(face_landmark_model_path):
+                print("Face landmark model not found. Please run download_models.py.")
+            face_landmark.loadModel(face_landmark_model_path)
+            face_landmark_columns = np.array(
+                [(f'x_{i}', f'y_{i}') for i in range(68)]).reshape(1, 136)[0].tolist()
+            landmark_empty = np.empty((1, 136))
+            landmark_empty[:] = np.nan
+            empty_landmark = pd.DataFrame(
+                landmark_empty, columns=face_landmark_columns)
+            self.info["face_landmark_model"] = face_landmark_model_path
+            self.info['face_landmark_columns'] = face_landmark_columns
+            self.face_landmark = face_landmark
+            self._empty_landmark = empty_landmark
+        elif landmark_model == 'another thing':
+            #TODO: Implement the initialization of another landmark detection model
+        self.detect_landmarks = (landmark_model is not None)
 
-        print("Loading FEX DCNN emotion model.")
-        emotion_model = 'fer_aug_model.h5'
-        emotion_model_path = os.path.join(get_resource_path(),'fer_aug_model.h5')
-        if not os.path.exists(emotion_model_path):
-            print("Emotion prediction model not found. Please run download_models.py.")
-        model = models.load_model(emotion_model_path) # Load model to use.
-        (_, img_w, img_h, img_c) = model.layers[0].input_shape # model input shape.
-        self.info["input_shape"] = {"img_w": img_w, "img_h": img_h, "img_c": img_c}
-        self.info["emotion_model"] = emotion_model_path
-        self.info["mapper"] = FEAT_EMOTION_MAPPER
-        self.emotion_model = model
-        emotion_columns = [key for key in self.info["mapper"].values()]
-        self.info['emotion_model_columns'] = emotion_columns
+        print("Loading au occurence model: ", au_occur_model)
+        if au_occur_model == 'jaanet':
+            self.au_model = JAANet()
 
-        # create empty df for predictions 
-        predictions = np.empty((1, len(self.info["mapper"])))
-        predictions[:] = np.nan
-        empty_emotion = pd.DataFrame(predictions, columns = self.info["mapper"].values())
-        self._empty_emotion = empty_emotion
+        self.detect_au_occurence = (au_occur_model is not None)
+
+        print("Loading emotion model: ", emotion_model)
+        if emotion_model == 'fer':
+            emotion_model = 'fer_aug_model.h5'
+            emotion_model_path = os.path.join(
+                get_resource_path(), 'fer_aug_model.h5')
+            if not os.path.exists(emotion_model_path):
+                print(
+                    "Emotion prediction model not found. Please run download_models.py.")
+            model = models.load_model(emotion_model_path)  # Load model to use.
+            # model input shape.
+            (_, img_w, img_h, img_c) = model.layers[0].input_shape
+            self.info["input_shape"] = {
+                "img_w": img_w, "img_h": img_h, "img_c": img_c}
+            self.info["emotion_model"] = emotion_model_path
+            self.info["mapper"] = FEAT_EMOTION_MAPPER
+            self.emotion_model = model
+            emotion_columns = [key for key in self.info["mapper"].values()]
+            self.info['emotion_model_columns'] = emotion_columns
+
+            # create empty df for predictions
+            predictions = np.empty((1, len(self.info["mapper"])))
+            predictions[:] = np.nan
+            empty_emotion = pd.DataFrame(
+                predictions, columns=self.info["mapper"].values())
+            self._empty_emotion = empty_emotion
+        self.detect_emotion = (emotion_model is not None)
 
         frame_columns = ["frame"]
-        self.info["output_columns"] = frame_columns + emotion_columns + face_detection_columns + face_landmark_columns
+        self.info["output_columns"] = frame_columns + emotion_columns + \
+            face_detection_columns + face_landmark_columns
 
     def __getitem__(self, i):
         return self.info[i]
 
-    def process_frame(self, frame, counter=0):
+    def process_frame(self, frame, raw_landmarks = None, counter=0):
         """Helper function to run face detection, landmark detection, and emotion detection on a frame. 
 
         Args:
@@ -117,6 +149,7 @@ class Detector(object):
             >> detector = Detector()
             >> detector.process_frame(np.array(frame))
         """
+
         try:
             # change image to grayscale
             grayscale_image = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -143,12 +176,23 @@ class Detector(object):
                 # make predictions
                 predictions = self.emotion_model.predict(tensor_img)
                 emotion_df = pd.DataFrame(predictions, columns = self["mapper"].values(), index=[counter])
-                return pd.concat([emotion_df, facebox_df, landmarks_df], axis=1)
+                
+                #=======================AU prediction==================================
+                if raw_landmarks is not None:
+                    au_landmarks = raw_landmarks
+                else:
+                    au_landmarks = convert68to49(landmarks[0][0]).flatten()
+                
+                au_df = pd.DataFrame(self.au_model.detect_au(frame,au_landmarks), columns = ["1","2","4","6","7","10","12","14","15","17","23","24"], index=[counter])
+                
+                return pd.concat([emotion_df, facebox_df, landmarks_df, au_df], axis=1)
         except:
             emotion_df = self._empty_emotion.reindex(index=[counter])
             facebox_df = self._empty_facebox.reindex(index=[counter])
             landmarks_df = self._empty_landmark.reindex(index=[counter])
-            return pd.concat([emotion_df, facebox_df, landmarks_df], axis=1)
+            au_df = self._empty_auoccurence.reindex(index=[counter])
+
+            return pd.concat([emotion_df, facebox_df, landmarks_df, au_df], axis=1)
 
     def detect_video(self, inputFname, outputFname=None, skip_frames=1):
         """Detects FEX from a video file.
@@ -218,7 +262,7 @@ class Detector(object):
             inputFname (str, or list of str): Path to image file or a list of paths to image files.
             outputFname (str, optional): Path to output file. Defaults to None.
 
-        Returns:
+        Rseturns:
             Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
         assert type(inputFname)==str or type(inputFname)==list, "inputFname must be a string path to image or list of image paths"
@@ -246,3 +290,4 @@ class Detector(object):
             return True
         else:
             return Fex(init_df, filename = inputFname, au_columns = None, emotion_columns = FEAT_EMOTION_COLUMNS, facebox_columns = FEAT_FACEBOX_COLUMNS, landmark_columns = openface_2d_landmark_columns, time_columns = FACET_TIME_COLUMNS, detector="Feat")
+

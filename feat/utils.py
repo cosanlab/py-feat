@@ -22,6 +22,9 @@ import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
 import feat
+import cv2
+import math
+from PIL import Image
 
 """ DEFINE IMPORTANT VARIABLES """
 # FEAT columns
@@ -414,3 +417,30 @@ def registration(face_lms, neutral= neutral, method = 'fullface'):
         transform = lambda x: unpad(np.dot(pad(x), A))
         registered_lms.append(transform(primary).T.reshape(1,136).ravel())
     return np.array(registered_lms)
+
+
+def convert68to49(points):
+    """
+    Function slightly modified from https://github.com/D-X-Y/landmark-detection/blob/7bc7a5dbdbda314653124a4596f3feaf071e8589/SAN/lib/datasets/dataset_utils.py#L169
+    to fit pytorch tensors.
+    Converts 68 point landmarks to 49 point landmarks
+    Args:
+        points: landmark points of shape (2,68) or (3,68)
+    Return:
+        cpoints: converted 49 landmark points of shape (2,49)
+    """
+    assert len(points.shape) == 2 and (points.shape[0] == 3 or points.shape[0] == 2) and points.shape[1] == 68, 'The shape of points is not right : {}'.format(points.shape)
+
+    if isinstance(points,torch.Tensor):
+        points = points.clone()
+        out = torch.ones((68,),dtype = torch.bool)
+    elif type(points) is np.arr:
+        points = points.copy()
+        out = np.ones((68,)).astype('bool')
+    
+    out[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,60,64]] = False
+    cpoints = points[:, out]
+
+    assert len(cpoints.shape) == 2 and cpoints.shape[1] == 49
+    return cpoints
+
