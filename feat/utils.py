@@ -25,6 +25,7 @@ import feat
 import cv2
 import math
 from PIL import Image
+import torch
 
 """ DEFINE IMPORTANT VARIABLES """
 # FEAT columns
@@ -63,7 +64,8 @@ def face_rect_to_coords(rectangle):
 def get_resource_path():
     """ Get path to feat resource directory. """
     return os.path.join(feat.__path__[0], 'resources') # points to the package folder.
-    # return os.path.join(os.path.dirname(__file__), 'resources')
+    #return ("F:/feat/feat/") # points to the package folder.
+    #return os.path.join(os.path.dirname(__file__), 'resources')
 
 def load_pickled_model(file_name='pls_python27.pkl'):
     """Load the pickled PLS model for plotting.
@@ -434,7 +436,7 @@ def convert68to49(points):
     if isinstance(points,torch.Tensor):
         points = points.clone()
         out = torch.ones((68,),dtype = torch.bool)
-    elif type(points) is np.arr:
+    elif type(points) is np.ndarray:
         points = points.copy()
         out = np.ones((68,)).astype('bool')
     
@@ -444,3 +446,62 @@ def convert68to49(points):
     assert len(cpoints.shape) == 2 and cpoints.shape[1] == 49
     return cpoints
 
+class BBox(object):
+    # https://github.com/cunjian/pytorch_face_landmark/
+    # bbox is a list of [left, right, top, bottom]
+    def __init__(self, bbox):
+        self.left = bbox[0]
+        self.right = bbox[1]
+        self.top = bbox[2]
+        self.bottom = bbox[3]
+        self.x = bbox[0]
+        self.y = bbox[2]
+        self.w = bbox[1] - bbox[0]
+        self.h = bbox[3] - bbox[2]
+
+    # scale to [0,1]
+    def projectLandmark(self, landmark):
+        landmark_= np.asarray(np.zeros(landmark.shape))     
+        for i, point in enumerate(landmark):
+            landmark_[i] = ((point[0]-self.x)/self.w, (point[1]-self.y)/self.h)
+        return landmark_
+
+    # landmark of (5L, 2L) from [0,1] to real range
+    def reprojectLandmark(self, landmark):
+        landmark_= np.asarray(np.zeros(landmark.shape)) 
+        for i, point in enumerate(landmark):
+            x = point[0] * self.w + self.x
+            y = point[1] * self.h + self.y
+            landmark_[i] = (x, y)
+        return landmark_
+
+def drawLandmark(img, bbox, landmark):
+    # https://github.com/cunjian/pytorch_face_landmark/
+    '''
+    Input:
+    - img: gray or RGB
+    - bbox: type of BBox
+    - landmark: reproject landmark of (5L, 2L)
+    Output:
+    - img marked with landmark and bbox
+    '''
+    img_ = img.copy()
+    cv2.rectangle(img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0,0,255), 2)
+    for x, y in landmark:
+        cv2.circle(img_, (int(x), int(y)), 3, (0,255,0), -1)
+    return img_
+
+def drawLandmark_multiple(img, bbox, landmark):
+    # https://github.com/cunjian/pytorch_face_landmark/
+    '''
+    Input:
+    - img: gray or RGB
+    - bbox: type of BBox
+    - landmark: reproject landmark of (5L, 2L)
+    Output:
+    - img marked with landmark and bbox
+    '''
+    cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0,0,255), 2)
+    for x, y in landmark:
+        cv2.circle(img, (int(x), int(y)), 2, (0,255,0), -1)
+    return img
