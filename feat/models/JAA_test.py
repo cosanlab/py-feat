@@ -5,11 +5,13 @@ import torch
 import math
 import pandas as pd
 import numpy as np
-import jaa_network as network
+import models.jaa_network as network
+import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
+from feat.utils import get_resource_path
 
-class JAANet(Object):
+class JAANet(nn.Module):
     def __init__(self) -> None:
         """
         Initialize.
@@ -20,13 +22,13 @@ class JAANet(Object):
         #self.imgs = img_data
         #self.land_data = land_data
         self.params = {
-                "config_unit_dim" = 8,
-                "config_crop_size" = 176,
-                "config_map_size" = 44,
-                "config_au_num" = 12,
-                "config_land_num" = 49,
-                "config_fill_coeff" = 0.56,
-                "config_write_path_prefix" = "F:/PyTorch-JAANet3/params/"
+                "config_unit_dim" : 8,
+                "config_crop_size" : 176,
+                "config_map_size" : 44,
+                "config_au_num" : 12,
+                "config_land_num" : 49,
+                "config_fill_coeff" : 0.56,
+                "config_write_path_prefix" : get_resource_path()
         }
 
     def align_face_49pts(self, img, img_land, box_enlarge = 2.9, img_size = 200):
@@ -90,7 +92,8 @@ class JAANet(Object):
     def detect_au(self,imgs,land_data):
 
         use_gpu = torch.cuda.is_available()
-
+        #if land_data.shape[]
+        land_data = land_data.flatten()
         img, land = self.align_face_49pts(imgs,land_data) # Transforms
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
