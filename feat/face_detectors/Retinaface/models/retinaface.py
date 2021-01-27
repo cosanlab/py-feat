@@ -5,9 +5,9 @@ import torchvision.models._utils as _utils
 import torch.nn.functional as F
 from collections import OrderedDict
 
-from face_detectors.Retinaface.models.net import MobileNetV1 as MobileNetV1
-from face_detectors.Retinaface.models.net import FPN as FPN
-from face_detectors.Retinaface.models.net import SSH as SSH
+from feat.face_detectors.Retinaface.models.net import MobileNetV1 as MobileNetV1
+from feat.face_detectors.Retinaface.models.net import FPN as FPN
+from feat.face_detectors.Retinaface.models.net import SSH as SSH
 
 
 
