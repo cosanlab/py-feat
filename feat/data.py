@@ -19,10 +19,10 @@ from functools import reduce
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
 
-#from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
-#from feat.plotting import plot_face
-from utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
-from plotting import plot_face
+from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
+from feat.plotting import plot_face
+#from utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
+#from plotting import plot_face
 #from nilearn.signal import clean
 from scipy.signal import convolve
 
