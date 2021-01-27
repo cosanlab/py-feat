@@ -177,3 +177,4 @@ class JAANet(nn.Module):
         AUoccur_pred[AUoccur_pred_prob >= 0.5] = 1
 
         return AUoccur_pred
+
