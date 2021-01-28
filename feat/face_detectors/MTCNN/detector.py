@@ -4,7 +4,7 @@ from torch.autograd import Variable
 from .get_nets import PNet, RNet, ONet
 from .box_utils import nms, calibrate_box, get_image_boxes, convert_to_square
 from .first_stage import run_first_stage
-
+from PIL import Image
 
 class MTCNN:
     def __init__(self):
@@ -32,6 +32,9 @@ class MTCNN:
         onet.eval()
 
         # BUILD AN IMAGE PYRAMID
+        if isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
+
         width, height = image.size
         min_length = min(height, width)
 

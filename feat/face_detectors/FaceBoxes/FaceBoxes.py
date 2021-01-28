@@ -28,7 +28,7 @@ HEIGHT, WIDTH = 720, 1080
 
 #make_abs_path = lambda fn: osp.join(osp.dirname(osp.realpath(__file__)), fn)
 #pretrained_path = make_abs_path('weights/FaceBoxesProd.pth')
-pretrained_path = os.path.join(feat.__path__[0], 'face_detectors/weights/FaceBoxesProd.pth'
+pretrained_path = os.path.join(feat.__path__[0], 'face_detectors/FaceBoxes/weights/FaceBoxesProd.pth')
 
 def viz_bbox(img, dets, wfp='out.jpg'):
     # show

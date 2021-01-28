@@ -6,7 +6,7 @@
 from feat.detector import Detector
 from feat.data import Fex
 from feat.utils import get_resource_path
-from .utils import get_test_data_path
+from feat.tests.utils import get_test_data_path
 import pandas as pd
 import feat
 import os
@@ -125,28 +125,38 @@ def test_detector():
     aus = detector1.au_occur_detect(img01,lands)
     assert aus.shape[-1] == 12
 
-    # Test detect image
-    inputFname = os.path.join(get_test_data_path(), "input.jpg")
-    out = detector.detect_image(inputFname=inputFname)
-    assert type(out) == Fex
-    assert len(out) == 1
-    assert out.happiness.values[0] > 0
+    # # Test detect image
+    # inputFname = os.path.join(get_test_data_path(), "input.jpg")
+    # out = detector.detect_image(inputFname=inputFname)
+    # assert type(out) == Fex
+    # assert len(out) == 1
+    # assert out.happiness.values[0] > 0
 
-    outputFname = os.path.join(get_test_data_path(), "output.csv")
-    out = detector.detect_image(inputFname=inputFname, outputFname=outputFname)
-    assert out
-    assert os.path.exists(outputFname)
-    out = pd.read_csv(outputFname)
-    assert out.happiness.values[0] > 0
+    # outputFname = os.path.join(get_test_data_path(), "output.csv")
+    # out = detector.detect_image(inputFname=inputFname, outputFname=outputFname)
+    # assert out
+    # assert os.path.exists(outputFname)
+    # out = pd.read_csv(outputFname)
+    # assert out.happiness.values[0] > 0
 
-    # Test detect video
-    inputFname = os.path.join(get_test_data_path(), "input.mp4")
-    out = detector.detect_video(inputFname=inputFname)
-    assert len(out) == 72
+    # # Test detect video
+    # inputFname = os.path.join(get_test_data_path(), "input.mp4")
+    # out = detector.detect_video(inputFname=inputFname)
+    # assert len(out) == 72
 
-    outputFname = os.path.join(get_test_data_path(), "output.csv")
-    out = detector.detect_video(inputFname=inputFname, outputFname=outputFname)
-    assert out
-    assert os.path.exists(outputFname)
-    out = pd.read_csv(outputFname)
-    assert out.happiness.values.max() > 0
+    # outputFname = os.path.join(get_test_data_path(), "output.csv")
+    # out = detector.detect_video(inputFname=inputFname, outputFname=outputFname)
+    # assert out
+    # assert os.path.exists(outputFname)
+    # out = pd.read_csv(outputFname)
+    # assert out.happiness.values.max() > 0
+
+    # Test processing everything:
+    detector04 = Detector(face_model='RetinaFace', emotion_model='fer', landmark_model="PFLD", au_occur_model='jaanet')
+    inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
+    img01 = cv2.imread(inputFname)
+    files = detector04.process_frame(img01,0)
+    #return files
+
+#kp01 = test_detector()
+#print("finished")
