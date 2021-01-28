@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image, ImageDraw
 import cv2
-
+import feat
 from feat.data import Fex
 from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
 from feat.models.JAA_test import JAANet
@@ -106,23 +106,21 @@ class Detector(object):
             self.landmark_detector = torch.nn.DataParallel(
                 self.landmark_detector)
             # download model from https://drive.google.com/file/d/1Le5UdpMkKOTRr1sTp4lwkw8263sbgdSe/view?usp=sharing
-            checkpoint = torch.load(
-                'landmark_detectors/weights/mobilenet_224_model_best_gdconv_external.pth.tar', map_location=self.map_location)
+            #CHANGEME
+            checkpoint = torch.load(os.path.join(feat.__path__[0], 'landmark_detectors/weights/mobilenet_224_model_best_gdconv_external.pth.tar'), map_location=self.map_location)
             print('Use MobileNet as backbone')
             self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
         elif landmark_model == 'PFLD':
             self.landmark_detector = PFLDInference()
             # download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
-            checkpoint = torch.load(
-                'landmark_detectors/weights/pfld_model_best.pth.tar', map_location=self.map_location)
+            checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/pfld_model_best.pth.tar'), map_location=self.map_location)
             print('Use PFLD as backbone')
             self.landmark_detector.load_state_dict(checkpoint['state_dict'])
             # download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
         elif landmark_model == 'MobileFaceNet':
             self.landmark_detector = MobileFaceNet([112, 112], 136)
-            checkpoint = torch.load(
-                'landmark_detectors/weights/mobilefacenet_model_best.pth.tar', map_location=self.map_location)
+            checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/mobilefacenet_model_best.pth.tar'), map_location=self.map_location)
             print('Use MobileFaceNet as backbone')
             self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
