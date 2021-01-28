@@ -31,7 +31,8 @@ import torch
 # FEAT columns
 FEAT_EMOTION_MAPPER = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4: 'sadness', 5: 'surprise', 6: 'neutral'}
 FEAT_EMOTION_COLUMNS = ['anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'neutral']
-FEAT_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
+#FEAT_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
+FEAT_FACEBOX_COLUMNS = ['FaceRectX1','FaceRectY1','FaceRectX2','FaceRectY2']
 FEAT_TIME_COLUMNS = ['frame']
 
 # FACET columns
@@ -45,6 +46,11 @@ FACET_DESIGN_COLUMNS = ['StimulusName', 'SlideType', 'EventSource','Annotation']
 landmark_length=68
 openface_2d_landmark_columns = [f'x_{i}' for i in range(landmark_length)] + [f'y_{i}' for i in range(landmark_length)]
 openface_3d_landmark_columns =[f'X_{i}' for i in range(landmark_length)] + [f'Y_{i}' for i in range(landmark_length)] + [f'Z_{i}' for i in range(landmark_length)] 
+
+jaanet_AU_list = [1,2,4,6,7,10,12,14,15,17,23,24]
+jaanet_AU_presence = [f'AU'+str(i).zfill(2)+'_c' for i in jaanet_AU_list]
+jaanet_AU_presence.sort()
+
 openface_AU_list = [1,2,4,5,6,7,9,10,12,14,15,17,20,23,25,26,45]
 openface_AU_intensity = [f'AU'+str(i).zfill(2)+'_r' for i in openface_AU_list]
 openface_AU_presence = [f'AU'+str(i).zfill(2)+'_c' for i in openface_AU_list+[28]]
