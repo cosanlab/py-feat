@@ -66,6 +66,12 @@ A deep convolutional neural network was trained on the Facial Expression Recogni
 AU prediction model 
 Joint Facial Action Unit Detection and Face Alignment via Adaptive Attention[Shao, Liu, Cai, and Ma, 2020](https://arxiv.org/pdf/2003.08834.pdf)
 
+## Contributing
+1. Fork the repository on GitHub. 
+2. Run the tests with `pytest tests/` to make confirm that all tests pass on your system. If some tests fail, try to find out why they are failing. Common issues may be not having downloaded model files or missing dependencies.
+3. Create your feature AND add tests to make sure they are working. 
+4. Run the tests again with `pytest tests/` to make sure everything still passes, including your new feature. If you broke something, edit your feature so that it doesn't break existing code. 
+5. Create a pull request to the main repository's `master` branch.
 
 ## Google DOCS for development
 https://docs.google.com/document/d/1cqbDp5dkMtnWWdFtAowLGf_l1zhnGmvb8JcOxNsn8dc/edit?usp=sharing
