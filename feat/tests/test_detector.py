@@ -59,7 +59,7 @@ def test_detector():
     bbox_right = out[0][1]
     bbox_top = out[0][2]
     bbox_bottom = out[0][3]
-    assert len(out[0]) == 4
+    assert len(out[0]) == 5
     assert bbox_left > 0 and bbox_right > 0 and bbox_top > 0 and bbox_bottom > 0 and \
         bbox_left < bbox_right and bbox_top < bbox_bottom and bbox_left < w and \
         bbox_right < w and bbox_top < h and bbox_bottom < h
@@ -71,7 +71,7 @@ def test_detector():
     bbox_right = out[0][1]
     bbox_top = out[0][2]
     bbox_bottom = out[0][3]
-    assert len(out[0]) == 4
+    assert len(out[0]) == 5
     assert bbox_left > 0 and bbox_right > 0 and bbox_top > 0 and bbox_bottom > 0 and \
         bbox_left < bbox_right and bbox_top < bbox_bottom and bbox_left < w and \
         bbox_right < w and bbox_top < h and bbox_bottom < h
@@ -83,7 +83,7 @@ def test_detector():
     bbox_right = out[0][1]
     bbox_top = out[0][2]
     bbox_bottom = out[0][3]
-    assert len(out[0]) == 4
+    assert len(out[0]) == 5
     assert bbox_left > 0 and bbox_right > 0 and bbox_top > 0 and bbox_bottom > 0 and \
         bbox_left < bbox_right and bbox_top < bbox_bottom and bbox_left < w and \
         bbox_right < w and bbox_top < h and bbox_bottom < h
