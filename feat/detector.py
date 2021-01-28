@@ -1,4 +1,3 @@
-# %%
 from __future__ import division
 
 """Functions to help detect face, landmarks, emotions, action units from images and videos"""
@@ -14,12 +13,8 @@ from PIL import Image, ImageDraw
 import cv2
 import feat
 from feat.data import Fex
-from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
+from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, jaanet_AU_presence, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
 from feat.models.JAA_test import JAANet
-# from data import Fex
-# from utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
-# from models.JAA_test import JAANet
-# from models.mtcnn_Net import MTCNN
 
 import torch
 from feat.face_detectors.FaceBoxes import FaceBoxes
@@ -71,7 +66,7 @@ class Detector(object):
 
         """ LOAD UP THE MODELS """
         print("Loading Face Detection model: ", face_model)
-        self.info['Face_Model'] = face_model
+        
         if face_model == "FaceBoxes":
             self.face_detector = FaceBoxes()
         elif face_model == "RetinaFace":
@@ -79,25 +74,10 @@ class Detector(object):
         elif face_model == 'MTCNN':
             self.face_detector = MTCNN()
 
-        # if face_model == 'haarcascade':
-        #     self.detect_face = True
-        #     face_detection_model_path = cv.data.haarcascades + \
-        #         "haarcascade_frontalface_alt.xml"
-        #     if not os.path.exists(face_detection_model_path):
-        #         print("Face detection model not found. Check haarcascade_frontalface_alt.xml exists in your opencv installation (cv.data).")
-        #     face_cascade = cv.CascadeClassifier(face_detection_model_path)
-        #     face_detection_columns = FEAT_FACEBOX_COLUMNS
-        #     facebox_empty = np.empty((1, 4))
-        #     facebox_empty[:] = np.nan
-        #     empty_facebox = pd.DataFrame(
-        #         facebox_empty, columns=face_detection_columns)
-        #     self.info["face_detection_model"] = face_detection_model_path
-        #     self.info["face_detection_columns"] = face_detection_columns
-        #     self.face_detector = face_cascade
-        #     self._empty_facebox = empty_facebox
-        # elif face_model == 'mtcnn':
-        #     self.face_detector = MTCNN()
-        #self.detect_face = (face_model is not None)
+        self.info['Face_Model'] = face_model
+        #self.info["mapper"] = FEAT_FACEBOX_COLUMNS
+        facebox_columns = FEAT_FACEBOX_COLUMNS
+        self.info['face_detection_columns'] = facebox_columns
 
         print("Loading Face Landmark model: ", landmark_model)
         self.info['Landmark_Model'] = landmark_model
@@ -124,31 +104,20 @@ class Detector(object):
             print('Use MobileFaceNet as backbone')
             self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
+        self.info['landmark_model'] = landmark_model
+        #self.info["mapper"] = openface_2d_landmark_columns
+        landmark_columns = openface_2d_landmark_columns
+        self.info['face_landmark_columns'] = landmark_columns
+
         print("Loading au occurence model: ", au_occur_model)
         self.info['AU_Occur_Model'] = au_occur_model
         if au_occur_model == 'jaanet':
             self.au_model = JAANet()
-        # if landmark_model == 'lbf':
-        #     face_landmark = cv.face.createFacemarkLBF()
-        #     face_landmark_model_path = os.path.join(
-        #         get_resource_path(), 'lbfmodel.yaml')
-        #     if not os.path.exists(face_landmark_model_path):
-        #         print("Face landmark model not found. Please run download_models.py.")
-        #     face_landmark.loadModel(face_landmark_model_path)
-        #     face_landmark_columns = np.array(
-        #         [(f'x_{i}', f'y_{i}') for i in range(68)]).reshape(1, 136)[0].tolist()
-        #     landmark_empty = np.empty((1, 136))
-        #     landmark_empty[:] = np.nan
-        #     empty_landmark = pd.DataFrame(
-        #         landmark_empty, columns=face_landmark_columns)
-        #     self.info["face_landmark_model"] = face_landmark_model_path
-        #     self.info['face_landmark_columns'] = face_landmark_columns
-        #     self.face_landmark = face_landmark
-        #     self._empty_landmark = empty_landmark
-        # elif landmark_model == 'another thing':
-            # TODO: Implement the initialization of another landmark detection model
-        #self.detect_landmarks = (landmark_model is not None)
-        #self.detect_au_occurence = (au_occur_model is not None)
+
+        self.info['auoccur_model'] = au_occur_model
+        #self.info["mapper"] = jaanet_AU_presence
+        auoccur_columns = jaanet_AU_presence
+        self.info['au_presence_columns'] = auoccur_columns
 
         print("Loading emotion model: ", emotion_model)
         if emotion_model == 'fer':
@@ -177,9 +146,10 @@ class Detector(object):
             self._empty_emotion = empty_emotion
         #self.detect_emotion = (emotion_model is not None)
 
-#        frame_columns = ["frame"]
-#        self.info["output_columns"] = frame_columns + emotion_columns + \
-#            face_detection_columns + face_landmark_columns
+        frame_columns = ["frame"]
+        # TODO: add emotion_columns
+        self.info["output_columns"] = frame_columns  + \
+           facebox_columns + landmark_columns + auoccur_columns
 
     def __getitem__(self, i):
         return self.info[i]
@@ -191,8 +161,7 @@ class Detector(object):
 
         if len(faces) == 0:
             print("Warning: NO FACE is detected")
-
-        return (faces)
+        return faces
 
     def landmark_detect(self, frame, detected_faces):
         mean = np.asarray([0.485, 0.456, 0.406])
@@ -266,70 +235,75 @@ class Detector(object):
             landmarks = convert68to49(landmarks)
         print(landmarks)
         print(landmarks.shape)
-        return (self.au_model.detect_au(frame, landmarks))
+        return self.au_model.detect_au(frame, landmarks)
 
-    # def process_frame(self, frame, raw_landmarks = None, counter=0):
-    #     """Helper function to run face detection, landmark detection, and emotion detection on a frame.
+    def process_frame(self, frame, counter=0):
+        """Helper function to run face detection, landmark detection, and emotion detection on a frame.
 
-    #     Args:
-    #         frame (np.array): Numpy array of image, ideally loaded through Pillow.Image
-    #         counter (int, str, default=0): Index used for the prediction results dataframe.
+        Args:
+            frame (np.array): Numpy array of image, ideally loaded through Pillow.Image
+            counter (int, str, default=0): Index used for the prediction results dataframe.
 
-    #     Returns:
-    #         df (dataframe): Prediction results dataframe.
+        Returns:
+            df (dataframe): Prediction results dataframe.
 
-    #     Example:
-    #         >> from pil import Image
-    #         >> frame = Image.open("input.jpg")
-    #         >> detector = Detector()
-    #         >> detector.process_frame(np.array(frame))
-    #     """
-    #     # How you would use MTCNN in this case:
-    #     # my_model.detect(img = im01,landmarks=False)[0] will return a bounding box array of shape (1,4)
+        Example:
+            >> from pil import Image
+            >> frame = Image.open("input.jpg")
+            >> detector = Detector()
+            >> detector.process_frame(np.array(frame))
+        """
+        # How you would use MTCNN in this case:
+        # my_model.detect(img = im01,landmarks=False)[0] will return a bounding box array of shape (1,4)
 
-    #     try:
-    #         # change image to grayscale
-    #         grayscale_image = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    #         # find faces
-    #         detected_faces = self.face_detector.detectMultiScale(grayscale_image)
-    #         # detect landmarks
-    #         ok, landmarks = self.face_landmark.fit(grayscale_image, detected_faces)
-    #         landmarks_df = pd.DataFrame(landmarks[0][0].reshape(1, 136), columns = self["face_landmark_columns"], index=[counter])
-    #         # Use Tiankang's colde to align the faces to the center
+        try:
+            # change image to grayscale
+            detected_faces = self.face_detect(frame=frame)
+            facebox_df = pd.DataFrame([detected_faces[0][0:4]], columns = self["face_detection_columns"], index=[counter])
+            
+            landmarks = self.landmark_detect(frame=frame,detected_faces=detected_faces[0:4])
+            landmarks_df = pd.DataFrame(landmarks[0].flatten(order="F").reshape(1,-1), columns = self["face_landmark_columns"], index=[counter])
+            
+            au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
+            au_occur_df = pd.DataFrame(au_occur, columns = self["au_presence_columns"], index = [counter])
 
-    #         # crop just the face area
-    #         if len(detected_faces)>0:
-    #             facebox_df = pd.DataFrame([detected_faces[0]], columns = self["face_detection_columns"], index=[counter])
-    #             grayscale_cropped_face = Image.fromarray(grayscale_image).crop(face_rect_to_coords(detected_faces[0]))
-    #             # resize face to newsize 48 x 48
-    #             # print("resizeface", grayscale_cropped_face.shape, img_w, img_h, img_c)
-    #             grayscale_cropped_resized_face = grayscale_cropped_face.resize((self['input_shape']["img_w"], self['input_shape']["img_h"]))
-    #             # reshape to put in model
-    #             grayscale_cropped_resized_reshaped_face = np.array(grayscale_cropped_resized_face).reshape(1, self['input_shape']["img_w"], self['input_shape']["img_h"], self['input_shape']["img_c"])
-    #             # normalize
-    #             normalize_grayscale_cropped_resized_reshaped_face = grayscale_cropped_resized_reshaped_face/255.
-    #             # make tensor
-    #             tensor_img = tf.convert_to_tensor(normalize_grayscale_cropped_resized_reshaped_face)
-    #             # make predictions
-    #             predictions = self.emotion_model.predict(tensor_img)
-    #             emotion_df = pd.DataFrame(predictions, columns = self["mapper"].values(), index=[counter])
+            # TODO: Modularize Emotion Detection Model
+            # crop just the face area
+            # if detected_faces.shape[0] > 0:
+            #     facebox_df = pd.DataFrame([detected_faces[0]], columns = self["face_detection_columns"], index=[counter])
+            #     grayscale_cropped_face = Image.fromarray(grayscale_image).crop(face_rect_to_coords(detected_faces[0]))
+            #     # resize face to newsize 48 x 48
+            #     # print("resizeface", grayscale_cropped_face.shape, img_w, img_h, img_c)
+            #     grayscale_cropped_resized_face = grayscale_cropped_face.resize((self['input_shape']["img_w"], self['input_shape']["img_h"]))
+            #     # reshape to put in model
+            #     grayscale_cropped_resized_reshaped_face = np.array(grayscale_cropped_resized_face).reshape(1, self['input_shape']["img_w"], self['input_shape']["img_h"], self['input_shape']["img_c"])
+            #     # normalize
+            #     normalize_grayscale_cropped_resized_reshaped_face = grayscale_cropped_resized_reshaped_face/255.
+            #     # make tensor
+            #     tensor_img = tf.convert_to_tensor(normalize_grayscale_cropped_resized_reshaped_face)
+            #     # make predictions
+            #     predictions = self.emotion_model.predict(tensor_img)
+            #     emotion_df = pd.DataFrame(predictions, columns = self["mapper"].values(), index=[counter])
 
-    #             #=======================AU prediction==================================
-    #             if raw_landmarks is not None:
-    #                 au_landmarks = raw_landmarks
-    #             else:
-    #                 au_landmarks = convert68to49(landmarks[0][0]).flatten()
+                #=======================AU prediction==================================
+            #if raw_landmarks is not None:
+            #    au_landmarks = raw_landmarks
+            #else:
+            #    au_landmarks = convert68to49(landmarks[0][0]).flatten()
 
-    #             au_df = pd.DataFrame(self.au_model.detect_au(frame,au_landmarks), columns = ["1","2","4","6","7","10","12","14","15","17","23","24"], index=[counter])
+            #au_df = pd.DataFrame(self.au_model.detect_au(frame,au_landmarks), columns = ["1","2","4","6","7","10","12","14","15","17","23","24"], index=[counter])
+            #emotion_df, 
+            return pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+        
+        except:
+            # TODO: Also, emotion model here too
+            #emotion_df = self._empty_emotion.reindex(index=[counter])
+            facebox_df = self._empty_facebox.reindex(index=[counter])
+            landmarks_df = self._empty_landmark.reindex(index=[counter])
+            au_df = self._empty_auoccurence.reindex(index=[counter])
+            #emotion_df, 
+            return pd.concat([facebox_df, landmarks_df, au_df], axis=1)
 
-    #             return pd.concat([emotion_df, facebox_df, landmarks_df, au_df], axis=1)
-    #     except:
-    #         emotion_df = self._empty_emotion.reindex(index=[counter])
-    #         facebox_df = self._empty_facebox.reindex(index=[counter])
-    #         landmarks_df = self._empty_landmark.reindex(index=[counter])
-    #         au_df = self._empty_auoccurence.reindex(index=[counter])
-
-    #         return pd.concat([emotion_df, facebox_df, landmarks_df, au_df], axis=1)
 
     def detect_video(self, inputFname, outputFname=None, skip_frames=1):
         """Detects FEX from a video file.
@@ -348,7 +322,7 @@ class Detector(object):
         if outputFname:
             init_df.to_csv(outputFname, index=False, header=True)
 
-        cap = cv.VideoCapture(inputFname)
+        cap = cv2.VideoCapture(inputFname)
 
         # Determine whether to use multiprocessing.
         n_jobs = self['n_jobs']

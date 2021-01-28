@@ -124,19 +124,33 @@ class JAANet(nn.Module):
             local_au_net = local_au_net.cuda()
             global_au_feat = global_au_feat.cuda()
             au_net = au_net.cuda()
-        # Load parameters
-        region_learning.load_state_dict(torch.load(
-            config_write_path_prefix + 'region_learning' + '.pth'))
-        align_net.load_state_dict(torch.load(
-            config_write_path_prefix + 'align_net' + '.pth'))
-        local_attention_refine.load_state_dict(torch.load(
-            config_write_path_prefix + 'local_attention_refine' + '.pth'))
-        local_au_net.load_state_dict(torch.load(
-            config_write_path_prefix + 'local_au_net' + '.pth'))
-        global_au_feat.load_state_dict(torch.load(
-            config_write_path_prefix + 'global_au_feat' + '.pth'))
-        au_net.load_state_dict(torch.load(
-            config_write_path_prefix + 'au_net' + '.pth'))
+            # Load parameters
+            #load_map = 'cpu' if True else 'false'
+            region_learning.load_state_dict(torch.load(
+                config_write_path_prefix + '/region_learning' + '.pth'))
+            align_net.load_state_dict(torch.load(
+                config_write_path_prefix + '/align_net' + '.pth'))
+            local_attention_refine.load_state_dict(torch.load(
+                config_write_path_prefix + '/local_attention_refine' + '.pth'))
+            local_au_net.load_state_dict(torch.load(
+                config_write_path_prefix + '/local_au_net' + '.pth'))
+            global_au_feat.load_state_dict(torch.load(
+                config_write_path_prefix + '/global_au_feat' + '.pth'))
+            au_net.load_state_dict(torch.load(
+                config_write_path_prefix + '/au_net' + '.pth'))
+        else:
+            region_learning.load_state_dict(torch.load(
+                config_write_path_prefix + '/region_learning' + '.pth',map_location={'cuda:0': 'cpu'}))
+            align_net.load_state_dict(torch.load(
+                config_write_path_prefix + '/align_net' + '.pth',map_location={'cuda:0': 'cpu'}))
+            local_attention_refine.load_state_dict(torch.load(
+                config_write_path_prefix + '/local_attention_refine' + '.pth',map_location={'cuda:0': 'cpu'}))
+            local_au_net.load_state_dict(torch.load(
+                config_write_path_prefix + '/local_au_net' + '.pth',map_location={'cuda:0': 'cpu'}))
+            global_au_feat.load_state_dict(torch.load(
+                config_write_path_prefix + '/global_au_feat' + '.pth',map_location={'cuda:0': 'cpu'}))
+            au_net.load_state_dict(torch.load(
+                config_write_path_prefix + '/au_net' + '.pth',map_location={'cuda:0': 'cpu'}))
         
         region_learning.eval()
         align_net.eval()
