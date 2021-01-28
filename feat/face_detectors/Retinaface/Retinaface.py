@@ -11,10 +11,10 @@ import cv2
 from .models.retinaface import RetinaFace
 from .utils.box_utils import decode, decode_landm
 import time
-
+import feat
 
 # some global configs
-trained_model='face_detectors/Retinaface/weights/mobilenet0.25_Final.pth'
+trained_model=os.path.join(feat.__path__[0], 'face_detectors/Retinaface/weights/mobilenet0.25_Final.pth')
 network='mobile0.25'
 confidence_threshold = 0.05
 top_k = 5000
