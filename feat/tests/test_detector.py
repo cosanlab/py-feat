@@ -64,7 +64,7 @@ def test_detector():
         bbox_left < bbox_right and bbox_top < bbox_bottom and bbox_left < w and \
         bbox_right < w and bbox_top < h and bbox_bottom < h
 
-    detector02 = Detector(face_model='Retinaface', landmark_model=None,
+    detector02 = Detector(face_model='RetinaFace', landmark_model=None,
                           au_occur_model=None, emotion_model=None, n_jobs=1)
     out = detector02.face_detect(img01)
     bbox_left = out[0][0]
