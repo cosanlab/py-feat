@@ -16,10 +16,6 @@ import feat
 from feat.data import Fex
 from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
 from feat.models.JAA_test import JAANet
-# from data import Fex
-# from utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
-# from models.JAA_test import JAANet
-# from models.mtcnn_Net import MTCNN
 
 import torch
 from feat.face_detectors.FaceBoxes import FaceBoxes
@@ -175,11 +171,11 @@ class Detector(object):
             empty_emotion = pd.DataFrame(
                 predictions, columns=self.info["mapper"].values())
             self._empty_emotion = empty_emotion
-        #self.detect_emotion = (emotion_model is not None)
+        self.detect_emotion = (emotion_model is not None)
 
-#        frame_columns = ["frame"]
-#        self.info["output_columns"] = frame_columns + emotion_columns + \
-#            face_detection_columns + face_landmark_columns
+        frame_columns = ["frame"]
+        self.info["output_columns"] = frame_columns + emotion_columns + \
+           face_detection_columns + face_landmark_columns
 
     def __getitem__(self, i):
         return self.info[i]
