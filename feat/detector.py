@@ -144,12 +144,17 @@ class Detector(object):
             empty_emotion = pd.DataFrame(
                 predictions, columns=self.info["mapper"].values())
             self._empty_emotion = empty_emotion
-        #self.detect_emotion = (emotion_model is not None)
+        self.detect_emotion = (emotion_model is not None)
 
         frame_columns = ["frame"]
+<<<<<<< HEAD
         # TODO: add emotion_columns
         self.info["output_columns"] = frame_columns  + \
            facebox_columns + landmark_columns + auoccur_columns
+=======
+        self.info["output_columns"] = frame_columns + emotion_columns + \
+           face_detection_columns + face_landmark_columns
+>>>>>>> AUOccur
 
     def __getitem__(self, i):
         return self.info[i]
