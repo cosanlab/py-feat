@@ -147,14 +147,12 @@ class Detector(object):
         self.detect_emotion = (emotion_model is not None)
 
         frame_columns = ["frame"]
-<<<<<<< HEAD
         # TODO: add emotion_columns
         self.info["output_columns"] = frame_columns  + \
            facebox_columns + landmark_columns + auoccur_columns
-=======
-        self.info["output_columns"] = frame_columns + emotion_columns + \
-           face_detection_columns + face_landmark_columns
->>>>>>> AUOccur
+
+        # self.info["output_columns"] = frame_columns + emotion_columns + \
+        #    face_detection_columns + face_landmark_columns
 
     def __getitem__(self, i):
         return self.info[i]
