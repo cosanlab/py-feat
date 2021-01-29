@@ -307,17 +307,15 @@ class Detector(object):
 
     def detect_video(self, inputFname, outputFname=None, skip_frames=1):
         """Detects FEX from a video file.
-
         Args:
             inputFname (str): Path to video file
             outputFname (str, optional): Path to output file. Defaults to None.
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
-
         Returns:
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
         self.info['inputFname'] = inputFname
-        self.info['outputFname'] = outputFname
+        self.info['outputFname'] = outputFname 
         init_df = pd.DataFrame(columns=self["output_columns"])
         if outputFname:
             init_df.to_csv(outputFname, index=False, header=True)
@@ -326,9 +324,9 @@ class Detector(object):
 
         # Determine whether to use multiprocessing.
         n_jobs = self['n_jobs']
-        if n_jobs == -1:
-            thread_num = cv.getNumberOfCPUs()  # get available cpus
-        else:
+        if n_jobs==-1:
+            thread_num = cv.getNumberOfCPUs() # get available cpus
+        else: 
             thread_num = n_jobs
         pool = ThreadPool(processes=thread_num)
         pending_task = deque()
@@ -347,29 +345,30 @@ class Detector(object):
                 else:
                     init_df = pd.concat([init_df, df], axis=0)
                 processed_frames = processed_frames + 1
-
+         
             if not frame_got:
                 break
-
+         
             # Populate the queue.
             if len(pending_task) < thread_num:
                 frame_got, frame = cap.read()
-                # Process at every seconds.
-                if counter % skip_frames == 0:
+                # Process at every seconds. 
+                if counter%skip_frames == 0:
                     if frame_got:
-                        task = pool.apply_async(
-                            self.process_frame, (frame.copy(), counter))
+                        task = pool.apply_async(self.process_frame, (frame.copy(), counter))
                         pending_task.append(task)
                 counter = counter + 1
-        cap.release()
+                print("counter:",counter)
+        cap.release() 
+        
         if outputFname:
-            return True
+            return True 
         else:
             return init_df
 
     def detect_image(self, inputFname, outputFname=None):
+        #TODO: update emotion model
         """Detects FEX from a video file.
-
         Args:
             inputFname (str, or list of str): Path to image file or a list of paths to image files.
             outputFname (str, optional): Path to output file. Defaults to None.
@@ -393,7 +392,6 @@ class Detector(object):
         for inputF in inputFname:
             frame = Image.open(inputF)
             df = self.process_frame(np.array(frame))
-
             if outputFname:
                 df.to_csv(outputFname, index=True, header=False, mode='a')
             else:
@@ -402,7 +400,8 @@ class Detector(object):
         if outputFname:
             return True
         else:
-            return Fex(init_df, filename=inputFname, au_columns=None, emotion_columns=FEAT_EMOTION_COLUMNS, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
+            #return Fex(init_df, filename=inputFname, au_columns=None, emotion_columns=FEAT_EMOTION_COLUMNS, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
+            return Fex(init_df, filename=inputFname, au_columns=jaanet_AU_presence, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
 
 
 # %%

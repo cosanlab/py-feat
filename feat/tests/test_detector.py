@@ -125,24 +125,24 @@ def test_detector():
     aus = detector1.au_occur_detect(img01,lands)
     assert aus.shape[-1] == 12
 
-    # # Test detect image
-    # inputFname = os.path.join(get_test_data_path(), "input.jpg")
-    # out = detector.detect_image(inputFname=inputFname)
-    # assert type(out) == Fex
-    # assert len(out) == 1
-    # assert out.happiness.values[0] > 0
+    # Test detect image
+    inputFname = os.path.join(get_test_data_path(), "input.jpg")
+    out = detector.detect_image(inputFname=inputFname)
+    assert type(out) == Fex
+    assert len(out) == 1
+    #assert out.happiness.values[0] > 0
 
-    # outputFname = os.path.join(get_test_data_path(), "output.csv")
-    # out = detector.detect_image(inputFname=inputFname, outputFname=outputFname)
-    # assert out
-    # assert os.path.exists(outputFname)
-    # out = pd.read_csv(outputFname)
-    # assert out.happiness.values[0] > 0
+    outputFname = os.path.join(get_test_data_path(), "output.csv")
+    out = detector.detect_image(inputFname=inputFname, outputFname=outputFname)
+    assert out
+    assert os.path.exists(outputFname)
+    out = pd.read_csv(outputFname)
+    #assert out.happiness.values[0] > 0
 
-    # # Test detect video
-    # inputFname = os.path.join(get_test_data_path(), "input.mp4")
-    # out = detector.detect_video(inputFname=inputFname)
-    # assert len(out) == 72
+    # Test detect video
+    inputFname = os.path.join(get_test_data_path(), "input.mp4")
+    out = detector.detect_video(inputFname=inputFname,skip_frames=20)
+    assert len(out) == 4
 
     # outputFname = os.path.join(get_test_data_path(), "output.csv")
     # out = detector.detect_video(inputFname=inputFname, outputFname=outputFname)
@@ -156,7 +156,6 @@ def test_detector():
     inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
     img01 = cv2.imread(inputFname)
     files = detector04.process_frame(img01,0)
-    #return files
 
-#kp01 = test_detector()
-#print("finished")
+
+test_detector()
