@@ -156,6 +156,3 @@ def test_detector():
     inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
     img01 = cv2.imread(inputFname)
     files = detector04.process_frame(img01,0)
-
-
-test_detector()
