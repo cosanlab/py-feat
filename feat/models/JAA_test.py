@@ -130,7 +130,9 @@ class JAANet(nn.Module):
             #load_map = 'cpu' if True else 'false'
             # au_occur_model_path = os.path.join(
             #     config_write_path_prefix , '/region_learning' , '.pth')
-
+            print("should load data at ",os.path.join(config_write_path_prefix , 'region_learning.pth'))
+            print("Directory Files:")
+            print(os.listdir(config_write_path_prefix))
             region_learning.load_state_dict(torch.load(os.path.join(
                 config_write_path_prefix , 'region_learning.pth')))
             align_net.load_state_dict(torch.load(os.path.join(
