@@ -328,7 +328,7 @@ class Detector(object):
         # Determine whether to use multiprocessing.
         n_jobs = self['n_jobs']
         if n_jobs==-1:
-            thread_num = cv.getNumberOfCPUs() # get available cpus
+            thread_num = cv2.getNumberOfCPUs() # get available cpus
         else: 
             thread_num = n_jobs
         pool = ThreadPool(processes=thread_num)

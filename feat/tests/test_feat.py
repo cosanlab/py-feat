@@ -14,6 +14,7 @@ from feat.utils import read_facet, read_openface, read_affectiva
 from nltools.data import Adjacency
 import unittest
 
+
 def test_info(capsys):
     importantstring = "ThisStringMustBeIncluded"
     fex = Fex(filename=importantstring)
