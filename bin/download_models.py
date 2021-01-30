@@ -35,14 +35,14 @@ jaanet_params = "https://github.com/cosanlab/feat/releases/download/v0.1/JAANetp
 wget.download(jaanet_params, get_resource_path())
 
 with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
-    zip_ref.extractall(os.path.join(get_resource_path(), "/JAA_params/"))
+    zip_ref.extractall(os.path.join(get_resource_path()))
 
-if os.path.exists(os.path.join(get_resource_path(), "/JAA_params/", "align_net.pth")) and \
-    os.path.exists(os.path.join(get_resource_path(), "/JAA_params/", "au_net.pth")) and \
-    os.path.exists(os.path.join(get_resource_path(), "/JAA_params/", "global_au_feat.pth")) and \
-    os.path.exists(os.path.join(get_resource_path(), "/JAA_params/", "local_attention_refine.pth")) and \
-    os.path.exists(os.path.join(get_resource_path(), "/JAA_params/", "local_au_net.pth")) and \
-    os.path.exists(os.path.join(get_resource_path(), "/JAA_params/", "region_learning.pth")):
+if os.path.exists(os.path.join(get_resource_path(), "align_net.pth")) and \
+    os.path.exists(os.path.join(get_resource_path(), "au_net.pth")) and \
+    os.path.exists(os.path.join(get_resource_path(), "global_au_feat.pth")) and \
+    os.path.exists(os.path.join(get_resource_path(), "local_attention_refine.pth")) and \
+    os.path.exists(os.path.join(get_resource_path(), "local_au_net.pth")) and \
+    os.path.exists(os.path.join(get_resource_path(), "region_learning.pth")):
 
     print("\nJAANet Params weight downloaded successfully.\n")
 else:

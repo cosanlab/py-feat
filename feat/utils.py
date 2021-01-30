@@ -31,8 +31,8 @@ import torch
 # FEAT columns
 FEAT_EMOTION_MAPPER = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4: 'sadness', 5: 'surprise', 6: 'neutral'}
 FEAT_EMOTION_COLUMNS = ['anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'neutral']
-#FEAT_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
-FEAT_FACEBOX_COLUMNS = ['FaceRectX1','FaceRectY1','FaceRectX2','FaceRectY2']
+FEAT_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
+#FEAT_FACEBOX_COLUMNS = ['FaceRectX1','FaceRectY1','FaceRectX2','FaceRectY2']
 FEAT_TIME_COLUMNS = ['frame']
 
 # FACET columns

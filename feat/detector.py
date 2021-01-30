@@ -262,7 +262,7 @@ class Detector(object):
         try:
             # change image to grayscale
             detected_faces = self.face_detect(frame=frame)
-            facebox_df = pd.DataFrame([detected_faces[0][0:4]], columns = self["face_detection_columns"], index=[counter])
+            facebox_df = pd.DataFrame([detected_faces[0][0],detected_faces[0][1],detected_faces[0][2]-detected_faces[0][0],detected_faces[0][3]-detected_faces[0][1]], columns = self["face_detection_columns"], index=[counter])
             
             landmarks = self.landmark_detect(frame=frame,detected_faces=detected_faces[0:4])
             landmarks_df = pd.DataFrame(landmarks[0].flatten(order="F").reshape(1,-1), columns = self["face_landmark_columns"], index=[counter])
