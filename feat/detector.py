@@ -78,6 +78,11 @@ class Detector(object):
         #self.info["mapper"] = FEAT_FACEBOX_COLUMNS
         facebox_columns = FEAT_FACEBOX_COLUMNS
         self.info['face_detection_columns'] = facebox_columns
+        predictions = np.empty((1, len(facebox_columns)))
+        predictions[:] = np.nan
+        empty_facebox = pd.DataFrame(predictions, columns=facebox_columns)
+        self._empty_facebox = empty_facebox
+
 
         print("Loading Face Landmark model: ", landmark_model)
         self.info['Landmark_Model'] = landmark_model
@@ -108,6 +113,11 @@ class Detector(object):
         #self.info["mapper"] = openface_2d_landmark_columns
         landmark_columns = openface_2d_landmark_columns
         self.info['face_landmark_columns'] = landmark_columns
+        predictions = np.empty((1, len(openface_2d_landmark_columns)))
+        predictions[:] = np.nan
+        empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
+        self._empty_landmark = empty_landmarks
+
 
         print("Loading au occurence model: ", au_occur_model)
         self.info['AU_Occur_Model'] = au_occur_model
@@ -118,6 +128,12 @@ class Detector(object):
         #self.info["mapper"] = jaanet_AU_presence
         auoccur_columns = jaanet_AU_presence
         self.info['au_presence_columns'] = auoccur_columns
+        predictions = np.empty((1, len(auoccur_columns)))
+        predictions[:] = np.nan
+        empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
+        self._empty_auoccurence = empty_au_occurs
+
+
 
         print("Loading emotion model: ", emotion_model)
         if emotion_model == 'fer':
