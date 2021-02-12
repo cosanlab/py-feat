@@ -125,6 +125,15 @@ def test_detector():
     aus = detector1.au_occur_detect(img01,lands)
     assert aus.shape[-1] == 12
 
+    # AU Detection Case2:
+    inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
+    img01 = cv2.imread(inputFname)
+    detector1 = Detector(face_model='RetinaFace',emotion_model=None, landmark_model = "MobileFaceNet", au_occur_model="drml")
+    bboxes = detector1.face_detect(img01)
+    lands = detector1.landmark_detect(img01,bboxes)
+    aus = detector1.au_occur_detect(img01,lands)
+    assert aus.shape[-1] == 12
+    
     # Test detect image
     inputFname = os.path.join(get_test_data_path(), "input.jpg")
     out = detector.detect_image(inputFname=inputFname)
@@ -157,4 +166,4 @@ def test_detector():
     img01 = cv2.imread(inputFname)
     files = detector04.process_frame(img01,0)
 
-#test_detector()
+test_detector()
