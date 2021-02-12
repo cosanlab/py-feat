@@ -15,6 +15,7 @@ import feat
 from feat.data import Fex
 from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, jaanet_AU_presence, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
 from feat.models.JAA_test import JAANet
+from feat.au_detectors.DRML.DRML_test import DRMLNet
 
 import torch
 from feat.face_detectors.FaceBoxes import FaceBoxes
@@ -123,6 +124,8 @@ class Detector(object):
         self.info['AU_Occur_Model'] = au_occur_model
         if au_occur_model == 'jaanet':
             self.au_model = JAANet()
+        elif au_occur_model == 'drml':
+            self.au_model = DRMLNet()
 
         self.info['auoccur_model'] = au_occur_model
         #self.info["mapper"] = jaanet_AU_presence
