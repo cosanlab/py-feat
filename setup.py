@@ -78,6 +78,20 @@ class CustomInstall(install):
                 else:
                     print("Something went wrong. Model not found in directory.")
 
+            if os.path.exists(os.path.join(get_resource_path(), "DRMLNetParams.pth")):
+                print("\nDRML NET model downloaded successfully.\n")
+            else:
+                try:
+                    print("Downloading DRML model.")
+                    drml_model = "https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"
+                    wget.download(drml_model, get_resource_path())
+                    if os.path.exists(os.path.join(get_resource_path(), "DRMLNetParams.pth")):
+                        print("\nLandmark detection model downloaded successfully.\n")
+                    else:
+                        print("Something went wrong. Model not found in directory.")
+                except:
+                    print("DRML model failed to download.")
+                    
         atexit.register(_post_install)
         install.run(self)
 
