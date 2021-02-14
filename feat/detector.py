@@ -68,11 +68,11 @@ class Detector(object):
         """ LOAD UP THE MODELS """
         print("Loading Face Detection model: ", face_model)
         
-        if face_model == "FaceBoxes":
+        if face_model.lower() == "faceboxes":
             self.face_detector = FaceBoxes()
-        elif face_model == "RetinaFace":
+        elif face_model.lower() == "retinaface":
             self.face_detector = Retinaface.Retinaface()
-        elif face_model == 'MTCNN':
+        elif face_model.lower() == 'mtcnn':
             self.face_detector = MTCNN()
 
         self.info['Face_Model'] = face_model
@@ -87,7 +87,7 @@ class Detector(object):
 
         print("Loading Face Landmark model: ", landmark_model)
         self.info['Landmark_Model'] = landmark_model
-        if landmark_model == 'MobileNet':
+        if landmark_model.lower() == 'mobilenet':
             self.landmark_detector = MobileNet_GDConv(136)
             self.landmark_detector = torch.nn.DataParallel(
                 self.landmark_detector)
@@ -97,14 +97,14 @@ class Detector(object):
             print('Use MobileNet as backbone')
             self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
-        elif landmark_model == 'PFLD':
+        elif landmark_model.lower() == 'pfld':
             self.landmark_detector = PFLDInference()
             # download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
             checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/pfld_model_best.pth.tar'), map_location=self.map_location)
             print('Use PFLD as backbone')
             self.landmark_detector.load_state_dict(checkpoint['state_dict'])
             # download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
-        elif landmark_model == 'MobileFaceNet':
+        elif landmark_model.lower() == 'mobilefacenet':
             self.landmark_detector = MobileFaceNet([112, 112], 136)
             checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/mobilefacenet_model_best.pth.tar'), map_location=self.map_location)
             print('Use MobileFaceNet as backbone')
@@ -122,9 +122,9 @@ class Detector(object):
 
         print("Loading au occurence model: ", au_occur_model)
         self.info['AU_Occur_Model'] = au_occur_model
-        if au_occur_model == 'jaanet':
+        if au_occur_model.lower() == 'jaanet':
             self.au_model = JAANet()
-        elif au_occur_model == 'drml':
+        elif au_occur_model.lower() == 'drml':
             self.au_model = DRMLNet()
 
         self.info['auoccur_model'] = au_occur_model
@@ -255,8 +255,6 @@ class Detector(object):
         landmarks = np.transpose(landmarks)
         if landmarks.shape[-1] == 68:
             landmarks = convert68to49(landmarks)
-        print(landmarks)
-        print(landmarks.shape)
         return self.au_model.detect_au(frame, landmarks)
 
     def process_frame(self, frame, counter=0):
@@ -279,13 +277,13 @@ class Detector(object):
         # my_model.detect(img = im01,landmarks=False)[0] will return a bounding box array of shape (1,4)
 
         try:
-            # change image to grayscale
+            # detect faces
             detected_faces = self.face_detect(frame=frame)
-            facebox_df = pd.DataFrame([detected_faces[0][0],detected_faces[0][1],detected_faces[0][2]-detected_faces[0][0],detected_faces[0][3]-detected_faces[0][1]], columns = self["face_detection_columns"], index=[counter])
-            
-            landmarks = self.landmark_detect(frame=frame,detected_faces=detected_faces[0:4])
-            landmarks_df = pd.DataFrame(landmarks[0].flatten(order="F").reshape(1,-1), columns = self["face_landmark_columns"], index=[counter])
-            
+            facebox_df = pd.DataFrame([[detected_faces[0][0], detected_faces[0][1], detected_faces[0][2] - detected_faces[0][0], detected_faces[0][3] - detected_faces[0][1]]], columns = self["face_detection_columns"], index=[counter])
+            # detect landmarks
+            landmarks = self.landmark_detect(frame=frame, detected_faces=detected_faces[0:4])
+            landmarks_df = pd.DataFrame([landmarks[0].flatten(order="F")], columns = self["face_landmark_columns"], index=[counter])
+            # detect AUs
             au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
             au_occur_df = pd.DataFrame(au_occur, columns = self["au_presence_columns"], index = [counter])
 
@@ -318,6 +316,7 @@ class Detector(object):
             return pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
         
         except:
+            print("exception occurred")
             # TODO: Also, emotion model here too
             #emotion_df = self._empty_emotion.reindex(index=[counter])
             facebox_df = self._empty_facebox.reindex(index=[counter])
@@ -412,8 +411,11 @@ class Detector(object):
             init_df.to_csv(outputFname, index=False, header=True)
 
         for inputF in inputFname:
-            frame = Image.open(inputF)
-            df = self.process_frame(np.array(frame))
+            print(f"processing {inputF}")
+            frame = cv2.imread(inputF)
+            df = self.process_frame(frame)
+            df['input'] = inputF
+            # df = self.process_frame(np.array(frame))
             if outputFname:
                 df.to_csv(outputFname, index=True, header=False, mode='a')
             else:
