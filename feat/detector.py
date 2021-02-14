@@ -392,11 +392,14 @@ class Detector(object):
                 # Populate the queue.
                 if len(pending_task) < thread_num:
                     frame_got, frame = cap.read()
-                    # Process at every seconds. 
+                    # Process at nth frame. 
+                    print(" ", end ="") # somehow need this to actually finish all frames.
                     if counter%skip_frames == 0:
                         if frame_got:
                             task = pool.apply_async(self.process_frame, (frame.copy(), counter))
                             pending_task.append(task)
+                            if verbose:
+                                print(counter, frame_got)
                     counter = counter + 1
             cap.release() 
         else:
