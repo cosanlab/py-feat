@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw
 import cv2
 import feat
 from feat.data import Fex
-from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, jaanet_AU_presence, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
+from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, jaanet_AU_presence, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FEAT_TIME_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
 from feat.models.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
 
@@ -320,7 +320,9 @@ class Detector(object):
 
             #au_df = pd.DataFrame(self.au_model.detect_au(frame,au_landmarks), columns = ["1","2","4","6","7","10","12","14","15","17","23","24"], index=[counter])
             #emotion_df, 
-            return pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+            out = pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+            out[FEAT_TIME_COLUMNS] = counter
+            return out
         
         except:
             print("exception occurred")
@@ -330,10 +332,12 @@ class Detector(object):
             landmarks_df = self._empty_landmark.reindex(index=[counter])
             au_df = self._empty_auoccurence.reindex(index=[counter])
             #emotion_df, 
-            return pd.concat([facebox_df, landmarks_df, au_df], axis=1)
+            out = pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+            out[FEAT_TIME_COLUMNS] = counter
+            return out
 
 
-    def detect_video(self, inputFname, outputFname=None, skip_frames=1):
+    def detect_video(self, inputFname, outputFname=None, skip_frames=1, verbose=False):
         """Detects FEX from a video file.
         Args:
             inputFname (str): Path to video file
@@ -356,39 +360,56 @@ class Detector(object):
             thread_num = cv2.getNumberOfCPUs() # get available cpus
         else: 
             thread_num = n_jobs
+        if verbose:
+            print(f"Using {thread_num} cpus")
         pool = ThreadPool(processes=thread_num)
         pending_task = deque()
         counter = 0
         processed_frames = 0
         frame_got = True
         detected_faces = []
-        print("Processing video.")
-        while True:
-            # Consume the queue.
-            while len(pending_task) > 0 and pending_task[0].ready():
-                df = pending_task.popleft().get()
-                # Save to output file.
-                if outputFname:
-                    df.to_csv(outputFname, index=True, header=False, mode='a')
-                else:
-                    init_df = pd.concat([init_df, df], axis=0)
-                processed_frames = processed_frames + 1
-         
-            if not frame_got:
-                break
-         
-            # Populate the queue.
-            if len(pending_task) < thread_num:
+        if verbose:
+            print("Processing video.")
+
+        if thread_num > 1:
+            # parallelization
+            while True:
+                # Consume the queue.
+                while len(pending_task) > 0 and pending_task[0].ready():
+                    if verbose:
+                        print("Processing frame:",counter)
+                    df = pending_task.popleft().get()
+                    # Save to output file.
+                    if outputFname:
+                        df.to_csv(outputFname, index=True, header=False, mode='a')
+                    else:
+                        init_df = pd.concat([init_df, df], axis=0)
+                    processed_frames = processed_frames + 1
+            
+                if not frame_got:
+                    break
+            
+                # Populate the queue.
+                if len(pending_task) < thread_num:
+                    frame_got, frame = cap.read()
+                    # Process at every seconds. 
+                    if counter%skip_frames == 0:
+                        if frame_got:
+                            task = pool.apply_async(self.process_frame, (frame.copy(), counter))
+                            pending_task.append(task)
+                    counter = counter + 1
+            cap.release() 
+        else:
+            #  single core
+            while True:
                 frame_got, frame = cap.read()
-                # Process at every seconds. 
                 if counter%skip_frames == 0:
-                    if frame_got:
-                        task = pool.apply_async(self.process_frame, (frame.copy(), counter))
-                        pending_task.append(task)
+                    df = self.process_frame(frame, counter=counter)
+                    init_df = pd.concat([init_df, df], axis=0)
                 counter = counter + 1
-                print("counter:",counter)
-        cap.release() 
-        
+                if not frame_got:
+                    break
+
         if outputFname:
             return True 
         else:
