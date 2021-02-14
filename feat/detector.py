@@ -7,21 +7,35 @@ from multiprocessing.pool import ThreadPool
 import tensorflow as tf
 from tensorflow.python.keras import optimizers, models
 import os
-import numpy as np, pandas as pd
+import numpy as np
+import pandas as pd
 from PIL import Image, ImageDraw
-import cv2 as cv
+import cv2
+import feat
 from feat.data import Fex
-from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FACET_TIME_COLUMNS
+from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, jaanet_AU_presence, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FEAT_TIME_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
+from feat.models.JAA_test import JAANet
+from feat.au_detectors.DRML.DRML_test import DRMLNet
+
+import torch
+from feat.face_detectors.FaceBoxes import FaceBoxes
+from feat.face_detectors.Retinaface import Retinaface
+from feat.face_detectors.MTCNN import MTCNN
+
+from feat.landmark_detectors.basenet import MobileNet_GDConv
+from feat.landmark_detectors.pfld_compressed import PFLDInference
+from feat.landmark_detectors.mobilefacenet import MobileFaceNet
+
 
 class Detector(object):
-    def __init__(self, n_jobs=1):
+    def __init__(self, face_model='FaceBoxes', landmark_model='MobileNet', au_occur_model='jaanet', emotion_model='fer', n_jobs=1):
         """Detector class to detect FEX from images or videos.
 
         Detector is a class used to detect faces, facial landmarks, emotions, and action units from images and videos.
 
         Args:
             n_jobs (int, default=1): Number of processes to use for extraction. 
-        
+
         Attributes:
             info (dict):
                 n_jobs (int): Number of jobs to be used in parallel.
@@ -45,64 +59,213 @@ class Detector(object):
         """
         self.info = {}
         self.info['n_jobs'] = n_jobs
+
+        if torch.cuda.is_available():
+            self.map_location = lambda storage, loc: storage.cuda()
+        else:
+            self.map_location = 'cpu'
+
         """ LOAD UP THE MODELS """
-        print("Loading Face Detection model.")
-        face_detection_model_path = cv.data.haarcascades + "haarcascade_frontalface_alt.xml"
-        if not os.path.exists(face_detection_model_path):
-            print("Face detection model not found. Check haarcascade_frontalface_alt.xml exists in your opencv installation (cv.data).")
-        face_cascade = cv.CascadeClassifier(face_detection_model_path)
-        face_detection_columns = FEAT_FACEBOX_COLUMNS
-        facebox_empty = np.empty((1,4))
-        facebox_empty[:] = np.nan
-        empty_facebox = pd.DataFrame(facebox_empty, columns = face_detection_columns)
-        self.info["face_detection_model"] = face_detection_model_path
-        self.info["face_detection_columns"] = face_detection_columns
-        self.face_detector = face_cascade
+        print("Loading Face Detection model: ", face_model)
+        
+        if face_model:
+            if face_model.lower() == "faceboxes":
+                self.face_detector = FaceBoxes()
+            elif face_model.lower() == "retinaface":
+                self.face_detector = Retinaface.Retinaface()
+            elif face_model.lower() == 'mtcnn':
+                self.face_detector = MTCNN()
+
+        self.info['Face_Model'] = face_model
+        #self.info["mapper"] = FEAT_FACEBOX_COLUMNS
+        facebox_columns = FEAT_FACEBOX_COLUMNS
+        self.info['face_detection_columns'] = facebox_columns
+        predictions = np.empty((1, len(facebox_columns)))
+        predictions[:] = np.nan
+        empty_facebox = pd.DataFrame(predictions, columns=facebox_columns)
         self._empty_facebox = empty_facebox
 
-        print("Loading Face Landmark model.")
-        face_landmark = cv.face.createFacemarkLBF()
-        face_landmark_model_path = os.path.join(get_resource_path(), 'lbfmodel.yaml')
-        if not os.path.exists(face_landmark_model_path):
-            print("Face landmark model not found. Please run download_models.py.")
-        face_landmark.loadModel(face_landmark_model_path)
-        face_landmark_columns = np.array([(f'x_{i}',f'y_{i}') for i in range(68)]).reshape(1,136)[0].tolist()
-        landmark_empty = np.empty((1,136))
-        landmark_empty[:] = np.nan
-        empty_landmark = pd.DataFrame(landmark_empty, columns = face_landmark_columns)
-        self.info["face_landmark_model"] = face_landmark_model_path
-        self.info['face_landmark_columns'] = face_landmark_columns
-        self.face_landmark = face_landmark
-        self._empty_landmark = empty_landmark
 
-        print("Loading FEX DCNN emotion model.")
-        emotion_model = 'fer_aug_model.h5'
-        emotion_model_path = os.path.join(get_resource_path(),'fer_aug_model.h5')
-        if not os.path.exists(emotion_model_path):
-            print("Emotion prediction model not found. Please run download_models.py.")
-        model = models.load_model(emotion_model_path) # Load model to use.
-        (_, img_w, img_h, img_c) = model.layers[0].input_shape # model input shape.
-        self.info["input_shape"] = {"img_w": img_w, "img_h": img_h, "img_c": img_c}
-        self.info["emotion_model"] = emotion_model_path
-        self.info["mapper"] = FEAT_EMOTION_MAPPER
-        self.emotion_model = model
-        emotion_columns = [key for key in self.info["mapper"].values()]
-        self.info['emotion_model_columns'] = emotion_columns
+        print("Loading Face Landmark model: ", landmark_model)
+        self.info['Landmark_Model'] = landmark_model
+        if landmark_model:
+            if landmark_model.lower() == 'mobilenet':
+                self.landmark_detector = MobileNet_GDConv(136)
+                self.landmark_detector = torch.nn.DataParallel(
+                    self.landmark_detector)
+                # download model from https://drive.google.com/file/d/1Le5UdpMkKOTRr1sTp4lwkw8263sbgdSe/view?usp=sharing
+                #CHANGEME
+                checkpoint = torch.load(os.path.join(feat.__path__[0], 'landmark_detectors/weights/mobilenet_224_model_best_gdconv_external.pth.tar'), map_location=self.map_location)
+                print('Use MobileNet as backbone')
+                self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
-        # create empty df for predictions 
-        predictions = np.empty((1, len(self.info["mapper"])))
+            elif landmark_model.lower() == 'pfld':
+                self.landmark_detector = PFLDInference()
+                # download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
+                checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/pfld_model_best.pth.tar'), map_location=self.map_location)
+                print('Use PFLD as backbone')
+                self.landmark_detector.load_state_dict(checkpoint['state_dict'])
+                # download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
+            elif landmark_model.lower() == 'mobilefacenet':
+                self.landmark_detector = MobileFaceNet([112, 112], 136)
+                checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/mobilefacenet_model_best.pth.tar'), map_location=self.map_location)
+                print('Use MobileFaceNet as backbone')
+                self.landmark_detector.load_state_dict(checkpoint['state_dict'])
+
+        self.info['landmark_model'] = landmark_model
+        #self.info["mapper"] = openface_2d_landmark_columns
+        landmark_columns = openface_2d_landmark_columns
+        self.info['face_landmark_columns'] = landmark_columns
+        predictions = np.empty((1, len(openface_2d_landmark_columns)))
         predictions[:] = np.nan
-        empty_emotion = pd.DataFrame(predictions, columns = self.info["mapper"].values())
-        self._empty_emotion = empty_emotion
+        empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
+        self._empty_landmark = empty_landmarks
+
+
+        print("Loading au occurence model: ", au_occur_model)
+        self.info['AU_Occur_Model'] = au_occur_model
+        if au_occur_model:
+            if au_occur_model.lower() == 'jaanet':
+                self.au_model = JAANet()
+            elif au_occur_model.lower() == 'drml':
+                self.au_model = DRMLNet()
+
+        self.info['auoccur_model'] = au_occur_model
+        #self.info["mapper"] = jaanet_AU_presence
+        auoccur_columns = jaanet_AU_presence
+        self.info['au_presence_columns'] = auoccur_columns
+        predictions = np.empty((1, len(auoccur_columns)))
+        predictions[:] = np.nan
+        empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
+        self._empty_auoccurence = empty_au_occurs
+
+
+
+        print("Loading emotion model: ", emotion_model)
+        if emotion_model:
+            if emotion_model.lower() == 'fer':
+                emotion_model = 'fer_aug_model.h5'
+                emotion_model_path = os.path.join(
+                    get_resource_path(), 'fer_aug_model.h5')
+                if not os.path.exists(emotion_model_path):
+                    print(
+                        "Emotion prediction model not found. Please run download_models.py.")
+                model = models.load_model(emotion_model_path)  # Load model to use.
+                # model input shape.
+                (_, img_w, img_h, img_c) = model.layers[0].input_shape
+                self.info["input_shape"] = {
+                    "img_w": img_w, "img_h": img_h, "img_c": img_c}
+                self.info["emotion_model"] = emotion_model_path
+                self.info["mapper"] = FEAT_EMOTION_MAPPER
+                self.emotion_model = model
+                emotion_columns = [key for key in self.info["mapper"].values()]
+                self.info['emotion_model_columns'] = emotion_columns
+
+                # create empty df for predictions
+                predictions = np.empty((1, len(self.info["mapper"])))
+                predictions[:] = np.nan
+                empty_emotion = pd.DataFrame(
+                    predictions, columns=self.info["mapper"].values())
+                self._empty_emotion = empty_emotion
+        self.detect_emotion = (emotion_model is not None)
 
         frame_columns = ["frame"]
-        self.info["output_columns"] = frame_columns + emotion_columns + face_detection_columns + face_landmark_columns
+        # TODO: add emotion_columns
+        self.info["output_columns"] = frame_columns  + \
+           facebox_columns + landmark_columns + auoccur_columns
+
+        # self.info["output_columns"] = frame_columns + emotion_columns + \
+        #    face_detection_columns + face_landmark_columns
 
     def __getitem__(self, i):
         return self.info[i]
 
+    def face_detect(self, frame):
+        # suppose frame=cv2.imread(imgname)
+        height, width, _ = frame.shape
+        faces = self.face_detector(frame)
+
+        if len(faces) == 0:
+            print("Warning: NO FACE is detected")
+        return faces
+
+    def landmark_detect(self, frame, detected_faces):
+        mean = np.asarray([0.485, 0.456, 0.406])
+        std = np.asarray([0.229, 0.224, 0.225])
+        self.landmark_detector.eval()
+        if self.info['Landmark_Model']:
+            if self.info['Landmark_Model'].lower() == 'mobilenet':
+                out_size = 224
+            else:
+                out_size = 112
+
+        height, width, _ = frame.shape
+        landmark_list = []
+
+        for k, face in enumerate(detected_faces):
+            x1 = face[0]
+            y1 = face[1]
+            x2 = face[2]
+            y2 = face[3]
+            w = x2 - x1 + 1
+            h = y2 - y1 + 1
+            size = int(min([w, h])*1.2)
+            cx = x1 + w//2
+            cy = y1 + h//2
+            x1 = cx - size//2
+            x2 = x1 + size
+            y1 = cy - size//2
+            y2 = y1 + size
+
+            dx = max(0, -x1)
+            dy = max(0, -y1)
+            x1 = max(0, x1)
+            y1 = max(0, y1)
+
+            edx = max(0, x2 - width)
+            edy = max(0, y2 - height)
+            x2 = min(width, x2)
+            y2 = min(height, y2)
+            new_bbox = list(map(int, [x1, x2, y1, y2]))
+            new_bbox = BBox(new_bbox)
+            cropped = frame[new_bbox.top:new_bbox.bottom,
+                            new_bbox.left:new_bbox.right]
+            if (dx > 0 or dy > 0 or edx > 0 or edy > 0):
+                cropped = cv2.copyMakeBorder(cropped, int(dy), int(
+                    edy), int(dx), int(edx), cv2.BORDER_CONSTANT, 0)
+            cropped_face = cv2.resize(cropped, (out_size, out_size))
+
+            if cropped_face.shape[0] <= 0 or cropped_face.shape[1] <= 0:
+                continue
+            test_face = cropped_face.copy()
+            test_face = test_face/255.0
+            if self.info['Landmark_Model']:
+                if self.info['Landmark_Model'].lower() == 'mobilenet':
+                    test_face = (test_face-mean)/std
+            test_face = test_face.transpose((2, 0, 1))
+            test_face = test_face.reshape((1,) + test_face.shape)
+            input = torch.from_numpy(test_face).float()
+            input = torch.autograd.Variable(input)
+            if self.info['Landmark_Model']:
+                if self.info['Landmark_Model'].lower() == 'mobilefacenet':
+                    landmark = self.landmark_detector(input)[0].cpu().data.numpy()
+                else:
+                    landmark = self.landmark_detector(input).cpu().data.numpy()
+            landmark = landmark.reshape(-1, 2)
+            landmark = new_bbox.reprojectLandmark(landmark)
+            landmark_list.append(landmark)
+
+        return landmark_list
+
+    def au_occur_detect(self, frame, landmarks):
+        # Assume that the Raw landmark is given in the format (n_land,2)
+        landmarks = np.transpose(landmarks)
+        if landmarks.shape[-1] == 68:
+            landmarks = convert68to49(landmarks)
+        return self.au_model.detect_au(frame, landmarks)
+
     def process_frame(self, frame, counter=0):
-        """Helper function to run face detection, landmark detection, and emotion detection on a frame. 
+        """Helper function to run face detection, landmark detection, and emotion detection on a frame.
 
         Args:
             frame (np.array): Numpy array of image, ideally loaded through Pillow.Image
@@ -117,47 +280,69 @@ class Detector(object):
             >> detector = Detector()
             >> detector.process_frame(np.array(frame))
         """
-        try:
-            # change image to grayscale
-            grayscale_image = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            # find faces
-            detected_faces = self.face_detector.detectMultiScale(grayscale_image)
-            # detect landmarks
-            ok, landmarks = self.face_landmark.fit(grayscale_image, detected_faces)
-            landmarks_df = pd.DataFrame(landmarks[0][0].reshape(1, 136), columns = self["face_landmark_columns"], index=[counter])
-            # Use Tiankang's colde to align the faces to the center 
+        # How you would use MTCNN in this case:
+        # my_model.detect(img = im01,landmarks=False)[0] will return a bounding box array of shape (1,4)
 
+        try:
+            # detect faces
+            detected_faces = self.face_detect(frame=frame)
+            facebox_df = pd.DataFrame([[detected_faces[0][0], detected_faces[0][1], detected_faces[0][2] - detected_faces[0][0], detected_faces[0][3] - detected_faces[0][1]]], columns = self["face_detection_columns"], index=[counter])
+            # detect landmarks
+            landmarks = self.landmark_detect(frame=frame, detected_faces=detected_faces[0:4])
+            landmarks_df = pd.DataFrame([landmarks[0].flatten(order="F")], columns = self["face_landmark_columns"], index=[counter])
+            # detect AUs
+            au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
+            au_occur_df = pd.DataFrame(au_occur, columns = self["au_presence_columns"], index = [counter])
+
+            # TODO: Modularize Emotion Detection Model
             # crop just the face area
-            if len(detected_faces)>0:
-                facebox_df = pd.DataFrame([detected_faces[0]], columns = self["face_detection_columns"], index=[counter])
-                grayscale_cropped_face = Image.fromarray(grayscale_image).crop(face_rect_to_coords(detected_faces[0]))
-                # resize face to newsize 48 x 48
-                # print("resizeface", grayscale_cropped_face.shape, img_w, img_h, img_c) 
-                grayscale_cropped_resized_face = grayscale_cropped_face.resize((self['input_shape']["img_w"], self['input_shape']["img_h"]))
-                # reshape to put in model
-                grayscale_cropped_resized_reshaped_face = np.array(grayscale_cropped_resized_face).reshape(1, self['input_shape']["img_w"], self['input_shape']["img_h"], self['input_shape']["img_c"])
-                # normalize
-                normalize_grayscale_cropped_resized_reshaped_face = grayscale_cropped_resized_reshaped_face/255.
-                # make tensor
-                tensor_img = tf.convert_to_tensor(normalize_grayscale_cropped_resized_reshaped_face)
-                # make predictions
-                predictions = self.emotion_model.predict(tensor_img)
-                emotion_df = pd.DataFrame(predictions, columns = self["mapper"].values(), index=[counter])
-                return pd.concat([emotion_df, facebox_df, landmarks_df], axis=1)
+            # if detected_faces.shape[0] > 0:
+            #     facebox_df = pd.DataFrame([detected_faces[0]], columns = self["face_detection_columns"], index=[counter])
+            #     grayscale_cropped_face = Image.fromarray(grayscale_image).crop(face_rect_to_coords(detected_faces[0]))
+            #     # resize face to newsize 48 x 48
+            #     # print("resizeface", grayscale_cropped_face.shape, img_w, img_h, img_c)
+            #     grayscale_cropped_resized_face = grayscale_cropped_face.resize((self['input_shape']["img_w"], self['input_shape']["img_h"]))
+            #     # reshape to put in model
+            #     grayscale_cropped_resized_reshaped_face = np.array(grayscale_cropped_resized_face).reshape(1, self['input_shape']["img_w"], self['input_shape']["img_h"], self['input_shape']["img_c"])
+            #     # normalize
+            #     normalize_grayscale_cropped_resized_reshaped_face = grayscale_cropped_resized_reshaped_face/255.
+            #     # make tensor
+            #     tensor_img = tf.convert_to_tensor(normalize_grayscale_cropped_resized_reshaped_face)
+            #     # make predictions
+            #     predictions = self.emotion_model.predict(tensor_img)
+            #     emotion_df = pd.DataFrame(predictions, columns = self["mapper"].values(), index=[counter])
+
+                #=======================AU prediction==================================
+            #if raw_landmarks is not None:
+            #    au_landmarks = raw_landmarks
+            #else:
+            #    au_landmarks = convert68to49(landmarks[0][0]).flatten()
+
+            #au_df = pd.DataFrame(self.au_model.detect_au(frame,au_landmarks), columns = ["1","2","4","6","7","10","12","14","15","17","23","24"], index=[counter])
+            #emotion_df, 
+            out = pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+            out[FEAT_TIME_COLUMNS] = counter
+            return out
+        
         except:
-            emotion_df = self._empty_emotion.reindex(index=[counter])
+            print("exception occurred")
+            # TODO: Also, emotion model here too
+            #emotion_df = self._empty_emotion.reindex(index=[counter])
             facebox_df = self._empty_facebox.reindex(index=[counter])
             landmarks_df = self._empty_landmark.reindex(index=[counter])
-            return pd.concat([emotion_df, facebox_df, landmarks_df], axis=1)
+            au_df = self._empty_auoccurence.reindex(index=[counter])
+            #emotion_df, 
+            out = pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+            out[FEAT_TIME_COLUMNS] = counter
+            return out
 
-    def detect_video(self, inputFname, outputFname=None, skip_frames=1):
+
+    def detect_video(self, inputFname, outputFname=None, skip_frames=1, verbose=False):
         """Detects FEX from a video file.
-
         Args:
             inputFname (str): Path to video file
             outputFname (str, optional): Path to output file. Defaults to None.
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
-
         Returns:
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
@@ -167,76 +352,104 @@ class Detector(object):
         if outputFname:
             init_df.to_csv(outputFname, index=False, header=True)
 
-        cap = cv.VideoCapture(inputFname)
+        cap = cv2.VideoCapture(inputFname)
+        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        frames_to_process = int(np.ceil(length / skip_frames))
 
         # Determine whether to use multiprocessing.
         n_jobs = self['n_jobs']
         if n_jobs==-1:
-            thread_num = cv.getNumberOfCPUs() # get available cpus
+            thread_num = cv2.getNumberOfCPUs() # get available cpus
         else: 
             thread_num = n_jobs
+        if verbose:
+            print(f"Using {thread_num} cpus")
         pool = ThreadPool(processes=thread_num)
         pending_task = deque()
         counter = 0
         processed_frames = 0
         frame_got = True
         detected_faces = []
-        print("Processing video.")
-        while True:
-            # Consume the queue.
-            while len(pending_task) > 0 and pending_task[0].ready():
-                df = pending_task.popleft().get()
-                # Save to output file.
-                if outputFname:
-                    df.to_csv(outputFname, index=True, header=False, mode='a')
-                else:
-                    init_df = pd.concat([init_df, df], axis=0)
-                processed_frames = processed_frames + 1
-         
-            if not frame_got:
-                break
-         
-            # Populate the queue.
-            if len(pending_task) < thread_num:
+        if verbose:
+            print("Processing video.")
+
+        if thread_num > 1:
+            # parallelization
+            while True:
+                # Consume the queue.
+                while len(pending_task) > 0 and pending_task[0].ready():
+                    if verbose:
+                        print("Processing frame:",counter)
+                    df = pending_task.popleft().get()
+                    # Save to output file.
+                    if outputFname:
+                        df.to_csv(outputFname, index=True, header=False, mode='a')
+                    else:
+                        init_df = pd.concat([init_df, df], axis=0)
+                    processed_frames = processed_frames + 1
+            
+                if (not frame_got) and (frames_to_process == processed_frames):
+                    break
+            
+                # Populate the queue.
+                if counter <= length:
+                    if len(pending_task) < thread_num:
+                        frame_got, frame = cap.read()
+                        # Process at nth frame. 
+                        print(" ", end ="") # somehow need this to actually finish all frames.
+                        if counter%skip_frames == 0:
+                            if frame_got:
+                                task = pool.apply_async(self.process_frame, (frame.copy(), counter))
+                                pending_task.append(task)
+                                if verbose:
+                                    print(counter, frame_got)
+                        counter = counter + 1
+            cap.release() 
+        else:
+            #  single core
+            while True:
                 frame_got, frame = cap.read()
-                # Process at every seconds. 
                 if counter%skip_frames == 0:
-                    if frame_got:
-                        task = pool.apply_async(self.process_frame, (frame.copy(), counter))
-                        pending_task.append(task)
+                    df = self.process_frame(frame, counter=counter)
+                    init_df = pd.concat([init_df, df], axis=0)
                 counter = counter + 1
-        cap.release() 
+                if not frame_got:
+                    break
+
         if outputFname:
             return True 
         else:
             return init_df
 
     def detect_image(self, inputFname, outputFname=None):
+        #TODO: update emotion model
         """Detects FEX from a video file.
-
         Args:
             inputFname (str, or list of str): Path to image file or a list of paths to image files.
             outputFname (str, optional): Path to output file. Defaults to None.
 
-        Returns:
+        Rseturns:
             Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
-        assert type(inputFname)==str or type(inputFname)==list, "inputFname must be a string path to image or list of image paths"
-        if type(inputFname)==str:
+        assert type(inputFname) == str or type(
+            inputFname) == list, "inputFname must be a string path to image or list of image paths"
+        if type(inputFname) == str:
             inputFname = [inputFname]
         for inputF in inputFname:
             if not os.path.exists(inputF):
                 raise FileNotFoundError(f"File {inputF} not found.")
         self.info['inputFname'] = inputFname
-        
+
         init_df = pd.DataFrame(columns=self["output_columns"])
         if outputFname:
             init_df.to_csv(outputFname, index=False, header=True)
 
         for inputF in inputFname:
-            frame = Image.open(inputF)
-            df = self.process_frame(np.array(frame))
-
+            print(f"processing {inputF}")
+            frame = cv2.imread(inputF)
+            df = self.process_frame(frame)
+            df['input'] = inputF
+            # df = self.process_frame(np.array(frame))
             if outputFname:
                 df.to_csv(outputFname, index=True, header=False, mode='a')
             else:
@@ -245,4 +458,34 @@ class Detector(object):
         if outputFname:
             return True
         else:
-            return Fex(init_df, filename = inputFname, au_columns = None, emotion_columns = FEAT_EMOTION_COLUMNS, facebox_columns = FEAT_FACEBOX_COLUMNS, landmark_columns = openface_2d_landmark_columns, time_columns = FACET_TIME_COLUMNS, detector="Feat")
+            #return Fex(init_df, filename=inputFname, au_columns=None, emotion_columns=FEAT_EMOTION_COLUMNS, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
+            return Fex(init_df, filename=inputFname, au_columns=jaanet_AU_presence, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
+
+
+# %%
+# Test case:
+
+# A01 = Detector(face_model='RetinaFace',emotion_model=None, landmark_model = "MobileFaceNet")
+# test_img = cv2.imread("F:/test_case/0010.jpg")
+# bboxes = A01.face_detect(test_img)
+# x,y,w,h,_ = bboxes[0]
+# x = int(x)
+# y = int(y)
+# w = int(w)
+# h = int(h)
+# cv2.rectangle(test_img,(x,y),(w,h),(0,255,0),2)
+# cv2.putText(test_img,'Moth Detected',(w+10,h),0,0.3,(0,255,0))
+# cv2.imshow("Show",test_img)
+# cv2.waitKey()
+# cv2.destroyAllWindows()
+#b_box_ = BBox(bboxes[0])
+# kruska0 = A01.landmark_detect(test_img,bboxes)
+# A01.landmark_detect()
+# imm00 = drawLandmark(test_img,b_box_,kruska0)
+# cv2.imshow('image',imm00)
+# cv2.waitKey(0)
+
+# test_img = cv2.imread("F:/test_case/0010.jpg")
+# bboxes = A01.face_detect(test_img)
+# lands = A01.landmark_detect(test_img,bboxes)
+# aus = A01.au_occur_detect(test_img,lands)
