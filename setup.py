@@ -4,6 +4,7 @@
 import atexit, os, sys
 from setuptools import setup, find_packages
 from setuptools.command.install import install
+import zipfile
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -60,10 +61,37 @@ class CustomInstall(install):
                     except:
                         print("Landmark model failed to download")
 
-                if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml")):
-                    print("\nLandmark detection model downloaded successfully.\n")
+            if os.path.exists(os.path.join(get_resource_path(), "align_net.pth")):
+                print("\nAU Detection Model Parameters downloaded successfully.\n")
+            else:
+                print("Downloading JAA Net AU Occurence model.")
+                try:
+                    jaanet_params = "https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip"
+                    wget.download(jaanet_params, get_resource_path())
+                    with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
+                        zip_ref.extractall(os.path.join(get_resource_path()))
+                except:
+                    print("JAA parameters failed to download")
+
+                if os.path.exists(os.path.join(get_resource_path(), "align_net.pth")):
+                    print("\nAU Detection Model Parameters downloaded successfully.\n")
                 else:
                     print("Something went wrong. Model not found in directory.")
+
+            if os.path.exists(os.path.join(get_resource_path(), "DRMLNetParams.pth")):
+                print("\nDRML NET model downloaded successfully.\n")
+            else:
+                try:
+                    print("Downloading DRML model.")
+                    drml_model = "https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"
+                    wget.download(drml_model, get_resource_path())
+                    if os.path.exists(os.path.join(get_resource_path(), "DRMLNetParams.pth")):
+                        print("\nLandmark detection model downloaded successfully.\n")
+                    else:
+                        print("Something went wrong. Model not found in directory.")
+                except:
+                    print("DRML model failed to download.")
+                    
         atexit.register(_post_install)
         install.run(self)
 

@@ -7,7 +7,8 @@ from feat.utils import read_openface, read_affectiva
 from feat.plotting import plot_face, draw_lineface, draw_vectorfield, predict
 import matplotlib
 import pytest
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 
 def assert_plot_shape(ax):
     assert ax.get_ylim()==(-240.0, -50.0)
