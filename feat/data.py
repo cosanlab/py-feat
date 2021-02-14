@@ -13,13 +13,16 @@ from copy import deepcopy
 from functools import reduce
 from nltools.data import Adjacency, design_matrix
 from nltools.stats import (downsample,
-                           upsample,
-                           transform_pairwise)
+                          upsample,
+                          transform_pairwise)
 from nltools.utils import (set_decomposition_algorithm)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
+
 from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
 from feat.plotting import plot_face
+#from utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
+#from plotting import plot_face
 from nilearn.signal import clean
 from scipy.signal import convolve
 
