@@ -353,6 +353,8 @@ class Detector(object):
             init_df.to_csv(outputFname, index=False, header=True)
 
         cap = cv2.VideoCapture(inputFname)
+        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        frames_to_process = int(np.ceil(length / skip_frames))
 
         # Determine whether to use multiprocessing.
         n_jobs = self['n_jobs']
@@ -386,21 +388,22 @@ class Detector(object):
                         init_df = pd.concat([init_df, df], axis=0)
                     processed_frames = processed_frames + 1
             
-                if not frame_got:
+                if (not frame_got) and (frames_to_process == processed_frames):
                     break
             
                 # Populate the queue.
-                if len(pending_task) < thread_num:
-                    frame_got, frame = cap.read()
-                    # Process at nth frame. 
-                    print(" ", end ="") # somehow need this to actually finish all frames.
-                    if counter%skip_frames == 0:
-                        if frame_got:
-                            task = pool.apply_async(self.process_frame, (frame.copy(), counter))
-                            pending_task.append(task)
-                            if verbose:
-                                print(counter, frame_got)
-                    counter = counter + 1
+                if counter <= length:
+                    if len(pending_task) < thread_num:
+                        frame_got, frame = cap.read()
+                        # Process at nth frame. 
+                        print(" ", end ="") # somehow need this to actually finish all frames.
+                        if counter%skip_frames == 0:
+                            if frame_got:
+                                task = pool.apply_async(self.process_frame, (frame.copy(), counter))
+                                pending_task.append(task)
+                                if verbose:
+                                    print(counter, frame_got)
+                        counter = counter + 1
             cap.release() 
         else:
             #  single core
