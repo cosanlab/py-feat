@@ -68,12 +68,13 @@ class Detector(object):
         """ LOAD UP THE MODELS """
         print("Loading Face Detection model: ", face_model)
         
-        if face_model.lower() == "faceboxes":
-            self.face_detector = FaceBoxes()
-        elif face_model.lower() == "retinaface":
-            self.face_detector = Retinaface.Retinaface()
-        elif face_model.lower() == 'mtcnn':
-            self.face_detector = MTCNN()
+        if face_model:
+            if face_model.lower() == "faceboxes":
+                self.face_detector = FaceBoxes()
+            elif face_model.lower() == "retinaface":
+                self.face_detector = Retinaface.Retinaface()
+            elif face_model.lower() == 'mtcnn':
+                self.face_detector = MTCNN()
 
         self.info['Face_Model'] = face_model
         #self.info["mapper"] = FEAT_FACEBOX_COLUMNS
@@ -87,28 +88,29 @@ class Detector(object):
 
         print("Loading Face Landmark model: ", landmark_model)
         self.info['Landmark_Model'] = landmark_model
-        if landmark_model.lower() == 'mobilenet':
-            self.landmark_detector = MobileNet_GDConv(136)
-            self.landmark_detector = torch.nn.DataParallel(
-                self.landmark_detector)
-            # download model from https://drive.google.com/file/d/1Le5UdpMkKOTRr1sTp4lwkw8263sbgdSe/view?usp=sharing
-            #CHANGEME
-            checkpoint = torch.load(os.path.join(feat.__path__[0], 'landmark_detectors/weights/mobilenet_224_model_best_gdconv_external.pth.tar'), map_location=self.map_location)
-            print('Use MobileNet as backbone')
-            self.landmark_detector.load_state_dict(checkpoint['state_dict'])
+        if landmark_model:
+            if landmark_model.lower() == 'mobilenet':
+                self.landmark_detector = MobileNet_GDConv(136)
+                self.landmark_detector = torch.nn.DataParallel(
+                    self.landmark_detector)
+                # download model from https://drive.google.com/file/d/1Le5UdpMkKOTRr1sTp4lwkw8263sbgdSe/view?usp=sharing
+                #CHANGEME
+                checkpoint = torch.load(os.path.join(feat.__path__[0], 'landmark_detectors/weights/mobilenet_224_model_best_gdconv_external.pth.tar'), map_location=self.map_location)
+                print('Use MobileNet as backbone')
+                self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
-        elif landmark_model.lower() == 'pfld':
-            self.landmark_detector = PFLDInference()
-            # download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
-            checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/pfld_model_best.pth.tar'), map_location=self.map_location)
-            print('Use PFLD as backbone')
-            self.landmark_detector.load_state_dict(checkpoint['state_dict'])
-            # download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
-        elif landmark_model.lower() == 'mobilefacenet':
-            self.landmark_detector = MobileFaceNet([112, 112], 136)
-            checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/mobilefacenet_model_best.pth.tar'), map_location=self.map_location)
-            print('Use MobileFaceNet as backbone')
-            self.landmark_detector.load_state_dict(checkpoint['state_dict'])
+            elif landmark_model.lower() == 'pfld':
+                self.landmark_detector = PFLDInference()
+                # download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
+                checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/pfld_model_best.pth.tar'), map_location=self.map_location)
+                print('Use PFLD as backbone')
+                self.landmark_detector.load_state_dict(checkpoint['state_dict'])
+                # download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
+            elif landmark_model.lower() == 'mobilefacenet':
+                self.landmark_detector = MobileFaceNet([112, 112], 136)
+                checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/mobilefacenet_model_best.pth.tar'), map_location=self.map_location)
+                print('Use MobileFaceNet as backbone')
+                self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
         self.info['landmark_model'] = landmark_model
         #self.info["mapper"] = openface_2d_landmark_columns
@@ -122,10 +124,11 @@ class Detector(object):
 
         print("Loading au occurence model: ", au_occur_model)
         self.info['AU_Occur_Model'] = au_occur_model
-        if au_occur_model.lower() == 'jaanet':
-            self.au_model = JAANet()
-        elif au_occur_model.lower() == 'drml':
-            self.au_model = DRMLNet()
+        if au_occur_model:
+            if au_occur_model.lower() == 'jaanet':
+                self.au_model = JAANet()
+            elif au_occur_model.lower() == 'drml':
+                self.au_model = DRMLNet()
 
         self.info['auoccur_model'] = au_occur_model
         #self.info["mapper"] = jaanet_AU_presence
@@ -139,30 +142,31 @@ class Detector(object):
 
 
         print("Loading emotion model: ", emotion_model)
-        if emotion_model == 'fer':
-            emotion_model = 'fer_aug_model.h5'
-            emotion_model_path = os.path.join(
-                get_resource_path(), 'fer_aug_model.h5')
-            if not os.path.exists(emotion_model_path):
-                print(
-                    "Emotion prediction model not found. Please run download_models.py.")
-            model = models.load_model(emotion_model_path)  # Load model to use.
-            # model input shape.
-            (_, img_w, img_h, img_c) = model.layers[0].input_shape
-            self.info["input_shape"] = {
-                "img_w": img_w, "img_h": img_h, "img_c": img_c}
-            self.info["emotion_model"] = emotion_model_path
-            self.info["mapper"] = FEAT_EMOTION_MAPPER
-            self.emotion_model = model
-            emotion_columns = [key for key in self.info["mapper"].values()]
-            self.info['emotion_model_columns'] = emotion_columns
+        if emotion_model:
+            if emotion_model.lower() == 'fer':
+                emotion_model = 'fer_aug_model.h5'
+                emotion_model_path = os.path.join(
+                    get_resource_path(), 'fer_aug_model.h5')
+                if not os.path.exists(emotion_model_path):
+                    print(
+                        "Emotion prediction model not found. Please run download_models.py.")
+                model = models.load_model(emotion_model_path)  # Load model to use.
+                # model input shape.
+                (_, img_w, img_h, img_c) = model.layers[0].input_shape
+                self.info["input_shape"] = {
+                    "img_w": img_w, "img_h": img_h, "img_c": img_c}
+                self.info["emotion_model"] = emotion_model_path
+                self.info["mapper"] = FEAT_EMOTION_MAPPER
+                self.emotion_model = model
+                emotion_columns = [key for key in self.info["mapper"].values()]
+                self.info['emotion_model_columns'] = emotion_columns
 
-            # create empty df for predictions
-            predictions = np.empty((1, len(self.info["mapper"])))
-            predictions[:] = np.nan
-            empty_emotion = pd.DataFrame(
-                predictions, columns=self.info["mapper"].values())
-            self._empty_emotion = empty_emotion
+                # create empty df for predictions
+                predictions = np.empty((1, len(self.info["mapper"])))
+                predictions[:] = np.nan
+                empty_emotion = pd.DataFrame(
+                    predictions, columns=self.info["mapper"].values())
+                self._empty_emotion = empty_emotion
         self.detect_emotion = (emotion_model is not None)
 
         frame_columns = ["frame"]
@@ -189,10 +193,11 @@ class Detector(object):
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
-        if self.info['Landmark_Model'] == 'MobileNet':
-            out_size = 224
-        else:
-            out_size = 112
+        if self.info['Landmark_Model']:
+            if self.info['Landmark_Model'].lower() == 'mobilenet':
+                out_size = 224
+            else:
+                out_size = 112
 
         height, width, _ = frame.shape
         landmark_list = []
@@ -234,16 +239,18 @@ class Detector(object):
                 continue
             test_face = cropped_face.copy()
             test_face = test_face/255.0
-            if self.info['Landmark_Model'] == 'MobileNet':
-                test_face = (test_face-mean)/std
+            if self.info['Landmark_Model']:
+                if self.info['Landmark_Model'].lower() == 'mobilenet':
+                    test_face = (test_face-mean)/std
             test_face = test_face.transpose((2, 0, 1))
             test_face = test_face.reshape((1,) + test_face.shape)
             input = torch.from_numpy(test_face).float()
             input = torch.autograd.Variable(input)
-            if self.info['Landmark_Model'] == 'MobileFaceNet':
-                landmark = self.landmark_detector(input)[0].cpu().data.numpy()
-            else:
-                landmark = self.landmark_detector(input).cpu().data.numpy()
+            if self.info['Landmark_Model']:
+                if self.info['Landmark_Model'].lower() == 'mobilefacenet':
+                    landmark = self.landmark_detector(input)[0].cpu().data.numpy()
+                else:
+                    landmark = self.landmark_detector(input).cpu().data.numpy()
             landmark = landmark.reshape(-1, 2)
             landmark = new_bbox.reprojectLandmark(landmark)
             landmark_list.append(landmark)
