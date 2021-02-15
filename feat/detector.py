@@ -1,3 +1,4 @@
+# %%
 from __future__ import division
 
 """Functions to help detect face, landmarks, emotions, action units from images and videos"""
@@ -16,12 +17,11 @@ from feat.data import Fex
 from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, jaanet_AU_presence, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FEAT_TIME_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
 from feat.models.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
-
+from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 import torch
 from feat.face_detectors.FaceBoxes import FaceBoxes
 from feat.face_detectors.Retinaface import Retinaface
 from feat.face_detectors.MTCNN import MTCNN
-
 from feat.landmark_detectors.basenet import MobileNet_GDConv
 from feat.landmark_detectors.pfld_compressed import PFLDInference
 from feat.landmark_detectors.mobilefacenet import MobileFaceNet
@@ -87,7 +87,7 @@ class Detector(object):
 
 
         print("Loading Face Landmark model: ", landmark_model)
-        self.info['Landmark_Model'] = landmark_model
+        #self.info['Landmark_Model'] = landmark_model
         if landmark_model:
             if landmark_model.lower() == 'mobilenet':
                 self.landmark_detector = MobileNet_GDConv(136)
@@ -113,7 +113,7 @@ class Detector(object):
                 self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
         self.info['landmark_model'] = landmark_model
-        #self.info["mapper"] = openface_2d_landmark_columns
+        self.info["mapper"] = openface_2d_landmark_columns
         landmark_columns = openface_2d_landmark_columns
         self.info['face_landmark_columns'] = landmark_columns
         predictions = np.empty((1, len(openface_2d_landmark_columns)))
@@ -142,40 +142,30 @@ class Detector(object):
 
 
         print("Loading emotion model: ", emotion_model)
+        self.info['Emo_Model'] = emotion_model
         if emotion_model:
             if emotion_model.lower() == 'fer':
-                emotion_model = 'fer_aug_model.h5'
-                emotion_model_path = os.path.join(
-                    get_resource_path(), 'fer_aug_model.h5')
-                if not os.path.exists(emotion_model_path):
-                    print(
-                        "Emotion prediction model not found. Please run download_models.py.")
-                model = models.load_model(emotion_model_path)  # Load model to use.
-                # model input shape.
-                (_, img_w, img_h, img_c) = model.layers[0].input_shape
-                self.info["input_shape"] = {
-                    "img_w": img_w, "img_h": img_h, "img_c": img_c}
-                self.info["emotion_model"] = emotion_model_path
-                self.info["mapper"] = FEAT_EMOTION_MAPPER
-                self.emotion_model = model
-                emotion_columns = [key for key in self.info["mapper"].values()]
-                self.info['emotion_model_columns'] = emotion_columns
+                self.emo_model = ferNetModule()
+        
+        self.info['emotion_model_columns'] = FEAT_EMOTION_COLUMNS
+        predictions = np.empty((1, len(FEAT_EMOTION_COLUMNS)))
+        predictions[:] = np.nan
+        empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
+        self._empty_emotion = empty_emotion
 
-                # create empty df for predictions
-                predictions = np.empty((1, len(self.info["mapper"])))
-                predictions[:] = np.nan
-                empty_emotion = pd.DataFrame(
-                    predictions, columns=self.info["mapper"].values())
-                self._empty_emotion = empty_emotion
-        self.detect_emotion = (emotion_model is not None)
+        #self.info['auoccur_model'] = au_occur_model
+        #self.info["mapper"] = jaanet_AU_presence
+        auoccur_columns = jaanet_AU_presence
+        self.info['au_presence_columns'] = auoccur_columns
+        predictions = np.empty((1, len(auoccur_columns)))
+        predictions[:] = np.nan
+        empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
+        self._empty_auoccurence = empty_au_occurs
 
         frame_columns = ["frame"]
-        # TODO: add emotion_columns
-        self.info["output_columns"] = frame_columns  + \
-           facebox_columns + landmark_columns + auoccur_columns
 
-        # self.info["output_columns"] = frame_columns + emotion_columns + \
-        #    face_detection_columns + face_landmark_columns
+        self.info["output_columns"] = frame_columns  + \
+           facebox_columns + landmark_columns + auoccur_columns + FEAT_EMOTION_COLUMNS
 
     def __getitem__(self, i):
         return self.info[i]
@@ -193,8 +183,8 @@ class Detector(object):
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
-        if self.info['Landmark_Model']:
-            if self.info['Landmark_Model'].lower() == 'mobilenet':
+        if self.info['landmark_model']:
+            if self.info['landmark_model'].lower() == 'mobilenet':
                 out_size = 224
             else:
                 out_size = 112
@@ -239,15 +229,15 @@ class Detector(object):
                 continue
             test_face = cropped_face.copy()
             test_face = test_face/255.0
-            if self.info['Landmark_Model']:
-                if self.info['Landmark_Model'].lower() == 'mobilenet':
+            if self.info['landmark_model']:
+                if self.info['landmark_model'].lower() == 'mobilenet':
                     test_face = (test_face-mean)/std
             test_face = test_face.transpose((2, 0, 1))
             test_face = test_face.reshape((1,) + test_face.shape)
             input = torch.from_numpy(test_face).float()
             input = torch.autograd.Variable(input)
-            if self.info['Landmark_Model']:
-                if self.info['Landmark_Model'].lower() == 'mobilefacenet':
+            if self.info['landmark_model']:
+                if self.info['landmark_model'].lower() == 'mobilefacenet':
                     landmark = self.landmark_detector(input)[0].cpu().data.numpy()
                 else:
                     landmark = self.landmark_detector(input).cpu().data.numpy()
@@ -263,6 +253,10 @@ class Detector(object):
         if landmarks.shape[-1] == 68:
             landmarks = convert68to49(landmarks)
         return self.au_model.detect_au(frame, landmarks)
+
+    def emo_detect(self, frame, facebox):
+
+        return self.emo_model.detect_emo(frame,facebox)
 
     def process_frame(self, frame, counter=0):
         """Helper function to run face detection, landmark detection, and emotion detection on a frame.
@@ -294,6 +288,8 @@ class Detector(object):
             au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
             au_occur_df = pd.DataFrame(au_occur, columns = self["au_presence_columns"], index = [counter])
 
+            emo_pred = self.emo_detect(frame=frame, facebox=detected_faces)
+            emo_pred_df = pd.DataFrame(emo_pred, columns = FEAT_EMOTION_COLUMNS, index=[counter])
             # TODO: Modularize Emotion Detection Model
             # crop just the face area
             # if detected_faces.shape[0] > 0:
@@ -320,19 +316,18 @@ class Detector(object):
 
             #au_df = pd.DataFrame(self.au_model.detect_au(frame,au_landmarks), columns = ["1","2","4","6","7","10","12","14","15","17","23","24"], index=[counter])
             #emotion_df, 
-            out = pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+            out = pd.concat([facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1)
             out[FEAT_TIME_COLUMNS] = counter
             return out
         
         except:
             print("exception occurred")
-            # TODO: Also, emotion model here too
-            #emotion_df = self._empty_emotion.reindex(index=[counter])
+            emotion_df = self._empty_emotion.reindex(index=[counter])
             facebox_df = self._empty_facebox.reindex(index=[counter])
             landmarks_df = self._empty_landmark.reindex(index=[counter])
-            au_df = self._empty_auoccurence.reindex(index=[counter])
-            #emotion_df, 
-            out = pd.concat([facebox_df, landmarks_df, au_occur_df], axis=1)
+            au_occur_df = self._empty_auoccurence.reindex(index=[counter])
+    
+            out = pd.concat([facebox_df, landmarks_df, au_occur_df, emotion_df], axis=1)
             out[FEAT_TIME_COLUMNS] = counter
             return out
 
@@ -489,3 +484,9 @@ class Detector(object):
 # bboxes = A01.face_detect(test_img)
 # lands = A01.landmark_detect(test_img,bboxes)
 # aus = A01.au_occur_detect(test_img,lands)
+
+if __name__ == '__main__':
+    A01 = Detector(face_model='RetinaFace',emotion_model='fer', landmark_model="MobileFaceNet", au_occur_model='jaanet')
+    test_img = cv2.imread("F:/test_case/0010.jpg")
+    ress = A01.process_frame(frame=test_img)
+# %%

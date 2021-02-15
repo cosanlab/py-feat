@@ -28,21 +28,21 @@ class CustomInstall(install):
                     if os.path.isdir(p) and "feat" in os.listdir(p):
                         return os.path.join(p, "feat", "resources")
 
-            if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
+            if os.path.exists(os.path.join(get_resource_path(), "best_ferModel.pth")):
                 print("Fex model already exists; skipping download.")
             else:
                 print("Downloading FEX emotion model.")
                 try:
-                    fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/fer_aug_model.h5"
+                    fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
                     wget.download(fex_emotion_model, get_resource_path())
+                #except:
+                #    try:
+                #        fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
+                #        wget.download(fex_emotion_model, get_resource_path())
                 except:
-                    try:
-                        fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
-                        wget.download(fex_emotion_model, get_resource_path())
-                    except:
-                        print("FeX emotion model failed to download")
+                    print("FeX emotion model failed to download")
 
-                if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
+                if os.path.exists(os.path.join(get_resource_path(), "best_ferModel.pth")):
                     print("\nFEX emotion model downloaded successfully.\n")
                 else:
                     print("Something went wrong. Model not found in directory.")
