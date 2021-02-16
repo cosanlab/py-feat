@@ -11,14 +11,20 @@ import os
 import zipfile
 
 print("Downloading FEX emotion model.")
-fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/fer_aug_model.h5"
-if not os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
-    wget.download(fex_emotion_model, get_resource_path())
-
-if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
-    print("\nFEX emotion model downloaded successfully.\n")
+if os.path.exists(os.path.join(get_resource_path(), "best_ferModel.pth")):
+    print("Fex model already exists; skipping download.")
 else:
-    print("Something went wrong. Model not found in directory.")
+    print("Downloading FEX emotion model.")
+    try:
+        fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
+        wget.download(fex_emotion_model, get_resource_path())
+    except:
+        print("FeX emotion model failed to download")
+
+    if os.path.exists(os.path.join(get_resource_path(), "best_ferModel.pth")):
+        print("\nFEX emotion model downloaded successfully.\n")
+    else:
+        print("Something went wrong. Model not found in directory.")
 
 
 print("Downloading landmark detection model.")
