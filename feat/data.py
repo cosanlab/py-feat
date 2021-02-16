@@ -20,9 +20,7 @@ from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
 
 from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
-from feat.plotting import plot_face
-#from utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
-#from plotting import plot_face
+from feat.plotting import plot_face, draw_lineface
 from nilearn.signal import clean
 from scipy.signal import convolve
 
@@ -199,6 +197,14 @@ class Fex(DataFrame):
             DataFrame: landmark data
         """        
         return self[self.landmark_columns]
+
+    def input(self):
+        """Returns input column as string
+
+        Returns:
+            string: path to input image
+        """        
+        return self['input'].values[0]
 
     def landmark_x(self):
         """Returns the x landmarks. 
@@ -942,6 +948,69 @@ class Fex(DataFrame):
                 return ax
             except Exception as e:
                 print('Unable to plot data:', e)
+
+    def plot_detections(self):
+        """Plots detection results by Feat.
+
+        Args: 
+
+        Returns:
+            ax
+        """        
+        from PIL import Image
+        import matplotlib.pyplot as plt
+        from matplotlib.patches import Rectangle
+
+        f,axes = plt.subplots(1, 3, figsize=(15,7))
+
+        try:
+            imagefile = self.input()
+            if os.path.exists(imagefile):
+                color = 'w'           
+                ax = axes[0]
+                # draw base image
+                im = Image.open(self.input())
+                ax.imshow(im)
+            else:
+                imagefile = None
+                color='k'
+        except: 
+            imagefile = None
+            color = 'k'
+            print("Input image not found.")
+
+        # draw landmarks
+        ax = axes[0]
+        landmarks = self.landmark()
+        currx = landmarks.values[0][:68]
+        curry = landmarks.values[0][68:]
+        draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
+        if imagefile:
+            ax.set(title = self.input())
+        else:
+            ax.set(title = self.input(), ylim=ax.get_ylim()[::-1])
+            ax.set_aspect('equal', 'box')
+
+        # draw facebox
+        facebox = self.facebox().values[0]
+        rect = Rectangle((facebox[0], facebox[1]), facebox[2], facebox[3], linewidth=2, edgecolor='cyan', fill=False)
+        ax.add_patch(rect)
+
+        # plot AUs
+        self.aus().T.plot(kind='barh', ax= axes[1])
+        axes[1].invert_yaxis()
+        axes[1].get_legend().remove()
+        axes[1].set(xlim=[0, 1.1], title="Action Units")
+
+        # plot emotions
+        self.emotions().T.plot(kind='barh', ax= axes[2])
+        axes[2].invert_yaxis()
+        axes[2].get_legend().remove()
+        axes[2].set(xlim=[0, 1.1], title="Emotions")
+
+        plt.tight_layout()
+        plt.show()
+        return axes
 
 class Fextractor:
 
