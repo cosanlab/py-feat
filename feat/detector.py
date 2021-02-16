@@ -5,8 +5,6 @@ from __future__ import division
 
 from collections import deque
 from multiprocessing.pool import ThreadPool
-import tensorflow as tf
-from tensorflow.python.keras import optimizers, models
 import os
 import numpy as np
 import pandas as pd
@@ -287,35 +285,10 @@ class Detector(object):
             # detect AUs
             au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
             au_occur_df = pd.DataFrame(au_occur, columns = self["au_presence_columns"], index = [counter])
-
+            # detect emotions
             emo_pred = self.emo_detect(frame=frame, facebox=detected_faces)
             emo_pred_df = pd.DataFrame(emo_pred, columns = FEAT_EMOTION_COLUMNS, index=[counter])
-            # TODO: Modularize Emotion Detection Model
-            # crop just the face area
-            # if detected_faces.shape[0] > 0:
-            #     facebox_df = pd.DataFrame([detected_faces[0]], columns = self["face_detection_columns"], index=[counter])
-            #     grayscale_cropped_face = Image.fromarray(grayscale_image).crop(face_rect_to_coords(detected_faces[0]))
-            #     # resize face to newsize 48 x 48
-            #     # print("resizeface", grayscale_cropped_face.shape, img_w, img_h, img_c)
-            #     grayscale_cropped_resized_face = grayscale_cropped_face.resize((self['input_shape']["img_w"], self['input_shape']["img_h"]))
-            #     # reshape to put in model
-            #     grayscale_cropped_resized_reshaped_face = np.array(grayscale_cropped_resized_face).reshape(1, self['input_shape']["img_w"], self['input_shape']["img_h"], self['input_shape']["img_c"])
-            #     # normalize
-            #     normalize_grayscale_cropped_resized_reshaped_face = grayscale_cropped_resized_reshaped_face/255.
-            #     # make tensor
-            #     tensor_img = tf.convert_to_tensor(normalize_grayscale_cropped_resized_reshaped_face)
-            #     # make predictions
-            #     predictions = self.emotion_model.predict(tensor_img)
-            #     emotion_df = pd.DataFrame(predictions, columns = self["mapper"].values(), index=[counter])
-
-                #=======================AU prediction==================================
-            #if raw_landmarks is not None:
-            #    au_landmarks = raw_landmarks
-            #else:
-            #    au_landmarks = convert68to49(landmarks[0][0]).flatten()
-
-            #au_df = pd.DataFrame(self.au_model.detect_au(frame,au_landmarks), columns = ["1","2","4","6","7","10","12","14","15","17","23","24"], index=[counter])
-            #emotion_df, 
+            #  combine results together.
             out = pd.concat([facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1)
             out[FEAT_TIME_COLUMNS] = counter
             return out
