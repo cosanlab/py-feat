@@ -35,10 +35,6 @@ class CustomInstall(install):
                 try:
                     fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
                     wget.download(fex_emotion_model, get_resource_path())
-                #except:
-                #    try:
-                #        fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
-                #        wget.download(fex_emotion_model, get_resource_path())
                 except:
                     print("FeX emotion model failed to download")
 
