@@ -504,45 +504,49 @@ class Fex(DataFrame):
 
         if self.sessions is None or ignore_sessions:
             out = self.copy()
-            if baseline == 'median':
-                baseline = out.median()
-            elif baseline == 'mean':
-                baseline = out.mean()
-            elif baseline == 'begin':
-                baseline = out.iloc[0,:]
+            if type(baseline) == str:
+                if baseline == 'median':
+                    baseline_values = out.median()
+                elif baseline == 'mean':
+                    baseline_values = out.mean()
+                elif baseline == 'begin':
+                    baseline_values = out.iloc[0,:]
+                else:
+                    raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
             elif isinstance(baseline, (Series, FexSeries)):
-                baseline = baseline
+                baseline_values = baseline
             elif isinstance(baseline, (Fex, DataFrame)):
                 raise ValueError('Must pass in a FexSeries not a FexSeries Instance.')
-            else:
-                raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
+
             if normalize == 'db':
-                out = 10*np.log10(out - baseline)/baseline
+                out = 10*np.log10(out - baseline_values)/baseline_values
             if normalize == 'pct':
-                out = 100*(out - baseline)/baseline
+                out = 100*(out - baseline_values)/baseline_values
             else:
-                out = out - baseline
+                out = out - baseline_values
         else:
             out = self.__class__(sampling_freq=self.sampling_freq)
             for k,v in self.itersessions():
-                if baseline == 'median':
-                    baseline = v.median()
-                elif baseline == 'mean':
-                    baseline = v.mean()
-                elif baseline == 'begin':
-                    baseline = v.iloc[0,:]
+                if type(baseline)==str:
+                    if baseline == "median":
+                        baseline_values = v.median()
+                    elif baseline == 'mean':
+                        baseline_values = v.mean()
+                    elif baseline == 'begin':
+                        baseline_values = v.iloc[0,:]
+                    else:
+                        raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
                 elif isinstance(baseline, (Series, FexSeries)):
-                    baseline = baseline
+                    baseline_values = baseline
                 elif isinstance(baseline, (Fex, DataFrame)):
                     raise ValueError('Must pass in a FexSeries not a FexSeries Instance.')
-                else:
-                    raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
+
                 if normalize == 'db':
-                    out = out.append(10*np.log10(v-baseline)/baseline, session_id=k)
+                    out = out.append(10*np.log10(v-baseline_values)/baseline_values, session_id=k)
                 if normalize == 'pct':
-                    out = out.append(100*(v-baseline)/baseline, session_id=k)
+                    out = out.append(100*(v-baseline_values)/baseline_values, session_id=k)
                 else:
-                    out = out.append(v-baseline, session_id=k)
+                    out = out.append(v-baseline_values, session_id=k)
         return self.__class__(out, sampling_freq=self.sampling_freq,
                              features=self.features, sessions=self.sessions)
 
