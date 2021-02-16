@@ -390,7 +390,6 @@ class Detector(object):
             return init_df
 
     def detect_image(self, inputFname, outputFname=None):
-        #TODO: update emotion model
         """Detects FEX from a video file.
         Args:
             inputFname (str, or list of str): Path to image file or a list of paths to image files.
@@ -426,8 +425,7 @@ class Detector(object):
         if outputFname:
             return True
         else:
-            #return Fex(init_df, filename=inputFname, au_columns=None, emotion_columns=FEAT_EMOTION_COLUMNS, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
-            return Fex(init_df, filename=inputFname, au_columns=jaanet_AU_presence, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
+            return Fex(init_df, filename=inputFname, au_columns=jaanet_AU_presence, emotion_columns=FEAT_EMOTION_COLUMNS, facebox_columns=FEAT_FACEBOX_COLUMNS, landmark_columns=openface_2d_landmark_columns, time_columns=FACET_TIME_COLUMNS, detector="Feat")
 
 
 # %%
