@@ -504,11 +504,11 @@ class Fex(DataFrame):
 
         if self.sessions is None or ignore_sessions:
             out = self.copy()
-            if baseline is 'median':
+            if baseline == 'median':
                 baseline = out.median()
-            elif baseline is 'mean':
+            elif baseline == 'mean':
                 baseline = out.mean()
-            elif baseline is 'begin':
+            elif baseline == 'begin':
                 baseline = out.iloc[0,:]
             elif isinstance(baseline, (Series, FexSeries)):
                 baseline = baseline
@@ -525,11 +525,11 @@ class Fex(DataFrame):
         else:
             out = self.__class__(sampling_freq=self.sampling_freq)
             for k,v in self.itersessions():
-                if baseline is 'median':
+                if baseline == 'median':
                     baseline = v.median()
-                elif baseline is 'mean':
+                elif baseline == 'mean':
                     baseline = v.mean()
-                elif baseline is 'begin':
+                elif baseline == 'begin':
                     baseline = v.iloc[0,:]
                 elif isinstance(baseline, (Series, FexSeries)):
                     baseline = baseline
@@ -775,15 +775,15 @@ class Fex(DataFrame):
             for k,v in self.itersessions():
                 session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq)
                 convolved = convolved.append(session, session_id=k)
-        if mode is 'complex':
+        if mode == 'complex':
             convolved = convolved
-        elif mode is 'filtered':
+        elif mode == 'filtered':
             convolved = np.real(convolved)
-        elif mode is 'phase':
+        elif mode == 'phase':
             convolved = np.angle(convolved)
-        elif mode is 'magnitude':
+        elif mode == 'magnitude':
             convolved = np.abs(convolved)
-        elif mode is 'power':
+        elif mode == 'power':
             convolved = np.abs(convolved)**2
         else:
             raise ValueError("Mode must be ['complex','filtered','phase',"
