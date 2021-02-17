@@ -90,8 +90,11 @@ def test_plot_detections():
     test_image = join(test_data_dir, "input.jpg")
     detector = Detector()
     image_prediction = detector.detect_image(test_image)
-
     axes = image_prediction.plot_detections()
+    assert axes[1].get_xlim()==(0.0, 1.1)
+    plt.close()
+
+    axes = image_prediction.plot_detections(muscle=True)
     assert axes[1].get_xlim()==(0.0, 1.1)
     plt.close()
 
