@@ -340,50 +340,16 @@ class Detector(object):
         detected_faces = []
         if verbose:
             print("Processing video.")
-
-        if thread_num > 1:
-            # parallelization
-            while True:
-                # Consume the queue.
-                while len(pending_task) > 0 and pending_task[0].ready():
-                    if verbose:
-                        print("Processing frame:",counter)
-                    df = pending_task.popleft().get()
-                    # Save to output file.
-                    if outputFname:
-                        df.to_csv(outputFname, index=True, header=False, mode='a')
-                    else:
-                        init_df = pd.concat([init_df, df], axis=0)
-                    processed_frames = processed_frames + 1
-            
-                if (not frame_got) and (frames_to_process == processed_frames):
-                    break
-            
-                # Populate the queue.
-                if counter <= length:
-                    if len(pending_task) < thread_num:
-                        frame_got, frame = cap.read()
-                        # Process at nth frame. 
-                        print(" ", end ="") # somehow need this to actually finish all frames.
-                        if counter%skip_frames == 0:
-                            if frame_got:
-                                task = pool.apply_async(self.process_frame, (frame.copy(), counter))
-                                pending_task.append(task)
-                                if verbose:
-                                    print(counter, frame_got)
-                        counter = counter + 1
-            cap.release() 
-        else:
-            #  single core
-            while True:
-                frame_got, frame = cap.read()
-                if counter%skip_frames == 0:
-                    df = self.process_frame(frame, counter=counter)
-                    init_df = pd.concat([init_df, df], axis=0)
-                counter = counter + 1
-                if not frame_got:
-                    break
-
+        #  single core
+        while True:
+            frame_got, frame = cap.read()
+            if counter%skip_frames == 0:
+                df = self.process_frame(frame, counter=counter)
+                init_df = pd.concat([init_df, df], axis=0)
+            counter = counter + 1
+            if not frame_got:
+                break
+        cap.release() 
         if outputFname:
             return True 
         else:
