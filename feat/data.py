@@ -986,7 +986,7 @@ class Fex(DataFrame):
         curry = landmarks.values[0][68:]
         draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
         if imagefile:
-            ax.set(title = self.input())
+            ax.set_title(self.input(), loc='center', wrap=True, fontsize=10)
         else:
             ax.set(title = self.input(), ylim=ax.get_ylim()[::-1])
             ax.set_aspect('equal', 'box')
