@@ -278,18 +278,23 @@ class Detector(object):
         try:
             # detect faces
             detected_faces = self.face_detect(frame=frame)
-            facebox_df = pd.DataFrame([[detected_faces[0][0], detected_faces[0][1], detected_faces[0][2] - detected_faces[0][0], detected_faces[0][3] - detected_faces[0][1]]], columns = self["face_detection_columns"], index=[counter])
-            # detect landmarks
-            landmarks = self.landmark_detect(frame=frame, detected_faces=detected_faces[0:4])
-            landmarks_df = pd.DataFrame([landmarks[0].flatten(order="F")], columns = self["face_landmark_columns"], index=[counter])
-            # detect AUs
-            au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
-            au_occur_df = pd.DataFrame(au_occur, columns = self["au_presence_columns"], index = [counter])
-            # detect emotions
-            emo_pred = self.emo_detect(frame=frame, facebox=detected_faces)
-            emo_pred_df = pd.DataFrame(emo_pred, columns = FEAT_EMOTION_COLUMNS, index=[counter])
-            #  combine results together.
-            out = pd.concat([facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1)
+            out = None
+            for i, faces in enumerate(detected_faces):
+                facebox_df = pd.DataFrame([[faces[0], faces[1], faces[2] - faces[0], faces[3] - faces[1]]], columns = self["face_detection_columns"], index=[counter+i])
+                # detect landmarks
+                landmarks = self.landmark_detect(frame=frame, detected_faces=[faces[0:4]])
+                landmarks_df = pd.DataFrame([landmarks[0].flatten(order="F")], columns = self["face_landmark_columns"], index=[counter+i])
+                # detect AUs
+                au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
+                au_occur_df = pd.DataFrame(au_occur, columns = self["au_presence_columns"], index = [counter+i])
+                # detect emotions
+                emo_pred = self.emo_detect(frame=frame, facebox=[faces])
+                emo_pred_df = pd.DataFrame(emo_pred, columns = FEAT_EMOTION_COLUMNS, index=[counter+i])
+                tmp_df = pd.concat([facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1)
+                if out is None:
+                    out = tmp_df
+                else:
+                    out = pd.concat([out,tmp_df],axis=0)
             out[FEAT_TIME_COLUMNS] = counter
             return out
         

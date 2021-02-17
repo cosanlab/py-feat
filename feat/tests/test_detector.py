@@ -13,33 +13,6 @@ import os
 import wget
 import cv2
 import numpy as np
-# def test_models():
-#     print("Downloading FEX emotion model.")
-#     fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/fer_aug_model.h5"
-#     wget.download(fex_emotion_model, get_resource_path())
-
-#     if os.path.exists(os.path.join(get_resource_path(), "fer_aug_model.h5")):
-#         print("\nFEX emotion model downloaded successfully.\n")
-#     else:
-#         print("Something went wrong. Model not found in directory.")
-
-#     print("Downloading landmark detection model.")
-#     lbfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"
-#     wget.download(lbfmodel, get_resource_path())
-
-#     if os.path.exists(os.path.join(get_resource_path(), "lbfmodel.yaml")):
-#         print("\nLandmark detection model downloaded successfully.\n")
-#     else:
-#         print("Something went wrong. Model not found in directory.")
-
-#     emotion_model = "fer_aug_model.h5"
-#     emotion_model_path = os.path.join(get_resource_path(), emotion_model)
-#     print("PATH TO EMOTION MODEL",emotion_model_path)
-#     assert os.path.exists(emotion_model_path)==True
-
-#     landmark_model = "lbfmodel.yaml"
-#     landmark_model_path = os.path.join(get_resource_path(), landmark_model)
-#     assert os.path.exists(landmark_model_path)==True
 
 inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
 img01 = cv2.imread(inputFname)
@@ -151,6 +124,13 @@ def test_detect_image():
     assert os.path.exists(outputFname)
     out = pd.read_csv(outputFname)
     #assert out.happiness.values[0] > 0
+
+def test_multiface():
+    inputFname2 = os.path.join(get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg")
+    img02 = cv2.imread(inputFname2)
+    detector = Detector(face_model='RetinaFace', emotion_model='fer', landmark_model="PFLD", au_occur_model='jaanet')
+    files = detector.process_frame(img02, 0)
+    assert files.shape[0] == 5
 
 def test_detect_video():
     # Test detect video
