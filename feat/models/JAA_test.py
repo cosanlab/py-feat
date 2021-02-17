@@ -193,9 +193,5 @@ class JAANet(nn.Module):
         aus_output = (aus_output[:,1,:]).exp()
         all_output = aus_output.data.cpu().float()
         AUoccur_pred_prob = all_output.data.numpy()
-        AUoccur_pred = np.zeros(AUoccur_pred_prob.shape)
-        AUoccur_pred[AUoccur_pred_prob < 0.5] = 0
-        AUoccur_pred[AUoccur_pred_prob >= 0.5] = 1
-
-        return AUoccur_pred
+        return AUoccur_pred_prob
 
