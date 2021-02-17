@@ -20,7 +20,7 @@ from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
 
 from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
-from feat.plotting import plot_face, draw_lineface
+from feat.plotting import plot_face, draw_lineface, draw_muscles
 from nilearn.signal import clean
 from scipy.signal import convolve
 
@@ -949,7 +949,7 @@ class Fex(DataFrame):
             except Exception as e:
                 print('Unable to plot data:', e)
 
-    def plot_detections(self):
+    def plot_detections(self, muscle = False):
         """Plots detection results by Feat.
 
         Args: 
@@ -990,6 +990,11 @@ class Fex(DataFrame):
         else:
             ax.set(title = self.input(), ylim=ax.get_ylim()[::-1])
             ax.set_aspect('equal', 'box')
+
+        if muscle:
+            au20index = [f"AU{str(i).zfill(2)}" for i in [1,2,4,5,6,7,9,10,12,14,15,17,18,20,23,24,25,26,28,43]]
+            au = self.aus().T.reindex(index=au20index).fillna(0).T.values[0]
+            draw_muscles(currx, curry, au=au, ax=ax, all="heatmap")
 
         # draw facebox
         facebox = self.facebox().values[0]
