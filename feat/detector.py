@@ -13,7 +13,7 @@ import cv2
 import feat
 from feat.data import Fex
 from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landmark_columns, jaanet_AU_presence, FEAT_EMOTION_MAPPER, FEAT_EMOTION_COLUMNS, FEAT_FACEBOX_COLUMNS, FEAT_TIME_COLUMNS, FACET_TIME_COLUMNS, BBox, convert68to49
-from feat.models.JAA_test import JAANet
+from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 import torch
