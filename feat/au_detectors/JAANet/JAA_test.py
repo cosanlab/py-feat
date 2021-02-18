@@ -5,8 +5,7 @@ import torch
 import math
 import pandas as pd
 import numpy as np
-import feat.models.jaa_network as network
-#import jaa_network as network
+import feat.au_detectors.JAANet.JAANet_model as network
 import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
