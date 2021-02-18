@@ -204,7 +204,7 @@ class Fex(DataFrame):
         Returns:
             string: path to input image
         """        
-        return self['input'].values[0]
+        return self['input']
 
     def landmark_x(self):
         """Returns the x landmarks. 
@@ -961,60 +961,66 @@ class Fex(DataFrame):
         import matplotlib.pyplot as plt
         from matplotlib.patches import Rectangle
 
-        f,axes = plt.subplots(1, 3, figsize=(15,7))
+        # check how many images.
+        inputs = self.input().unique() 
+        all_axes = []
+        for imagefile in inputs:
+            f,axes = plt.subplots(1, 3, figsize=(15,7))
+            ax = axes[0]
+            try:
+                if os.path.exists(imagefile):
+                    color = 'w'           
+                    # draw base image
+                    im = Image.open(imagefile)
+                    ax.imshow(im)
+                    image_exists = True
+                else:
+                    image_exists = False
+                    color='k'
+            except: 
+                color = 'k'
+                print(f"Input image {imagefile} not found.")
+                image_exists = False
 
-        try:
-            imagefile = self.input()
-            if os.path.exists(imagefile):
-                color = 'w'           
-                ax = axes[0]
-                # draw base image
-                im = Image.open(self.input())
-                ax.imshow(im)
+            sub_data = self.query("input==@imagefile")
+            for i in range(len(sub_data)):
+                # draw landmarks
+                row = sub_data.iloc[[i]]
+                landmark = row.landmark().values[0]
+                currx = landmark[:68]
+                curry = landmark[68:]
+                draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
+                # muscle    
+                if muscle:
+                    au20index = [f"AU{str(i).zfill(2)}" for i in [1,2,4,5,6,7,9,10,12,14,15,17,18,20,23,24,25,26,28,43]]
+                    aus = row.aus().T.reindex(index=au20index).fillna(0).T.values[0]
+                    draw_muscles(currx, curry, au=aus, ax=ax, all="heatmap")
+                # facebox
+                facebox = row.facebox().values[0]
+                rect = Rectangle((facebox[0], facebox[1]), facebox[2], facebox[3], linewidth=2, edgecolor='cyan', fill=False)
+                ax.add_patch(rect)
+
+            if image_exists:
+                ax.set_title(sub_data.input().unique()[0], loc='center', wrap=True, fontsize=10)
             else:
-                imagefile = None
-                color='k'
-        except: 
-            imagefile = None
-            color = 'k'
-            print("Input image not found.")
+                ax.set(title = imagefile, ylim=ax.get_ylim()[::-1])
+                ax.set_aspect('equal', 'box')
 
-        # draw landmarks
-        ax = axes[0]
-        landmarks = self.landmark()
-        currx = landmarks.values[0][:68]
-        curry = landmarks.values[0][68:]
-        draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
-        if imagefile:
-            ax.set_title(self.input(), loc='center', wrap=True, fontsize=10)
-        else:
-            ax.set(title = self.input(), ylim=ax.get_ylim()[::-1])
-            ax.set_aspect('equal', 'box')
+            # plot AUs
+            sub_data.aus().T.plot(kind='barh', ax= axes[1])
+            axes[1].invert_yaxis()
+            axes[1].get_legend().remove()
+            axes[1].set(xlim=[0, 1.1], title="Action Units")
 
-        if muscle:
-            au20index = [f"AU{str(i).zfill(2)}" for i in [1,2,4,5,6,7,9,10,12,14,15,17,18,20,23,24,25,26,28,43]]
-            au = self.aus().T.reindex(index=au20index).fillna(0).T.values[0]
-            draw_muscles(currx, curry, au=au, ax=ax, all="heatmap")
+            # plot emotions
+            sub_data.emotions().T.plot(kind='barh', ax= axes[2])
+            axes[2].invert_yaxis()
+            axes[2].get_legend().remove()
+            axes[2].set(xlim=[0, 1.1], title="Emotions")
 
-        # draw facebox
-        facebox = self.facebox().values[0]
-        rect = Rectangle((facebox[0], facebox[1]), facebox[2], facebox[3], linewidth=2, edgecolor='cyan', fill=False)
-        ax.add_patch(rect)
-
-        # plot AUs
-        self.aus().T.plot(kind='barh', ax= axes[1])
-        axes[1].invert_yaxis()
-        axes[1].get_legend().remove()
-        axes[1].set(xlim=[0, 1.1], title="Action Units")
-
-        # plot emotions
-        self.emotions().T.plot(kind='barh', ax= axes[2])
-        axes[2].invert_yaxis()
-        axes[2].get_legend().remove()
-        axes[2].set(xlim=[0, 1.1], title="Emotions")
-
-        plt.tight_layout()
-        plt.show()
+            plt.tight_layout()
+            plt.show()
+            all_axes.append(axes)
         return axes
 
 class Fextractor:
