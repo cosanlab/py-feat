@@ -1,9 +1,9 @@
+# Note: Most of the codes are copied from https://github.com/ZhiwenShao/PyTorch-JAANet/blob/master/network.py
+# Please check with the repo and original authors if you want to redistribute. 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 import numpy as np
-
 
 class LocalConv2dReLU(nn.Module):
     def __init__(self, local_h_num, local_w_num, in_channels, out_channels, kernel_size, stride=1,
