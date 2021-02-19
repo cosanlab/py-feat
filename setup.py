@@ -34,7 +34,7 @@ class CustomInstall(install):
                 print("Downloading FEX emotion model.")
                 try:
                     fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
-                    wget.download(fex_emotion_model, get_resource_path())
+                    wget.download(fex_emotion_model, get_resource_path(), bar=None)
                 # except:
                 #    try:
                 #        fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
@@ -53,11 +53,11 @@ class CustomInstall(install):
                 print("Downloading landmark detection model.")
                 try:
                     lbfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"
-                    wget.download(lbfmodel, get_resource_path())
+                    wget.download(lbfmodel, get_resource_path(), bar=None)
                 except:
                     try:
                         lbfmodel = "https://www.dropbox.com/s/cqune0z1bwf79zy/lbfmodel.yaml?dl=1"
-                        wget.download(lbfmodel, get_resource_path())
+                        wget.download(lbfmodel, get_resource_path(), bar=None)
                     except:
                         print("Landmark model failed to download")
 
@@ -67,7 +67,7 @@ class CustomInstall(install):
                 print("Downloading JAA Net AU Occurence model.")
                 try:
                     jaanet_params = "https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip"
-                    wget.download(jaanet_params, get_resource_path())
+                    wget.download(jaanet_params, get_resource_path(), bar=None)
                     with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
                         zip_ref.extractall(os.path.join(get_resource_path()))
                 except:
@@ -84,7 +84,7 @@ class CustomInstall(install):
                 try:
                     # print("Downloading DRML model.")
                     drml_model = "https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"
-                    wget.download(drml_model, get_resource_path())
+                    wget.download(drml_model, get_resource_path(), bar=None)
                     # if os.path.exists(os.path.join(get_resource_path(), "DRMLNetParams.pth")):
                     #     print("\nLandmark detection model downloaded successfully.\n")
                     # else:
@@ -98,7 +98,7 @@ class CustomInstall(install):
                 try:
                     # print("Downloading nFaceBox model.")
                     facebox_model = "https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"
-                    wget.download(facebox_model, get_resource_path())
+                    wget.download(facebox_model, get_resource_path(), bar=None)
                     # if os.path.exists(os.path.join(get_resource_path(), "FaceBoxesProd.pth")):
                     #     print("\nFaceBox model downloaded successfully.\n")
                     # else:
@@ -112,7 +112,7 @@ class CustomInstall(install):
                 try:
                     # print("Downloading MTCNN ONet model.")
                     onet_model = "https://github.com/cosanlab/feat/releases/download/v0.1/onet.npy"
-                    wget.download(onet_model, get_resource_path())
+                    wget.download(onet_model, get_resource_path(), bar=None)
                     # if os.path.exists(os.path.join(get_resource_path(), "onet.npy")):
                     #     print("\nMTCNN Onet model downloaded successfully.\n")
                     # else:
@@ -126,7 +126,7 @@ class CustomInstall(install):
                 try:
                     # print("Downloading MTCNN pnet model.")
                     pnet_model = "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.npy"
-                    wget.download(pnet_model, get_resource_path())
+                    wget.download(pnet_model, get_resource_path(), bar=None)
                     # if os.path.exists(os.path.join(get_resource_path(), "pnet.npy")):
                     #     print("\nMTCNN pnet model downloaded successfully.\n")
                     # else:
@@ -140,7 +140,7 @@ class CustomInstall(install):
                 try:
                     # print("Downloading MTCNN rnet model.")
                     rnet_model = "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.npy"
-                    wget.download(rnet_model, get_resource_path())
+                    wget.download(rnet_model, get_resource_path(), bar=None)
                     # if os.path.exists(os.path.join(get_resource_path(), "rnet.npy")):
                     #     print("\nMTCNN rnet model downloaded successfully.\n")
                     # else:
@@ -154,7 +154,7 @@ class CustomInstall(install):
                 try:
                     #print("Downloading RetinaFace model.")
                     retin_model = "https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet0.25_Final.pth"
-                    wget.download(retin_model, get_resource_path())
+                    wget.download(retin_model, get_resource_path(), bar=None)
                     # if os.path.exists(os.path.join(get_resource_path(), "mobilenet0.25_Final.pth")):
                     #     print("\nRetinaFace model downloaded successfully.\n")
                     # else:
@@ -196,7 +196,7 @@ class CustomInstall(install):
                 try:
                     #print("Downloading MobileFaceNet model.")
                     mbfa_model = "https://github.com/cosanlab/feat/releases/download/v0.1/mobilefacenet_model_best.pth.tar"
-                    wget.download(mbfa_model, get_resource_path())
+                    wget.download(mbfa_model, get_resource_path(), bar=None)
                     # if os.path.exists(os.path.join(get_resource_path(), "mobilefacenet_model_best.pth.tar")):
                     #     print("\nMobileFaceNet model downloaded successfully.\n")
                     # else:
