@@ -48,7 +48,7 @@ openface_2d_landmark_columns = [f'x_{i}' for i in range(landmark_length)] + [f'y
 openface_3d_landmark_columns =[f'X_{i}' for i in range(landmark_length)] + [f'Y_{i}' for i in range(landmark_length)] + [f'Z_{i}' for i in range(landmark_length)] 
 
 jaanet_AU_list = [1,2,4,6,7,10,12,14,15,17,23,24]
-jaanet_AU_presence = [f'AU'+str(i).zfill(2)+'_c' for i in jaanet_AU_list]
+jaanet_AU_presence = [f'AU'+str(i).zfill(2) for i in jaanet_AU_list]
 jaanet_AU_presence.sort()
 
 openface_AU_list = [1,2,4,5,6,7,9,10,12,14,15,17,20,23,25,26,45]
