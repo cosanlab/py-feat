@@ -1,1 +1,1 @@
-from .detector import MTCNN
+from .MTCNN_test import MTCNN

@@ -29,6 +29,7 @@ def test_faceboxes():
                           au_occur_model=None, emotion_model=None, n_jobs=1)
     out = detector01.face_detect(img01)
     bbox_left = out[0][0]
+    assert bbox_left!=None
     bbox_right = out[0][1]
     bbox_top = out[0][2]
     bbox_bottom = out[0][3]
@@ -42,6 +43,7 @@ def test_retinaface():
                           au_occur_model=None, emotion_model=None, n_jobs=1)
     out = detector02.face_detect(img01)
     bbox_left = out[0][0]
+    assert bbox_left!=None
     bbox_right = out[0][1]
     bbox_top = out[0][2]
     bbox_bottom = out[0][3]
@@ -55,6 +57,7 @@ def test_mtcnn():
                           au_occur_model=None, emotion_model=None, n_jobs=1)
     out = detector03.face_detect(img01)
     bbox_left = out[0][0]
+    assert bbox_left!=None
     bbox_right = out[0][1]
     bbox_top = out[0][2]
     bbox_bottom = out[0][3]
@@ -97,6 +100,7 @@ def test_jaanet():
     bboxes = detector1.face_detect(img01)
     lands = detector1.landmark_detect(img01,bboxes)
     aus = detector1.au_occur_detect(img01,lands)
+    assert np.sum(np.isnan(aus))==0
     assert aus.shape[-1] == 12
 
 def test_drml():
@@ -107,6 +111,7 @@ def test_drml():
     bboxes = detector1.face_detect(img01)
     lands = detector1.landmark_detect(img01,bboxes)
     aus = detector1.au_occur_detect(img01,lands)
+    assert np.sum(np.isnan(aus))==0
     assert aus.shape[-1] == 12
     
 def test_detect_image():
@@ -116,14 +121,14 @@ def test_detect_image():
     out = detector.detect_image(inputFname=inputFname)
     assert type(out) == Fex
     assert len(out) == 1
-    #assert out.happiness.values[0] > 0
+    assert out.happiness.values[0] > 0
 
     outputFname = os.path.join(get_test_data_path(), "output.csv")
     out = detector.detect_image(inputFname=inputFname, outputFname=outputFname)
     assert out
     assert os.path.exists(outputFname)
     out = pd.read_csv(outputFname)
-    #assert out.happiness.values[0] > 0
+    assert out.happiness.values[0] > 0
 
 def test_multiface():
     inputFname2 = os.path.join(get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg")
@@ -146,12 +151,12 @@ def test_detect_video_parallel():
     out = detector.detect_video(inputFname=inputFname, skip_frames=20, verbose=True)
     assert len(out) == 4
 
-    # outputFname = os.path.join(get_test_data_path(), "output.csv")
-    # out = detector.detect_video(inputFname=inputFname, outputFname=outputFname)
-    # assert out
-    # assert os.path.exists(outputFname)
-    # out = pd.read_csv(outputFname)
-    # assert out.happiness.values.max() > 0
+    outputFname = os.path.join(get_test_data_path(), "output.csv")
+    out = detector.detect_video(inputFname=inputFname, outputFname=outputFname, skip_frames=10)
+    assert out
+    assert os.path.exists(outputFname)
+    out = pd.read_csv(outputFname)
+    assert out.happiness.values.max() > 0
 
 def test_simultaneous():
     # Test processing everything:
