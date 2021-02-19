@@ -17,12 +17,12 @@ from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 import torch
-from feat.face_detectors.FaceBoxes import FaceBoxes
-from feat.face_detectors.Retinaface import Retinaface
-from feat.face_detectors.MTCNN import MTCNN
-from feat.landmark_detectors.basenet import MobileNet_GDConv
-from feat.landmark_detectors.pfld_compressed import PFLDInference
-from feat.landmark_detectors.mobilefacenet import MobileFaceNet
+from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
+from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
+from feat.face_detectors.Retinaface import Retinaface_test
+from feat.landmark_detectors.basenet_test import MobileNet_GDConv
+from feat.landmark_detectors.pfld_compressed_test import PFLDInference
+from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 
 
 class Detector(object):
@@ -70,7 +70,7 @@ class Detector(object):
             if face_model.lower() == "faceboxes":
                 self.face_detector = FaceBoxes()
             elif face_model.lower() == "retinaface":
-                self.face_detector = Retinaface.Retinaface()
+                self.face_detector = Retinaface_test.Retinaface()
             elif face_model.lower() == 'mtcnn':
                 self.face_detector = MTCNN()
 
@@ -91,22 +91,22 @@ class Detector(object):
                 self.landmark_detector = MobileNet_GDConv(136)
                 self.landmark_detector = torch.nn.DataParallel(
                     self.landmark_detector)
-                # download model from https://drive.google.com/file/d/1Le5UdpMkKOTRr1sTp4lwkw8263sbgdSe/view?usp=sharing
-                #CHANGEME
-                checkpoint = torch.load(os.path.join(feat.__path__[0], 'landmark_detectors/weights/mobilenet_224_model_best_gdconv_external.pth.tar'), map_location=self.map_location)
+                # or download model from https://drive.google.com/file/d/1Le5UdpMkKOTRr1sTp4lwkw8263sbgdSe/view?usp=sharing
+                checkpoint = torch.load(os.path.join(get_resource_path(), 'mobilenet_224_model_best_gdconv_external.pth.tar'), map_location=self.map_location)
                 print('Use MobileNet as backbone')
                 self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
             elif landmark_model.lower() == 'pfld':
                 self.landmark_detector = PFLDInference()
-                # download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
-                checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/pfld_model_best.pth.tar'), map_location=self.map_location)
+                # or download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
+                checkpoint = torch.load(os.path.join(get_resource_path(),'pfld_model_best.pth.tar'), map_location=self.map_location)
                 print('Use PFLD as backbone')
                 self.landmark_detector.load_state_dict(checkpoint['state_dict'])
-                # download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
+                # or download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
+                
             elif landmark_model.lower() == 'mobilefacenet':
                 self.landmark_detector = MobileFaceNet([112, 112], 136)
-                checkpoint = torch.load(os.path.join(feat.__path__[0],'landmark_detectors/weights/mobilefacenet_model_best.pth.tar'), map_location=self.map_location)
+                checkpoint = torch.load(os.path.join(get_resource_path(),'mobilefacenet_model_best.pth.tar'), map_location=self.map_location)
                 print('Use MobileFaceNet as backbone')
                 self.landmark_detector.load_state_dict(checkpoint['state_dict'])
 
@@ -350,7 +350,10 @@ class Detector(object):
             frame_got, frame = cap.read()
             if counter%skip_frames == 0:
                 df = self.process_frame(frame, counter=counter)
-                init_df = pd.concat([init_df, df], axis=0)
+                if outputFname:
+                    df.to_csv(outputFname, index=True, header=False, mode='a')
+                else:
+                    init_df = pd.concat([init_df, df], axis=0)
             counter = counter + 1
             if not frame_got:
                 break
