@@ -1,10 +1,14 @@
-# %%
 # https://www.kaggle.com/jcheong0428/facial-emotion-recognition
-# Pytorch Implementation of the above algorithm
+# Pytorch Implementation of the above algorithm. Achieves similar 
+# F1 score and accuracy.
 import torch.nn as nn
 import torch
 
 class EarlyStopping(object):
+    """
+    code from https://gist.github.com/stefanonardo/693d96ceb2f531fa05db530f3e21517d.
+    A pytorch implementation of keras earlystopping 
+    """
     def __init__(self, mode='min', min_delta=0, patience=10, percentage=False):
         self.mode = mode
         self.min_delta = min_delta
