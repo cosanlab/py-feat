@@ -356,12 +356,12 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
             if muscle in kwargs:
                 todraw[muscle] = kwargs[muscle]
                 del kwargs[muscle]
-    for muscle in muscle_names:
-      if muscle in todraw:
+    for muscle in todraw.keys():
         if todraw[muscle] == 'heatmap':
-          muscles[muscle].set_color(get_heat(muscle, au, facet))
+            # muscles[muscle].set_color(get_heat(muscle, au, facet))
+            muscles[muscle].set_color(get_heat(muscle, au, facet))
         else:
-          muscles[muscle].set_color(todraw[muscle])
+            muscles[muscle].set_color(todraw[muscle])
         ax.add_patch(muscles[muscle], *args, **kwargs)
 
     eye_l = plt.Polygon([[currx[36], curry[36]], [currx[37], curry[37]],
@@ -377,9 +377,9 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                         [currx[64], curry[64]], [currx[65], curry[65]],
                             [currx[66], curry[66]], [currx[67], curry[67]]], color='w')
 
-    ax.add_patch(eye_l)
-    ax.add_patch(eye_r)
-    ax.add_patch(mouth)
+    # ax.add_patch(eye_l)
+    # ax.add_patch(eye_r)
+    # ax.add_patch(mouth)
     return ax
 
 
@@ -414,8 +414,15 @@ def get_heat(muscle, au, log):
         num = int(100*(1. / (1 + 10. ** -(au[unit]))))
     else:
         num = int(au[unit]*20)
-    color = colors.to_hex(q[num])
-    return str(color)
+    # set alpha (opacity)
+    if au[unit] == 0:
+        alpha=0
+    else: 
+        alpha=.5
+    # color = colors.to_hex(q[num])
+    # return str(color)
+    color = colors.to_rgba(q[num], alpha=alpha)
+    return color
 
 
 def plot_face(model=None, au=None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1,
