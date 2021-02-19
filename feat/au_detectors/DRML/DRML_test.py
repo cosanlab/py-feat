@@ -1,36 +1,32 @@
 import torch
-import pandas as pd
-import numpy as np
 from feat.au_detectors.DRML.DRML_model import DRML_net
 import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
 from feat.utils import get_resource_path
-import cv2
-import feat
 import os
 
-pretrained_path = os.path.join(get_resource_path(), 'DRMLNetParams.pth')
 
 class DRMLNet(nn.Module):
     def __init__(self) -> None:
         """
         Initialize.
-        Args:
-            img_data: numpy array image data files of shape (N,3,W,H)
-            land_data: numpy array landmark data of shape (N, 49*2)
         """
-        #self.imgs = img_data
-        #self.land_data = land_data
         self.params = {
                 "config_au_num" : 12,
-                "config_write_path_prefix" : get_resource_path()
+                "config_write_path_prefix" : os.path.join(get_resource_path(), 'DRMLNetParams.pth')
         }
 
     def detect_au(self, imgs, landmarks=None):
-
+        """
+        Wrapper function that takes in imgs and produces AU occurence predictions.
+        Args:
+            imgs: processed images type numpy array
+        Return:
+            all_pred_au: AU occurence predictions for all AU classes
+        """
         use_gpu = torch.cuda.is_available()
-        config_write_path_prefix = self.params["config_write_path_prefix"]
+        pretrained_path = self.params["config_write_path_prefix"]
         config_au_num = self.params["config_au_num"]
 
         drml_net = DRML_net(AU_num=config_au_num)
@@ -64,6 +60,5 @@ class DRMLNet(nn.Module):
         
         all_pred_au[all_pred_au<0.5]=0
         all_pred_au[all_pred_au>=0.5]=1
-        #all_pred_au = all_pred_au.transpose((1,0))
         all_pred_au = all_pred_au.data.numpy()
         return all_pred_au

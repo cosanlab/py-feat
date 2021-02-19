@@ -35,6 +35,10 @@ class CustomInstall(install):
                 try:
                     fex_emotion_model = "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
                     wget.download(fex_emotion_model, get_resource_path())
+                # except:
+                #    try:
+                #        fex_emotion_model = "https://www.dropbox.com/s/d3yhtsqggqcrjl2/fer_emotion_model.h5?dl=1"
+                #        wget.download(fex_emotion_model, get_resource_path())
                 except:
                     print("FeX emotion model failed to download")
 
@@ -78,16 +82,128 @@ class CustomInstall(install):
                 print("\nDRML NET model downloaded successfully.\n")
             else:
                 try:
-                    print("Downloading DRML model.")
+                    # print("Downloading DRML model.")
                     drml_model = "https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"
                     wget.download(drml_model, get_resource_path())
-                    if os.path.exists(os.path.join(get_resource_path(), "DRMLNetParams.pth")):
-                        print("\nLandmark detection model downloaded successfully.\n")
-                    else:
-                        print("Something went wrong. Model not found in directory.")
+                    # if os.path.exists(os.path.join(get_resource_path(), "DRMLNetParams.pth")):
+                    #     print("\nLandmark detection model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
                 except:
                     print("DRML model failed to download.")
-                    
+
+            if os.path.exists(os.path.join(get_resource_path(), "FaceBoxesProd.pth")):
+                print("\nFaceBox model downloaded successfully.\n")
+            else:
+                try:
+                    # print("Downloading nFaceBox model.")
+                    facebox_model = "https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"
+                    wget.download(facebox_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "FaceBoxesProd.pth")):
+                    #     print("\nFaceBox model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("FaceBox model failed to download.")
+
+            if os.path.exists(os.path.join(get_resource_path(), "onet.npy")):
+                print("\nMTCNN O Net model downloaded successfully.\n")
+            else:
+                try:
+                    # print("Downloading MTCNN ONet model.")
+                    onet_model = "https://github.com/cosanlab/feat/releases/download/v0.1/onet.npy"
+                    wget.download(onet_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "onet.npy")):
+                    #     print("\nMTCNN Onet model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("MTCNN Onet model failed to download.")
+
+            if os.path.exists(os.path.join(get_resource_path(), "pnet.npy")):
+                print("\nMTCNN PNet model downloaded successfully.\n")
+            else:
+                try:
+                    # print("Downloading MTCNN pnet model.")
+                    pnet_model = "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.npy"
+                    wget.download(pnet_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "pnet.npy")):
+                    #     print("\nMTCNN pnet model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("MTCNN pnet model failed to download.")     
+
+            if os.path.exists(os.path.join(get_resource_path(), "rnet.npy")):
+                print("\nMTCNN rnet model downloaded successfully.\n")
+            else:
+                try:
+                    # print("Downloading MTCNN rnet model.")
+                    rnet_model = "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.npy"
+                    wget.download(rnet_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "rnet.npy")):
+                    #     print("\nMTCNN rnet model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("MTCNN rnet model failed to download.")     
+
+            if os.path.exists(os.path.join(get_resource_path(), "mobilenet0.25_Final.pth")):
+                print("\nRetinaFace model downloaded successfully.\n")
+            else:
+                try:
+                    #print("Downloading RetinaFace model.")
+                    retin_model = "https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet0.25_Final.pth"
+                    wget.download(retin_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "mobilenet0.25_Final.pth")):
+                    #     print("\nRetinaFace model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("RetinaFace model failed to download.")    
+
+            if os.path.exists(os.path.join(get_resource_path(), "mobilenet_224_model_best_gdconv_external.pth.tar")):
+                print("\nmobilenet model downloaded successfully.\n")
+            else:
+                try:
+                    #print("Downloading mobilenet model.")
+                    mble_model = "https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet_224_model_best_gdconv_external.pth.tar"
+                    wget.download(mble_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "mobilenet_224_model_best_gdconv_external.pth.tar")):
+                    #     print("\nmobilenet model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("mobilenet model failed to download.")    
+
+            if os.path.exists(os.path.join(get_resource_path(), "pfld_model_best.pth.tar")):
+                print("\nPFLD model downloaded successfully.\n")
+            else:
+                try:
+                    #print("Downloading PFLD model.")
+                    pfld_model = "https://github.com/cosanlab/feat/releases/download/v0.1/pfld_model_best.pth.tar"
+                    wget.download(pfld_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "pfld_model_best.pth.tar")):
+                    #     print("\nPFLD model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("PFLD model failed to download.")    
+
+            if os.path.exists(os.path.join(get_resource_path(), "mobilefacenet_model_best.pth.tar")):
+                print("\nMobileFaceNet model downloaded successfully.\n")
+            else:
+                try:
+                    #print("Downloading MobileFaceNet model.")
+                    mbfa_model = "https://github.com/cosanlab/feat/releases/download/v0.1/mobilefacenet_model_best.pth.tar"
+                    wget.download(mbfa_model, get_resource_path())
+                    # if os.path.exists(os.path.join(get_resource_path(), "mobilefacenet_model_best.pth.tar")):
+                    #     print("\nMobileFaceNet model downloaded successfully.\n")
+                    # else:
+                    #     print("Something went wrong. Model not found in directory.")
+                except:
+                    print("MobileFaceNet model failed to download.")   
+
         atexit.register(_post_install)
         install.run(self)
 
