@@ -20,9 +20,7 @@ from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
 
 from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
-from feat.plotting import plot_face
-#from utils import read_feat, read_affectiva, read_facet, read_openface, wavelet, calc_hist_auc, load_h5, get_resource_path
-#from plotting import plot_face
+from feat.plotting import plot_face, draw_lineface, draw_muscles
 from nilearn.signal import clean
 from scipy.signal import convolve
 
@@ -199,6 +197,14 @@ class Fex(DataFrame):
             DataFrame: landmark data
         """        
         return self[self.landmark_columns]
+
+    def input(self):
+        """Returns input column as string
+
+        Returns:
+            string: path to input image
+        """        
+        return self['input']
 
     def landmark_x(self):
         """Returns the x landmarks. 
@@ -504,45 +510,49 @@ class Fex(DataFrame):
 
         if self.sessions is None or ignore_sessions:
             out = self.copy()
-            if baseline is 'median':
-                baseline = out.median()
-            elif baseline is 'mean':
-                baseline = out.mean()
-            elif baseline is 'begin':
-                baseline = out.iloc[0,:]
+            if type(baseline) == str:
+                if baseline == 'median':
+                    baseline_values = out.median()
+                elif baseline == 'mean':
+                    baseline_values = out.mean()
+                elif baseline == 'begin':
+                    baseline_values = out.iloc[0,:]
+                else:
+                    raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
             elif isinstance(baseline, (Series, FexSeries)):
-                baseline = baseline
+                baseline_values = baseline
             elif isinstance(baseline, (Fex, DataFrame)):
                 raise ValueError('Must pass in a FexSeries not a FexSeries Instance.')
-            else:
-                raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
+
             if normalize == 'db':
-                out = 10*np.log10(out - baseline)/baseline
+                out = 10*np.log10(out - baseline_values)/baseline_values
             if normalize == 'pct':
-                out = 100*(out - baseline)/baseline
+                out = 100*(out - baseline_values)/baseline_values
             else:
-                out = out - baseline
+                out = out - baseline_values
         else:
             out = self.__class__(sampling_freq=self.sampling_freq)
             for k,v in self.itersessions():
-                if baseline is 'median':
-                    baseline = v.median()
-                elif baseline is 'mean':
-                    baseline = v.mean()
-                elif baseline is 'begin':
-                    baseline = v.iloc[0,:]
+                if type(baseline)==str:
+                    if baseline == "median":
+                        baseline_values = v.median()
+                    elif baseline == 'mean':
+                        baseline_values = v.mean()
+                    elif baseline == 'begin':
+                        baseline_values = v.iloc[0,:]
+                    else:
+                        raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
                 elif isinstance(baseline, (Series, FexSeries)):
-                    baseline = baseline
+                    baseline_values = baseline
                 elif isinstance(baseline, (Fex, DataFrame)):
                     raise ValueError('Must pass in a FexSeries not a FexSeries Instance.')
-                else:
-                    raise ValueError('%s is not implemented please use {mean, median, Fex}' % baseline)
+
                 if normalize == 'db':
-                    out = out.append(10*np.log10(v-baseline)/baseline, session_id=k)
+                    out = out.append(10*np.log10(v-baseline_values)/baseline_values, session_id=k)
                 if normalize == 'pct':
-                    out = out.append(100*(v-baseline)/baseline, session_id=k)
+                    out = out.append(100*(v-baseline_values)/baseline_values, session_id=k)
                 else:
-                    out = out.append(v-baseline, session_id=k)
+                    out = out.append(v-baseline_values, session_id=k)
         return self.__class__(out, sampling_freq=self.sampling_freq,
                              features=self.features, sessions=self.sessions)
 
@@ -775,15 +785,15 @@ class Fex(DataFrame):
             for k,v in self.itersessions():
                 session = self.__class__(pd.DataFrame({x:convolve(y, wav, mode='same') for x,y in v.iteritems()}), sampling_freq=self.sampling_freq)
                 convolved = convolved.append(session, session_id=k)
-        if mode is 'complex':
+        if mode == 'complex':
             convolved = convolved
-        elif mode is 'filtered':
+        elif mode == 'filtered':
             convolved = np.real(convolved)
-        elif mode is 'phase':
+        elif mode == 'phase':
             convolved = np.angle(convolved)
-        elif mode is 'magnitude':
+        elif mode == 'magnitude':
             convolved = np.abs(convolved)
-        elif mode is 'power':
+        elif mode == 'power':
             convolved = np.abs(convolved)**2
         else:
             raise ValueError("Mode must be ['complex','filtered','phase',"
@@ -938,6 +948,80 @@ class Fex(DataFrame):
                 return ax
             except Exception as e:
                 print('Unable to plot data:', e)
+
+    def plot_detections(self, muscle = False):
+        """Plots detection results by Feat.
+
+        Args: 
+
+        Returns:
+            ax
+        """        
+        from PIL import Image
+        import matplotlib.pyplot as plt
+        from matplotlib.patches import Rectangle
+
+        # check how many images.
+        inputs = self.input().unique() 
+        all_axes = []
+        for imagefile in inputs:
+            f,axes = plt.subplots(1, 3, figsize=(15,7))
+            ax = axes[0]
+            try:
+                if os.path.exists(imagefile):
+                    color = 'w'           
+                    # draw base image
+                    im = Image.open(imagefile)
+                    ax.imshow(im)
+                    image_exists = True
+                else:
+                    image_exists = False
+                    color='k'
+            except: 
+                color = 'k'
+                print(f"Input image {imagefile} not found.")
+                image_exists = False
+
+            sub_data = self.query("input==@imagefile")
+            for i in range(len(sub_data)):
+                # draw landmarks
+                row = sub_data.iloc[[i]]
+                landmark = row.landmark().values[0]
+                currx = landmark[:68]
+                curry = landmark[68:]
+                draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
+                # muscle    
+                if muscle:
+                    au20index = [f"AU{str(i).zfill(2)}" for i in [1,2,4,5,6,7,9,10,12,14,15,17,18,20,23,24,25,26,28,43]]
+                    aus = row.aus().T.reindex(index=au20index).fillna(0).T.values[0]
+                    draw_muscles(currx, curry, au=aus, ax=ax, all="heatmap")
+                # facebox
+                facebox = row.facebox().values[0]
+                rect = Rectangle((facebox[0], facebox[1]), facebox[2], facebox[3], linewidth=2, edgecolor='cyan', fill=False)
+                ax.add_patch(rect)
+
+            if image_exists:
+                ax.set_title(sub_data.input().unique()[0], loc='center', wrap=True, fontsize=10)
+            else:
+                ax.set(title = imagefile, ylim=ax.get_ylim()[::-1])
+                ax.set_aspect('equal', 'box')
+
+            # plot AUs
+            sub_data.aus().T.plot(kind='barh', ax= axes[1])
+            axes[1].invert_yaxis()
+            axes[1].get_legend().remove()
+            axes[1].set(xlim=[0, 1.1], title="Action Units")
+
+            # plot emotions
+            sub_data.emotions().T.plot(kind='barh', ax= axes[2])
+            axes[2].invert_yaxis()
+            axes[2].get_legend().remove()
+            axes[2].set(xlim=[0, 1.1], title="Emotions")
+
+            plt.tight_layout()
+            plt.show()
+            all_axes.append(axes)
+        return axes
 
 class Fextractor:
 
