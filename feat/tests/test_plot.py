@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os.path import join
 from .utils import get_test_data_path
-from feat.data import Fex
+from feat import Fex, Detector
 from feat.utils import read_openface, read_affectiva
 from feat.plotting import plot_face, draw_lineface, draw_vectorfield, predict
 import matplotlib
@@ -83,4 +83,23 @@ def test_plot_muscle():
     openface = read_openface(test_file)
     ax = openface.plot_aus(12, ax=ax, muscles={'all': "heatmap"}, gaze = None)
     assert_plot_shape(plt.gca())
+    plt.close()
+
+def test_plot_detections():
+    test_data_dir = get_test_data_path()
+    test_image = join(test_data_dir, "input.jpg")
+    detector = Detector()
+    image_prediction = detector.detect_image(test_image)
+    axes = image_prediction.plot_detections()
+    assert axes[1].get_xlim()==(0.0, 1.1)
+    plt.close()
+
+    axes = image_prediction.plot_detections(muscle=True)
+    assert axes[1].get_xlim()==(0.0, 1.1)
+    plt.close()
+
+    image_prediction2 = image_prediction.copy()
+    image_prediction2['input']= "NO_SUCH_FILE_EXISTS"
+    axes = image_prediction2.plot_detections()
+    assert axes[1].get_xlim()==(0.0, 1.1)
     plt.close()
