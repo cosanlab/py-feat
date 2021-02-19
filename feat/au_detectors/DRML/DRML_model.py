@@ -1,4 +1,6 @@
-# See https://github.com/AlexHex7/DRML_pytorch
+# We first did implementation according to original paper. But we 
+# validated our model with https://github.com/AlexHex7/DRML_pytorch and updated
+# our codes accordingly.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
