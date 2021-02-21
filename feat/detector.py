@@ -275,7 +275,6 @@ class Detector(object):
         try:
             # detect faces
             detected_faces = self.face_detect(frame=frame)
-            print(detected_faces)
             out = None
             for i, faces in enumerate(detected_faces):
                 facebox_df = pd.DataFrame([[faces[0], faces[1], faces[2] - faces[0], faces[3] - faces[1], faces[4]]], columns = self["face_detection_columns"], index=[counter+i])
