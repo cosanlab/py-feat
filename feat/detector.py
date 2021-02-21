@@ -160,10 +160,7 @@ class Detector(object):
         empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
         self._empty_auoccurence = empty_au_occurs
 
-        frame_columns = ["frame"]
-
-        self.info["output_columns"] = frame_columns  + \
-           facebox_columns + landmark_columns + auoccur_columns + FEAT_EMOTION_COLUMNS
+        self.info["output_columns"] = FEAT_TIME_COLUMNS  + facebox_columns + landmark_columns + auoccur_columns + FEAT_EMOTION_COLUMNS + ["input"]
 
     def __getitem__(self, i):
         return self.info[i]
@@ -278,9 +275,10 @@ class Detector(object):
         try:
             # detect faces
             detected_faces = self.face_detect(frame=frame)
+            print(detected_faces)
             out = None
             for i, faces in enumerate(detected_faces):
-                facebox_df = pd.DataFrame([[faces[0], faces[1], faces[2] - faces[0], faces[3] - faces[1]]], columns = self["face_detection_columns"], index=[counter+i])
+                facebox_df = pd.DataFrame([[faces[0], faces[1], faces[2] - faces[0], faces[3] - faces[1], faces[4]]], columns = self["face_detection_columns"], index=[counter+i])
                 # detect landmarks
                 landmarks = self.landmark_detect(frame=frame, detected_faces=[faces[0:4]])
                 landmarks_df = pd.DataFrame([landmarks[0].flatten(order="F")], columns = self["face_landmark_columns"], index=[counter+i])
@@ -350,10 +348,11 @@ class Detector(object):
             frame_got, frame = cap.read()
             if counter%skip_frames == 0:
                 df = self.process_frame(frame, counter=counter)
+                df['input'] = inputFname
                 if outputFname:
-                    df.to_csv(outputFname, index=True, header=False, mode='a')
+                    df[init_df.columns].to_csv(outputFname, index=False, header=False, mode='a')
                 else:
-                    init_df = pd.concat([init_df, df], axis=0)
+                    init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
             counter = counter + 1
             if not frame_got:
                 break
@@ -363,7 +362,7 @@ class Detector(object):
         else:
             return init_df
 
-    def detect_image(self, inputFname, outputFname=None):
+    def detect_image(self, inputFname, outputFname=None, verbose=False):
         """Detects FEX from a video file.
         Args:
             inputFname (str, or list of str): Path to image file or a list of paths to image files.
@@ -386,15 +385,15 @@ class Detector(object):
             init_df.to_csv(outputFname, index=False, header=True)
 
         for inputF in inputFname:
-            print(f"processing {inputF}")
+            if verbose:
+                print(f"processing {inputF}")
             frame = cv2.imread(inputF)
             df = self.process_frame(frame)
             df['input'] = inputF
-            # df = self.process_frame(np.array(frame))
             if outputFname:
-                df.to_csv(outputFname, index=True, header=False, mode='a')
+                df[init_df.columns].to_csv(outputFname, index=False, header=False, mode='a')
             else:
-                init_df = pd.concat([init_df, df], axis=0)
+                init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
 
         if outputFname:
             return True
