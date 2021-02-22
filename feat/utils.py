@@ -126,7 +126,7 @@ def read_feat(fexfile):
         fexfile: [description]
     """    
     d = pd.read_csv(fexfile)
-    return feat.Fex(d, filename = fexfile, au_columns = None, emotion_columns = FEAT_EMOTION_COLUMNS, facebox_columns = FEAT_FACEBOX_COLUMNS, time_columns = FEAT_TIME_COLUMNS, detector = 'Feat')
+    return feat.Fex(d, filename = fexfile, au_columns = jaanet_AU_presence, emotion_columns = FEAT_EMOTION_COLUMNS, landmark_columns = openface_2d_landmark_columns, facebox_columns = FEAT_FACEBOX_COLUMNS, time_columns = FEAT_TIME_COLUMNS, detector = 'Feat')
 
 def read_facet(facetfile, features=None, raw=False):
     """This function reads in an iMotions-FACET exported facial expression file.
