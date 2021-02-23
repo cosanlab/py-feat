@@ -128,7 +128,7 @@ def read_feat(fexfile):
     d = pd.read_csv(fexfile)
     return feat.Fex(d, filename = fexfile, au_columns = jaanet_AU_presence, emotion_columns = FEAT_EMOTION_COLUMNS, landmark_columns = openface_2d_landmark_columns, facebox_columns = FEAT_FACEBOX_COLUMNS, time_columns = FEAT_TIME_COLUMNS, detector = 'Feat')
 
-def read_facet(facetfile, features=None, raw=False):
+def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
     """This function reads in an iMotions-FACET exported facial expression file.
 
     Args:
@@ -141,6 +141,7 @@ def read_facet(facetfile, features=None, raw=False):
                 'Yaw', 'Pitch', 'Roll'].
                 Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
         raw (default=False): Set to True to return all columns without processing.
+        sampling_freq: sampling frequency to pass to Fex
     Returns:
         dataframe of processed facial expressions
     """
@@ -177,7 +178,7 @@ def read_facet(facetfile, features=None, raw=False):
             d.columns = [col.replace(' ','') for col in d.columns]
             # d._metadata = fex_columns
     au_columns = [col for col in d.columns if "AU" in col]
-    return feat.Fex(d, filename = facetfile, au_columns = au_columns, emotion_columns = FACET_EMOTION_COLUMNS, facebox_columns = FACET_FACEBOX_COLUMNS, facepose_columns = FACET_FACEPOSE_COLUMNS, time_columns = FACET_TIME_COLUMNS, design_columns=FACET_DESIGN_COLUMNS, detector = 'FACET')
+    return feat.Fex(d, filename = facetfile, au_columns = au_columns, emotion_columns = FACET_EMOTION_COLUMNS, facebox_columns = FACET_FACEBOX_COLUMNS, facepose_columns = FACET_FACEPOSE_COLUMNS, time_columns = FACET_TIME_COLUMNS, design_columns=FACET_DESIGN_COLUMNS, detector = 'FACET', sampling_freq= sampling_freq)
 
 def read_openface(openfacefile, features=None):
     '''
