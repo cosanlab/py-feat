@@ -14,7 +14,7 @@ from functools import reduce
 from nltools.data import Adjacency, design_matrix
 from nltools.stats import (downsample,
                           upsample,
-                          transform_pairwise)
+                          transform_pairwise, regress)
 from nltools.utils import (set_decomposition_algorithm)
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
@@ -23,6 +23,7 @@ from feat.utils import read_feat, read_affectiva, read_facet, read_openface, wav
 from feat.plotting import plot_face, draw_lineface, draw_muscles
 from nilearn.signal import clean
 from scipy.signal import convolve
+from scipy.stats import ttest_1samp
 
 class FexSeries(Series):
     """
@@ -507,7 +508,7 @@ class Fex(DataFrame):
                 out = self.__class__(pd.concat([self, data],
                                                axis=axis,
                                                ignore_index=True),
-                                     sampling_freq=self.sampling_freq)
+                                     sampling_freq=self.sampling_freq).__finalize__(self)
                 if session_id is not None:
                     out.sessions = np.hstack([self.sessions, np.repeat(session_id, len(data))])
                 if self.features is not None:
@@ -522,7 +523,7 @@ class Fex(DataFrame):
                     out = data.features
             elif axis==1:
                 out = self.__class__(pd.concat([self, data], axis=axis),
-                                     sampling_freq=self.sampling_freq)
+                                     sampling_freq=self.sampling_freq).__finalize__(self)
                 if self.sessions is not None:
                     if data.sessions is not None:
                         if np.array_equal(self.sessions, data.sessions):
@@ -543,14 +544,65 @@ class Fex(DataFrame):
                 raise ValueError('Axis must be 1 or 0.')
         return out
 
-    def regress(self):
-        NotImplemented
+    def regress(self, X, y, fit_intercept=True, *args, **kwargs):
+        """Regress using nltools.stats.regress.
 
-    def ttest(self, threshold_dict=None):
-        NotImplemented
+        Args:
+            X ([type]): [description]
+            y ([type]): [description]
 
-    def predict(self, *args, **kwargs):
-        NotImplemented
+        Returns:
+            [type]: [description]
+        """        
+        if type(X) == list:
+            mX = self[X]
+        else:
+            mX = X
+        
+        if fit_intercept:
+            mX['intercept'] = 1
+
+        if type(y) == str:
+            my = self[y]
+        else: 
+            my = y 
+        return regress(mX, my, *args, **kwargs)
+
+    def ttest(self, popmean=0, threshold_dict=None):
+        """Conducts 1 sample ttest.
+
+        Args:
+            popmean (int, optional): [description]. Defaults to 0.
+            threshold_dict ([type], optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: [description]
+        """        
+        return ttest_1samp(self, popmean)
+
+    def predict(self, X, y, model, *args, **kwargs):
+        """Perform prediction with specified model.
+
+        Args:
+            X ([type]): [description]
+            y ([type]): [description]
+            model ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        if type(X) == list:
+            mX = self[X]
+        else:
+            mX = X
+
+        if type(y) == str:
+            my = self[y]
+        else: 
+            my = y 
+        clf = model(*args, **kwargs)        
+        clf.fit(mX, my)
+        return clf
 
     def downsample(self, target, **kwargs):
         """ Downsample Fex columns. Relies on nltools.stats.downsample,
@@ -564,14 +616,18 @@ class Fex(DataFrame):
         """
 
         df_ds = downsample(self, sampling_freq=self.sampling_freq,
-                           target=target, **kwargs)
+                           target=target, **kwargs).__finalize__(self)
+        df_ds.sampling_freq = target
+
         if self.features is not None:
             ds_features = downsample(self.features,
                                      sampling_freq=self.sampling_freq,
                                      target=target, **kwargs)
         else:
             ds_features = self.features
-        return self.__class__(df_ds, sampling_freq=target, features=ds_features)
+        df_ds.features = ds_features
+        return df_ds
+        # return self.__class__(df_ds, sampling_freq=target, features=ds_features)
 
     def upsample(self, target, target_type='hz', **kwargs):
         """ Upsample Fex columns. Relies on nltools.stats.upsample,
@@ -699,8 +755,8 @@ class Fex(DataFrame):
                     out = out.append(100*(v-baseline_values)/baseline_values, session_id=k)
                 else:
                     out = out.append(v-baseline_values, session_id=k)
-        return self.__class__(out, sampling_freq=self.sampling_freq,
-                             features=self.features, sessions=self.sessions)
+        return out.__finalize__(self)
+        # return self.__class__(out, sampling_freq=self.sampling_freq, features=self.features, sessions=self.sessions)
 
     def clean(self, detrend=True, standardize=True, confounds=None,
               low_pass=None, high_pass=None, ensure_finite=False,
@@ -821,18 +877,24 @@ class Fex(DataFrame):
             Fex: mean values for each feature
 
         """
-
+        prefix = "mean_"
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.mean()).T
-            feats.columns = 'mean_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
             feats = pd.DataFrame()
             for k,v in self.itersessions():
                 feats = feats.append(pd.Series(v.mean(), name=k))
-            feats.columns = 'mean_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                  sessions=np.unique(self.sessions))
+        feats = self.__class__(feats)
+        feats.columns = prefix + feats.columns
+        feats = feats.__finalize__(self)
+        if ignore_sessions == False: 
+            feats.sessions = np.unique(self.sessions)
+        for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
+            attr_list = feats.__getattr__(attr_name)
+            if attr_list:
+                new_attr = [prefix + attr for attr in attr_list]
+                feats.__setattr__(attr_name, new_attr)
+        return feats
 
     def extract_min(self, ignore_sessions=False, *args, **kwargs):
         """ Extract minimum of each feature
@@ -844,18 +906,24 @@ class Fex(DataFrame):
             Fex: (Fex) minimum values for each feature
 
         """
-
+        prefix = "min_"
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.min()).T
-            feats.columns = 'min_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
             feats = pd.DataFrame()
             for k,v in self.itersessions():
                 feats = feats.append(pd.Series(v.min(), name=k))
-            feats.columns = 'min_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                  sessions=np.unique(self.sessions))
+        feats = self.__class__(feats)
+        feats.columns = prefix + feats.columns
+        feats = feats.__finalize__(self)
+        if ignore_sessions == False: 
+            feats.sessions = np.unique(self.sessions)
+        for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
+            attr_list = feats.__getattr__(attr_name)
+            if attr_list:
+                new_attr = [prefix + attr for attr in attr_list]
+                feats.__setattr__(attr_name, new_attr)
+        return feats
 
     def extract_max(self, ignore_sessions=False, *args, **kwargs):
         """ Extract maximum of each feature
@@ -867,20 +935,26 @@ class Fex(DataFrame):
             fex: (Fex) maximum values for each feature
 
         """
-
+        prefix = "max_"
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.max()).T
-            feats.columns = 'max_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq)
         else:
             feats = pd.DataFrame()
             for k,v in self.itersessions():
                 feats = feats.append(pd.Series(v.max(), name=k))
-            feats.columns = 'max_' + feats.columns
-            return self.__class__(feats, sampling_freq=self.sampling_freq,
-                                  sessions=np.unique(self.sessions))
+        feats = self.__class__(feats)
+        feats.columns = prefix + feats.columns
+        feats = feats.__finalize__(self)
+        if ignore_sessions == False: 
+            feats.sessions = np.unique(self.sessions)
+        for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
+            attr_list = feats.__getattr__(attr_name)
+            if attr_list:
+                new_attr = [prefix + attr for attr in attr_list]
+                feats.__setattr__(attr_name, new_attr)
+        return feats
 
-    def extract_summary(self, mean=False, max=False, min=False,
+    def extract_summary(self, mean=True, max=True, min=True,
                         ignore_sessions=False, *args, **kwargs):
         """ Extract summary of multiple features
 
@@ -896,16 +970,36 @@ class Fex(DataFrame):
 
         """
 
-        out = self.__class__(sampling_freq=self.sampling_freq)
+        out = self.__class__().__finalize__(self)
+        if ignore_sessions == False:
+            out.sessions = np.unique(self.sessions)
         if mean:
-            out = out.append(self.extract_mean(ignore_sessions=ignore_sessions,
-                                               *args, **kwargs), axis=1)
+            new = self.extract_mean(ignore_sessions=ignore_sessions, *args, **kwargs)
+            out = out.append(new, axis=1)
+            # for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
+            #     if new.__getattr__(attr_name):
+            #         new_attr = new.__getattr__(attr_name)
+            #         out.__setattr__(attr_name, new_attr)
         if max:
-            out = out.append(self.extract_max(ignore_sessions=ignore_sessions,
-                                               *args, **kwargs), axis=1)
+            new = self.extract_max(ignore_sessions=ignore_sessions, *args, **kwargs)
+            out = out.append(new, axis=1)
+            # for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
+            #     if out.__getattr__(attr_name) and new.__getattr__(attr_name):
+            #         new_attr = out.__getattr__(attr_name) + new.__getattr__(attr_name)
+            #         out.__setattr__(attr_name, new_attr)
         if min:
-            out = out.append(self.extract_min(ignore_sessions=ignore_sessions,
-                                               *args, **kwargs), axis=1)
+            new = self.extract_min(ignore_sessions=ignore_sessions, *args, **kwargs)
+            out = out.append(new, axis=1)
+        for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
+            if self.__getattr__(attr_name):
+                new_attr = []
+                if mean: 
+                    new_attr.extend(["mean_"+attr for attr in self.__getattr__(attr_name)])
+                if max: 
+                    new_attr.extend(["max_"+attr for attr in self.__getattr__(attr_name)])
+                if min: 
+                    new_attr.extend(["min_"+attr for attr in self.__getattr__(attr_name)]) 
+                out.__setattr__(attr_name, new_attr)
         return out
 
     def extract_wavelet(self, freq, num_cyc=3, mode='complex',
@@ -1027,7 +1121,7 @@ class Fex(DataFrame):
             out = self['AU4'] + self[['AU6','AU7']].max(axis=1) + self[['AU9','AU10']].max(axis=1) + self['AU43']
         if self.detector =='OpenFace':
             out = self['AU04_r'] + self[['AU06_r','AU07_r']].max(axis=1) + self[['AU09_r','AU10_r']].max(axis=1) + self['AU45_r']
-        return out
+        return out.__finalize__(self)
 
     def plot_aus(self, row_n, model = None, vectorfield=None, muscles = None, ax=None, color='k', linewidth=1, linestyle='-', gaze = None, *args, **kwargs):
         if self.detector == 'FACET':
