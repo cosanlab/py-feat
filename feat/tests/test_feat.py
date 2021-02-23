@@ -52,6 +52,13 @@ def test_fex():
 
     assert df.design().shape[-1]==4    
 
+    # Test metadata propagation to sliced series
+    assert df.iloc[0].aus().shape==(20, )
+    assert df.iloc[0].emotions().shape==(12, )
+    assert df.iloc[0].facebox().shape==(4, )
+    assert df.iloc[0].time().shape==(4,)
+    assert df.iloc[0].design().shape==(4, )
+
     sessions = np.array([[x]*10 for x in range(1+int(len(df)/10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
     dat = dat[['Joy', 'Anger',
@@ -72,9 +79,14 @@ def test_fex():
     # Test sessions generator
     assert len(np.unique(dat.sessions))==len([x for x in dat.itersessions()])
 
-    # Test metadata propagation
+    # Test metadata propagation 
     assert dat[['Joy']].sampling_freq == dat.sampling_freq
     assert dat.iloc[:,0].sampling_freq == dat.sampling_freq
+    assert dat.iloc[0,:].sampling_freq == dat.sampling_freq
+
+    assert dat.loc[[0],:].sampling_freq == dat.sampling_freq
+    assert dat.loc[:,["Joy"]].sampling_freq == dat.sampling_freq
+    # assert dat.loc[0].sampling_freq == dat.sampling_freq # DOES NOT WORK YET
 
     # Test Downsample
     assert len(dat.downsample(target=10))==52
@@ -295,7 +307,9 @@ def test_openface():
 
     # Test landmark methods
     assert openface.landmark().shape[1] == 136
+    assert openface.iloc[0].landmark().shape[0] == 136
     assert openface.landmark_x().shape[1] == openface.landmark_y().shape[1]
+    assert openface.iloc[0].landmark_x().shape[0] == openface.iloc[0].landmark_y().shape[0]
 
     # Test PSPI calculation b/c diff from facet
     assert len(openface.calc_pspi()) == len(openface)

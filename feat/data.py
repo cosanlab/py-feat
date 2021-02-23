@@ -34,7 +34,21 @@ class FexSeries(Series):
     _metadata = ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns', 'design_columns', 'fex_columns', 'filename', 'sampling_freq', 'features', 'sessions', 'detector']
 
     def __init__(self, *args, **kwargs):
+        ### Columns ### 
+        self.au_columns = kwargs.pop('au_columns', None)
+        self.emotion_columns = kwargs.pop('emotion_columns', None)
+        self.facebox_columns = kwargs.pop('facebox_columns', None)
+        self.landmark_columns = kwargs.pop('landmark_columns', None)
+        self.facepose_columns = kwargs.pop('facepose_columns', None)
+        self.gaze_columns = kwargs.pop('gaze_columns', None)
+        self.time_columns = kwargs.pop('time_columns', None)
+        self.design_columns = kwargs.pop('design_columns', None)
+
+        ### Meta data ### 
+        self.filename = kwargs.pop('filename', None)
         self.sampling_freq = kwargs.pop('sampling_freq', None)
+        self.detector = kwargs.pop('detector', None)
+        self.features = kwargs.pop('features', None)
         self.sessions = kwargs.pop('sessions', None)
         super().__init__(*args, **kwargs)
 
@@ -53,6 +67,106 @@ class FexSeries(Series):
             object.__setattr__(self, name, getattr(other, name, None))
         return self
 
+    def aus(self):
+        """Returns the Action Units data
+
+        Returns:
+            DataFrame: Action Units data
+        """        
+        return self[self.au_columns]
+
+    def emotions(self):
+        """Returns the emotion data
+
+        Returns:
+            DataFrame: emotion data
+        """        
+        return self[self.emotion_columns]
+
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns:
+            DataFrame: landmark data
+        """        
+        return self[self.landmark_columns]
+
+    def input(self):
+        """Returns input column as string
+
+        Returns:
+            string: path to input image
+        """        
+        return self['input']
+
+    def landmark_x(self):
+        """Returns the x landmarks. 
+
+        Returns: 
+            DataFrame: x landmarks.
+        """
+        ######## TODO: NATSORT columns before returning #######     
+        x_cols = [col for col in self.landmark_columns if 'x' in col]
+        return self[x_cols]
+
+    def landmark_y(self):
+        """Returns the y landmarks. 
+
+        Returns: 
+            DataFrame: y landmarks.
+        """        
+        y_cols = [col for col in self.landmark_columns if 'y' in col]
+        return self[y_cols]
+
+    def facebox(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """        
+        return self[self.facebox_columns]
+
+    def time(self):
+        """Returns the time data
+
+        Returns:
+            DataFrame: time data
+        """        
+        return self[self.time_columns]
+
+    def design(self):
+        """Returns the design data
+
+        Returns:
+            DataFrame: time data
+        """        
+        return self[self.design_columns]
+
+    def read_file(self, *args, **kwargs):
+        """Loads file into FEX class
+
+        Returns:
+            DataFrame: Fex class
+        """        
+        if self.detector=='FACET':
+            return self.read_facet(self.filename)
+        elif self.detector=='OpenFace':
+            return self.read_openface(self.filename)
+        elif self.detector=='Affectiva':
+            return self.read_affectiva(self.filename)
+        elif self.detector=='Feat':
+            return self.read_feat(self.filename)
+        else:
+            print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
+
+    def info(self):
+        """Print class meta data.
+
+        """
+        attr_list = []
+        for name in self._metadata:
+            attr_list.append(name +": "+ str(getattr(self, name, None))+'\n')
+        print(f"{self.__class__}\n" +  "".join(attr_list))
 class Fex(DataFrame):
     """Fex is a class to represent facial expression (Fex) data. It is essentially
         an enhanced pandas df, with extra attributes and methods. Methods
@@ -131,7 +245,7 @@ class Fex(DataFrame):
         return FexSeries
 
     def _ixs(self, i, axis=0):
-        """ Override indexing to ensure Fex._metadata is propogated correctly
+        """Override indexing to ensure Fex._metadata is propogated correctly
             when integer indexing
 
         i : int, slice, or sequence of integers
@@ -140,7 +254,33 @@ class Fex(DataFrame):
         result = super()._ixs(i, axis=axis)
 
         # Override columns
-        if axis == 1:
+        if axis == 0:
+            if isinstance(i, slice):
+                return self[i]
+            else:
+                label = self.index[i]
+                if isinstance(label, Index):
+                    # a location index by definition
+                    result = self.take(i, axis=axis)
+                    copy=True
+                else:
+                    new_values = self._data.fast_xs(i)
+
+                    # if we are a copy, mark as such
+                    copy = isinstance(new_values,np.ndarray) and new_values.base is None
+                    result = self._constructor_sliced(new_values, index=self.columns,
+                                    name=self.index[i], dtype=new_values.dtype,
+                                    au_columns = self.au_columns, emotion_columns = self.emotion_columns,
+                                    facebox_columns = self.facebox_columns, landmark_columns = self.landmark_columns,
+                                    facepose_columns = self.facepose_columns, gaze_columns = self.gaze_columns,
+                                    time_columns = self.time_columns, design_columns = self.design_columns, 
+                                    filename = self.filename, sampling_freq = self.sampling_freq, 
+                                    detector = self.detector, features = self.features, 
+                                    sessions = self.sessions)
+                result._set_is_copy(self, copy=copy)
+                return result
+
+        else:
             """
             Notes
             -----
@@ -167,12 +307,18 @@ class Fex(DataFrame):
                 if index_len and not len(values):
                     values = np.array([np.nan] * index_len, dtype=object)
                 result = self._constructor_sliced(
-                    values, index=self.index, name=label, fastpath=True,
-                    sampling_freq=self.sampling_freq, sessions=self.sessions)
+                                values, index=self.index, name=label, fastpath=True,
+                                au_columns = self.au_columns, emotion_columns = self.emotion_columns,
+                                facebox_columns = self.facebox_columns, landmark_columns = self.landmark_columns,
+                                facepose_columns = self.facepose_columns, gaze_columns = self.gaze_columns,
+                                time_columns = self.time_columns, design_columns = self.design_columns, 
+                                filename = self.filename, sampling_freq = self.sampling_freq, 
+                                detector = self.detector, features = self.features, 
+                                sessions = self.sessions)
 
                 # this is a cached value, mark it so
                 result._set_as_cached(label, self)
-        return result
+                return result
 
     def aus(self):
         """Returns the Action Units data
