@@ -9,6 +9,8 @@ ehthumbs.db
 Thumbs.db
 .vscode
 feat/tests/data/output.csv
+feat/tests/data/fex_s20_cv_20170330.txt
+feat/tests/data/cond_pain_2017-03-30_s20_r01.txt
 
 #Ignoreresources folder.
 resources/
