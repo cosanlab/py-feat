@@ -547,12 +547,14 @@ class Fex(DataFrame):
     def regress(self, X, y, fit_intercept=True, *args, **kwargs):
         """Regress using nltools.stats.regress.
 
+        fMRI-like regression to predict Fex activity (y) from set of regressors (X). 
+
         Args:
-            X ([type]): [description]
-            y ([type]): [description]
+            X (list or str): Independent variable to predict.
+            y (list or str): Dependent variable to be predicted. 
 
         Returns:
-            [type]: [description]
+            betas, t-stats, p-values, df, residuals
         """        
         if type(X) == list:
             mX = self[X]
@@ -566,7 +568,13 @@ class Fex(DataFrame):
             my = self[y]
         else: 
             my = y 
-        return regress(mX, my, *args, **kwargs)
+        b, t, p, df, res = regress(mX, my, *args, **kwargs)
+        b_df = pd.DataFrame(b, index = mX.columns, columns = my.columns)
+        t_df = pd.DataFrame(t, index = mX.columns, columns = my.columns)
+        p_df = pd.DataFrame(p, index = mX.columns, columns = my.columns)
+        df_df = pd.DataFrame([df], index=[0], columns = my.columns)
+        res_df = pd.DataFrame(res, columns = my.columns)
+        return b_df, t_df, p_df, df_df, res_df 
 
     def ttest(self, popmean=0, threshold_dict=None):
         """Conducts 1 sample ttest.
