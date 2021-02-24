@@ -94,61 +94,6 @@ class BasicBlock(nn.Module):
         out = self.relu(out)
 
         return out
-
-
-class Bottleneck(nn.Module):
-    expansion = 4
-    __constants__ = ["downsample"]
-
-    def __init__(
-        self,
-        inplanes,
-        planes,
-        stride=1,
-        downsample=None,
-        groups=1,
-        base_width=64,
-        dilation=1,
-        norm_layer=None,
-    ):
-        super(Bottleneck, self).__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-        width = int(planes * (base_width / 64.0)) * groups
-        # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv1x1(inplanes, width)
-        self.bn1 = norm_layer(width)
-        self.conv2 = conv3x3(width, width, stride, groups, dilation)
-        self.bn2 = norm_layer(width)
-        self.conv3 = conv1x1(width, planes * self.expansion)
-        self.bn3 = norm_layer(planes * self.expansion)
-        self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            identity = self.downsample(x)
-
-        out += identity
-        out = self.relu(out)
-
-        return out
-
-
 class ResNet(nn.Module):
     def __init__(
         self,
@@ -216,9 +161,7 @@ class ResNet(nn.Module):
         # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
         if zero_init_residual:
             for m in self.modules():
-                if isinstance(m, Bottleneck):
-                    nn.init.constant_(m.bn3.weight, 0)
-                elif isinstance(m, BasicBlock):
+                if isinstance(m, BasicBlock):
                     nn.init.constant_(m.bn2.weight, 0)
 
     def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
@@ -390,9 +333,7 @@ class Masking4(nn.Module):
         # so that the residual branch starts with zeros, and each residual block behaves like an identity.
         # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
         for m in self.modules():
-            if isinstance(m, Bottleneck):
-                nn.init.constant_(m.bn3.weight, 0)
-            elif isinstance(m, BasicBlock):
+            if isinstance(m, BasicBlock):
                 nn.init.constant_(m.bn2.weight, 0)
 
     def forward(self, x):
@@ -499,9 +440,7 @@ class Masking3(nn.Module):
         # so that the residual branch starts with zeros, and each residual block behaves like an identity.
         # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
         for m in self.modules():
-            if isinstance(m, Bottleneck):
-                nn.init.constant_(m.bn3.weight, 0)
-            elif isinstance(m, BasicBlock):
+            if isinstance(m, BasicBlock):
                 nn.init.constant_(m.bn2.weight, 0)
 
     def forward(self, x):
@@ -583,9 +522,7 @@ class Masking2(nn.Module):
         # so that the residual branch starts with zeros, and each residual block behaves like an identity.
         # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
         for m in self.modules():
-            if isinstance(m, Bottleneck):
-                nn.init.constant_(m.bn3.weight, 0)
-            elif isinstance(m, BasicBlock):
+            if isinstance(m, BasicBlock):
                 nn.init.constant_(m.bn2.weight, 0)
 
     def forward(self, x):
@@ -636,9 +573,7 @@ class Masking1(nn.Module):
         # so that the residual branch starts with zeros, and each residual block behaves like an identity.
         # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
         for m in self.modules():
-            if isinstance(m, Bottleneck):
-                nn.init.constant_(m.bn3.weight, 0)
-            elif isinstance(m, BasicBlock):
+            if isinstance(m, BasicBlock):
                 nn.init.constant_(m.bn2.weight, 0)
 
     def forward(self, x):
@@ -720,70 +655,8 @@ class ResMasking(ResNet):
         x = self.fc(x)
         return x
 
-
-class ResMasking50(ResNet):
-    def __init__(self, weight_path):
-        super(ResMasking50, self).__init__(
-            block=Bottleneck, layers=[3, 4, 6, 3], in_channels=3, num_classes=1000
-        )
-        # state_dict = torch.load(weight_path)['net']
-        state_dict = load_state_dict_from_url(model_urls["resnet50"], progress=True)
-        self.load_state_dict(state_dict)
-
-        self.fc = nn.Linear(2048, 7)
-
-        """
-        # freeze all net
-        for m in self.parameters():
-            m.requires_grad = False
-        """
-
-        self.mask1 = masking(256, 256, depth=4)
-        self.mask2 = masking(512, 512, depth=3)
-        self.mask3 = masking(1024, 1024, depth=2)
-        self.mask4 = masking(2048, 2048, depth=1)
-
-    def forward(self, x):  # 224
-        x = self.conv1(x)  # 112
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)  # 56
-
-        x = self.layer1(x)  # 56
-        m = self.mask1(x)
-        x = x * (1 + m)
-
-        x = self.layer2(x)  # 28
-        m = self.mask2(x)
-        x = x * (1 + m)
-
-        x = self.layer3(x)  # 14
-        m = self.mask3(x)
-        x = x * (1 + m)
-
-        x = self.layer4(x)  # 7
-        m = self.mask4(x)
-        x = x * (1 + m)
-
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-
-        x = self.fc(x)
-        return x
-
-
-# def resmasking(in_channels, num_classes, weight_path='saved/checkpoints/resnet18_rot30_2019Nov05_17.44'):
-#     return ResMasking(weight_path)
-
-
 def resmasking(in_channels, num_classes, weight_path=""):
     return ResMasking(weight_path)
-
-
-def resmasking50_dropout1(in_channels, num_classes, weight_path=""):
-    model = ResMasking50(weight_path)
-    model.fc = nn.Sequential(nn.Dropout(0.4), nn.Linear(2048, num_classes))
-    return model
 
 
 def resmasking_dropout1(in_channels=3, num_classes=7, weight_path=""):
@@ -794,50 +667,6 @@ def resmasking_dropout1(in_channels=3, num_classes=7, weight_path=""):
         # nn.Linear(512, num_classes)
     )
     return model
-
-
-def resmasking_dropout2(in_channels, num_classes, weight_path=""):
-    model = ResMasking(weight_path)
-
-    model.fc = nn.Sequential(
-        nn.Linear(512, 128),
-        nn.ReLU(),
-        nn.Dropout(p=0.5),
-        nn.Linear(128, 7),
-    )
-    return model
-
-
-def resmasking_dropout3(in_channels, num_classes, weight_path=""):
-    model = ResMasking(weight_path)
-
-    model.fc = nn.Sequential(
-        nn.Linear(512, 512),
-        nn.ReLU(True),
-        nn.Dropout(),
-        nn.Linear(512, 128),
-        nn.ReLU(True),
-        nn.Dropout(),
-        nn.Linear(128, 7),
-    )
-    return model
-
-
-def resmasking_dropout4(in_channels, num_classes, weight_path=""):
-    model = ResMasking(weight_path)
-
-    model.fc = nn.Sequential(
-        nn.Linear(512, 128),
-        nn.ReLU(True),
-        nn.Dropout(),
-        nn.Linear(128, 128),
-        nn.ReLU(True),
-        nn.Dropout(),
-        nn.Linear(128, 7),
-    )
-    return model
-
-    
     
 ###########################
 
