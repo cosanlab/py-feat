@@ -30,11 +30,21 @@ or detect in notebok.
 ```python
 from feat.detector import Detector
 detector = Detector() 
-out = detector.detect_image("input.png")
+# Detect FEX from video
 out = detector.detect_video("input.mp4")
+# Detect FEX from image
+out = detector.detect_image("input.png")
 ```
 
-### 2. Preprocessing FEX data
+### 2. Visualize FEX data
+Visualize results of detections.
+```python
+from feat.detector import Detector
+detector = Detector() 
+out = detector.detect_image("input.png")
+out.plot_detections()
+```
+### 3. Preprocessing FEX data
 Loading a facial expression file and preprocess. 
 ```python
 # Code goes here
@@ -45,17 +55,32 @@ You can also preprocess facial expression data extracted using other software (e
 # Code goes here
 ```
 
-### 3. Analyze FEX data
+### 4. Analyze FEX data
 Analyze FEX.
 ```python
 # Code goes here
 ```
 
-### 4. Visualize FEX data
-Visualize FEX.
-```python
-# Code goes here
-```
+## Supported Models 
+Please respect the usage licenses for each model.
+
+Face detection models
+- [FaceBoxes](https://github.com/zisianw/FaceBoxes.PyTorch)
+- [MTCNN](https://github.com/ipazc/mtcnn)
+- [RetinaFace](https://github.com/deepinsight/insightface/)
+
+Facial landmark detection models
+- [MobileNet](https://github.com/cunjian/pytorch_face_landmark)
+- [MobileFaceNet](https://github.com/foamliu/MobileFaceNet)
+- [PFLD: Practical Facial Landmark Detector](https://github.com/polarisZhao/PFLD-pytorch)
+
+Action Unit detection models
+- [DRML: Deep Region and Multi-Label Learning](https://github.com/AlexHex7/DRML_pytorch)
+- [JAANet: Joint AU Detection and Face Alignment via Adaptive Attention](https://github.com/ZhiwenShao/PyTorch-JAANet)
+
+Emotion detection models 
+- [FerNet](https://www.kaggle.com/gauravsharma99/facial-emotion-recognition?select=fer2013)
+- [ResMaskNet: Residual Masking Network](https://github.com/phamquiluan/ResidualMaskingNetwork)
 
 ## Methods (to use when writing up paper)
 
