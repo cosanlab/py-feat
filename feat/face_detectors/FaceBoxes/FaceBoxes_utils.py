@@ -4,23 +4,28 @@ from math import ceil
 import sys
 import os.path as osp
 import numpy as np
+
 cfg = {
-    'name': 'FaceBoxes',
-    'min_sizes': [[32, 64, 128], [256], [512]],
-    'steps': [32, 64, 128],
-    'variance': [0.1, 0.2],
-    'clip': False
+    "name": "FaceBoxes",
+    "min_sizes": [[32, 64, 128], [256], [512]],
+    "steps": [32, 64, 128],
+    "variance": [0.1, 0.2],
+    "clip": False,
 }
+
 
 class PriorBox(object):
     def __init__(self, image_size=None):
         super(PriorBox, self).__init__()
         # self.aspect_ratios = cfg['aspect_ratios']
-        self.min_sizes = cfg['min_sizes']
-        self.steps = cfg['steps']
-        self.clip = cfg['clip']
+        self.min_sizes = cfg["min_sizes"]
+        self.steps = cfg["steps"]
+        self.clip = cfg["clip"]
         self.image_size = image_size
-        self.feature_maps = [[ceil(self.image_size[0] / step), ceil(self.image_size[1] / step)] for step in self.steps]
+        self.feature_maps = [
+            [ceil(self.image_size[0] / step), ceil(self.image_size[1] / step)]
+            for step in self.steps
+        ]
 
     def forward(self):
         anchors = []
@@ -31,15 +36,25 @@ class PriorBox(object):
                     s_kx = min_size / self.image_size[1]
                     s_ky = min_size / self.image_size[0]
                     if min_size == 32:
-                        dense_cx = [x * self.steps[k] / self.image_size[1] for x in
-                                    [j + 0, j + 0.25, j + 0.5, j + 0.75]]
-                        dense_cy = [y * self.steps[k] / self.image_size[0] for y in
-                                    [i + 0, i + 0.25, i + 0.5, i + 0.75]]
+                        dense_cx = [
+                            x * self.steps[k] / self.image_size[1]
+                            for x in [j + 0, j + 0.25, j + 0.5, j + 0.75]
+                        ]
+                        dense_cy = [
+                            y * self.steps[k] / self.image_size[0]
+                            for y in [i + 0, i + 0.25, i + 0.5, i + 0.75]
+                        ]
                         for cy, cx in product(dense_cy, dense_cx):
                             anchors += [cx, cy, s_kx, s_ky]
                     elif min_size == 64:
-                        dense_cx = [x * self.steps[k] / self.image_size[1] for x in [j + 0, j + 0.5]]
-                        dense_cy = [y * self.steps[k] / self.image_size[0] for y in [i + 0, i + 0.5]]
+                        dense_cx = [
+                            x * self.steps[k] / self.image_size[1]
+                            for x in [j + 0, j + 0.5]
+                        ]
+                        dense_cy = [
+                            y * self.steps[k] / self.image_size[0]
+                            for y in [i + 0, i + 0.5]
+                        ]
                         for cy, cx in product(dense_cy, dense_cx):
                             anchors += [cx, cy, s_kx, s_ky]
                     else:
@@ -62,12 +77,12 @@ def check_keys(model, pretrained_state_dict):
     # print('Missing keys:{}'.format(len(missing_keys)))
     # print('Unused checkpoint keys:{}'.format(len(unused_pretrained_keys)))
     # print('Used keys:{}'.format(len(used_pretrained_keys)))
-    assert len(used_pretrained_keys) > 0, 'load NONE from pretrained checkpoint'
+    assert len(used_pretrained_keys) > 0, "load NONE from pretrained checkpoint"
     return True
 
 
 def remove_prefix(state_dict, prefix):
-    ''' Old style model is stored with all names of parameters sharing common prefix 'module.' '''
+    """ Old style model is stored with all names of parameters sharing common prefix 'module.' """
     # print('remove prefix \'{}\''.format(prefix))
     f = lambda x: x.split(prefix, 1)[-1] if x.startswith(prefix) else x
     return {f(key): value for key, value in state_dict.items()}
@@ -75,18 +90,22 @@ def remove_prefix(state_dict, prefix):
 
 def load_model(model, pretrained_path, load_to_cpu):
     if not osp.isfile(pretrained_path):
-        print(f'The pre-trained FaceBoxes model {pretrained_path} does not exist')
-        sys.exit('-1')
+        print(f"The pre-trained FaceBoxes model {pretrained_path} does not exist")
+        sys.exit("-1")
     # print('Loading pretrained model from {}'.format(pretrained_path))
     if load_to_cpu:
-        pretrained_dict = torch.load(pretrained_path, map_location=lambda storage, loc: storage)
+        pretrained_dict = torch.load(
+            pretrained_path, map_location=lambda storage, loc: storage
+        )
     else:
         device = torch.cuda.current_device()
-        pretrained_dict = torch.load(pretrained_path, map_location=lambda storage, loc: storage.cuda(device))
+        pretrained_dict = torch.load(
+            pretrained_path, map_location=lambda storage, loc: storage.cuda(device)
+        )
     if "state_dict" in pretrained_dict.keys():
-        pretrained_dict = remove_prefix(pretrained_dict['state_dict'], 'module.')
+        pretrained_dict = remove_prefix(pretrained_dict["state_dict"], "module.")
     else:
-        pretrained_dict = remove_prefix(pretrained_dict, 'module.')
+        pretrained_dict = remove_prefix(pretrained_dict, "module.")
     check_keys(model, pretrained_dict)
     model.load_state_dict(pretrained_dict, strict=False)
     return model
@@ -106,9 +125,13 @@ def decode(loc, priors, variances):
         decoded bounding box predictions
     """
 
-    boxes = torch.cat((
-        priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
-        priors[:, 2:] * torch.exp(loc[:, 2:] * variances[1])), 1)
+    boxes = torch.cat(
+        (
+            priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
+            priors[:, 2:] * torch.exp(loc[:, 2:] * variances[1]),
+        ),
+        1,
+    )
     boxes[:, :2] -= boxes[:, 2:] / 2
     boxes[:, 2:] += boxes[:, :2]
     return boxes
@@ -124,15 +147,16 @@ def decode(loc, priors, variances):
 # --------------------------------------------------------
 import time
 
+
 class Timer(object):
     """A simple timer."""
 
     def __init__(self):
-        self.total_time = 0.
+        self.total_time = 0.0
         self.calls = 0
-        self.start_time = 0.
-        self.diff = 0.
-        self.average_time = 0.
+        self.start_time = 0.0
+        self.diff = 0.0
+        self.average_time = 0.0
 
     def tic(self):
         # using time.time instead of time.clock because time time.clock
@@ -150,11 +174,11 @@ class Timer(object):
             return self.diff
 
     def clear(self):
-        self.total_time = 0.
+        self.total_time = 0.0
         self.calls = 0
-        self.start_time = 0.
-        self.diff = 0.
-        self.average_time = 0.
+        self.start_time = 0.0
+        self.diff = 0.0
+        self.average_time = 0.0
 
 
 def py_cpu_nms(dets, thresh):

@@ -3,16 +3,26 @@ import numpy as np
 import torch
 from PIL import Image
 from feat.face_detectors.MTCNN.MTCNN_model import PNet, RNet, ONet
-from feat.face_detectors.MTCNN.MTCNN_utils import nms, calibrate_box, get_image_boxes, convert_to_square, run_first_stage
+from feat.face_detectors.MTCNN.MTCNN_utils import (
+    nms,
+    calibrate_box,
+    get_image_boxes,
+    convert_to_square,
+    run_first_stage,
+)
 
 
 class MTCNN(object):
     def __init__(self):
-        self.version = '1.01'
+        self.version = "1.01"
 
-    def __call__(self, image, min_face_size=20.0,
-                    thresholds=[0.6, 0.7, 0.8],
-                    nms_thresholds=[0.7, 0.7, 0.7]):
+    def __call__(
+        self,
+        image,
+        min_face_size=20.0,
+        thresholds=[0.6, 0.7, 0.8],
+        nms_thresholds=[0.7, 0.7, 0.7],
+    ):
         """
         Arguments:
             image: an instance of PIL.Image.
@@ -47,12 +57,12 @@ class MTCNN(object):
         # scales the image so that
         # minimum size that we can detect equals to
         # minimum face size that we want to detect
-        m = min_detection_size/min_face_size
+        m = min_detection_size / min_face_size
         min_length *= m
 
         factor_count = 0
         while min_length > min_detection_size:
-            scales.append(m*factor**factor_count)
+            scales.append(m * factor ** factor_count)
             min_length *= factor
             factor_count += 1
 
@@ -83,7 +93,7 @@ class MTCNN(object):
         # STAGE 2
 
         img_boxes = get_image_boxes(bounding_boxes, image, size=24)
-        #img_boxes = Variable(torch.FloatTensor(img_boxes), volatile=True)
+        # img_boxes = Variable(torch.FloatTensor(img_boxes), volatile=True)
         with torch.no_grad():
             img_boxes = torch.FloatTensor(img_boxes)
         output = rnet(img_boxes)
@@ -104,9 +114,9 @@ class MTCNN(object):
         # STAGE 3
 
         img_boxes = get_image_boxes(bounding_boxes, image, size=48)
-        if len(img_boxes) == 0: 
+        if len(img_boxes) == 0:
             return [], []
-        #img_boxes = Variable(torch.FloatTensor(img_boxes), volatile=True)
+        # img_boxes = Variable(torch.FloatTensor(img_boxes), volatile=True)
         with torch.no_grad():
             img_boxes = torch.FloatTensor(img_boxes)
         output = onet(img_boxes)
@@ -124,11 +134,15 @@ class MTCNN(object):
         width = bounding_boxes[:, 2] - bounding_boxes[:, 0] + 1.0
         height = bounding_boxes[:, 3] - bounding_boxes[:, 1] + 1.0
         xmin, ymin = bounding_boxes[:, 0], bounding_boxes[:, 1]
-        landmarks[:, 0:5] = np.expand_dims(xmin, 1) + np.expand_dims(width, 1)*landmarks[:, 0:5]
-        landmarks[:, 5:10] = np.expand_dims(ymin, 1) + np.expand_dims(height, 1)*landmarks[:, 5:10]
+        landmarks[:, 0:5] = (
+            np.expand_dims(xmin, 1) + np.expand_dims(width, 1) * landmarks[:, 0:5]
+        )
+        landmarks[:, 5:10] = (
+            np.expand_dims(ymin, 1) + np.expand_dims(height, 1) * landmarks[:, 5:10]
+        )
 
         bounding_boxes = calibrate_box(bounding_boxes, offsets)
-        keep = nms(bounding_boxes, nms_thresholds[2], mode='min')
+        keep = nms(bounding_boxes, nms_thresholds[2], mode="min")
         bounding_boxes = bounding_boxes[keep]
         landmarks = landmarks[keep]
 

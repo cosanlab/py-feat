@@ -28,9 +28,15 @@
 import torch
 import numpy as np
 import cv2
-import os 
+import os
 from feat.face_detectors.FaceBoxes.FaceBoxes_model import FaceBoxesNet
-from feat.face_detectors.FaceBoxes.FaceBoxes_utils import PriorBox, decode, Timer, load_model, nms
+from feat.face_detectors.FaceBoxes.FaceBoxes_utils import (
+    PriorBox,
+    decode,
+    Timer,
+    load_model,
+    nms,
+)
 from feat.utils import get_resource_path
 
 # some global configs
@@ -42,16 +48,17 @@ vis_thres = 0.5
 resize = 1
 scale_flag = True
 HEIGHT, WIDTH = 720, 1080
-pretrained_path = os.path.join(get_resource_path(), 'FaceBoxesProd.pth')
+pretrained_path = os.path.join(get_resource_path(), "FaceBoxesProd.pth")
 cfg = {
-    'name': 'FaceBoxes',
-    'min_sizes': [[32, 64, 128], [256], [512]],
-    'steps': [32, 64, 128],
-    'variance': [0.1, 0.2],
-    'clip': False
+    "name": "FaceBoxes",
+    "min_sizes": [[32, 64, 128], [256], [512]],
+    "steps": [32, 64, 128],
+    "variance": [0.1, 0.2],
+    "clip": False,
 }
 
-def viz_bbox(img, dets, wfp='out.jpg'):
+
+def viz_bbox(img, dets, wfp="out.jpg"):
     # show
     for b in dets:
         if b[4] < vis_thres:
@@ -63,14 +70,16 @@ def viz_bbox(img, dets, wfp='out.jpg'):
         cy = b[1] + 12
         cv2.putText(img, text, (cx, cy), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
     cv2.imwrite(wfp, img)
-    print(f'Viz bbox to {wfp}')
+    print(f"Viz bbox to {wfp}")
 
 
 class FaceBoxes:
     def __init__(self, timer_flag=False):
         torch.set_grad_enabled(False)
 
-        net = FaceBoxesNet(phase='test', size=None, num_classes=2)  # initialize detector
+        net = FaceBoxesNet(
+            phase="test", size=None, num_classes=2
+        )  # initialize detector
         self.net = load_model(net, pretrained_path=pretrained_path, load_to_cpu=True)
         self.net.eval()
         # print('Finished loading model!')
@@ -103,21 +112,23 @@ class FaceBoxes:
             img = np.float32(img_raw)
 
         # forward
-        _t = {'forward_pass': Timer(), 'misc': Timer()}
+        _t = {"forward_pass": Timer(), "misc": Timer()}
         im_height, im_width, _ = img.shape
-        scale_bbox = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
+        scale_bbox = torch.Tensor(
+            [img.shape[1], img.shape[0], img.shape[1], img.shape[0]]
+        )
         img -= (104, 117, 123)
         img = img.transpose(2, 0, 1)
         img = torch.from_numpy(img).unsqueeze(0)
 
-        _t['forward_pass'].tic()
+        _t["forward_pass"].tic()
         loc, conf = self.net(img)  # forward pass
-        _t['forward_pass'].toc()
-        _t['misc'].tic()
+        _t["forward_pass"].toc()
+        _t["misc"].tic()
         priorbox = PriorBox(image_size=(im_height, im_width))
         priors = priorbox.forward()
         prior_data = priors.data
-        boxes = decode(loc.data.squeeze(0), prior_data, cfg['variance'])
+        boxes = decode(loc.data.squeeze(0), prior_data, cfg["variance"])
         if scale_flag:
             boxes = boxes * scale_bbox / scale / resize
         else:
@@ -144,11 +155,14 @@ class FaceBoxes:
 
         # keep top-K faster NMS
         dets = dets[:keep_top_k, :]
-        _t['misc'].toc()
+        _t["misc"].toc()
 
         if self.timer_flag:
-            print('Detection: {:d}/{:d} forward_pass_time: {:.4f}s misc: {:.4f}s'.format(1, 1, _t[
-                'forward_pass'].average_time, _t['misc'].average_time))
+            print(
+                "Detection: {:d}/{:d} forward_pass_time: {:.4f}s misc: {:.4f}s".format(
+                    1, 1, _t["forward_pass"].average_time, _t["misc"].average_time
+                )
+            )
 
         # filter using vis_thres
         det_bboxes = []
@@ -163,13 +177,13 @@ class FaceBoxes:
         return det_bboxes
 
 
-#if __name__ == '__main__':
-    # face_boxes = FaceBoxes(timer_flag=True)
-    # fn = 'trump_hillary.jpg'
-    # img_fp = f'../examples/inputs/{fn}'
-    # img = cv2.imread(img_fp)
-    # dets = face_boxes(img)  # xmin, ymin, w, h
-    # # print(dets)
-    # wfn = fn.replace('.jpg', '_det.jpg')
-    # wfp = osp.join('../examples/results', wfn)
-    # viz_bbox(img, dets, wfp)
+# if __name__ == '__main__':
+# face_boxes = FaceBoxes(timer_flag=True)
+# fn = 'trump_hillary.jpg'
+# img_fp = f'../examples/inputs/{fn}'
+# img = cv2.imread(img_fp)
+# dets = face_boxes(img)  # xmin, ymin, w, h
+# # print(dets)
+# wfn = fn.replace('.jpg', '_det.jpg')
+# wfp = osp.join('../examples/results', wfn)
+# viz_bbox(img, dets, wfp)

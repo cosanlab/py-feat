@@ -1,6 +1,6 @@
 """
 All code & models from https://github.com/phamquiluan/ResidualMaskingNetwork
-"""         
+"""
 import os
 import glob
 import json
@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from torchvision.transforms import transforms
 from torch.hub import load_state_dict_from_url
-import traceback   
+import traceback
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,6 +26,7 @@ model_urls = {
     "wide_resnet50_2": "https://download.pytorch.org/models/wide_resnet50_2-95faca4d.pth",
     "wide_resnet101_2": "https://download.pytorch.org/models/wide_resnet101_2-32ee1156.pth",
 }
+
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
@@ -94,6 +95,8 @@ class BasicBlock(nn.Module):
         out = self.relu(out)
 
         return out
+
+
 class ResNet(nn.Module):
     def __init__(
         self,
@@ -221,9 +224,9 @@ class ResNet(nn.Module):
         x = self.fc(x)
 
         return x
-    
-###################### masking
 
+
+###################### masking
 
 
 # from .resnet import conv1x1, conv3x3, BasicBlock, Bottleneck
@@ -601,6 +604,7 @@ def masking(in_channels, out_channels, depth, block=BasicBlock):
 #######################
 # from .resnet import conv1x1, conv3x3, BasicBlock, Bottleneck
 
+
 class ResMasking(ResNet):
     def __init__(self, weight_path):
         super(ResMasking, self).__init__(
@@ -655,6 +659,7 @@ class ResMasking(ResNet):
         x = self.fc(x)
         return x
 
+
 def resmasking(in_channels, num_classes, weight_path=""):
     return ResMasking(weight_path)
 
@@ -667,8 +672,10 @@ def resmasking_dropout1(in_channels=3, num_classes=7, weight_path=""):
         # nn.Linear(512, num_classes)
     )
     return model
-    
+
+
 ###########################
+
 
 def ensure_color(image):
     if len(image.shape) == 2:
@@ -676,6 +683,7 @@ def ensure_color(image):
     elif image.shape[2] == 1:
         return np.dstack([image] * 3)
     return image
+
 
 class ResMaskNet:
     def __init__(self):
@@ -688,8 +696,10 @@ class ResMaskNet:
         Year = {2020}
         }
 
-        """         
-        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor()])
+        """
+        self.transform = transforms.Compose(
+            [transforms.ToPILImage(), transforms.ToTensor()]
+        )
 
         self.FER_2013_EMO_DICT = {
             0: "angry",
@@ -702,28 +712,34 @@ class ResMaskNet:
         }
 
         # load configs and set random seed
-        configs = json.load(open(os.path.join(get_resource_path(), "ResMaskNet_fer2013_config.json")))
+        configs = json.load(
+            open(os.path.join(get_resource_path(), "ResMaskNet_fer2013_config.json"))
+        )
         self.image_size = (configs["image_size"], configs["image_size"])
         self.use_gpu = torch.cuda.is_available()
         if self.use_gpu:
             self.state = torch.load(
-                os.path.join(get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth")
+                os.path.join(
+                    get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+                )
             )
         else:
             self.state = torch.load(
-                os.path.join(get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"), 
-                map_location={'cuda:0': 'cpu'}
+                os.path.join(
+                    get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+                ),
+                map_location={"cuda:0": "cpu"},
             )
 
     def detect_emo(self, frame, detected_face, *args, **kwargs):
-        """Detect emotions. 
+        """Detect emotions.
 
         Args:
             frame ([type]): [description]
 
         Returns:
-            List of predicted emotions in probability: [angry, disgust, fear, happy, sad, surprise, neutral] 
-        """        
+            List of predicted emotions in probability: [angry, disgust, fear, happy, sad, surprise, neutral]
+        """
         model = resmasking_dropout1(in_channels=3, num_classes=7)
         if self.use_gpu:
             model.cuda()
@@ -735,8 +751,10 @@ class ResMaskNet:
             frame = np.fliplr(frame).astype(np.uint8)
             h, w = frame.shape[:2]
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            
-            start_x, start_y, end_x, end_y, conf = np.array(detected_face[0]).astype(int)
+
+            start_x, start_y, end_x, end_y, conf = np.array(detected_face[0]).astype(
+                int
+            )
             # covnert to square images
             center_x, center_y = (start_x + end_x) // 2, (start_y + end_y) // 2
             square_length = ((end_x - start_x) + (end_y - start_y)) // 2 // 2
@@ -745,16 +763,16 @@ class ResMaskNet:
             start_y = int(center_y - square_length)
             end_x = int(center_x + square_length)
             end_y = int(center_y + square_length)
-            if start_x<0:
+            if start_x < 0:
                 start_x = 0
-            if start_y<0:
-                start_y = 0                
+            if start_y < 0:
+                start_y = 0
             face = gray[start_y:end_y, start_x:end_x]
             face = ensure_color(face)
             face = cv2.resize(face, self.image_size)
             if self.use_gpu:
                 face = self.transform(face).cuda()
-            else: 
+            else:
                 face = self.transform(face)
             face = torch.unsqueeze(face, dim=0)
             output = torch.squeeze(model(face), 0)
