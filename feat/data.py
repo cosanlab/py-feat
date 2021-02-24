@@ -167,23 +167,6 @@ class FexSeries(Series):
         """
         return self[self.design_columns]
 
-    def read_file(self, *args, **kwargs):
-        """Loads file into FEX class
-
-        Returns:
-            DataFrame: Fex class
-        """
-        if self.detector == "FACET":
-            return self.read_facet(self.filename)
-        elif self.detector == "OpenFace":
-            return self.read_openface(self.filename)
-        elif self.detector == "Affectiva":
-            return self.read_affectiva(self.filename)
-        elif self.detector == "Feat":
-            return self.read_feat(self.filename)
-        else:
-            print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
-
     def info(self):
         """Print class meta data."""
         attr_list = []
