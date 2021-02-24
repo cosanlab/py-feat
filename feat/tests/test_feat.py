@@ -386,7 +386,9 @@ def test_affectiva():
 def test_feat():
     filename = os.path.join(get_test_data_path(), "output.csv")
     fex = Fex(filename=filename, detector="Feat")
-    fex.read_file()
+    fex = fex.read_file()
+    # test input
+    assert fex.input().values[0] == fex.iloc[0].input()
 
 
 def test_stats():
