@@ -1189,7 +1189,7 @@ class Fex(DataFrame):
             except Exception as e:
                 print('Unable to plot data:', e)
 
-    def plot_detections(self, muscle = False):
+    def plot_detections(self, draw_landmarks=True, draw_facelines=True, muscle = False):
         """Plots detection results by Feat.
 
         Args: 
@@ -1229,7 +1229,11 @@ class Fex(DataFrame):
                 landmark = row.landmark().values[0]
                 currx = landmark[:68]
                 curry = landmark[68:]
-                draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
+                if draw_landmarks:
+                    if draw_facelines:
+                        draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
+                    else:
+                        draw_lineface(currx, curry, ax=ax, color=color, linewidth=0)
                 # muscle    
                 if muscle:
                     au20index = [f"AU{str(i).zfill(2)}" for i in [1,2,4,5,6,7,9,10,12,14,15,17,18,20,23,24,25,26,28,43]]

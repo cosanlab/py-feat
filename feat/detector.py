@@ -16,6 +16,7 @@ from feat.utils import get_resource_path, face_rect_to_coords, openface_2d_landm
 from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
+from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 import torch
 from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
 from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
@@ -26,7 +27,7 @@ from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 
 
 class Detector(object):
-    def __init__(self, face_model='FaceBoxes', landmark_model='MobileNet', au_occur_model='jaanet', emotion_model='fer', n_jobs=1):
+    def __init__(self, face_model='retinaface', landmark_model='MobileNet', au_occur_model='jaanet', emotion_model='fer', n_jobs=1):
         """Detector class to detect FEX from images or videos.
 
         Detector is a class used to detect faces, facial landmarks, emotions, and action units from images and videos.
@@ -144,6 +145,8 @@ class Detector(object):
         if emotion_model:
             if emotion_model.lower() == 'fer':
                 self.emo_model = ferNetModule()
+            elif emotion_model.lower() == 'resmasknet':
+                self.emo_model = ResMaskNet()
         
         self.info['emotion_model_columns'] = FEAT_EMOTION_COLUMNS
         predictions = np.empty((1, len(FEAT_EMOTION_COLUMNS)))

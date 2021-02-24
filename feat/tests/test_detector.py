@@ -113,6 +113,12 @@ def test_drml():
     aus = detector1.au_occur_detect(img01,lands)
     assert np.sum(np.isnan(aus))==0
     assert aus.shape[-1] == 12
+
+def test_resmasknet():
+    inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
+    detector1 = Detector(emotion_model="resmasknet")
+    out = detector1.detect_image(inputFname)
+    assert out.emotions()['neutral'].values>.5
     
 def test_detect_image():
     # Test detect image
