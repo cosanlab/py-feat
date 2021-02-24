@@ -324,4 +324,15 @@ def test_feat():
     fex = Fex(filename = filename, detector='Feat')
     fex.read_file()
 
-   
+def test_stats():
+    filename = os.path.join(get_test_data_path(), 'OpenFace_Test.csv')
+    openface = Fex(filename=filename, sampling_freq = 30, detector='OpenFace')
+    openface = openface.read_file()
+
+    aus = openface.aus()
+    aus.sessions = range(len(aus))
+    y = aus[[i for i in aus.columns if "_r" in i]]
+    X = pd.DataFrame(aus.sessions)
+    b, t, p, df, res  = aus.regress(X, y, mode='ols', fit_intercept=True)
+    assert b.shape==(2,17)
+    assert res.mean().mean() < 1
