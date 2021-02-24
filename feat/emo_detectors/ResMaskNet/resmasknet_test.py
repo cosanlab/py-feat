@@ -876,10 +876,15 @@ class ResMaskNet:
         configs = json.load(open(os.path.join(get_resource_path(), "ResMaskNet_fer2013_config.json")))
         self.image_size = (configs["image_size"], configs["image_size"])
         self.use_gpu = torch.cuda.is_available()
-
-        self.state = torch.load(
-            os.path.join(get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth")
-        )
+        if self.use_gpu:
+            self.state = torch.load(
+                os.path.join(get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth")
+            )
+        else:
+            self.state = torch.load(
+                os.path.join(get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"), 
+                map_location={'cuda:0': 'cpu'}
+            )
 
     def detect_emo(self, frame, detected_face, *args, **kwargs):
         """Detect emotions. 
@@ -888,7 +893,7 @@ class ResMaskNet:
             frame ([type]): [description]
 
         Returns:
-            [type]: [description]
+            List of predicted emotions in probability: [angry, disgust, fear, happy, sad, surprise, neutral] 
         """        
         model = resmasking_dropout1(in_channels=3, num_classes=7)
         if self.use_gpu:
