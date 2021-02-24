@@ -204,6 +204,15 @@ class CustomInstall(install):
                 except:
                     print("MobileFaceNet model failed to download.")   
 
+            if os.path.exists(os.path.join(get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth")):
+                print("\nResidualMaskingNetwork model downloaded successfully.\n")
+            else:
+                try:
+                    resmasknetmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+                    wget.download(resmasknetmodel, get_resource_path(), bar=None)
+                except:
+                    print("ResidualMaskingNetwork model failed to download.")   
+
         atexit.register(_post_install)
         install.run(self)
 

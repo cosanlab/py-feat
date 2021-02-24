@@ -860,10 +860,6 @@ class ResMaskNet:
         }
 
         """         
-        self.net = cv2.dnn.readNetFromCaffe(
-            os.path.join(get_resource_path(), "deploy.prototxt.txt"), 
-            os.path.join(get_resource_path(), "res10_300x300_ssd_iter_140000.caffemodel")
-        )
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor()])
 
         self.FER_2013_EMO_DICT = {
@@ -877,17 +873,16 @@ class ResMaskNet:
         }
 
         # load configs and set random seed
-        configs = json.load(open(os.path.join(get_resource_path(), "fer2013_config.json")))
+        configs = json.load(open(os.path.join(get_resource_path(), "ResMaskNet_fer2013_config.json")))
         self.image_size = (configs["image_size"], configs["image_size"])
         self.use_gpu = torch.cuda.is_available()
 
         self.state = torch.load(
-            os.path.join(get_resource_path(), "Z_resmasking_dropout1_rot30_2019Nov30_13.32")
+            os.path.join(get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth")
         )
 
     def detect_emo(self, frame, detected_face, *args, **kwargs):
         """Detect emotions. 
-
 
         Args:
             frame ([type]): [description]
@@ -906,73 +901,29 @@ class ResMaskNet:
             frame = np.fliplr(frame).astype(np.uint8)
             h, w = frame.shape[:2]
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            blob = cv2.dnn.blobFromImage(
-                cv2.resize(frame, (300, 300)),
-                1.0,
-                (300, 300),
-                (104.0, 177.0, 123.0),
-            )
-            self.net.setInput(blob)
-            if detected_face: 
-                start_x, start_y, end_x, end_y, conf = np.array(detected_face[0]).astype(int)
-                # covnert to square images
-                center_x, center_y = (start_x + end_x) // 2, (start_y + end_y) // 2
-                square_length = ((end_x - start_x) + (end_y - start_y)) // 2 // 2
-                square_length *= 1.1
-                start_x = int(center_x - square_length)
-                start_y = int(center_y - square_length)
-                end_x = int(center_x + square_length)
-                end_y = int(center_y + square_length)
-                if start_x<0:
-                    start_x = 0
-                if start_y<0:
-                    start_y = 0                
-                face = gray[start_y:end_y, start_x:end_x]
-                face = ensure_color(face)
-                face = cv2.resize(face, self.image_size)
-                if self.use_gpu:
-                    face = self.transform(face).cuda()
-                else: 
-                    face = self.transform(face)
-                face = torch.unsqueeze(face, dim=0)
-                output = torch.squeeze(model(face), 0)
-                proba = torch.softmax(output, 0)
-                proba_np = proba.cpu().numpy()
-                return [proba_np]
-            else:
-                faces = self.net.forward()
-
-                for i in range(0, faces.shape[2]):
-                    confidence = faces[0, 0, i, 2]
-                    if confidence < 0.5:
-                        continue
-                    box = faces[0, 0, i, 3:7] * np.array([w, h, w, h])
-                    start_x, start_y, end_x, end_y = box.astype("int")
-
-                    # covnert to square images
-                    center_x, center_y = (start_x + end_x) // 2, (start_y + end_y) // 2
-                    square_length = ((end_x - start_x) + (end_y - start_y)) // 2 // 2
-
-                    square_length *= 1.1
-
-                    start_x = int(center_x - square_length)
-                    start_y = int(center_y - square_length)
-                    end_x = int(center_x + square_length)
-                    end_y = int(center_y + square_length)
-
-                    face = gray[start_y:end_y, start_x:end_x]
-
-                    face = ensure_color(face)
-
-                    face = cv2.resize(face, self.image_size)
-                    if self.use_gpu:
-                        face = self.transform(face).cuda()
-                    else: 
-                        face = self.transform(face)
-                    face = torch.unsqueeze(face, dim=0)
-
-                    output = torch.squeeze(model(face), 0)
-                    proba = torch.softmax(output, 0)
-                    proba_np = proba.cpu().numpy()
-                    return [proba_np]
+            
+            start_x, start_y, end_x, end_y, conf = np.array(detected_face[0]).astype(int)
+            # covnert to square images
+            center_x, center_y = (start_x + end_x) // 2, (start_y + end_y) // 2
+            square_length = ((end_x - start_x) + (end_y - start_y)) // 2 // 2
+            square_length *= 1.1
+            start_x = int(center_x - square_length)
+            start_y = int(center_y - square_length)
+            end_x = int(center_x + square_length)
+            end_y = int(center_y + square_length)
+            if start_x<0:
+                start_x = 0
+            if start_y<0:
+                start_y = 0                
+            face = gray[start_y:end_y, start_x:end_x]
+            face = ensure_color(face)
+            face = cv2.resize(face, self.image_size)
+            if self.use_gpu:
+                face = self.transform(face).cuda()
+            else: 
+                face = self.transform(face)
+            face = torch.unsqueeze(face, dim=0)
+            output = torch.squeeze(model(face), 0)
+            proba = torch.softmax(output, 0)
+            proba_np = proba.cpu().numpy()
+            return [proba_np]
