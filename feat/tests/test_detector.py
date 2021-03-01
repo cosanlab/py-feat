@@ -30,7 +30,7 @@ def test_faceboxes():
     detector01 = Detector(
         face_model="FaceBoxes",
         landmark_model=None,
-        au_occur_model=None,
+        au_model=None,
         emotion_model=None,
         n_jobs=1,
     )
@@ -59,7 +59,7 @@ def test_retinaface():
     detector02 = Detector(
         face_model="RetinaFace",
         landmark_model=None,
-        au_occur_model=None,
+        au_model=None,
         emotion_model=None,
         n_jobs=1,
     )
@@ -88,7 +88,7 @@ def test_mtcnn():
     detector03 = Detector(
         face_model="MTCNN",
         landmark_model=None,
-        au_occur_model=None,
+        au_model=None,
         emotion_model=None,
         n_jobs=1,
     )
@@ -165,7 +165,7 @@ def test_jaanet():
         face_model="RetinaFace",
         emotion_model=None,
         landmark_model="MobileFaceNet",
-        au_occur_model="jaanet",
+        au_model="jaanet",
     )
     bboxes = detector1.face_detect(img01)
     lands = detector1.landmark_detect(img01, bboxes)
@@ -182,7 +182,7 @@ def test_drml():
         face_model="RetinaFace",
         emotion_model=None,
         landmark_model="MobileFaceNet",
-        au_occur_model="drml",
+        au_model="drml",
     )
     bboxes = detector1.face_detect(img01)
     lands = detector1.landmark_detect(img01, bboxes)
@@ -224,7 +224,7 @@ def test_multiface():
         face_model="RetinaFace",
         emotion_model="fer",
         landmark_model="PFLD",
-        au_occur_model="jaanet",
+        au_model="jaanet",
     )
     files = detector.process_frame(img02, 0)
     assert files.shape[0] == 5
@@ -261,6 +261,6 @@ def test_simultaneous():
         face_model="RetinaFace",
         emotion_model="fer",
         landmark_model="PFLD",
-        au_occur_model="jaanet",
+        au_model="jaanet",
     )
     files = detector04.process_frame(img01, 0)
