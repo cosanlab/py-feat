@@ -169,7 +169,7 @@ def test_jaanet():
     )
     bboxes = detector1.face_detect(img01)
     lands = detector1.landmark_detect(img01, bboxes)
-    aus = detector1.au_occur_detect(img01, lands)
+    aus = detector1.au_detect(img01, lands)
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 12
 
@@ -186,7 +186,7 @@ def test_drml():
     )
     bboxes = detector1.face_detect(img01)
     lands = detector1.landmark_detect(img01, bboxes)
-    aus = detector1.au_occur_detect(img01, lands)
+    aus = detector1.au_detect(img01, lands)
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 12
 
