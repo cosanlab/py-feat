@@ -295,9 +295,12 @@ class Detector(object):
             landmarks = convert68to49(landmarks)
         return self.au_model.detect_au(frame, landmarks)
 
-    def emo_detect(self, frame, facebox):
-
-        return self.emo_model.detect_emo(frame, facebox)
+    def emo_detect(self, frame, landmarks):
+        landmarks = np.transpose(landmarks)
+        if landmarks.shape[-1] == 68:
+           landmarks = convert68to49(landmarks)
+        landmarks = landmarks.T
+        return self.emo_model.detect_emo(frame,landmarks)
 
     def process_frame(self, frame, counter=0):
         """Helper function to run face detection, landmark detection, and emotion detection on a frame.
@@ -351,7 +354,7 @@ class Detector(object):
                     au_occur, columns=self["au_presence_columns"], index=[counter + i]
                 )
                 # detect emotions
-                emo_pred = self.emo_detect(frame=frame, facebox=[faces])
+                emo_pred = self.emo_detect(frame=frame, landmarks=landmarks[0])
                 emo_pred_df = pd.DataFrame(
                     emo_pred, columns=FEAT_EMOTION_COLUMNS, index=[counter + i]
                 )
@@ -485,5 +488,7 @@ class Detector(object):
 # Test case:
 if __name__ == '__main__':
     A01 = Detector(face_model='RetinaFace',emotion_model='fer', landmark_model="MobileFaceNet", au_occur_model='jaanet')
-    test_img = cv2.imread(r"C:\Users\Yaqian\src\py-feat\feat\tests\data\input.jpg")
+    test_img = cv2.imread(r"C:\Users\Yaqian\src\py-feat\feat\tests\data\surprise_white.jpg")
     ress = A01.process_frame(frame=test_img)
+
+# %%
