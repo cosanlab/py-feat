@@ -1,5 +1,6 @@
 from __future__ import division
-'''
+
+"""
     FEAT Utils Class
     ==========================================
     read_facet: read in iMotions-FACET formatted files
@@ -7,13 +8,21 @@ from __future__ import division
     read_affectiva: read in affectiva-api formatted files
     read_openface: read in openface formatted files
 
-'''
+"""
 
-__all__ = ['get_resource_path','load_pickled_model','read_facet',
-           'read_affdex','read_affectiva','read_openface', 'softmax',
-           'registration','neutral','load_h5']
+__all__ = [
+    "get_resource_path",
+    "load_pickled_model",
+    "read_facet",
+    "read_affdex",
+    "read_affectiva",
+    "read_openface",
+    "softmax",
+    "registration",
+    "neutral",
+    "load_h5",
+]
 __author__ = ["Jin Hyun Cheong"]
-
 
 
 import os, math, pywt, pickle, h5py
@@ -29,51 +38,164 @@ import torch
 
 """ DEFINE IMPORTANT VARIABLES """
 # FEAT columns
-FEAT_EMOTION_MAPPER = {0:'anger', 1:'disgust', 2:'fear', 3:'happiness', 4: 'sadness', 5: 'surprise', 6: 'neutral'}
-FEAT_EMOTION_COLUMNS = ['anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'neutral']
-FEAT_FACEBOX_COLUMNS = ['FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight']
-#FEAT_FACEBOX_COLUMNS = ['FaceRectX1','FaceRectY1','FaceRectX2','FaceRectY2']
-FEAT_TIME_COLUMNS = ['frame']
+FEAT_EMOTION_MAPPER = {
+    0: "anger",
+    1: "disgust",
+    2: "fear",
+    3: "happiness",
+    4: "sadness",
+    5: "surprise",
+    6: "neutral",
+}
+FEAT_EMOTION_COLUMNS = [
+    "anger",
+    "disgust",
+    "fear",
+    "happiness",
+    "sadness",
+    "surprise",
+    "neutral",
+]
+FEAT_FACEBOX_COLUMNS = [
+    "FaceRectX",
+    "FaceRectY",
+    "FaceRectWidth",
+    "FaceRectHeight",
+    "FaceScore",
+]
+# FEAT_FACEBOX_COLUMNS = ['FaceRectX1','FaceRectY1','FaceRectX2','FaceRectY2']
+FEAT_TIME_COLUMNS = ["frame"]
 
 # FACET columns
-FACET_EMOTION_COLUMNS = ['Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration', 'Neutral','Positive','Negative']
-FACET_FACEBOX_COLUMNS = FEAT_FACEBOX_COLUMNS
-FACET_TIME_COLUMNS = ['Timestamp', 'MediaTime', 'FrameNo', 'FrameTime']
-FACET_FACEPOSE_COLUMNS = ['Pitch', 'Roll', 'Yaw']
-FACET_DESIGN_COLUMNS = ['StimulusName', 'SlideType', 'EventSource','Annotation']
+FACET_EMOTION_COLUMNS = [
+    "Joy",
+    "Anger",
+    "Surprise",
+    "Fear",
+    "Contempt",
+    "Disgust",
+    "Sadness",
+    "Confusion",
+    "Frustration",
+    "Neutral",
+    "Positive",
+    "Negative",
+]
+FACET_FACEBOX_COLUMNS = ["FaceRectX", "FaceRectY", "FaceRectWidth", "FaceRectHeight"]
+FACET_TIME_COLUMNS = ["Timestamp", "MediaTime", "FrameNo", "FrameTime"]
+FACET_FACEPOSE_COLUMNS = ["Pitch", "Roll", "Yaw"]
+FACET_DESIGN_COLUMNS = ["StimulusName", "SlideType", "EventSource", "Annotation"]
 
 # OpenFace columns
-landmark_length=68
-openface_2d_landmark_columns = [f'x_{i}' for i in range(landmark_length)] + [f'y_{i}' for i in range(landmark_length)]
-openface_3d_landmark_columns =[f'X_{i}' for i in range(landmark_length)] + [f'Y_{i}' for i in range(landmark_length)] + [f'Z_{i}' for i in range(landmark_length)] 
+landmark_length = 68
+openface_2d_landmark_columns = [f"x_{i}" for i in range(landmark_length)] + [
+    f"y_{i}" for i in range(landmark_length)
+]
+openface_3d_landmark_columns = (
+    [f"X_{i}" for i in range(landmark_length)]
+    + [f"Y_{i}" for i in range(landmark_length)]
+    + [f"Z_{i}" for i in range(landmark_length)]
+)
 
-jaanet_AU_list = [1,2,4,6,7,10,12,14,15,17,23,24]
-jaanet_AU_presence = [f'AU'+str(i).zfill(2) for i in jaanet_AU_list]
+jaanet_AU_list = [1, 2, 4, 6, 7, 10, 12, 14, 15, 17, 23, 24]
+jaanet_AU_presence = [f"AU" + str(i).zfill(2) for i in jaanet_AU_list]
 jaanet_AU_presence.sort()
 
-openface_AU_list = [1,2,4,5,6,7,9,10,12,14,15,17,20,23,25,26,45]
-openface_AU_intensity = [f'AU'+str(i).zfill(2)+'_r' for i in openface_AU_list]
-openface_AU_presence = [f'AU'+str(i).zfill(2)+'_c' for i in openface_AU_list+[28]]
+openface_AU_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 45]
+openface_AU_intensity = [f"AU" + str(i).zfill(2) + "_r" for i in openface_AU_list]
+openface_AU_presence = [f"AU" + str(i).zfill(2) + "_c" for i in openface_AU_list + [28]]
 openface_AU_presence.sort()
-openface_AU_columns =  openface_AU_intensity + openface_AU_presence
-openface_time_columns = ['frame', 'timestamp']
-openface_gaze_columns = ['gaze_0_x', 'gaze_0_y', 'gaze_0_z', 'gaze_1_x', 'gaze_1_y', 'gaze_1_z']
-openface_facepose_columns = ['pose_Tx', 'pose_Ty', 'pose_Tz', 'pose_Rx', 'pose_Ry', 'pose_Rz'] 
-OPENFACE_ORIG_COLUMNS = openface_time_columns + ['confidence', 'success'] + openface_gaze_columns + openface_facepose_columns + openface_2d_landmark_columns + openface_3d_landmark_columns + ['p_scale', 'p_rx', 'p_ry', 'p_rz', 'p_tx', 'p_ty', 'p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7', 'p_8', 'p_9', 'p_10', 'p_11', 'p_12', 'p_13', 'p_14', 'p_15', 'p_16', 'p_17', 'p_18', 'p_19', 'p_20', 'p_21', 'p_22', 'p_23', 'p_24', 'p_25', 'p_26', 'p_27', 'p_28', 'p_29', 'p_30', 'p_31', 'p_32', 'p_33'] + openface_AU_columns
+openface_AU_columns = openface_AU_intensity + openface_AU_presence
+openface_time_columns = ["frame", "timestamp"]
+openface_gaze_columns = [
+    "gaze_0_x",
+    "gaze_0_y",
+    "gaze_0_z",
+    "gaze_1_x",
+    "gaze_1_y",
+    "gaze_1_z",
+]
+openface_facepose_columns = [
+    "pose_Tx",
+    "pose_Ty",
+    "pose_Tz",
+    "pose_Rx",
+    "pose_Ry",
+    "pose_Rz",
+]
+OPENFACE_ORIG_COLUMNS = (
+    openface_time_columns
+    + ["confidence", "success"]
+    + openface_gaze_columns
+    + openface_facepose_columns
+    + openface_2d_landmark_columns
+    + openface_3d_landmark_columns
+    + [
+        "p_scale",
+        "p_rx",
+        "p_ry",
+        "p_rz",
+        "p_tx",
+        "p_ty",
+        "p_0",
+        "p_1",
+        "p_2",
+        "p_3",
+        "p_4",
+        "p_5",
+        "p_6",
+        "p_7",
+        "p_8",
+        "p_9",
+        "p_10",
+        "p_11",
+        "p_12",
+        "p_13",
+        "p_14",
+        "p_15",
+        "p_16",
+        "p_17",
+        "p_18",
+        "p_19",
+        "p_20",
+        "p_21",
+        "p_22",
+        "p_23",
+        "p_24",
+        "p_25",
+        "p_26",
+        "p_27",
+        "p_28",
+        "p_29",
+        "p_30",
+        "p_31",
+        "p_32",
+        "p_33",
+    ]
+    + openface_AU_columns
+)
+
 
 def face_rect_to_coords(rectangle):
     """
     Takes in a (x, y, w, h) array and transforms it into (x, y, x2, y2)
     """
-    return [rectangle[0], rectangle[1], rectangle[0]+rectangle[2], rectangle[1]+rectangle[3]]
-    
+    return [
+        rectangle[0],
+        rectangle[1],
+        rectangle[0] + rectangle[2],
+        rectangle[1] + rectangle[3],
+    ]
+
+
 def get_resource_path():
     """ Get path to feat resource directory. """
-    return os.path.join(feat.__path__[0], 'resources') # points to the package folder.
-    #return ("F:/feat/feat/") # points to the package folder.
-    #return os.path.join(os.path.dirname(__file__), 'resources')
+    return os.path.join(feat.__path__[0], "resources")  # points to the package folder.
+    # return ("F:/feat/feat/") # points to the package folder.
+    # return os.path.join(os.path.dirname(__file__), 'resources')
 
-def load_pickled_model(file_name='pls_python27.pkl'):
+
+def load_pickled_model(file_name="pls_python27.pkl"):
     """Load the pickled PLS model for plotting.
 
     Args:
@@ -81,20 +203,21 @@ def load_pickled_model(file_name='pls_python27.pkl'):
 
     Returns:
         model: PLS model
-    """    
+    """
     file_name = os.path.join(get_resource_path(), file_name)
     try:
-        with open(file_name, 'rb') as f:
+        with open(file_name, "rb") as f:
             model = pickle.load(f)
     except UnicodeDecodeError as e:
-        with open(file_name, 'rb') as f:
-            model = pickle.load(f, encoding='latin1')
+        with open(file_name, "rb") as f:
+            model = pickle.load(f, encoding="latin1")
     except Exception as e:
-        print('Unable to load data ', file_name, ':', e)
+        print("Unable to load data ", file_name, ":", e)
         raise
     return model
 
-def load_h5(file_name='blue.h5'):
+
+def load_h5(file_name="blue.h5"):
     """Load the h5 PLS model for plotting.
 
     Args:
@@ -102,13 +225,13 @@ def load_h5(file_name='blue.h5'):
 
     Returns:
         model: PLS model
-    """    
+    """
     try:
-        hf = h5py.File(os.path.join(get_resource_path(), file_name), 'r')
-        d1 = hf.get('coef')
-        d2 = hf.get('x_mean')
-        d3 = hf.get('y_mean')
-        d4 = hf.get('x_std')
+        hf = h5py.File(os.path.join(get_resource_path(), file_name), "r")
+        d1 = hf.get("coef")
+        d2 = hf.get("x_mean")
+        d3 = hf.get("y_mean")
+        d4 = hf.get("x_std")
         model = PLSRegression(len(d1))
         model.coef_ = np.array(d1)
         model.x_mean_ = np.array(d2)
@@ -116,19 +239,30 @@ def load_h5(file_name='blue.h5'):
         model.x_std_ = np.array(d4)
         hf.close()
     except Exception as e:
-        print('Unable to load data ', file_name, ':', e)
+        print("Unable to load data ", file_name, ":", e)
     return model
+
 
 def read_feat(fexfile):
     """This function reads files extracted using the Detector from the Feat package.
 
     Args:
         fexfile: [description]
-    """    
+    """
     d = pd.read_csv(fexfile)
-    return feat.Fex(d, filename = fexfile, au_columns = None, emotion_columns = FEAT_EMOTION_COLUMNS, facebox_columns = FEAT_FACEBOX_COLUMNS, time_columns = FEAT_TIME_COLUMNS, detector = 'Feat')
+    return feat.Fex(
+        d,
+        filename=fexfile,
+        au_columns=jaanet_AU_presence,
+        emotion_columns=FEAT_EMOTION_COLUMNS,
+        landmark_columns=openface_2d_landmark_columns,
+        facebox_columns=FEAT_FACEBOX_COLUMNS,
+        time_columns=FEAT_TIME_COLUMNS,
+        detector="Feat",
+    )
 
-def read_facet(facetfile, features=None, raw=False):
+
+def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
     """This function reads in an iMotions-FACET exported facial expression file.
 
     Args:
@@ -141,46 +275,65 @@ def read_facet(facetfile, features=None, raw=False):
                 'Yaw', 'Pitch', 'Roll'].
                 Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
         raw (default=False): Set to True to return all columns without processing.
+        sampling_freq: sampling frequency to pass to Fex
     Returns:
         dataframe of processed facial expressions
     """
     # Check iMotions Version
-    versionstr = ''
+    versionstr = ""
     try:
-        with open(facetfile,'r') as f:
-            studyname = f.readline().replace('\t','').replace('\n','')
-            studydate = f.readline().replace('\t','').replace('\n','')
-            versionstr = f.readline().replace('\t','').replace('\n','')
-        versionnum = int(versionstr.split(' ')[-1].split('.')[0])
+        with open(facetfile, "r") as f:
+            studyname = f.readline().replace("\t", "").replace("\n", "")
+            studydate = f.readline().replace("\t", "").replace("\n", "")
+            versionstr = f.readline().replace("\t", "").replace("\n", "")
+        versionnum = int(versionstr.split(" ")[-1].split(".")[0])
     except:
-        raise TypeError("Cannot infer version of iMotions-FACET file. Check to make sure this is the raw iMotions-FACET file.")
+        raise TypeError(
+            "Cannot infer version of iMotions-FACET file. Check to make sure this is the raw iMotions-FACET file."
+        )
 
-    d = pd.read_csv(facetfile, skiprows=5, sep='\t')
+    d = pd.read_csv(facetfile, skiprows=5, sep="\t")
     # Check if features argument is passed and return only those features, else return all columns
-    if isinstance(features,list):
+    if isinstance(features, list):
         try:
             d = d[features]
             if raw:
-                return feat.Fex(d, filename = facetfile)
+                return feat.Fex(d, filename=facetfile)
         except:
-            raise KeyError([features,'not in facetfile'])
+            raise KeyError([features, "not in facetfile"])
     elif isinstance(features, type(None)):
         if raw:
-            return feat.Fex(d, filename = facetfile)
+            return feat.Fex(d, filename=facetfile)
         else:
-            fex_columns = [col.replace(' Evidence','').replace(' Degrees','') for col in d.columns if 'Evidence' in col or 'Degrees' in col]
+            fex_columns = [
+                col.replace(" Evidence", "").replace(" Degrees", "")
+                for col in d.columns
+                if "Evidence" in col or "Degrees" in col
+            ]
             # Remove Intensity as this has been deprecated
             cols2drop = [col for col in d.columns if "Intensity" in col]
             d = d.drop(columns=cols2drop)
-            d.columns = [col.replace(' Evidence','') for col in d.columns]
-            d.columns = [col.replace(' Degrees','') for col in d.columns]
-            d.columns = [col.replace(' ','') for col in d.columns]
+            d.columns = [col.replace(" Evidence", "") for col in d.columns]
+            d.columns = [col.replace(" Degrees", "") for col in d.columns]
+            d.columns = [col.replace(" ", "") for col in d.columns]
             # d._metadata = fex_columns
     au_columns = [col for col in d.columns if "AU" in col]
-    return feat.Fex(d, filename = facetfile, au_columns = au_columns, emotion_columns = FACET_EMOTION_COLUMNS, facebox_columns = FACET_FACEBOX_COLUMNS, facepose_columns = FACET_FACEPOSE_COLUMNS, time_columns = FACET_TIME_COLUMNS, design_columns=FACET_DESIGN_COLUMNS, detector = 'FACET')
+    return feat.Fex(
+        d,
+        filename=facetfile,
+        au_columns=au_columns,
+        emotion_columns=FACET_EMOTION_COLUMNS,
+        facebox_columns=FACET_FACEBOX_COLUMNS,
+        facepose_columns=FACET_FACEPOSE_COLUMNS,
+        time_columns=FACET_TIME_COLUMNS,
+        design_columns=FACET_DESIGN_COLUMNS,
+        detector="FACET",
+        sampling_freq=sampling_freq,
+    )
+
 
 def read_openface(openfacefile, features=None):
-    '''
+    """
     This function reads in an OpenFace exported facial expression file.
     Args:
         features: If a list of column names are passed, those are returned. Otherwise, default returns the following features:
@@ -243,34 +396,77 @@ def read_openface(openfacefile, features=None):
     Returns:
         dataframe of processed facial expressions
 
-    '''
-    d = pd.read_csv(openfacefile, sep=',')
-    d.columns = d.columns.str.strip(' ')
+    """
+    d = pd.read_csv(openfacefile, sep=",")
+    d.columns = d.columns.str.strip(" ")
     # Check if features argument is passed and return only those features, else return basic emotion/AU features
-    if isinstance(features,list):
+    if isinstance(features, list):
         try:
             d = d[features]
         except:
-            raise KeyError([features,'not in openfacefile'])
+            raise KeyError([features, "not in openfacefile"])
     elif isinstance(features, type(None)):
         features = OPENFACE_ORIG_COLUMNS
         try:
             d = d[features]
         except:
             pass
-    return feat.Fex(d, filename = openfacefile, au_columns = openface_AU_columns, emotion_columns = None, facebox_columns=None, landmark_columns = openface_2d_landmark_columns, facepose_columns = openface_facepose_columns, gaze_columns = openface_gaze_columns, time_columns = openface_time_columns, detector = "OpenFace")
+    return feat.Fex(
+        d,
+        filename=openfacefile,
+        au_columns=openface_AU_columns,
+        emotion_columns=None,
+        facebox_columns=None,
+        landmark_columns=openface_2d_landmark_columns,
+        facepose_columns=openface_facepose_columns,
+        gaze_columns=openface_gaze_columns,
+        time_columns=openface_time_columns,
+        detector="OpenFace",
+    )
 
-def read_affectiva(affectivafile, orig_cols = False):
-    '''
+
+def read_affectiva(affectivafile, orig_cols=False):
+    """
     This function reads in affectiva file processed through
     the https://github.com/cosanlab/affectiva-api-app.
     Args:
         affectivafile: file to read
         orig_cols: If True, convert original colnames to FACS names
-    '''
+    """
     d = pd.read_json(affectivafile, lines=True)
-    rep_dict = { 'anger':'Anger','attention':'Attention','contempt':'Contempt','disgust':'Disgust','engagement':'Engagement', 'fear':'Fear','joy':'Joy','sadness':'Sadness','smirk':'Smirk','surprise':'Surprise','valence':'Valence', 'browFurrow': "AU04", "smile":'AU12', 'browRaise':'AU02', 'cheekRaise':'AU06', 'chinRaise':'AU17', 'dimpler':'AU14', 'eyeClosure':'AU43', 'eyeWiden':'AU05', 'innerBrowRaise':'AU01', 'jawDrop': 'AU26', 'lidTighten':'AU07', 'lipCornerDepressor':'AU15', 'lipPress':'AU24', 'lipPucker':'AU18', 'lipStretch':'AU20', 'lipSuck':'AU28', 'mouthOpen':'AU25','noseWrinkle':'AU09', 'upperLipRaise':'AU10'}
-    affectiva_au_columns = [col for col in rep_dict.values() if 'AU' in col]
+    rep_dict = {
+        "anger": "Anger",
+        "attention": "Attention",
+        "contempt": "Contempt",
+        "disgust": "Disgust",
+        "engagement": "Engagement",
+        "fear": "Fear",
+        "joy": "Joy",
+        "sadness": "Sadness",
+        "smirk": "Smirk",
+        "surprise": "Surprise",
+        "valence": "Valence",
+        "browFurrow": "AU04",
+        "smile": "AU12",
+        "browRaise": "AU02",
+        "cheekRaise": "AU06",
+        "chinRaise": "AU17",
+        "dimpler": "AU14",
+        "eyeClosure": "AU43",
+        "eyeWiden": "AU05",
+        "innerBrowRaise": "AU01",
+        "jawDrop": "AU26",
+        "lidTighten": "AU07",
+        "lipCornerDepressor": "AU15",
+        "lipPress": "AU24",
+        "lipPucker": "AU18",
+        "lipStretch": "AU20",
+        "lipSuck": "AU28",
+        "mouthOpen": "AU25",
+        "noseWrinkle": "AU09",
+        "upperLipRaise": "AU10",
+    }
+    affectiva_au_columns = [col for col in rep_dict.values() if "AU" in col]
     affectiva_emotion_columns = list(set(rep_dict.values()) - set(affectiva_au_columns))
     if not orig_cols:
         new_cols = []
@@ -279,34 +475,42 @@ def read_affectiva(affectivafile, orig_cols = False):
                 new_cols.append(rep_dict[col])
             except:
                 new_cols.append(col)
-        d.columns = new_cols       
-    return feat.Fex(d, filename = affectivafile, au_columns = affectiva_au_columns, emotion_columns = affectiva_emotion_columns, detector="Affectiva")
+        d.columns = new_cols
+    return feat.Fex(
+        d,
+        filename=affectivafile,
+        au_columns=affectiva_au_columns,
+        emotion_columns=affectiva_emotion_columns,
+        detector="Affectiva",
+    )
 
-def wavelet(freq, num_cyc=3, sampling_freq=30.):
+
+def wavelet(freq, num_cyc=3, sampling_freq=30.0):
     """Create a complex Morlet wavelet by windowing a cosine function by a
-        Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13
+    Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13
 
-        Args:
-            freq: (float) desired frequence of wavelet
-            num_cyc: (float) number of wavelet cycles/gaussian taper. Note that
-                     smaller cycles give greater temporal precision and that larger
-                     values give greater frequency precision; (default: 3)
-            sampling_freq: (float) sampling frequency of original signal.
+    Args:
+        freq: (float) desired frequence of wavelet
+        num_cyc: (float) number of wavelet cycles/gaussian taper. Note that
+                 smaller cycles give greater temporal precision and that larger
+                 values give greater frequency precision; (default: 3)
+        sampling_freq: (float) sampling frequency of original signal.
 
-        Returns:
-            wav: (ndarray) complex wavelet
+    Returns:
+        wav: (ndarray) complex wavelet
     """
-    dur = (1/freq)*num_cyc
-    time = np.arange(-dur, dur, 1./sampling_freq)
+    dur = (1 / freq) * num_cyc
+    time = np.arange(-dur, dur, 1.0 / sampling_freq)
 
-    #Cosine component
+    # Cosine component
     sin = np.exp(2 * np.pi * 1j * freq * time)
 
-    #Gaussian component
-    sd = num_cyc/(2 * np.pi * freq) #standard deviation
-    gaus = np.exp(-time**2./(2. * sd**2.))
+    # Gaussian component
+    sd = num_cyc / (2 * np.pi * freq)  # standard deviation
+    gaus = np.exp(-(time ** 2.0) / (2.0 * sd ** 2.0))
 
     return sin * gaus
+
 
 def calc_hist_auc(vals, hist_range=None):
     """
@@ -324,18 +528,18 @@ def calc_hist_auc(vals, hist_range=None):
 
 
     """
-    #Square values
-    vals = [elem**2 if elem > 0 else -1*elem**2 for elem in vals]
-    #Get 0 crossings
+    # Square values
+    vals = [elem ** 2 if elem > 0 else -1 * elem ** 2 for elem in vals]
+    # Get 0 crossings
     crossings = np.where(np.diff(np.sign(vals)))[0]
-    pos,neg = [],[]
+    pos, neg = [], []
     for i in range(len(crossings)):
         if i == 0:
-            cross = vals[:crossings[i]]
-        elif i == len(crossings)-1:
-            cross = vals[crossings[i]:]
+            cross = vals[: crossings[i]]
+        elif i == len(crossings) - 1:
+            cross = vals[crossings[i] :]
         else:
-            cross = vals[crossings[i]:crossings[i+1]]
+            cross = vals[crossings[i] : crossings[i + 1]]
         if cross:
             auc = simps(cross)
             if auc > 0:
@@ -343,48 +547,102 @@ def calc_hist_auc(vals, hist_range=None):
             elif auc < 0:
                 neg.append(np.abs(auc))
     if not hist_range:
-        hist_range = np.logspace(0,5,7) # bartlett 10**0~ 10**5
+        hist_range = np.logspace(0, 5, 7)  # bartlett 10**0~ 10**5
 
-    out = pd.Series(np.hstack([np.histogram(pos,hist_range)[0], np.histogram(neg,hist_range)[0]]))
+    out = pd.Series(
+        np.hstack([np.histogram(pos, hist_range)[0], np.histogram(neg, hist_range)[0]])
+    )
     return out
 
+
 def softmax(x):
-    '''
+    """
     Softmax function to change log likelihood evidence values to probabilities.
     Use with Evidence values from FACET.
 
     Args:
         x: value to softmax
-    '''
-    return 1./(1+10.**-(x))
+    """
+    return 1.0 / (1 + 10.0 ** -(x))
+
 
 ### Functions for face registration ###
-neutral = np.array([[37.514994071403564, 118.99554304280198], [38.347467261268164, 135.93119298564565], [40.77550102890035, 152.83280452855092],
-           [44.109285817364565, 169.1279402172728], [49.982831719005134, 184.53328583541997], [59.18894827224358, 198.01613609507382],
-           [70.41509055106278, 209.2829929016551], [83.65962787515429, 217.8257797774197], [98.6747861407431, 220.00636721799012],
-           [113.36502269321642, 217.35622273914575], [126.09720342342395, 208.61554139570768], [137.37278216681938, 197.26636201144768],
-           [146.15109522110836, 183.95054534968338], [151.7203254679301, 168.70328047716666], [154.90171533762026, 152.54959546525106],
-           [157.01705755745184, 136.0791940145902], [157.81240022435486, 119.28714731581948], [45.87342275811805, 109.05187535227455],
-           [53.83702202368147, 101.43275042887998], [65.61231530318975, 99.44649503101734], [77.49003981781006, 101.34627038289048],
-           [88.31833069100318, 105.66229287035226], [108.80512997829634, 105.18583248508406], [120.180518838434, 100.84850879934683],
-           [131.6712265255873, 99.22426247038426], [142.8040873694427, 101.39810664193074], [150.0927107560624, 108.74640334130906],
-           [98.93955016899183, 117.16643104438056], [99.01139789533919, 128.44882090731443], [99.09059391932496, 139.71335180079416],
-           [99.22411612922204, 151.32196734885628], [85.97238779261347, 158.19140086045783], [92.2064468619444, 160.61659751751895],
-           [98.67862473703293, 162.56437315387998], [105.26853264390792, 160.62509055875418], [111.14227856687825, 158.32687793454852],
-           [59.22833204018989, 118.63189570941351], [66.08746862218415, 114.39263501569359], [74.66886627073309, 114.59919005618073],
-           [81.80683310969295, 120.00819188630955], [74.34426159695313, 121.7055175900537], [65.7237769427475, 121.82223252349223],
-           [114.7522889881524, 119.90654628204749], [122.29832379941683, 114.26349216485505], [130.61954432603773, 114.38399042631573],
-           [137.03708638863128, 118.48489574810866], [131.21518765419418, 121.51217888800802], [122.97461037812238, 121.56526096419978],
-           [75.39827955150834, 179.4070640864827], [84.55991401346533, 176.2145796986134], [92.90235587470646, 174.4243211955652],
-           [98.56534031739243, 176.0653659731581], [104.97777372929698, 174.45766843787231], [113.1125749468363, 176.39970964033202],
-           [121.19973608809934, 179.19790184992027], [113.16310623913299, 185.69051008752652], [105.26365304952049, 188.31443911070232],
-           [98.41771871303214, 188.9656394139811], [92.2240282658315, 188.38538897373022], [84.05109731022314, 185.74954657843966],
-           [79.18422925303048, 179.8065722186372], [92.7172317110304, 179.5201781895618], [98.52973444977067, 180.1630365496041],
-           [105.05932172975814, 179.42368920844928], [117.43706438358437, 179.7109259873213], [104.90869094557993, 180.32984591574524],
-           [98.35933953480642, 181.15981769637827], [92.49485174856926, 180.48994809345996]])
+neutral = np.array(
+    [
+        [37.514994071403564, 118.99554304280198],
+        [38.347467261268164, 135.93119298564565],
+        [40.77550102890035, 152.83280452855092],
+        [44.109285817364565, 169.1279402172728],
+        [49.982831719005134, 184.53328583541997],
+        [59.18894827224358, 198.01613609507382],
+        [70.41509055106278, 209.2829929016551],
+        [83.65962787515429, 217.8257797774197],
+        [98.6747861407431, 220.00636721799012],
+        [113.36502269321642, 217.35622273914575],
+        [126.09720342342395, 208.61554139570768],
+        [137.37278216681938, 197.26636201144768],
+        [146.15109522110836, 183.95054534968338],
+        [151.7203254679301, 168.70328047716666],
+        [154.90171533762026, 152.54959546525106],
+        [157.01705755745184, 136.0791940145902],
+        [157.81240022435486, 119.28714731581948],
+        [45.87342275811805, 109.05187535227455],
+        [53.83702202368147, 101.43275042887998],
+        [65.61231530318975, 99.44649503101734],
+        [77.49003981781006, 101.34627038289048],
+        [88.31833069100318, 105.66229287035226],
+        [108.80512997829634, 105.18583248508406],
+        [120.180518838434, 100.84850879934683],
+        [131.6712265255873, 99.22426247038426],
+        [142.8040873694427, 101.39810664193074],
+        [150.0927107560624, 108.74640334130906],
+        [98.93955016899183, 117.16643104438056],
+        [99.01139789533919, 128.44882090731443],
+        [99.09059391932496, 139.71335180079416],
+        [99.22411612922204, 151.32196734885628],
+        [85.97238779261347, 158.19140086045783],
+        [92.2064468619444, 160.61659751751895],
+        [98.67862473703293, 162.56437315387998],
+        [105.26853264390792, 160.62509055875418],
+        [111.14227856687825, 158.32687793454852],
+        [59.22833204018989, 118.63189570941351],
+        [66.08746862218415, 114.39263501569359],
+        [74.66886627073309, 114.59919005618073],
+        [81.80683310969295, 120.00819188630955],
+        [74.34426159695313, 121.7055175900537],
+        [65.7237769427475, 121.82223252349223],
+        [114.7522889881524, 119.90654628204749],
+        [122.29832379941683, 114.26349216485505],
+        [130.61954432603773, 114.38399042631573],
+        [137.03708638863128, 118.48489574810866],
+        [131.21518765419418, 121.51217888800802],
+        [122.97461037812238, 121.56526096419978],
+        [75.39827955150834, 179.4070640864827],
+        [84.55991401346533, 176.2145796986134],
+        [92.90235587470646, 174.4243211955652],
+        [98.56534031739243, 176.0653659731581],
+        [104.97777372929698, 174.45766843787231],
+        [113.1125749468363, 176.39970964033202],
+        [121.19973608809934, 179.19790184992027],
+        [113.16310623913299, 185.69051008752652],
+        [105.26365304952049, 188.31443911070232],
+        [98.41771871303214, 188.9656394139811],
+        [92.2240282658315, 188.38538897373022],
+        [84.05109731022314, 185.74954657843966],
+        [79.18422925303048, 179.8065722186372],
+        [92.7172317110304, 179.5201781895618],
+        [98.52973444977067, 180.1630365496041],
+        [105.05932172975814, 179.42368920844928],
+        [117.43706438358437, 179.7109259873213],
+        [104.90869094557993, 180.32984591574524],
+        [98.35933953480642, 181.15981769637827],
+        [92.49485174856926, 180.48994809345996],
+    ]
+)
 
-def registration(face_lms, neutral= neutral, method = 'fullface'):
-    '''
+
+def registration(face_lms, neutral=neutral, method="fullface"):
+    """
     Affine registration of face landmarks to neutral face.
 
     Args:
@@ -396,34 +654,36 @@ def registration(face_lms, neutral= neutral, method = 'fullface'):
                     If list, pass landmarks to register to e.g. [27, 28, 29, 30, 36, 39, 42, 45]
     Return:
         registered_lms: registered landmarks in shape (n,136)
-    '''
-    assert(type(face_lms)==np.ndarray), TypeError('face_lms must be type np.ndarray')
-    assert(face_lms.ndim==2), ValueError('face_lms must be shape (n, 136)')
-    assert(face_lms.shape[1]==136), ValueError('Must have 136 landmarks')
-    registered_lms =[]
+    """
+    assert type(face_lms) == np.ndarray, TypeError("face_lms must be type np.ndarray")
+    assert face_lms.ndim == 2, ValueError("face_lms must be shape (n, 136)")
+    assert face_lms.shape[1] == 136, ValueError("Must have 136 landmarks")
+    registered_lms = []
     for row in face_lms:
-        face = [row[:68],row[68:]]
+        face = [row[:68], row[68:]]
         face = np.array(face).T
-    #   Rotate face
+        #   Rotate face
         primary = np.array(face)
         secondary = np.array(neutral)
         n = primary.shape[0]
         pad = lambda x: np.hstack([x, np.ones((x.shape[0], 1))])
         unpad = lambda x: x[:, :-1]
         X1, Y1 = pad(primary), pad(secondary)
-        if type(method)==str:
-            if method == 'fullface':
-                A, res, rank, s = np.linalg.lstsq(X1, Y1,rcond=None)
-            elif method == 'inner':
-                A, res, rank, s = np.linalg.lstsq(X1[17:, :], Y1[17:, :],rcond=None)
+        if type(method) == str:
+            if method == "fullface":
+                A, res, rank, s = np.linalg.lstsq(X1, Y1, rcond=None)
+            elif method == "inner":
+                A, res, rank, s = np.linalg.lstsq(X1[17:, :], Y1[17:, :], rcond=None)
             else:
                 raise ValueError("method is either 'fullface' or 'inner'")
-        elif type(method)==list:
-            A, res, rank, s = np.linalg.lstsq(X1[method], Y1[method],rcond=None)
+        elif type(method) == list:
+            A, res, rank, s = np.linalg.lstsq(X1[method], Y1[method], rcond=None)
         else:
-            raise TypeError("method is string ('fullface','inner') or list of landmarks")
+            raise TypeError(
+                "method is string ('fullface','inner') or list of landmarks"
+            )
         transform = lambda x: unpad(np.dot(pad(x), A))
-        registered_lms.append(transform(primary).T.reshape(1,136).ravel())
+        registered_lms.append(transform(primary).T.reshape(1, 136).ravel())
     return np.array(registered_lms)
 
 
@@ -437,20 +697,25 @@ def convert68to49(points):
     Return:
         cpoints: converted 49 landmark points of shape (2,49)
     """
-    assert len(points.shape) == 2 and (points.shape[0] == 3 or points.shape[0] == 2) and points.shape[1] == 68, 'The shape of points is not right : {}'.format(points.shape)
+    assert (
+        len(points.shape) == 2
+        and (points.shape[0] == 3 or points.shape[0] == 2)
+        and points.shape[1] == 68
+    ), "The shape of points is not right : {}".format(points.shape)
 
-    if isinstance(points,torch.Tensor):
+    if isinstance(points, torch.Tensor):
         points = points.clone()
-        out = torch.ones((68,),dtype = torch.bool)
+        out = torch.ones((68,), dtype=torch.bool)
     elif type(points) is np.ndarray:
         points = points.copy()
-        out = np.ones((68,)).astype('bool')
-    
-    out[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,60,64]] = False
+        out = np.ones((68,)).astype("bool")
+
+    out[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60, 64]] = False
     cpoints = points[:, out]
 
     assert len(cpoints.shape) == 2 and cpoints.shape[1] == 49
     return cpoints
+
 
 class BBox(object):
     # https://github.com/cunjian/pytorch_face_landmark/
@@ -467,47 +732,51 @@ class BBox(object):
 
     # scale to [0,1]
     def projectLandmark(self, landmark):
-        landmark_= np.asarray(np.zeros(landmark.shape))     
+        landmark_ = np.asarray(np.zeros(landmark.shape))
         for i, point in enumerate(landmark):
-            landmark_[i] = ((point[0]-self.x)/self.w, (point[1]-self.y)/self.h)
+            landmark_[i] = ((point[0] - self.x) / self.w, (point[1] - self.y) / self.h)
         return landmark_
 
     # landmark of (5L, 2L) from [0,1] to real range
     def reprojectLandmark(self, landmark):
-        landmark_= np.asarray(np.zeros(landmark.shape)) 
+        landmark_ = np.asarray(np.zeros(landmark.shape))
         for i, point in enumerate(landmark):
             x = point[0] * self.w + self.x
             y = point[1] * self.h + self.y
             landmark_[i] = (x, y)
         return landmark_
 
+
 def drawLandmark(img, bbox, landmark):
     # https://github.com/cunjian/pytorch_face_landmark/
-    '''
+    """
     Input:
     - img: gray or RGB
     - bbox: type of BBox
     - landmark: reproject landmark of (5L, 2L)
     Output:
     - img marked with landmark and bbox
-    '''
+    """
     img_ = img.copy()
-    cv2.rectangle(img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0,0,255), 2)
+    cv2.rectangle(
+        img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2
+    )
     for x, y in landmark:
-        cv2.circle(img_, (int(x), int(y)), 3, (0,255,0), -1)
+        cv2.circle(img_, (int(x), int(y)), 3, (0, 255, 0), -1)
     return img_
+
 
 def drawLandmark_multiple(img, bbox, landmark):
     # https://github.com/cunjian/pytorch_face_landmark/
-    '''
+    """
     Input:
     - img: gray or RGB
     - bbox: type of BBox
     - landmark: reproject landmark of (5L, 2L)
     Output:
     - img marked with landmark and bbox
-    '''
-    cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0,0,255), 2)
+    """
+    cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2)
     for x, y in landmark:
-        cv2.circle(img, (int(x), int(y)), 2, (0,255,0), -1)
+        cv2.circle(img, (int(x), int(y)), 2, (0, 255, 0), -1)
     return img
