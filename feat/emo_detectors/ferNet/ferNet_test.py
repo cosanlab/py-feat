@@ -8,16 +8,31 @@ import os
 from torchvision import transforms
 import math
 import cv2
+import torch
 
 
 class ferNetModule(nn.Module):
 
     def __init__(self) -> None:
+        
         """
         Initialize model. Loads model weights
         """
+        super(ferNetModule, self).__init__()
+
         self.pretrained_path = os.path.join(
             get_resource_path(), 'best_ferModel.pth')
+
+        self.net0 = fer_net(in_chs=3, num_classes=7, img_size=200)
+        self.use_gpu = torch.cuda.is_available()
+        if self.use_gpu:
+            self.net0 = self.net0.cuda()
+        if self.use_gpu:
+            self.net0.load_state_dict(torch.load(self.pretrained_path))
+        else:
+            self.net0.load_state_dict(torch.load(
+                self.pretrained_path, map_location={'cuda:0': 'cpu'}))
+
 
     def align_face_49pts(self, img, img_land, box_enlarge=2.9, img_size=200):
         """
@@ -118,26 +133,17 @@ class ferNetModule(nn.Module):
 
         im_pil = Image.fromarray(img)
         #im_pil = ImageOps.grayscale(im_pil)
-        use_gpu = torch.cuda.is_available()
-        net0 = fer_net(in_chs=3, num_classes=7, img_size=200)
 
-        if use_gpu:
-            net0 = net0.cuda()
-        if use_gpu:
-            net0.load_state_dict(torch.load(self.pretrained_path))
-        else:
-            net0.load_state_dict(torch.load(
-                self.pretrained_path, map_location={'cuda:0': 'cpu'}))
-
-        net0.eval()
+                
+        self.net0.eval()
         #imgs_net = Image.fromarray(grayscale_cropped_resized_reshaped_face)
         #imgs_net = Image.fromarray(grayscale_cropped_resized_reshaped_face)
         imgs_net = transforms.ToTensor()(im_pil).unsqueeze_(0)
 
         #imgs_net = transforms.ToTensor()(im_pil).unsqueeze_(0)
-        if use_gpu:
+        if self.use_gpu:
             imgs_net = imgs_net.cuda()
-        pred_emo = net0(imgs_net)
+        pred_emo = self.net0(imgs_net)
         pred_emo_softmax = nn.functional.softmax(
             pred_emo).cpu().float().data.numpy()
 
