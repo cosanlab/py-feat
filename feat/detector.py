@@ -43,7 +43,7 @@ class Detector(object):
         self,
         face_model="retinaface",
         landmark_model="MobileNet",
-        au_occur_model="jaanet",
+        au_model="jaanet",
         emotion_model="fer",
         n_jobs=1,
     ):
@@ -151,15 +151,15 @@ class Detector(object):
         empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
         self._empty_landmark = empty_landmarks
 
-        print("Loading au occurence model: ", au_occur_model)
-        self.info["AU_Occur_Model"] = au_occur_model
-        if au_occur_model:
-            if au_occur_model.lower() == "jaanet":
+        print("Loading au occurence model: ", au_model)
+        self.info["au_model"] = au_model
+        if au_model:
+            if au_model.lower() == "jaanet":
                 self.au_model = JAANet()
-            elif au_occur_model.lower() == "drml":
+            elif au_model.lower() == "drml":
                 self.au_model = DRMLNet()
 
-        self.info["auoccur_model"] = au_occur_model
+        self.info["auoccur_model"] = au_model
         # self.info["mapper"] = jaanet_AU_presence
         auoccur_columns = jaanet_AU_presence
         self.info["au_presence_columns"] = auoccur_columns
@@ -182,7 +182,7 @@ class Detector(object):
         empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
         self._empty_emotion = empty_emotion
 
-        # self.info['auoccur_model'] = au_occur_model
+        # self.info['auoccur_model'] = au_model
         # self.info["mapper"] = jaanet_AU_presence
         auoccur_columns = jaanet_AU_presence
         self.info["au_presence_columns"] = auoccur_columns
@@ -288,7 +288,7 @@ class Detector(object):
 
         return landmark_list
 
-    def au_occur_detect(self, frame, landmarks):
+    def au_detect(self, frame, landmarks):
         # Assume that the Raw landmark is given in the format (n_land,2)
         landmarks = np.transpose(landmarks)
         if landmarks.shape[-1] == 68:
@@ -346,7 +346,7 @@ class Detector(object):
                     index=[counter + i],
                 )
                 # detect AUs
-                au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
+                au_occur = self.au_detect(frame=frame, landmarks=landmarks)
                 au_occur_df = pd.DataFrame(
                     au_occur, columns=self["au_presence_columns"], index=[counter + i]
                 )
