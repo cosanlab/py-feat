@@ -13,8 +13,10 @@ class DRMLNet(nn.Module):
         Initialize.
         """
         self.params = {
-                "config_au_num" : 12,
-                "config_write_path_prefix" : os.path.join(get_resource_path(), 'DRMLNetParams.pth')
+            "config_au_num": 12,
+            "config_write_path_prefix": os.path.join(
+                get_resource_path(), "DRMLNetParams.pth"
+            ),
         }
 
     def detect_au(self, imgs, landmarks=None):
@@ -38,14 +40,18 @@ class DRMLNet(nn.Module):
         if use_gpu:
             drml_net.load_state_dict(torch.load(pretrained_path))
         else:
-            drml_net.load_state_dict(torch.load(pretrained_path,map_location={'cuda:0': 'cpu'}))
+            drml_net.load_state_dict(
+                torch.load(pretrained_path, map_location={"cuda:0": "cpu"})
+            )
         drml_net.eval()
 
-        img_transforms = transforms.Compose([
+        img_transforms = transforms.Compose(
+            [
                 transforms.CenterCrop(170),
                 transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])        
-        ])
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
         imgs = Image.fromarray(imgs)
         input = img_transforms(imgs)
         if len(input.shape) < 4:
@@ -56,9 +62,9 @@ class DRMLNet(nn.Module):
 
         pred_au = drml_net(input)
         all_pred_au = pred_au.data.cpu().float()
-        all_pred_au = (all_pred_au[:,1,:]).exp()
-        
-        all_pred_au[all_pred_au<0.5]=0
-        all_pred_au[all_pred_au>=0.5]=1
+        all_pred_au = (all_pred_au[:, 1, :]).exp()
+
+        all_pred_au[all_pred_au < 0.5] = 0
+        all_pred_au[all_pred_au >= 0.5] = 1
         all_pred_au = all_pred_au.data.numpy()
         return all_pred_au
