@@ -10,18 +10,21 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 
+
 def conv_bn(inp, oup, kernel, stride, padding=1):
     return nn.Sequential(
         nn.Conv2d(inp, oup, kernel, stride, padding, bias=False),
         nn.BatchNorm2d(oup),
-        nn.ReLU(inplace=True))
+        nn.ReLU(inplace=True),
+    )
 
 
 def conv_1x1_bn(inp, oup):
     return nn.Sequential(
         nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
         nn.BatchNorm2d(oup),
-        nn.ReLU(inplace=True))
+        nn.ReLU(inplace=True),
+    )
 
 
 class InvertedResidual(nn.Module):
@@ -43,7 +46,8 @@ class InvertedResidual(nn.Module):
                 stride,
                 1,
                 groups=inp * expand_ratio,
-                bias=False),
+                bias=False,
+            ),
             nn.BatchNorm2d(inp * expand_ratio),
             nn.ReLU(inplace=True),
             nn.Conv2d(inp * expand_ratio, oup, 1, 1, 0, bias=False),
@@ -61,16 +65,15 @@ class PFLDInference(nn.Module):
     def __init__(self):
         super(PFLDInference, self).__init__()
 
-        self.conv1 = nn.Conv2d(
-            3, 64, kernel_size=3, stride=2, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
-        '''
+        """
         self.conv2 = nn.Conv2d(
             64, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
-        '''
+        """
         # use Depth-wise pooling
         self.dw_pool = nn.Conv2d(64, 64, 3, stride=1, padding=1, groups=64, bias=False)
         self.dw_bn = nn.BatchNorm2d(64)
@@ -102,7 +105,7 @@ class PFLDInference(nn.Module):
         self.avg_pool1 = nn.AvgPool2d(14)
         self.avg_pool2 = nn.AvgPool2d(7)
         self.fc = nn.Linear(176, 136)
-        '''
+        """
         self.fc_aux = nn.Linear(176, 3)
 
         self.conv1_aux = conv_bn(64, 128, 3, 2)
@@ -112,10 +115,11 @@ class PFLDInference(nn.Module):
         self.max_pool1_aux = nn.MaxPool2d(3)
         self.fc1_aux = nn.Linear(128, 32)
         self.fc2_aux = nn.Linear(32 + 176, 3)
-        '''
+        """
+
     def forward(self, x):  # x: 3, 112, 112
         x = self.relu(self.bn1(self.conv1(x)))  # [64, 56, 56]
-        #x = self.relu(self.bn2(self.conv2(x)))  # [64, 56, 56]
+        # x = self.relu(self.bn2(self.conv2(x)))  # [64, 56, 56]
         x = self.relu(self.conv1_extra(self.dw_bn(self.dw_pool(x))))
         x = self.conv3_1(x)
         x = self.block3_2(x)
@@ -144,7 +148,7 @@ class PFLDInference(nn.Module):
         multi_scale = torch.cat([x1, x2, x3], 1)
         landmarks = self.fc(multi_scale)
 
-        '''
+        """
         aux = self.conv1_aux(out1)
         aux = self.conv2_aux(aux)
         aux = self.conv3_aux(aux)
@@ -156,13 +160,15 @@ class PFLDInference(nn.Module):
         pose = self.fc2_aux(aux)
         
         return pose, landmarks
-        '''
+        """
         return landmarks
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     input = torch.randn(1, 3, 112, 112)
     plfd_backbone = PFLDInference()
     angle, landmarks = plfd_backbone(input)
     print(plfd_backbone)
-    print("angle.shape:{0:}, landmarks.shape: {1:}".format(
-        angle.shape, landmarks.shape))
+    print(
+        "angle.shape:{0:}, landmarks.shape: {1:}".format(angle.shape, landmarks.shape)
+    )
