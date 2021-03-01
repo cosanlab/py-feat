@@ -481,3 +481,9 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
+# %%
+# Test case:
+if __name__ == '__main__':
+    A01 = Detector(face_model='RetinaFace',emotion_model='fer', landmark_model="MobileFaceNet", au_occur_model='jaanet')
+    test_img = cv2.imread(r"C:\Users\Yaqian\src\py-feat\feat\tests\data\input.jpg")
+    ress = A01.process_frame(frame=test_img)
