@@ -94,7 +94,7 @@ class Detector(object):
             elif face_model.lower() == "mtcnn":
                 self.face_detector = MTCNN()
 
-        self.info["Face_Model"] = face_model
+        self.info["face_model"] = face_model
         # self.info["mapper"] = FEAT_FACEBOX_COLUMNS
         facebox_columns = FEAT_FACEBOX_COLUMNS
         self.info["face_detection_columns"] = facebox_columns
@@ -117,7 +117,7 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                print("Use MobileNet as backbone")
+                # print("Use MobileNet as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
             elif landmark_model.lower() == "pfld":
@@ -159,7 +159,6 @@ class Detector(object):
             elif au_model.lower() == "drml":
                 self.au_model = DRMLNet()
 
-        self.info["auoccur_model"] = au_model
         # self.info["mapper"] = jaanet_AU_presence
         auoccur_columns = jaanet_AU_presence
         self.info["au_presence_columns"] = auoccur_columns
@@ -169,12 +168,12 @@ class Detector(object):
         self._empty_auoccurence = empty_au_occurs
 
         print("Loading emotion model: ", emotion_model)
-        self.info["Emo_Model"] = emotion_model
+        self.info["emotion_model"] = emotion_model
         if emotion_model:
             if emotion_model.lower() == "fer":
-                self.emo_model = ferNetModule()
+                self.emotion_model = ferNetModule()
             elif emotion_model.lower() == "resmasknet":
-                self.emo_model = ResMaskNet()
+                self.emotion_model = ResMaskNet()
 
         self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
         predictions = np.empty((1, len(FEAT_EMOTION_COLUMNS)))
@@ -203,7 +202,7 @@ class Detector(object):
     def __getitem__(self, i):
         return self.info[i]
 
-    def face_detect(self, frame):
+    def detect_faces(self, frame):
         # suppose frame=cv2.imread(imgname)
         height, width, _ = frame.shape
         faces = self.face_detector(frame)
@@ -212,7 +211,7 @@ class Detector(object):
             print("Warning: NO FACE is detected")
         return faces
 
-    def landmark_detect(self, frame, detected_faces):
+    def detect_landmarks(self, frame, detected_faces):
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
@@ -288,16 +287,33 @@ class Detector(object):
 
         return landmark_list
 
-    def au_detect(self, frame, landmarks):
+    def detect_aus(self, frame, landmarks):
         # Assume that the Raw landmark is given in the format (n_land,2)
         landmarks = np.transpose(landmarks)
         if landmarks.shape[-1] == 68:
             landmarks = convert68to49(landmarks)
         return self.au_model.detect_au(frame, landmarks)
 
-    def emo_detect(self, frame, facebox):
+    def detect_emotions(self, frame, facebox, landmarks):
+        """Detect emotions.
 
-        return self.emo_model.detect_emo(frame, facebox)
+        Args:
+            frame ([type]): [description]
+            facebox ([type]): [description]
+            landmarks ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
+        if self.info["emotion_model"].lower() == 'fer':
+            landmarks = np.transpose(landmarks)
+            if landmarks.shape[-1] == 68:
+                landmarks = convert68to49(landmarks)
+                landmarks = landmarks.T
+            return self.emotion_model.detect_emo(frame,landmarks)
+
+        elif self.info["emotion_model"].lower() == 'resmasknet':
+            return self.emotion_model.detect_emo(frame, facebox)        
 
     def process_frame(self, frame, counter=0):
         """Helper function to run face detection, landmark detection, and emotion detection on a frame.
@@ -315,12 +331,9 @@ class Detector(object):
             >> detector = Detector()
             >> detector.process_frame(np.array(frame))
         """
-        # How you would use MTCNN in this case:
-        # my_model.detect(img = im01,landmarks=False)[0] will return a bounding box array of shape (1,4)
-
         try:
             # detect faces
-            detected_faces = self.face_detect(frame=frame)
+            detected_faces = self.detect_faces(frame=frame)
             out = None
             for i, faces in enumerate(detected_faces):
                 facebox_df = pd.DataFrame(
@@ -337,7 +350,7 @@ class Detector(object):
                     index=[counter + i],
                 )
                 # detect landmarks
-                landmarks = self.landmark_detect(
+                landmarks = self.detect_landmarks(
                     frame=frame, detected_faces=[faces[0:4]]
                 )
                 landmarks_df = pd.DataFrame(
@@ -346,12 +359,13 @@ class Detector(object):
                     index=[counter + i],
                 )
                 # detect AUs
-                au_occur = self.au_detect(frame=frame, landmarks=landmarks)
+                au_occur = self.detect_aus(frame=frame, landmarks=landmarks)
                 au_occur_df = pd.DataFrame(
                     au_occur, columns=self["au_presence_columns"], index=[counter + i]
                 )
                 # detect emotions
-                emo_pred = self.emo_detect(frame=frame, facebox=[faces])
+                emo_pred = self.detect_emotions(frame=frame, facebox=[faces], landmarks=landmarks[0])
+
                 emo_pred_df = pd.DataFrame(
                     emo_pred, columns=FEAT_EMOTION_COLUMNS, index=[counter + i]
                 )
@@ -364,7 +378,6 @@ class Detector(object):
                     out = pd.concat([out, tmp_df], axis=0)
             out[FEAT_TIME_COLUMNS] = counter
             return out
-
         except:
             print("exception occurred")
             emotion_df = self._empty_emotion.reindex(index=[counter])
@@ -481,3 +494,10 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
+# %%
+# Test case:
+if __name__ == '__main__':
+    A01 = Detector(face_model='RetinaFace',emotion_model='resmasknet', landmark_model="MobileFaceNet", au_occur_model='drml')
+    test_img = cv2.imread(r"C:\Users\Yaqian\src\py-feat\feat\tests\data\angry_black.jpg")
+    ress = A01.process_frame(frame=test_img)
+
