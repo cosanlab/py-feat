@@ -43,7 +43,7 @@ class Detector(object):
         self,
         face_model="retinaface",
         landmark_model="MobileNet",
-        au_occur_model="jaanet",
+        au_model="jaanet",
         emotion_model="fer",
         n_jobs=1,
     ):
@@ -94,7 +94,7 @@ class Detector(object):
             elif face_model.lower() == "mtcnn":
                 self.face_detector = MTCNN()
 
-        self.info["Face_Model"] = face_model
+        self.info["face_model"] = face_model
         # self.info["mapper"] = FEAT_FACEBOX_COLUMNS
         facebox_columns = FEAT_FACEBOX_COLUMNS
         self.info["face_detection_columns"] = facebox_columns
@@ -117,7 +117,7 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                print("Use MobileNet as backbone")
+                # print("Use MobileNet as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
             elif landmark_model.lower() == "pfld":
@@ -127,7 +127,7 @@ class Detector(object):
                     os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
                     map_location=self.map_location,
                 )
-                print("Use PFLD as backbone")
+                # print("Use PFLD as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 # or download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
 
@@ -139,7 +139,7 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                print("Use MobileFaceNet as backbone")
+                # print("Use MobileFaceNet as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
         self.info["landmark_model"] = landmark_model
@@ -151,15 +151,14 @@ class Detector(object):
         empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
         self._empty_landmark = empty_landmarks
 
-        print("Loading au occurence model: ", au_occur_model)
-        self.info["AU_Occur_Model"] = au_occur_model
-        if au_occur_model:
-            if au_occur_model.lower() == "jaanet":
+        print("Loading au occurence model: ", au_model)
+        self.info["au_model"] = au_model
+        if au_model:
+            if au_model.lower() == "jaanet":
                 self.au_model = JAANet()
-            elif au_occur_model.lower() == "drml":
+            elif au_model.lower() == "drml":
                 self.au_model = DRMLNet()
 
-        self.info["auoccur_model"] = au_occur_model
         # self.info["mapper"] = jaanet_AU_presence
         auoccur_columns = jaanet_AU_presence
         self.info["au_presence_columns"] = auoccur_columns
@@ -169,12 +168,12 @@ class Detector(object):
         self._empty_auoccurence = empty_au_occurs
 
         print("Loading emotion model: ", emotion_model)
-        self.info["Emo_Model"] = emotion_model
+        self.info["emotion_model"] = emotion_model
         if emotion_model:
             if emotion_model.lower() == "fer":
-                self.emo_model = ferNetModule()
+                self.emotion_model = ferNetModule()
             elif emotion_model.lower() == "resmasknet":
-                self.emo_model = ResMaskNet()
+                self.emotion_model = ResMaskNet()
 
         self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
         predictions = np.empty((1, len(FEAT_EMOTION_COLUMNS)))
@@ -182,7 +181,7 @@ class Detector(object):
         empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
         self._empty_emotion = empty_emotion
 
-        # self.info['auoccur_model'] = au_occur_model
+        # self.info['auoccur_model'] = au_model
         # self.info["mapper"] = jaanet_AU_presence
         auoccur_columns = jaanet_AU_presence
         self.info["au_presence_columns"] = auoccur_columns
@@ -203,7 +202,7 @@ class Detector(object):
     def __getitem__(self, i):
         return self.info[i]
 
-    def face_detect(self, frame):
+    def detect_faces(self, frame):
         # suppose frame=cv2.imread(imgname)
         height, width, _ = frame.shape
         faces = self.face_detector(frame)
@@ -212,7 +211,7 @@ class Detector(object):
             print("Warning: NO FACE is detected")
         return faces
 
-    def landmark_detect(self, frame, detected_faces):
+    def detect_landmarks(self, frame, detected_faces):
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
@@ -288,24 +287,33 @@ class Detector(object):
 
         return landmark_list
 
-    def au_occur_detect(self, frame, landmarks):
+    def detect_aus(self, frame, landmarks):
         # Assume that the Raw landmark is given in the format (n_land,2)
         landmarks = np.transpose(landmarks)
         if landmarks.shape[-1] == 68:
             landmarks = convert68to49(landmarks)
         return self.au_model.detect_au(frame, landmarks)
 
-    def emo_detect(self, frame, facebox, landmarks):
-        
-        if self.info["Emo_Model"].lower() == 'fer':
+    def detect_emotions(self, frame, facebox, landmarks):
+        """Detect emotions.
+
+        Args:
+            frame ([type]): [description]
+            facebox ([type]): [description]
+            landmarks ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """        
+        if self.info["emotion_model"].lower() == 'fer':
             landmarks = np.transpose(landmarks)
             if landmarks.shape[-1] == 68:
                 landmarks = convert68to49(landmarks)
                 landmarks = landmarks.T
-            return self.emo_model.detect_emo(frame,landmarks)
+            return self.emotion_model.detect_emo(frame,landmarks)
 
-        elif self.info["Emo_Model"].lower() == 'resmasknet':
-            return self.emo_model.detect_emo(frame, facebox)        
+        elif self.info["emotion_model"].lower() == 'resmasknet':
+            return self.emotion_model.detect_emo(frame, facebox)        
 
     def process_frame(self, frame, counter=0):
         """Helper function to run face detection, landmark detection, and emotion detection on a frame.
@@ -323,67 +331,63 @@ class Detector(object):
             >> detector = Detector()
             >> detector.process_frame(np.array(frame))
         """
-        # How you would use MTCNN in this case:
-        # my_model.detect(img = im01,landmarks=False)[0] will return a bounding box array of shape (1,4)
-
-        #try:
+        try:
             # detect faces
-        detected_faces = self.face_detect(frame=frame)
-        out = None
-        for i, faces in enumerate(detected_faces):
-            facebox_df = pd.DataFrame(
-                [
+            detected_faces = self.detect_faces(frame=frame)
+            out = None
+            for i, faces in enumerate(detected_faces):
+                facebox_df = pd.DataFrame(
                     [
-                        faces[0],
-                        faces[1],
-                        faces[2] - faces[0],
-                        faces[3] - faces[1],
-                        faces[4],
-                    ]
-                ],
-                columns=self["face_detection_columns"],
-                index=[counter + i],
-            )
-            # detect landmarks
-            landmarks = self.landmark_detect(
-                frame=frame, detected_faces=[faces[0:4]]
-            )
-            landmarks_df = pd.DataFrame(
-                [landmarks[0].flatten(order="F")],
-                columns=self["face_landmark_columns"],
-                index=[counter + i],
-            )
-            # detect AUs
-            au_occur = self.au_occur_detect(frame=frame, landmarks=landmarks)
-            au_occur_df = pd.DataFrame(
-                au_occur, columns=self["au_presence_columns"], index=[counter + i]
-            )
-            # detect emotions
-            emo_pred = self.emo_detect(frame=frame, facebox=[faces], landmarks=landmarks[0])
+                        [
+                            faces[0],
+                            faces[1],
+                            faces[2] - faces[0],
+                            faces[3] - faces[1],
+                            faces[4],
+                        ]
+                    ],
+                    columns=self["face_detection_columns"],
+                    index=[counter + i],
+                )
+                # detect landmarks
+                landmarks = self.detect_landmarks(
+                    frame=frame, detected_faces=[faces[0:4]]
+                )
+                landmarks_df = pd.DataFrame(
+                    [landmarks[0].flatten(order="F")],
+                    columns=self["face_landmark_columns"],
+                    index=[counter + i],
+                )
+                # detect AUs
+                au_occur = self.detect_aus(frame=frame, landmarks=landmarks)
+                au_occur_df = pd.DataFrame(
+                    au_occur, columns=self["au_presence_columns"], index=[counter + i]
+                )
+                # detect emotions
+                emo_pred = self.detect_emotions(frame=frame, facebox=[faces], landmarks=landmarks[0])
 
-            emo_pred_df = pd.DataFrame(
-                emo_pred, columns=FEAT_EMOTION_COLUMNS, index=[counter + i]
-            )
-            tmp_df = pd.concat(
-                [facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1
-            )
-            if out is None:
-                out = tmp_df
-            else:
-                out = pd.concat([out, tmp_df], axis=0)
-        out[FEAT_TIME_COLUMNS] = counter
-        return out
+                emo_pred_df = pd.DataFrame(
+                    emo_pred, columns=FEAT_EMOTION_COLUMNS, index=[counter + i]
+                )
+                tmp_df = pd.concat(
+                    [facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1
+                )
+                if out is None:
+                    out = tmp_df
+                else:
+                    out = pd.concat([out, tmp_df], axis=0)
+            out[FEAT_TIME_COLUMNS] = counter
+            return out
+        except:
+            print("exception occurred")
+            emotion_df = self._empty_emotion.reindex(index=[counter])
+            facebox_df = self._empty_facebox.reindex(index=[counter])
+            landmarks_df = self._empty_landmark.reindex(index=[counter])
+            au_occur_df = self._empty_auoccurence.reindex(index=[counter])
 
-        # except:
-        #     print("exception occurred")
-        #     emotion_df = self._empty_emotion.reindex(index=[counter])
-        #     facebox_df = self._empty_facebox.reindex(index=[counter])
-        #     landmarks_df = self._empty_landmark.reindex(index=[counter])
-        #     au_occur_df = self._empty_auoccurence.reindex(index=[counter])
-
-        #     out = pd.concat([facebox_df, landmarks_df, au_occur_df, emotion_df], axis=1)
-        #     out[FEAT_TIME_COLUMNS] = counter
-        #     return out
+            out = pd.concat([facebox_df, landmarks_df, au_occur_df, emotion_df], axis=1)
+            out[FEAT_TIME_COLUMNS] = counter
+            return out
 
     def detect_video(self, inputFname, outputFname=None, skip_frames=1, verbose=False):
         """Detects FEX from a video file.
