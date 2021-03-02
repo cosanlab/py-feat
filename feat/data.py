@@ -16,6 +16,7 @@ from nltools.stats import downsample, upsample, transform_pairwise, regress
 from nltools.utils import set_decomposition_algorithm
 from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
 from sklearn.utils import check_random_state
+from sklearn.linear_model import LinearRegression
 
 from feat.utils import (
     read_feat,
@@ -603,6 +604,7 @@ class Fex(DataFrame):
         Args:
             X (list or str): Independent variable to predict.
             y (list or str): Dependent variable to be predicted.
+            fit_intercept (bool): Whether to add intercept before fitting. Defaults to True.
 
         Returns:
             betas, t-stats, p-values, df, residuals
@@ -639,16 +641,17 @@ class Fex(DataFrame):
         """
         return ttest_1samp(self, popmean)
 
-    def predict(self, X, y, model, *args, **kwargs):
-        """Perform prediction with specified model.
+    def predict(self, X, y, model=LinearRegression, *args, **kwargs):
+        """[summary]
 
         Args:
-            X ([type]): [description]
-            y ([type]): [description]
-            model ([type]): [description]
+            X (list or DataFrame): List of column names or dataframe to be used as features for prediction
+            y (string or array): y values to be predicted
+            model (class, optional): Any sklearn model. Defaults to LinearRegression.
+            *args, **kwargs: Model arguments
 
         Returns:
-            [type]: [description]
+            model: Fit model instance.
         """
         if type(X) == list:
             mX = self[X]
