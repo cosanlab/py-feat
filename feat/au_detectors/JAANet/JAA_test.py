@@ -23,6 +23,8 @@ class JAANet(nn.Module):
         """
         # self.imgs = img_data
         # self.land_data = land_data
+        super(JAANet,self).__init__()
+        
         self.params = {
             "config_unit_dim": 8,
             "config_crop_size": 176,
@@ -32,6 +34,127 @@ class JAANet(nn.Module):
             "config_fill_coeff": 0.56,
             "config_write_path_prefix": get_resource_path(),
         }
+        
+        config_unit_dim = self.params["config_unit_dim"]
+        config_crop_size = self.params["config_crop_size"]
+        config_map_size = self.params["config_map_size"]
+        config_au_num = self.params["config_au_num"]
+        config_land_num = self.params["config_land_num"]
+        config_fill_coeff = self.params["config_fill_coeff"]
+        config_write_path_prefix = self.params["config_write_path_prefix"]
+
+        self.region_learning = network.network_dict["HMRegionLearning"](
+            input_dim=3, unit_dim=config_unit_dim
+        )
+        self.align_net = network.network_dict["AlignNet"](
+            crop_size=config_crop_size,
+            map_size=config_map_size,
+            au_num=config_au_num,
+            land_num=config_land_num,
+            input_dim=config_unit_dim * 8,
+            fill_coeff=config_fill_coeff,
+        )
+        self.local_attention_refine = network.network_dict["LocalAttentionRefine"](
+            au_num=config_au_num, unit_dim=config_unit_dim
+        )
+        self.local_au_net = network.network_dict["LocalAUNetv2"](
+            au_num=config_au_num,
+            input_dim=config_unit_dim * 8,
+            unit_dim=config_unit_dim,
+        )
+        self.global_au_feat = network.network_dict["HLFeatExtractor"](
+            input_dim=config_unit_dim * 8, unit_dim=config_unit_dim
+        )
+        self.au_net = network.network_dict["AUNet"](
+            au_num=config_au_num, input_dim=12000, unit_dim=config_unit_dim
+        )
+        
+        self.use_gpu = torch.cuda.is_available()
+
+
+        if self.use_gpu:
+            self.region_learning = self.region_learning.cuda()
+            self.align_net = self.align_net.cuda()
+            self.local_attention_refine = self.local_attention_refine.cuda()
+            self.local_au_net = self.local_au_net.cuda()
+            self.global_au_feat = self.global_au_feat.cuda()
+            self.au_net = self.au_net.cuda()
+            # Load parameters
+            # load_map = 'cpu' if True else 'false'
+            # au_occur_model_path = os.path.join(
+            #     config_write_path_prefix , '/region_learning' , '.pth')
+            # print("should load data at ",os.path.join(config_write_path_prefix , 'region_learning.pth'))
+            # print("Directory Files:")
+            # print(os.listdir(config_write_path_prefix))
+            self.region_learning.load_state_dict(
+                torch.load(
+                    os.path.join(config_write_path_prefix, "region_learning.pth")
+                )
+            )
+            self.align_net.load_state_dict(
+                torch.load(os.path.join(config_write_path_prefix, "align_net.pth"))
+            )
+            self.local_attention_refine.load_state_dict(
+                torch.load(
+                    os.path.join(config_write_path_prefix, "local_attention_refine.pth")
+                )
+            )
+            self.local_au_net.load_state_dict(
+                torch.load(os.path.join(config_write_path_prefix, "local_au_net.pth"))
+            )
+            self.global_au_feat.load_state_dict(
+                torch.load(os.path.join(config_write_path_prefix, "global_au_feat.pth"))
+            )
+            self.au_net.load_state_dict(
+                torch.load(os.path.join(config_write_path_prefix, "au_net.pth"))
+            )
+        else:
+            self.region_learning.load_state_dict(
+                torch.load(
+                    os.path.join(config_write_path_prefix, "region_learning.pth"),
+                    map_location={"cuda:0": "cpu"},
+                )
+            )
+            self.align_net.load_state_dict(
+                torch.load(
+                    os.path.join(config_write_path_prefix, "align_net.pth"),
+                    map_location={"cuda:0": "cpu"},
+                )
+            )
+            self.local_attention_refine.load_state_dict(
+                torch.load(
+                    os.path.join(
+                        config_write_path_prefix, "local_attention_refine.pth"
+                    ),
+                    map_location={"cuda:0": "cpu"},
+                )
+            )
+            self.local_au_net.load_state_dict(
+                torch.load(
+                    os.path.join(config_write_path_prefix, "local_au_net.pth"),
+                    map_location={"cuda:0": "cpu"},
+                )
+            )
+            self.global_au_feat.load_state_dict(
+                torch.load(
+                    os.path.join(config_write_path_prefix, "global_au_feat.pth"),
+                    map_location={"cuda:0": "cpu"},
+                )
+            )
+            self.au_net.load_state_dict(
+                torch.load(
+                    os.path.join(config_write_path_prefix, "au_net.pth"),
+                    map_location={"cuda:0": "cpu"},
+                )
+            )
+
+        self.region_learning.eval()
+        self.align_net.eval()
+        self.local_attention_refine.eval()
+        self.local_au_net.eval()
+        self.global_au_feat.eval()
+        self.au_net.eval()
+
 
     def align_face_49pts(self, img, img_land, box_enlarge=2.9, img_size=200):
         """
@@ -138,130 +261,12 @@ class JAANet(nn.Module):
 
     def detect_au(self, imgs, land_data):
 
-        use_gpu = torch.cuda.is_available()
         # if land_data.shape[]
         land_data = land_data.flatten()
         img, land = self.align_face_49pts(imgs, land_data)  # Transforms
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         im_pil = Image.fromarray(img)  # Convert image to PIL
-
-        config_unit_dim = self.params["config_unit_dim"]
-        config_crop_size = self.params["config_crop_size"]
-        config_map_size = self.params["config_map_size"]
-        config_au_num = self.params["config_au_num"]
-        config_land_num = self.params["config_land_num"]
-        config_fill_coeff = self.params["config_fill_coeff"]
-        config_write_path_prefix = self.params["config_write_path_prefix"]
-
-        region_learning = network.network_dict["HMRegionLearning"](
-            input_dim=3, unit_dim=config_unit_dim
-        )
-        align_net = network.network_dict["AlignNet"](
-            crop_size=config_crop_size,
-            map_size=config_map_size,
-            au_num=config_au_num,
-            land_num=config_land_num,
-            input_dim=config_unit_dim * 8,
-            fill_coeff=config_fill_coeff,
-        )
-        local_attention_refine = network.network_dict["LocalAttentionRefine"](
-            au_num=config_au_num, unit_dim=config_unit_dim
-        )
-        local_au_net = network.network_dict["LocalAUNetv2"](
-            au_num=config_au_num,
-            input_dim=config_unit_dim * 8,
-            unit_dim=config_unit_dim,
-        )
-        global_au_feat = network.network_dict["HLFeatExtractor"](
-            input_dim=config_unit_dim * 8, unit_dim=config_unit_dim
-        )
-        au_net = network.network_dict["AUNet"](
-            au_num=config_au_num, input_dim=12000, unit_dim=config_unit_dim
-        )
-
-        if use_gpu:
-            region_learning = region_learning.cuda()
-            align_net = align_net.cuda()
-            local_attention_refine = local_attention_refine.cuda()
-            local_au_net = local_au_net.cuda()
-            global_au_feat = global_au_feat.cuda()
-            au_net = au_net.cuda()
-            # Load parameters
-            # load_map = 'cpu' if True else 'false'
-            # au_occur_model_path = os.path.join(
-            #     config_write_path_prefix , '/region_learning' , '.pth')
-            # print("should load data at ",os.path.join(config_write_path_prefix , 'region_learning.pth'))
-            # print("Directory Files:")
-            # print(os.listdir(config_write_path_prefix))
-            region_learning.load_state_dict(
-                torch.load(
-                    os.path.join(config_write_path_prefix, "region_learning.pth")
-                )
-            )
-            align_net.load_state_dict(
-                torch.load(os.path.join(config_write_path_prefix, "align_net.pth"))
-            )
-            local_attention_refine.load_state_dict(
-                torch.load(
-                    os.path.join(config_write_path_prefix, "local_attention_refine.pth")
-                )
-            )
-            local_au_net.load_state_dict(
-                torch.load(os.path.join(config_write_path_prefix, "local_au_net.pth"))
-            )
-            global_au_feat.load_state_dict(
-                torch.load(os.path.join(config_write_path_prefix, "global_au_feat.pth"))
-            )
-            au_net.load_state_dict(
-                torch.load(os.path.join(config_write_path_prefix, "au_net.pth"))
-            )
-        else:
-            region_learning.load_state_dict(
-                torch.load(
-                    os.path.join(config_write_path_prefix, "region_learning.pth"),
-                    map_location={"cuda:0": "cpu"},
-                )
-            )
-            align_net.load_state_dict(
-                torch.load(
-                    os.path.join(config_write_path_prefix, "align_net.pth"),
-                    map_location={"cuda:0": "cpu"},
-                )
-            )
-            local_attention_refine.load_state_dict(
-                torch.load(
-                    os.path.join(
-                        config_write_path_prefix, "local_attention_refine.pth"
-                    ),
-                    map_location={"cuda:0": "cpu"},
-                )
-            )
-            local_au_net.load_state_dict(
-                torch.load(
-                    os.path.join(config_write_path_prefix, "local_au_net.pth"),
-                    map_location={"cuda:0": "cpu"},
-                )
-            )
-            global_au_feat.load_state_dict(
-                torch.load(
-                    os.path.join(config_write_path_prefix, "global_au_feat.pth"),
-                    map_location={"cuda:0": "cpu"},
-                )
-            )
-            au_net.load_state_dict(
-                torch.load(
-                    os.path.join(config_write_path_prefix, "au_net.pth"),
-                    map_location={"cuda:0": "cpu"},
-                )
-            )
-
-        region_learning.eval()
-        align_net.eval()
-        local_attention_refine.eval()
-        local_au_net.eval()
-        global_au_feat.eval()
-        au_net.eval()
 
         img_transforms = transforms.Compose(
             [
@@ -276,21 +281,21 @@ class JAANet(nn.Module):
             input.unsqueeze_(0)
         land = torch.from_numpy(land)
 
-        if use_gpu:
+        if self.use_gpu:
             input, land = input.cuda(), land.cuda()
 
-        region_feat = region_learning(input)
-        align_feat, align_output, aus_map = align_net(region_feat)
-        if use_gpu:
+        region_feat = self.region_learning(input)
+        align_feat, align_output, aus_map = self.align_net(region_feat)
+        if self.use_gpu:
             aus_map = aus_map.cuda()
-        output_aus_map = local_attention_refine(aus_map.detach())
-        local_au_out_feat, local_aus_output = local_au_net(region_feat, output_aus_map)
+        output_aus_map = self.local_attention_refine(aus_map.detach())
+        local_au_out_feat, local_aus_output = self.local_au_net(region_feat, output_aus_map)
         local_aus_output = (local_aus_output[:, 1, :]).exp()
-        global_au_out_feat = global_au_feat(region_feat)
+        global_au_out_feat = self.global_au_feat(region_feat)
         concat_au_feat = torch.cat(
             (align_feat, global_au_out_feat, local_au_out_feat.detach()), 1
         )
-        aus_output = au_net(concat_au_feat)
+        aus_output = self.au_net(concat_au_feat)
         aus_output = (aus_output[:, 1, :]).exp()
         all_output = aus_output.data.cpu().float()
         AUoccur_pred_prob = all_output.data.numpy()

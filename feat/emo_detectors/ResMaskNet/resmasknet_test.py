@@ -717,19 +717,43 @@ class ResMaskNet:
         )
         self.image_size = (configs["image_size"], configs["image_size"])
         self.use_gpu = torch.cuda.is_available()
+        # if self.use_gpu:
+        #     self.state = torch.load(
+        #         os.path.join(
+        #             get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+        #         )
+        #     )
+        # else:
+        #     self.state = torch.load(
+        #         os.path.join(
+        #             get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+        #         ),
+        #         map_location={"cuda:0": "cpu"},
+        #     )
+
+        self.model = resmasking_dropout1(in_channels=3, num_classes=7)
+        
         if self.use_gpu:
-            self.state = torch.load(
-                os.path.join(
-                    get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+            self.model.load_state_dict(
+                torch.load(
+                    os.path.join(
+                        get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+                        )
+                    )['net']
                 )
-            )
+            self.model.cuda()
+
         else:
-            self.state = torch.load(
-                os.path.join(
-                    get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
-                ),
+            self.model.load_state_dict(
+                torch.load(
+                    os.path.join(
+                        get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+                    ),
                 map_location={"cuda:0": "cpu"},
+                )['net']
             )
+        self.model.eval()
+
 
     def detect_emo(self, frame, detected_face, *args, **kwargs):
         """Detect emotions.
@@ -740,12 +764,7 @@ class ResMaskNet:
         Returns:
             List of predicted emotions in probability: [angry, disgust, fear, happy, sad, surprise, neutral]
         """
-        model = resmasking_dropout1(in_channels=3, num_classes=7)
-        if self.use_gpu:
-            model.cuda()
 
-        model.load_state_dict(self.state["net"])
-        model.eval()
 
         with torch.no_grad():
             frame = np.fliplr(frame).astype(np.uint8)
@@ -775,7 +794,7 @@ class ResMaskNet:
             else:
                 face = self.transform(face)
             face = torch.unsqueeze(face, dim=0)
-            output = torch.squeeze(model(face), 0)
+            output = torch.squeeze(self.model(face), 0)
             proba = torch.softmax(output, 0)
             proba_np = proba.cpu().numpy()
             return [proba_np]
