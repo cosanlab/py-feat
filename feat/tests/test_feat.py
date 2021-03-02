@@ -403,3 +403,12 @@ def test_stats():
     b, t, p, df, res = aus.regress(X, y, mode="ols", fit_intercept=True)
     assert b.shape == (2, 17)
     assert res.mean().mean() < 1
+
+    clf = openface.predict(X = ["AU02_c"], y = "AU04_c")
+    assert clf.coef_ < 0
+
+    clf = openface.predict(X = openface[["AU02_c"]], y = openface["AU04_c"])
+    assert clf.coef_ < 0
+
+    t, p = openface[["AU02_c"]].ttest()
+    assert t > 0
