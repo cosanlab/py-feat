@@ -127,7 +127,7 @@ class Detector(object):
                     os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
                     map_location=self.map_location,
                 )
-                print("Use PFLD as backbone")
+                # print("Use PFLD as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 # or download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
 
@@ -139,7 +139,7 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                print("Use MobileFaceNet as backbone")
+                # print("Use MobileFaceNet as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
         self.info["landmark_model"] = landmark_model
