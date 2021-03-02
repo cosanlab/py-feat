@@ -34,7 +34,7 @@ def test_faceboxes():
         emotion_model=None,
         n_jobs=1,
     )
-    out = detector01.face_detect(img01)
+    out = detector01.detect_faces(img01)
     bbox_left = out[0][0]
     assert bbox_left != None
     bbox_right = out[0][1]
@@ -63,7 +63,7 @@ def test_retinaface():
         emotion_model=None,
         n_jobs=1,
     )
-    out = detector02.face_detect(img01)
+    out = detector02.detect_faces(img01)
     bbox_left = out[0][0]
     assert bbox_left != None
     bbox_right = out[0][1]
@@ -92,7 +92,7 @@ def test_mtcnn():
         emotion_model=None,
         n_jobs=1,
     )
-    out = detector03.face_detect(img01)
+    out = detector03.detect_faces(img01)
     bbox_left = out[0][0]
     assert bbox_left != None
     bbox_right = out[0][1]
@@ -118,8 +118,8 @@ def test_mobilefacenet():
     detector01 = Detector(
         face_model="RetinaFace", emotion_model=None, landmark_model="MobileFaceNet"
     )
-    bboxes = detector01.face_detect(img01)
-    landmarks = detector01.landmark_detect(img01, bboxes)
+    bboxes = detector01.detect_faces(img01)
+    landmarks = detector01.detect_landmarks(img01, bboxes)
     assert landmarks[0].shape == (68, 2)
     assert (
         np.any(landmarks[0][:, 0] > 0)
@@ -133,8 +133,8 @@ def test_mobilenet():
     detector02 = Detector(
         face_model="RetinaFace", emotion_model=None, landmark_model="MobileNet"
     )
-    bboxes = detector02.face_detect(img01)
-    landmarks = detector02.landmark_detect(img01, bboxes)
+    bboxes = detector02.detect_faces(img01)
+    landmarks = detector02.detect_landmarks(img01, bboxes)
     assert landmarks[0].shape == (68, 2)
     assert (
         np.any(landmarks[0][:, 0] > 0)
@@ -148,8 +148,8 @@ def test_pfld():
     detector03 = Detector(
         face_model="RetinaFace", emotion_model=None, landmark_model="PFLD"
     )
-    bboxes = detector03.face_detect(img01)
-    landmarks = detector03.landmark_detect(img01, bboxes)
+    bboxes = detector03.detect_faces(img01)
+    landmarks = detector03.detect_landmarks(img01, bboxes)
     assert landmarks[0].shape == (68, 2)
     assert (
         np.any(landmarks[0][:, 0] > 0)
@@ -167,9 +167,9 @@ def test_jaanet():
         landmark_model="MobileFaceNet",
         au_model="jaanet",
     )
-    bboxes = detector1.face_detect(img01)
-    lands = detector1.landmark_detect(img01, bboxes)
-    aus = detector1.au_detect(img01, lands)
+    bboxes = detector1.detect_faces(img01)
+    lands = detector1.detect_landmarks(img01, bboxes)
+    aus = detector1.detect_aus(img01, lands)
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 12
 
@@ -184,9 +184,9 @@ def test_drml():
         landmark_model="MobileFaceNet",
         au_model="drml",
     )
-    bboxes = detector1.face_detect(img01)
-    lands = detector1.landmark_detect(img01, bboxes)
-    aus = detector1.au_detect(img01, lands)
+    bboxes = detector1.detect_faces(img01)
+    lands = detector1.detect_landmarks(img01, bboxes)
+    aus = detector1.detect_aus(img01, lands)
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 12
 
