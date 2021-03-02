@@ -736,7 +736,10 @@ class ResMaskNet:
         if self.use_gpu:
             self.model.load_state_dict(
                 torch.load(
-                    get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth")['net']
+                    os.path.join(
+                        get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+                        )
+                    )['net']
                 )
             self.model.cuda()
 
@@ -745,7 +748,7 @@ class ResMaskNet:
                 torch.load(
                     os.path.join(
                         get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
-                ),
+                    ),
                 map_location={"cuda:0": "cpu"},
                 )['net']
             )
