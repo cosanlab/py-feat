@@ -224,7 +224,7 @@ setup(
     author="Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Nathaniel Hanes, Luke Chang ",
     author_email='jcheong0428@gmail.com',
     url='https://github.com/cosanlab/feat',
-    packages=find_packages(include=['feat', 'bin/*']),
+    packages=find_packages(),
     package_data = {'feat': ['resources/*','tests/*','tests/data/*']},
     scripts=['bin/detect_fex.py', 'bin/download_models.py'],
     install_requires=requirements,

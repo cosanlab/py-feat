@@ -2,5 +2,6 @@ include LICENSE
 include README.md
 include requirements.txt
 recursive-include tutorials *.ipynb
-recursive-include feat/tests *
-recursive-include feat/resources *
+recursive-include feat *
+global-exclude *.pth *.tar *.yaml *.zip *.npy *.xml *fer_*
+global-exclude */.ipynb_checkpoints/* *.py[co] __pycache__ .DS_Store
