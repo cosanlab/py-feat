@@ -13,6 +13,7 @@ from sklearn.datasets import make_classification
 from sklearn.linear_model import LogisticRegression
 from feat.utils import get_resource_path
 import joblib
+import os 
 
 #all_AUs_list = ['AU1','AU2','AU4','AU5','AU6','AU7','AU10','AU11','AU12','AU14',
 #                'AU23', 'AU24','AU25','AU26','AU28','AU43']
@@ -24,8 +25,8 @@ def load_classifier(cf_path):
 
 class RandomForestClassifier():
     def __init__(self) -> None:
-        self.pca_model = load_classifier(get_resource_path() + "/" + "hog_pca_all_emotio.joblib")
-        self.classifier = load_classifier(get_resource_path() + "/" + "RF_568.joblib")
+        self.pca_model = load_classifier(os.path.join(get_resource_path(),"hog_pca_all_emotio.joblib"))
+        self.classifier = load_classifier(os.path.join(get_resource_path(), "RF_568.joblib"))
         self.scaler = StandardScaler()
     def detect_au(self, frame, landmarks):
         """
@@ -50,8 +51,8 @@ class RandomForestClassifier():
 
 class SVMClassifier():
     def __init__(self) -> None:
-        self.pca_model = load_classifier(get_resource_path() + "/" + "hog_pca_all_emotio.joblib")
-        self.classifier = load_classifier(get_resource_path() + "/" + "svm_568.joblib")
+        self.pca_model = load_classifier(os.path.join(get_resource_path(),"hog_pca_all_emotio.joblib"))
+        self.classifier = load_classifier(os.path.join(get_resource_path(),"svm_568.joblib"))
         self.scaler = StandardScaler()
     def detect_au(self, frame, landmarks):
         """
@@ -76,8 +77,8 @@ class SVMClassifier():
 class LogisticClassifier():
     
     def __init__(self) -> None:
-        self.pca_model = load_classifier(get_resource_path() + "/" + "hog_pca_all_emotio.joblib")
-        self.classifier = load_classifier(get_resource_path() + "/" + "Logistic_520.joblib")
+        self.pca_model = load_classifier(os.path.join(get_resource_path(),"hog_pca_all_emotio.joblib"))
+        self.classifier = load_classifier(os.path.join(get_resource_path(),"Logistic_520.joblib"))
         self.scaler = StandardScaler()
     def detect_au(self, frame, landmarks):
         """
