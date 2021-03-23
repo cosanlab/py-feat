@@ -8,7 +8,11 @@ from multiprocessing.pool import ThreadPool
 import os
 import numpy as np
 import pandas as pd
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
+import math
+from scipy.spatial import ConvexHull
+from skimage.morphology.convex_hull import grid_points_in_poly
+from skimage.feature import hog
 import cv2
 import feat
 from feat.data import Fex
@@ -17,6 +21,7 @@ from feat.utils import (
     face_rect_to_coords,
     openface_2d_landmark_columns,
     jaanet_AU_presence,
+    RF_AU_presence,
     FEAT_EMOTION_MAPPER,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
@@ -24,9 +29,13 @@ from feat.utils import (
     FACET_TIME_COLUMNS,
     BBox,
     convert68to49,
+    padding,
+    resize_with_padding,
+    align_face_68pts
 )
 from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
+from feat.au_detectors.StatLearning.SL_test import RandomForestClassifier,SVMClassifier,LogisticClassifier
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 import torch
@@ -158,9 +167,19 @@ class Detector(object):
                 self.au_model = JAANet()
             elif au_model.lower() == "drml":
                 self.au_model = DRMLNet()
+            elif au_model.lower() == "logistic":
+                self.au_model = LogisticClassifier()
+            elif au_model.lower() == "svm":
+                self.au_model = SVMClassifier()
+            elif au_model.lower() == 'rf':
+                self.au_model = RandomForestClassifier()
 
         # self.info["mapper"] = jaanet_AU_presence
-        auoccur_columns = jaanet_AU_presence
+        if (au_model is None) or (au_model.lower() in ['jaanet','drml']):
+            auoccur_columns = jaanet_AU_presence
+        else:
+            auoccur_columns = RF_AU_presence
+
         self.info["au_presence_columns"] = auoccur_columns
         predictions = np.empty((1, len(auoccur_columns)))
         predictions[:] = np.nan
@@ -183,8 +202,8 @@ class Detector(object):
 
         # self.info['auoccur_model'] = au_model
         # self.info["mapper"] = jaanet_AU_presence
-        auoccur_columns = jaanet_AU_presence
-        self.info["au_presence_columns"] = auoccur_columns
+        #auoccur_columns = jaanet_AU_presence
+        #self.info["au_presence_columns"] = auoccur_columns
         predictions = np.empty((1, len(auoccur_columns)))
         predictions[:] = np.nan
         empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
@@ -286,12 +305,66 @@ class Detector(object):
             landmark_list.append(landmark)
 
         return landmark_list
+    
+    def extract_face(self, frame, detected_faces, landmarks, size_output=112):
+        """
+        This function extracts the faces of the frame with convex hulls
+        Args:
+            frame: The original image
+            detected_faces: face bounding boxes
+            landmarks: the landmark information
+        Returns:
+        """
+        detected_faces = np.array(detected_faces)
+        landmarks = np.array(landmarks)
+        # if (np.any(detected_faces) < 0):
+        #     orig_size = np.array(frame).shape
+        #     if np.where(detected_faces<0)[0][0]==1: 
+        #         # extend y 
+        #         new_size = (orig_size[0], int(orig_size[1] + 2*abs(detected_faces[detected_faces<0][0])))
+        #     else:
+        #         # extend x
+        #         new_size = (int(orig_size[0] + 2*abs(detected_faces[detected_faces<0][0])), orig_size[1])
+
+        #     frame = resize_with_padding(Image.fromarray(frame), new_size)
+        #     frame = np.asarray(frame)
+        #     detected_faces = np.array(detector.detect_faces(np.array(frame))[0])
+
+        detected_faces = detected_faces.astype(int)
+
+        aligned_img, new_landmarks = align_face_68pts(frame, landmarks.flatten(), 2.5, img_size=size_output)
+
+        hull = ConvexHull(new_landmarks)
+        mask = grid_points_in_poly(shape=np.array(aligned_img).shape, 
+                                verts= list(zip(new_landmarks[hull.vertices][:,1], new_landmarks[hull.vertices][:,0])) # for some reason verts need to be flipped
+                                )
+
+        mask[0:np.min([new_landmarks[0][1], new_landmarks[16][1]]), new_landmarks[0][0]:new_landmarks[16][0]] = True
+        aligned_img[~mask] = 0
+        resized_face_np = aligned_img
+        resized_face_np = cv2.cvtColor(resized_face_np, cv2.COLOR_BGR2RGB)
+
+        return resized_face_np, new_landmarks
+
+
+    def extract_hog(self, frame, orientation=8, pixels_per_cell=(8,8), cells_per_block=(2,2), visualize=False):
+        """
+        
+        """
+        
+        hog_output = hog(frame, orientations=orientation, pixels_per_cell=pixels_per_cell,
+                        cells_per_block=cells_per_block, visualize=visualize, multichannel=True)
+        if visualize:
+            return (hog_output[0], hog_output[1])
+        else:
+            return hog_output 
 
     def detect_aus(self, frame, landmarks):
         # Assume that the Raw landmark is given in the format (n_land,2)
-        landmarks = np.transpose(landmarks)
-        if landmarks.shape[-1] == 68:
-            landmarks = convert68to49(landmarks)
+        
+        #landmarks = np.transpose(landmarks)
+        #if landmarks.shape[-1] == 68:
+        #    landmarks = convert68to49(landmarks)
         return self.au_model.detect_au(frame, landmarks)
 
     def detect_emotions(self, frame, facebox, landmarks):
@@ -359,7 +432,13 @@ class Detector(object):
                     index=[counter + i],
                 )
                 # detect AUs
-                au_occur = self.detect_aus(frame=frame, landmarks=landmarks)
+                if self["au_model"].lower() in ['logistic','svm','rf']:
+                    convex_hull, new_lands = self.extract_face(frame=frame, detected_faces=[faces[0:4]], landmarks=landmarks, size_output=112)
+                    hogs = self.extract_hog(frame=convex_hull,visualize=False)
+                    au_occur = self.detect_aus(frame=hogs, landmarks=new_lands)
+                else:
+                    au_occur = self.detect_aus(frame=frame, landmarks=landmarks)
+
                 au_occur_df = pd.DataFrame(
                     au_occur, columns=self["au_presence_columns"], index=[counter + i]
                 )
@@ -487,7 +566,7 @@ class Detector(object):
             return Fex(
                 init_df,
                 filename=inputFname,
-                au_columns=jaanet_AU_presence,
+                au_columns=self['au_presence_columns'],
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
                 landmark_columns=openface_2d_landmark_columns,
@@ -497,7 +576,20 @@ class Detector(object):
 # %%
 # Test case:
 if __name__ == '__main__':
-    A01 = Detector(face_model='RetinaFace',emotion_model='resmasknet', landmark_model="MobileFaceNet", au_occur_model='drml')
-    test_img = cv2.imread(r"C:\Users\Yaqian\src\py-feat\feat\tests\data\angry_black.jpg")
-    ress = A01.process_frame(frame=test_img)
+    A01 = Detector(face_model='RetinaFace',emotion_model='resmasknet', landmark_model="MobileFaceNet", au_model='rf')
+    test_img = cv2.imread(r"F:\test_case\JinHyunCheong.jpg")
+    im01 = Image.open(r"F:\test_case\JinHyunCheong.jpg")
+    detected_faces = A01.detect_faces(frame=test_img)
+    landmarks = A01.detect_landmarks(
+                    frame=test_img, detected_faces=[detected_faces[0][0:4]]
+                )
+    ress = A01.detect_image(r"F:\test_case\JinHyunCheong.jpg")
+    print(ress)
+    #convex_hull, new_lands = A01.extract_face(frame=test_img, detected_faces=detected_faces[0], landmarks=landmarks, size_output=112)
+    #bk01,bk02 = A01.extract_hog(frame=convex_hull,visualize=True)
+    #A02 = LogisticClassifier()
+    #probbs = A02.detect_au(bk01, new_lands)
+    #print(probbs)
+    print("yes")
+    ress.plot_detections();
 

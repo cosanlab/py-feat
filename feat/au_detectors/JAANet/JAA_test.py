@@ -9,7 +9,7 @@ import feat.au_detectors.JAANet.JAANet_model as network
 import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
-from feat.utils import get_resource_path
+from feat.utils import get_resource_path, convert68to49
 import os
 
 
@@ -260,6 +260,10 @@ class JAANet(nn.Module):
         return aligned_img, new_land
 
     def detect_au(self, imgs, land_data):
+        
+        land_data = np.transpose(land_data)
+        if land_data.shape[-1] == 68:
+           land_data = convert68to49(land_data)
 
         # if land_data.shape[]
         land_data = land_data.flatten()
