@@ -194,3 +194,40 @@ else:
         wget.download(resmasknetmodel, get_resource_path(), bar=None)
     except:
         print("ResidualMaskingNetwork model failed to download.")   
+
+if os.path.exists(os.path.join(get_resource_path(), "svm_568.joblib")):
+    print("\nSVM Action Unit model downloaded successfully.\n")
+else:
+    try:
+        svmmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib"
+        wget.download(svmmodel, get_resource_path(), bar=None)
+    except:
+        print("SVM Action Unit model failed to download.")  
+
+if os.path.exists(os.path.join(get_resource_path(), "RF_568.joblib")):
+    print("\nRandom Forest Action Unit model downloaded successfully.\n")
+else:
+    try:
+        rfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/RF_568.joblib"
+        wget.download(rfmodel, get_resource_path(), bar=None)
+    except:
+        print("RF Action Unit model failed to download.")  
+
+if os.path.exists(os.path.join(get_resource_path(), "Logistic_520.joblib")):
+    print("\nLogistic Regression Action Unit model downloaded successfully.\n")
+else:
+    try:
+        logmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/Logistic_520.joblib"
+        wget.download(logmodel, get_resource_path(), bar=None)
+    except:
+        print("Logistic Action Unit model failed to download.")  
+
+if os.path.exists(os.path.join(get_resource_path(), "hog_pca_all_emotio.joblib")):
+    print("\nPCA model downloaded successfully.\n")
+else:
+    try:
+        pcamodel = "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib"
+        wget.download(pcamodel, get_resource_path(), bar=None)
+    except:
+        print("PCA model failed to download.")  
+
