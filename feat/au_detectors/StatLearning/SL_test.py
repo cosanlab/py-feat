@@ -24,8 +24,8 @@ def load_classifier(cf_path):
 
 class RandomForestClassifier():
     def __init__(self) -> None:
-        self.pca_model = load_classifier(get_resource_path() + "\\" + "hog_pca_all_emotio.joblib")
-        self.classifier = load_classifier(get_resource_path() + "\\" + "RF_568.joblib")
+        self.pca_model = load_classifier(get_resource_path() + "/" + "hog_pca_all_emotio.joblib")
+        self.classifier = load_classifier(get_resource_path() + "/" + "RF_568.joblib")
         self.scaler = StandardScaler()
     def detect_au(self, frame, landmarks):
         """
@@ -50,8 +50,8 @@ class RandomForestClassifier():
 
 class SVMClassifier():
     def __init__(self) -> None:
-        self.pca_model = load_classifier(get_resource_path() + "\\" + "hog_pca_all_emotio.joblib")
-        self.classifier = load_classifier(get_resource_path() + "\\" + "svm_568.joblib")
+        self.pca_model = load_classifier(get_resource_path() + "/" + "hog_pca_all_emotio.joblib")
+        self.classifier = load_classifier(get_resource_path() + "/" + "svm_568.joblib")
         self.scaler = StandardScaler()
     def detect_au(self, frame, landmarks):
         """
@@ -76,8 +76,8 @@ class SVMClassifier():
 class LogisticClassifier():
     
     def __init__(self) -> None:
-        self.pca_model = load_classifier(get_resource_path() + "\\" + "hog_pca_all_emotio.joblib")
-        self.classifier = load_classifier(get_resource_path() + "\\" + "Logistic_520.joblib")
+        self.pca_model = load_classifier(get_resource_path() + "/" + "hog_pca_all_emotio.joblib")
+        self.classifier = load_classifier(get_resource_path() + "/" + "Logistic_520.joblib")
         self.scaler = StandardScaler()
     def detect_au(self, frame, landmarks):
         """
