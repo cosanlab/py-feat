@@ -96,4 +96,5 @@ if __name__ == "__main__":
     net = DRML_net(AU_num=12)
     print(net)
     result01 = net(pic_x)
+    print(result01)
     print("finished")
