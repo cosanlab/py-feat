@@ -174,6 +174,55 @@ def test_jaanet():
     assert aus.shape[-1] == 12
 
 
+def test_logistic():
+    # AU Detection Case:
+    detector1 = Detector(
+        face_model="RetinaFace",
+        emotion_model=None,
+        landmark_model="MobileFaceNet",
+        au_model="logistic",
+    )
+    bboxes = detector1.detect_faces(img01)
+    lands = detector1.detect_landmarks(img01, bboxes)
+    convex_hull, new_lands = detector1.extract_face(frame=img01, detected_faces=[bboxes[0:4]], landmarks=lands, size_output=112)
+    hogs = detector1.extract_hog(frame=convex_hull,visualize=False)
+    aus = detector1.detect_aus(frame=hogs, landmarks=new_lands)
+
+    assert np.sum(np.isnan(aus)) == 0
+    assert aus.shape[-1] == 20
+
+def test_svm():
+    # AU Detection Case:
+    detector1 = Detector(
+        face_model="RetinaFace",
+        emotion_model=None,
+        landmark_model="MobileFaceNet",
+        au_model="svm",
+    )
+    bboxes = detector1.detect_faces(img01)
+    lands = detector1.detect_landmarks(img01, bboxes)
+    convex_hull, new_lands = detector1.extract_face(frame=img01, detected_faces=[bboxes[0:4]], landmarks=lands, size_output=112)
+    hogs = detector1.extract_hog(frame=convex_hull,visualize=False)
+    aus = detector1.detect_aus(frame=hogs, landmarks=new_lands)
+    assert np.sum(np.isnan(aus)) == 0
+    assert aus.shape[-1] == 20
+
+def test_rf():
+    # AU Detection Case:
+    detector1 = Detector(
+        face_model="RetinaFace",
+        emotion_model=None,
+        landmark_model="MobileFaceNet",
+        au_model="RF",
+    )
+    bboxes = detector1.detect_faces(img01)
+    lands = detector1.detect_landmarks(img01, bboxes)
+    convex_hull, new_lands = detector1.extract_face(frame=img01, detected_faces=[bboxes[0:4]], landmarks=lands, size_output=112)
+    hogs = detector1.extract_hog(frame=convex_hull,visualize=False)
+    aus = detector1.detect_aus(frame=hogs, landmarks=new_lands)
+    assert np.sum(np.isnan(aus)) == 0
+    assert aus.shape[-1] == 20
+
 def test_drml():
     # AU Detection Case2:
     inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
