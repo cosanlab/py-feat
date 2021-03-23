@@ -213,6 +213,33 @@ class CustomInstall(install):
                 except:
                     print("ResidualMaskingNetwork model failed to download.")   
 
+            if os.path.exists(os.path.join(get_resource_path(), "svm_568.joblib")):
+                print("\nSVM Action Unit model downloaded successfully.\n")
+            else:
+                try:
+                    svmmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib"
+                    wget.download(svmmodel, get_resource_path(), bar=None)
+                except:
+                    print("SVM Action Unit model failed to download.")  
+
+            if os.path.exists(os.path.join(get_resource_path(), "RF_568.joblib")):
+                print("\nRandom Forest Action Unit model downloaded successfully.\n")
+            else:
+                try:
+                    rfmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/RF_568.joblib"
+                    wget.download(rfmodel, get_resource_path(), bar=None)
+                except:
+                    print("RF Action Unit model failed to download.")  
+
+            if os.path.exists(os.path.join(get_resource_path(), "Logistic_520.joblib")):
+                print("\nLogistic Regression Action Unit model downloaded successfully.\n")
+            else:
+                try:
+                    logmodel = "https://github.com/cosanlab/feat/releases/download/v0.1/Logistic_520.joblib"
+                    wget.download(logmodel, get_resource_path(), bar=None)
+                except:
+                    print("Logistic Action Unit model failed to download.")  
+
         atexit.register(_post_install)
         install.run(self)
 
