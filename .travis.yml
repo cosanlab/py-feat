@@ -28,7 +28,7 @@ install:
   - pip install -q --upgrade coveralls pytest-cov codecov
   - pip install -q -r requirements.txt --upgrade
   - pip install -q tox-travis
-  - python setup.py install
+  - python setup.py -q install
 
 # command to run tests, e.g. python setup.py test
 script:
