@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Analysis &#8212; Py-Feat</title>
+    <title>Preprocessing &#8212; Py-Feat</title>
     
   <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
 
@@ -118,12 +118,12 @@
  </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   Analysis
+   Preprocessing
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="#regression">
-   Regression
+  <a class="reference internal" href="#analyses">
+   Analyses
   </a>
  </li>
  <li class="toctree-l1">
@@ -308,7 +308,7 @@
             <ul class="nav section-nav flex-column">
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#">
-   Analysis
+   Preprocessing
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h2 nav-item toc-entry">
@@ -321,6 +321,13 @@
      Extract features
     </a>
    </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#analyses">
+   Analyses
+  </a>
+  <ul class="nav section-nav flex-column">
    <li class="toc-h2 nav-item toc-entry">
     <a class="reference internal nav-link" href="#simple-t-test">
      Simple t-test
@@ -331,12 +338,12 @@
      Prediction
     </a>
    </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#regression">
+     Regression
+    </a>
+   </li>
   </ul>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#regression">
-   Regression
-  </a>
  </li>
 </ul>
 
@@ -350,12 +357,20 @@
         
               <div>
                 
-  <div class="section" id="analysis">
-<h1>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="preprocessing">
+<h1>Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="how-to-analyze-facial-expression-data-with-feat">
 <h2>How to analyze facial expression data with Feat.<a class="headerlink" href="#how-to-analyze-facial-expression-data-with-feat" title="Permalink to this headline">¶</a></h2>
 <p><em>Written by Jin Hyun Cheong</em></p>
 <p>Here we will be using a sample dataset by David Watson on <a class="reference external" href="https://journals.plos.org/ploscompbiol/article/peerReview?id=10.1371/journal.pcbi.1008335">“A Data-Driven Characterisation Of Natural Facial Expressions When Giving Good And Bad News”</a> by Watson &amp; Johnston 2020. The full dataset is available on <a class="reference external" href="https://osf.io/6tbwj/">OSF</a>.</p>
+<p>Let’s start by installing Py-FEAT if you have not already done so or using this on Google Colab</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip install -q py-feat
+</pre></div>
+</div>
+</div>
+</div>
 <p>First, we download the necessary files &amp; videos.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -394,7 +409,7 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;jaanet&quot;</span><span class="p">,</span> <span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;resmasknet&quot;</span><span class="p">)</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;rf&quot;</span><span class="p">,</span> <span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;resmasknet&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">videos</span><span class="p">:</span> 
     <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">outputFname</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">))</span>
 </pre></div>
@@ -411,7 +426,7 @@
     <span class="k">if</span> <span class="n">ix</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
         <span class="n">fex</span> <span class="o">=</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">outputF</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">fex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">out</span><span class="p">,</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">outputF</span><span class="p">)])</span>
+        <span class="n">fex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">fex</span><span class="p">,</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">outputF</span><span class="p">)])</span>
 <span class="n">fex</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -421,18 +436,99 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load in conditions</span>
 <span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clip_attrs.csv&quot;</span><span class="p">)</span>
-<span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="o">.</span><span class="n">clipN</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
-<span class="n">input_class_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]))</span>
+<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="nb">input</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="o">.</span><span class="n">clipN</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.mp4&quot;</span><span class="p">),</span>
+                               <span class="n">condition</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;gn&quot;</span><span class="p">:</span><span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="s2">&quot;ists&quot;</span><span class="p">:</span><span class="s2">&quot;badNews&quot;</span><span class="p">}))</span>
+<span class="n">input_class_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;condition&#39;</span><span class="p">]))</span>
+<span class="n">clip_attrs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>clipN</th>
+      <th>class</th>
+      <th>phraseN</th>
+      <th>phrase_txt</th>
+      <th>input</th>
+      <th>condition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>gn</td>
+      <td>1</td>
+      <td>your loan has been approved</td>
+      <td>001.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>gn</td>
+      <td>2</td>
+      <td>you've got the job</td>
+      <td>002.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>gn</td>
+      <td>3</td>
+      <td>the vendor has accepted your offer</td>
+      <td>003.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>gn</td>
+      <td>4</td>
+      <td>your tests have come back clear</td>
+      <td>004.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>gn</td>
+      <td>5</td>
+      <td>your application has been accepted</td>
+      <td>005.mp4</td>
+      <td>goodNews</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
 </div>
 <div class="section" id="extract-features">
 <h2>Extract features<a class="headerlink" href="#extract-features" title="Permalink to this headline">¶</a></h2>
+<p>You can set the <code class="docutils literal notranslate"><span class="pre">sessions</span></code> attribute to provide a grouping of your experimental setup. This could be the name of each video if you want to extract features per video or it could be conditions to extract features per condition.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract conditions between the two condtiiosn (gn: good news, ists: bad news)</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;condition&#39;</span><span class="p">]))</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
 <span class="n">average_au_intensity_per_video</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
 <span class="n">display</span><span class="p">(</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </pre></div>
@@ -460,13 +556,119 @@
       <th>mean_AU01</th>
       <th>mean_AU02</th>
       <th>mean_AU04</th>
+      <th>mean_AU05</th>
       <th>mean_AU06</th>
       <th>mean_AU07</th>
+      <th>mean_AU09</th>
       <th>mean_AU10</th>
+      <th>mean_AU11</th>
       <th>mean_AU12</th>
-      <th>mean_AU14</th>
-      <th>mean_AU15</th>
-      <th>mean_AU17</th>
+      <th>...</th>
+      <th>mean_y_61</th>
+      <th>mean_y_62</th>
+      <th>mean_y_63</th>
+      <th>mean_y_64</th>
+      <th>mean_y_65</th>
+      <th>mean_y_66</th>
+      <th>mean_y_67</th>
+      <th>mean_y_7</th>
+      <th>mean_y_8</th>
+      <th>mean_y_9</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>badNews</th>
+      <td>0.370603</td>
+      <td>0.347909</td>
+      <td>0.274446</td>
+      <td>0.470608</td>
+      <td>0.144680</td>
+      <td>0.350956</td>
+      <td>0.057206</td>
+      <td>0.367228</td>
+      <td>0.414330</td>
+      <td>0.245751</td>
+      <td>...</td>
+      <td>714.571030</td>
+      <td>715.994335</td>
+      <td>711.230906</td>
+      <td>703.585629</td>
+      <td>715.312303</td>
+      <td>720.341735</td>
+      <td>718.979703</td>
+      <td>823.783636</td>
+      <td>827.212203</td>
+      <td>813.770216</td>
+    </tr>
+    <tr>
+      <th>goodNews</th>
+      <td>0.437070</td>
+      <td>0.399585</td>
+      <td>0.209061</td>
+      <td>0.219561</td>
+      <td>0.641241</td>
+      <td>0.642395</td>
+      <td>0.161864</td>
+      <td>0.775689</td>
+      <td>0.412116</td>
+      <td>0.814605</td>
+      <td>...</td>
+      <td>684.355943</td>
+      <td>686.797688</td>
+      <td>683.110011</td>
+      <td>676.147267</td>
+      <td>693.425396</td>
+      <td>697.551264</td>
+      <td>695.402943</td>
+      <td>810.933791</td>
+      <td>817.027471</td>
+      <td>806.257672</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 169 columns</p>
+</div></div></div>
+</div>
+<p>Or simply extract features per video</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract features per video</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span>
+<span class="n">average_au_intensity_per_video</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean_AU01</th>
+      <th>mean_AU02</th>
+      <th>mean_AU04</th>
+      <th>mean_AU05</th>
+      <th>mean_AU06</th>
+      <th>mean_AU07</th>
+      <th>mean_AU09</th>
+      <th>mean_AU10</th>
+      <th>mean_AU11</th>
+      <th>mean_AU12</th>
       <th>...</th>
       <th>mean_y_61</th>
       <th>mean_y_62</th>
@@ -483,16 +685,16 @@
   <tbody>
     <tr>
       <th>001.mp4</th>
-      <td>0.140665</td>
-      <td>0.855856</td>
-      <td>0.070829</td>
-      <td>0.851965</td>
-      <td>0.748190</td>
-      <td>0.842554</td>
-      <td>0.992311</td>
-      <td>0.524729</td>
-      <td>0.261690</td>
-      <td>0.000499</td>
+      <td>0.367902</td>
+      <td>0.304953</td>
+      <td>0.217278</td>
+      <td>0.247205</td>
+      <td>0.529641</td>
+      <td>0.546710</td>
+      <td>0.127434</td>
+      <td>0.689482</td>
+      <td>0.405150</td>
+      <td>0.757060</td>
       <td>...</td>
       <td>694.305659</td>
       <td>696.236139</td>
@@ -507,16 +709,16 @@
     </tr>
     <tr>
       <th>002.mp4</th>
-      <td>0.068047</td>
-      <td>0.757220</td>
-      <td>0.065335</td>
-      <td>0.756616</td>
-      <td>0.593310</td>
-      <td>0.892189</td>
-      <td>0.996428</td>
-      <td>0.528385</td>
-      <td>0.474023</td>
-      <td>0.000575</td>
+      <td>0.384290</td>
+      <td>0.372414</td>
+      <td>0.218073</td>
+      <td>0.238233</td>
+      <td>0.466245</td>
+      <td>0.568260</td>
+      <td>0.139705</td>
+      <td>0.645774</td>
+      <td>0.406103</td>
+      <td>0.665162</td>
       <td>...</td>
       <td>686.464658</td>
       <td>688.592334</td>
@@ -531,16 +733,16 @@
     </tr>
     <tr>
       <th>003.mp4</th>
-      <td>0.097756</td>
-      <td>0.829843</td>
-      <td>0.056197</td>
-      <td>0.777233</td>
-      <td>0.786006</td>
-      <td>0.870444</td>
-      <td>0.995471</td>
-      <td>0.662425</td>
-      <td>0.470681</td>
-      <td>0.000654</td>
+      <td>0.475926</td>
+      <td>0.435061</td>
+      <td>0.193346</td>
+      <td>0.235034</td>
+      <td>0.628517</td>
+      <td>0.614398</td>
+      <td>0.130048</td>
+      <td>0.758156</td>
+      <td>0.406965</td>
+      <td>0.822223</td>
       <td>...</td>
       <td>678.527397</td>
       <td>681.056783</td>
@@ -555,16 +757,16 @@
     </tr>
     <tr>
       <th>004.mp4</th>
-      <td>0.245191</td>
-      <td>0.899495</td>
-      <td>0.120592</td>
-      <td>0.870192</td>
-      <td>0.821127</td>
-      <td>0.832403</td>
-      <td>0.984547</td>
-      <td>0.558193</td>
-      <td>0.228535</td>
-      <td>0.000828</td>
+      <td>0.465396</td>
+      <td>0.431265</td>
+      <td>0.215378</td>
+      <td>0.136780</td>
+      <td>0.719656</td>
+      <td>0.712953</td>
+      <td>0.195271</td>
+      <td>0.852897</td>
+      <td>0.413281</td>
+      <td>0.888342</td>
       <td>...</td>
       <td>682.179613</td>
       <td>684.565805</td>
@@ -579,16 +781,16 @@
     </tr>
     <tr>
       <th>005.mp4</th>
-      <td>0.062102</td>
-      <td>0.664194</td>
-      <td>0.020351</td>
-      <td>0.837711</td>
-      <td>0.638295</td>
-      <td>0.815326</td>
-      <td>0.995633</td>
-      <td>0.334880</td>
-      <td>0.178700</td>
-      <td>0.000406</td>
+      <td>0.358873</td>
+      <td>0.346983</td>
+      <td>0.196898</td>
+      <td>0.132950</td>
+      <td>0.729992</td>
+      <td>0.724506</td>
+      <td>0.230352</td>
+      <td>0.844839</td>
+      <td>0.421897</td>
+      <td>0.883427</td>
       <td>...</td>
       <td>701.603967</td>
       <td>703.849507</td>
@@ -603,16 +805,20 @@
     </tr>
   </tbody>
 </table>
-<p>5 rows × 161 columns</p>
+<p>5 rows × 169 columns</p>
 </div></div></div>
 </div>
 </div>
+</div>
+<div class="section" id="analyses">
+<h1>Analyses<a class="headerlink" href="#analyses" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="simple-t-test">
 <h2>Simple t-test<a class="headerlink" href="#simple-t-test" title="Permalink to this headline">¶</a></h2>
+<p>You can use a simple t-test to test if the average activation of a certain AU is significantly higher than .5 (chance). The results suggests that AU10 (upper lip raiser), 12 (lip corner puller), and 14 (dimpler) is significantly activitated when providing good news.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">input_class_map</span><span class="p">)</span>
-<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">ttest</span><span class="p">()</span>
+<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="p">[</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span><span class="o">==</span><span class="s2">&quot;goodNews&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">ttest</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">p</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">au_columns</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -643,63 +849,63 @@
   <tbody>
     <tr>
       <th>mean_AU01</th>
-      <td>6.630503</td>
-      <td>9.585643e-05</td>
+      <td>-2.927201</td>
+      <td>1.683346e-02</td>
     </tr>
     <tr>
       <th>mean_AU02</th>
-      <td>32.900581</td>
-      <td>1.089750e-10</td>
+      <td>-5.838201</td>
+      <td>2.473720e-04</td>
     </tr>
     <tr>
       <th>mean_AU04</th>
-      <td>7.411417</td>
-      <td>4.054087e-05</td>
+      <td>-49.805912</td>
+      <td>2.660164e-12</td>
     </tr>
     <tr>
       <th>mean_AU06</th>
-      <td>50.006273</td>
-      <td>2.566064e-12</td>
+      <td>3.905366</td>
+      <td>3.589972e-03</td>
     </tr>
     <tr>
       <th>mean_AU07</th>
-      <td>27.094823</td>
-      <td>6.155222e-10</td>
+      <td>5.487334</td>
+      <td>3.864728e-04</td>
     </tr>
     <tr>
       <th>mean_AU10</th>
-      <td>55.170538</td>
-      <td>1.062332e-12</td>
+      <td>10.361594</td>
+      <td>2.660301e-06</td>
     </tr>
     <tr>
       <th>mean_AU12</th>
-      <td>712.489793</td>
-      <td>1.076048e-22</td>
+      <td>11.949046</td>
+      <td>7.984040e-07</td>
     </tr>
     <tr>
       <th>mean_AU14</th>
-      <td>16.957212</td>
-      <td>3.871804e-08</td>
+      <td>23.155621</td>
+      <td>2.485336e-09</td>
     </tr>
     <tr>
       <th>mean_AU15</th>
-      <td>6.923634</td>
-      <td>6.883327e-05</td>
+      <td>-12.587565</td>
+      <td>5.119202e-07</td>
     </tr>
     <tr>
       <th>mean_AU17</th>
-      <td>8.490694</td>
-      <td>1.371510e-05</td>
+      <td>-0.460219</td>
+      <td>6.562759e-01</td>
     </tr>
     <tr>
       <th>mean_AU23</th>
-      <td>4.668994</td>
-      <td>1.170252e-03</td>
+      <td>-0.300423</td>
+      <td>7.706780e-01</td>
     </tr>
     <tr>
       <th>mean_AU24</th>
-      <td>4.439722</td>
-      <td>1.624148e-03</td>
+      <td>-4.533345</td>
+      <td>1.419377e-03</td>
     </tr>
   </tbody>
 </table>
@@ -708,21 +914,22 @@
 </div>
 <div class="section" id="prediction">
 <h2>Prediction<a class="headerlink" href="#prediction" title="Permalink to this headline">¶</a></h2>
+<p>If you want to know what combination of features predic the good news or bad news conditions. To investigate this problem, we can train a Logistc Regression model using emotion labels to predict the conditions. Results suggest that detections of happy expressions predict the delivery of good news.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">input_class_map</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">(),</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;liblinear&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;score: &quot;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">(),</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;coefficients: &quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;score: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">(),</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;coefficients for predicting class: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">classes_</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">()</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>score:  0.9334741288278775
-coefficients: 
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>score: 0.933
+coefficients for predicting class: goodNews
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -755,163 +962,38 @@ coefficients:
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.722285</td>
-      <td>0.566583</td>
-      <td>2.868222</td>
-      <td>-8.24894</td>
-      <td>2.434085</td>
-      <td>0.096825</td>
-      <td>3.030539</td>
+      <td>-0.722285</td>
+      <td>-0.566583</td>
+      <td>-2.868222</td>
+      <td>8.24894</td>
+      <td>-2.434085</td>
+      <td>-0.096825</td>
+      <td>-3.030539</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">aus</span><span class="p">(),</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;liblinear&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;score: &quot;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">aus</span><span class="p">(),</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;coefficients: &quot;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>score:  0.8331573389651531
-coefficients: 
-</pre></div>
-</div>
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>AU01</th>
-      <th>AU02</th>
-      <th>AU04</th>
-      <th>AU06</th>
-      <th>AU07</th>
-      <th>AU10</th>
-      <th>AU12</th>
-      <th>AU14</th>
-      <th>AU15</th>
-      <th>AU17</th>
-      <th>AU23</th>
-      <th>AU24</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>-0.042668</td>
-      <td>-0.669198</td>
-      <td>-1.326025</td>
-      <td>-1.102651</td>
-      <td>-1.671964</td>
-      <td>-4.342783</td>
-      <td>2.817245</td>
-      <td>1.133602</td>
-      <td>-0.801147</td>
-      <td>0.004</td>
-      <td>-0.719024</td>
-      <td>0.000995</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
-</div>
 </div>
 </div>
 <div class="section" id="regression">
-<h1>Regression<a class="headerlink" href="#regression" title="Permalink to this headline">¶</a></h1>
+<h2>Regression<a class="headerlink" href="#regression" title="Permalink to this headline">¶</a></h2>
+<p>We can also run an fMRI style regression to predict the Action Unit activities from a contrast of conditions. This analysis can be conducted through the <code class="docutils literal notranslate"><span class="pre">regress</span></code> method. In this example, we identify the action units that are significantly more active in the good news versus the bad news conditions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">input_class_map</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;gn&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;ists&quot;</span><span class="p">:</span><span class="o">-.</span><span class="mi">5</span><span class="p">})</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span>
-<span class="n">X</span><span class="p">[</span><span class="s1">&#39;intercept&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">regress</span><span class="p">(</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Betas predicting good news estimated for each emotion.&quot;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Betas predicting good news
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/anaconda3/lib/python3.8/site-packages/nltools/stats.py:970: FutureWarning: Support for multi-dimensional indexing (e.g. `obj[:, None]`) is deprecated and will be removed in a future version.  Convert to a numpy array before indexing instead.
-  stderr = np.sqrt(np.diag(np.linalg.pinv(np.dot(X.T, X))))[:, np.newaxis] * sigma[np.newaxis, :]
-</pre></div>
-</div>
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>anger</th>
-      <th>disgust</th>
-      <th>fear</th>
-      <th>happiness</th>
-      <th>sadness</th>
-      <th>surprise</th>
-      <th>neutral</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>-0.018</td>
-      <td>-0.015</td>
-      <td>-0.088</td>
-      <td>0.619</td>
-      <td>-0.088</td>
-      <td>-0.34</td>
-      <td>-0.07</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">input_class_map</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;gn&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;ists&quot;</span><span class="p">:</span><span class="o">-.</span><span class="mi">5</span><span class="p">})</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">input_class_map</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;goodNews&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">:</span><span class="o">-.</span><span class="mi">5</span><span class="p">})</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span>
 <span class="n">X</span><span class="p">[</span><span class="s1">&#39;intercept&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">regress</span><span class="p">(</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">aus</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Betas predicting good news estimated for each AU.&quot;</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Betas predicting good news estimated for each emotion.&quot;</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="s2">&quot;betas&quot;</span><span class="p">}),</span>
+                    <span class="n">t</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="s2">&quot;t-stats&quot;</span><span class="p">}),</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="s2">&quot;p-values&quot;</span><span class="p">})])</span>
+<span class="n">display</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Betas predicting good news estimated for each AU.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Betas predicting good news estimated for each emotion.
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/anaconda3/lib/python3.8/site-packages/nltools/stats.py:970: FutureWarning: Support for multi-dimensional indexing (e.g. `obj[:, None]`) is deprecated and will be removed in a future version.  Convert to a numpy array before indexing instead.
@@ -952,23 +1034,54 @@ coefficients:
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
-      <td>0.074</td>
-      <td>0.111</td>
+      <th>betas</th>
       <td>0.066</td>
-      <td>0.222</td>
-      <td>0.246</td>
-      <td>0.34</td>
-      <td>-0.004</td>
-      <td>-0.095</td>
-      <td>-0.011</td>
-      <td>-0.0</td>
-      <td>0.011</td>
-      <td>0.0</td>
+      <td>0.052</td>
+      <td>-0.065</td>
+      <td>0.497</td>
+      <td>0.291</td>
+      <td>0.408</td>
+      <td>0.569</td>
+      <td>0.022</td>
+      <td>0.111</td>
+      <td>0.101</td>
+      <td>-0.029</td>
+      <td>-0.284</td>
+    </tr>
+    <tr>
+      <th>t-stats</th>
+      <td>8.221</td>
+      <td>8.219</td>
+      <td>-17.153</td>
+      <td>43.783</td>
+      <td>33.364</td>
+      <td>35.625</td>
+      <td>46.713</td>
+      <td>4.088</td>
+      <td>17.515</td>
+      <td>15.673</td>
+      <td>-5.063</td>
+      <td>-22.483</td>
+    </tr>
+    <tr>
+      <th>p-values</th>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
+</div>
 </div>
 </div>
 

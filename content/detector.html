@@ -55,7 +55,7 @@
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Analysis" href="analysis.html" />
+    <link rel="next" title="Preprocessing" href="analysis.html" />
     <link rel="prev" title="Installation example" href="installation.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -118,12 +118,12 @@
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="analysis.html">
-   Analysis
+   Preprocessing
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="analysis.html#regression">
-   Regression
+  <a class="reference internal" href="analysis.html#analyses">
+   Analyses
   </a>
  </li>
  <li class="toctree-l1">
@@ -374,6 +374,14 @@
 <h2>How to use the Feat Detector class.<a class="headerlink" href="#how-to-use-the-feat-detector-class" title="Permalink to this headline">¶</a></h2>
 <p><em>Written by Jin Hyun Cheong</em></p>
 <p>Here is an example of how to use the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class to detect faces, facial landmarks, Action Units, and emotions, from face images or videos.</p>
+<p>Let’s start by installing Py-FEAT if you have not already done so or usign this from Google Colab</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip install -q py-feat
+</pre></div>
+</div>
+</div>
+</div>
 </div>
 <div class="section" id="detecting-facial-expressions-from-images">
 <h2>Detecting facial expressions from images.<a class="headerlink" href="#detecting-facial-expressions-from-images" title="Permalink to this headline">¶</a></h2>
@@ -383,17 +391,32 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 <span class="n">face_model</span> <span class="o">=</span> <span class="s2">&quot;retinaface&quot;</span>
 <span class="n">landmark_model</span> <span class="o">=</span> <span class="s2">&quot;mobilenet&quot;</span>
-<span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;jaanet&quot;</span>
-<span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;fer&quot;</span>
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;rf&quot;</span>
+<span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;resmasknet&quot;</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span> <span class="o">=</span> <span class="n">face_model</span><span class="p">,</span> <span class="n">landmark_model</span> <span class="o">=</span> <span class="n">landmark_model</span><span class="p">,</span> <span class="n">au_model</span> <span class="o">=</span> <span class="n">au_model</span><span class="p">,</span> <span class="n">emotion_model</span> <span class="o">=</span> <span class="n">emotion_model</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  retinaface
-Loading Face Landmark model:  MobileNet
-Loading Action Unit model:  jaanet
-Loading Emotion model:  fer
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet0.25_Final.pth
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/RF_568.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
+Loading Face Landmark model:  mobilenet
+Loading au model:  rf
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator PCA from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  warnings.warn(
+/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator DecisionTreeClassifier from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  warnings.warn(
+/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator RandomForestClassifier from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading emotion model:  resmasknet
 </pre></div>
 </div>
 </div>
@@ -422,7 +445,7 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_5_0.png" src="../_images/detector_5_0.png" />
+<img alt="../_images/detector_7_0.png" src="../_images/detector_7_0.png" />
 </div>
 </div>
 <p>Now we use our initialized <code class="docutils literal notranslate"><span class="pre">detector</span></code> instance to make predictions with the <code class="docutils literal notranslate"><span class="pre">detect_image()</span></code> method.</p>
@@ -435,10 +458,6 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/packages/feat/feat/emo_detectors/ferNet/ferNet_test.py:147: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
-  pred_emo_softmax = nn.functional.softmax(
-</pre></div>
-</div>
 <div class="output text_html"><div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -468,8 +487,8 @@ Loading Emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU23</th>
-      <th>AU24</th>
+      <th>AU28</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -494,20 +513,20 @@ Loading Emotion model:  fer
       <td>192.874615</td>
       <td>197.39479</td>
       <td>...</td>
-      <td>0.002872</td>
-      <td>0.000004</td>
-      <td>0.001737</td>
-      <td>0.017439</td>
-      <td>0.000756</td>
-      <td>0.94757</td>
-      <td>0.000364</td>
-      <td>0.000533</td>
-      <td>0.031602</td>
+      <td>0.117955</td>
+      <td>0.143632</td>
+      <td>0.000369</td>
+      <td>0.000026</td>
+      <td>0.000485</td>
+      <td>0.986996</td>
+      <td>0.000046</td>
+      <td>0.01201</td>
+      <td>0.000068</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
     </tr>
   </tbody>
 </table>
-<p>1 rows × 162 columns</p>
+<p>1 rows × 170 columns</p>
 </div></div></div>
 </div>
 <p>The output is a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> class instance which allows you to run the built-in methods for <code class="docutils literal notranslate"><span class="pre">Fex</span></code>.</p>
@@ -522,7 +541,7 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_9_0.png" src="../_images/detector_9_0.png" />
+<img alt="../_images/detector_11_0.png" src="../_images/detector_11_0.png" />
 </div>
 </div>
 </div>
@@ -602,32 +621,48 @@ Loading Emotion model:  fer
       <th>AU01</th>
       <th>AU02</th>
       <th>AU04</th>
+      <th>AU05</th>
       <th>AU06</th>
       <th>AU07</th>
+      <th>AU09</th>
       <th>AU10</th>
+      <th>AU11</th>
       <th>AU12</th>
       <th>AU14</th>
       <th>AU15</th>
       <th>AU17</th>
+      <th>AU20</th>
       <th>AU23</th>
       <th>AU24</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>AU28</th>
+      <th>AU43</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.16389</td>
-      <td>0.990565</td>
-      <td>0.001981</td>
-      <td>0.827827</td>
-      <td>0.895377</td>
-      <td>0.654377</td>
-      <td>0.995468</td>
-      <td>0.041832</td>
-      <td>0.324254</td>
-      <td>0.000614</td>
-      <td>0.002872</td>
-      <td>0.000004</td>
+      <td>0.592975</td>
+      <td>0.487862</td>
+      <td>0.182525</td>
+      <td>0.175082</td>
+      <td>0.890265</td>
+      <td>0.687173</td>
+      <td>0.361338</td>
+      <td>0.929177</td>
+      <td>0.464157</td>
+      <td>0.959261</td>
+      <td>0.657362</td>
+      <td>0.350172</td>
+      <td>0.248738</td>
+      <td>0.269894</td>
+      <td>0.248381</td>
+      <td>0.044258</td>
+      <td>0.963012</td>
+      <td>0.358748</td>
+      <td>0.117955</td>
+      <td>0.143632</td>
     </tr>
   </tbody>
 </table>
@@ -670,13 +705,13 @@ Loading Emotion model:  fer
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.001737</td>
-      <td>0.017439</td>
-      <td>0.000756</td>
-      <td>0.94757</td>
-      <td>0.000364</td>
-      <td>0.000533</td>
-      <td>0.031602</td>
+      <td>0.000369</td>
+      <td>0.000026</td>
+      <td>0.000485</td>
+      <td>0.986996</td>
+      <td>0.000046</td>
+      <td>0.01201</td>
+      <td>0.000068</td>
     </tr>
   </tbody>
 </table>
@@ -693,10 +728,6 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/packages/feat/feat/emo_detectors/ferNet/ferNet_test.py:147: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
-  pred_emo_softmax = nn.functional.softmax(
-</pre></div>
-</div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
 </pre></div>
 </div>
@@ -745,8 +776,8 @@ Loading Emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU23</th>
-      <th>AU24</th>
+      <th>AU28</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -771,20 +802,20 @@ Loading Emotion model:  fer
       <td>192.874615</td>
       <td>197.39479</td>
       <td>...</td>
-      <td>0.002872</td>
-      <td>0.000004</td>
-      <td>0.001737</td>
-      <td>0.017439</td>
-      <td>0.000756</td>
-      <td>0.94757</td>
-      <td>0.000364</td>
-      <td>0.000533</td>
-      <td>0.031602</td>
+      <td>0.117955</td>
+      <td>0.143632</td>
+      <td>0.000369</td>
+      <td>0.000026</td>
+      <td>0.000485</td>
+      <td>0.986996</td>
+      <td>0.000046</td>
+      <td>0.01201</td>
+      <td>0.000068</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
     </tr>
   </tbody>
 </table>
-<p>1 rows × 162 columns</p>
+<p>1 rows × 170 columns</p>
 </div></div></div>
 </div>
 <div class="cell docutils container">
@@ -826,8 +857,8 @@ Loading Emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU23</th>
-      <th>AU24</th>
+      <th>AU28</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -852,29 +883,35 @@ Loading Emotion model:  fer
       <td>192.874615</td>
       <td>197.39479</td>
       <td>...</td>
-      <td>0.002872</td>
-      <td>0.000004</td>
-      <td>0.001737</td>
-      <td>0.017439</td>
-      <td>0.000756</td>
-      <td>0.94757</td>
-      <td>0.000364</td>
-      <td>0.000533</td>
-      <td>0.031602</td>
+      <td>0.117955</td>
+      <td>0.143632</td>
+      <td>0.000369</td>
+      <td>0.000026</td>
+      <td>0.000485</td>
+      <td>0.986996</td>
+      <td>0.000046</td>
+      <td>0.01201</td>
+      <td>0.000068</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
     </tr>
   </tbody>
 </table>
-<p>1 rows × 162 columns</p>
+<p>1 rows × 170 columns</p>
 </div></div></div>
 </div>
 </div>
 <div class="section" id="detecting-facial-expressions-images-with-many-faces">
 <h2>Detecting facial expressions images with many faces.<a class="headerlink" href="#detecting-facial-expressions-images-with-many-faces" title="Permalink to this headline">¶</a></h2>
-<p>Feat’s Detector can find multiple faces in a single image.</p>
+<p>Feat’s Detector can find multiple faces in a single image. Let’s also practice switching the emotion detector</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_image</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;tim-mossholder-hOF1bWoet_Q-unsplash.jpg&quot;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">face_model</span> <span class="o">=</span> <span class="s2">&quot;mtcnn&quot;</span>
+<span class="n">landmark_model</span> <span class="o">=</span> <span class="s2">&quot;mobilenet&quot;</span>
+<span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;logistic&quot;</span>
+<span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;fer&quot;</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span> <span class="o">=</span> <span class="n">face_model</span><span class="p">,</span> <span class="n">landmark_model</span> <span class="o">=</span> <span class="n">landmark_model</span><span class="p">,</span> <span class="n">au_model</span> <span class="o">=</span> <span class="n">au_model</span><span class="p">,</span> <span class="n">emotion_model</span> <span class="o">=</span> <span class="n">emotion_model</span><span class="p">)</span>
+
+<span class="n">test_image</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;tim-mossholder-hOF1bWoet_Q-unsplash.jpg&quot;</span><span class="p">)</span>
 <span class="n">image_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">test_image</span><span class="p">)</span>
 <span class="c1"># Show results</span>
 <span class="n">image_prediction</span>
@@ -882,8 +919,23 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/packages/feat/feat/emo_detectors/ferNet/ferNet_test.py:147: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
-  pred_emo_softmax = nn.functional.softmax(
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  mtcnn
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/onet.npy
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/pnet.npy
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/rnet.npy
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/Logistic_520.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/best_ferModel.pth
+Loading Face Landmark model:  mobilenet
+Loading au model:  logistic
+Loading emotion model:  fer
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator PCA from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  warnings.warn(
+/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator LogisticRegression from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
+  warnings.warn(
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -915,8 +967,8 @@ Loading Emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU23</th>
-      <th>AU24</th>
+      <th>AU28</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -931,126 +983,126 @@ Loading Emotion model:  fer
     <tr>
       <th>0</th>
       <td>0</td>
-      <td>683.844116</td>
-      <td>288.876495</td>
-      <td>103.788025</td>
-      <td>134.104675</td>
-      <td>0.999768</td>
-      <td>686.784070</td>
-      <td>684.581417</td>
-      <td>683.259731</td>
-      <td>683.543446</td>
+      <td>686.666818</td>
+      <td>293.999382</td>
+      <td>101.031716</td>
+      <td>120.632281</td>
+      <td>1.000000</td>
+      <td>686.673264</td>
+      <td>684.464720</td>
+      <td>683.203394</td>
+      <td>683.556753</td>
       <td>...</td>
-      <td>0.000047</td>
-      <td>2.072674e-08</td>
+      <td>0.041033</td>
+      <td>0.000191</td>
       <td>0.000488</td>
-      <td>0.005617</td>
-      <td>0.000796</td>
-      <td>0.951391</td>
-      <td>0.001863</td>
-      <td>0.004160</td>
-      <td>0.035685</td>
+      <td>0.004986</td>
+      <td>0.000750</td>
+      <td>0.950166</td>
+      <td>0.001690</td>
+      <td>0.004727</td>
+      <td>0.037192</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>1</th>
       <td>0</td>
-      <td>533.678894</td>
-      <td>309.400024</td>
-      <td>96.237732</td>
-      <td>124.128448</td>
-      <td>0.999421</td>
-      <td>536.352311</td>
-      <td>533.773776</td>
-      <td>532.264484</td>
-      <td>532.354007</td>
+      <td>317.520424</td>
+      <td>235.865105</td>
+      <td>91.047654</td>
+      <td>119.294925</td>
+      <td>0.999948</td>
+      <td>314.853761</td>
+      <td>315.877231</td>
+      <td>317.895325</td>
+      <td>321.337098</td>
       <td>...</td>
-      <td>0.000067</td>
-      <td>2.451054e-09</td>
-      <td>0.000284</td>
-      <td>0.006320</td>
-      <td>0.001193</td>
-      <td>0.971111</td>
-      <td>0.000716</td>
-      <td>0.000561</td>
-      <td>0.019815</td>
+      <td>0.015860</td>
+      <td>0.000025</td>
+      <td>0.000108</td>
+      <td>0.002324</td>
+      <td>0.000214</td>
+      <td>0.917784</td>
+      <td>0.001381</td>
+      <td>0.001332</td>
+      <td>0.076859</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>2</th>
       <td>0</td>
-      <td>316.984406</td>
-      <td>233.779205</td>
-      <td>92.016876</td>
-      <td>126.462952</td>
-      <td>0.999196</td>
-      <td>314.601801</td>
-      <td>315.569317</td>
-      <td>317.556657</td>
-      <td>320.979813</td>
+      <td>435.751950</td>
+      <td>212.001750</td>
+      <td>76.493827</td>
+      <td>95.736649</td>
+      <td>0.999937</td>
+      <td>439.072266</td>
+      <td>438.872138</td>
+      <td>439.476009</td>
+      <td>440.813668</td>
       <td>...</td>
-      <td>0.000409</td>
-      <td>2.915924e-07</td>
-      <td>0.000121</td>
-      <td>0.002568</td>
-      <td>0.000227</td>
-      <td>0.899846</td>
-      <td>0.001718</td>
-      <td>0.001472</td>
-      <td>0.094047</td>
+      <td>0.300772</td>
+      <td>0.000001</td>
+      <td>0.001694</td>
+      <td>0.022541</td>
+      <td>0.000762</td>
+      <td>0.649048</td>
+      <td>0.043860</td>
+      <td>0.000816</td>
+      <td>0.281279</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>3</th>
       <td>0</td>
-      <td>221.297470</td>
-      <td>64.152290</td>
-      <td>85.109238</td>
-      <td>109.057457</td>
-      <td>0.996842</td>
-      <td>221.084806</td>
-      <td>218.956038</td>
-      <td>217.532470</td>
-      <td>217.588805</td>
+      <td>533.900150</td>
+      <td>308.100535</td>
+      <td>91.076060</td>
+      <td>119.357605</td>
+      <td>0.999775</td>
+      <td>535.784887</td>
+      <td>533.329005</td>
+      <td>531.925614</td>
+      <td>532.258772</td>
       <td>...</td>
-      <td>0.000014</td>
-      <td>1.441462e-08</td>
-      <td>0.000620</td>
-      <td>0.004256</td>
-      <td>0.000250</td>
-      <td>0.903749</td>
-      <td>0.000306</td>
-      <td>0.002786</td>
-      <td>0.088032</td>
+      <td>0.035089</td>
+      <td>0.011815</td>
+      <td>0.000310</td>
+      <td>0.005809</td>
+      <td>0.000977</td>
+      <td>0.972369</td>
+      <td>0.000534</td>
+      <td>0.000787</td>
+      <td>0.019214</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>4</th>
       <td>0</td>
-      <td>437.129089</td>
-      <td>213.861359</td>
-      <td>79.529785</td>
-      <td>97.050537</td>
-      <td>0.996773</td>
-      <td>439.015782</td>
-      <td>438.598763</td>
-      <td>439.106142</td>
-      <td>440.473301</td>
+      <td>214.450517</td>
+      <td>64.650659</td>
+      <td>91.337077</td>
+      <td>111.502833</td>
+      <td>0.995610</td>
+      <td>220.870587</td>
+      <td>218.820371</td>
+      <td>217.513163</td>
+      <td>217.441024</td>
       <td>...</td>
-      <td>0.000018</td>
-      <td>4.327078e-09</td>
-      <td>0.001339</td>
-      <td>0.018785</td>
-      <td>0.000607</td>
-      <td>0.661113</td>
-      <td>0.047018</td>
-      <td>0.000741</td>
-      <td>0.270397</td>
+      <td>0.035445</td>
+      <td>0.000021</td>
+      <td>0.000504</td>
+      <td>0.004014</td>
+      <td>0.000283</td>
+      <td>0.926783</td>
+      <td>0.000241</td>
+      <td>0.001621</td>
+      <td>0.066554</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 162 columns</p>
+<p>5 rows × 170 columns</p>
 </div></div></div>
 </div>
 </div>
@@ -1063,7 +1115,7 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_22_0.png" src="../_images/detector_22_0.png" />
+<img alt="../_images/detector_24_0.png" src="../_images/detector_24_0.png" />
 </div>
 </div>
 </div>
@@ -1088,10 +1140,6 @@ Loading Emotion model:  fer
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/home/jcheong/packages/feat/feat/tests/data/input.jpg&#39;, &#39;/home/jcheong/packages/feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg&#39;]
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/packages/feat/feat/emo_detectors/ferNet/ferNet_test.py:147: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
-  pred_emo_softmax = nn.functional.softmax(
-</pre></div>
-</div>
 <div class="output text_html"><div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -1121,8 +1169,8 @@ Loading Emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU23</th>
-      <th>AU24</th>
+      <th>AU28</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1137,150 +1185,150 @@ Loading Emotion model:  fer
     <tr>
       <th>0</th>
       <td>0.0</td>
-      <td>196.976852</td>
-      <td>140.997742</td>
-      <td>173.810471</td>
-      <td>257.639343</td>
-      <td>0.999681</td>
-      <td>192.864591</td>
-      <td>191.586714</td>
-      <td>192.874615</td>
-      <td>197.394790</td>
+      <td>185.127976</td>
+      <td>151.353452</td>
+      <td>180.762838</td>
+      <td>234.933019</td>
+      <td>0.998658</td>
+      <td>193.944269</td>
+      <td>192.360442</td>
+      <td>193.323525</td>
+      <td>197.581484</td>
       <td>...</td>
-      <td>0.002872</td>
-      <td>3.748603e-06</td>
-      <td>0.001737</td>
-      <td>0.017439</td>
-      <td>0.000756</td>
-      <td>0.947570</td>
-      <td>0.000364</td>
-      <td>0.000533</td>
-      <td>0.031602</td>
+      <td>0.080031</td>
+      <td>0.000019</td>
+      <td>0.001407</td>
+      <td>0.017716</td>
+      <td>0.001101</td>
+      <td>0.944522</td>
+      <td>0.000425</td>
+      <td>0.000589</td>
+      <td>0.034241</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
     </tr>
     <tr>
       <th>0</th>
       <td>0.0</td>
-      <td>683.844116</td>
-      <td>288.876495</td>
-      <td>103.788025</td>
-      <td>134.104675</td>
-      <td>0.999768</td>
-      <td>686.784070</td>
-      <td>684.581417</td>
-      <td>683.259731</td>
-      <td>683.543446</td>
+      <td>686.666818</td>
+      <td>293.999382</td>
+      <td>101.031716</td>
+      <td>120.632281</td>
+      <td>1.000000</td>
+      <td>686.673264</td>
+      <td>684.464720</td>
+      <td>683.203394</td>
+      <td>683.556753</td>
       <td>...</td>
-      <td>0.000047</td>
-      <td>2.072674e-08</td>
+      <td>0.041033</td>
+      <td>0.000191</td>
       <td>0.000488</td>
-      <td>0.005617</td>
-      <td>0.000796</td>
-      <td>0.951391</td>
-      <td>0.001863</td>
-      <td>0.004160</td>
-      <td>0.035685</td>
+      <td>0.004986</td>
+      <td>0.000750</td>
+      <td>0.950166</td>
+      <td>0.001690</td>
+      <td>0.004727</td>
+      <td>0.037192</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>1</th>
       <td>0.0</td>
-      <td>533.678894</td>
-      <td>309.400024</td>
-      <td>96.237732</td>
-      <td>124.128448</td>
-      <td>0.999421</td>
-      <td>536.352311</td>
-      <td>533.773776</td>
-      <td>532.264484</td>
-      <td>532.354007</td>
+      <td>317.520424</td>
+      <td>235.865105</td>
+      <td>91.047654</td>
+      <td>119.294925</td>
+      <td>0.999948</td>
+      <td>314.853761</td>
+      <td>315.877231</td>
+      <td>317.895325</td>
+      <td>321.337098</td>
       <td>...</td>
-      <td>0.000067</td>
-      <td>2.451054e-09</td>
-      <td>0.000284</td>
-      <td>0.006320</td>
-      <td>0.001193</td>
-      <td>0.971111</td>
-      <td>0.000716</td>
-      <td>0.000561</td>
-      <td>0.019815</td>
+      <td>0.015860</td>
+      <td>0.000025</td>
+      <td>0.000108</td>
+      <td>0.002324</td>
+      <td>0.000214</td>
+      <td>0.917784</td>
+      <td>0.001381</td>
+      <td>0.001332</td>
+      <td>0.076859</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>2</th>
       <td>0.0</td>
-      <td>316.984406</td>
-      <td>233.779205</td>
-      <td>92.016876</td>
-      <td>126.462952</td>
-      <td>0.999196</td>
-      <td>314.601801</td>
-      <td>315.569317</td>
-      <td>317.556657</td>
-      <td>320.979813</td>
+      <td>435.751950</td>
+      <td>212.001750</td>
+      <td>76.493827</td>
+      <td>95.736649</td>
+      <td>0.999937</td>
+      <td>439.072266</td>
+      <td>438.872138</td>
+      <td>439.476009</td>
+      <td>440.813668</td>
       <td>...</td>
-      <td>0.000409</td>
-      <td>2.915924e-07</td>
-      <td>0.000121</td>
-      <td>0.002568</td>
-      <td>0.000227</td>
-      <td>0.899846</td>
-      <td>0.001718</td>
-      <td>0.001472</td>
-      <td>0.094047</td>
+      <td>0.300772</td>
+      <td>0.000001</td>
+      <td>0.001694</td>
+      <td>0.022541</td>
+      <td>0.000762</td>
+      <td>0.649048</td>
+      <td>0.043860</td>
+      <td>0.000816</td>
+      <td>0.281279</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>3</th>
       <td>0.0</td>
-      <td>221.297470</td>
-      <td>64.152290</td>
-      <td>85.109238</td>
-      <td>109.057457</td>
-      <td>0.996842</td>
-      <td>221.084806</td>
-      <td>218.956038</td>
-      <td>217.532470</td>
-      <td>217.588805</td>
+      <td>533.900150</td>
+      <td>308.100535</td>
+      <td>91.076060</td>
+      <td>119.357605</td>
+      <td>0.999775</td>
+      <td>535.784887</td>
+      <td>533.329005</td>
+      <td>531.925614</td>
+      <td>532.258772</td>
       <td>...</td>
-      <td>0.000014</td>
-      <td>1.441462e-08</td>
-      <td>0.000620</td>
-      <td>0.004256</td>
-      <td>0.000250</td>
-      <td>0.903749</td>
-      <td>0.000306</td>
-      <td>0.002786</td>
-      <td>0.088032</td>
+      <td>0.035089</td>
+      <td>0.011815</td>
+      <td>0.000310</td>
+      <td>0.005809</td>
+      <td>0.000977</td>
+      <td>0.972369</td>
+      <td>0.000534</td>
+      <td>0.000787</td>
+      <td>0.019214</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
     <tr>
       <th>4</th>
       <td>0.0</td>
-      <td>437.129089</td>
-      <td>213.861359</td>
-      <td>79.529785</td>
-      <td>97.050537</td>
-      <td>0.996773</td>
-      <td>439.015782</td>
-      <td>438.598763</td>
-      <td>439.106142</td>
-      <td>440.473301</td>
+      <td>214.450517</td>
+      <td>64.650659</td>
+      <td>91.337077</td>
+      <td>111.502833</td>
+      <td>0.995610</td>
+      <td>220.870587</td>
+      <td>218.820371</td>
+      <td>217.513163</td>
+      <td>217.441024</td>
       <td>...</td>
-      <td>0.000018</td>
-      <td>4.327078e-09</td>
-      <td>0.001339</td>
-      <td>0.018785</td>
-      <td>0.000607</td>
-      <td>0.661113</td>
-      <td>0.047018</td>
-      <td>0.000741</td>
-      <td>0.270397</td>
+      <td>0.035445</td>
+      <td>0.000021</td>
+      <td>0.000504</td>
+      <td>0.004014</td>
+      <td>0.000283</td>
+      <td>0.926783</td>
+      <td>0.000241</td>
+      <td>0.001621</td>
+      <td>0.066554</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
     </tr>
   </tbody>
 </table>
-<p>6 rows × 162 columns</p>
+<p>6 rows × 170 columns</p>
 </div></div></div>
 </div>
 <p>When you have multiple images, you can still call the plot_detection which will plot results for all input images. If you have a lot of images, we recommend checking one by one using slicing.</p>
@@ -1291,8 +1339,8 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_26_0.png" src="../_images/detector_26_0.png" />
-<img alt="../_images/detector_26_1.png" src="../_images/detector_26_1.png" />
+<img alt="../_images/detector_28_0.png" src="../_images/detector_28_0.png" />
+<img alt="../_images/detector_28_1.png" src="../_images/detector_28_1.png" />
 </div>
 </div>
 <p>You can use the slicing function to plot specific rows in the detection results or for a particular input file.</p>
@@ -1303,7 +1351,7 @@ Loading Emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_28_0.png" src="../_images/detector_28_0.png" />
+<img alt="../_images/detector_30_0.png" src="../_images/detector_30_0.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1312,6 +1360,9 @@ Loading Emotion model:  fer
 <span class="n">image_prediction</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;input == @image_to_plot&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">();</span>
 </pre></div>
 </div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/detector_31_0.png" src="../_images/detector_31_0.png" />
 </div>
 </div>
 </div>
@@ -1341,19 +1392,12 @@ Loading Emotion model:  fer
 <p>Let’s predict facial expressions from the video using the <code class="docutils literal notranslate"><span class="pre">detect_video()</span></code> method.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">test_video</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">test_video</span><span class="p">,</span> <span class="n">skip_frames</span><span class="o">=</span><span class="mi">24</span><span class="p">)</span>
 <span class="n">video_prediction</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/packages/feat/feat/emo_detectors/ferNet/ferNet_test.py:147: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
-  pred_emo_softmax = nn.functional.softmax(
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>exception occurred
-</pre></div>
-</div>
 <div class="output text_html"><div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -1383,8 +1427,8 @@ Loading Emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU23</th>
-      <th>AU24</th>
+      <th>AU28</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1399,133 +1443,133 @@ Loading Emotion model:  fer
     <tr>
       <th>0</th>
       <td>0.0</td>
-      <td>334.117889</td>
-      <td>54.037693</td>
-      <td>215.074738</td>
-      <td>293.471466</td>
-      <td>0.999814</td>
-      <td>329.997266</td>
-      <td>331.559383</td>
-      <td>336.836954</td>
-      <td>344.936493</td>
+      <td>320.202412</td>
+      <td>57.558373</td>
+      <td>213.289391</td>
+      <td>280.135407</td>
+      <td>0.999956</td>
+      <td>328.068297</td>
+      <td>330.247982</td>
+      <td>335.995479</td>
+      <td>344.494300</td>
       <td>...</td>
-      <td>0.010879</td>
+      <td>0.280955</td>
+      <td>0.003971</td>
       <td>0.002144</td>
-      <td>0.002376</td>
-      <td>0.017735</td>
-      <td>0.003534</td>
-      <td>0.043448</td>
-      <td>0.679344</td>
-      <td>0.000382</td>
-      <td>0.253180</td>
+      <td>0.017533</td>
+      <td>0.004198</td>
+      <td>0.052163</td>
+      <td>0.656592</td>
+      <td>0.000451</td>
+      <td>0.266918</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
     </tr>
     <tr>
-      <th>1</th>
-      <td>1.0</td>
-      <td>334.696350</td>
-      <td>54.557045</td>
-      <td>214.053772</td>
-      <td>292.697205</td>
-      <td>0.999814</td>
-      <td>329.433781</td>
-      <td>331.189479</td>
-      <td>336.568767</td>
-      <td>344.685601</td>
+      <th>24</th>
+      <td>24.0</td>
+      <td>342.495606</td>
+      <td>65.060999</td>
+      <td>201.611214</td>
+      <td>272.792829</td>
+      <td>0.998452</td>
+      <td>347.370955</td>
+      <td>347.782018</td>
+      <td>350.472735</td>
+      <td>355.718191</td>
       <td>...</td>
-      <td>0.005956</td>
-      <td>0.002272</td>
-      <td>0.002100</td>
-      <td>0.017477</td>
-      <td>0.003784</td>
-      <td>0.046172</td>
-      <td>0.674860</td>
-      <td>0.000452</td>
-      <td>0.255156</td>
+      <td>0.370595</td>
+      <td>0.435345</td>
+      <td>0.000546</td>
+      <td>0.007087</td>
+      <td>0.053077</td>
+      <td>0.005362</td>
+      <td>0.926105</td>
+      <td>0.000480</td>
+      <td>0.007343</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
     </tr>
     <tr>
-      <th>2</th>
-      <td>2.0</td>
-      <td>335.436401</td>
-      <td>55.284416</td>
-      <td>213.081726</td>
-      <td>291.650299</td>
-      <td>0.999821</td>
-      <td>329.852573</td>
-      <td>331.535833</td>
-      <td>336.860531</td>
-      <td>345.014069</td>
+      <th>48</th>
+      <td>48.0</td>
+      <td>342.608143</td>
+      <td>47.947295</td>
+      <td>203.172812</td>
+      <td>276.045015</td>
+      <td>0.999960</td>
+      <td>342.359266</td>
+      <td>340.776404</td>
+      <td>341.667753</td>
+      <td>344.410859</td>
       <td>...</td>
-      <td>0.006748</td>
-      <td>0.002069</td>
-      <td>0.001533</td>
-      <td>0.016694</td>
-      <td>0.005359</td>
-      <td>0.036064</td>
-      <td>0.730688</td>
-      <td>0.000468</td>
-      <td>0.209193</td>
+      <td>0.171885</td>
+      <td>0.065533</td>
+      <td>0.001262</td>
+      <td>0.016965</td>
+      <td>0.026640</td>
+      <td>0.006251</td>
+      <td>0.939121</td>
+      <td>0.000101</td>
+      <td>0.009660</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
     </tr>
     <tr>
-      <th>3</th>
-      <td>3.0</td>
-      <td>335.695801</td>
-      <td>56.410995</td>
-      <td>211.726624</td>
-      <td>289.590271</td>
-      <td>0.999804</td>
-      <td>330.581873</td>
-      <td>332.221322</td>
-      <td>337.449009</td>
-      <td>345.461436</td>
+      <th>72</th>
+      <td>72.0</td>
+      <td>300.303537</td>
+      <td>64.434191</td>
+      <td>217.068643</td>
+      <td>281.385054</td>
+      <td>0.997365</td>
+      <td>317.485745</td>
+      <td>318.096879</td>
+      <td>321.099939</td>
+      <td>325.844969</td>
       <td>...</td>
-      <td>0.016985</td>
-      <td>0.001556</td>
-      <td>0.001333</td>
-      <td>0.016171</td>
-      <td>0.005142</td>
-      <td>0.027576</td>
-      <td>0.816095</td>
-      <td>0.000319</td>
-      <td>0.133362</td>
+      <td>0.134151</td>
+      <td>0.001940</td>
+      <td>0.006043</td>
+      <td>0.018187</td>
+      <td>0.028824</td>
+      <td>0.001597</td>
+      <td>0.939004</td>
+      <td>0.000300</td>
+      <td>0.006044</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
     </tr>
     <tr>
-      <th>4</th>
-      <td>4.0</td>
-      <td>336.746582</td>
-      <td>57.888710</td>
-      <td>210.408081</td>
-      <td>285.932861</td>
-      <td>0.999807</td>
-      <td>330.764068</td>
-      <td>332.417871</td>
-      <td>337.529334</td>
-      <td>345.411309</td>
+      <th>96</th>
+      <td>96.0</td>
+      <td>325.272769</td>
+      <td>97.683995</td>
+      <td>211.820777</td>
+      <td>270.068090</td>
+      <td>0.998955</td>
+      <td>342.997087</td>
+      <td>344.506875</td>
+      <td>349.551777</td>
+      <td>358.010617</td>
       <td>...</td>
-      <td>0.027723</td>
-      <td>0.000518</td>
-      <td>0.002087</td>
-      <td>0.019557</td>
-      <td>0.009824</td>
-      <td>0.031533</td>
-      <td>0.854187</td>
-      <td>0.000510</td>
-      <td>0.082301</td>
+      <td>0.297714</td>
+      <td>0.000106</td>
+      <td>0.028032</td>
+      <td>0.132029</td>
+      <td>0.023023</td>
+      <td>0.005211</td>
+      <td>0.774166</td>
+      <td>0.006976</td>
+      <td>0.030563</td>
       <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 162 columns</p>
+<p>5 rows × 170 columns</p>
 </div></div></div>
 </div>
 <p>You can also plot the detection results from a video. The frames are not extracted from the video (that will result in thousands of images) so the visualization only shows the detected face without the underlying image.</p>
 <p>The video has 24 fps and the actress show sadness around the 0:02, and happiness at 0:14 seconds.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span><span class="o">.</span><span class="n">iloc</span><span class="p">[[</span><span class="mi">2</span><span class="o">*</span><span class="mi">24</span><span class="p">]]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">();</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">48</span><span class="p">]]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -1533,12 +1577,12 @@ Loading Emotion model:  fer
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Input image /home/jcheong/packages/feat/feat/tests/data/WolfgangLanger_Pexels.mp4 not found.
 </pre></div>
 </div>
-<img alt="../_images/detector_35_1.png" src="../_images/detector_35_1.png" />
+<img alt="../_images/detector_37_1.png" src="../_images/detector_37_1.png" />
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span><span class="o">.</span><span class="n">iloc</span><span class="p">[[</span><span class="mi">13</span><span class="o">*</span><span class="mi">24</span><span class="p">]]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">();</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">17</span><span class="o">*</span><span class="mi">24</span><span class="p">]]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -1546,7 +1590,7 @@ Loading Emotion model:  fer
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Input image /home/jcheong/packages/feat/feat/tests/data/WolfgangLanger_Pexels.mp4 not found.
 </pre></div>
 </div>
-<img alt="../_images/detector_36_1.png" src="../_images/detector_36_1.png" />
+<img alt="../_images/detector_38_1.png" src="../_images/detector_38_1.png" />
 </div>
 </div>
 <p>We can also leverage existing pandas plotting functions to show how emotions unfold over time. We can clearly see how her emotions change from sadness to happiness.</p>
@@ -1560,644 +1604,17 @@ Loading Emotion model:  fer
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/detector_38_1.png" src="../_images/detector_38_1.png" />
+<img alt="../_images/detector_40_1.png" src="../_images/detector_40_1.png" />
 </div>
 </div>
-<p>In situations you don’t need predictions for EVERY frame of the video, you can specify how many frames to skip with <code class="docutils literal notranslate"><span class="pre">skip_frames</span></code>.</p>
+<p>In situations you want to predict EVERY frame of the video, you can ust leave out the <code class="docutils literal notranslate"><span class="pre">skip_frames</span></code> argument. Speed of processing may vary depending on the detector you use.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">test_video</span><span class="p">,</span> <span class="n">skip_frames</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">test_video</span><span class="p">)</span>
 <span class="n">video_prediction</span>
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/packages/feat/feat/emo_detectors/ferNet/ferNet_test.py:147: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
-  pred_emo_softmax = nn.functional.softmax(
-</pre></div>
-</div>
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>frame</th>
-      <th>FaceRectX</th>
-      <th>FaceRectY</th>
-      <th>FaceRectWidth</th>
-      <th>FaceRectHeight</th>
-      <th>FaceScore</th>
-      <th>x_0</th>
-      <th>x_1</th>
-      <th>x_2</th>
-      <th>x_3</th>
-      <th>...</th>
-      <th>AU23</th>
-      <th>AU24</th>
-      <th>anger</th>
-      <th>disgust</th>
-      <th>fear</th>
-      <th>happiness</th>
-      <th>sadness</th>
-      <th>surprise</th>
-      <th>neutral</th>
-      <th>input</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0.0</td>
-      <td>334.117889</td>
-      <td>54.037693</td>
-      <td>215.074738</td>
-      <td>293.471466</td>
-      <td>0.999814</td>
-      <td>329.997266</td>
-      <td>331.559383</td>
-      <td>336.836954</td>
-      <td>344.936493</td>
-      <td>...</td>
-      <td>0.010879</td>
-      <td>2.144145e-03</td>
-      <td>0.002376</td>
-      <td>0.017735</td>
-      <td>0.003534</td>
-      <td>0.043448</td>
-      <td>0.679344</td>
-      <td>0.000382</td>
-      <td>0.253180</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>20.0</td>
-      <td>345.315521</td>
-      <td>50.246700</td>
-      <td>209.266937</td>
-      <td>285.912537</td>
-      <td>0.999865</td>
-      <td>341.547993</td>
-      <td>341.953766</td>
-      <td>344.908072</td>
-      <td>350.935955</td>
-      <td>...</td>
-      <td>0.004495</td>
-      <td>6.515096e-05</td>
-      <td>0.000385</td>
-      <td>0.007921</td>
-      <td>0.047638</td>
-      <td>0.004685</td>
-      <td>0.931002</td>
-      <td>0.000528</td>
-      <td>0.007840</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>40</th>
-      <td>40.0</td>
-      <td>371.669556</td>
-      <td>67.396049</td>
-      <td>202.619385</td>
-      <td>284.222137</td>
-      <td>0.999776</td>
-      <td>369.287267</td>
-      <td>366.912197</td>
-      <td>367.318749</td>
-      <td>369.762106</td>
-      <td>...</td>
-      <td>0.000004</td>
-      <td>6.008734e-09</td>
-      <td>0.001130</td>
-      <td>0.016735</td>
-      <td>0.028055</td>
-      <td>0.002594</td>
-      <td>0.943883</td>
-      <td>0.000054</td>
-      <td>0.007549</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>60</th>
-      <td>60.0</td>
-      <td>334.266724</td>
-      <td>53.615170</td>
-      <td>205.271545</td>
-      <td>288.509247</td>
-      <td>0.999382</td>
-      <td>330.865895</td>
-      <td>328.752478</td>
-      <td>329.076178</td>
-      <td>331.629985</td>
-      <td>...</td>
-      <td>0.000068</td>
-      <td>5.428853e-07</td>
-      <td>0.001213</td>
-      <td>0.022268</td>
-      <td>0.047338</td>
-      <td>0.000046</td>
-      <td>0.927586</td>
-      <td>0.000061</td>
-      <td>0.001487</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>80</th>
-      <td>80.0</td>
-      <td>321.414734</td>
-      <td>77.334610</td>
-      <td>211.284485</td>
-      <td>307.020264</td>
-      <td>0.998917</td>
-      <td>320.852148</td>
-      <td>320.785224</td>
-      <td>323.195517</td>
-      <td>327.355516</td>
-      <td>...</td>
-      <td>0.000848</td>
-      <td>1.031232e-05</td>
-      <td>0.004403</td>
-      <td>0.013541</td>
-      <td>0.014029</td>
-      <td>0.000276</td>
-      <td>0.966207</td>
-      <td>0.000075</td>
-      <td>0.001468</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>100</th>
-      <td>100.0</td>
-      <td>318.838959</td>
-      <td>68.266754</td>
-      <td>209.228363</td>
-      <td>284.455872</td>
-      <td>0.999052</td>
-      <td>344.003722</td>
-      <td>346.941046</td>
-      <td>352.676120</td>
-      <td>360.579674</td>
-      <td>...</td>
-      <td>0.017789</td>
-      <td>1.165615e-02</td>
-      <td>0.116049</td>
-      <td>0.050452</td>
-      <td>0.018061</td>
-      <td>0.036182</td>
-      <td>0.669502</td>
-      <td>0.023323</td>
-      <td>0.086431</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>120</th>
-      <td>120.0</td>
-      <td>337.243988</td>
-      <td>95.725853</td>
-      <td>212.628021</td>
-      <td>269.459351</td>
-      <td>0.999600</td>
-      <td>346.483702</td>
-      <td>350.850075</td>
-      <td>358.057220</td>
-      <td>366.815067</td>
-      <td>...</td>
-      <td>0.055902</td>
-      <td>2.022403e-03</td>
-      <td>0.062257</td>
-      <td>0.185951</td>
-      <td>0.039216</td>
-      <td>0.000690</td>
-      <td>0.678152</td>
-      <td>0.008728</td>
-      <td>0.025006</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>140</th>
-      <td>140.0</td>
-      <td>352.502472</td>
-      <td>58.126644</td>
-      <td>201.449615</td>
-      <td>285.656891</td>
-      <td>0.999631</td>
-      <td>342.969811</td>
-      <td>343.754622</td>
-      <td>348.152331</td>
-      <td>355.479260</td>
-      <td>...</td>
-      <td>0.062459</td>
-      <td>3.628837e-03</td>
-      <td>0.009199</td>
-      <td>0.100385</td>
-      <td>0.085749</td>
-      <td>0.051670</td>
-      <td>0.398730</td>
-      <td>0.053393</td>
-      <td>0.300874</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>160</th>
-      <td>160.0</td>
-      <td>337.957184</td>
-      <td>19.365978</td>
-      <td>205.994598</td>
-      <td>298.821014</td>
-      <td>0.999720</td>
-      <td>333.286925</td>
-      <td>330.563057</td>
-      <td>332.222516</td>
-      <td>338.064620</td>
-      <td>...</td>
-      <td>0.000009</td>
-      <td>4.677405e-08</td>
-      <td>0.003045</td>
-      <td>0.025650</td>
-      <td>0.113392</td>
-      <td>0.048234</td>
-      <td>0.085036</td>
-      <td>0.483756</td>
-      <td>0.240886</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>180</th>
-      <td>180.0</td>
-      <td>337.540100</td>
-      <td>23.954981</td>
-      <td>208.278259</td>
-      <td>293.569366</td>
-      <td>0.999660</td>
-      <td>334.904558</td>
-      <td>332.809211</td>
-      <td>334.318491</td>
-      <td>339.388947</td>
-      <td>...</td>
-      <td>0.000014</td>
-      <td>8.630889e-08</td>
-      <td>0.002085</td>
-      <td>0.016225</td>
-      <td>0.139893</td>
-      <td>0.023396</td>
-      <td>0.076215</td>
-      <td>0.586103</td>
-      <td>0.156083</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>200</th>
-      <td>200.0</td>
-      <td>345.591980</td>
-      <td>28.703466</td>
-      <td>207.380127</td>
-      <td>289.014496</td>
-      <td>0.999356</td>
-      <td>337.325420</td>
-      <td>335.253504</td>
-      <td>336.799696</td>
-      <td>341.822850</td>
-      <td>...</td>
-      <td>0.000017</td>
-      <td>1.363161e-07</td>
-      <td>0.000509</td>
-      <td>0.006231</td>
-      <td>0.096629</td>
-      <td>0.023035</td>
-      <td>0.010495</td>
-      <td>0.809597</td>
-      <td>0.053503</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>220</th>
-      <td>220.0</td>
-      <td>340.953400</td>
-      <td>21.448563</td>
-      <td>214.535980</td>
-      <td>304.521484</td>
-      <td>0.999522</td>
-      <td>337.375294</td>
-      <td>334.903257</td>
-      <td>335.878628</td>
-      <td>339.914578</td>
-      <td>...</td>
-      <td>0.000008</td>
-      <td>6.485813e-08</td>
-      <td>0.002408</td>
-      <td>0.019468</td>
-      <td>0.026312</td>
-      <td>0.058888</td>
-      <td>0.016924</td>
-      <td>0.635890</td>
-      <td>0.240110</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>240</th>
-      <td>240.0</td>
-      <td>344.495300</td>
-      <td>18.286711</td>
-      <td>214.457214</td>
-      <td>295.932495</td>
-      <td>0.999813</td>
-      <td>342.326513</td>
-      <td>340.875591</td>
-      <td>342.162659</td>
-      <td>346.191183</td>
-      <td>...</td>
-      <td>0.033147</td>
-      <td>2.307015e-04</td>
-      <td>0.003469</td>
-      <td>0.017779</td>
-      <td>0.010262</td>
-      <td>0.414149</td>
-      <td>0.011235</td>
-      <td>0.082568</td>
-      <td>0.460538</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>260</th>
-      <td>260.0</td>
-      <td>343.555328</td>
-      <td>18.505762</td>
-      <td>212.913727</td>
-      <td>301.492950</td>
-      <td>0.999777</td>
-      <td>341.944979</td>
-      <td>339.810709</td>
-      <td>340.200266</td>
-      <td>343.887453</td>
-      <td>...</td>
-      <td>0.000033</td>
-      <td>3.940348e-08</td>
-      <td>0.002813</td>
-      <td>0.008108</td>
-      <td>0.003241</td>
-      <td>0.844909</td>
-      <td>0.008019</td>
-      <td>0.009024</td>
-      <td>0.123885</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>280</th>
-      <td>280.0</td>
-      <td>335.502045</td>
-      <td>18.636438</td>
-      <td>215.587982</td>
-      <td>302.977295</td>
-      <td>0.999642</td>
-      <td>335.435797</td>
-      <td>333.779359</td>
-      <td>334.382983</td>
-      <td>337.408230</td>
-      <td>...</td>
-      <td>0.000003</td>
-      <td>9.643721e-09</td>
-      <td>0.001371</td>
-      <td>0.009276</td>
-      <td>0.015773</td>
-      <td>0.312941</td>
-      <td>0.003946</td>
-      <td>0.512397</td>
-      <td>0.144297</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>300</th>
-      <td>300.0</td>
-      <td>340.890839</td>
-      <td>9.235092</td>
-      <td>216.493256</td>
-      <td>306.148865</td>
-      <td>0.999644</td>
-      <td>336.662383</td>
-      <td>334.871537</td>
-      <td>335.252921</td>
-      <td>338.686101</td>
-      <td>...</td>
-      <td>0.000088</td>
-      <td>2.923357e-08</td>
-      <td>0.001856</td>
-      <td>0.004487</td>
-      <td>0.001299</td>
-      <td>0.864783</td>
-      <td>0.006026</td>
-      <td>0.031100</td>
-      <td>0.090449</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>320</th>
-      <td>320.0</td>
-      <td>339.939575</td>
-      <td>11.696180</td>
-      <td>225.389771</td>
-      <td>317.820160</td>
-      <td>0.999540</td>
-      <td>337.425140</td>
-      <td>335.229648</td>
-      <td>335.424742</td>
-      <td>338.835049</td>
-      <td>...</td>
-      <td>0.000035</td>
-      <td>5.003739e-08</td>
-      <td>0.002550</td>
-      <td>0.006496</td>
-      <td>0.002275</td>
-      <td>0.825433</td>
-      <td>0.008380</td>
-      <td>0.021040</td>
-      <td>0.133826</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>340</th>
-      <td>340.0</td>
-      <td>347.545471</td>
-      <td>23.168407</td>
-      <td>223.847778</td>
-      <td>311.374634</td>
-      <td>0.999602</td>
-      <td>348.133185</td>
-      <td>345.740766</td>
-      <td>345.546899</td>
-      <td>348.475742</td>
-      <td>...</td>
-      <td>0.000005</td>
-      <td>1.005602e-08</td>
-      <td>0.001868</td>
-      <td>0.005396</td>
-      <td>0.002009</td>
-      <td>0.812614</td>
-      <td>0.009916</td>
-      <td>0.023089</td>
-      <td>0.145108</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>360</th>
-      <td>360.0</td>
-      <td>363.282318</td>
-      <td>28.516903</td>
-      <td>211.615082</td>
-      <td>309.851471</td>
-      <td>0.999701</td>
-      <td>363.341758</td>
-      <td>362.337130</td>
-      <td>363.782375</td>
-      <td>368.114361</td>
-      <td>...</td>
-      <td>0.000210</td>
-      <td>6.720961e-08</td>
-      <td>0.003457</td>
-      <td>0.009223</td>
-      <td>0.002542</td>
-      <td>0.777830</td>
-      <td>0.015163</td>
-      <td>0.037182</td>
-      <td>0.154604</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>380</th>
-      <td>380.0</td>
-      <td>364.891693</td>
-      <td>32.483879</td>
-      <td>212.339142</td>
-      <td>312.202759</td>
-      <td>0.999761</td>
-      <td>365.229946</td>
-      <td>363.766260</td>
-      <td>364.977982</td>
-      <td>369.203915</td>
-      <td>...</td>
-      <td>0.000138</td>
-      <td>1.881559e-08</td>
-      <td>0.007597</td>
-      <td>0.011272</td>
-      <td>0.002416</td>
-      <td>0.822729</td>
-      <td>0.015106</td>
-      <td>0.006533</td>
-      <td>0.134347</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>400</th>
-      <td>400.0</td>
-      <td>326.155151</td>
-      <td>43.441788</td>
-      <td>217.043884</td>
-      <td>296.680115</td>
-      <td>0.999389</td>
-      <td>320.454394</td>
-      <td>333.699163</td>
-      <td>349.385693</td>
-      <td>367.460454</td>
-      <td>...</td>
-      <td>0.033554</td>
-      <td>7.079385e-04</td>
-      <td>0.005289</td>
-      <td>0.007426</td>
-      <td>0.001091</td>
-      <td>0.912054</td>
-      <td>0.006782</td>
-      <td>0.003091</td>
-      <td>0.064268</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>420</th>
-      <td>420.0</td>
-      <td>305.187805</td>
-      <td>50.167694</td>
-      <td>225.592102</td>
-      <td>289.326782</td>
-      <td>0.999758</td>
-      <td>309.155603</td>
-      <td>322.075413</td>
-      <td>337.301481</td>
-      <td>354.788570</td>
-      <td>...</td>
-      <td>0.041639</td>
-      <td>1.533432e-03</td>
-      <td>0.002530</td>
-      <td>0.005374</td>
-      <td>0.001052</td>
-      <td>0.924155</td>
-      <td>0.006046</td>
-      <td>0.002012</td>
-      <td>0.058832</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>440</th>
-      <td>440.0</td>
-      <td>327.518433</td>
-      <td>38.018608</td>
-      <td>216.917236</td>
-      <td>298.589417</td>
-      <td>0.999655</td>
-      <td>319.209173</td>
-      <td>327.680207</td>
-      <td>338.688503</td>
-      <td>352.830819</td>
-      <td>...</td>
-      <td>0.037592</td>
-      <td>1.022787e-03</td>
-      <td>0.007642</td>
-      <td>0.007597</td>
-      <td>0.003149</td>
-      <td>0.948721</td>
-      <td>0.007905</td>
-      <td>0.002514</td>
-      <td>0.022472</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-    <tr>
-      <th>460</th>
-      <td>460.0</td>
-      <td>369.639008</td>
-      <td>67.135239</td>
-      <td>219.441742</td>
-      <td>289.726440</td>
-      <td>0.999747</td>
-      <td>394.461214</td>
-      <td>382.644045</td>
-      <td>373.249231</td>
-      <td>367.580364</td>
-      <td>...</td>
-      <td>0.000014</td>
-      <td>8.703573e-09</td>
-      <td>0.000713</td>
-      <td>0.005573</td>
-      <td>0.001419</td>
-      <td>0.931659</td>
-      <td>0.003615</td>
-      <td>0.001693</td>
-      <td>0.055328</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
-    </tr>
-  </tbody>
-</table>
-<p>24 rows × 162 columns</p>
-</div></div></div>
 </div>
 </div>
 </div>
@@ -2228,7 +1645,7 @@ Loading Emotion model:  fer
         <div class='prev-next-bottom'>
             
     <a class='left-prev' id="prev-link" href="installation.html" title="previous page">Installation example</a>
-    <a class='right-next' id="next-link" href="analysis.html" title="next page">Analysis</a>
+    <a class='right-next' id="next-link" href="analysis.html" title="next page">Preprocessing</a>
 
         </div>
         
