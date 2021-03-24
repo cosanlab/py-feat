@@ -28,14 +28,14 @@ class CustomInstall(install):
                     if os.path.isdir(p) and "feat" in os.listdir(p):
                         return os.path.join(p, "feat", "resources")
 
-        with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
-            model_urls = json.load(f) 
+            with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
+                model_urls = json.load(f) 
 
-        # Download default models
-        default_models = [("au_detectors", "rf"), ("emotion_detectors", "resmasknet"), ("face_detectors", "retinaface"), ("landmark_detectors", "mobilenet")]   
-        for modelType, modelName in default_models:
-            for url in model_urls[modelType][modelName]["urls"]:
-                download_url(url, get_resource_path())
+            # Download default models
+            default_models = [("au_detectors", "rf"), ("emotion_detectors", "resmasknet"), ("face_detectors", "retinaface"), ("landmark_detectors", "mobilenet")]   
+            for modelType, modelName in default_models:
+                for url in model_urls[modelType][modelName]["urls"]:
+                    download_url(url, get_resource_path())
 
         atexit.register(_post_install)
         install.run(self)
