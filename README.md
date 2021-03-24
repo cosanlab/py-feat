@@ -16,9 +16,6 @@ Run setup
 Option 2  
 `pip install git+https://github.com/cosanlab/feat`
 
-Verify models have been downloaded
-`python download_models.py` 
-
 ## Usage examples
 ### 1. Feature extraction
 Extract emotion predictions from a face video.
