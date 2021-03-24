@@ -10,7 +10,6 @@ from feat.tests.utils import get_test_data_path
 import pandas as pd
 import feat
 import os
-import wget
 import cv2
 import numpy as np
 
