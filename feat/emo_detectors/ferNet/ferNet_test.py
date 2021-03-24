@@ -145,6 +145,6 @@ class ferNetModule(nn.Module):
             imgs_net = imgs_net.cuda()
         pred_emo = self.net0(imgs_net)
         pred_emo_softmax = nn.functional.softmax(
-            pred_emo).cpu().float().data.numpy()
+            pred_emo, dim=1).cpu().float().data.numpy()
 
         return pred_emo_softmax

@@ -70,7 +70,7 @@ class Detector(object):
                 face_model (str, default=retinaface): Name of face detection model
                 landmark_model (str, default=mobilenet): Nam eof landmark model
                 au_model (str, default=rf): Name of Action Unit detection model
-                emotion_model (str, default=fer_aug_model.h5): Path to emotion detection model.
+                emotion_model (str, default=resmasknet): Path to emotion detection model.
                 face_detection_columns (list): Column names for face detection ouput (x, y, w, h)
                 face_landmark_columns (list): Column names for face landmark output (x0, y0, x1, y1, ...)
                 emotion_model_columns (list): Column names for emotion model output
@@ -348,13 +348,19 @@ class Detector(object):
         return landmark_list
     
     def extract_face(self, frame, detected_faces, landmarks, size_output=112):
-        """
-        This function extracts the faces of the frame with convex hulls
+        """Extract a face in a frame with a convex hull of landmarks.
+
+        This function extracts the faces of the frame with convex hulls and masks out the rest.
+
         Args:
-            frame: The original image
-            detected_faces: face bounding boxes
-            landmarks: the landmark information
+            frame (array): The original image]
+            detected_faces (list): face bounding box
+            landmarks (list): the landmark information]
+            size_output (int, optional): [description]. Defaults to 112.
+
         Returns:
+            resized_face_np: resized face as a numpy array
+            new_landmarks: landmarks of aligned face
         """
         detected_faces = np.array(detected_faces)
         landmarks = np.array(landmarks)
@@ -389,9 +395,18 @@ class Detector(object):
 
 
     def extract_hog(self, frame, orientation=8, pixels_per_cell=(8,8), cells_per_block=(2,2), visualize=False):
-        """
-        
-        """
+        """Extract HOG features from a frame.
+
+        Args:
+            frame (array]): Frame of image]
+            orientation (int, optional): Orientation for HOG. Defaults to 8.
+            pixels_per_cell (tuple, optional): Pixels per cell for HOG. Defaults to (8,8).
+            cells_per_block (tuple, optional): Cells per block for HOG. Defaults to (2,2).
+            visualize (bool, optional): Whether to provide the HOG image. Defaults to False.
+
+        Returns:
+            hog_output: array of HOG features, and the HOG image if visualize is True.
+        """        
         
         hog_output = hog(frame, orientations=orientation, pixels_per_cell=pixels_per_cell,
                         cells_per_block=cells_per_block, visualize=visualize, multichannel=True)
@@ -590,7 +605,16 @@ class Detector(object):
         if outputFname:
             return True
         else:
-            return init_df
+            return Fex(
+                init_df,
+                filename=inputFname,
+                au_columns=self["au_presence_columns"],
+                emotion_columns=FEAT_EMOTION_COLUMNS,
+                facebox_columns=FEAT_FACEBOX_COLUMNS,
+                landmark_columns=openface_2d_landmark_columns,
+                time_columns=FACET_TIME_COLUMNS,
+                detector="Feat",
+            )
 
     def detect_image(self, inputFname, outputFname=None, verbose=False):
         """Detects FEX from an image file.
