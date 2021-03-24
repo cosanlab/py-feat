@@ -4,7 +4,6 @@
 import atexit, os, sys
 from setuptools import setup, find_packages
 from setuptools.command.install import install
-import zipfile
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -16,38 +15,6 @@ with open("feat/version.py") as f:
 extra_setuptools_args = dict(
     tests_require=['pytest']
 )
-
-class CustomInstall(install):
-    def run(self):
-        def _post_install():
-            from torchvision.datasets.utils import download_url
-            import os, sys, json
-            class HiddenPrints:
-                def __enter__(self):
-                    self._original_stdout = sys.stdout
-                    sys.stdout = open(os.devnull, 'w')
-
-                def __exit__(self, exc_type, exc_val, exc_tb):
-                    sys.stdout.close()
-                    sys.stdout = self._original_stdout
-                    
-            def get_resource_path():
-                for p in sys.path:
-                    if os.path.isdir(p) and "feat" in os.listdir(p):
-                        return os.path.join(p, "feat", "resources")
-
-            with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
-                model_urls = json.load(f) 
-
-            # Download default models
-            default_models = [("au_detectors", "rf"), ("emotion_detectors", "resmasknet"), ("face_detectors", "retinaface"), ("landmark_detectors", "mobilenet")]   
-            for modelType, modelName in default_models:
-                for url in model_urls[modelType][modelName]["urls"]:
-                    with HiddenPrints():
-                        download_url(url, get_resource_path())
-
-        atexit.register(_post_install)
-        install.run(self)
 
 setup(
     name='py-feat',
@@ -74,7 +41,6 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='feat/tests',
-    cmdclass={'install':CustomInstall},
     **extra_setuptools_args
 )
 
