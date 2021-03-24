@@ -26,7 +26,7 @@ setup(
     url='https://github.com/cosanlab/feat',
     packages=find_packages(),
     package_data = {'feat': ['resources/*','tests/*','tests/data/*']},
-    scripts=['bin/detect_fex.py', 'bin/download_models.py'],
+    scripts=['bin/detect_fex.py'],
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
