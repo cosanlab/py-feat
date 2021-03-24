@@ -14,7 +14,7 @@ import wget
 import cv2
 import numpy as np
 
-inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
+inputFname = os.path.join(get_test_data_path(), "input.jpg")
 img01 = cv2.imread(inputFname)
 h, w, _ = img01.shape
 
@@ -35,24 +35,13 @@ def test_faceboxes():
         n_jobs=1,
     )
     out = detector01.detect_faces(img01)
-    bbox_left = out[0][0]
-    assert bbox_left != None
-    bbox_right = out[0][1]
-    bbox_top = out[0][2]
-    bbox_bottom = out[0][3]
+    bbox_x = out[0][0]
+    assert bbox_x != None
+    bbox_width = out[0][1]
+    bbox_y = out[0][2]
+    bbox_height = out[0][3]
     assert len(out[0]) == 5
-    assert (
-        bbox_left > 0
-        and bbox_right > 0
-        and bbox_top > 0
-        and bbox_bottom > 0
-        and bbox_left < bbox_right
-        and bbox_top < bbox_bottom
-        and bbox_left < w
-        and bbox_right < w
-        and bbox_top < h
-        and bbox_bottom < h
-    )
+    assert bbox_x > 180 and bbox_x < 200
 
 
 def test_retinaface():
@@ -64,25 +53,13 @@ def test_retinaface():
         n_jobs=1,
     )
     out = detector02.detect_faces(img01)
-    bbox_left = out[0][0]
-    assert bbox_left != None
-    bbox_right = out[0][1]
-    bbox_top = out[0][2]
-    bbox_bottom = out[0][3]
+    bbox_x = out[0][0]
+    assert bbox_x != None
+    bbox_width = out[0][1]
+    bbox_y = out[0][2]
+    bbox_height = out[0][3]
     assert len(out[0]) == 5
-    assert (
-        bbox_left > 0
-        and bbox_right > 0
-        and bbox_top > 0
-        and bbox_bottom > 0
-        and bbox_left < bbox_right
-        and bbox_top < bbox_bottom
-        and bbox_left < w
-        and bbox_right < w
-        and bbox_top < h
-        and bbox_bottom < h
-    )
-
+    assert bbox_x > 180 and bbox_x < 200
 
 def test_mtcnn():
     detector03 = Detector(
@@ -93,24 +70,13 @@ def test_mtcnn():
         n_jobs=1,
     )
     out = detector03.detect_faces(img01)
-    bbox_left = out[0][0]
-    assert bbox_left != None
-    bbox_right = out[0][1]
-    bbox_top = out[0][2]
-    bbox_bottom = out[0][3]
+    bbox_x = out[0][0]
+    assert bbox_x != None
+    bbox_width = out[0][1]
+    bbox_y = out[0][2]
+    bbox_height = out[0][3]
     assert len(out[0]) == 5
-    assert (
-        bbox_left > 0
-        and bbox_right > 0
-        and bbox_top > 0
-        and bbox_bottom > 0
-        and bbox_left < bbox_right
-        and bbox_top < bbox_bottom
-        and bbox_left < w
-        and bbox_right < w
-        and bbox_top < h
-        and bbox_bottom < h
-    )
+    assert bbox_x > 180 and bbox_x < 200
 
 
 def test_mobilefacenet():
@@ -225,7 +191,7 @@ def test_rf():
 
 def test_drml():
     # AU Detection Case2:
-    inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
+    inputFname = os.path.join(get_test_data_path(), "input.jpg")
     img01 = cv2.imread(inputFname)
     detector1 = Detector(
         face_model="RetinaFace",
@@ -241,10 +207,10 @@ def test_drml():
 
 
 def test_resmasknet():
-    inputFname = os.path.join(get_test_data_path(), "sampler0000.jpg")
+    inputFname = os.path.join(get_test_data_path(), "input.jpg")
     detector1 = Detector(emotion_model="resmasknet")
     out = detector1.detect_image(inputFname)
-    assert out.emotions()["neutral"].values > 0.5
+    assert out.emotions()["happiness"].values > 0.5
 
 
 def test_detect_image():
