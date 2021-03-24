@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contribute &#8212; Py-Feat</title>
+    <title>Contributing new FEX models &#8212; Py-Feat</title>
     
   <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
 
@@ -55,7 +55,8 @@
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="API Reference" href="../api/index.html" />
+    <link rel="next" title="API Reference" href="../api/index.html" />
+    <link rel="prev" title="Loading FEX data from other detectors" href="loadingOtherFiles.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -109,7 +110,7 @@
   Tutorials
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="current nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="detector.html">
    Detecting FEX from images and videos
@@ -135,8 +136,8 @@
    Loading FEX data from other detectors
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="modelContribution.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Contributing new FEX models
   </a>
  </li>
@@ -188,9 +189,9 @@
   Contributing
  </span>
 </p>
-<ul class="current nav sidenav_l1">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="contribute.html">
    Contribute
   </a>
  </li>
@@ -241,7 +242,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../_sources/content/contribute.md"><button type="button"
+        <a class="dropdown-buttons" href="../_sources/content/modelContribution.md"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.md</button></a>
         <!-- Download PDF via print -->
@@ -261,7 +262,7 @@
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/cosanlab/feat/issues/new?title=Issue%20on%20page%20%2Fcontent/contribute.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/cosanlab/feat/issues/new?title=Issue%20on%20page%20%2Fcontent/modelContribution.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -288,13 +289,18 @@
         <nav id="bd-toc-nav">
             <ul class="nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#general-contribution-guidelines">
-   General contribution guidelines
+  <a class="reference internal nav-link" href="#develop-a-model">
+   1. Develop a model
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#model-contribution-guidelines">
-   Model contribution guidelines
+  <a class="reference internal nav-link" href="#benchmark-your-model">
+   2. Benchmark your model.
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#add-models-to-the-toolbox">
+   3. Add models to the toolbox.
   </a>
  </li>
 </ul>
@@ -309,38 +315,68 @@
         
               <div>
                 
-  <div class="section" id="contribute">
-<h1>Contribute<a class="headerlink" href="#contribute" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="general-contribution-guidelines">
-<h2>General contribution guidelines<a class="headerlink" href="#general-contribution-guidelines" title="Permalink to this headline">¶</a></h2>
-<ol class="simple">
-<li><p>Fork the repository on <a class="reference external" href="https://github.com/cosanlab/feat">GitHub</a>.</p></li>
-<li><p>Install Feat on your machine.</p></li>
-<li><p>Install <code class="docutils literal notranslate"><span class="pre">pytest</span></code> with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pytest</span></code> then run the tests in the repository with <code class="docutils literal notranslate"><span class="pre">pytest</span></code> or <code class="docutils literal notranslate"><span class="pre">pytest/feat/tests/</span></code>. Confirm that all tests pass on your system. If some tests fail, try to find out why they are failing. Common issues may be not having downloaded model files or missing dependencies.</p></li>
-<li><p>Create your feature.</p></li>
-<li><p>Add tests to <code class="docutils literal notranslate"><span class="pre">feat/tests/</span></code>.</p></li>
-<li><p>Run the tests again with <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/</span></code> to make sure everything still passes, including your new feature. If you broke something, edit your feature so that it doesn’t break existing code.</p></li>
-<li><p>Create a pull request to the main repository’s <code class="docutils literal notranslate"><span class="pre">master</span></code> branch!</p></li>
-</ol>
+  <div class="section" id="contributing-new-fex-models">
+<h1>Contributing new FEX models<a class="headerlink" href="#contributing-new-fex-models" title="Permalink to this headline">¶</a></h1>
+<p><em>written by Jin Hyun Cheong</em></p>
+<p>In this tutorial we outline the necessary steps for users to contribute new models to the Py-FEAT toolbox. This will allow developers to gain a wide audience for their work and researchers can also benefit from making informed choices for selecting models.</p>
+<div class="section" id="develop-a-model">
+<h2>1. Develop a model<a class="headerlink" href="#develop-a-model" title="Permalink to this headline">¶</a></h2>
+<p>Currently we have organized our models into the following categories:</p>
+<ul class="simple">
+<li><p>au_detectors</p></li>
+<li><p>emotion_detectors</p></li>
+<li><p>face_detectors</p></li>
+<li><p>landmark_detectors</p></li>
+</ul>
+<p>Therefore any model you develop that fall into those categories can be added. If there is a new category you would like us to implement (e.g. gaze, head pose) please submit a pull request.</p>
 </div>
-<div class="section" id="model-contribution-guidelines">
-<h2>Model contribution guidelines<a class="headerlink" href="#model-contribution-guidelines" title="Permalink to this headline">¶</a></h2>
-<p>There are three key steps to adding a model.</p>
+<div class="section" id="benchmark-your-model">
+<h2>2. Benchmark your model.<a class="headerlink" href="#benchmark-your-model" title="Permalink to this headline">¶</a></h2>
+<p>We benchmark each model on a specified dataset. These are quite standard datasets. We employ an honor system that your model should not be using these datasets for training. We will also add new benchmark dataset and results as needed.</p>
+<ul class="simple">
+<li><p>au_detectors: DISFA Plus</p></li>
+<li><p>emotion_detectors: AffNet</p></li>
+<li><p>face_detectors: WIDER</p></li>
+<li><p>landmark_detectors: 300W</p></li>
+</ul>
+</div>
+<div class="section" id="add-models-to-the-toolbox">
+<h2>3. Add models to the toolbox.<a class="headerlink" href="#add-models-to-the-toolbox" title="Permalink to this headline">¶</a></h2>
+<p>Adding a new model to the Py-FEAT toolbox is easy if you are familiar with Python, Github, and package development. Here is 10 simple steps to adding a new model.</p>
 <ol class="simple">
-<li><p>Create a folder for the model you are building in the appropriate model type directory.
-If you are contributing an Action Unit detection model and calling it <code class="docutils literal notranslate"><span class="pre">mynewmodel</span></code>, create a folder in <code class="docutils literal notranslate"><span class="pre">feat/feat/au_detectors/</span></code>. If it’s an Emotion detection model, add a folder <code class="docutils literal notranslate"><span class="pre">feat/feat/emo_detectors/</span></code>.</p></li>
-<li><p>Add your model architecture.
-Your model files could contained in a single (e.g. <code class="docutils literal notranslate"><span class="pre">feat/emo_detectors/ResMaskNet/resmasknet_test.py</span></code>) or they could be separated in to a model file (e.g. <code class="docutils literal notranslate"><span class="pre">/au_detectors/JAANet/JAA_model</span></code>) and a test file (e.g. <code class="docutils literal notranslate"><span class="pre">/au_detectors/JAANet/JAA_test</span></code>).</p></li>
-<li><p>Your model should be a class that has the appropriate method that the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> can call it.
-For example, AU detectors should have the function <code class="docutils literal notranslate"><span class="pre">mynewmodel.detect_au()</span></code> that can be called.</p></li>
-<li><p>Add model to list of models in the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class in <code class="docutils literal notranslate"><span class="pre">feat/detector.py</span></code>.</p></li>
-<li><p>Upload your trained model weights to an accessible locations (e.g. Google Drive).</p></li>
-<li><p>Add tests to make sure your model is working.</p></li>
-<li><p>Create a pull request to the main repository’s <code class="docutils literal notranslate"><span class="pre">master</span></code> branch!</p></li>
+<li><p>For the Py-FEAT repository from https://github.com/cosanlab/feat</p></li>
+<li><p>Install the package to your computer in development mode. This will allow you to quickly test your code as you develop.
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
+<li><p>Make sure everything is working using <code class="docutils literal notranslate"><span class="pre">pytest</span></code></p></li>
+<li><p>If you are testing in a Jupyter Notebook enviornment, enable autoreload so that every change you make on the toolbox is immediately loaded.</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">load_ext</span> <span class="n">autoreload</span>
+<span class="o">%</span><span class="n">autoreload</span> <span class="mi">2</span>
 </pre></div>
 </div>
+<ol class="simple">
+<li><p>Create a directory for your model.
+If you are adding a new emotion detector, and your model name is MYNEWMODEL, create folder <code class="docutils literal notranslate"><span class="pre">feat/emo_detectors/MYNEWMODEL</span></code></p></li>
+<li><p>Add an empty <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file so that it is recognized as a submodule by Python.
+<code class="docutils literal notranslate"><span class="pre">touch</span> <span class="pre">__init__.py</span></code></p></li>
+<li><p>Create the model file, class, and methods.
+For example, this model file could be named <code class="docutils literal notranslate"><span class="pre">mynewmodel.py</span></code> which defines a class called <code class="docutils literal notranslate"><span class="pre">myNewModel()</span></code> which has a method <code class="docutils literal notranslate"><span class="pre">detect_emo()</span></code></p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">myNewModel</span><span class="p">():</span> 
+    <span class="c1">## code to init and load model</span>
+    
+    <span class="n">detect_emo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1">## code to detect emotions</span>
+    
+        <span class="k">return</span> <span class="p">[</span><span class="n">array</span> <span class="k">with</span> <span class="n">probabilities</span> <span class="k">for</span> <span class="mi">7</span> <span class="n">emotions</span><span class="p">]</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Add your model info and download url link to <code class="docutils literal notranslate"><span class="pre">model_list.json</span></code>
+This will allow us to download the model files when necessary.</p></li>
+<li><p>Lastly, add your method to <code class="docutils literal notranslate"><span class="pre">detector.py</span></code> so that it is accessible.</p></li>
+<li><p>Before submitting a pull request please run <code class="docutils literal notranslate"><span class="pre">pytest</span></code> to make sure other parts of the package is not broken.</p></li>
+</ol>
 </div>
 </div>
 
@@ -369,7 +405,8 @@ For example, AU detectors should have the function <code class="docutils literal
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="../api/index.html" title="previous page">API Reference</a>
+    <a class='left-prev' id="prev-link" href="loadingOtherFiles.html" title="previous page">Loading FEX data from other detectors</a>
+    <a class='right-next' id="next-link" href="../api/index.html" title="next page">API Reference</a>
 
         </div>
         
