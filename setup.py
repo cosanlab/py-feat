@@ -22,7 +22,15 @@ class CustomInstall(install):
         def _post_install():
             from torchvision.datasets.utils import download_url
             import os, sys, json
+            class HiddenPrints:
+                def __enter__(self):
+                    self._original_stdout = sys.stdout
+                    sys.stdout = open(os.devnull, 'w')
 
+                def __exit__(self, exc_type, exc_val, exc_tb):
+                    sys.stdout.close()
+                    sys.stdout = self._original_stdout
+                    
             def get_resource_path():
                 for p in sys.path:
                     if os.path.isdir(p) and "feat" in os.listdir(p):
@@ -35,7 +43,8 @@ class CustomInstall(install):
             default_models = [("au_detectors", "rf"), ("emotion_detectors", "resmasknet"), ("face_detectors", "retinaface"), ("landmark_detectors", "mobilenet")]   
             for modelType, modelName in default_models:
                 for url in model_urls[modelType][modelName]["urls"]:
-                    download_url(url, get_resource_path())
+                    with HiddenPrints():
+                        download_url(url, get_resource_path())
 
         atexit.register(_post_install)
         install.run(self)
