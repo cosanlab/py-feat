@@ -1,4 +1,4 @@
-# Loading FEX data from other detectors
+# Loading data from other detectors
 *written by Jin Hyun Cheong*
 
 While Py-FEAT provides it's own set of detectors, you can still use Py-FEAT if you extracted features from other models. Currently we support data files extracted from OpenFace, FACET iMotions, and Affectiva JavaScript SDK. Please open an Issue if you would like to see support for other model outputs. 

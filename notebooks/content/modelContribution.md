@@ -1,4 +1,4 @@
-# Contributing new FEX models
+# Contributing new detectors
 
 *written by Jin Hyun Cheong*  
 
@@ -56,3 +56,7 @@ This will allow us to download the model files when necessary.
 10. Before submitting a pull request please run `pytest` to make sure other parts of the package is not broken. 
 
 
+
+```python
+
+```

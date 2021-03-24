@@ -1,4 +1,4 @@
-# Detecting FEX from images and videos
+# Detecting FEX from images
 
 ## How to use the Feat Detector class.
 
@@ -123,7 +123,7 @@ image_prediction.iloc[[1]].plot_detections();
 image_to_plot = image_prediction.input().unique()[1]
 image_prediction.query("input == @image_to_plot").plot_detections();
 
-## Detecting facial expressions from videos. 
+# Detecting FEX from videos. 
 Detecting facial expressions in videos is also easy by using the `detect_video()` method. This sample video is by [Wolfgang Langer](https://www.pexels.com/@wolfgang-langer-1415383?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels) from [Pexels](https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/).
 
 # Find the file you want to process.
