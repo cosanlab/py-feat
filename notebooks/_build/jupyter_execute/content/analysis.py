@@ -1,6 +1,6 @@
-# Preprocessing
+# Preprocessing FEX data
 
-## How to analyze facial expression data with Feat.
+## How to preprocess and analyze facial expression data with Feat.
 
 *Written by Jin Hyun Cheong*
 
@@ -70,7 +70,7 @@ fex.sessions = fex.input()
 average_au_intensity_per_video = fex.extract_mean()
 display(average_au_intensity_per_video.head())
 
-# Analyses
+# Analyzing FEX data
 ## Simple t-test
 You can use a simple t-test to test if the average activation of a certain AU is significantly higher than .5 (chance). The results suggests that AU10 (upper lip raiser), 12 (lip corner puller), and 14 (dimpler) is significantly activitated when providing good news. 
 

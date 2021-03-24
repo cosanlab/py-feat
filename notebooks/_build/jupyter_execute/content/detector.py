@@ -1,4 +1,4 @@
-# Detector
+# Detecting FEX from images and videos
 
 ## How to use the Feat Detector class.
 
