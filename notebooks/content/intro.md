@@ -57,7 +57,10 @@ from feat import Detector
 ## Available models
 Below is a list of models implemented in Py-Feat and ready to use. The model names are in the titles followed by the reference publications.
 ### Action Unit detection
-- `JAANET`: Joint facial action unit detectio nand face alignment via adaptive attention ([Shao et al., 2020](https://arxiv.org/pdf/2003.08834v1.pdf))
+- `rf`: Random Forest model trained on Histogram of Oriented Gradients. 
+- `svm`: SVM model trained on Histogram of Oriented Gradients. 
+- `logistic`: Logistic Classifier model trained on Histogram of Oriented Gradients. 
+- `JAANET`: Joint facial action unit detection and face alignment via adaptive attention ([Shao et al., 2020](https://arxiv.org/pdf/2003.08834v1.pdf))
 - `DRML`: Deep region and multi-label learning for facial action unit detection by ([Zhao et al., 2016](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Zhao_Deep_Region_and_CVPR_2016_paper.pdf))
 ###  Emotion detection
 - `FeatNet` by Tiankang Xie 
