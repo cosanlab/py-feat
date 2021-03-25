@@ -942,9 +942,7 @@ def predict(au, model=None):
 
     Returns:
         landmarks: Array of landmarks (2,68)
-
     """
-
     if model is None:
         model = load_h5()
     elif not isinstance(model, PLSRegression):

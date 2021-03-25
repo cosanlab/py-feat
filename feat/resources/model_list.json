@@ -1,0 +1,51 @@
+{
+    "au_detectors": {
+        "svm": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib", "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib"]
+        },
+        "rf": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib", "https://github.com/cosanlab/feat/releases/download/v0.1/RF_568.joblib"]
+        },
+        "logistic": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib", "https://github.com/cosanlab/feat/releases/download/v0.1/Logistic_520.joblib"]
+        },
+        "hog-pca": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib"]
+        },
+        "jaanet": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip"]
+        },
+        "drml": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"]
+        }
+    },
+    "emotion_detectors": {
+        "fer": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"]
+        },
+        "resmasknet": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth"]}
+    },
+    "face_detectors": {
+        "retinaface": {
+            "urls":["https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet0.25_Final.pth"]},
+        "mtcnn": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/onet.npy", "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.npy", "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.npy"
+            ]},
+        "faceboxes": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"]}
+        },
+    "landmark_detectors": {
+        "lbfmodel": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"]
+        },
+        "mobilefacenet": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/mobilefacenet_model_best.pth.tar"]
+        },
+        "mobilenet": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet_224_model_best_gdconv_external.pth.tar"]
+        },
+        "pfld": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/pfld_model_best.pth.tar"]}
+    }
+}
