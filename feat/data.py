@@ -87,7 +87,9 @@ class FexSeries(Series):
         return Fex
 
     def __finalize__(self, other, method=None, **kwargs):
-        """ propagate metadata from other to self """
+        """Propagate metadata from other to self
+        
+        """
         # NOTE: backported from pandas master (upcoming v0.13)
         for name in self._metadata:
             object.__setattr__(self, name, getattr(other, name, None))
@@ -177,20 +179,16 @@ class FexSeries(Series):
 
 
 class Fex(DataFrame):
-    """Fex is a class to represent facial expression (Fex) data. It is essentially
-        an enhanced pandas df, with extra attributes and methods. Methods
-        always return a new design matrix instance.
+    """Fex is a class to represent facial expression (Fex) data
+    
+    Fex class is  an enhanced pandas dataframe, with extra attributes and methods to help with facial expression data analysis.
 
     Args:
         filename: (str, optional) path to file
         detector: (str, optional) name of software used to extract Fex. (Feat, FACET, OpenFace, or Affectiva)
-        sampling_freq (float, optional): sampling rate of each row in Hz;
-                                         defaults to None
-        features (pd.Dataframe, optional): features that correspond to each
-                                          Fex row
-        sessions: Unique values indicating rows associated with a specific
-                  session (e.g., trial, subject, etc). Must be a 1D array of
-                  n_samples elements; defaults to None
+        sampling_freq (float, optional): sampling rate of each row in Hz; defaults to None
+        features (pd.Dataframe, optional): features that correspond to each Fex row
+        sessions: Unique values indicating rows associated with a specific session (e.g., trial, subject, etc).Must be a 1D array of n_samples elements; defaults to None
     """
 
     # __metaclass__  = abc.ABCMeta
@@ -214,7 +212,7 @@ class Fex(DataFrame):
     ]
 
     def __finalize__(self, other, method=None, **kwargs):
-        """propagate metadata from other to self """
+        """Propagate metadata from other to self """
         self = super().__finalize__(other, method=method, **kwargs)
         # merge operation: using metadata of the left object
         if method == "merge":
@@ -370,6 +368,8 @@ class Fex(DataFrame):
     def aus(self):
         """Returns the Action Units data
 
+        Returns Action Unit data using the columns set in fex.au_columns.
+
         Returns:
             DataFrame: Action Units data
         """
@@ -377,6 +377,8 @@ class Fex(DataFrame):
 
     def emotions(self):
         """Returns the emotion data
+
+        Returns emotions data using the columns set in fex.emotion_columns.
 
         Returns:
             DataFrame: emotion data
@@ -386,6 +388,8 @@ class Fex(DataFrame):
     def landmark(self):
         """Returns the landmark data
 
+        Returns landmark data using the columns set in fex.landmark_columns.
+
         Returns:
             DataFrame: landmark data
         """
@@ -394,6 +398,8 @@ class Fex(DataFrame):
     def input(self):
         """Returns input column as string
 
+        Returns input data in the "input" column.
+
         Returns:
             string: path to input image
         """
@@ -401,6 +407,8 @@ class Fex(DataFrame):
 
     def landmark_x(self):
         """Returns the x landmarks.
+
+        Returns the x-coordinates for facial landmarks looking for "x" in fex.landmark_columns.
 
         Returns:
             DataFrame: x landmarks.
@@ -412,6 +420,8 @@ class Fex(DataFrame):
     def landmark_y(self):
         """Returns the y landmarks.
 
+        Returns the y-coordinates for facial landmarks looking for "y" in fex.landmark_columns.
+
         Returns:
             DataFrame: y landmarks.
         """
@@ -421,13 +431,18 @@ class Fex(DataFrame):
     def facebox(self):
         """Returns the facebox data
 
+        Returns the facebox data using fex.facebox_columns.
+
         Returns:
             DataFrame: facebox data
         """
+            
         return self[self.facebox_columns]
 
     def time(self):
         """Returns the time data
+
+        Returns the time information using fex.time_columns.
 
         Returns:
             DataFrame: time data
@@ -437,6 +452,8 @@ class Fex(DataFrame):
     def design(self):
         """Returns the design data
 
+        Returns the study design information using columns in fex.design_columns.
+
         Returns:
             DataFrame: time data
         """
@@ -444,6 +461,14 @@ class Fex(DataFrame):
 
     def read_file(self, *args, **kwargs):
         """Loads file into FEX class
+
+        This function checks the detector set in fex.detector and calls the appropriate read function that helps utilize functionalities of Feat. 
+
+        Available detectors include:
+            FACET
+            OpenFace
+            Affectiva
+            Feat
 
         Returns:
             DataFrame: Fex class
@@ -460,7 +485,10 @@ class Fex(DataFrame):
             print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
 
     def info(self):
-        """Print class meta data."""
+        """Print all meta data of fex
+        
+        Loops through metadata set in self._metadata and prints out the information.
+        """
         attr_list = []
         for name in self._metadata:
             attr_list.append(name + ": " + str(getattr(self, name, None)) + "\n")
@@ -468,6 +496,14 @@ class Fex(DataFrame):
 
     ###   Class Methods   ###
     def read_feat(self, filename=None, *args, **kwargs):
+        """Reads facial expression detection results from Feat Detector
+
+        Args:
+            filename (string, optional): Path to file. Defaults to None.
+
+        Returns:
+            Fex
+        """ 
         # Check if filename exists in metadata.
         if not filename:
             try:
@@ -478,6 +514,14 @@ class Fex(DataFrame):
         return result
 
     def read_facet(self, filename=None, *args, **kwargs):
+        """Reads facial expression detection results from FACET 
+
+        Args:
+            filename (string, optional): Path to file. Defaults to None.
+
+        Returns:
+            Fex
+        """ 
         # Check if filename exists in metadata.
         if not filename:
             try:
@@ -492,6 +536,14 @@ class Fex(DataFrame):
         return result
 
     def read_openface(self, filename=None, *args, **kwargs):
+        """Reads facial expression detection results from OpenFace 
+
+        Args:
+            filename (string, optional): Path to file. Defaults to None.
+
+        Returns:
+            Fex
+        """
         if not filename:
             try:
                 filename = self.filename
@@ -505,6 +557,14 @@ class Fex(DataFrame):
         return result
 
     def read_affectiva(self, filename=None, *args, **kwargs):
+        """Reads facial expression detection results from Affectiva 
+
+        Args:
+            filename (string, optional): Path to file. Defaults to None.
+
+        Returns:
+            Fex
+        """
         if not filename:
             try:
                 filename = self.filename
@@ -632,17 +692,21 @@ class Fex(DataFrame):
     def ttest(self, popmean=0, threshold_dict=None):
         """Conducts 1 sample ttest.
 
+        Uses scipy.stats.ttest_1samp to conduct 1 sample ttest
+
         Args:
-            popmean (int, optional): [description]. Defaults to 0.
-            threshold_dict ([type], optional): [description]. Defaults to None.
+            popmean (int, optional): Population mean to test against. Defaults to 0.
+            threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]
 
         Returns:
-            [type]: [description]
+            t, p: t-statistics and p-values
         """
         return ttest_1samp(self, popmean)
 
     def predict(self, X, y, model=LinearRegression, *args, **kwargs):
-        """[summary]
+        """Predicts y from X using a sklearn model.
+
+        Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.
 
         Args:
             X (list or DataFrame): List of column names or dataframe to be used as features for prediction
@@ -676,7 +740,6 @@ class Fex(DataFrame):
             kwargs: additional inputs to nltools.stats.downsample
 
         """
-
         df_ds = downsample(
             self, sampling_freq=self.sampling_freq, target=target, **kwargs
         ).__finalize__(self)
@@ -702,7 +765,6 @@ class Fex(DataFrame):
             kwargs: additional inputs to nltools.stats.upsample
 
         """
-
         df_us = upsample(
             self,
             sampling_freq=self.sampling_freq,
@@ -733,7 +795,6 @@ class Fex(DataFrame):
             dist: Outputs a 2D distance matrix.
 
         """
-
         return Adjacency(
             pairwise_distances(self, metric=method, **kwargs), matrix_type="Distance"
         )
@@ -774,19 +835,13 @@ class Fex(DataFrame):
         """Reference a Fex object to a baseline.
 
         Args:
-            method: {'median', 'mean', 'begin', FexSeries instance}. Will subtract baseline
-                    from Fex object (e.g., mean, median).  If passing a Fex
-                    object, it will treat that as the baseline.
-            normalize: (str). Can normalize results of baseline.
-                        Values can be [None, 'db','pct']; default None.
-            ignore_sessions: (bool) If True, will ignore Fex.sessions
-                             information. Otherwise, method will be applied
-                             separately to each unique session.
+            method: {'median', 'mean', 'begin', FexSeries instance}. Will subtract baseline from Fex object (e.g., mean, median).  If passing a Fex object, it will treat that as the baseline.
+            normalize: (str). Can normalize results of baseline. Values can be [None, 'db','pct']; default None.
+            ignore_sessions: (bool) If True, will ignore Fex.sessions information. Otherwise, method will be applied separately to each unique session.
 
         Returns:
             Fex object
         """
-
         if self.sessions is None or ignore_sessions:
             out = self.copy()
             if type(baseline) == str:
@@ -860,7 +915,6 @@ class Fex(DataFrame):
         *args,
         **kwargs,
     ):
-
         """Clean Time Series signal
 
         This function wraps nilearn functionality and can filter, denoise,
@@ -878,32 +932,16 @@ class Fex(DataFrame):
         If Fex.sessions is not None, sessions will be cleaned separately.
 
         Args:
-            confounds: (numpy.ndarray, str or list of Confounds timeseries)
-                        Shape must be (instant number, confound number),
-                        or just (instant number,). The number of time
-                        instants in signals and confounds must be identical
-                        (i.e. signals.shape[0] == confounds.shape[0]). If a
-                        string is provided, it is assumed to be the name of
-                        a csv file containing signals as columns, with an
-                        optional one-line header. If a list is provided,
-                        all confounds are removed from the input signal,
-                        as if all were in the same array.
-
+            confounds: (numpy.ndarray, str or list of Confounds timeseries) Shape must be (instant number, confound number), or just (instant number,). The number of time instants in signals and confounds must be identical (i.e. signals.shape[0] == confounds.shape[0]). If a string is provided, it is assumed to be the name of a csv file containing signals as columns, with an optional one-line header. If a list is provided, all confounds are removed from the input signal, as if all were in the same array.
             low_pass: (float) low pass cutoff frequencies in Hz.
             high_pass: (float) high pass cutoff frequencies in Hz.
-            detrend: (bool) If detrending should be applied on timeseries
-                     (before confound removal)
-            standardize: (bool) If True, returned signals are set to unit
-                         variance.
-            ensure_finite: (bool) If True, the non-finite values
-                           (NANs and infs) found in the data will be
-                           replaced by zeros.
-            ignore_sessions: (bool) If True, will ignore Fex.sessions
-                             information. Otherwise, method will be applied
-                             separately to each unique session.
+            detrend: (bool) If detrending should be applied on timeseries (before confound removal)
+            standardize: (bool) If True, returned signals are set to unit variance.
+            ensure_finite: (bool) If True, the non-finite values (NANs and infs) found in the data will be replaced by zeros.
+            ignore_sessions: (bool) If True, will ignore Fex.sessions information. Otherwise, method will be applied separately to each unique session.
+
         Returns:
             cleaned Fex instance
-
         """
         if self.sessions is not None:
             if ignore_sessions:
@@ -938,17 +976,13 @@ class Fex(DataFrame):
         """Decompose Fex instance
 
         Args:
-            algorithm: (str) Algorithm to perform decomposition
-                        types=['pca','ica','nnmf','fa']
+            algorithm: (str) Algorithm to perform decomposition types=['pca','ica','nnmf','fa']
             axis: dimension to decompose [0,1]
-            n_components: (int) number of components. If None then retain
-                        as many as possible.
+            n_components: (int) number of components. If None then retain as many as possible.
 
         Returns:
             output: a dictionary of decomposition parameters
-
         """
-
         out = {}
         out["decomposition_object"] = set_decomposition_algorithm(
             algorithm=algorithm, n_components=n_components, *args, **kwargs
@@ -998,11 +1032,10 @@ class Fex(DataFrame):
         """Extract mean of each feature
 
         Args:
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             Fex: mean values for each feature
-
         """
         prefix = "mean_"
         if self.sessions is None or ignore_sessions:
@@ -1035,11 +1068,10 @@ class Fex(DataFrame):
         """Extract minimum of each feature
 
         Args:
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+        
         Returns:
             Fex: (Fex) minimum values for each feature
-
         """
         prefix = "min_"
         if self.sessions is None or ignore_sessions:
@@ -1072,11 +1104,10 @@ class Fex(DataFrame):
         """Extract maximum of each feature
 
         Args:
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             fex: (Fex) maximum values for each feature
-
         """
         prefix = "max_"
         if self.sessions is None or ignore_sessions:
@@ -1114,14 +1145,11 @@ class Fex(DataFrame):
             mean: (bool) extract mean of features
             max: (bool) extract max of features
             min: (bool) extract min of features
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
 
         Returns:
             fex: (Fex)
-
         """
-
         out = self.__class__().__finalize__(self)
         if ignore_sessions == False:
             out.sessions = np.unique(self.sessions)
@@ -1169,18 +1197,17 @@ class Fex(DataFrame):
         return out
 
     def extract_wavelet(self, freq, num_cyc=3, mode="complex", ignore_sessions=False):
-        """Perform feature extraction by convolving with a complex morlet
-        wavelet
+        """Perform feature extraction by convolving with a complex morlet wavelet
 
         Args:
             freq: (float) frequency to extract
             num_cyc: (float) number of cycles for wavelet
-            mode: (str) feature to extract, e.g.,
-                        ['complex','filtered','phase','magnitude','power']
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            mode: (str) feature to extract, e.g., 'complex','filtered','phase','magnitude','power']
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+        
         Returns:
             convolved: (Fex instance)
+
         """
         wav = wavelet(freq, sampling_freq=self.sampling_freq, num_cyc=num_cyc)
         if self.sessions is None or ignore_sessions:
@@ -1228,19 +1255,18 @@ class Fex(DataFrame):
     def extract_multi_wavelet(
         self, min_freq=0.06, max_freq=0.66, bank=8, *args, **kwargs
     ):
-        """Convolve with a bank of morlet wavelets. Wavelets are equally
-        spaced from min to max frequency. See extract_wavelet for more
-        information and options.
+        """Convolve with a bank of morlet wavelets.
+
+        Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.
 
         Args:
             min_freq: (float) minimum frequency to extract
             max_freq: (float) maximum frequency to extract
             bank: (int) size of wavelet bank
             num_cyc: (float) number of cycles for wavelet
-            mode: (str) feature to extract, e.g.,
-                        ['complex','filtered','phase','magnitude','power']
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            mode: (str) feature to extract, e.g., ['complex','filtered','phase','magnitude','power']
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             convolved: (Fex instance)
         """
@@ -1256,6 +1282,7 @@ class Fex(DataFrame):
 
     def extract_boft(self, min_freq=0.06, max_freq=0.66, bank=8, *args, **kwargs):
         """Extract Bag of Temporal features
+
         Args:
             min_freq: maximum frequency of temporal filters
             max_freq: minimum frequency of temporal filters
@@ -1264,7 +1291,6 @@ class Fex(DataFrame):
         Returns:
             wavs: list of Morlet wavelets with corresponding freq
             hzs:  list of hzs for each Morlet wavelet
-
         """
         # First generate the wavelets
         target_hz = self.sampling_freq
@@ -1520,13 +1546,20 @@ class Fex(DataFrame):
         """Plots detection results by Feat.
 
         Args:
+            draw_landmarks (bool, optional): Whether to draw landmarks. Defaults to True.
+            draw_facelines (bool, optional): Whether to draw face lines. Defaults to True.
+            muscle (bool, optional): Whether to draw muscle activations. Defaults to False.
 
         Returns:
-            ax
+            axes: handle to plot
         """
+
         from PIL import Image
         import matplotlib.pyplot as plt
         from matplotlib.patches import Rectangle
+        import seaborn as sns
+        from textwrap import wrap
+        sns.set_context("paper", font_scale=2.0)
 
         # check how many images.
         inputs = self.input().unique()
@@ -1603,11 +1636,13 @@ class Fex(DataFrame):
                 ax.add_patch(rect)
 
             if image_exists:
-                ax.set_title(
-                    sub_data.input().unique()[0], loc="center", wrap=True, fontsize=10
-                )
+                if sub_data.input().any():
+                    ax.set_title(
+                        "\n".join(wrap(sub_data.input().unique()[0], 30)), loc="left", wrap=True, fontsize=14
+                    )
             else:
-                ax.set(title=imagefile, ylim=ax.get_ylim()[::-1])
+                ax.set_title("\n".join(wrap(imagefile, 30)), loc="left", wrap=True, fontsize=14)
+                ax.set(ylim=ax.get_ylim()[::-1])
                 ax.set_aspect("equal", "box")
 
             # plot AUs
@@ -1629,7 +1664,6 @@ class Fex(DataFrame):
 
 
 class Fextractor:
-
     """
     Fextractor is a class that extracts and merges features from a Fex instance
     in preparation for data analysis.
@@ -1643,13 +1677,11 @@ class Fextractor:
 
         Args:
             fex_object: (Fex) Fex instance to extract features from.
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             Fex: mean values for each feature
-
         """
-
         if not isinstance(fex_object, (Fex, DataFrame)):
             raise ValueError("Must pass in a Fex object.")
         self.extracted_features.append(
@@ -1661,12 +1693,11 @@ class Fextractor:
 
         Args:
             fex_object: (Fex) Fex instance to extract features from.
-            ignore_sessions: (bool) ignore sessions or extract separately
-                             by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             Fex: (Fex) maximum values for each feature
         """
-
         if not isinstance(fex_object, (Fex, DataFrame)):
             raise ValueError("Must pass in a Fex object.")
         self.extracted_features.append(
@@ -1678,13 +1709,11 @@ class Fextractor:
 
         Args:
             fex_object: (Fex) Fex instance to extract features from.
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             Fex: (Fex) minimum values for each feature
-
         """
-
         if not isinstance(fex_object, (Fex, DataFrame)):
             raise ValueError("Must pass in a Fex object.")
         self.extracted_features.append(
@@ -1707,12 +1736,11 @@ class Fextractor:
             mean: (bool) extract mean of features
             max: (bool) extract max of features
             min: (bool) extract min of features
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+       
         Returns:
             fex: (Fex)
         """
-
         self.extracted_features.append(
             fex_object.extract_summary(mean, max, min, ignore_sessions, *args, **kwargs)
         )
@@ -1727,14 +1755,12 @@ class Fextractor:
             fex_object: (Fex) Fex instance to extract features from.
             freq: (float) frequency to extract
             num_cyc: (float) number of cycles for wavelet
-            mode: (str) feature to extract, e.g.,
-                        ['complex','filtered','phase','magnitude','power']
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            mode: (str) feature to extract, e.g., ['complex','filtered','phase','magnitude','power']
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             convolved: (Fex instance)
         """
-
         if not isinstance(fex_object, (Fex, DataFrame)):
             raise ValueError("Must pass in a Fex object.")
         self.extracted_features.append(
@@ -1744,9 +1770,9 @@ class Fextractor:
     def multi_wavelet(
         self, fex_object, min_freq=0.06, max_freq=0.66, bank=8, *args, **kwargs
     ):
-        """Convolve with a bank of morlet wavelets. Wavelets are equally
-        spaced from min to max frequency. See extract_wavelet for more
-        information and options.
+        """Convolve with a bank of morlet wavelets.
+        
+        Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.
 
         Args:
             fex_object: (Fex) Fex instance to extract features from.
@@ -1754,14 +1780,12 @@ class Fextractor:
             max_freq: (float) maximum frequency to extract
             bank: (int) size of wavelet bank
             num_cyc: (float) number of cycles for wavelet
-            mode: (str) feature to extract, e.g.,
-                        ['complex','filtered','phase','magnitude','power']
-            ignore_sessions: (bool) ignore sessions or extract separately
-                                    by sessions if available.
+            mode: (str) feature to extract, e.g., ['complex','filtered','phase','magnitude','power']
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
         Returns:
             convolved: (Fex instance)
         """
-
         if not isinstance(fex_object, (Fex, DataFrame)):
             raise ValueError("Must pass in a Fex object.")
         self.extracted_features.append(
@@ -1770,6 +1794,7 @@ class Fextractor:
 
     def boft(self, fex_object, min_freq=0.06, max_freq=0.66, bank=8, *args, **kwargs):
         """Extract Bag of Temporal features
+
         Args:
             fex_object: (Fex) Fex instance to extract features from.
             min_freq: maximum frequency of temporal filters
@@ -1779,9 +1804,7 @@ class Fextractor:
         Returns:
             wavs: list of Morlet wavelets with corresponding freq
             hzs:  list of hzs for each Morlet wavelet
-
         """
-
         if not isinstance(fex_object, (Fex, DataFrame)):
             raise ValueError("Must pass in a Fex object.")
         self.extracted_features.append(
@@ -1790,12 +1813,12 @@ class Fextractor:
 
     def merge(self, out_format="long"):
         """Merge all extracted features to a single dataframe
+        
         Args:
             format: (str) Output format of merged data. Can be set to 'long' or 'wide'. Defaults to long.
+        
         Returns:
-            merged: (DataFrame) DataFrame containing merged features extracted
-                    from a Fex instance.
-
+            merged: (DataFrame) DataFrame containing merged features extracted from a Fex instance.
         """
         out = reduce(
             lambda x, y: pd.merge(x, y, left_index=True, right_index=True),
