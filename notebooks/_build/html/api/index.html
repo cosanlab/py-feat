@@ -56,7 +56,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contribute" href="../content/contribute.html" />
-    <link rel="prev" title="Visualizations" href="../content/visualizations.html" />
+    <link rel="prev" title="Contributing new FEX models" href="../content/modelContribution.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -113,22 +113,32 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="../content/detector.html">
-   Detector
+   Detecting FEX from images and videos
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../content/analysis.html">
-   Analysis
+   Preprocessing FEX data
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../content/analysis.html#regression">
-   Regression
+  <a class="reference internal" href="../content/analysis.html#analyzing-fex-data">
+   Analyzing FEX data
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../content/visualizations.html">
    Visualizations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../content/loadingOtherFiles.html">
+   Loading FEX data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../content/modelContribution.html">
+   Contributing new FEX models
   </a>
  </li>
 </ul>
@@ -333,7 +343,7 @@
 <span id="feat-detector-module"></span><h1>feat.detector module<a class="headerlink" href="#module-feat.detector" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="feat.detector.Detector">
-<em class="property">class </em><code class="sig-prename descclassname">feat.detector.</code><code class="sig-name descname">Detector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face_model</span><span class="o">=</span><span class="default_value">'retinaface'</span></em>, <em class="sig-param"><span class="n">landmark_model</span><span class="o">=</span><span class="default_value">'MobileNet'</span></em>, <em class="sig-param"><span class="n">au_model</span><span class="o">=</span><span class="default_value">'jaanet'</span></em>, <em class="sig-param"><span class="n">emotion_model</span><span class="o">=</span><span class="default_value">'fer'</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">feat.detector.</code><code class="sig-name descname">Detector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face_model</span><span class="o">=</span><span class="default_value">'retinaface'</span></em>, <em class="sig-param"><span class="n">landmark_model</span><span class="o">=</span><span class="default_value">'mobilenet'</span></em>, <em class="sig-param"><span class="n">au_model</span><span class="o">=</span><span class="default_value">'rf'</span></em>, <em class="sig-param"><span class="n">emotion_model</span><span class="o">=</span><span class="default_value">'resmasknet'</span></em>, <em class="sig-param"><span class="n">n_jobs</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt id="feat.detector.Detector.detect_aus">
@@ -445,6 +455,39 @@ outputFname (str, optional): Path to output file. Defaults to None.
 skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.</p>
 </dd>
 <dt>Returns:</dt><dd><p>dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="feat.detector.Detector.extract_face">
+<code class="sig-name descname">extract_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame</span></em>, <em class="sig-param"><span class="n">detected_faces</span></em>, <em class="sig-param"><span class="n">landmarks</span></em>, <em class="sig-param"><span class="n">size_output</span><span class="o">=</span><span class="default_value">112</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.extract_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract a face in a frame with a convex hull of landmarks.</p>
+<p>This function extracts the faces of the frame with convex hulls and masks out the rest.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>frame (array): The original image]
+detected_faces (list): face bounding box
+landmarks (list): the landmark information]
+size_output (int, optional): [description]. Defaults to 112.</p>
+</dd>
+<dt>Returns:</dt><dd><p>resized_face_np: resized face as a numpy array
+new_landmarks: landmarks of aligned face</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="feat.detector.Detector.extract_hog">
+<code class="sig-name descname">extract_hog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame</span></em>, <em class="sig-param"><span class="n">orientation</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">pixels_per_cell</span><span class="o">=</span><span class="default_value">8, 8</span></em>, <em class="sig-param"><span class="n">cells_per_block</span><span class="o">=</span><span class="default_value">2, 2</span></em>, <em class="sig-param"><span class="n">visualize</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.extract_hog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract HOG features from a frame.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>frame (array]): Frame of image]
+orientation (int, optional): Orientation for HOG. Defaults to 8.
+pixels_per_cell (tuple, optional): Pixels per cell for HOG. Defaults to (8,8).
+cells_per_block (tuple, optional): Cells per block for HOG. Defaults to (2,2).
+visualize (bool, optional): Whether to provide the HOG image. Defaults to False.</p>
+</dd>
+<dt>Returns:</dt><dd><p>hog_output: array of HOG features, and the HOG image if visualize is True.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -943,11 +986,12 @@ fit_intercept (bool): Whether to add intercept before fitting. Defaults to True.
 <dt id="feat.data.Fex.ttest">
 <code class="sig-name descname">ttest</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">popmean</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">threshold_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conducts 1 sample ttest.</p>
+<p>Uses scipy.stats.ttest_1samp to conduct 1 sample ttest</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>popmean (int, optional): [description]. Defaults to 0.
-threshold_dict ([type], optional): [description]. Defaults to None.</p>
+<dt>Args:</dt><dd><p>popmean (int, optional): Population mean to test against. Defaults to 0.
+threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]</p>
 </dd>
-<dt>Returns:</dt><dd><p>[type]: [description]</p>
+<dt>Returns:</dt><dd><p>t, p: t-statistics and p-values</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1357,9 +1401,10 @@ sampling_freq: sampling frequency to pass to Fex</p>
 <dl class="py function">
 <dt id="feat.utils.read_openface">
 <code class="sig-prename descclassname">feat.utils.</code><code class="sig-name descname">read_openface</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">openfacefile</span></em>, <em class="sig-param"><span class="n">features</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_openface" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function reads in an OpenFace exported facial expression file.</p>
-<dl>
-<dt>Args:</dt><dd><blockquote>
+<dd><p>This function reads in an OpenFace exported facial expression file.
+Args:</p>
+<blockquote>
+<div><blockquote>
 <div><p>features: If a list of column names are passed, those are returned. Otherwise, default returns the following features:
 [‘frame’, ‘timestamp’, ‘confidence’, ‘success’, ‘gaze_0_x’,</p>
 </div></blockquote>
@@ -1417,8 +1462,9 @@ sampling_freq: sampling frequency to pass to Fex</p>
 ‘AU01_c’, ‘AU02_c’, ‘AU04_c’, ‘AU05_c’, ‘AU06_c’, ‘AU07_c’,
 ‘AU09_c’, ‘AU10_c’, ‘AU12_c’, ‘AU14_c’, ‘AU15_c’, ‘AU17_c’,
 ‘AU20_c’, ‘AU23_c’, ‘AU25_c’, ‘AU26_c’, ‘AU28_c’, ‘AU45_c’]</p>
-</dd>
-<dt>Returns:</dt><dd><p>Fex of processed facial expressions</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>dataframe of processed facial expressions</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1441,12 +1487,10 @@ method(str or list): If string, register to all landmarks (‘fullface’, defau
 <dl class="py function">
 <dt id="feat.utils.softmax">
 <code class="sig-prename descclassname">feat.utils.</code><code class="sig-name descname">softmax</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.softmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>Softmax function.</p>
-<p>Softmax function to change log likelihood evidence values to probabilities. Use with Evidence values from FACET.</p>
+<dd><p>Softmax function to change log likelihood evidence values to probabilities.
+Use with Evidence values from FACET.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>x: value to softmax</p>
-</dd>
-<dt>Returns: </dt><dd><p>Probabilities</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1485,7 +1529,7 @@ method(str or list): If string, register to all landmarks (‘fullface’, defau
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="../content/visualizations.html" title="previous page">Visualizations</a>
+    <a class='left-prev' id="prev-link" href="../content/modelContribution.html" title="previous page">Contributing new FEX models</a>
     <a class='right-next' id="next-link" href="../content/contribute.html" title="next page">Contribute</a>
 
         </div>

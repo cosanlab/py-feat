@@ -112,22 +112,37 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="detector.html">
-   Detector
+   Detecting FEX from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="detector.html#detecting-fex-from-videos">
+   Detecting FEX from videos
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="analysis.html">
-   Analysis
+   Preprocessing FEX data
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="analysis.html#regression">
-   Regression
+  <a class="reference internal" href="analysis.html#analyzing-fex-data">
+   Analyzing FEX data
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="visualizations.html">
    Visualizations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="loadingOtherFiles.html">
+   Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="modelContribution.html">
+   Contributing new detectors
   </a>
  </li>
 </ul>
@@ -407,7 +422,10 @@
 <div class="section" id="action-unit-detection">
 <h3>Action Unit detection<a class="headerlink" href="#action-unit-detection" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">JAANET</span></code>: Joint facial action unit detectio nand face alignment via adaptive attention (<a class="reference external" href="https://arxiv.org/pdf/2003.08834v1.pdf">Shao et al., 2020</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rf</span></code>: Random Forest model trained on Histogram of Oriented Gradients.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logistic</span></code>: Logistic Classifier model trained on Histogram of Oriented Gradients.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">JAANET</span></code>: Joint facial action unit detection and face alignment via adaptive attention (<a class="reference external" href="https://arxiv.org/pdf/2003.08834v1.pdf">Shao et al., 2020</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">DRML</span></code>: Deep region and multi-label learning for facial action unit detection by (<a class="reference external" href="https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Zhao_Deep_Region_and_CVPR_2016_paper.pdf">Zhao et al., 2016</a>)</p></li>
 </ul>
 </div>
