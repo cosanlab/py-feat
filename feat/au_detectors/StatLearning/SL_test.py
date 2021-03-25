@@ -15,8 +15,6 @@ from feat.utils import get_resource_path
 import joblib
 import os 
 
-#all_AUs_list = ['AU1','AU2','AU4','AU5','AU6','AU7','AU10','AU11','AU12','AU14',
-#                'AU23', 'AU24','AU25','AU26','AU28','AU43']
 
 def load_classifier(cf_path):
     clf = joblib.load(cf_path)
