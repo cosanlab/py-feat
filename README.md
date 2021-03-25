@@ -4,29 +4,25 @@
 
 Facial Expression Analysis Toolbox (FEAT)
 
-FEAT is a suite for facial expressions (FEX) research written in Python. This package includes tools to extract emotional facial expressions (e.g., happiness, sadness, anger), facial muscle movements (e.g., action units), and facial landmarks, from videos and images of faces, as well as methods to preprocess, analyze, and visualize FEX data. 
+FEAT is a suite for facial expressions (FEX) research written in Python. This package includes tools to detect faces, extract emotional facial expressions (e.g., happiness, sadness, anger), facial muscle movements (e.g., action units), and facial landmarks, from videos and images of faces, as well as methods to preprocess, analyze, and visualize FEX data. 
+
+For detailed examples, tutorials, and API please refer to the [Py-FEAT website](https://cosanlab.github.io/feat/). 
 
 ## Installation
-Option 1 
+Option 1: Easy installation for quick use
 Clone the repository    
-`git clone https://github.com/cosanlab/feat.git`  
-Run setup  
-`python setup.py install`
+`pip install py-feat`  
 
-Option 2  
-`pip install git+https://github.com/cosanlab/feat`
-
-Verify models have been downloaded
-`python download_models.py` 
-
-## Usage examples
-### 1. Feature extraction
-Extract emotion predictions from a face video.
-```python
-python detect_fex.py -i input.mp4 -o output.csv
+Option 2: Installation in development mode
+```
+git clone https://github.com/cosanlab/feat.git
+cd feat && python setup.py install -e . 
 ```
 
-or detect in notebok.
+## Usage examples
+### 1. Detect FEX data from images or videos
+FEAT is intended for use in Jupyter Notebook or Jupyter Lab environment. In a notebook cell, you can run the following to detect faces, facial landmarks, action units, and emotional expressions from images or videos. On the first execution, it will automatically download the default model files. You can also change the detection models from the [list of supported models](https://cosanlab.github.io/feat/content/intro.html#available-models).
+
 ```python
 from feat.detector import Detector
 detector = Detector() 
@@ -37,7 +33,7 @@ out = detector.detect_image("input.png")
 ```
 
 ### 2. Visualize FEX data
-Visualize results of detections.
+Visualize FEX detection results.
 ```python
 from feat.detector import Detector
 detector = Detector() 
@@ -82,15 +78,6 @@ Emotion detection models
 - [FerNet](https://www.kaggle.com/gauravsharma99/facial-emotion-recognition?select=fer2013)
 - [ResMaskNet: Residual Masking Network](https://github.com/phamquiluan/ResidualMaskingNetwork)
 
-## Methods (to use when writing up paper)
-
-Emotion prediction model
-A deep convolutional neural network was trained on the Facial Expression Recognition database by Carrier et al 2013. 
-- [kaggle notebook](https://www.kaggle.com/jcheong0428/facial-emotion-recognition) adapated from [Gaurav Sharma](https://medium.com/analytics-vidhya/facial-emotion-recognition-fer-using-keras-763df7946a64)
-
-AU prediction model 
-Joint Facial Action Unit Detection and Face Alignment via Adaptive Attention[Shao, Liu, Cai, and Ma, 2020](https://arxiv.org/pdf/2003.08834.pdf)
-
 ## Contributing
 1. Fork the repository on GitHub. 
 2. Run the tests with `pytest tests/` to make confirm that all tests pass on your system. If some tests fail, try to find out why they are failing. Common issues may be not having downloaded model files or missing dependencies.
@@ -98,15 +85,3 @@ Joint Facial Action Unit Detection and Face Alignment via Adaptive Attention[Sha
 4. Run the tests again with `pytest tests/` to make sure everything still passes, including your new feature. If you broke something, edit your feature so that it doesn't break existing code. 
 5. Create a pull request to the main repository's `master` branch.
 
-## Google DOCS for development
-https://docs.google.com/document/d/1cqbDp5dkMtnWWdFtAowLGf_l1zhnGmvb8JcOxNsn8dc/edit?usp=sharing
-
-
-## [Documentation](https://feat.readthedocs.io/en/latest/index.html)
-[Short examples](https://paper.dropbox.com/doc/feat_tutorial-JT4sSvNEFA77Hgeo5kVg2) for how to use the toolbox are currently on dropbox papers.  This will eventually be moved to readthedocs.
-
----------
-#### Credit
-
-This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) with the following [template](https://github.com/ejolly/cookiecutter-pypackage).
-http://eshinjolly.com/pybest/

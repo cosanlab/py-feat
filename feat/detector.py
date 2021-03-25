@@ -1,4 +1,3 @@
-# %%
 from __future__ import division
 
 """Functions to help detect face, landmarks, emotions, action units from images and videos"""
@@ -45,15 +44,17 @@ from feat.face_detectors.Retinaface import Retinaface_test
 from feat.landmark_detectors.basenet_test import MobileNet_GDConv
 from feat.landmark_detectors.pfld_compressed_test import PFLDInference
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
-
+import json
+from torchvision.datasets.utils import download_url
+import zipfile
 
 class Detector(object):
     def __init__(
         self,
         face_model="retinaface",
-        landmark_model="MobileNet",
-        au_model="jaanet",
-        emotion_model="fer",
+        landmark_model="mobilenet",
+        au_model="rf",
+        emotion_model="resmasknet",
         n_jobs=1,
     ):
         """Detector class to detect FEX from images or videos.
@@ -66,11 +67,12 @@ class Detector(object):
         Attributes:
             info (dict):
                 n_jobs (int): Number of jobs to be used in parallel.
-                face_detection_model (str, default=haarcascade_frontalface_alt.xml): Path to face detection model.
+                face_model (str, default=retinaface): Name of face detection model
+                landmark_model (str, default=mobilenet): Nam eof landmark model
+                au_model (str, default=rf): Name of Action Unit detection model
+                emotion_model (str, default=resmasknet): Path to emotion detection model.
                 face_detection_columns (list): Column names for face detection ouput (x, y, w, h)
-                face_landmark_model (str, default=lbfmodel.yaml): Path to landmark model.
                 face_landmark_columns (list): Column names for face landmark output (x0, y0, x1, y1, ...)
-                emotion_model (str, default=fer_aug_model.h5): Path to emotion detection model.
                 emotion_model_columns (list): Column names for emotion model output
                 mapper (dict): Class names for emotion model output by index.
                 input_shape (dict)
@@ -94,6 +96,27 @@ class Detector(object):
 
         """ LOAD UP THE MODELS """
         print("Loading Face Detection model: ", face_model)
+        # Check if model files have been downloaded. Otherwise download model. 
+        # get model url. 
+        with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
+            model_urls = json.load(f) 
+
+        if face_model:
+            for url in model_urls["face_detectors"][face_model.lower()]["urls"]:
+                download_url(url, get_resource_path())
+        if landmark_model:
+            for url in model_urls["landmark_detectors"][landmark_model.lower()]["urls"]:
+                download_url(url, get_resource_path())        
+        if au_model:
+            for url in model_urls["au_detectors"][au_model.lower()]["urls"]:
+                download_url(url, get_resource_path())
+                if ".zip" in url:
+                    import zipfile
+                    with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
+                        zip_ref.extractall(os.path.join(get_resource_path()))
+        if emotion_model:
+            for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
+                download_url(url, get_resource_path())
 
         if face_model:
             if face_model.lower() == "faceboxes":
@@ -104,7 +127,6 @@ class Detector(object):
                 self.face_detector = MTCNN()
 
         self.info["face_model"] = face_model
-        # self.info["mapper"] = FEAT_FACEBOX_COLUMNS
         facebox_columns = FEAT_FACEBOX_COLUMNS
         self.info["face_detection_columns"] = facebox_columns
         predictions = np.empty((1, len(facebox_columns)))
@@ -113,12 +135,10 @@ class Detector(object):
         self._empty_facebox = empty_facebox
 
         print("Loading Face Landmark model: ", landmark_model)
-        # self.info['Landmark_Model'] = landmark_model
         if landmark_model:
             if landmark_model.lower() == "mobilenet":
                 self.landmark_detector = MobileNet_GDConv(136)
                 self.landmark_detector = torch.nn.DataParallel(self.landmark_detector)
-                # or download model from https://drive.google.com/file/d/1Le5UdpMkKOTRr1sTp4lwkw8263sbgdSe/view?usp=sharing
                 checkpoint = torch.load(
                     os.path.join(
                         get_resource_path(),
@@ -126,19 +146,15 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                # print("Use MobileNet as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
             elif landmark_model.lower() == "pfld":
                 self.landmark_detector = PFLDInference()
-                # or download from https://drive.google.com/file/d/1gjgtm6qaBQJ_EY7lQfQj3EuMJCVg9lVu/view?usp=sharing
                 checkpoint = torch.load(
                     os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
                     map_location=self.map_location,
                 )
-                # print("Use PFLD as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-                # or download from https://drive.google.com/file/d/1T8J73UTcB25BEJ_ObAJczCkyGKW5VaeY/view?usp=sharing
 
             elif landmark_model.lower() == "mobilefacenet":
                 self.landmark_detector = MobileFaceNet([112, 112], 136)
@@ -148,7 +164,6 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                # print("Use MobileFaceNet as backbone")
                 self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
         self.info["landmark_model"] = landmark_model
@@ -160,7 +175,7 @@ class Detector(object):
         empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
         self._empty_landmark = empty_landmarks
 
-        print("Loading au occurence model: ", au_model)
+        print("Loading au model: ", au_model)
         self.info["au_model"] = au_model
         if au_model:
             if au_model.lower() == "jaanet":
@@ -174,7 +189,6 @@ class Detector(object):
             elif au_model.lower() == 'rf':
                 self.au_model = RandomForestClassifier()
 
-        # self.info["mapper"] = jaanet_AU_presence
         if (au_model is None) or (au_model.lower() in ['jaanet','drml']):
             auoccur_columns = jaanet_AU_presence
         else:
@@ -200,10 +214,6 @@ class Detector(object):
         empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
         self._empty_emotion = empty_emotion
 
-        # self.info['auoccur_model'] = au_model
-        # self.info["mapper"] = jaanet_AU_presence
-        #auoccur_columns = jaanet_AU_presence
-        #self.info["au_presence_columns"] = auoccur_columns
         predictions = np.empty((1, len(auoccur_columns)))
         predictions[:] = np.nan
         empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
@@ -222,7 +232,21 @@ class Detector(object):
         return self.info[i]
 
     def detect_faces(self, frame):
-        # suppose frame=cv2.imread(imgname)
+        """Detect faces from image or video frame
+
+        Args:
+            frame (array): image array
+
+        Returns:
+            array: face detection results (x, y, x2, y2)
+
+        Examples: 
+            >>> import cv2
+            >>> frame = cv2.imread(imgfile)
+            >>> from feat import Detector
+            >>> detector = Detector()        
+            >>> detector.detect_faces(frame)
+        """        
         height, width, _ = frame.shape
         faces = self.face_detector(frame)
 
@@ -231,6 +255,23 @@ class Detector(object):
         return faces
 
     def detect_landmarks(self, frame, detected_faces):
+        """Detect landmarks from image or video frame
+        
+        Args:
+            frame (array): image array
+            detected_faces (array): 
+
+        Returns:
+            list: x and y landmark coordinates (1,68,2)
+
+        Examples: 
+            >>> import cv2
+            >>> frame = cv2.imread(imgfile)
+            >>> from feat import Detector
+            >>> detector = Detector()
+            >>> detected_faces = detector.detect_faces(frame)        
+            >>> detector.detect_landmarks(frame, detected_faces)
+        """      
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
@@ -307,13 +348,19 @@ class Detector(object):
         return landmark_list
     
     def extract_face(self, frame, detected_faces, landmarks, size_output=112):
-        """
-        This function extracts the faces of the frame with convex hulls
+        """Extract a face in a frame with a convex hull of landmarks.
+
+        This function extracts the faces of the frame with convex hulls and masks out the rest.
+
         Args:
-            frame: The original image
-            detected_faces: face bounding boxes
-            landmarks: the landmark information
+            frame (array): The original image]
+            detected_faces (list): face bounding box
+            landmarks (list): the landmark information]
+            size_output (int, optional): [description]. Defaults to 112.
+
         Returns:
+            resized_face_np: resized face as a numpy array
+            new_landmarks: landmarks of aligned face
         """
         detected_faces = np.array(detected_faces)
         landmarks = np.array(landmarks)
@@ -348,9 +395,18 @@ class Detector(object):
 
 
     def extract_hog(self, frame, orientation=8, pixels_per_cell=(8,8), cells_per_block=(2,2), visualize=False):
-        """
-        
-        """
+        """Extract HOG features from a frame.
+
+        Args:
+            frame (array]): Frame of image]
+            orientation (int, optional): Orientation for HOG. Defaults to 8.
+            pixels_per_cell (tuple, optional): Pixels per cell for HOG. Defaults to (8,8).
+            cells_per_block (tuple, optional): Cells per block for HOG. Defaults to (2,2).
+            visualize (bool, optional): Whether to provide the HOG image. Defaults to False.
+
+        Returns:
+            hog_output: array of HOG features, and the HOG image if visualize is True.
+        """        
         
         hog_output = hog(frame, orientations=orientation, pixels_per_cell=pixels_per_cell,
                         cells_per_block=cells_per_block, visualize=visualize, multichannel=True)
@@ -360,6 +416,22 @@ class Detector(object):
             return hog_output 
 
     def detect_aus(self, frame, landmarks):
+        """Detect Action Units from image or video frame
+
+        Args:
+            frame (array): image loaded in array format (n, m, 3)
+            landmarks (array): 68 landmarks used to localize face.
+
+        Returns:
+            array: Action Unit predictions
+
+        Examples: 
+            >>> import cv2
+            >>> frame = cv2.imread(imgfile)
+            >>> from feat import Detector
+            >>> detector = Detector()        
+            >>> detector.detect_aus(frame)
+        """  
         # Assume that the Raw landmark is given in the format (n_land,2)
         
         #landmarks = np.transpose(landmarks)
@@ -368,7 +440,7 @@ class Detector(object):
         return self.au_model.detect_au(frame, landmarks)
 
     def detect_emotions(self, frame, facebox, landmarks):
-        """Detect emotions.
+        """Detect emotions from image or video frame
 
         Args:
             frame ([type]): [description]
@@ -376,8 +448,17 @@ class Detector(object):
             landmarks ([type]): [description]
 
         Returns:
-            [type]: [description]
-        """        
+            array: Action Unit predictions
+
+        Examples: 
+            >>> import cv2
+            >>> frame = cv2.imread(imgfile)
+            >>> from feat import Detector
+            >>> detector = Detector()        
+            >>> detected_faces = detector.detect_faces(frame)
+            >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
+            >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
+        """              
         if self.info["emotion_model"].lower() == 'fer':
             landmarks = np.transpose(landmarks)
             if landmarks.shape[-1] == 68:
@@ -399,10 +480,10 @@ class Detector(object):
             df (dataframe): Prediction results dataframe.
 
         Example:
-            >> from pil import Image
-            >> frame = Image.open("input.jpg")
-            >> detector = Detector()
-            >> detector.process_frame(np.array(frame))
+            >>> from pil import Image
+            >>> frame = Image.open("input.jpg")
+            >>> detector = Detector()
+            >>> detector.process_frame(np.array(frame))
         """
         try:
             # detect faces
@@ -470,10 +551,12 @@ class Detector(object):
 
     def detect_video(self, inputFname, outputFname=None, skip_frames=1, verbose=False):
         """Detects FEX from a video file.
+
         Args:
             inputFname (str): Path to video file
             outputFname (str, optional): Path to output file. Defaults to None.
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
+            
         Returns:
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
@@ -522,10 +605,20 @@ class Detector(object):
         if outputFname:
             return True
         else:
-            return init_df
+            return Fex(
+                init_df,
+                filename=inputFname,
+                au_columns=self["au_presence_columns"],
+                emotion_columns=FEAT_EMOTION_COLUMNS,
+                facebox_columns=FEAT_FACEBOX_COLUMNS,
+                landmark_columns=openface_2d_landmark_columns,
+                time_columns=FACET_TIME_COLUMNS,
+                detector="Feat",
+            )
 
     def detect_image(self, inputFname, outputFname=None, verbose=False):
-        """Detects FEX from a video file.
+        """Detects FEX from an image file.
+
         Args:
             inputFname (str, or list of str): Path to image file or a list of paths to image files.
             outputFname (str, optional): Path to output file. Defaults to None.
@@ -573,23 +666,3 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
-# %%
-# Test case:
-if __name__ == '__main__':
-    A01 = Detector(face_model='RetinaFace',emotion_model='resmasknet', landmark_model="MobileFaceNet", au_model='rf')
-    test_img = cv2.imread(r"F:\test_case\JinHyunCheong.jpg")
-    im01 = Image.open(r"F:\test_case\JinHyunCheong.jpg")
-    detected_faces = A01.detect_faces(frame=test_img)
-    landmarks = A01.detect_landmarks(
-                    frame=test_img, detected_faces=[detected_faces[0][0:4]]
-                )
-    ress = A01.detect_image(r"F:\test_case\JinHyunCheong.jpg")
-    print(ress)
-    #convex_hull, new_lands = A01.extract_face(frame=test_img, detected_faces=detected_faces[0], landmarks=landmarks, size_output=112)
-    #bk01,bk02 = A01.extract_hog(frame=convex_hull,visualize=True)
-    #A02 = LogisticClassifier()
-    #probbs = A02.detect_au(bk01, new_lands)
-    #print(probbs)
-    print("yes")
-    ress.plot_detections();
-
