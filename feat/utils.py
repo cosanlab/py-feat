@@ -250,7 +250,10 @@ def read_feat(fexfile):
     """This function reads files extracted using the Detector from the Feat package.
 
     Args:
-        fexfile: [description]
+        fexfile: Path to facial expression file.
+
+    Returns:
+        Fex of processed facial expressions
     """
     d = pd.read_csv(fexfile)
     return feat.Fex(
@@ -270,15 +273,10 @@ def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
 
     Args:
         facetfile: iMotions-FACET file. Files from iMotions 5, 6, and 7 have been tested and supported
-        features: If a list of iMotion-FACET column names are passed, those are returned.
-                Otherwise, default columns are returned in the following format:['Timestamp','FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight',
-                'Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration',
-                'Neutral','Positive','Negative','AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10',
-                'AU12','AU14','AU15','AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43',
-                'Yaw', 'Pitch', 'Roll'].
-                Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
+        features: If a list of iMotion-FACET column names are passed, those are returned. Otherwise, default columns are returned in the following format:['Timestamp','FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight', 'Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration', 'Neutral','Positive','Negative','AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10', 'AU12','AU14','AU15','AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43', 'Yaw', 'Pitch', 'Roll']. Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
         raw (default=False): Set to True to return all columns without processing.
         sampling_freq: sampling frequency to pass to Fex
+
     Returns:
         dataframe of processed facial expressions
     """
@@ -430,11 +428,14 @@ def read_openface(openfacefile, features=None):
 
 def read_affectiva(affectivafile, orig_cols=False):
     """
-    This function reads in affectiva file processed through
-    the https://github.com/cosanlab/affectiva-api-app.
+    This function reads in affectiva file processed through the https://github.com/cosanlab/affectiva-api-app.
+
     Args:
         affectivafile: file to read
         orig_cols: If True, convert original colnames to FACS names
+
+    Returns:
+        Fex of processed facial expressions
     """
     d = pd.read_json(affectivafile, lines=True)
     rep_dict = {
@@ -489,14 +490,13 @@ def read_affectiva(affectivafile, orig_cols=False):
 
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.0):
-    """Create a complex Morlet wavelet by windowing a cosine function by a
-    Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13
+    """Create a complex Morlet wavelet.
+    
+    Creates a complex Morlet wavelet by windowing a cosine function by a Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13
 
     Args:
         freq: (float) desired frequence of wavelet
-        num_cyc: (float) number of wavelet cycles/gaussian taper. Note that
-                 smaller cycles give greater temporal precision and that larger
-                 values give greater frequency precision; (default: 3)
+        num_cyc: (float) number of wavelet cycles/gaussian taper. Note that smaller cycles give greater temporal precision and that larger values give greater frequency precision; (default: 3)
         sampling_freq: (float) sampling frequency of original signal.
 
     Returns:
@@ -516,20 +516,15 @@ def wavelet(freq, num_cyc=3, sampling_freq=30.0):
 
 
 def calc_hist_auc(vals, hist_range=None):
-    """
-    This function follows the bag of temporal feature analysis as described in
-    Bartlett, M. S., Littlewort, G. C., Frank, M. G., & Lee, K. (2014).
-    Automatic decoding of facial movements reveals deceptive pain expressions.
-    Current Biology, 24(7), 738-743.
-    The function receives convolved data, squares the values,
-    finds 0 crossings to calculate the AUC(area under the curve)
-    and generates a 6 exponentially-spaced-bin histogram for each data.
+    """Calculate histogram area under the curve.
+
+    This function follows the bag of temporal feature analysis as described in Bartlett, M. S., Littlewort, G. C., Frank, M. G., & Lee, K. (2014). Automatic decoding of facial movements reveals deceptive pain expressions. Current Biology, 24(7), 738-743. The function receives convolved data, squares the values, finds 0 crossings to calculate the AUC(area under the curve) and generates a 6 exponentially-spaced-bin histogram for each data.
 
     Args:
+        vals: 
 
     Returns:
-
-
+        Series of histograms
     """
     # Square values
     vals = [elem ** 2 if elem > 0 else -1 * elem ** 2 for elem in vals]
@@ -645,16 +640,15 @@ neutral = np.array(
 
 
 def registration(face_lms, neutral=neutral, method="fullface"):
-    """
+    """Register faces to a neutral face.
+
     Affine registration of face landmarks to neutral face.
 
     Args:
-        face_lms(array): face landmarks to register with shape (n,136).
-                         Columns 0~67 are x coordinates and 68~136 are y coordinates
+        face_lms(array): face landmarks to register with shape (n,136). Columns 0~67 are x coordinates and 68~136 are y coordinates
         neutral(array): target neutral face array that face_lm will be registered
-        method(str or list): If string, register to all landmarks ('fullface', default),
-                    or inner parts of face nose,mouth,eyes, and brows ('inner').
-                    If list, pass landmarks to register to e.g. [27, 28, 29, 30, 36, 39, 42, 45]
+        method(str or list): If string, register to all landmarks ('fullface', default), or inner parts of face nose,mouth,eyes, and brows ('inner'). If list, pass landmarks to register to e.g. [27, 28, 29, 30, 36, 39, 42, 45]
+
     Return:
         registered_lms: registered landmarks in shape (n,136)
     """
@@ -691,12 +685,13 @@ def registration(face_lms, neutral=neutral, method="fullface"):
 
 
 def convert68to49(points):
-    """
-    Function slightly modified from https://github.com/D-X-Y/landmark-detection/blob/7bc7a5dbdbda314653124a4596f3feaf071e8589/SAN/lib/datasets/dataset_utils.py#L169
-    to fit pytorch tensors.
-    Converts 68 point landmarks to 49 point landmarks
+    """Convert landmark form 68 to 49
+
+    Function slightly modified from https://github.com/D-X-Y/landmark-detection/blob/7bc7a5dbdbda314653124a4596f3feaf071e8589/SAN/lib/datasets/dataset_utils.py#L169 to fit pytorch tensors. Converts 68 point landmarks to 49 point landmarks
+    
     Args:
         points: landmark points of shape (2,68) or (3,68)
+
     Return:
         cpoints: converted 49 landmark points of shape (2,49)
     """
@@ -751,15 +746,18 @@ class BBox(object):
 
 
 def drawLandmark(img, bbox, landmark):
-    # https://github.com/cunjian/pytorch_face_landmark/
-    """
-    Input:
-    - img: gray or RGB
-    - bbox: type of BBox
-    - landmark: reproject landmark of (5L, 2L)
-    Output:
-    - img marked with landmark and bbox
-    """
+    """Draws face bounding box and landmarks.
+
+    From https://github.com/cunjian/pytorch_face_landmark/
+
+    Args:
+        img ([type]): gray or RGB
+        bbox ([type]): type of BBox
+        landmark ([type]): reproject landmark of (5L, 2L)
+
+    Returns:
+        img marked with landmark and bbox
+    """ 
     img_ = img.copy()
     cv2.rectangle(
         img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2
@@ -770,15 +768,18 @@ def drawLandmark(img, bbox, landmark):
 
 
 def drawLandmark_multiple(img, bbox, landmark):
-    # https://github.com/cunjian/pytorch_face_landmark/
-    """
-    Input:
-    - img: gray or RGB
-    - bbox: type of BBox
-    - landmark: reproject landmark of (5L, 2L)
-    Output:
-    - img marked with landmark and bbox
-    """
+    """Draw multiple landmarks.
+
+    From https://github.com/cunjian/pytorch_face_landmark/
+    
+    Args:
+        img ([type]): gray or RGB
+        bbox ([type]): type of BBox
+        landmark ([type]): reproject landmark of (5L, 2L)
+
+    Returns:
+        img marked with landmark and bbox
+    """    
     cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2)
     for x, y in landmark:
         cv2.circle(img, (int(x), int(y)), 2, (0, 255, 0), -1)
@@ -812,8 +813,10 @@ def resize_with_padding(img, expected_size):
 
 
 def align_face_68pts(img, img_land, box_enlarge, img_size=112):
-    """
-    Peforms affine transformation to align the images by eyes
+    """Performs affine transformation to align the images by eyes.
+
+    Performs affine alignment including eyes. 
+    
     Args:
         img: gray or RGB
         img_land: 68 system flattened landmarks, shape:(136) 
