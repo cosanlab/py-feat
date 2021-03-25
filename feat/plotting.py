@@ -863,7 +863,7 @@ def plot_face(
 
     Args:
         model: sklearn PLSRegression instance
-        au: vector of action units (same length as model.x_mean_)
+        au: vector of action units (same length as model.n_components)
         vectorfield: (dict) {'target':target_array,'reference':reference_array}
         muscles: (dict) {'muscle': color}
         ax: matplotlib axis handle
@@ -883,7 +883,7 @@ def plot_face(
             raise ValueError("make sure that model is a PLSRegression instance")
 
     if au is None:
-        au = np.zeros(len(model.x_mean_))
+        au = np.zeros(model.n_components)
         warnings.warn(
             "Don't forget to pass an 'au' vector of len(20), "
             "using neutral as default"
@@ -927,7 +927,7 @@ def plot_face(
             vectorfield["target"] = landmarks
         draw_vectorfield(ax=ax, **vectorfield)
     ax.set_xlim([25, 172])
-    ax.set_ylim((-240, -50))
+    ax.set_ylim((240, 50))
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     return ax
@@ -948,20 +948,20 @@ def predict(au, model=None):
     elif not isinstance(model, PLSRegression):
         raise ValueError("make sure that model is a PLSRegression instance")
 
-    if len(au) != len(model.x_mean_):
+    if len(au) != model.n_components:
         print(au)
-        print(len(model.x_mean_))
-        raise ValueError("au vector must be len(", len(model.x_mean_), ").")
+        print(model.n_components)
+        raise ValueError("au vector must be len(", model.n_components, ").")
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
 
     landmarks = np.reshape(model.predict(au), (2, 68))
-    landmarks[1, :] = -1 * landmarks[1, :]  # this might not generalize to other models
+    # landmarks[1, :] = -1 * landmarks[1, :]  # this might not generalize to other models
     return landmarks
 
 
-def _create_empty_figure(figsize=(4, 5), xlim=[25, 172], ylim=[-240, -50]):
+def _create_empty_figure(figsize=(4, 5), xlim=[25, 172], ylim=[240, 50]):
     """Create an empty figure"""
     plt.figure(figsize=figsize)
     ax = plt.gca()
