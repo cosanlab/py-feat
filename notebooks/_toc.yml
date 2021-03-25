@@ -13,6 +13,8 @@
     - file: content/detector
     - file: content/analysis
     - file: content/visualizations
+    - file: content/loadingOtherFiles
+    - file: content/modelContribution
 
 - part: API
   chapters:

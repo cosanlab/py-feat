@@ -1,10 +1,14 @@
-# Detector
+# Detecting FEX from images
 
 ## How to use the Feat Detector class.
 
 *Written by Jin Hyun Cheong*
 
 Here is an example of how to use the `Detector` class to detect faces, facial landmarks, Action Units, and emotions, from face images or videos. 
+
+Let's start by installing Py-FEAT if you have not already done so or usign this from Google Colab
+
+!pip install -q py-feat
 
 ## Detecting facial expressions from images. 
 
@@ -13,9 +17,9 @@ First, load the detector class. You can specify which models you want to use.
 from feat import Detector
 face_model = "retinaface"
 landmark_model = "mobilenet"
-au_model = "jaanet"
-emotion_model = "fer"
-detector = Detector()
+au_model = "rf"
+emotion_model = "resmasknet"
+detector = Detector(face_model = face_model, landmark_model = landmark_model, au_model = au_model, emotion_model = emotion_model)
 
 Find the file you want to process. In our case, we'll use our test image `input.jpg`. 
 
@@ -43,7 +47,7 @@ The output is a `Fex` class instance which allows you to run the built-in method
 
 ## Visualizing detection results.
 
-For example, you can easily plot the detection results. 
+For example, you can easily plot the detection results.
 
 image_prediction.plot_detections();
 
@@ -78,9 +82,15 @@ image_prediction = pd.read_csv("output.csv")
 image_prediction
 
 ## Detecting facial expressions images with many faces. 
-Feat's Detector can find multiple faces in a single image. 
+Feat's Detector can find multiple faces in a single image. Let's also practice switching the emotion detector
 
-test_image = glob.glob(os.path.join(test_data_dir, "tim-mossholder-hOF1bWoet_Q-unsplash.jpg"))
+face_model = "mtcnn"
+landmark_model = "mobilenet"
+au_model = "logistic"
+emotion_model = "fer"
+detector = Detector(face_model = face_model, landmark_model = landmark_model, au_model = au_model, emotion_model = emotion_model)
+
+test_image = os.path.join(test_data_dir, "tim-mossholder-hOF1bWoet_Q-unsplash.jpg")
 image_prediction = detector.detect_image(test_image)
 # Show results
 image_prediction
@@ -113,7 +123,7 @@ image_prediction.iloc[[1]].plot_detections();
 image_to_plot = image_prediction.input().unique()[1]
 image_prediction.query("input == @image_to_plot").plot_detections();
 
-## Detecting facial expressions from videos. 
+# Detecting FEX from videos
 Detecting facial expressions in videos is also easy by using the `detect_video()` method. This sample video is by [Wolfgang Langer](https://www.pexels.com/@wolfgang-langer-1415383?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels) from [Pexels](https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/).
 
 # Find the file you want to process.
@@ -128,23 +138,22 @@ Video(test_video, embed=True)
 
 Let's predict facial expressions from the video using the `detect_video()` method.
 
-video_prediction = detector.detect_video(test_video)
+video_prediction = detector.detect_video(test_video, skip_frames=24)
 video_prediction.head()
 
 You can also plot the detection results from a video. The frames are not extracted from the video (that will result in thousands of images) so the visualization only shows the detected face without the underlying image.
 
 The video has 24 fps and the actress show sadness around the 0:02, and happiness at 0:14 seconds.
 
-video_prediction.iloc[[2*24]].plot_detections();
+video_prediction.loc[[48]].plot_detections();
 
-video_prediction.iloc[[13*24]].plot_detections();
+video_prediction.loc[[17*24]].plot_detections();
 
 We can also leverage existing pandas plotting functions to show how emotions unfold over time. We can clearly see how her emotions change from sadness to happiness.
 
 video_prediction.emotions().plot()
 
-In situations you don't need predictions for EVERY frame of the video, you can specify how many frames to skip with `skip_frames`.
+In situations you want to predict EVERY frame of the video, you can ust leave out the `skip_frames` argument. Speed of processing may vary depending on the detector you use. 
 
-video_prediction = detector.detect_video(test_video, skip_frames=20)
+video_prediction = detector.detect_video(test_video)
 video_prediction
-

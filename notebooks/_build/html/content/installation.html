@@ -55,7 +55,7 @@
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Detector" href="detector.html" />
+    <link rel="next" title="Detecting FEX from images and videos" href="detector.html" />
     <link rel="prev" title="Py-Feat: Python Facial Expression Analysis Toolbox" href="intro.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -113,22 +113,32 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="detector.html">
-   Detector
+   Detecting FEX from images and videos
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="analysis.html">
-   Analysis
+   Preprocessing FEX data
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="analysis.html#regression">
-   Regression
+  <a class="reference internal" href="analysis.html#analyzing-fex-data">
+   Analyzing FEX data
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="visualizations.html">
    Visualizations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="loadingOtherFiles.html">
+   Loading FEX data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="modelContribution.html">
+   Contributing new FEX models
   </a>
  </li>
 </ul>
@@ -312,27 +322,18 @@
   <div class="section" id="installation-example">
 <h1>Installation example<a class="headerlink" href="#installation-example" title="Permalink to this headline">¶</a></h1>
 <p><em>Written by Jin Hyun Cheong</em></p>
-<p>Open the current notebook in <a class="reference external" href="http://colab.research.google.com/">Google Colab</a> and run the cell below to install Py-Feat. Make sure to <code class="docutils literal notranslate"><span class="pre">Restart</span> <span class="pre">Runtime</span></code> so that the installation is recognized.</p>
+<p>Open the current notebook in <a class="reference external" href="http://colab.research.google.com/">Google Colab</a> and run the cell below to install Py-Feat.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install Py-Feat from source.</span>
-<span class="o">!</span>git clone https://github.com/cosanlab/feat.git  
-<span class="o">!</span><span class="nb">cd</span> feat <span class="o">&amp;&amp;</span> pip install -q -r requirements.txt
-<span class="o">!</span><span class="nb">cd</span> feat <span class="o">&amp;&amp;</span> pip install -q -e . 
-<span class="o">!</span><span class="nb">cd</span> feat <span class="o">&amp;&amp;</span> python bin/download_models.py
-<span class="c1"># Click Runtime from top menu and Restart Runtime! </span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install Py-Feat from Pypi.</span>
+<span class="o">!</span>pip install py-feat
 </pre></div>
 </div>
 </div>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Make sure you <code class="docutils literal notranslate"><span class="pre">Restart</span> <span class="pre">Runtime</span></code> from the <code class="docutils literal notranslate"><span class="pre">Runtime</span></code> top menu bar to refresh your session.
-In Kaggle, click <code class="docutils literal notranslate"><span class="pre">Restart</span> <span class="pre">&amp;</span> <span class="pre">clear</span> <span class="pre">outputs</span></code> from the <code class="docutils literal notranslate"><span class="pre">Run</span></code> top menu bar. NOT <code class="docutils literal notranslate"><span class="pre">Restart</span> <span class="pre">session</span></code></p>
-</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check Fex class installation</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check Fex class installation.</span>
 <span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Fex</span>
 <span class="n">fex</span> <span class="o">=</span> <span class="n">Fex</span><span class="p">()</span>
 </pre></div>
@@ -341,17 +342,9 @@ In Kaggle, click <code class="docutils literal notranslate"><span class="pre">Re
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check Detector class installation</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check Detector class installation.</span>
 <span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 <span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  retinaface
-Loading Face Landmark model:  MobileNet
-Loading au occurence model:  jaanet
-Loading emotion model:  fer
 </pre></div>
 </div>
 </div>
@@ -384,7 +377,7 @@ Loading emotion model:  fer
         <div class='prev-next-bottom'>
             
     <a class='left-prev' id="prev-link" href="intro.html" title="previous page">Py-Feat: Python Facial Expression Analysis Toolbox</a>
-    <a class='right-next' id="next-link" href="detector.html" title="next page">Detector</a>
+    <a class='right-next' id="next-link" href="detector.html" title="next page">Detecting FEX from images and videos</a>
 
         </div>
         

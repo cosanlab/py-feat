@@ -18,7 +18,7 @@ jupyter-book build notebooks
 4. Add & commit changes
 ```
 git add . 
-git commit -m "added changes"
+git commit -m "updated jupyter book"
 ```
 
 5. Upload to gh-pages
