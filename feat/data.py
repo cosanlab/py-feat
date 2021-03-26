@@ -7,8 +7,6 @@ from os.path import join
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series, Index
-import six
-import abc
 from copy import deepcopy
 from functools import reduce
 from nltools.data import Adjacency, design_matrix
