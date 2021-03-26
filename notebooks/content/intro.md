@@ -2,10 +2,10 @@ Py-Feat: Python Facial Expression Analysis Toolbox
 ============================
 
 [![Build Status](https://api.travis-ci.org/cosanlab/feat.svg?branch=master)](https://travis-ci.org/cosanlab/feat/)
-[![Coverage Status](https://coveralls.io/repos/github/cosanlab/feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/feat?branch=master)
-[![GitHub forks](https://img.shields.io/github/forks/cosanlab/feat)](https://github.com/cosanlab/feat/network)
-[![GitHub stars](https://img.shields.io/github/stars/cosanlab/feat)](https://github.com/cosanlab/feat/stargazers)
-[![GitHub license](https://img.shields.io/github/license/cosanlab/feat)](https://github.com/cosanlab/feat/blob/master/LICENSE)
+[![Coverage Status](https://coveralls.io/repos/github/cosanlab/py-feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/py-feat?branch=master)
+[![GitHub forks](https://img.shields.io/github/forks/cosanlab/py-feat)](https://github.com/cosanlab/feat/network)
+[![GitHub stars](https://img.shields.io/github/stars/cosanlab/py-feat)](https://github.com/cosanlab/feat/stargazers)
+[![GitHub license](https://img.shields.io/github/license/cosanlab/py-feat)](https://github.com/cosanlab/feat/blob/master/LICENSE)
 
 Py-Feat provides a comprehensive set of tools and models to easily detect facial expressions (Action Units, emotions, facial landmarks) from images and videos, preprocess & analyze facial expression data, and visualize facial expression data. 
 
