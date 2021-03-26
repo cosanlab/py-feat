@@ -115,9 +115,16 @@ class Detector(object):
                     import zipfile
                     with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
                         zip_ref.extractall(os.path.join(get_resource_path()))
+                if au_model.lower() in ['logistic','svm','rf']:
+                    download_url(model_urls["au_detectors"]['hog-pca']['urls'],get_resource_path())
+                    download_url(model_urls["au_detectors"]['au_scalar']['urls'],get_resource_path())
+
         if emotion_model:
             for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
                 download_url(url, get_resource_path())
+                if emotion_model.lower() in ['svm','rf']:
+                    download_url(model_urls["emotion_detectors"]['emo_pca']['urls'],get_resource_path())
+                    download_url(model_urls["emotion_detectors"]['emo_scalar']['urls'],get_resource_path())
 
         if face_model:
             if face_model.lower() == "faceboxes":
