@@ -17,7 +17,6 @@ from feat.utils import (
     neutral,
     softmax,
     load_h5,
-    load_pickled_model,
 )
 from nltools.data import Adjacency
 import unittest
@@ -48,8 +47,3 @@ def test_utils():
     # Test badfile.
     with pytest.raises(Exception):
         load_h5("badfile.h5")
-
-    # Test loading of pickled model
-    out = load_pickled_model()
-    with pytest.raises(Exception):
-        load_pickled_model("badfile.pkl")
