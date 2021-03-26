@@ -12,7 +12,6 @@ from __future__ import division
 
 __all__ = [
     "get_resource_path",
-    "load_pickled_model",
     "read_facet",
     "read_affdex",
     "read_affectiva",
@@ -27,6 +26,10 @@ __author__ = ["Jin Hyun Cheong, Tiankang Xie"]
 
 import os, math, pywt, pickle, h5py
 from sklearn.cross_decomposition import PLSRegression
+# setattr(PLSRegression, "_x_mean", None)
+# setattr(PLSRegression, "_y_mean", None)
+# setattr(PLSRegression, "_x_std", None)
+from sklearn import __version__
 import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
@@ -197,30 +200,7 @@ def get_resource_path():
     # return ("F:/feat/feat/") # points to the package folder.
     # return os.path.join(os.path.dirname(__file__), 'resources')
 
-
-def load_pickled_model(file_name="pls_python27.pkl"):
-    """Load the pickled PLS model for plotting.
-
-    Args:
-        file_name ([type], optional): Specify model to load. Defaults to  pls_python27.pkl.
-
-    Returns:
-        model: PLS model
-    """
-    file_name = os.path.join(get_resource_path(), file_name)
-    try:
-        with open(file_name, "rb") as f:
-            model = pickle.load(f)
-    except UnicodeDecodeError as e:
-        with open(file_name, "rb") as f:
-            model = pickle.load(f, encoding="latin1")
-    except Exception as e:
-        print("Unable to load data ", file_name, ":", e)
-        raise
-    return model
-
-
-def load_h5(file_name="blue.h5"):
+def load_h5(file_name="pyfeat_aus_to_landmarks.h5"):
     """Load the h5 PLS model for plotting.
 
     Args:
@@ -237,9 +217,14 @@ def load_h5(file_name="blue.h5"):
         d4 = hf.get("x_std")
         model = PLSRegression(len(d1))
         model.coef_ = np.array(d1)
-        model.x_mean_ = np.array(d2)
-        model.y_mean_ = np.array(d3)
-        model.x_std_ = np.array(d4)
+        if int(__version__.split(".")[1]) < 24:
+            model.x_mean_ = np.array(d2)
+            model.y_mean_ = np.array(d3)
+            model.x_std_ = np.array(d4)
+        else:
+            model._x_mean = np.array(d2)
+            model._y_mean = np.array(d3)
+            model._x_std = np.array(d4)
         hf.close()
     except Exception as e:
         print("Unable to load data ", file_name, ":", e)

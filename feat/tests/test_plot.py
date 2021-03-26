@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 
 
 def assert_plot_shape(ax):
-    assert ax.get_ylim() == (-240.0, -50.0)
+    assert ax.get_ylim() == (240.0, 50.0)
     assert ax.get_xlim() == (25.0, 172.0)
 
 
