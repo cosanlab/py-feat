@@ -12,6 +12,9 @@
         "hog-pca": {
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib"]
         },
+        "au_scalar": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_scalar_aus.joblib"]
+        },
         "jaanet": {
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip"]
         },
@@ -24,7 +27,18 @@
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"]
         },
         "resmasknet": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth"]}
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth"]},
+        "rf": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emoRF36.joblib"]},
+        "svm": {
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emoSVM38.joblib"]},
+        "emo_scalar": {
+                "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_scalar.joblib"]
+            },
+        "emo_pca": {
+                "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_pca.joblib"]
+            }
+
     },
     "face_detectors": {
         "retinaface": {
