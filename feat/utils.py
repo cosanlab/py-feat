@@ -26,9 +26,9 @@ __author__ = ["Jin Hyun Cheong, Tiankang Xie"]
 
 import os, math, pywt, pickle, h5py
 from sklearn.cross_decomposition import PLSRegression
-setattr(PLSRegression, "_x_mean", None)
-setattr(PLSRegression, "_y_mean", None)
-setattr(PLSRegression, "_x_std", None)
+# setattr(PLSRegression, "_x_mean", None)
+# setattr(PLSRegression, "_y_mean", None)
+# setattr(PLSRegression, "_x_std", None)
 from sklearn import __version__
 import numpy as np, pandas as pd
 from scipy import signal
@@ -200,7 +200,7 @@ def get_resource_path():
     # return ("F:/feat/feat/") # points to the package folder.
     # return os.path.join(os.path.dirname(__file__), 'resources')
 
-def load_h5(file_name="blue.h5"):
+def load_h5(file_name="pyfeat_aus_to_landmarks.h5"):
     """Load the h5 PLS model for plotting.
 
     Args:
@@ -222,9 +222,9 @@ def load_h5(file_name="blue.h5"):
             model.y_mean_ = np.array(d3)
             model.x_std_ = np.array(d4)
         else:
-            setattr(model, "_x_mean", np.array(d2))
-            setattr(model, "_y_mean", np.array(d3))
-            setattr(model, "_x_std", np.array(d4))
+            model._x_mean = np.array(d2)
+            model._y_mean = np.array(d3)
+            model._x_std = np.array(d4)
         hf.close()
     except Exception as e:
         print("Unable to load data ", file_name, ":", e)

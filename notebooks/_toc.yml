@@ -14,6 +14,7 @@
     - file: content/analysis
     - file: content/visualizations
     - file: content/loadingOtherFiles
+    - file: content/trainAUvisModel
     - file: content/modelContribution
 
 - part: API
