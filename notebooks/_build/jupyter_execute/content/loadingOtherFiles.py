@@ -48,3 +48,19 @@ facet = os.path.join(get_test_data_path(), "sample_affectiva-api-app_output.json
 detections = read_affectiva(facet)
 print(type(detections))
 display(detections.head())
+
+## Loading a completely new file as a Fex class
+It's easy to cast a dataframe which might be neither an OpenFace or FACET outputs into a Fex class. Simply cast your dataframe as a Fex class.
+
+from feat import Fex
+import pandas as pd, numpy as np
+au_columns = [f"AU{i}" for i in range(20)]
+fex = Fex(pd.DataFrame(np.random.rand(20,20)))
+fex.columns = au_columns
+print(type(fex))
+
+To take full advantage of Py-Feat's features, make sure you set the attributes. 
+
+fex.au_columns = au_columns
+display(fex.aus().head())
+

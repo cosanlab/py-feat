@@ -130,13 +130,18 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="content/visualizations.html">
-   Visualizations
+  <a class="reference internal" href="content/plotting.html">
+   Plotting examples
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="content/loadingOtherFiles.html">
    Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="content/trainAUvisModel.html">
+   Training AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
@@ -199,7 +204,7 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/cosanlab/feat">
+  <a class="reference external" href="https://github.com/cosanlab/py-feat">
    GitHub Repository
    <i class="fas fa-external-link-alt">
    </i>
@@ -244,11 +249,11 @@
         aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
     <div class="dropdown-buttons sourcebuttons">
         <a class="repository-button"
-            href="https://github.com/cosanlab/feat"><button type="button" class="btn btn-secondary topbarbtn"
+            href="https://github.com/cosanlab/py-feat"><button type="button" class="btn btn-secondary topbarbtn"
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/cosanlab/feat/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -494,14 +499,16 @@
         <li><a href="api/index.html#feat.data.FexSeries.info">(feat.data.FexSeries method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/index.html#feat.data.Fex.input">input() (feat.data.Fex method)</a>
 
       <ul>
         <li><a href="api/index.html#feat.data.FexSeries.input">(feat.data.FexSeries method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/index.html#feat.data.Fex.isc">isc() (feat.data.Fex method)</a>
+</li>
       <li><a href="api/index.html#feat.data.Fex.itersessions">itersessions() (feat.data.Fex method)</a>
 </li>
   </ul></td>
@@ -531,8 +538,6 @@
 </li>
       </ul></li>
       <li><a href="api/index.html#feat.utils.load_h5">load_h5() (in module feat.utils)</a>
-</li>
-      <li><a href="api/index.html#feat.utils.load_pickled_model">load_pickled_model() (in module feat.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -653,7 +658,9 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/index.html#feat.data.Fex.ttest">ttest() (feat.data.Fex method)</a>
+      <li><a href="api/index.html#feat.data.Fex.ttest_1samp">ttest_1samp() (feat.data.Fex method)</a>
+</li>
+      <li><a href="api/index.html#feat.data.Fex.ttest_ind">ttest_ind() (feat.data.Fex method)</a>
 </li>
   </ul></td>
 </tr></table>

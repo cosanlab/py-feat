@@ -60,9 +60,9 @@ launch_buttons:
   colab_url                 : https://colab.research.google.com # The URL of Google Colab (e.g., https://colab.research.google.com)
 
 repository:
-  url                       : https://github.com/cosanlab/feat # The URL to your book's repository
+  url                       : https://github.com/cosanlab/py-feat # The URL to your book's repository
   path_to_book              : "notebooks"  # A path to your book's folder, relative to the repository root.
-  branch                    : book  # Which branch of the repository should be used when creating links
+  branch                    : master  # Which branch of the repository should be used when creating links
 
 #######################################################################################
 # Advanced and power-user settings
