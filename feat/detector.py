@@ -37,6 +37,7 @@ from feat.au_detectors.DRML.DRML_test import DRMLNet
 from feat.au_detectors.StatLearning.SL_test import RandomForestClassifier,SVMClassifier,LogisticClassifier
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
+from feat.emo_detectors.StatLearning.EmoSL_test import EmoRandomForestClassifier, EmoSVMClassifier
 import torch
 from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
 from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
@@ -114,9 +115,16 @@ class Detector(object):
                     import zipfile
                     with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
                         zip_ref.extractall(os.path.join(get_resource_path()))
+                if au_model.lower() in ['logistic','svm','rf']:
+                    download_url(model_urls["au_detectors"]['hog-pca']['urls'][0],get_resource_path())
+                    download_url(model_urls["au_detectors"]['au_scalar']['urls'][0],get_resource_path())
+
         if emotion_model:
             for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
                 download_url(url, get_resource_path())
+                if emotion_model.lower() in ['svm','rf']:
+                    download_url(model_urls["emotion_detectors"]['emo_pca']['urls'][0],get_resource_path())
+                    download_url(model_urls["emotion_detectors"]['emo_scalar']['urls'][0],get_resource_path())
 
         if face_model:
             if face_model.lower() == "faceboxes":
@@ -207,6 +215,10 @@ class Detector(object):
                 self.emotion_model = ferNetModule()
             elif emotion_model.lower() == "resmasknet":
                 self.emotion_model = ResMaskNet()
+            elif emotion_model.lower() == 'svm':
+                self.emotion_model = EmoSVMClassifier()
+            elif emotion_model.lower() == 'rf':
+                self.emotion_model = EmoRandomForestClassifier()
 
         self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
         predictions = np.empty((1, len(FEAT_EMOTION_COLUMNS)))
@@ -467,7 +479,14 @@ class Detector(object):
             return self.emotion_model.detect_emo(frame,landmarks)
 
         elif self.info["emotion_model"].lower() == 'resmasknet':
-            return self.emotion_model.detect_emo(frame, facebox)        
+            return self.emotion_model.detect_emo(frame, facebox) 
+
+        elif self.info["emotion_model"].lower() in ['svm','rf']:
+            return self.emotion_model.detect_emo(frame, landmarks)    
+        
+        else:
+            raise ValueError('Cannot recognize input emo model! Please try to re-type emotion model')
+
 
     def process_frame(self, frame, counter=0):
         """Helper function to run face detection, landmark detection, and emotion detection on a frame.
@@ -524,7 +543,10 @@ class Detector(object):
                     au_occur, columns=self["au_presence_columns"], index=[counter + i]
                 )
                 # detect emotions
-                emo_pred = self.detect_emotions(frame=frame, facebox=[faces], landmarks=landmarks[0])
+                if self["emotion_model"].lower() in ['svm','rf']:
+                    emo_pred = self.detect_emotions(frame=hogs, facebox = None, landmarks = new_lands)
+                else:
+                    emo_pred = self.detect_emotions(frame=frame, facebox=[faces], landmarks=landmarks[0])
 
                 emo_pred_df = pd.DataFrame(
                     emo_pred, columns=FEAT_EMOTION_COLUMNS, index=[counter + i]
@@ -666,3 +688,23 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
+# %%
+# Test case:
+if __name__ == '__main__':
+    A01 = Detector(face_model='RetinaFace',emotion_model='svm', landmark_model="MobileFaceNet", au_model='rf')
+    test_img = cv2.imread(r"F:\test_case\JinHyunCheong.jpg")
+    im01 = Image.open(r"F:\test_case\JinHyunCheong.jpg")
+    detected_faces = A01.detect_faces(frame=test_img)
+    landmarks = A01.detect_landmarks(
+                    frame=test_img, detected_faces=[detected_faces[0][0:4]]
+                )
+    ress = A01.detect_image(r"F:\test_case\JinHyunCheong.jpg")
+    print(ress)
+    #convex_hull, new_lands = A01.extract_face(frame=test_img, detected_faces=detected_faces[0], landmarks=landmarks, size_output=112)
+    #bk01,bk02 = A01.extract_hog(frame=convex_hull,visualize=True)
+    #A02 = LogisticClassifier()
+    #probbs = A02.detect_au(bk01, new_lands)
+    #print(probbs)
+    print("yes")
+    ress.plot_detections();
+# %%
