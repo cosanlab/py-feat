@@ -56,7 +56,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Visualizations" href="visualizations.html" />
-    <link rel="prev" title="Detecting FEX from images and videos" href="detector.html" />
+    <link rel="prev" title="Detecting FEX from images" href="detector.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -113,7 +113,12 @@
 <ul class="current nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="detector.html">
-   Detecting FEX from images and videos
+   Detecting FEX from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="detector.html#detecting-fex-from-videos">
+   Detecting FEX from videos
   </a>
  </li>
  <li class="toctree-l1 current active">
@@ -127,18 +132,43 @@
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="#two-sample-independent-t-test">
+   Two sample independent t-test
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="visualizations.html">
    Visualizations
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="loadingOtherFiles.html">
-   Loading FEX data from other detectors
+   Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="trainAUvisModel.html">
+   Training AU visualization model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="trainAUvisModel.html#tiankang-data">
+   tiankang data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="trainAUvisModel.html#train-model-with-facet-aus-on-openface-landmarks">
+   Train model with FACET AUs on OpenFace landmarks
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="trainAUvisModel.html#train-model-with-openface-aus-on-openface-landmarks">
+   Train model with OpenFace AUs on OpenFace landmarks
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="modelContribution.html">
-   Contributing new FEX models
+   Contributing new detectors
   </a>
  </li>
 </ul>
@@ -283,21 +313,21 @@
         aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
     <div class="dropdown-buttons">
         
-        <a class="binder-button" href="https://mybinder.org/v2/gh/cosanlab/feat/book?urlpath=tree/notebooks/content/analysis.ipynb"><button type="button"
+        <a class="binder-button" href="https://mybinder.org/v2/gh/cosanlab/feat/master?urlpath=tree/notebooks/content/analysis.ipynb"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
                 data-placement="left"><img class="binder-button-logo"
                     src="../_static/images/logo_binder.svg"
                     alt="Interact on binder">Binder</button></a>
         
         
-        <a class="jupyterhub-button" href="https://jhub.dartmouth.edu//hub/user-redirect/git-pull?repo=https://github.com/cosanlab/feat&urlpath=tree/feat/notebooks/content/analysis.ipynb&branch=book"><button type="button"
+        <a class="jupyterhub-button" href="https://jhub.dartmouth.edu//hub/user-redirect/git-pull?repo=https://github.com/cosanlab/feat&urlpath=tree/feat/notebooks/content/analysis.ipynb&branch=master"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Launch JupyterHub" data-toggle="tooltip"
                 data-placement="left"><img class="jupyterhub-button-logo"
                     src="../_static/images/logo_jupyterhub.svg"
                     alt="Interact on JupyterHub">JupyterHub</button></a>
         
         
-        <a class="colab-button" href="https://colab.research.google.com/github/cosanlab/feat/blob/book/notebooks/content/analysis.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
+        <a class="colab-button" href="https://colab.research.google.com/github/cosanlab/feat/blob/master/notebooks/content/analysis.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
                 title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
                     src="../_static/images/logo_colab.png"
                     alt="Interact on Colab">Colab</button></a>
@@ -343,6 +373,13 @@
      Simple t-test
     </a>
    </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#two-sample-independent-t-test">
+   Two sample independent t-test
+  </a>
+  <ul class="nav section-nav flex-column">
    <li class="toc-h2 nav-item toc-entry">
     <a class="reference internal nav-link" href="#prediction">
      Prediction
@@ -351,6 +388,11 @@
    <li class="toc-h2 nav-item toc-entry">
     <a class="reference internal nav-link" href="#regression">
      Regression
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#intersubject-correlations">
+     Intersubject correlations
     </a>
    </li>
   </ul>
@@ -400,6 +442,8 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;talk&quot;</span><span class="p">)</span>
 
 <span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clip_attrs.csv&quot;</span><span class="p">)</span>
 <span class="n">videos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.mp4&quot;</span><span class="p">))</span>
@@ -828,7 +872,7 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">input_class_map</span><span class="p">)</span>
-<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="p">[</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span><span class="o">==</span><span class="s2">&quot;goodNews&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">ttest</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="p">[</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span><span class="o">==</span><span class="s2">&quot;goodNews&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">p</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">au_columns</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -920,6 +964,29 @@
   </tbody>
 </table>
 </div></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="two-sample-independent-t-test">
+<h1>Two sample independent t-test<a class="headerlink" href="#two-sample-independent-t-test" title="Permalink to this headline">¶</a></h1>
+<p>You can also perform an independent two sample ttest between two sessions which in this case is goodNews vs badNews.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">columns2compare</span> <span class="o">=</span> <span class="s2">&quot;mean_AU12&quot;</span>
+<span class="n">sessions</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">)</span>
+<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">ttest_ind</span><span class="p">(</span><span class="n">col</span> <span class="o">=</span> <span class="n">columns2compare</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">sessions</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T-test between </span><span class="si">{</span><span class="n">sessions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">sessions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">: t=</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2">, p=</span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span> 
+            <span class="n">y</span> <span class="o">=</span> <span class="n">columns2compare</span><span class="p">,</span> 
+            <span class="n">data</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>T-test between goodNews vs badNews: t=17, p=2.32e-12
+</pre></div>
+</div>
+<img alt="../_images/analysis_17_1.png" src="../_images/analysis_17_1.png" />
 </div>
 </div>
 <div class="section" id="prediction">
@@ -1093,6 +1160,22 @@ coefficients for predicting class: goodNews
 </div></div></div>
 </div>
 </div>
+<div class="section" id="intersubject-correlations">
+<h2>Intersubject correlations<a class="headerlink" href="#intersubject-correlations" title="Permalink to this headline">¶</a></h2>
+<p>To compare the similarity of signals over time between subjects or videos, you can use the <code class="docutils literal notranslate"><span class="pre">isc</span></code> method. You can get a sense of how much two signals, such as a certain action unit activity, correlates over time. For example, if you want to see how AU01 activations are similar across the videos, you can do the following which shows that the temporal profile of AU01 activations form two clusters between the goodNews and the badNews conditions.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span>
+<span class="n">isc</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">isc</span><span class="p">(</span><span class="n">col</span> <span class="o">=</span> <span class="s2">&quot;AU01&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">isc</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span> <span class="n">center</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/analysis_23_0.png" src="../_images/analysis_23_0.png" />
+</div>
+</div>
+</div>
 </div>
 
     <script type="text/x-thebe-config">
@@ -1120,7 +1203,7 @@ coefficients for predicting class: goodNews
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="detector.html" title="previous page">Detecting FEX from images and videos</a>
+    <a class='left-prev' id="prev-link" href="detector.html" title="previous page">Detecting FEX from images</a>
     <a class='right-next' id="next-link" href="visualizations.html" title="next page">Visualizations</a>
 
         </div>
