@@ -31,7 +31,7 @@ from feat.utils import (
 from feat.plotting import plot_face, draw_lineface, draw_muscles
 from nilearn.signal import clean
 from scipy.signal import convolve
-from scipy.stats import ttest_1samp
+from scipy.stats import ttest_1samp, ttest_ind
 
 
 class FexSeries(Series):
@@ -689,7 +689,7 @@ class Fex(DataFrame):
         res_df = pd.DataFrame(res, columns=my.columns)
         return b_df, t_df, p_df, df_df, res_df
 
-    def ttest(self, popmean=0, threshold_dict=None):
+    def ttest_1samp(self, popmean=0, threshold_dict=None):
         """Conducts 1 sample ttest.
 
         Uses scipy.stats.ttest_1samp to conduct 1 sample ttest
@@ -702,6 +702,24 @@ class Fex(DataFrame):
             t, p: t-statistics and p-values
         """
         return ttest_1samp(self, popmean)
+
+    def ttest_ind(self, col, sessions, threshold_dict=None):
+        """Conducts 2 sample ttest.
+
+        Uses scipy.stats.ttest_ind to conduct 2 sample ttest on column col between sessions.
+
+        Args:
+            col (str): Column names to compare in a t-test between sessions
+            session_names (tuple): tuple of session names stored in Fex.sessions.
+            threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]
+
+        Returns:
+            t, p: t-statistics and p-values
+        """
+        sess1, sess2 = sessions
+        a = self[self.sessions == sess1][col]
+        b = self[self.sessions == sess2][col]
+        return ttest_ind(a, b)
 
     def predict(self, X, y, model=LinearRegression, *args, **kwargs):
         """Predicts y from X using a sklearn model.
@@ -754,6 +772,25 @@ class Fex(DataFrame):
         df_ds.features = ds_features
         return df_ds
         # return self.__class__(df_ds, sampling_freq=target, features=ds_features)
+
+    def isc(self, col, index="frame", columns="input", method="pearson"):   
+        """[summary]
+
+        Args:
+            col (str]): Column name to compute the ISC for.
+            index (str, optional): Column to be used in computing ISC. Usually this would be the column identifying the time such as the number of the frame. Defaults to "frame".
+            columns (str, optional): Column to be used for ISC. Usually this would be the column identifying the video or subject. Defaults to "input".
+            method (str, optional): Method to use for correlation pearson, kendall, or spearman. Defaults to "pearson".
+
+        Returns:
+            DataFrame: Correlation matrix with index as colmns 
+        """                 
+        if index == None:
+            index = 'frame'
+        if columns == None:
+            columns = "input"
+        mat = pd.pivot_table(self, index = index, columns=columns, values=col).corr(method=method)
+        return mat 
 
     def upsample(self, target, target_type="hz", **kwargs):
         """Upsample Fex columns. Relies on nltools.stats.upsample,
