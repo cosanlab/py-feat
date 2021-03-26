@@ -80,7 +80,7 @@ average_au_intensity_per_video.sessions = average_au_intensity_per_video.index.m
 t, p = average_au_intensity_per_video[average_au_intensity_per_video.sessions=="goodNews"].aus().ttest_1samp(.5)
 pd.DataFrame({"t": t, "p": p}, index= average_au_intensity_per_video.au_columns)
 
-# Two sample independent t-test
+## Two sample independent t-test
 You can also perform an independent two sample ttest between two sessions which in this case is goodNews vs badNews.
 
 columns2compare = "mean_AU12"
