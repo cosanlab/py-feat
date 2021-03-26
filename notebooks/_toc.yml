@@ -12,7 +12,7 @@
   chapters:
     - file: content/detector
     - file: content/analysis
-    - file: content/visualizations
+    - file: content/plotting
     - file: content/loadingOtherFiles
     - file: content/trainAUvisModel
     - file: content/modelContribution
@@ -24,5 +24,5 @@
 - part: Contributing
   chapters:
   - file: content/contribute
-  - url: https://github.com/cosanlab/feat
+  - url: https://github.com/cosanlab/py-feat
     title: GitHub Repository
