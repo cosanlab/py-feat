@@ -115,9 +115,12 @@ results = pd.concat([b.round(3).loc[[0]].rename(index={0:"betas"}),
                     p.round(3).loc[[0]].rename(index={0:"p-values"})])
 display(results)
 
-## Intersubject correlations
-To compare the similarity of signals over time between subjects or videos, you can use the `isc` method. You can get a sense of how much two signals, such as a certain action unit activity, correlates over time. For example, if you want to see how AU01 activations are similar across the videos, you can do the following which shows that the temporal profile of AU01 activations form two clusters between the goodNews and the badNews conditions. 
+## Intersubject (or intervideo) correlations
+To compare the similarity of signals over time between subjects or videos, you can use the `isc` method. You can get a sense of how much two signals, such as a certain action unit activity, correlates over time. 
+
+In this example, we are calculating the ISC over videos. We want to check how similar AU01 activations are across videos so our session is set to the `input` which is the video name. Executing the `isc` method shows that the temporal profile of AU01 activations form two clusters between the goodNews and the badNews conditions. 
 
 fex.sessions = fex.input()
 isc = fex.isc(col = "AU01")
 sns.heatmap(isc.corr(), center=0, vmin=-1, vmax=1, cmap="RdBu_r");
+

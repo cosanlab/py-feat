@@ -369,8 +369,8 @@
     </a>
    </li>
    <li class="toc-h2 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#intersubject-correlations">
-     Intersubject correlations
+    <a class="reference internal nav-link" href="#intersubject-or-intervideo-correlations">
+     Intersubject (or intervideo) correlations
     </a>
    </li>
   </ul>
@@ -895,6 +895,11 @@
       <td>2.660164e-12</td>
     </tr>
     <tr>
+      <th>mean_AU05</th>
+      <td>-11.942339</td>
+      <td>8.022300e-07</td>
+    </tr>
+    <tr>
       <th>mean_AU06</th>
       <td>3.905366</td>
       <td>3.589972e-03</td>
@@ -905,9 +910,19 @@
       <td>3.864728e-04</td>
     </tr>
     <tr>
+      <th>mean_AU09</th>
+      <td>-22.647961</td>
+      <td>3.024835e-09</td>
+    </tr>
+    <tr>
       <th>mean_AU10</th>
       <td>10.361594</td>
       <td>2.660301e-06</td>
+    </tr>
+    <tr>
+      <th>mean_AU11</th>
+      <td>-42.691265</td>
+      <td>1.059418e-11</td>
     </tr>
     <tr>
       <th>mean_AU12</th>
@@ -930,6 +945,11 @@
       <td>6.562759e-01</td>
     </tr>
     <tr>
+      <th>mean_AU20</th>
+      <td>-45.470892</td>
+      <td>6.019391e-12</td>
+    </tr>
+    <tr>
       <th>mean_AU23</th>
       <td>-0.300423</td>
       <td>7.706780e-01</td>
@@ -938,6 +958,26 @@
       <th>mean_AU24</th>
       <td>-4.533345</td>
       <td>1.419377e-03</td>
+    </tr>
+    <tr>
+      <th>mean_AU25</th>
+      <td>3.119502</td>
+      <td>1.232852e-02</td>
+    </tr>
+    <tr>
+      <th>mean_AU26</th>
+      <td>-5.015769</td>
+      <td>7.232461e-04</td>
+    </tr>
+    <tr>
+      <th>mean_AU28</th>
+      <td>-7.169935</td>
+      <td>5.251451e-05</td>
+    </tr>
+    <tr>
+      <th>mean_AU43</th>
+      <td>-78.139016</td>
+      <td>4.660607e-14</td>
     </tr>
   </tbody>
 </table>
@@ -1076,15 +1116,23 @@ coefficients for predicting class: goodNews
       <th>AU01</th>
       <th>AU02</th>
       <th>AU04</th>
+      <th>AU05</th>
       <th>AU06</th>
       <th>AU07</th>
+      <th>AU09</th>
       <th>AU10</th>
+      <th>AU11</th>
       <th>AU12</th>
       <th>AU14</th>
       <th>AU15</th>
       <th>AU17</th>
+      <th>AU20</th>
       <th>AU23</th>
       <th>AU24</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>AU28</th>
+      <th>AU43</th>
     </tr>
   </thead>
   <tbody>
@@ -1093,30 +1141,46 @@ coefficients for predicting class: goodNews
       <td>0.066</td>
       <td>0.052</td>
       <td>-0.065</td>
+      <td>-0.251</td>
       <td>0.497</td>
       <td>0.291</td>
+      <td>0.105</td>
       <td>0.408</td>
+      <td>-0.002</td>
       <td>0.569</td>
       <td>0.022</td>
       <td>0.111</td>
       <td>0.101</td>
+      <td>0.038</td>
       <td>-0.029</td>
       <td>-0.284</td>
+      <td>0.305</td>
+      <td>0.140</td>
+      <td>-0.016</td>
+      <td>0.013</td>
     </tr>
     <tr>
       <th>t-stats</th>
       <td>8.221</td>
       <td>8.219</td>
       <td>-17.153</td>
+      <td>-31.413</td>
       <td>43.783</td>
       <td>33.364</td>
+      <td>21.079</td>
       <td>35.625</td>
+      <td>-2.671</td>
       <td>46.713</td>
       <td>4.088</td>
       <td>17.515</td>
       <td>15.673</td>
+      <td>7.927</td>
       <td>-5.063</td>
       <td>-22.483</td>
+      <td>19.415</td>
+      <td>16.822</td>
+      <td>-2.293</td>
+      <td>2.422</td>
     </tr>
     <tr>
       <th>p-values</th>
@@ -1128,19 +1192,28 @@ coefficients for predicting class: goodNews
       <td>0.000</td>
       <td>0.000</td>
       <td>0.000</td>
+      <td>0.008</td>
       <td>0.000</td>
       <td>0.000</td>
       <td>0.000</td>
       <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.022</td>
+      <td>0.016</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
 </div>
 </div>
-<div class="section" id="intersubject-correlations">
-<h2>Intersubject correlations<a class="headerlink" href="#intersubject-correlations" title="Permalink to this headline">¶</a></h2>
-<p>To compare the similarity of signals over time between subjects or videos, you can use the <code class="docutils literal notranslate"><span class="pre">isc</span></code> method. You can get a sense of how much two signals, such as a certain action unit activity, correlates over time. For example, if you want to see how AU01 activations are similar across the videos, you can do the following which shows that the temporal profile of AU01 activations form two clusters between the goodNews and the badNews conditions.</p>
+<div class="section" id="intersubject-or-intervideo-correlations">
+<h2>Intersubject (or intervideo) correlations<a class="headerlink" href="#intersubject-or-intervideo-correlations" title="Permalink to this headline">¶</a></h2>
+<p>To compare the similarity of signals over time between subjects or videos, you can use the <code class="docutils literal notranslate"><span class="pre">isc</span></code> method. You can get a sense of how much two signals, such as a certain action unit activity, correlates over time.</p>
+<p>In this example, we are calculating the ISC over videos. We want to check how similar AU01 activations are across videos so our session is set to the <code class="docutils literal notranslate"><span class="pre">input</span></code> which is the video name. Executing the <code class="docutils literal notranslate"><span class="pre">isc</span></code> method shows that the temporal profile of AU01 activations form two clusters between the goodNews and the badNews conditions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span>
