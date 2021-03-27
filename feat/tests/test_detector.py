@@ -12,6 +12,7 @@ import feat
 import os
 import cv2
 import numpy as np
+import pytest
 
 inputFname = os.path.join(get_test_data_path(), "input.jpg")
 img01 = cv2.imread(inputFname)
@@ -211,6 +212,28 @@ def test_resmasknet():
     out = detector1.detect_image(inputFname)
     assert out.emotions()["happiness"].values > 0.5
 
+def test_emotionsvm():
+    inputFname = os.path.join(get_test_data_path(), "input.jpg")
+    detector1 = Detector(emotion_model="svm")
+    out = detector1.detect_image(inputFname)
+    assert out.emotions()["happiness"].values > 0.5
+
+def test_emotionrf():
+    # Emotion RF models is not good 
+    inputFname = os.path.join(get_test_data_path(), "input.jpg")
+    detector1 = Detector(emotion_model="rf")
+    out = detector1.detect_image(inputFname)
+    assert out.emotions()["happiness"].values > 0.0
+
+def test_wrongmodelname():
+    with pytest.raises(KeyError):
+        detector1 = Detector(emotion_model="badmodelname")
+
+def test_nofile():
+    with pytest.raises(FileNotFoundError):
+        inputFname = os.path.join(get_test_data_path(), "nosuchfile.jpg")
+        detector1 = Detector(emotion_model="svm")
+        out = detector1.detect_image(inputFname)
 
 def test_detect_image():
     # Test detect image

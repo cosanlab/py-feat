@@ -688,23 +688,3 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
-# %%
-# Test case:
-if __name__ == '__main__':
-    A01 = Detector(face_model='RetinaFace',emotion_model='svm', landmark_model="MobileFaceNet", au_model='rf')
-    test_img = cv2.imread(r"F:\test_case\JinHyunCheong.jpg")
-    im01 = Image.open(r"F:\test_case\JinHyunCheong.jpg")
-    detected_faces = A01.detect_faces(frame=test_img)
-    landmarks = A01.detect_landmarks(
-                    frame=test_img, detected_faces=[detected_faces[0][0:4]]
-                )
-    ress = A01.detect_image(r"F:\test_case\JinHyunCheong.jpg")
-    print(ress)
-    #convex_hull, new_lands = A01.extract_face(frame=test_img, detected_faces=detected_faces[0], landmarks=landmarks, size_output=112)
-    #bk01,bk02 = A01.extract_hog(frame=convex_hull,visualize=True)
-    #A02 = LogisticClassifier()
-    #probbs = A02.detect_au(bk01, new_lands)
-    #print(probbs)
-    print("yes")
-    ress.plot_detections();
-# %%
