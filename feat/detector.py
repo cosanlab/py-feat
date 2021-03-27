@@ -634,7 +634,7 @@ class Detector(object):
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
                 landmark_columns=openface_2d_landmark_columns,
-                time_columns=FACET_TIME_COLUMNS,
+                time_columns=FEAT_TIME_COLUMNS,
                 detector="Feat",
             )
 
