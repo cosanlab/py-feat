@@ -1,8 +1,8 @@
-# Py-FEAT  
+# Py-FEAT: Python Facial Expression Analysis Toolbox (FEAT)
 [![Package versioning](https://img.shields.io/pypi/v/py-feat.svg)](https://pypi.org/project/py-feat/)
-[![Build Status](https://api.travis-ci.org/cosanlab/feat.svg?branch=master)](https://travis-ci.org/cosanlab/feat/)
+[![Build Status](https://api.travis-ci.org/cosanlab/py-feat.svg?branch=master)](https://travis-ci.org/cosanlab/py-feat/)
 [![Coverage Status](https://coveralls.io/repos/github/cosanlab/py-feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/py-feat?branch=master)
-Python Facial Expression Analysis Toolbox (FEAT)
+
 
 Py-FEAT is a suite for facial expressions (FEX) research written in Python. This package includes tools to detect faces, extract emotional facial expressions (e.g., happiness, sadness, anger), facial muscle movements (e.g., action units), and facial landmarks, from videos and images of faces, as well as methods to preprocess, analyze, and visualize FEX data. 
 
@@ -40,22 +40,8 @@ detector = Detector()
 out = detector.detect_image("input.png")
 out.plot_detections()
 ```
-### 3. Preprocessing FEX data
-Loading a facial expression file and preprocess. 
-```python
-# Code goes here
-```
-
-You can also preprocess facial expression data extracted using other software (e.g., iMotions, FACET, Affectiva, OpenFace)
-```python
-# Code goes here
-```
-
-### 4. Analyze FEX data
-Analyze FEX.
-```python
-# Code goes here
-```
+### 3. Preprocessing & analyzing FEX data
+See examples in our [tutorial](https://cosanlab.github.io/py-feat/content/analysis.html#). 
 
 ## Supported Models 
 Please respect the usage licenses for each model.
@@ -71,10 +57,15 @@ Facial landmark detection models
 - [PFLD: Practical Facial Landmark Detector](https://github.com/polarisZhao/PFLD-pytorch)
 
 Action Unit detection models
+- FEAT-Random Forest
+- FEAT-SVM
+- FEAT-Logistic
 - [DRML: Deep Region and Multi-Label Learning](https://github.com/AlexHex7/DRML_pytorch)
 - [JAANet: Joint AU Detection and Face Alignment via Adaptive Attention](https://github.com/ZhiwenShao/PyTorch-JAANet)
 
 Emotion detection models 
+- FEAT-Random Forest
+- FEAT-Logistic
 - [FerNet](https://www.kaggle.com/gauravsharma99/facial-emotion-recognition?select=fer2013)
 - [ResMaskNet: Residual Masking Network](https://github.com/phamquiluan/ResidualMaskingNetwork)
 
