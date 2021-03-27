@@ -241,10 +241,11 @@ def read_feat(fexfile):
         Fex of processed facial expressions
     """
     d = pd.read_csv(fexfile)
+    au_columns = [col for col in d.columns if "AU" in col]
     return feat.Fex(
         d,
         filename=fexfile,
-        au_columns=jaanet_AU_presence,
+        au_columns=au_columns,
         emotion_columns=FEAT_EMOTION_COLUMNS,
         landmark_columns=openface_2d_landmark_columns,
         facebox_columns=FEAT_FACEBOX_COLUMNS,
