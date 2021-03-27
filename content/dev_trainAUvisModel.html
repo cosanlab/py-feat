@@ -55,8 +55,6 @@
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Contributing new detectors" href="modelContribution.html" />
-    <link rel="prev" title="Loading data from other detectors" href="loadingOtherFiles.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -110,7 +108,7 @@
   Tutorials
  </span>
 </p>
-<ul class="current nav sidenav_l1">
+<ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="detector.html">
    Detecting FEX from images
@@ -141,8 +139,8 @@
    Loading data from other detectors
   </a>
  </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="trainAUvisModel.html">
    Training AU visualization model
   </a>
  </li>
@@ -252,7 +250,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../_sources/content/trainAUvisModel.ipynb"><button type="button"
+        <a class="dropdown-buttons" href="../_sources/content/dev_trainAUvisModel.ipynb"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.ipynb</button></a>
         <!-- Download PDF via print -->
@@ -272,7 +270,7 @@
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fcontent/trainAUvisModel.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fcontent/dev_trainAUvisModel.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -293,21 +291,21 @@
         aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
     <div class="dropdown-buttons">
         
-        <a class="binder-button" href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/content/trainAUvisModel.ipynb"><button type="button"
+        <a class="binder-button" href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/content/dev_trainAUvisModel.ipynb"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
                 data-placement="left"><img class="binder-button-logo"
                     src="../_static/images/logo_binder.svg"
                     alt="Interact on binder">Binder</button></a>
         
         
-        <a class="jupyterhub-button" href="https://jhub.dartmouth.edu//hub/user-redirect/git-pull?repo=https://github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/content/trainAUvisModel.ipynb&branch=master"><button type="button"
+        <a class="jupyterhub-button" href="https://jhub.dartmouth.edu//hub/user-redirect/git-pull?repo=https://github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/content/dev_trainAUvisModel.ipynb&branch=master"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Launch JupyterHub" data-toggle="tooltip"
                 data-placement="left"><img class="jupyterhub-button-logo"
                     src="../_static/images/logo_jupyterhub.svg"
                     alt="Interact on JupyterHub">JupyterHub</button></a>
         
         
-        <a class="colab-button" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/trainAUvisModel.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
+        <a class="colab-button" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/dev_trainAUvisModel.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
                 title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
                     src="../_static/images/logo_colab.png"
                     alt="Interact on Colab">Colab</button></a>
@@ -360,17 +358,22 @@
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
 
+<span class="n">au_cols</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">43</span><span class="p">]</span>
+<span class="n">au_cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;AU</span><span class="si">{</span><span class="n">au</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">au_cols</span><span class="p">]</span>
+
 <span class="n">base_dir</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Projects/feat_benchmark/scripts/jcheong/openface_train&quot;</span>
 
 <span class="n">labels_emotionet</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;emotionet_labels.csv&quot;</span><span class="p">))</span>
 <span class="n">landmarks_emotionet</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;emotionet_landmarks.csv&quot;</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EmotioNet: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels_emotionet</span><span class="p">))</span>
+
 <span class="n">labels_disfaplus</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;disfaplus_labels.csv&quot;</span><span class="p">))</span>
 <span class="n">landmarks_disfaplus</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;disfaplus_landmarks.csv&quot;</span><span class="p">))</span>
 <span class="c1"># Disfa is rescaled to 0 - 1</span>
 <span class="n">disfaplus_aus</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">labels_disfaplus</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;AU&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">]</span>
 <span class="n">labels_disfaplus</span><span class="p">[</span><span class="n">disfaplus_aus</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels_disfaplus</span><span class="p">[</span><span class="n">disfaplus_aus</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DISFA Plus: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels_disfaplus</span><span class="p">))</span>
+
 <span class="n">labels_bp4d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;bp4d_labels.csv&quot;</span><span class="p">))</span>
 <span class="n">landmarks_bp4d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;bp4d_landmarks.csv&quot;</span><span class="p">))</span>
 <span class="n">bp4d_pruned_idx</span> <span class="o">=</span> <span class="n">labels_bp4d</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">9</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
@@ -402,8 +405,7 @@ BP4D:  143951
 
 <span class="n">landmarks</span> <span class="o">=</span> <span class="n">landmarks</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">labels</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
 
-<span class="n">au_cols</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">43</span><span class="p">]</span>
-<span class="n">au_cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;AU</span><span class="si">{</span><span class="n">au</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">au_cols</span><span class="p">]</span>
+
 <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -457,6 +459,18 @@ N_comp: 20 Rsquare 0.15
 </div>
 </div>
 </div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(10000, 20)
+</pre></div>
+</div>
+</div>
+</div>
 <p>We visualize the results of our model. The regression was trained on labels 0-1 so we do not recommend exceeding 1 for the intensity. Setting the intensity to 2 will exaggerate the face and anything beyond that might give you strange faces.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -487,7 +501,7 @@ N_comp: 20 Rsquare 0.15
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/trainAUvisModel_7_0.png" src="../_images/trainAUvisModel_7_0.png" />
+<img alt="../_images/dev_trainAUvisModel_8_0.png" src="../_images/dev_trainAUvisModel_8_0.png" />
 </div>
 </div>
 <p>Here is how we would export our model into an h5 format which can be loaded using our load_h5 function.</p>
@@ -689,8 +703,6 @@ N_comp: 20 Rsquare 0.15
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="loadingOtherFiles.html" title="previous page">Loading data from other detectors</a>
-    <a class='right-next' id="next-link" href="modelContribution.html" title="next page">Contributing new detectors</a>
 
         </div>
         
