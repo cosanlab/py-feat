@@ -10,6 +10,7 @@ import numpy as np
 from os.path import join, exists
 from .utils import get_test_data_path
 from feat.utils import (
+    read_feat,
     read_facet,
     read_openface,
     read_affectiva,
@@ -18,9 +19,14 @@ from feat.utils import (
     softmax,
     load_h5,
 )
+from feat import Fex
 from nltools.data import Adjacency
 import unittest
 
+
+def test_read_feat():
+    fex = read_feat(join(get_test_data_path(), "output.csv"))
+    assert type(fex) == Fex
 
 def test_utils():
     sample = read_openface(join(get_test_data_path(), "OpenFace_Test.csv"))
