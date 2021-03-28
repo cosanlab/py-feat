@@ -12,6 +12,7 @@ import warnings
 import seaborn as sns
 import matplotlib.colors as colors
 from collections import OrderedDict
+from sklearn.preprocessing import minmax_scale
 
 __all__ = [
     "draw_lineface",
@@ -852,6 +853,7 @@ def plot_face(
     vectorfield=None,
     muscles=None,
     ax=None,
+    scale=False,
     color="k",
     linewidth=1,
     linestyle="-",
@@ -867,6 +869,7 @@ def plot_face(
         vectorfield: (dict) {'target':target_array,'reference':reference_array}
         muscles: (dict) {'muscle': color}
         ax: matplotlib axis handle
+        scale (bool): whether to scale AU values to model range. (default: False)
         color: matplotlib color
         linewidth: matplotlib linewidth
         linestyle: matplotlib linestyle
@@ -888,6 +891,9 @@ def plot_face(
             "Don't forget to pass an 'au' vector of len(20), "
             "using neutral as default"
         )
+
+    if scale==True:
+        au = minmax_scale([au], feature_range=(0,1), axis=1)[0]
 
     landmarks = predict(au, model)
     currx, curry = [landmarks[x, :] for x in range(2)]
