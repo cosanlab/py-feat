@@ -21,7 +21,7 @@ setup(
     version=version['__version__'],
     description="Facial Expression Analysis Toolbox",
     long_description="",
-    author="Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Nathaniel Hanes, Luke Chang ",
+    author="Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Luke Chang ",
     author_email='jcheong0428@gmail.com',
     url='https://github.com/cosanlab/feat',
     packages=find_packages(),
