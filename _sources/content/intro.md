@@ -3,6 +3,7 @@ Py-Feat: Python Facial Expression Analysis Toolbox
 [![Package versioning](https://img.shields.io/pypi/v/py-feat.svg)](https://pypi.org/project/py-feat/)
 [![Build Status](https://api.travis-ci.org/cosanlab/py-feat.svg?branch=master)](https://travis-ci.org/cosanlab/py-feat/)
 [![Coverage Status](https://coveralls.io/repos/github/cosanlab/py-feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/py-feat?branch=master)
+![Python Versions](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
 [![GitHub forks](https://img.shields.io/github/forks/cosanlab/py-feat)](https://github.com/cosanlab/py-feat/network)
 [![GitHub stars](https://img.shields.io/github/stars/cosanlab/py-feat)](https://github.com/cosanlab/py-feat/stargazers)
 [![GitHub license](https://img.shields.io/github/license/cosanlab/py-feat)](https://github.com/cosanlab/py-feat/blob/master/LICENSE)
@@ -57,13 +58,15 @@ from feat import Detector
 ## Available models
 Below is a list of models implemented in Py-Feat and ready to use. The model names are in the titles followed by the reference publications.
 ### Action Unit detection
-- `rf`: Random Forest model trained on Histogram of Oriented Gradients. 
-- `svm`: SVM model trained on Histogram of Oriented Gradients. 
-- `logistic`: Logistic Classifier model trained on Histogram of Oriented Gradients. 
-- `JAANET`: Joint facial action unit detection and face alignment via adaptive attention ([Shao et al., 2020](https://arxiv.org/pdf/2003.08834v1.pdf))
+- `rf`: Random Forest model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
+- `svm`: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
+- `logistic`: Logistic Classifier model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
+- `JAANET`: Joint facial action unit detection and face alignment via adaptive attention trained with BP4D and BP4D+ ([Shao et al., 2020](https://arxiv.org/pdf/2003.08834v1.pdf))
 - `DRML`: Deep region and multi-label learning for facial action unit detection by ([Zhao et al., 2016](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Zhao_Deep_Region_and_CVPR_2016_paper.pdf))
 ###  Emotion detection
-- `FeatNet` by Tiankang Xie 
+- `rf`: Random Forest model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
+- `svm`: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
+- `fernet`: Deep convolutional network
 - `ResMaskNet`: Facial expression recognition using residual masking network by ([Pham et al., 2020](https://ailb-web.ing.unimore.it/icpr/author/3818))
 ###  Face detection
 - `MTCNN`: Multi-task cascaded convolutional networks by ([Zhang et al., 2016](https://arxiv.org/pdf/1604.02878.pdf); [Zhang et al., 2020](https://ieeexplore.ieee.org/document/9239720))
@@ -78,4 +81,4 @@ Below is a list of models implemented in Py-Feat and ready to use. The model nam
 We are excited for people to add new models and features to Py-Feat. Please see the [contribution guides](https://cosanlab.github.io/feat/content/contribute.html). 
 
 ## License 
-Py-Feat is under the [MIT license](https://github.com/cosanlab/feat/blob/master/LICENSE) but the provided models may have separate licenses. Please cite the corresponding references for the models you've used.
+Py-FEAT is provided under the  [MIT license](https://github.com/cosanlab/py-feat/blob/master/LICENSE). You also need to cite and respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 
