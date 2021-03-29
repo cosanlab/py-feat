@@ -663,6 +663,12 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
         "orb_oris_u": orb_oris_u,
         "orb_oc_l": orb_oc_l,
         "cor_sup_l": cor_sup_l,
+        "pars_palp_l": orb_oc_l_inner,
+        "pars_palp_r": orb_oc_r_inner,
+        "masseter_l_rel": masseter_l,
+        "masseter_r_rel": masseter_r,
+        "temporalis_l_rel": temporalis_l,
+        "temporalis_r_rel": temporalis_r,
     }
 
     muscle_names = [
@@ -701,6 +707,12 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
         "orb_oris_l",
         "orb_oris_u",
         "cor_sup_l",
+        "pars_palp_l",
+        "pars_palp_r",
+        "masseter_l_rel",
+        "masseter_r_rel",
+        "temporalis_l_rel",
+        "temporalis_r_rel",
     ]
     todraw = {}
     facet = False
@@ -730,7 +742,6 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                 del kwargs[muscle]
     for muscle in todraw.keys():
         if todraw[muscle] == "heatmap":
-            # muscles[muscle].set_color(get_heat(muscle, au, facet))
             muscles[muscle].set_color(get_heat(muscle, au, facet))
         else:
             muscles[muscle].set_color(todraw[muscle])
@@ -784,9 +795,9 @@ def get_heat(muscle, au, log):
     """Function to create heatmap from au vector
 
     Args:
-        au: vector of action units
-        muscle: string representation of a muscle
-        boolean: whether the action unit values are on a log scale
+        muscle (string): string representation of a muscle
+        au (list): vector of action units
+        log (boolean): whether the action unit values are on a log scale
 
 
     Returns:
@@ -829,18 +840,21 @@ def get_heat(muscle, au, log):
         "orb_oc_r_inner": 16,
         "orb_oris_l": 13,
         "orb_oris_u": 13,
+        "pars_palp_l": 19,
+        "pars_palp_r": 19,
+        "masseter_l_rel": 17,
+        "masseter_r_rel": 17,
+        "temporalis_l_rel": 17,
+        "temporalis_r_rel": 17,
     }
     if muscle in aus:
         unit = aus[muscle]
     if log:
         num = int(100 * (1.0 / (1 + 10.0 ** -(au[unit]))))
     else:
-        num = int(au[unit] * 20)
+        num = int(au[unit])
     # set alpha (opacity)
-    if au[unit] == 0:
-        alpha = 0
-    else:
-        alpha = 0.5
+    alpha = au[unit]/100
     # color = colors.to_hex(q[num])
     # return str(color)
     color = colors.to_rgba(q[num], alpha=alpha)
@@ -853,7 +867,7 @@ def plot_face(
     vectorfield=None,
     muscles=None,
     ax=None,
-    scale=False,
+    feature_range=False,
     color="k",
     linewidth=1,
     linestyle="-",
@@ -869,7 +883,7 @@ def plot_face(
         vectorfield: (dict) {'target':target_array,'reference':reference_array}
         muscles: (dict) {'muscle': color}
         ax: matplotlib axis handle
-        scale (bool): whether to scale AU values to model range. (default: False)
+        feature_range (tuple, default: None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.
         color: matplotlib color
         linewidth: matplotlib linewidth
         linestyle: matplotlib linestyle
@@ -891,17 +905,16 @@ def plot_face(
             "Don't forget to pass an 'au' vector of len(20), "
             "using neutral as default"
         )
-
-    if scale==True:
-        au = minmax_scale([au], feature_range=(0,1), axis=1)[0]
-
-    landmarks = predict(au, model)
+        
+    landmarks = predict(au, model, feature_range = feature_range)
     currx, curry = [landmarks[x, :] for x in range(2)]
 
     if ax is None:
         ax = _create_empty_figure()
 
     if muscles is not None:
+        # Muscles are always scaled 0 - 100 b/c color palette is 0-100
+        au = minmax_scale(au, feature_range=(0,100))
         if not isinstance(muscles, dict):
             raise ValueError("muscles must be a dictionary ")
         draw_muscles(currx, curry, ax=ax, au=au, **muscles)
@@ -939,12 +952,13 @@ def plot_face(
     return ax
 
 
-def predict(au, model=None):
+def predict(au, model=None, feature_range=None):
     """Helper function to predict landmarks from au given a sklearn model
 
     Args:
         au: vector of action unit intensities
         model: sklearn pls object (uses pretrained model by default)
+        feature_range (tuple, default: None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.
 
     Returns:
         landmarks: Array of landmarks (2,68)
@@ -961,6 +975,9 @@ def predict(au, model=None):
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
+
+    if feature_range:
+        au = minmax_scale(au, feature_range=feature_range, axis=1)
 
     landmarks = np.reshape(model.predict(au), (2, 68))
     # landmarks[1, :] = -1 * landmarks[1, :]  # this might not generalize to other models
