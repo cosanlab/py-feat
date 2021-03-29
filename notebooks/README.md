@@ -23,5 +23,5 @@ git commit -m "updated jupyter book"
 
 5. Upload to gh-pages
 ```
-ghp-import -n -p -f notebooks/_build/html
+ghp-import -n -p -f -c py-feat.org notebooks/_build/html
 ```
