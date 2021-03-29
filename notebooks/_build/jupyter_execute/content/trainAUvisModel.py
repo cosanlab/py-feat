@@ -191,6 +191,8 @@ display(HTML('au_to_landmark2.html'))
 
 display(HTML('au_to_landmark3.html'))
 
+Note that we are using intensities up to 3 for visualization but the true scale of the models is between 0 and 1. 
+
 ## Preprocessing datasets
 Here we provide sample code for how you might preprocess the datasets to be used in this tutorial. 
 
