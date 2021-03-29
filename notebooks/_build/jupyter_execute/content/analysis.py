@@ -24,6 +24,8 @@ Check that videos have been downloaded and the attributes file, `clip_attrs.csv)
 import os, glob
 import numpy as np
 import pandas as pd
+import seaborn as sns
+sns.set_context("talk")
 
 clip_attrs = pd.read_csv("clip_attrs.csv")
 videos = np.sort(glob.glob("*.mp4"))
@@ -75,8 +77,19 @@ display(average_au_intensity_per_video.head())
 You can use a simple t-test to test if the average activation of a certain AU is significantly higher than .5 (chance). The results suggests that AU10 (upper lip raiser), 12 (lip corner puller), and 14 (dimpler) is significantly activitated when providing good news. 
 
 average_au_intensity_per_video.sessions = average_au_intensity_per_video.index.map(input_class_map)
-t, p = average_au_intensity_per_video[average_au_intensity_per_video.sessions=="goodNews"].aus().ttest(.5)
+t, p = average_au_intensity_per_video[average_au_intensity_per_video.sessions=="goodNews"].aus().ttest_1samp(.5)
 pd.DataFrame({"t": t, "p": p}, index= average_au_intensity_per_video.au_columns)
+
+## Two sample independent t-test
+You can also perform an independent two sample ttest between two sessions which in this case is goodNews vs badNews.
+
+columns2compare = "mean_AU12"
+sessions = ("goodNews", "badNews")
+t, p = average_au_intensity_per_video.ttest_ind(col = columns2compare, sessions=sessions)
+print(f"T-test between {sessions[0]} vs {sessions[1]}: t={t:.2g}, p={p:.3g}")
+sns.barplot(x = average_au_intensity_per_video.sessions, 
+            y = columns2compare, 
+            data = average_au_intensity_per_video);
 
 ## Prediction
 If you want to know what combination of features predic the good news or bad news conditions. To investigate this problem, we can train a Logistc Regression model using emotion labels to predict the conditions. Results suggest that detections of happy expressions predict the delivery of good news. 
@@ -101,3 +114,13 @@ results = pd.concat([b.round(3).loc[[0]].rename(index={0:"betas"}),
                     t.round(3).loc[[0]].rename(index={0:"t-stats"}),
                     p.round(3).loc[[0]].rename(index={0:"p-values"})])
 display(results)
+
+## Intersubject (or intervideo) correlations
+To compare the similarity of signals over time between subjects or videos, you can use the `isc` method. You can get a sense of how much two signals, such as a certain action unit activity, correlates over time. 
+
+In this example, we are calculating the ISC over videos. We want to check how similar AU01 activations are across videos so our session is set to the `input` which is the video name. Executing the `isc` method shows that the temporal profile of AU01 activations form two clusters between the goodNews and the badNews conditions. 
+
+fex.sessions = fex.input()
+isc = fex.isc(col = "AU01")
+sns.heatmap(isc.corr(), center=0, vmin=-1, vmax=1, cmap="RdBu_r");
+

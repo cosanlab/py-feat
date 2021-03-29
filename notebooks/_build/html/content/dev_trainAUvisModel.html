@@ -1,0 +1,733 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Training AU visualization model &#8212; Py-Feat</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.37f24b989f4638ff9c27c22dc7559d4f.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">Py-Feat</h1>
+  
+</a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form>
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Py-Feat: Python Facial Expression Analysis Toolbox
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  Installation
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   Installation example
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  Tutorials
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="detector.html">
+   Detecting FEX from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="detector.html#detecting-fex-from-videos">
+   Detecting FEX from videos
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="analysis.html">
+   Preprocessing FEX data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="analysis.html#analyzing-fex-data">
+   Analyzing FEX data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="plotting.html">
+   Plotting examples
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="loadingOtherFiles.html">
+   Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="trainAUvisModel.html">
+   Training AU visualization model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="modelContribution.html">
+   Contributing new detectors
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/index.html">
+   API Reference
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/index.html#module-feat.detector">
+   feat.detector module
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/index.html#module-feat.data">
+   feat.data module
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/index.html#module-feat.plotting">
+   feat.plotting module
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/index.html#module-feat.utils">
+   feat.utils module
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/index.html#module-feat.version">
+   feat.version module
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/index.html#module-feat">
+   Module contents
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  Contributing
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="contribute.html">
+   Contribute
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/cosanlab/py-feat">
+   GitHub Repository
+   <i class="fas fa-external-link-alt">
+   </i>
+  </a>
+ </li>
+</ul>
+
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/content/dev_trainAUvisModel.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/cosanlab/py-feat"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fcontent/dev_trainAUvisModel.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/content/dev_trainAUvisModel.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        <a class="jupyterhub-button" href="https://jhub.dartmouth.edu//hub/user-redirect/git-pull?repo=https://github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/content/dev_trainAUvisModel.ipynb&branch=master"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch JupyterHub" data-toggle="tooltip"
+                data-placement="left"><img class="jupyterhub-button-logo"
+                    src="../_static/images/logo_jupyterhub.svg"
+                    alt="Interact on JupyterHub">JupyterHub</button></a>
+        
+        
+        <a class="colab-button" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/dev_trainAUvisModel.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
+                title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
+                    src="../_static/images/logo_colab.png"
+                    alt="Interact on Colab">Colab</button></a>
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i> Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#preprocessing-datasets">
+   Preprocessing datasets
+  </a>
+ </li>
+</ul>
+
+        </nav>
+        
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="training-au-visualization-model">
+<h1>Training AU visualization model<a class="headerlink" href="#training-au-visualization-model" title="Permalink to this headline">¶</a></h1>
+<p>You will first need to gather the datasets for training. In this tutorial we use the datasets EmotioNet, DISFA Plus, and BP4d. After you download each model you should extract the labels and landmarks from each dataset. Detailed code on how to do that is described at the bottom of this tutorial. Once you have the labels and landmark files for each dataset you can train the AU visualization model with the following.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_decomposition</span> <span class="kn">import</span> <span class="n">PLSRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">predict</span><span class="p">,</span> <span class="n">plot_face</span>
+<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">registration</span><span class="p">,</span> <span class="n">neutral</span>
+<span class="kn">from</span> <span class="nn">natsort</span> <span class="kn">import</span> <span class="n">natsorted</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span> 
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+
+<span class="n">au_cols</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">43</span><span class="p">]</span>
+<span class="n">au_cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;AU</span><span class="si">{</span><span class="n">au</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">au_cols</span><span class="p">]</span>
+
+<span class="n">base_dir</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Projects/feat_benchmark/scripts/jcheong/openface_train&quot;</span>
+
+<span class="n">labels_emotionet</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;emotionet_labels.csv&quot;</span><span class="p">))</span>
+<span class="n">landmarks_emotionet</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;emotionet_landmarks.csv&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EmotioNet: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels_emotionet</span><span class="p">))</span>
+
+<span class="n">labels_disfaplus</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;disfaplus_labels.csv&quot;</span><span class="p">))</span>
+<span class="n">landmarks_disfaplus</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;disfaplus_landmarks.csv&quot;</span><span class="p">))</span>
+<span class="c1"># Disfa is rescaled to 0 - 1</span>
+<span class="n">disfaplus_aus</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">labels_disfaplus</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;AU&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">]</span>
+<span class="n">labels_disfaplus</span><span class="p">[</span><span class="n">disfaplus_aus</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels_disfaplus</span><span class="p">[</span><span class="n">disfaplus_aus</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DISFA Plus: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels_disfaplus</span><span class="p">))</span>
+
+<span class="n">labels_bp4d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;bp4d_labels.csv&quot;</span><span class="p">))</span>
+<span class="n">landmarks_bp4d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s2">&quot;bp4d_landmarks.csv&quot;</span><span class="p">))</span>
+<span class="n">bp4d_pruned_idx</span> <span class="o">=</span> <span class="n">labels_bp4d</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">9</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;BP4D: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels_bp4d</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>EmotioNet:  24587
+DISFA Plus:  57668
+BP4D:  143951
+</pre></div>
+</div>
+</div>
+</div>
+<p>We aggregate the datasets and specify the AUs we want to train.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>
+                    <span class="n">labels_emotionet</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">999</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">}),</span> 
+                    <span class="n">labels_disfaplus</span><span class="p">,</span>
+                    <span class="n">labels_bp4d</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">9</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">bp4d_pruned_idx</span><span class="p">,:]</span>
+                   <span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">landmarks</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>
+                       <span class="n">landmarks_emotionet</span><span class="p">,</span> 
+                       <span class="n">landmarks_disfaplus</span><span class="p">,</span>
+                       <span class="n">landmarks_bp4d</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">bp4d_pruned_idx</span><span class="p">,:]</span>
+                      <span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">landmarks</span> <span class="o">=</span> <span class="n">landmarks</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">labels</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We train our model using PLSRegression with a minimum of 500 samples for each AU activation. We evaluate the model in a 3-fold split and retrain the model with all the data which is distributed with the package.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">min_pos_sample</span> <span class="o">=</span> <span class="mi">500</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pseudo balancing samples&#39;</span><span class="p">)</span>
+<span class="n">balY</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="n">balX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">AU</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">AU</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">min_pos_sample</span><span class="p">:</span>
+        <span class="n">replace</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">replace</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">newSample</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">AU</span><span class="p">]</span><span class="o">&gt;.</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">min_pos_sample</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">replace</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">balX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">balX</span><span class="p">,</span> <span class="n">newSample</span><span class="p">])</span>
+    <span class="n">balY</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">balY</span><span class="p">,</span> <span class="n">landmarks</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">newSample</span><span class="o">.</span><span class="n">index</span><span class="p">]])</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">balX</span><span class="p">[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">registration</span><span class="p">(</span><span class="n">balY</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">neutral</span><span class="p">)</span>
+
+<span class="c1"># Model Accuracy in KFold CV</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluating model with KFold CV&quot;</span><span class="p">)</span>
+<span class="n">n_components</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">au_cols</span><span class="p">)</span>
+<span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">train_index</span><span class="p">,</span> <span class="n">test_index</span> <span class="ow">in</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">X_train</span><span class="p">,</span><span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span><span class="n">X</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+    <span class="n">y_train</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span><span class="n">y</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+    <span class="n">clf</span> <span class="o">=</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">)</span>
+    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;3-fold accuracy mean&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="c1"># Train real model</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;N_comp:&#39;</span><span class="p">,</span><span class="n">n_components</span><span class="p">,</span><span class="s1">&#39;Rsquare&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">),</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Pseudo balancing samples
+Evaluating model with KFold CV
+3-fold accuracy mean 0.13
+N_comp: 20 Rsquare 0.15
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(10000, 20)
+</pre></div>
+</div>
+</div>
+</div>
+<p>We visualize the results of our model. The regression was trained on labels 0-1 so we do not recommend exceeding 1 for the intensity. Setting the intensity to 2 will exaggerate the face and anything beyond that might give you strange faces.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot results for each action unit</span>
+<span class="n">f</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">18</span><span class="p">))</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="c1"># Exaggerate the intensity of the expression for clearer visualization. </span>
+<span class="c1"># We do not recommend exceeding 2. </span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="k">for</span> <span class="n">aui</span><span class="p">,</span> <span class="n">auname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">auname</span><span class="o">=</span><span class="n">au_cols</span><span class="p">[</span><span class="n">aui</span><span class="p">]</span>
+        <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">n_components</span><span class="p">)</span>
+        <span class="n">au</span><span class="p">[</span><span class="n">aui</span><span class="p">]</span> <span class="o">=</span> <span class="n">intensity</span>
+        <span class="n">predicted</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="n">au</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">68</span><span class="p">)</span>
+        <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">au</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                  <span class="n">vectorfield</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">neutral</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predicted</span><span class="p">,</span>
+                               <span class="s1">&#39;color&#39;</span><span class="p">:</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span><span class="o">.</span><span class="mi">6</span><span class="p">},</span>
+                 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">aui</span><span class="p">])</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">aui</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">auname</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">aui</span><span class="p">]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/dev_trainAUvisModel_8_0.png" src="../_images/dev_trainAUvisModel_8_0.png" />
+</div>
+</div>
+<p>Here is how we would export our model into an h5 format which can be loaded using our load_h5 function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save out trained model</span>
+<span class="c1"># import h5py</span>
+<span class="c1"># hf = h5py.File(&#39;../feat/resources/pyfeat_aus_to_landmarks.h5&#39;, &#39;w&#39;)</span>
+<span class="c1"># hf.create_dataset(&#39;coef&#39;, data=clf.coef_)</span>
+<span class="c1"># hf.create_dataset(&#39;x_mean&#39;, data=clf._x_mean)</span>
+<span class="c1"># hf.create_dataset(&#39;x_std&#39;, data=clf._x_std)</span>
+<span class="c1"># hf.create_dataset(&#39;y_mean&#39;, data=clf._y_mean)</span>
+<span class="c1"># hf.close()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="preprocessing-datasets">
+<h2>Preprocessing datasets<a class="headerlink" href="#preprocessing-datasets" title="Permalink to this headline">¶</a></h2>
+<p>Here we provide sample code for how you might preprocess the datasets to be used in this tutorial.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span>
+<span class="kn">import</span> <span class="nn">math</span><span class="o">,</span> <span class="nn">cv2</span><span class="o">,</span> <span class="nn">csv</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">ConvexHull</span>
+<span class="kn">from</span> <span class="nn">skimage.morphology.convex_hull</span> <span class="kn">import</span> <span class="n">grid_points_in_poly</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">skimage</span> <span class="kn">import</span> <span class="n">data</span><span class="p">,</span> <span class="n">exposure</span>
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">hog</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="k">def</span> <span class="nf">padding</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">expected_size</span><span class="p">):</span>
+    <span class="n">desired_size</span> <span class="o">=</span> <span class="n">expected_size</span>
+    <span class="n">delta_width</span> <span class="o">=</span> <span class="n">desired_size</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">delta_height</span> <span class="o">=</span> <span class="n">desired_size</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pad_width</span> <span class="o">=</span> <span class="n">delta_width</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">pad_height</span> <span class="o">=</span> <span class="n">delta_height</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">pad_width</span><span class="p">,</span> <span class="n">pad_height</span><span class="p">,</span> <span class="n">delta_width</span> <span class="o">-</span> <span class="n">pad_width</span><span class="p">,</span> <span class="n">delta_height</span> <span class="o">-</span> <span class="n">pad_height</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ImageOps</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">resize_with_padding</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">expected_size</span><span class="p">):</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="n">expected_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">expected_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">delta_width</span> <span class="o">=</span> <span class="n">expected_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">delta_height</span> <span class="o">=</span> <span class="n">expected_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pad_width</span> <span class="o">=</span> <span class="n">delta_width</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">pad_height</span> <span class="o">=</span> <span class="n">delta_height</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">pad_width</span><span class="p">,</span> <span class="n">pad_height</span><span class="p">,</span> <span class="n">delta_width</span> <span class="o">-</span> <span class="n">pad_width</span><span class="p">,</span> <span class="n">delta_height</span> <span class="o">-</span> <span class="n">pad_height</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ImageOps</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">align_face_68pts</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_land</span><span class="p">,</span> <span class="n">box_enlarge</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">112</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    img: image</span>
+<span class="sd">    img_land: landmarks 68</span>
+<span class="sd">    box_enlarge: relative size of face</span>
+<span class="sd">    img_size = 112</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">leftEye0</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">36</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">37</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">38</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">39</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">40</span><span class="p">]</span> <span class="o">+</span>
+                <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">41</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">leftEye1</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">36</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">37</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">38</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">39</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">40</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">41</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">rightEye0</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">42</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">43</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">44</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">45</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">46</span><span class="p">]</span> <span class="o">+</span>
+                 <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">47</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">rightEye1</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">42</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">43</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">44</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">45</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                 <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">46</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">47</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">deltaX</span> <span class="o">=</span> <span class="p">(</span><span class="n">rightEye0</span> <span class="o">-</span> <span class="n">leftEye0</span><span class="p">)</span>
+    <span class="n">deltaY</span> <span class="o">=</span> <span class="p">(</span><span class="n">rightEye1</span> <span class="o">-</span> <span class="n">leftEye1</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">deltaX</span> <span class="o">*</span> <span class="n">deltaX</span> <span class="o">+</span> <span class="n">deltaY</span> <span class="o">*</span> <span class="n">deltaY</span><span class="p">)</span>
+    <span class="n">sinVal</span> <span class="o">=</span> <span class="n">deltaY</span> <span class="o">/</span> <span class="n">l</span>
+    <span class="n">cosVal</span> <span class="o">=</span> <span class="n">deltaX</span> <span class="o">/</span> <span class="n">l</span>
+    <span class="n">mat1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([[</span><span class="n">cosVal</span><span class="p">,</span> <span class="n">sinVal</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">sinVal</span><span class="p">,</span> <span class="n">cosVal</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">mat2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([[</span><span class="n">leftEye0</span><span class="p">,</span> <span class="n">leftEye1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">rightEye0</span><span class="p">,</span> <span class="n">rightEye1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">30</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span>
+                   <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">48</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">48</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">54</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">54</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">mat2</span> <span class="o">=</span> <span class="p">(</span><span class="n">mat1</span> <span class="o">*</span> <span class="n">mat2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">cx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])))</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">cy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))):</span>
+        <span class="n">halfSize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">box_enlarge</span> <span class="o">*</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">halfSize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">box_enlarge</span> <span class="o">*</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">halfSize</span>
+    <span class="n">mat3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([[</span><span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">halfSize</span> <span class="o">-</span> <span class="n">cx</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">halfSize</span> <span class="o">-</span> <span class="n">cy</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">mat3</span> <span class="o">*</span> <span class="n">mat1</span>
+    <span class="n">aligned_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">img_size</span><span class="p">,</span> <span class="n">img_size</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LINEAR</span><span class="p">,</span> <span class="n">borderValue</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span>
+    <span class="n">land_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_land</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">land_3d</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img_land</span><span class="p">),</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_land</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">mat_land_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">land_3d</span><span class="p">)</span>
+    <span class="n">new_land</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">mat</span> <span class="o">*</span> <span class="n">mat_land_3d</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">new_land</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">new_land</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_land</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">aligned_img</span><span class="p">,</span> <span class="n">new_land</span>
+
+<span class="k">def</span> <span class="nf">extract_hog</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">im</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">detected_faces</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">orig_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">detected_faces</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span> 
+            <span class="n">new_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">orig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">orig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">detected_faces</span><span class="p">[</span><span class="n">detected_faces</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_size</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">orig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">detected_faces</span><span class="p">[</span><span class="n">detected_faces</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span> <span class="n">orig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">resize_with_padding</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">im</span><span class="p">),</span> <span class="n">new_size</span><span class="p">)</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+        <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">detected_faces</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">),</span> <span class="p">[</span><span class="n">detected_faces</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">aligned_img</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">align_face_68pts</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="mf">2.5</span><span class="p">)</span>
+
+    <span class="n">hull</span> <span class="o">=</span> <span class="n">ConvexHull</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">grid_points_in_poly</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">aligned_img</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> 
+                               <span class="n">verts</span><span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">hull</span><span class="o">.</span><span class="n">vertices</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">hull</span><span class="o">.</span><span class="n">vertices</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]))</span> <span class="c1"># for some reason verts need to be flipped</span>
+                               <span class="p">)</span>
+
+    <span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span><span class="n">points</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">aligned_img</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">resized_face_np</span> <span class="o">=</span> <span class="n">aligned_img</span>
+
+    <span class="n">fd</span><span class="p">,</span> <span class="n">hog_image</span> <span class="o">=</span> <span class="n">hog</span><span class="p">(</span><span class="n">resized_face_np</span><span class="p">,</span> <span class="n">orientations</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pixels_per_cell</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                    <span class="n">cells_per_block</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">visualize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">multichannel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fd</span><span class="p">,</span> <span class="n">hog_image</span><span class="p">,</span> <span class="n">points</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Replace the paths so that it points to your local dataset directory.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span> <span class="o">=</span> <span class="s2">&quot;retinaface&quot;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilenet&quot;</span><span class="p">)</span>
+<span class="c1"># Correct path to your downloaded dataset.</span>
+<span class="n">EmotioNet_images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;/Storage/Data/EmotioNet/imgs/*.jpg&quot;</span><span class="p">))</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;/Storage/Data/EmotioNet/labels/EmotioNet_FACS_aws_2020_24600.csv&quot;</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">labels</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;AU&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">):</span> <span class="n">labels</span><span class="p">[[</span><span class="n">col</span><span class="p">]]}</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="n">col</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">URL</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">URL</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)))</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;URL&#39;</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;URL orig&quot;</span><span class="p">])</span>
+
+<span class="n">aus_to_train</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AU1&#39;</span><span class="p">,</span><span class="s1">&#39;AU2&#39;</span><span class="p">,</span><span class="s1">&#39;AU4&#39;</span><span class="p">,</span><span class="s1">&#39;AU5&#39;</span><span class="p">,</span> <span class="s2">&quot;AU6&quot;</span><span class="p">,</span> <span class="s2">&quot;AU9&quot;</span><span class="p">,</span><span class="s2">&quot;AU10&quot;</span><span class="p">,</span> <span class="s2">&quot;AU12&quot;</span><span class="p">,</span> <span class="s2">&quot;AU15&quot;</span><span class="p">,</span><span class="s2">&quot;AU17&quot;</span><span class="p">,</span> 
+                <span class="s2">&quot;AU18&quot;</span><span class="p">,</span><span class="s2">&quot;AU20&quot;</span><span class="p">,</span> <span class="s2">&quot;AU24&quot;</span><span class="p">,</span> <span class="s2">&quot;AU25&quot;</span><span class="p">,</span> <span class="s2">&quot;AU26&quot;</span><span class="p">,</span> <span class="s2">&quot;AU28&quot;</span><span class="p">,</span> <span class="s2">&quot;AU43&quot;</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;emotionet_labels.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s2">&quot;URL&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">aus_to_train</span><span class="p">)</span>
+    
+<span class="n">landmark_cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;x_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">68</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;y_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">68</span><span class="p">)]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;emotionet_landmarks.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">landmark_cols</span><span class="p">)</span>
+    
+<span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">EmotioNet_images</span><span class="p">)):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">imageURL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">image</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">imageURL</span><span class="p">][</span><span class="n">aus_to_train</span><span class="p">]</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">extract_hog</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">detector</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;emotionet_labels.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="n">imageURL</span><span class="p">]</span><span class="o">+</span><span class="nb">list</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;emotionet_landmarks.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed </span><span class="si">{</span><span class="n">image</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./content"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By Jin Hyun Cheong<br/>
+        
+            &copy; Copyright 2020.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>

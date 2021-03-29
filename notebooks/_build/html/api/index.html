@@ -56,7 +56,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contribute" href="../content/contribute.html" />
-    <link rel="prev" title="Contributing new FEX models" href="../content/modelContribution.html" />
+    <link rel="prev" title="Contributing new detectors" href="../content/modelContribution.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
@@ -113,7 +113,12 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="../content/detector.html">
-   Detecting FEX from images and videos
+   Detecting FEX from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../content/detector.html#detecting-fex-from-videos">
+   Detecting FEX from videos
   </a>
  </li>
  <li class="toctree-l1">
@@ -127,18 +132,23 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../content/visualizations.html">
-   Visualizations
+  <a class="reference internal" href="../content/plotting.html">
+   Plotting examples
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../content/loadingOtherFiles.html">
-   Loading FEX data from other detectors
+   Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../content/trainAUvisModel.html">
+   Training AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../content/modelContribution.html">
-   Contributing new FEX models
+   Contributing new detectors
   </a>
  </li>
 </ul>
@@ -196,7 +206,7 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/cosanlab/feat">
+  <a class="reference external" href="https://github.com/cosanlab/py-feat">
    GitHub Repository
    <i class="fas fa-external-link-alt">
    </i>
@@ -258,11 +268,11 @@
         aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
     <div class="dropdown-buttons sourcebuttons">
         <a class="repository-button"
-            href="https://github.com/cosanlab/feat"><button type="button" class="btn btn-secondary topbarbtn"
+            href="https://github.com/cosanlab/py-feat"><button type="button" class="btn btn-secondary topbarbtn"
                 data-toggle="tooltip" data-placement="left" title="Source repository"><i
                     class="fab fa-github"></i>repository</button></a>
         <a class="issues-button"
-            href="https://github.com/cosanlab/feat/issues/new?title=Issue%20on%20page%20%2Fapi/index.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fapi/index.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
         
@@ -802,6 +812,21 @@ ignore_sessions: (bool) ignore sessions or extract separately by sessions if ava
 </dd></dl>
 
 <dl class="py method">
+<dt id="feat.data.Fex.isc">
+<code class="sig-name descname">isc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">col</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">'frame'</span></em>, <em class="sig-param"><span class="n">columns</span><span class="o">=</span><span class="default_value">'input'</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'pearson'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.isc" title="Permalink to this definition">¶</a></dt>
+<dd><p>[summary]</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>col (str]): Column name to compute the ISC for.
+index (str, optional): Column to be used in computing ISC. Usually this would be the column identifying the time such as the number of the frame. Defaults to “frame”.
+columns (str, optional): Column to be used for ISC. Usually this would be the column identifying the video or subject. Defaults to “input”.
+method (str, optional): Method to use for correlation pearson, kendall, or spearman. Defaults to “pearson”.</p>
+</dd>
+<dt>Returns:</dt><dd><p>DataFrame: Correlation matrix with index as colmns</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="feat.data.Fex.itersessions">
 <code class="sig-name descname">itersessions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.itersessions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over Fex sessions as (session, series) pairs.</p>
@@ -983,12 +1008,27 @@ fit_intercept (bool): Whether to add intercept before fitting. Defaults to True.
 </dd></dl>
 
 <dl class="py method">
-<dt id="feat.data.Fex.ttest">
-<code class="sig-name descname">ttest</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">popmean</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">threshold_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest" title="Permalink to this definition">¶</a></dt>
+<dt id="feat.data.Fex.ttest_1samp">
+<code class="sig-name descname">ttest_1samp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">popmean</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">threshold_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_1samp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conducts 1 sample ttest.</p>
 <p>Uses scipy.stats.ttest_1samp to conduct 1 sample ttest</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>popmean (int, optional): Population mean to test against. Defaults to 0.
+threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]</p>
+</dd>
+<dt>Returns:</dt><dd><p>t, p: t-statistics and p-values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="feat.data.Fex.ttest_ind">
+<code class="sig-name descname">ttest_ind</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">col</span></em>, <em class="sig-param"><span class="n">sessions</span></em>, <em class="sig-param"><span class="n">threshold_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_ind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conducts 2 sample ttest.</p>
+<p>Uses scipy.stats.ttest_ind to conduct 2 sample ttest on column col between sessions.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>col (str): Column names to compare in a t-test between sessions
+session_names (tuple): tuple of session names stored in Fex.sessions.
 threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]</p>
 </dd>
 <dt>Returns:</dt><dd><p>t, p: t-statistics and p-values</p>
@@ -1310,7 +1350,7 @@ boolean: whether the action unit values are on a log scale</p>
 <dd><p>Function to plot facesself</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>model: sklearn PLSRegression instance
-au: vector of action units (same length as <a href="#id5"><span class="problematic" id="id6">model.x_mean_</span></a>)
+au: vector of action units (same length as model.n_components)
 vectorfield: (dict) {‘target’:target_array,’reference’:reference_array}
 muscles: (dict) {‘muscle’: color}
 ax: matplotlib axis handle
@@ -1348,22 +1388,10 @@ model: sklearn pls object (uses pretrained model by default)</p>
 
 <dl class="py function">
 <dt id="feat.utils.load_h5">
-<code class="sig-prename descclassname">feat.utils.</code><code class="sig-name descname">load_h5</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span><span class="o">=</span><span class="default_value">'blue.h5'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_h5" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">feat.utils.</code><code class="sig-name descname">load_h5</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span><span class="o">=</span><span class="default_value">'pyfeat_aus_to_landmarks.h5'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_h5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the h5 PLS model for plotting.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>file_name (str, optional): Specify model to load.. Defaults to ‘blue.h5’.</p>
-</dd>
-<dt>Returns:</dt><dd><p>model: PLS model</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="feat.utils.load_pickled_model">
-<code class="sig-prename descclassname">feat.utils.</code><code class="sig-name descname">load_pickled_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span><span class="o">=</span><span class="default_value">'pls_python27.pkl'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_pickled_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the pickled PLS model for plotting.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>file_name ([type], optional): Specify model to load. Defaults to  pls_python27.pkl.</p>
 </dd>
 <dt>Returns:</dt><dd><p>model: PLS model</p>
 </dd>
@@ -1529,7 +1557,7 @@ Use with Evidence values from FACET.</p>
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="../content/modelContribution.html" title="previous page">Contributing new FEX models</a>
+    <a class='left-prev' id="prev-link" href="../content/modelContribution.html" title="previous page">Contributing new detectors</a>
     <a class='right-next' id="next-link" href="../content/contribute.html" title="next page">Contribute</a>
 
         </div>
