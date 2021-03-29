@@ -1335,9 +1335,9 @@ au: vector of action units (len(17))</p>
 <code class="sig-prename descclassname">feat.plotting.</code><code class="sig-name descname">get_heat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">muscle</span></em>, <em class="sig-param"><span class="n">au</span></em>, <em class="sig-param"><span class="n">log</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.get_heat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to create heatmap from au vector</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>au: vector of action units
-muscle: string representation of a muscle
-boolean: whether the action unit values are on a log scale</p>
+<dt>Args:</dt><dd><p>muscle (string): string representation of a muscle
+au (list): vector of action units
+log (boolean): whether the action unit values are on a log scale</p>
 </dd>
 <dt>Returns:</dt><dd><p>color of muscle according to its au value</p>
 </dd>
@@ -1346,7 +1346,7 @@ boolean: whether the action unit values are on a log scale</p>
 
 <dl class="py function">
 <dt id="feat.plotting.plot_face">
-<code class="sig-prename descclassname">feat.plotting.</code><code class="sig-name descname">plot_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">au</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">vectorfield</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">muscles</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">'k'</span></em>, <em class="sig-param"><span class="n">linewidth</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">linestyle</span><span class="o">=</span><span class="default_value">'-'</span></em>, <em class="sig-param"><span class="n">gaze</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.plot_face" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">feat.plotting.</code><code class="sig-name descname">plot_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">au</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">vectorfield</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">muscles</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">feature_range</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">'k'</span></em>, <em class="sig-param"><span class="n">linewidth</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">linestyle</span><span class="o">=</span><span class="default_value">'-'</span></em>, <em class="sig-param"><span class="n">gaze</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.plot_face" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to plot facesself</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>model: sklearn PLSRegression instance
@@ -1354,6 +1354,7 @@ au: vector of action units (same length as model.n_components)
 vectorfield: (dict) {‘target’:target_array,’reference’:reference_array}
 muscles: (dict) {‘muscle’: color}
 ax: matplotlib axis handle
+feature_range (tuple, default: None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.
 color: matplotlib color
 linewidth: matplotlib linewidth
 linestyle: matplotlib linestyle
@@ -1366,11 +1367,12 @@ gaze: array of gaze vectors (len(4))</p>
 
 <dl class="py function">
 <dt id="feat.plotting.predict">
-<code class="sig-prename descclassname">feat.plotting.</code><code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">au</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.predict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">feat.plotting.</code><code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">au</span></em>, <em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">feature_range</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function to predict landmarks from au given a sklearn model</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>au: vector of action unit intensities
-model: sklearn pls object (uses pretrained model by default)</p>
+model: sklearn pls object (uses pretrained model by default)
+feature_range (tuple, default: None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.</p>
 </dd>
 <dt>Returns:</dt><dd><p>landmarks: Array of landmarks (2,68)</p>
 </dd>
