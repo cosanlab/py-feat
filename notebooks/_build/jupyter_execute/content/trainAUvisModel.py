@@ -126,7 +126,9 @@ Here we share an interactive plot to visualize what each activation unit activat
 
 from feat.plotting import plot_face, predict
 import pandas as pd, numpy as np
-
+import plotly.express as px
+import plotly.graph_objects as go
+    
 aus, xs, ys = [], [], []
 AUname = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 18, 20, 23, 24, 25, 26, 28, 43]
 AUdesc = ["inner brow raiser", "outer brow raiser", "brow lowerer", "upper lid raiser", "cheek raiser",
@@ -159,8 +161,7 @@ for intensity in np.arange(0, 3.1 ,.5):
         df = pd.concat([df, _df])
         
 def visualize_autolandmark(df, width=800, height=600):
-    import plotly.express as px
-    import plotly.graph_objects as go
+
     fig = px.line(df, x="xs", y="ys", animation_frame="intensity", 
                   color="color", color_discrete_map={"k":"black"},
                      hover_name="AU", facet_col="AU", facet_col_wrap=4,
@@ -183,11 +184,12 @@ def visualize_autolandmark(df, width=800, height=600):
     })
     fig.show()
 
-visualize_autolandmark(df.query("AUidx<8"))
+from IPython.core.display import display, HTML
+display(HTML('au_to_landmark1.html'))
 
-visualize_autolandmark(df.query("AUidx>=8 and AUidx<16"))
+display(HTML('au_to_landmark2.html'))
 
-visualize_autolandmark(df.query("AUidx>=16"), height=400)
+display(HTML('au_to_landmark3.html'))
 
 ## Preprocessing datasets
 Here we provide sample code for how you might preprocess the datasets to be used in this tutorial. 

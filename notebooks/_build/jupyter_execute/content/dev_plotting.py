@@ -14,6 +14,7 @@ intensity = 2
 %matplotlib inline
 from feat.plotting import plot_face, predict
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 plot_face(au=np.zeros(20))
@@ -241,6 +242,46 @@ def visualize_autolandmark(df):
         "paper_bgcolor": "rgba(0,0,0,0)",
     })
     fig.show()
+
+
+
+
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+config={'showLink': False, 'displayModeBar': False}
+plot(fig, filename = 'au_to_landmark1.html', config = config)
+
+from IPython.core.display import display, HTML
+display(HTML('au_to_landmark1.html'))
+
+import plotly.express as px
+import plotly.graph_objects as go
+
+_df = df.query("AUidx>=16")
+fig = px.line(_df, x="xs", y="ys", animation_frame="intensity", 
+              color="color", color_discrete_map={"k":"black"},
+                 hover_name="AU", facet_col="AU", facet_col_wrap=4,
+                 range_x=[30,170], range_y=[250, 80],
+                 title= "Action Unit activation to landmarks",
+                 width=800, height=600
+                )
+
+fig.update_yaxes(
+    scaleanchor = "x",
+    scaleratio = 1,
+    visible=False
+  )
+fig.update_xaxes(
+    visible=False
+)
+fig.update_layout({
+    "plot_bgcolor": "rgba(0,0,0,0)",
+    "paper_bgcolor": "rgba(0,0,0,0)",
+})
+fig.show()
+
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+config={'showLink': False, 'displayModeBar': False}
+plot(fig, filename = 'au_to_landmark3.html', config = config)
 
 visualize_autolandmark(df.query("AUidx<8"))
 
