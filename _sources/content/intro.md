@@ -6,7 +6,8 @@ Py-Feat: Python Facial Expression Analysis Toolbox
 ![Python Versions](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
 [![GitHub forks](https://img.shields.io/github/forks/cosanlab/py-feat)](https://github.com/cosanlab/py-feat/network)
 [![GitHub stars](https://img.shields.io/github/stars/cosanlab/py-feat)](https://github.com/cosanlab/py-feat/stargazers)
-[![GitHub license](https://img.shields.io/github/license/cosanlab/py-feat)](https://github.com/cosanlab/py-feat/blob/master/LICENSE)
+[![DOI](https://zenodo.org/badge/118517740.svg)](https://zenodo.org/badge/latestdoi/118517740)
+
 
 Py-Feat provides a comprehensive set of tools and models to easily detect facial expressions (Action Units, emotions, facial landmarks) from images and videos, preprocess & analyze facial expression data, and visualize facial expression data. 
 
