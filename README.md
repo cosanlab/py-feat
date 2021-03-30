@@ -1,12 +1,14 @@
-# Py-FEAT: Python Facial Expression Analysis Toolbox (FEAT)
+# Py-FEAT: Python Facial Expression Analysis Toolbox
 [![Package versioning](https://img.shields.io/pypi/v/py-feat.svg)](https://pypi.org/project/py-feat/)
 [![Build Status](https://api.travis-ci.org/cosanlab/py-feat.svg?branch=master)](https://travis-ci.org/cosanlab/py-feat/)
 [![Coverage Status](https://coveralls.io/repos/github/cosanlab/py-feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/py-feat?branch=master)
+![Python Versions](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
+[![GitHub license](https://img.shields.io/github/license/cosanlab/py-feat)](https://github.com/cosanlab/py-feat/blob/master/LICENSE)
 
 
 Py-FEAT is a suite for facial expressions (FEX) research written in Python. This package includes tools to detect faces, extract emotional facial expressions (e.g., happiness, sadness, anger), facial muscle movements (e.g., action units), and facial landmarks, from videos and images of faces, as well as methods to preprocess, analyze, and visualize FEX data. 
 
-For detailed examples, tutorials, and API please refer to the [Py-FEAT website](https://cosanlab.github.io/feat/). 
+For detailed examples, tutorials, and API please refer to the [Py-FEAT website](https://cosanlab.github.io/py-feat/). 
 
 ## Installation
 Option 1: Easy installation for quick use
@@ -41,7 +43,7 @@ out = detector.detect_image("input.png")
 out.plot_detections()
 ```
 ### 3. Preprocessing & analyzing FEX data
-See examples in our [tutorial](https://cosanlab.github.io/py-feat/content/analysis.html#). 
+We provide a number of preprocessing and analysis functionalities including baselining, feature extraction such as timeseries descriptors and wavelet decompositions, predictions, regressions, and intersubject correlations. See examples in our [tutorial](https://cosanlab.github.io/py-feat/content/analysis.html#). 
 
 ## Supported Models 
 Please respect the usage licenses for each model.
@@ -76,3 +78,5 @@ Emotion detection models
 4. Run the tests again with `pytest tests/` to make sure everything still passes, including your new feature. If you broke something, edit your feature so that it doesn't break existing code. 
 5. Create a pull request to the main repository's `master` branch.
 
+## Licenses
+Py-FEAT is provided under the MIT license. You also need to respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 
