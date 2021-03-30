@@ -58,7 +58,6 @@ class DRMLNet(nn.Module):
         pred_au = self.drml_net(input)
         all_pred_au = pred_au.data.cpu().float()
         # all_pred_au = (all_pred_au[:, 1, :]).exp()
-
         # all_pred_au[all_pred_au < 0.5] = 0
         # all_pred_au[all_pred_au >= 0.5] = 1
         all_pred_au = all_pred_au.data.numpy()
