@@ -34,7 +34,7 @@ from feat.utils import (
 )
 from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
-from feat.au_detectors.StatLearning.SL_test import RandomForestClassifier,SVMClassifier,LogisticClassifier
+from feat.au_detectors.StatLearning.SL_test import RandomForestClassifier, SVMClassifier, LogisticClassifier
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import EmoRandomForestClassifier, EmoSVMClassifier
@@ -48,6 +48,7 @@ from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 import json
 from torchvision.datasets.utils import download_url
 import zipfile
+
 
 class Detector(object):
     def __init__(
@@ -97,17 +98,17 @@ class Detector(object):
 
         """ LOAD UP THE MODELS """
         print("Loading Face Detection model: ", face_model)
-        # Check if model files have been downloaded. Otherwise download model. 
-        # get model url. 
+        # Check if model files have been downloaded. Otherwise download model.
+        # get model url.
         with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
-            model_urls = json.load(f) 
+            model_urls = json.load(f)
 
         if face_model:
             for url in model_urls["face_detectors"][face_model.lower()]["urls"]:
                 download_url(url, get_resource_path())
         if landmark_model:
             for url in model_urls["landmark_detectors"][landmark_model.lower()]["urls"]:
-                download_url(url, get_resource_path())        
+                download_url(url, get_resource_path())
         if au_model:
             for url in model_urls["au_detectors"][au_model.lower()]["urls"]:
                 download_url(url, get_resource_path())
@@ -115,16 +116,20 @@ class Detector(object):
                     import zipfile
                     with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
                         zip_ref.extractall(os.path.join(get_resource_path()))
-                if au_model.lower() in ['logistic','svm','rf']:
-                    download_url(model_urls["au_detectors"]['hog-pca']['urls'][0],get_resource_path())
-                    download_url(model_urls["au_detectors"]['au_scalar']['urls'][0],get_resource_path())
+                if au_model.lower() in ['logistic', 'svm', 'rf']:
+                    download_url(
+                        model_urls["au_detectors"]['hog-pca']['urls'][0], get_resource_path())
+                    download_url(
+                        model_urls["au_detectors"]['au_scalar']['urls'][0], get_resource_path())
 
         if emotion_model:
             for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
                 download_url(url, get_resource_path())
-                if emotion_model.lower() in ['svm','rf']:
-                    download_url(model_urls["emotion_detectors"]['emo_pca']['urls'][0],get_resource_path())
-                    download_url(model_urls["emotion_detectors"]['emo_scalar']['urls'][0],get_resource_path())
+                if emotion_model.lower() in ['svm', 'rf']:
+                    download_url(
+                        model_urls["emotion_detectors"]['emo_pca']['urls'][0], get_resource_path())
+                    download_url(
+                        model_urls["emotion_detectors"]['emo_scalar']['urls'][0], get_resource_path())
 
         if face_model:
             if face_model.lower() == "faceboxes":
@@ -146,7 +151,8 @@ class Detector(object):
         if landmark_model:
             if landmark_model.lower() == "mobilenet":
                 self.landmark_detector = MobileNet_GDConv(136)
-                self.landmark_detector = torch.nn.DataParallel(self.landmark_detector)
+                self.landmark_detector = torch.nn.DataParallel(
+                    self.landmark_detector)
                 checkpoint = torch.load(
                     os.path.join(
                         get_resource_path(),
@@ -154,15 +160,18 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                self.landmark_detector.load_state_dict(
+                    checkpoint["state_dict"])
 
             elif landmark_model.lower() == "pfld":
                 self.landmark_detector = PFLDInference()
                 checkpoint = torch.load(
-                    os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
+                    os.path.join(get_resource_path(),
+                                 "pfld_model_best.pth.tar"),
                     map_location=self.map_location,
                 )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                self.landmark_detector.load_state_dict(
+                    checkpoint["state_dict"])
 
             elif landmark_model.lower() == "mobilefacenet":
                 self.landmark_detector = MobileFaceNet([112, 112], 136)
@@ -172,7 +181,8 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                self.landmark_detector.load_state_dict(
+                    checkpoint["state_dict"])
 
         self.info["landmark_model"] = landmark_model
         self.info["mapper"] = openface_2d_landmark_columns
@@ -197,7 +207,7 @@ class Detector(object):
             elif au_model.lower() == 'rf':
                 self.au_model = RandomForestClassifier()
 
-        if (au_model is None) or (au_model.lower() in ['jaanet','drml']):
+        if (au_model is None) or (au_model.lower() in ['jaanet', 'drml']):
             auoccur_columns = jaanet_AU_presence
         else:
             auoccur_columns = RF_AU_presence
@@ -258,7 +268,7 @@ class Detector(object):
             >>> from feat import Detector
             >>> detector = Detector()        
             >>> detector.detect_faces(frame)
-        """        
+        """
         height, width, _ = frame.shape
         faces = self.face_detector(frame)
 
@@ -283,7 +293,7 @@ class Detector(object):
             >>> detector = Detector()
             >>> detected_faces = detector.detect_faces(frame)        
             >>> detector.detect_landmarks(frame, detected_faces)
-        """      
+        """
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
@@ -323,7 +333,7 @@ class Detector(object):
             new_bbox = list(map(int, [x1, x2, y1, y2]))
             new_bbox = BBox(new_bbox)
             cropped = frame[
-                new_bbox.top : new_bbox.bottom, new_bbox.left : new_bbox.right
+                new_bbox.top: new_bbox.bottom, new_bbox.left: new_bbox.right
             ]
             if dx > 0 or dy > 0 or edx > 0 or edy > 0:
                 cropped = cv2.copyMakeBorder(
@@ -350,7 +360,8 @@ class Detector(object):
             input = torch.autograd.Variable(input)
             if self.info["landmark_model"]:
                 if self.info["landmark_model"].lower() == "mobilefacenet":
-                    landmark = self.landmark_detector(input)[0].cpu().data.numpy()
+                    landmark = self.landmark_detector(
+                        input)[0].cpu().data.numpy()
                 else:
                     landmark = self.landmark_detector(input).cpu().data.numpy()
             landmark = landmark.reshape(-1, 2)
@@ -358,7 +369,7 @@ class Detector(object):
             landmark_list.append(landmark)
 
         return landmark_list
-    
+
     def extract_face(self, frame, detected_faces, landmarks, size_output=112):
         """Extract a face in a frame with a convex hull of landmarks.
 
@@ -378,8 +389,8 @@ class Detector(object):
         landmarks = np.array(landmarks)
         # if (np.any(detected_faces) < 0):
         #     orig_size = np.array(frame).shape
-        #     if np.where(detected_faces<0)[0][0]==1: 
-        #         # extend y 
+        #     if np.where(detected_faces<0)[0][0]==1:
+        #         # extend y
         #         new_size = (orig_size[0], int(orig_size[1] + 2*abs(detected_faces[detected_faces<0][0])))
         #     else:
         #         # extend x
@@ -391,22 +402,25 @@ class Detector(object):
 
         detected_faces = detected_faces.astype(int)
 
-        aligned_img, new_landmarks = align_face_68pts(frame, landmarks.flatten(), 2.5, img_size=size_output)
+        aligned_img, new_landmarks = align_face_68pts(
+            frame, landmarks.flatten(), 2.5, img_size=size_output)
 
         hull = ConvexHull(new_landmarks)
-        mask = grid_points_in_poly(shape=np.array(aligned_img).shape, 
-                                verts= list(zip(new_landmarks[hull.vertices][:,1], new_landmarks[hull.vertices][:,0])) # for some reason verts need to be flipped
-                                )
+        mask = grid_points_in_poly(shape=np.array(aligned_img).shape,
+                                   # for some reason verts need to be flipped
+                                   verts=list(
+                                       zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0]))
+                                   )
 
-        mask[0:np.min([new_landmarks[0][1], new_landmarks[16][1]]), new_landmarks[0][0]:new_landmarks[16][0]] = True
+        mask[0:np.min([new_landmarks[0][1], new_landmarks[16][1]]),
+             new_landmarks[0][0]:new_landmarks[16][0]] = True
         aligned_img[~mask] = 0
         resized_face_np = aligned_img
         resized_face_np = cv2.cvtColor(resized_face_np, cv2.COLOR_BGR2RGB)
 
         return resized_face_np, new_landmarks
 
-
-    def extract_hog(self, frame, orientation=8, pixels_per_cell=(8,8), cells_per_block=(2,2), visualize=False):
+    def extract_hog(self, frame, orientation=8, pixels_per_cell=(8, 8), cells_per_block=(2, 2), visualize=False):
         """Extract HOG features from a frame.
 
         Args:
@@ -418,14 +432,14 @@ class Detector(object):
 
         Returns:
             hog_output: array of HOG features, and the HOG image if visualize is True.
-        """        
-        
+        """
+
         hog_output = hog(frame, orientations=orientation, pixels_per_cell=pixels_per_cell,
-                        cells_per_block=cells_per_block, visualize=visualize, multichannel=True)
+                         cells_per_block=cells_per_block, visualize=visualize, multichannel=True)
         if visualize:
             return (hog_output[0], hog_output[1])
         else:
-            return hog_output 
+            return hog_output
 
     def detect_aus(self, frame, landmarks):
         """Detect Action Units from image or video frame
@@ -443,9 +457,9 @@ class Detector(object):
             >>> from feat import Detector
             >>> detector = Detector()        
             >>> detector.detect_aus(frame)
-        """  
+        """
         # Assume that the Raw landmark is given in the format (n_land,2)
-        
+
         #landmarks = np.transpose(landmarks)
         #if landmarks.shape[-1] == 68:
         #    landmarks = convert68to49(landmarks)
@@ -470,23 +484,23 @@ class Detector(object):
             >>> detected_faces = detector.detect_faces(frame)
             >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
             >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
-        """              
+        """
         if self.info["emotion_model"].lower() == 'fer':
             landmarks = np.transpose(landmarks)
             if landmarks.shape[-1] == 68:
                 landmarks = convert68to49(landmarks)
                 landmarks = landmarks.T
-            return self.emotion_model.detect_emo(frame,landmarks)
+            return self.emotion_model.detect_emo(frame, landmarks)
 
         elif self.info["emotion_model"].lower() == 'resmasknet':
-            return self.emotion_model.detect_emo(frame, facebox) 
+            return self.emotion_model.detect_emo(frame, facebox)
 
-        elif self.info["emotion_model"].lower() in ['svm','rf']:
-            return self.emotion_model.detect_emo(frame, landmarks)    
-        
+        elif self.info["emotion_model"].lower() in ['svm', 'rf']:
+            return self.emotion_model.detect_emo(frame, landmarks)
+
         else:
-            raise ValueError('Cannot recognize input emo model! Please try to re-type emotion model')
-
+            raise ValueError(
+                'Cannot recognize input emo model! Please try to re-type emotion model')
 
     def process_frame(self, frame, counter=0):
         """Helper function to run face detection, landmark detection, and emotion detection on a frame.
@@ -532,21 +546,26 @@ class Detector(object):
                     index=[counter + i],
                 )
                 # detect AUs
-                if self["au_model"].lower() in ['logistic','svm','rf']:
-                    convex_hull, new_lands = self.extract_face(frame=frame, detected_faces=[faces[0:4]], landmarks=landmarks, size_output=112)
-                    hogs = self.extract_hog(frame=convex_hull,visualize=False)
+                if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
+                    convex_hull, new_lands = self.extract_face(
+                        frame=frame, detected_faces=[faces[0:4]], landmarks=landmarks, size_output=112)
+                    hogs = self.extract_hog(frame=convex_hull, visualize=False)
                     au_occur = self.detect_aus(frame=hogs, landmarks=new_lands)
                 else:
-                    au_occur = self.detect_aus(frame=frame, landmarks=landmarks)
+                    au_occur = self.detect_aus(
+                        frame=frame, landmarks=landmarks)
 
                 au_occur_df = pd.DataFrame(
-                    au_occur, columns=self["au_presence_columns"], index=[counter + i]
+                    au_occur, columns=self["au_presence_columns"], index=[
+                        counter + i]
                 )
                 # detect emotions
-                if self["emotion_model"].lower() in ['svm','rf']:
-                    emo_pred = self.detect_emotions(frame=hogs, facebox = None, landmarks = new_lands)
+                if self["emotion_model"].lower() in ['svm', 'rf']:
+                    emo_pred = self.detect_emotions(
+                        frame=hogs, facebox=None, landmarks=new_lands)
                 else:
-                    emo_pred = self.detect_emotions(frame=frame, facebox=[faces], landmarks=landmarks[0])
+                    emo_pred = self.detect_emotions(
+                        frame=frame, facebox=[faces], landmarks=landmarks[0])
 
                 emo_pred_df = pd.DataFrame(
                     emo_pred, columns=FEAT_EMOTION_COLUMNS, index=[counter + i]
@@ -567,7 +586,8 @@ class Detector(object):
             landmarks_df = self._empty_landmark.reindex(index=[counter])
             au_occur_df = self._empty_auoccurence.reindex(index=[counter])
 
-            out = pd.concat([facebox_df, landmarks_df, au_occur_df, emotion_df], axis=1)
+            out = pd.concat([facebox_df, landmarks_df,
+                             au_occur_df, emotion_df], axis=1)
             out[FEAT_TIME_COLUMNS] = counter
             return out
 
