@@ -127,6 +127,11 @@ Here is how we would export our model into an h5 format which can be loaded usin
 # hf.create_dataset('y_mean', data=clf._y_mean)
 # hf.close()
 
+Load h5 model
+
+from feat.utils import load_h5
+clf = load_h5('../../feat/resources/pyfeat_aus_to_landmarks.h5')
+
 ## Preprocessing datasets
 Here we provide sample code for how you might preprocess the datasets to be used in this tutorial. 
 

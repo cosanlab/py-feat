@@ -121,6 +121,78 @@ Here is how we would export our model into an h5 format which can be loaded usin
 # hf.create_dataset('y_mean', data=clf._y_mean)
 # hf.close()
 
+## Interactive visualization plot
+Here we share an interactive plot to visualize what each activation unit activation looks like from our visualization model.
+
+from feat.plotting import plot_face, predict
+import pandas as pd, numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+    
+aus, xs, ys = [], [], []
+AUname = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 18, 20, 23, 24, 25, 26, 28, 43]
+AUdesc = ["inner brow raiser", "outer brow raiser", "brow lowerer", "upper lid raiser", "cheek raiser",
+         "lid tightener", "nose wrinkler", "upper lip raiser", "lip corner puller", "dimpler",
+         "lip corner depressor", "chin raiser", "lip puckerer", "lip stretcher", "lip tightener",
+         "lip pressor", "lips part", "jaw drop", "lip suck", "eyes closed"]
+df = pd.DataFrame()
+for intensity in np.arange(0, 3.1 ,.5):
+    for au in range(20):
+        aus = np.zeros(20)
+        aus[au] = intensity
+        xs, ys = predict(aus)     
+        AUtitle = f"{AUname[au]}\n"+AUdesc[au]
+        _df = pd.DataFrame({"xs": xs, 
+                          "ys": ys, 
+                          "coord_id": range(68),
+                          "intensity": intensity, 
+                          "AU": AUtitle,
+                          "AUidx": au,
+                          "color": "k"})
+        
+        idxs = [17, 23, 29, 39, 46, 53]
+        for idx in idxs:
+            df1 = _df.iloc[:idx].copy()
+            df1.loc[-1] = [np.nan, np.nan, np.nan, intensity, AUtitle, au, "k"]
+            df2 = _df.iloc[idx:]
+            df2.index = df2.index+1
+            _df = pd.concat([df1.reset_index(drop=True), df2])
+            
+        df = pd.concat([df, _df])
+        
+def visualize_autolandmark(df, width=800, height=600):
+
+    fig = px.line(df, x="xs", y="ys", animation_frame="intensity", 
+                  color="color", color_discrete_map={"k":"black"},
+                     hover_name="AU", facet_col="AU", facet_col_wrap=4,
+                     range_x=[30,170], range_y=[250, 80],
+                     title= "Action Unit activation to landmarks",
+                     width=width, height=height
+                    )
+
+    fig.update_yaxes(
+        scaleanchor = "x",
+        scaleratio = 1,
+        visible=False
+      )
+    fig.update_xaxes(
+        visible=False
+    )
+    fig.update_layout({
+        "plot_bgcolor": "rgba(0,0,0,0)",
+        "paper_bgcolor": "rgba(0,0,0,0)",
+    })
+    fig.show()
+
+from IPython.core.display import display, HTML
+display(HTML('au_to_landmark1.html'))
+
+display(HTML('au_to_landmark2.html'))
+
+display(HTML('au_to_landmark3.html'))
+
+Note that we are using intensities up to 3 for visualization but the true scale of the models is between 0 and 1. 
+
 ## Preprocessing datasets
 Here we provide sample code for how you might preprocess the datasets to be used in this tutorial. 
 

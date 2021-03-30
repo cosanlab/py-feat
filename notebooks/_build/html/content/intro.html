@@ -373,6 +373,7 @@
 <p><a class="reference external" href="https://pypi.org/project/py-feat/"><img alt="Package versioning" src="https://img.shields.io/pypi/v/py-feat.svg" /></a>
 <a class="reference external" href="https://travis-ci.org/cosanlab/py-feat/"><img alt="Build Status" src="https://api.travis-ci.org/cosanlab/py-feat.svg?branch=master" /></a>
 <a class="reference external" href="https://coveralls.io/github/cosanlab/py-feat?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/cosanlab/py-feat/badge.svg?branch=master" /></a>
+<img alt="Python Versions" src="https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue" />
 <a class="reference external" href="https://github.com/cosanlab/py-feat/network"><img alt="GitHub forks" src="https://img.shields.io/github/forks/cosanlab/py-feat" /></a>
 <a class="reference external" href="https://github.com/cosanlab/py-feat/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/cosanlab/py-feat" /></a>
 <a class="reference external" href="https://github.com/cosanlab/py-feat/blob/master/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/cosanlab/py-feat" /></a></p>
@@ -428,17 +429,19 @@
 <div class="section" id="action-unit-detection">
 <h3>Action Unit detection<a class="headerlink" href="#action-unit-detection" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">rf</span></code>: Random Forest model trained on Histogram of Oriented Gradients.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">logistic</span></code>: Logistic Classifier model trained on Histogram of Oriented Gradients.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">JAANET</span></code>: Joint facial action unit detection and face alignment via adaptive attention (<a class="reference external" href="https://arxiv.org/pdf/2003.08834v1.pdf">Shao et al., 2020</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rf</span></code>: Random Forest model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logistic</span></code>: Logistic Classifier model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">JAANET</span></code>: Joint facial action unit detection and face alignment via adaptive attention trained with BP4D and BP4D+ (<a class="reference external" href="https://arxiv.org/pdf/2003.08834v1.pdf">Shao et al., 2020</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">DRML</span></code>: Deep region and multi-label learning for facial action unit detection by (<a class="reference external" href="https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Zhao_Deep_Region_and_CVPR_2016_paper.pdf">Zhao et al., 2016</a>)</p></li>
 </ul>
 </div>
 <div class="section" id="emotion-detection">
 <h3>Emotion detection<a class="headerlink" href="#emotion-detection" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">FeatNet</span></code> by Tiankang Xie</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rf</span></code>: Random Forest model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fernet</span></code>: Deep convolutional network</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ResMaskNet</span></code>: Facial expression recognition using residual masking network by (<a class="reference external" href="https://ailb-web.ing.unimore.it/icpr/author/3818">Pham et al., 2020</a>)</p></li>
 </ul>
 </div>
@@ -465,7 +468,7 @@
 </div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>Py-Feat is under the <a class="reference external" href="https://github.com/cosanlab/feat/blob/master/LICENSE">MIT license</a> but the provided models may have separate licenses. Please cite the corresponding references for the models you’ve used.</p>
+<p>Py-FEAT is provided under the  <a class="reference external" href="https://github.com/cosanlab/py-feat/blob/master/LICENSE">MIT license</a>. You also need to cite and respect the licenses of each model you are using. Please see the LICENSE file for links to each model’s license information.</p>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
