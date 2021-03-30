@@ -14,6 +14,7 @@
     - file: content/analysis
     - file: content/plotting
     - file: content/loadingOtherFiles
+    - file: content/train_hogs
     - file: content/trainAUvisModel
     - file: content/modelContribution
 
