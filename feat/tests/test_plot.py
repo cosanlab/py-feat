@@ -89,7 +89,7 @@ def test_plot_face():
     assert_plot_shape(plt.gca())
     plt.close()
 
-    plot_face(au=au, vectorfield={"reference": predict(au2)}, scale=True)
+    plot_face(au=au, vectorfield={"reference": predict(au2)}, feature_range=(0,1))
     assert_plot_shape(plt.gca())
     plt.close()
 
