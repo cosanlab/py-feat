@@ -803,7 +803,7 @@ def get_heat(muscle, au, log):
     Returns:
         color of muscle according to its au value
     """
-    q = sns.color_palette("Blues", 101)
+    q = sns.color_palette("Blues", 151)
     unit = 0
     aus = {
         "masseter_l": 15,
