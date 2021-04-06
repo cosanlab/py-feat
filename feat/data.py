@@ -1533,7 +1533,8 @@ class Fex(DataFrame):
             except Exception as e:
                 print("Unable to plot data:", e)
         if self.detector == "Affectiva":
-            feats = [
+            if "AU01" not in self.au_columns:
+                feats = [
                     "innerBrowRaise",
                     "browRaise",
                     "browFurrow",
@@ -1551,7 +1552,27 @@ class Fex(DataFrame):
                     "mouthOpen",
                     "jawDrop",
                     "eyeClosure",
-                    ]
+                ]
+            else:
+                feats = [
+                    "AU01",
+                    "AU02",
+                    "AU04",
+                    "AU05",
+                    "AU06",
+                    "AU07",
+                    "AU09",
+                    "AU10",
+                    "AU12",
+                    "AU14",
+                    "AU15",
+                    "AU17",
+                    "AU20",
+                    "AU24",
+                    "AU25",
+                    "AU26",
+                    "AU43",
+                ]
             if row_n > len(self):
                 raise ValueError("Row number out of range.")
             try:
@@ -1559,7 +1580,9 @@ class Fex(DataFrame):
                 for feat in feats:
                     aun = self[feat]
                     au.append(aun.copy()[row_n] / 20)
+                au = np.array(au + [0, 0, 0])
                 ax = plot_face(
+                    model=model,
                     au=au,
                     vectorfield=vectorfield,
                     muscles=muscles,
