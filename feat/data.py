@@ -1533,8 +1533,7 @@ class Fex(DataFrame):
             except Exception as e:
                 print("Unable to plot data:", e)
         if self.detector == "Affectiva":
-            if "AU01" not in self.au_columns:
-                feats = [
+            feats = [
                     "innerBrowRaise",
                     "browRaise",
                     "browFurrow",
@@ -1552,9 +1551,31 @@ class Fex(DataFrame):
                     "mouthOpen",
                     "jawDrop",
                     "eyeClosure",
-                ]
-            else:
-                feats = [
+                    ]
+            if row_n > len(self):
+                raise ValueError("Row number out of range.")
+            try:
+                au = []
+                for feat in feats:
+                    aun = self[feat]
+                    au.append(aun.copy()[row_n] / 20)
+                ax = plot_face(
+                    au=au,
+                    vectorfield=vectorfield,
+                    muscles=muscles,
+                    ax=ax,
+                    color=color,
+                    linewidth=linewidth,
+                    linestyle=linestyle,
+                    gaze=gaze,
+                    *args,
+                    **kwargs,
+                )
+                return ax
+            except Exception as e:
+                print("Unable to plot data:", e)
+        if self.detector =="feat":
+            feats = [
                     "AU01",
                     "AU02",
                     "AU04",
@@ -1567,23 +1588,27 @@ class Fex(DataFrame):
                     "AU14",
                     "AU15",
                     "AU17",
+                    "AU18",
                     "AU20",
+                    "AU23",
                     "AU24",
                     "AU25",
                     "AU26",
+                    "AU28",
                     "AU43",
-                ]
+                    ]
             if row_n > len(self):
                 raise ValueError("Row number out of range.")
             try:
                 au = []
                 for feat in feats:
-                    aun = self[feat]
-                    au.append(aun.copy()[row_n] / 20)
-                au = np.array(au + [0, 0, 0])
+                    if feat=="AU18":
+                        au.append(0)
+                    else:
+                        aun = self[feat]
+                        au.append(aun.copy()[row_n])
                 ax = plot_face(
-                    model=model,
-                    au=au,
+                    au=np.array(au),
                     vectorfield=vectorfield,
                     muscles=muscles,
                     ax=ax,
