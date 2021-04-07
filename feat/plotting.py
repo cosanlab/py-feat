@@ -787,9 +787,9 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
         color="w",
     )
 
-    # ax.add_patch(eye_l)
-    # ax.add_patch(eye_r)
-    # ax.add_patch(mouth)
+    ax.add_patch(eye_l)
+    ax.add_patch(eye_r)
+    ax.add_patch(mouth)
     return ax
 
 
