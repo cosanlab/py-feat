@@ -342,6 +342,11 @@
   </ul>
  </li>
  <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#create-face-initialize-with-actual-vector">
+   Create face initialize with actual vector
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#draw-lineface">
    draw lineface
   </a>
@@ -396,12 +401,6 @@
 <span class="o">%</span><span class="k">autoreload</span> 2
 <span class="o">%</span><span class="k">config</span> InlineBackend.figure_format = &#39;retina&#39;
 <span class="n">intensity</span> <span class="o">=</span> <span class="mi">2</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The autoreload extension is already loaded. To reload it, use:
-  %reload_ext autoreload
 </pre></div>
 </div>
 </div>
@@ -494,42 +493,46 @@
 <span class="n">f</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.6</span><span class="p">)</span>
 <span class="c1"># Add data, AU is ordered as such: </span>
 <span class="c1"># AU 1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 18, 20, 23, 24, 25, 26, 28, 43</span>
 
 <span class="c1"># Activate AU1: Inner brow raiser </span>
 <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">,</span> <span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
 
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span> <span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span> <span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AU1: Inner brow raiser&quot;</span><span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">,</span> <span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
 
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span><span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span><span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AU12: Lip corner puller&quot;</span><span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">,</span> <span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span><span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span><span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AU15: Lip corner depressor&quot;</span><span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
 <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">,</span> <span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
 
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span><span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span><span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AU43: Eye closer&quot;</span><span class="p">)</span>
 </pre></div>
@@ -547,7 +550,7 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="n">font_scale</span><span class="o">=</span><span class="mf">1.6</span><span class="p">)</span>
 <span class="c1"># Add data, AU is ordered as such: </span>
 <span class="c1"># AU 1, 2, 4, 5, 6, </span>
 <span class="c1"># 7, 9, 10, 12, 14, </span>
@@ -576,9 +579,10 @@
                <span class="mi">0</span><span class="p">,</span> 
                <span class="mi">0</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
 
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Happiness&quot;</span><span class="p">)</span>
 
@@ -588,44 +592,204 @@
                <span class="n">intensity</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> 
                <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
 
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Sadness&quot;</span><span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">intensity</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
+<span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">intensity</span><span class="p">,</span> <span class="n">intensity</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
                <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
                <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
                <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Surprise&quot;</span><span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
 
 <span class="c1"># FEAR</span>
-<span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">intensity</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
+<span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">intensity</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">intensity</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">intensity</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">intensity</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
                <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
-               <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
+               <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> 
                <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">intensity</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">),</span>
-           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">}</span>
+           <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
 
-<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
+<span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
           <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Fear&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Fear&#39;)
+</div>
+</div>
+</div>
+<div class="section" id="create-face-initialize-with-actual-vector">
+<h1>Create face initialize with actual vector<a class="headerlink" href="#create-face-initialize-with-actual-vector" title="Permalink to this headline">¶</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_9_1.png" src="../_images/dev_plotting_9_1.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="mi">1</span><span class="o">=</span><span class="n">anger</span><span class="p">,</span> <span class="mi">2</span><span class="o">=</span><span class="n">contempt</span><span class="p">,</span> <span class="mi">3</span><span class="o">=</span><span class="n">disgust</span><span class="p">,</span> <span class="mi">4</span><span class="o">=</span><span class="n">fear</span><span class="p">,</span> <span class="mi">5</span><span class="o">=</span><span class="n">happy</span><span class="p">,</span> <span class="mi">6</span><span class="o">=</span><span class="n">sadness</span><span class="p">,</span> <span class="mi">7</span><span class="o">=</span><span class="n">surprise</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  retinaface
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet0.25_Final.pth
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/RF_568.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
+Loading Face Landmark model:  mobilenet
+Loading au model:  rf
+Loading emotion model:  resmasknet
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aus</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">43</span><span class="p">]</span>
+<span class="n">aulist</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;AU&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">au</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">aus</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">plot_face</span><span class="p">,</span> <span class="n">predict</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">neutral</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">au</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># happy</span>
+<span class="n">imgfile</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S010/006/S010_006_00000008.png&quot;</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+<span class="n">happyau</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AU18</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">aulist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># sadness</span>
+<span class="n">imgfile</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S011/002/S011_002_00000008.png&quot;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+<span class="n">sadau</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AU18</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">aulist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># surprise</span>
+<span class="n">imgfile</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S010/002/S010_002_00000008.png&quot;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+<span class="n">surpriseau</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AU18</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">aulist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># fear</span>
+<span class="n">imgfile</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S011/003/S011_003_00000008.png&quot;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+<span class="n">fearau</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AU18</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">aulist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1">#disgust </span>
+<span class="n">imgfile</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S005/001/S005_001_00000008.png&quot;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+<span class="n">disgustau</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AU18</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">aulist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># anger</span>
+<span class="n">imgfile</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S010/004/S010_004_00000012.png&quot;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+<span class="n">angerau</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AU18</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">aulist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">,</span><span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Happy&#39;</span><span class="p">,</span> <span class="s2">&quot;Sad&quot;</span><span class="p">,</span> <span class="s2">&quot;Surprise&quot;</span><span class="p">,</span> <span class="s2">&quot;Anger&quot;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">au</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">happyau</span><span class="p">,</span> <span class="n">sadau</span><span class="p">,</span> <span class="n">surpriseau</span><span class="p">,</span> <span class="n">angerau</span><span class="p">]):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
+    <span class="n">vectors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">(</span><span class="n">au</span><span class="p">),</span>
+               <span class="s1">&#39;reference&#39;</span><span class="p">:</span>  <span class="n">neutral</span><span class="p">,</span> 
+              <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;orangered&#39;</span><span class="p">,</span> <span class="s2">&quot;headlength&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;headwidth&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span><span class="o">.</span><span class="mi">005</span><span class="p">}</span>
+    <span class="n">plot_face</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vectorfield</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
+              <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">au</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">feature_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="n">titles</span><span class="p">[</span><span class="n">ix</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/dev_plotting_17_0.png" src="../_images/dev_plotting_17_0.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># disgust</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S005/001/S005_001_00000008.png&quot;</span><span class="p">)</span>
+<span class="n">img</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># surprise</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S010/002/S010_002_00000008.png&quot;</span><span class="p">)</span>
+<span class="n">img</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># anger</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S010/004/S010_004_00000012.png&quot;</span><span class="p">)</span>
+<span class="n">img</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># fear</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S011/003/S011_003_00000008.png&quot;</span><span class="p">)</span>
+<span class="n">img</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># sadness</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;/Storage/Data/CK+/cohn-kanade-images/S011/002/S011_002_00000008.png&quot;</span><span class="p">)</span>
+<span class="n">img</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="cell docutils container">
@@ -644,7 +808,7 @@
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Surprise&#39;)
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_10_1.png" src="../_images/dev_plotting_10_1.png" />
+<img alt="../_images/dev_plotting_26_1.png" src="../_images/dev_plotting_26_1.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -819,7 +983,6 @@ if (outputEl) {{
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">visualize_autolandmark</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;AUidx&gt;=16&quot;</span><span class="p">))</span>
 </pre></div>
-</div>
 </div>
 </div>
 </div>
@@ -2567,7 +2730,7 @@ if (outputEl) {{
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_35_1.png" src="../_images/dev_plotting_35_1.png" />
+<img alt="../_images/dev_plotting_51_1.png" src="../_images/dev_plotting_51_1.png" />
 </div>
 </div>
 </div>
@@ -2598,7 +2761,7 @@ if (outputEl) {{
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_37_1.png" src="../_images/dev_plotting_37_1.png" />
+<img alt="../_images/dev_plotting_53_1.png" src="../_images/dev_plotting_53_1.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -2625,7 +2788,7 @@ if (outputEl) {{
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_38_1.png" src="../_images/dev_plotting_38_1.png" />
+<img alt="../_images/dev_plotting_54_1.png" src="../_images/dev_plotting_54_1.png" />
 </div>
 </div>
 </div>
@@ -2657,7 +2820,7 @@ if (outputEl) {{
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_40_1.png" src="../_images/dev_plotting_40_1.png" />
+<img alt="../_images/dev_plotting_56_1.png" src="../_images/dev_plotting_56_1.png" />
 </div>
 </div>
 </div>
@@ -2687,7 +2850,7 @@ Gaze vectors are length 4 (lefteye_x, lefteye_y, righteye_x, righteye_y) where t
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_42_1.png" src="../_images/dev_plotting_42_1.png" />
+<img alt="../_images/dev_plotting_58_1.png" src="../_images/dev_plotting_58_1.png" />
 </div>
 </div>
 </div>
@@ -2714,7 +2877,7 @@ Gaze vectors are length 4 (lefteye_x, lefteye_y, righteye_x, righteye_y) where t
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/dev_plotting_45_1.png" src="../_images/dev_plotting_45_1.png" />
+<img alt="../_images/dev_plotting_61_1.png" src="../_images/dev_plotting_61_1.png" />
 </div>
 </div>
 </div>
