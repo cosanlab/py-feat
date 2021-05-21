@@ -38,7 +38,6 @@
         "emo_pca": {
                 "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_pca.joblib"]
             }
-
     },
     "face_detectors": {
         "retinaface": {
@@ -47,8 +46,25 @@
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/onet.npy", "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.npy", "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.npy"
             ]},
         "faceboxes": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"]}
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"]
         },
+        "img2pose": {
+            "urls": [
+                "https://matts-model-bucket.s3.amazonaws.com/img2pose_v1.pth",
+                "https://matts-model-bucket.s3.amazonaws.com/WIDER_train_pose_mean_v1.npy",
+                "https://matts-model-bucket.s3.amazonaws.com/WIDER_train_pose_stddev_v1.npy",
+                "https://matts-model-bucket.s3.amazonaws.com/reference_3d_68_points_trans.npy"
+            ]
+        },
+         "img2pose-c": {
+            "urls": [
+                "https://matts-model-bucket.s3.amazonaws.com/img2pose_v1_ft_300w_lp.pth",
+                "https://matts-model-bucket.s3.amazonaws.com/WIDER_train_pose_mean_v1.npy",
+                "https://matts-model-bucket.s3.amazonaws.com/WIDER_train_pose_stddev_v1.npy",
+                "https://matts-model-bucket.s3.amazonaws.com/reference_3d_68_points_trans.npy"
+            ]
+        }
+    },
     "landmark_detectors": {
         "lbfmodel": {
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"]
