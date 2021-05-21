@@ -72,6 +72,10 @@ Emotion detection models
 - [FerNet](https://www.kaggle.com/gauravsharma99/facial-emotion-recognition?select=fer2013)
 - [ResMaskNet: Residual Masking Network](https://github.com/phamquiluan/ResidualMaskingNetwork)
 
+Head pose estimation models
+- [img2pose](https://github.com/vitoralbiero/img2pose)
+- Perspective-n-Point algorithm to solve 3D head pose from 2D facial landmarks
+
 ## Contributing
 1. Fork the repository on GitHub. 
 2. Run the tests with `pytest tests/` to make confirm that all tests pass on your system. If some tests fail, try to find out why they are failing. Common issues may be not having downloaded model files or missing dependencies.
