@@ -20,7 +20,7 @@ execute:
 #######################################################################################
 # Parse and render settings
 parse:
-  myst_extended_syntax      : true  # enable MyST extended syntax support (see documents for details)
+  # myst_extended_syntax      : true  # enable MyST extended syntax support (see documents for details)
   myst_url_schemes          : [mailto, http, https]  # URI schemes that will be recognised as external URLs in Markdown links
 
 #######################################################################################
@@ -32,9 +32,9 @@ html:
   use_issues_button         : true  # Whether to add an "open an issue" button
   extra_navbar              : "" # Will be displayed underneath the left navbar.
   extra_footer              : "" # Will be displayed underneath the footer.
-  google_analytics_id       : "UA-113777015-5" # A GA id that can be used to track book views.
+  google_analytics_id       : "UA-113777015-5"
   home_page_in_navbar       : false  # Whether to include your home page in the left Navigation Bar
-  baseurl                   : "" # The base URL where your book will be hosted. Used for creating image previews and social links. e.g.: https://mypage.com/mybook/
+  baseurl                   : "https://py-feat.org/" # The base URL where your book will be hosted. Used for creating image previews and social links. e.g.: https://mypage.com/mybook/
   comments:
     hypothesis              : false
     utterances              : false
