@@ -261,17 +261,14 @@ class JAANet(nn.Module):
 
     def detect_au(self, imgs, land_data):
         
-        land_data = np.transpose(land_data)
-        if land_data.shape[-1] == 68:
-           land_data = convert68to49(land_data)
+        
+        lenth_index = [len(ama) for ama in land_data]
+        lenth_cumu = np.cumsum(lenth_index)
 
-        # if land_data.shape[]
-        land_data = land_data.flatten()
-        img, land = self.align_face_49pts(imgs, land_data)  # Transforms
-
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        im_pil = Image.fromarray(img)  # Convert image to PIL
-
+        flat_faces = np.array([item for sublist in land_data for item in sublist]) # Flatten the faces
+        flat_faces = flat_faces.transpose(0,2,1)
+        pt49_array = None
+        
         img_transforms = transforms.Compose(
             [
                 transforms.CenterCrop(176),
@@ -280,15 +277,35 @@ class JAANet(nn.Module):
             ]
         )
 
-        input = img_transforms(im_pil)
-        if len(input.shape) < 4:
-            input.unsqueeze_(0)
-        land = torch.from_numpy(land)
+        input_torch = None
+        land_torch = None
+        for i in range(flat_faces.shape[0]):
+            
+            frame_assignment = np.where(i<=lenth_cumu)[0][0] # which frame is it?
+
+            land_convert = convert68to49(flat_faces[i])
+            new_land_data = land_convert.flatten()
+            new_img, new_land = self.align_face_49pts(imgs[frame_assignment], new_land_data)
+            new_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2RGB)
+            im_pil = Image.fromarray(new_img) 
+            input = img_transforms(im_pil)
+            if len(input.shape) < 4:
+                input.unsqueeze_(0)
+            new_land = torch.from_numpy(new_land)
+
+            if input_torch is None:
+                input_torch = input
+            else:
+                input_torch = torch.cat((input_torch,input),0)
+            if land_torch is None:
+                land_torch = new_land
+            else:
+                land_torch = torch.cat((land_torch,new_land),0)
 
         if self.use_gpu:
-            input, land = input.cuda(), land.cuda()
+            input_torch, land_torch = input_torch.cuda(), land_torch.cuda()
 
-        region_feat = self.region_learning(input)
+        region_feat = self.region_learning(input_torch)
         align_feat, align_output, aus_map = self.align_net(region_feat)
         if self.use_gpu:
             aus_map = aus_map.cuda()
