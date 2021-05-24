@@ -350,7 +350,8 @@ class Detector(object):
 
         len_index = [len(aa) for aa in landmarks]
         lenth_cumu = np.cumsum(len_index)
-
+        lenth_cumu2 = np.insert(lenth_cumu,0,0)
+        new_lands_list = []
         flat_faces = [item for sublist in detected_faces for item in sublist]
         flat_land = [item for sublist in landmarks for item in sublist]
         hogs_arr = None
@@ -364,7 +365,13 @@ class Detector(object):
                 hogs_arr = hogs
             else:
                 hogs_arr = np.concatenate([hogs_arr,hogs],0)
-        return (hogs_arr, len_index)
+            new_lands_list.append(new_lands)
+
+        new_lands = []
+        for i in range(len(lenth_cumu)):
+            new_lands.append(new_lands_list[lenth_cumu2[i]:(lenth_cumu2[i+1])])
+
+        return (hogs_arr, new_lands)
 
 
     def _face_preprocesing(self, frame, detected_faces, mean, std, out_size, height, width):
@@ -582,10 +589,10 @@ class Detector(object):
             >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
         """
         if self.info["emotion_model"].lower() == 'fer':
-            landmarks = np.transpose(landmarks)
-            if landmarks.shape[-1] == 68:
-                landmarks = convert68to49(landmarks)
-                landmarks = landmarks.T
+            #landmarks = np.transpose(landmarks)
+            #if landmarks.shape[-1] == 68:
+            #    landmarks = convert68to49(landmarks)
+            #    landmarks = landmarks.T
             return self.emotion_model.detect_emo(frame, landmarks)
 
         elif self.info["emotion_model"].lower() == 'resmasknet':
@@ -597,31 +604,6 @@ class Detector(object):
         else:
             raise ValueError(
                 'Cannot recognize input emo model! Please try to re-type emotion model')
-
-    def read_pictures(self, imgname_list):
-        """
-        NEW
-        Reads in a list of pictures and concatenate these pictures into batches of images.
-
-        Args:
-            imgname_list (list of string): a list of filenames for the facial pictures
-        
-        Returns:
-            img_batch_arr (np.array): np array of shape BxHxWxC 
-        """
-
-        img_batch_arr = None
-        for img_name in imgname_list:
-            frame = cv2.imread(img_name)
-            frame = np.expand_dims(frame,0)
-            if img_batch_arr is None:
-                img_batch_arr = frame
-            else:
-                assert img_batch_arr.shape[1::] == frame.shape[1::], 'please make sure that the input images are of the same shape! otherwise you need to process each image individually'
-                img_batch_arr = np.concatenate([img_batch_arr,frame],0)
-
-        return img_batch_arr
-        
 
 
     def process_frame(self, frames, counter=0):
@@ -650,19 +632,20 @@ class Detector(object):
         index_len = [len(ii) for ii in landmarks]
 
         if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
-            hog_arr, index_len = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
-            au_occur = self.detect_aus(frame=hog_arr, landmarks=landmarks)
+            hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
+            au_occur = self.detect_aus(frame=hog_arr, landmarks=new_lands)
         else:
             au_occur = self.detect_aus(
                 frame=frames, landmarks=landmarks)
 
         if self["emotion_model"].lower() in ['svm', 'rf']:
-            hog_arr, index_len = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
+            hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
             emo_pred = self.detect_emotions(
-                frame=hog_arr, facebox=None, landmarks=landmarks)
+                frame=hog_arr, facebox=None, landmarks=new_lands)
         else:
             emo_pred = self.detect_emotions(
-                frame=frames, facebox=detected_faces, landmarks=None)
+                frame=frames, facebox=detected_faces, landmarks=landmarks)
+
         my_aus = self._concatenate_au_batch(indexed_length=index_len, au_results=au_occur)
         my_emo = self._concatenate_au_batch(indexed_length=index_len, au_results=emo_pred)
 
@@ -854,7 +837,7 @@ if __name__ == '__main__':
 
     import cv2
     from feat import Detector   
-    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='rf', emotion_model='ResMaskNet') 
+    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='rf', emotion_model='svm') 
     #imgfile = '/home/tiankang/src/py-feat/feat/tests/data/input.jpg'
     imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'
 
