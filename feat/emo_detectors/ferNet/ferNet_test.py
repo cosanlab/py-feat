@@ -9,6 +9,7 @@ from torchvision import transforms
 import math
 import cv2
 import torch
+from torchvision.utils import save_image
 
 
 class ferNetModule(nn.Module):
@@ -125,16 +126,17 @@ class ferNetModule(nn.Module):
                 #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
             ]
         )
-
         input_torch = None
         land_torch = None
         for i in range(flat_faces.shape[0]):
             
             frame_assignment = np.where(i<=lenth_cumu)[0][0] # which frame is it?
 
-            land_convert = convert68to49(flat_faces[i])
+            land_convert = convert68to49(flat_faces[i]).T
             new_land_data = land_convert.flatten()
+            #print("new land:",new_land_data)
             new_img, new_land = self.align_face_49pts(imgs[frame_assignment], new_land_data, img_size=200)
+            #print("New Land:",new_land)
             new_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2RGB)
             im_pil = Image.fromarray(new_img) 
             input = img_transforms(im_pil)
@@ -157,9 +159,12 @@ class ferNetModule(nn.Module):
         #im_pil = Image.fromarray(img)
         #im_pil = ImageOps.grayscale(im_pil)
 
-                
+
+        #images.shape #torch.Size([64,3,28,28])
+        #img1 = input_torch[0] #torch.Size([3,28,28]
+        #save_image(img1, '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/img1.png')
+
         self.net0.eval()
-        #imgs_net = transforms.ToTensor()(input_torch)
 
         if self.use_gpu:
             input_torch = input_torch.cuda()
