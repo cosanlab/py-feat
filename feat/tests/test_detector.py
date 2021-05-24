@@ -18,7 +18,6 @@ inputFname = os.path.join(get_test_data_path(), "input.jpg")
 img01 = read_pictures([inputFname])
 _, h, w, _ = img01.shape
 
-
 def test_detector():
     detector = Detector(n_jobs=1)
     assert detector["n_jobs"] == 1
@@ -77,7 +76,6 @@ def test_retinaface():
 #     bbox_height = out[0][3]
 #     assert len(out[0]) == 5
 #     assert bbox_x > 180 and bbox_x < 200
-
 
 def test_mobilefacenet():
     # Landmark Detector Test Case:

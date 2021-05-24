@@ -261,7 +261,6 @@ class JAANet(nn.Module):
 
     def detect_au(self, imgs, land_data):
         
-        
         lenth_index = [len(ama) for ama in land_data]
         lenth_cumu = np.cumsum(lenth_index)
 
@@ -283,7 +282,7 @@ class JAANet(nn.Module):
             
             frame_assignment = np.where(i<=lenth_cumu)[0][0] # which frame is it?
 
-            land_convert = convert68to49(flat_faces[i])
+            land_convert = convert68to49(flat_faces[i]).T
             new_land_data = land_convert.flatten()
             new_img, new_land = self.align_face_49pts(imgs[frame_assignment], new_land_data)
             new_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2RGB)
