@@ -5,7 +5,7 @@
 
 from feat.detector import Detector
 from feat.data import Fex
-from feat.utils import get_resource_path
+from feat.utils import get_resource_path, read_pictures
 from feat.tests.utils import get_test_data_path
 import pandas as pd
 import feat
@@ -15,8 +15,8 @@ import numpy as np
 import pytest
 
 inputFname = os.path.join(get_test_data_path(), "input.jpg")
-img01 = cv2.imread(inputFname)
-h, w, _ = img01.shape
+img01 = read_pictures([inputFname])
+_, h, w, _ = img01.shape
 
 
 def test_detector():
@@ -133,9 +133,11 @@ def test_jaanet():
         landmark_model="MobileFaceNet",
         au_model="jaanet",
     )
-    bboxes = detector1.detect_faces(img01)[0]
-    lands = detector1.detect_landmarks(img01, [bboxes])[0]
-    aus = detector1.detect_aus(img01, lands)
+
+    detected_faces = detector1.detect_faces(img01)     
+    landmarks = detector1.detect_landmarks(img01, detected_faces)
+
+    aus = detector1.detect_aus(img01, landmarks)
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 12
 
@@ -148,10 +150,11 @@ def test_logistic():
         landmark_model="MobileFaceNet",
         au_model="logistic",
     )
-    bboxes = detector1.detect_faces(img01)[0]
-    lands = detector1.detect_landmarks(img01, [bboxes])[0]
-    convex_hull, new_lands = detector1.extract_face(frame=img01, detected_faces=[bboxes[0:4]], landmarks=lands, size_output=112)
-    hogs = detector1.extract_hog(frame=convex_hull,visualize=False)
+
+    detected_faces = detector1.detect_faces(img01)     
+    landmarks = detector1.detect_landmarks(img01, detected_faces)
+    hogs, new_lands = detector1._batch_hog(frames = img01, detected_faces = detected_faces, landmarks = landmarks)
+
     aus = detector1.detect_aus(frame=hogs, landmarks=new_lands)
 
     assert np.sum(np.isnan(aus)) == 0
@@ -165,11 +168,11 @@ def test_svm():
         landmark_model="MobileFaceNet",
         au_model="svm",
     )
-    bboxes = detector1.detect_faces(img01)[0]
-    lands = detector1.detect_landmarks(img01, [bboxes])[0]
-    convex_hull, new_lands = detector1.extract_face(frame=img01, detected_faces=[bboxes[0:4]], landmarks=lands, size_output=112)
-    hogs = detector1.extract_hog(frame=convex_hull,visualize=False)
+    detected_faces = detector1.detect_faces(img01)     
+    landmarks = detector1.detect_landmarks(img01, detected_faces)
+    hogs, new_lands = detector1._batch_hog(frames = img01, detected_faces = detected_faces, landmarks = landmarks)
     aus = detector1.detect_aus(frame=hogs, landmarks=new_lands)
+
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 20
 
@@ -181,12 +184,12 @@ def test_rf():
         landmark_model="MobileFaceNet",
         au_model="RF",
     )
-    bboxes = detector1.detect_faces(img01)[0]
-    lands = detector1.detect_landmarks(img01, [bboxes])[0]
-    convex_hull, new_lands = detector1.extract_face(frame=img01, detected_faces=[bboxes[0:4]], landmarks=lands, size_output=112)
-    hogs = detector1.extract_hog(frame=convex_hull,visualize=False)
-    # @tiankang: something to do with landmarks not being in right shape.
+    detected_faces = detector1.detect_faces(img01)     
+    landmarks = detector1.detect_landmarks(img01, detected_faces)
+    hogs, new_lands = detector1._batch_hog(frames = img01, detected_faces = detected_faces, landmarks = landmarks)
+
     aus = detector1.detect_aus(frame=hogs, landmarks=new_lands)
+
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 20
 
@@ -254,9 +257,14 @@ def test_detect_image():
 
 
 def test_multiface():
+    # Test multiple faces
     inputFname2 = os.path.join(
         get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
     )
+    img01 = read_pictures([inputFname])
+    _, h, w, _ = img01.shape
+
+
     img02 = cv2.imread(inputFname2)
     # @tiankang: seems to be a problem with fer
     detector = Detector(
@@ -303,3 +311,8 @@ def test_simultaneous():
         au_model="jaanet",
     )
     files = detector04.process_frame(img01, 0)
+
+
+
+if __name__ == '__main__':
+    test_multiface()
