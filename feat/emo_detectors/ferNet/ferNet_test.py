@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from PIL import Image, ImageOps
-from feat.utils import get_resource_path, face_rect_to_coords
+from feat.utils import get_resource_path, face_rect_to_coords, convert68to49
 import os
 from torchvision import transforms
 import math
@@ -112,38 +112,59 @@ class ferNetModule(nn.Module):
             pred_emo_softmax: probablilities for each emotion class.
         """
 
-        #img_pil = Image.fromarray(imgs)
-        #grayscale_image = ImageOps.grayscale(img_pil)
-        #grayscale_cropped_face = grayscale_image.crop(
-        #    land_data[0:4])
-        #grayscale_cropped_resized_face = grayscale_cropped_face.resize(
-        #    (img_w, img_h))
-        #grayscale_cropped_resized_reshaped_face = np.array(
-        #    grayscale_cropped_resized_face).reshape(img_w, img_h)
+        lenth_index = [len(ama) for ama in land_data]
+        lenth_cumu = np.cumsum(lenth_index)
 
-        #n_chs = np.min(grayscale_cropped_resized_reshaped_face.shape)
-        #szht = np.max(grayscale_cropped_resized_reshaped_face.shape)
+        flat_faces = np.array([item for sublist in land_data for item in sublist]) # Flatten the faces
+        flat_faces = flat_faces.transpose(0,2,1)
+        pt49_array = None
+        
+        img_transforms = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
 
-        #use_gpu = torch.cuda.is_available()
-        #im_pil = Image.fromarray(grayscale_cropped_resized_reshaped_face)
+        input_torch = None
+        land_torch = None
+        for i in range(flat_faces.shape[0]):
+            
+            frame_assignment = np.where(i<=lenth_cumu)[0][0] # which frame is it?
 
-        land_data = land_data.reshape(1, -1)
-        img, land = self.align_face_49pts(imgs, land_data[0], img_size=200)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            land_convert = convert68to49(flat_faces[i])
+            new_land_data = land_convert.flatten()
+            new_img, new_land = self.align_face_49pts(imgs[frame_assignment], new_land_data, img_size=200)
+            new_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2RGB)
+            im_pil = Image.fromarray(new_img) 
+            input = img_transforms(im_pil)
+            if len(input.shape) < 4:
+                input.unsqueeze_(0)
+            new_land = torch.from_numpy(new_land)
 
-        im_pil = Image.fromarray(img)
+            if input_torch is None:
+                input_torch = input
+            else:
+                input_torch = torch.cat((input_torch,input),0)
+            if land_torch is None:
+                land_torch = new_land
+            else:
+                land_torch = torch.cat((land_torch,new_land),0)
+
+        #land_data = land_data.reshape(1, -1)
+        #img, land = self.align_face_49pts(imgs, land_data[0], img_size=200)
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        #im_pil = Image.fromarray(img)
         #im_pil = ImageOps.grayscale(im_pil)
 
                 
         self.net0.eval()
-        #imgs_net = Image.fromarray(grayscale_cropped_resized_reshaped_face)
-        #imgs_net = Image.fromarray(grayscale_cropped_resized_reshaped_face)
-        imgs_net = transforms.ToTensor()(im_pil).unsqueeze_(0)
+        #imgs_net = transforms.ToTensor()(input_torch)
 
-        #imgs_net = transforms.ToTensor()(im_pil).unsqueeze_(0)
         if self.use_gpu:
-            imgs_net = imgs_net.cuda()
-        pred_emo = self.net0(imgs_net)
+            input_torch = input_torch.cuda()
+
+        pred_emo = self.net0(input_torch)
         pred_emo_softmax = nn.functional.softmax(
             pred_emo, dim=1).cpu().float().data.numpy()
 
