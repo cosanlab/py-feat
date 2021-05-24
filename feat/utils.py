@@ -20,6 +20,7 @@ __all__ = [
     "registration",
     "neutral",
     "load_h5",
+    "read_pictures"
 ]
 __author__ = ["Jin Hyun Cheong, Tiankang Xie"]
 
@@ -783,6 +784,30 @@ def padding(img, expected_size):
     padding = (pad_width, pad_height, delta_width - pad_width, delta_height - pad_height)
     return ImageOps.expand(img, padding)
 
+
+def read_pictures(imgname_list):
+        """
+        NEW
+        Reads in a list of pictures and concatenate these pictures into batches of images.
+
+        Args:
+            imgname_list (list of string): a list of filenames for the facial pictures
+        
+        Returns:
+            img_batch_arr (np.array): np array of shape BxHxWxC 
+        """
+
+        img_batch_arr = None
+        for img_name in imgname_list:
+            frame = cv2.imread(img_name)
+            frame = np.expand_dims(frame,0)
+            if img_batch_arr is None:
+                img_batch_arr = frame
+            else:
+                assert img_batch_arr.shape[1::] == frame.shape[1::], 'please make sure that the input images are of the same shape! otherwise you need to process each image individually'
+                img_batch_arr = np.concatenate([img_batch_arr,frame],0)
+
+        return img_batch_arr
 
 def resize_with_padding(img, expected_size):
     """
