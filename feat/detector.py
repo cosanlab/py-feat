@@ -357,7 +357,9 @@ class Detector(object):
         hogs_arr = None
 
         for i in range(len(flat_land)):
+
             frame_assignment = np.where(i <= lenth_cumu)[0][0] # which frame is it?
+
             convex_hull, new_lands = self.extract_face(
                 frame=frames[frame_assignment], detected_faces=[flat_faces[i][0:4]], landmarks=flat_land[i], size_output=112)
             hogs = self.extract_hog(frame=convex_hull, visualize=False).reshape(1,-1)
@@ -837,13 +839,13 @@ if __name__ == '__main__':
 
     import cv2
     from feat import Detector   
-    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='rf', emotion_model='fer') 
+    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='jaanet', emotion_model='svm') 
     #imgfile = '/home/tiankang/src/py-feat/feat/tests/data/input.jpg'
-    imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'
+    imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/input.jpg'
 
     frame = cv2.imread(imgfile)
     frame = np.expand_dims(frame,0)
-    frame = np.concatenate([frame,frame],0)
+    #frame = np.concatenate([frame,frame],0)
     a,b = detector.process_frame(frames=frame)
     detected_faces = detector.detect_faces(frame)        
     landmarks = detector.detect_landmarks(frame, detected_faces)
