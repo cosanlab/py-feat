@@ -269,6 +269,10 @@ class Detector(object):
             >>> detector = Detector()        
             >>> detector.detect_faces(frame)
         """
+        # check if frame is 4d
+        if frame.ndim==3:
+            frame = np.expand_dims(frame,0)
+        assert frame.ndim==4, "Frame needs to be 4 dimensions (list of images)"
         #height, width, _ = frame.shape
         faces = self.face_detector(frame)
 
@@ -294,6 +298,11 @@ class Detector(object):
             >>> detected_faces = detector.detect_faces(frame)        
             >>> detector.detect_landmarks(frame, detected_faces)
         """
+        # check if frame is 4d
+        if frame.ndim==3:
+            frame = np.expand_dims(frame,0)
+        assert frame.ndim==4, "Frame needs to be 4 dimensions (list of images)"
+ 
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
@@ -630,85 +639,89 @@ class Detector(object):
         Example:
 
         """
+        # check if frame is 4d
+        if frames.ndim==3:
+            frames = np.expand_dims(frames,0)
+        assert frames.ndim==4, "Frame needs to be 4 dimensions (list of images)"
         out = None
-        try:
-            detected_faces = self.detect_faces(frame=frames)        
-            landmarks = self.detect_landmarks(frame=frames, detected_faces=detected_faces)
-            index_len = [len(ii) for ii in landmarks]
+        # try:
+        detected_faces = self.detect_faces(frame=frames)        
+        landmarks = self.detect_landmarks(frame=frames, detected_faces=detected_faces)
+        index_len = [len(ii) for ii in landmarks]
 
-            if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
-                hog_arr, index_len = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
-                au_occur = self.detect_aus(frame=hog_arr, landmarks=landmarks)
-            else:
-                au_occur = self.detect_aus(
-                    frame=frames, landmarks=landmarks)
+        if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
+            hog_arr, index_len = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
+            au_occur = self.detect_aus(frame=hog_arr, landmarks=landmarks)
+        else:
+            au_occur = self.detect_aus(
+                frame=frames, landmarks=landmarks)
 
-            if self["emotion_model"].lower() in ['svm', 'rf']:
-                emo_pred = self.detect_emotions(
-                    frame=hog_arr, facebox=None, landmarks=landmarks)
-            else:
-                emo_pred = self.detect_emotions(
-                    frame=frames, facebox=detected_faces, landmarks=None)
+        if self["emotion_model"].lower() in ['svm', 'rf']:
+            hog_arr, index_len = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
+            emo_pred = self.detect_emotions(
+                frame=hog_arr, facebox=None, landmarks=landmarks)
+        else:
+            emo_pred = self.detect_emotions(
+                frame=frames, facebox=detected_faces, landmarks=None)
+        my_aus = self._concatenate_au_batch(indexed_length=index_len, au_results=au_occur)
+        my_emo = self._concatenate_au_batch(indexed_length=index_len, au_results=emo_pred)
 
-            my_aus = self._concatenate_au_batch(indexed_length=index_len, au_results=au_occur)
-            my_emo = self._concatenate_au_batch(indexed_length=index_len, au_results=emo_pred)
-
-            for i, sessions in enumerate(detected_faces):
-                for j, faces in enumerate(sessions):
-                    facebox_df = pd.DataFrame(
+        for i, sessions in enumerate(detected_faces):
+            for j, faces in enumerate(sessions):
+                facebox_df = pd.DataFrame(
+                    [
                         [
-                            [
-                                faces[0],
-                                faces[1],
-                                faces[2] - faces[0],
-                                faces[3] - faces[1],
-                                faces[4],
-                            ]
-                        ],
-                        columns=self["face_detection_columns"],
-                        index=[counter + j],
-                    )
+                            faces[0],
+                            faces[1],
+                            faces[2] - faces[0],
+                            faces[3] - faces[1],
+                            faces[4],
+                        ]
+                    ],
+                    columns=self["face_detection_columns"],
+                    index=[counter + j],
+                )
 
-                    landmarks_df = pd.DataFrame(
-                        [landmarks[i][j].flatten(order="F")],
-                        columns=self["face_landmark_columns"],
-                        index=[counter + j],
-                    )
+                landmarks_df = pd.DataFrame(
+                    [landmarks[i][j].flatten(order="F")],
+                    columns=self["face_landmark_columns"],
+                    index=[counter + j],
+                )
 
-                    au_occur_df = pd.DataFrame(
-                        my_aus[i][j,:].reshape(1,len(self["au_presence_columns"])), columns=self["au_presence_columns"], index=[
-                            counter + j]
-                    )
+                au_occur_df = pd.DataFrame(
+                    my_aus[i][j,:].reshape(1,len(self["au_presence_columns"])), columns=self["au_presence_columns"], index=[
+                        counter + j]
+                )
 
-                    emo_pred_df = pd.DataFrame(
-                        my_emo[i][j,:].reshape(1,len(FEAT_EMOTION_COLUMNS)), columns=FEAT_EMOTION_COLUMNS, index=[counter + j]
-                    )
+                emo_pred_df = pd.DataFrame(
+                    my_emo[i][j,:].reshape(1,len(FEAT_EMOTION_COLUMNS)), columns=FEAT_EMOTION_COLUMNS, index=[counter + j]
+                )
 
-                    tmp_df = pd.concat(
-                        [facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1
-                    )
-                    tmp_df[FEAT_TIME_COLUMNS] = counter
-                    if out is None:
-                        out = tmp_df
-                    else:
-                        out = pd.concat([out, tmp_df], axis=0)
-                    #out[FEAT_TIME_COLUMNS] = counter
+                tmp_df = pd.concat(
+                    [facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1
+                )
+                tmp_df[FEAT_TIME_COLUMNS] = counter
+                if out is None:
+                    out = tmp_df
+                else:
+                    out = pd.concat([out, tmp_df], axis=0)
+                #out[FEAT_TIME_COLUMNS] = counter
 
-                counter += 1
-                
-            return(out, counter)
+            counter += 1
+            
+        return(out, counter)
 
-        except:
-            print("exception occurred")
-            emotion_df = self._empty_emotion.reindex(index=[counter])
-            facebox_df = self._empty_facebox.reindex(index=[counter])
-            landmarks_df = self._empty_landmark.reindex(index=[counter])
-            au_occur_df = self._empty_auoccurence.reindex(index=[counter])
+        # except:
+        #     print("exception occurred")
+        #     emotion_df = self._empty_emotion.reindex(index=[counter])
+        #     facebox_df = self._empty_facebox.reindex(index=[counter])
+        #     landmarks_df = self._empty_landmark.reindex(index=[counter])
+        #     au_occur_df = self._empty_auoccurence.reindex(index=[counter])
 
-            out = pd.concat([facebox_df, landmarks_df,
-                             au_occur_df, emotion_df], axis=1)
-            out[FEAT_TIME_COLUMNS] = counter
-            return out
+        #     out = pd.concat([facebox_df, landmarks_df,
+        #                      au_occur_df, emotion_df], axis=1)
+        #     out[FEAT_TIME_COLUMNS] = counter
+        #     return(out, counter)
 
     def detect_video(self, inputFname, batch_size=5, outputFname=None, skip_frames=1, verbose=False):
         """Detects FEX from a video file.
@@ -731,49 +744,45 @@ class Detector(object):
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frames_to_process = int(np.ceil(length / skip_frames))
 
-        # Determine whether to use multiprocessing.
-        n_jobs = self["n_jobs"]
-        if n_jobs == -1:
-            thread_num = cv2.getNumberOfCPUs()  # get available cpus
-        else:
-            thread_num = n_jobs
-        if verbose:
-            print(f"Using {thread_num} cpus")
-        pool = ThreadPool(processes=thread_num)
-        pending_task = deque()
         counter = 0
-        processed_frames = 0
         frame_got = True
-        detected_faces = []
         if verbose:
             print("Processing video.")
         #  single core
+        concat_frame = None
         while True:
-            concat_frame = None
-            tmp_counter = 0
-            while tmp_counter < batch_size:
-            #for ct_value in range(batch_size):
+            frame_got, frame = cap.read()
+            if frame_got:
                 if counter % skip_frames == 0:
-                    frame_got, frame = cap.read()
                     if concat_frame is None:
                         concat_frame = np.expand_dims(frame,0)
+                        tmp_counter = counter
                     else:
-                        concat_frame = np.concatenate([concat_frame,np.expand_dims(frame,0)],0)
-                tmp_counter += 1
-
-                if not frame_got:
-                    break
-            if counter % skip_frames == 0:
-                df = self.process_frame(frame, counter=counter)
-                df["input"] = inputFname
-                if outputFname:
-                    df[init_df.columns].to_csv(
-                        outputFname, index=False, header=False, mode="a"
-                    )
-                else:
-                    init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
-            counter = counter + 1
-            if not frame_got:
+                        concat_frame = np.concatenate([concat_frame,
+                                                    np.expand_dims(frame,0)],0)
+                if (counter % batch_size == 0) and (concat_frame is not None):
+                    df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                    df["input"] = inputFname
+                    if outputFname:
+                        df[init_df.columns].to_csv(
+                            outputFname, index=False, header=False, mode="a"
+                        )
+                    else:
+                        init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
+                    concat_frame = None
+                    tmp_counter = None
+                counter = counter + 1
+            else:
+                # process remaining frames
+                if concat_frame is not None:
+                    df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                    df["input"] = inputFname
+                    if outputFname:
+                        df[init_df.columns].to_csv(
+                            outputFname, index=False, header=False, mode="a"
+                        )
+                    else:
+                        init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
                 break
         cap.release()
         if outputFname:
@@ -818,7 +827,7 @@ class Detector(object):
             if verbose:
                 print(f"processing {inputF}")
             frame = cv2.imread(inputF)
-            df = self.process_frame(frame)
+            df, _ = self.process_frame(frame)
             df["input"] = inputF
             if outputFname:
                 df[init_df.columns].to_csv(
