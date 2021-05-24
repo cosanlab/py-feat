@@ -769,8 +769,8 @@ class ResMaskNet:
         face = self._batch_make(frame=frame, detected_face=detected_face)
             
         with torch.no_grad():    
-            output = torch.squeeze(self.model(face), 0)
-            proba = torch.softmax(output, 0)
+            output = self.model(face)
+            proba = torch.softmax(output, 1)
             proba_np = proba.cpu().numpy()
             return proba_np
 
