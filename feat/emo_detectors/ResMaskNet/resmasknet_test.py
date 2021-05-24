@@ -770,7 +770,7 @@ class ResMaskNet:
             
         with torch.no_grad():    
             output = self.model(face)
-            proba = torch.softmax(output, 1)
+            proba = torch.softmax(output, 0)
             proba_np = proba.cpu().numpy()
             return proba_np
 
