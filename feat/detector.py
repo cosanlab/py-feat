@@ -845,8 +845,9 @@ if __name__ == '__main__':
 
     import cv2
     from feat import Detector   
-    detector = Detector(face_model='faceboxes', landmark_model='mobilefacenet', au_model='svm', emotion_model='svm') 
-    imgfile = '/home/tiankang/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'
+    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='rf', emotion_model='ResMaskNet') 
+    #imgfile = '/home/tiankang/src/py-feat/feat/tests/data/input.jpg'
+    imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'
 
     frame = cv2.imread(imgfile)
     frame = np.expand_dims(frame,0)
