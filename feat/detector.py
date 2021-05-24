@@ -837,7 +837,7 @@ if __name__ == '__main__':
 
     import cv2
     from feat import Detector   
-    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='rf', emotion_model='svm') 
+    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='rf', emotion_model='fer') 
     #imgfile = '/home/tiankang/src/py-feat/feat/tests/data/input.jpg'
     imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'
 
