@@ -53,6 +53,8 @@ def test_fex():
 
     assert df.design().shape[-1] == 4
 
+    assert df.facepose().shape[-1] == 3
+
     # Test metadata propagation to sliced series
     assert df.iloc[0].aus().shape == (20,)
     assert df.iloc[0].emotions().shape == (12,)
