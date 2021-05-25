@@ -279,8 +279,8 @@ class Detector(object):
             + facebox_columns
             + landmark_columns
             + auoccur_columns
-            + FEAT_EMOTION_COLUMNS
             + FACET_FACEPOSE_COLUMNS
+            + FEAT_EMOTION_COLUMNS
             + ["input"]
         )
 
@@ -667,7 +667,7 @@ class Detector(object):
                     facepose_pred, columns=FACET_FACEPOSE_COLUMNS, index=[counter + i]
                 )
                 tmp_df = pd.concat(
-                    [facebox_df, landmarks_df, au_occur_df, emo_pred_df, facepose_df], axis=1
+                    [facebox_df, landmarks_df, au_occur_df, facepose_df, emo_pred_df], axis=1
                 )
                 if out is None:
                     out = tmp_df
@@ -684,7 +684,7 @@ class Detector(object):
             facepose_df = self._empty_facepose.reindex(index=[counter])
 
             out = pd.concat([facebox_df, landmarks_df,
-                             au_occur_df, emotion_df, facepose_df], axis=1)
+                             au_occur_df, facepose_df, emotion_df], axis=1)
             out[FEAT_TIME_COLUMNS] = counter
             return out
 
@@ -717,12 +717,6 @@ class Detector(object):
             thread_num = n_jobs
         if verbose:
             print(f"Using {thread_num} cpus")
-        pool = ThreadPool(processes=thread_num)
-        pending_task = deque()
-        counter = 0
-        processed_frames = 0
-        frame_got = True
-        detected_faces = []
         if verbose:
             print("Processing video.")
         #  single core
