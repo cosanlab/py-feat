@@ -108,9 +108,9 @@ def test_img2pose_mismatch():
     # but selects a different face detector. Detector should tell user they must use img2pose as both face detector and
     # pose estimator, and force face model to be `img2pose`.
     detector = Detector(
-        face_model="RetinaFace", facepose_model="img2pose"
+        face_model="RetinaFace", facepose_model="img2pose-c"
     )
-    assert detector.info["face_model"] == "img2pose"
+    assert detector.info["face_model"] == "img2pose-c"
 
 
 def test_mobilefacenet():
@@ -360,3 +360,32 @@ def test_simultaneous():
         facepose_model="PnP"
     )
     files = detector04.process_frame(img01, 0)
+
+    # Test with different set of detectors
+    detector05 = Detector(
+        face_model="img2pose",
+        emotion_model="rf",
+        landmark_model="mobilenet",
+        au_model="svm",
+        facepose_model="img2pose"
+    )
+    files = detector04.process_frame(img01, 0)
+
+
+def test_no_face_detected():
+    detector = Detector(
+        face_model="RetinaFace",
+        emotion_model="fer",
+        landmark_model="PFLD",
+        au_model="jaanet",
+        facepose_model="PnP"
+    )
+    faceless_img_file = os.path.join(get_test_data_path(), "no-face.jpg")
+    faceless_img = cv2.imread(faceless_img_file)
+    prediction_with_face = detector.process_frame(img01)
+    prediction_without_face = detector.process_frame(faceless_img)
+
+    # Check that both predictions contain same FEX columns
+    assert prediction_with_face.columns.to_list() == prediction_without_face.columns.to_list()
+    # Check that the detector did not detect a face in the faceless image
+    assert prediction_without_face.drop(columns=['frame']).isnull().values.all()
