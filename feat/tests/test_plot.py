@@ -123,6 +123,10 @@ def test_plot_detections():
     assert axes[1].get_xlim() == (0.0, 1.1)
     plt.close()
 
+    axes = image_prediction.plot_detections(pose=True)
+    assert axes[1].get_xlim() == (0.0, 1.1)
+    plt.close()
+
     image_prediction2 = image_prediction.copy()
     image_prediction2["input"] = "NO_SUCH_FILE_EXISTS"
     axes = image_prediction2.plot_detections()
