@@ -590,7 +590,7 @@ class Detector(object):
             counter (int, str, default=0): Index used for the prediction results dataframe.
 
         Returns:
-            df (dataframe): Prediction results dataframe.
+            feat.data.Fex (dataframe): Prediction results dataframe.
 
         Example:
             >>> from pil import Image

@@ -333,49 +333,6 @@ class RegionProposalNetwork(torch.nn.Module):
             return self._post_nms_top_n["training"]
         return self._post_nms_top_n["testing"]
 
-    def assign_targets_to_anchors(self, anchors, targets):
-        # type: (List[Tensor], List[Dict[str, Tensor]])
-        # -> Tuple[List[Tensor], List[Tensor]]
-        labels = []
-        matched_gt_boxes = []
-        for anchors_per_image, targets_per_image in zip(anchors, targets):
-            gt_boxes = targets_per_image["boxes"]
-
-            if gt_boxes.numel() == 0:
-                # Background image (negative example)
-                device = anchors_per_image.device
-                matched_gt_boxes_per_image = torch.zeros(
-                    anchors_per_image.shape, dtype=torch.float32, device=device
-                )
-                labels_per_image = torch.zeros(
-                    (anchors_per_image.shape[0],), dtype=torch.float32, device=device
-                )
-            else:
-                match_quality_matrix = box_ops.box_iou(gt_boxes, anchors_per_image)
-                matched_idxs = self.proposal_matcher(match_quality_matrix)
-                # get the targets corresponding GT for each proposal
-                # NB: need to clamp the indices because we can have a single
-                # GT in the image, and matched_idxs can be -2, which goes
-                # out of bounds
-                matched_gt_boxes_per_image = gt_boxes[matched_idxs.clamp(min=0)]
-
-                labels_per_image = matched_idxs >= 0
-                labels_per_image = labels_per_image.to(dtype=torch.float32)
-
-                # Background (negative examples)
-                bg_indices = matched_idxs == self.proposal_matcher.BELOW_LOW_THRESHOLD
-                labels_per_image[bg_indices] = 0.0
-
-                # discard indices that are between thresholds
-                inds_to_discard = (
-                    matched_idxs == self.proposal_matcher.BETWEEN_THRESHOLDS
-                )
-                labels_per_image[inds_to_discard] = -1.0
-
-            labels.append(labels_per_image)
-            matched_gt_boxes.append(matched_gt_boxes_per_image)
-        return labels, matched_gt_boxes
-
     def _get_top_n_idx(self, objectness, num_anchors_per_level):
         # type: (Tensor, List[int]) -> Tensor
         r = []
@@ -438,47 +395,6 @@ class RegionProposalNetwork(torch.nn.Module):
             final_scores.append(scores)
         return final_boxes, final_scores
 
-    def compute_loss(self, objectness, pred_bbox_deltas, labels, regression_targets):
-        # type: (Tensor, Tensor, List[Tensor], List[Tensor]) -> Tuple[Tensor, Tensor]
-        """
-        Arguments:
-            objectness (Tensor)
-            pred_bbox_deltas (Tensor)
-            labels (List[Tensor])
-            regression_targets (List[Tensor])
-
-        Returns:
-            objectness_loss (Tensor)
-            box_loss (Tensor)
-        """
-
-        sampled_pos_inds, sampled_neg_inds = self.fg_bg_sampler(labels)
-        sampled_pos_inds = torch.nonzero(torch.cat(sampled_pos_inds, dim=0)).squeeze(1)
-        sampled_neg_inds = torch.nonzero(torch.cat(sampled_neg_inds, dim=0)).squeeze(1)
-
-        sampled_inds = torch.cat([sampled_pos_inds, sampled_neg_inds], dim=0)
-
-        objectness = objectness.flatten()
-
-        labels = torch.cat(labels, dim=0)
-        regression_targets = torch.cat(regression_targets, dim=0)
-
-        box_loss = (
-            det_utils.smooth_l1_loss(
-                pred_bbox_deltas[sampled_pos_inds],
-                regression_targets[sampled_pos_inds],
-                beta=1 / 9,
-                size_average=False,
-            )
-            / (sampled_inds.numel())
-        )
-
-        objectness_loss = F.binary_cross_entropy_with_logits(
-            objectness[sampled_inds], labels[sampled_inds]
-        )
-
-        return objectness_loss, box_loss
-
     def forward(
         self,
         images,  # type: ImageList
@@ -525,15 +441,4 @@ class RegionProposalNetwork(torch.nn.Module):
         )
 
         losses = {}
-        if self.training or targets is not None:
-            assert targets is not None
-            labels, matched_gt_boxes = self.assign_targets_to_anchors(anchors, targets)
-            regression_targets = self.box_coder.encode(matched_gt_boxes, anchors)
-            loss_objectness, loss_rpn_box_reg = self.compute_loss(
-                objectness, pred_bbox_deltas, labels, regression_targets
-            )
-            losses = {
-                "loss_objectness": loss_objectness,
-                "loss_rpn_box_reg": loss_rpn_box_reg,
-            }
         return boxes, losses

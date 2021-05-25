@@ -28,10 +28,8 @@ class img2poseModel:
         device=None,
         pose_mean=None,
         pose_stddev=None,
-        distributed=False,
         gpu=0,
         threed_68_points=None,
-        threed_5_points=None,
         rpn_pre_nms_top_n_test=6000,
         rpn_post_nms_top_n_test=1000,
         bbox_x_factor=1.1,
@@ -42,7 +40,6 @@ class img2poseModel:
         self.min_size = min_size
         self.max_size = max_size
         self.model_path = model_path
-        self.distributed = distributed
         self.gpu = gpu
 
         if device is None:
@@ -60,9 +57,6 @@ class img2poseModel:
         if threed_68_points is not None:
             threed_68_points = torch.tensor(threed_68_points)
 
-        if threed_5_points is not None:
-            threed_5_points = torch.tensor(threed_5_points)
-
         # create the feature pyramid network
         self.fpn_model = FasterDoFRCNN(
             backbone,
@@ -72,7 +66,6 @@ class img2poseModel:
             pose_mean=pose_mean,
             pose_stddev=pose_stddev,
             threed_68_points=threed_68_points,
-            threed_5_points=threed_5_points,
             rpn_pre_nms_top_n_test=rpn_pre_nms_top_n_test,
             rpn_post_nms_top_n_test=rpn_post_nms_top_n_test,
             bbox_x_factor=bbox_x_factor,
@@ -83,47 +76,29 @@ class img2poseModel:
         # if using cpu, remove the parallel modules from the saved model
         self.fpn_model_without_ddp = self.fpn_model
 
-        if self.distributed:
-            self.fpn_model = self.fpn_model.to(self.device)
-            self.fpn_model = DistributedDataParallel(
-                self.fpn_model, device_ids=[self.gpu]
-            )
-            self.fpn_model_without_ddp = self.fpn_model.module
-
-            # print("Model will use distributed mode!")
-
-        elif str(self.device) == "cpu":
+        if str(self.device) == "cpu":
             self.fpn_model = WrappedModel(self.fpn_model)
             self.fpn_model_without_ddp = self.fpn_model
-
-            # print("Model will run on CPU!")
-
-        else:
+        else:  # GPU
             self.fpn_model = DataParallel(self.fpn_model)
             self.fpn_model = self.fpn_model.to(self.device)
             self.fpn_model_without_ddp = self.fpn_model
 
-            # print(f"Model will use {torch.cuda.device_count()} GPUs!")
-
-        if self.model_path is not None:
-            self.load_saved_model(self.model_path)
-            self.evaluate()
-
     def evaluate(self):
         self.fpn_model.eval()
 
-    def train(self):
-        self.fpn_model.train()
+    # UNCOMMENT to enable training
+    # def train(self):
+    #     self.fpn_model.train()
 
     def run_model(self, imgs, targets=None):
         outputs = self.fpn_model(imgs, targets)
 
         return outputs
 
-    def forward(self, imgs, targets):
-        losses = self.run_model(imgs, targets)
-
-        return losses
+    # def forward(self, imgs, targets):
+    #     losses = self.run_model(imgs, targets)
+    #     return losses
 
     def predict(self, imgs):
         assert self.fpn_model.training is False

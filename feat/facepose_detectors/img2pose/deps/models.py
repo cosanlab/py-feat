@@ -11,7 +11,6 @@ from torchvision.ops import MultiScaleRoIAlign
 from torchvision.ops import boxes as box_ops
 
 from .generalized_rcnn import GeneralizedRCNN
-from .losses import fastrcnn_loss
 from .rpn import AnchorGenerator, RegionProposalNetwork, RPNHead
 from .pose_operations import transform_pose_global_project_bbox
 
@@ -300,70 +299,6 @@ class DOFRoIHeads(RoIHeads):
         self.bbox_y_factor = bbox_y_factor
         self.expand_forehead = expand_forehead
 
-    def select_training_samples(
-        self,
-        proposals,  # type: List[Tensor]
-        targets,  # type: Optional[List[Dict[str, Tensor]]]
-    ):
-        # type: (...) -> Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]
-        self.check_targets(targets)
-        assert targets is not None
-        dtype = proposals[0].dtype
-        device = proposals[0].device
-
-        gt_boxes = [t["boxes"].to(dtype) for t in targets]
-        gt_labels = [t["labels"] for t in targets]
-        gt_dofs = [t["dofs"] for t in targets]
-
-        # append ground-truth bboxes to propos
-        proposals = self.add_gt_proposals(proposals, gt_boxes)
-
-        # get matching gt indices for each proposal
-        matched_idxs, labels = self.assign_targets_to_proposals(
-            proposals, gt_boxes, gt_labels
-        )
-        # sample a fixed proportion of positive-negative proposals
-        sampled_inds = self.subsample(labels)
-        matched_gt_boxes = []
-        matched_gt_dofs = []
-        num_images = len(proposals)
-        for img_id in range(num_images):
-            img_sampled_inds = sampled_inds[img_id]
-            proposals[img_id] = proposals[img_id][img_sampled_inds]
-            labels[img_id] = labels[img_id][img_sampled_inds]
-            matched_idxs[img_id] = matched_idxs[img_id][img_sampled_inds]
-
-            gt_boxes_in_image = gt_boxes[img_id]
-            gt_dofs_in_image = gt_dofs[img_id]
-            if gt_boxes_in_image.numel() == 0:
-                gt_boxes_in_image = torch.zeros((1, 4), dtype=dtype, device=device)
-            if gt_dofs_in_image.numel() == 0:
-                gt_dofs_in_image = torch.zeros((1, 4), dtype=dtype, device=device)
-            matched_gt_boxes.append(gt_boxes_in_image[matched_idxs[img_id]])
-            matched_gt_dofs.append(gt_dofs_in_image[matched_idxs[img_id]])
-        # regression_targets = self.box_coder.encode(matched_gt_boxes, proposals)
-        dof_regression_targets = matched_gt_dofs
-        box_regression_targets = matched_gt_boxes
-        return (
-            proposals,
-            matched_idxs,
-            labels,
-            dof_regression_targets,
-            box_regression_targets,
-        )
-
-    def decode(self, rel_codes, boxes):
-        # type: (Tensor, List[Tensor]) -> Tensor
-        assert isinstance(boxes, (list, tuple))
-        assert isinstance(rel_codes, torch.Tensor)
-        boxes_per_image = [b.size(0) for b in boxes]
-        concat_boxes = torch.cat(boxes, dim=0)
-        box_sum = 0
-        for val in boxes_per_image:
-            box_sum += val
-        pred_boxes = self.decode_single(rel_codes.reshape(box_sum, -1), concat_boxes)
-        return pred_boxes.reshape(box_sum, -1, 6)
-
     def postprocess_detections(
         self,
         class_logits,  # type: Tensor
@@ -473,96 +408,27 @@ class DOFRoIHeads(RoIHeads):
             image_shapes (List[Tuple[H, W]])
             targets (List[Dict])
         """
-        if targets is not None:
-            for t in targets:
-                floating_point_types = (torch.float, torch.double, torch.half)
-                assert (
-                    t["boxes"].dtype in floating_point_types
-                ), "target boxes must of float type"
-                assert (
-                    t["labels"].dtype == torch.int64
-                ), "target labels must of int64 type"
-
-        if self.training or targets is not None:
-            (
-                proposals,
-                matched_idxs,
-                labels,
-                regression_targets,
-                regression_targets_box,
-            ) = self.select_training_samples(proposals, targets)
-        else:
-            labels = None
-            regression_targets = None
-            matched_idxs = None
-
-        if self.training or targets is not None:
-            num_images = len(proposals)
-            dof_proposals = []
-            dof_regression_targets = []
-            box_regression_targets = []
-            dof_labels = []
-            pos_matched_idxs = []
-
-            for img_id in range(num_images):
-                pos = torch.nonzero(labels[img_id] > 0).squeeze(1)
-                dof_proposals.append(proposals[img_id][pos])
-                dof_regression_targets.append(regression_targets[img_id][pos])
-                box_regression_targets.append(regression_targets_box[img_id][pos])
-                dof_labels.append(labels[img_id][pos])
-                pos_matched_idxs.append(matched_idxs[img_id][pos])
-
-            box_features = self.box_roi_pool(features, dof_proposals, image_shapes)
-            box_features = self.box_head(box_features)
-            dof_regression = self.box_predictor(box_features)
-            class_features = self.class_roi_pool(features, proposals, image_shapes)
-            class_features = self.class_head(class_features)
-            class_logits = self.class_predictor(class_features)
-            result = torch.jit.annotate(List[Dict[str, torch.Tensor]], [])
-        else:
-            num_images = len(proposals)
-            box_features = self.box_roi_pool(features, proposals, image_shapes)
-            box_features = self.box_head(box_features)
-            dof_regression = self.box_predictor(box_features)
-            class_features = self.class_roi_pool(features, proposals, image_shapes)
-            class_features = self.class_head(class_features)
-            class_logits = self.class_predictor(class_features)
-            result = torch.jit.annotate(List[Dict[str, torch.Tensor]], [])
+        box_features = self.box_roi_pool(features, proposals, image_shapes)
+        box_features = self.box_head(box_features)
+        dof_regression = self.box_predictor(box_features)
+        class_features = self.class_roi_pool(features, proposals, image_shapes)
+        class_features = self.class_head(class_features)
+        class_logits = self.class_predictor(class_features)
+        result = torch.jit.annotate(List[Dict[str, torch.Tensor]], [])
 
         losses = {}
-        if self.training or targets is not None:
-            assert labels is not None and regression_targets is not None
-            # assert matched_idxs is not None
-            loss_classifier, loss_dof_reg, loss_points = fastrcnn_loss(
-                class_logits,
-                labels,
-                dof_regression,
-                dof_labels,
-                dof_regression_targets,
-                dof_proposals,
-                image_shapes,
-                self.pose_mean,
-                self.pose_stddev,
-                self.threed_5_points,
+        boxes, dofs, scores, labels = self.postprocess_detections(
+            class_logits, dof_regression, proposals, image_shapes
+        )
+        num_images = len(boxes)
+        for i in range(num_images):
+            result.append(
+                {
+                    "boxes": boxes[i],
+                    "labels": labels[i],
+                    "scores": scores[i],
+                    "dofs": dofs[i],
+                }
             )
-            losses = {
-                "loss_classifier": loss_classifier,
-                "loss_dof_reg": loss_dof_reg,
-                "loss_points": loss_points,
-            }
-        else:
-            boxes, dofs, scores, labels = self.postprocess_detections(
-                class_logits, dof_regression, proposals, image_shapes
-            )
-            num_images = len(boxes)
-            for i in range(num_images):
-                result.append(
-                    {
-                        "boxes": boxes[i],
-                        "labels": labels[i],
-                        "scores": scores[i],
-                        "dofs": dofs[i],
-                    }
-                )
 
         return result, losses
