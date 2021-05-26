@@ -358,8 +358,8 @@ class Detector(object):
 
         for i in range(len(flat_land)):
 
-            frame_assignment = np.where(i <= lenth_cumu)[0][0] # which frame is it?
-
+            frame_assignment = np.where(i < lenth_cumu)[0][0]
+            
             convex_hull, new_lands = self.extract_face(
                 frame=frames[frame_assignment], detected_faces=[flat_faces[i][0:4]], landmarks=flat_land[i], size_output=112)
             hogs = self.extract_hog(frame=convex_hull, visualize=False).reshape(1,-1)
@@ -468,18 +468,6 @@ class Detector(object):
         """
         detected_faces = np.array(detected_faces)
         landmarks = np.array(landmarks)
-        # if (np.any(detected_faces) < 0):
-        #     orig_size = np.array(frame).shape
-        #     if np.where(detected_faces<0)[0][0]==1:
-        #         # extend y
-        #         new_size = (orig_size[0], int(orig_size[1] + 2*abs(detected_faces[detected_faces<0][0])))
-        #     else:
-        #         # extend x
-        #         new_size = (int(orig_size[0] + 2*abs(detected_faces[detected_faces<0][0])), orig_size[1])
-
-        #     frame = resize_with_padding(Image.fromarray(frame), new_size)
-        #     frame = np.asarray(frame)
-        #     detected_faces = np.array(detector.detect_faces(np.array(frame))[0])
 
         detected_faces = detected_faces.astype(int)
 
@@ -839,7 +827,7 @@ if __name__ == '__main__':
 
     import cv2
     from feat import Detector   
-    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='jaanet', emotion_model='svm') 
+    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='logistic', emotion_model='rf') 
     #imgfile = '/home/tiankang/src/py-feat/feat/tests/data/input.jpg'
     #imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/input.jpg'
     imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'

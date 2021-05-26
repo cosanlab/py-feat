@@ -42,14 +42,14 @@ class RandomForestClassifier():
         landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.fit_transform(frame))
+            self.scaler.transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_aus = []
         for keys in self.classifier:
             au_pred = self.classifier[keys].predict_proba(feature_cbd)
             au_pred = au_pred[:, 1]
             pred_aus.append(au_pred)
-        print("halt")
+        #print("halt")
         pred_aus = np.array(pred_aus).T
         return pred_aus
 
@@ -72,7 +72,7 @@ class SVMClassifier():
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.fit_transform(frame))
+            self.scaler.transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_aus = []
         for keys in self.classifier:
@@ -104,7 +104,7 @@ class LogisticClassifier():
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.fit_transform(frame))
+            self.scaler.transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_aus = []
         for keys in self.classifier:
