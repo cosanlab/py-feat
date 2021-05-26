@@ -367,6 +367,8 @@ class Detector(object):
                 hogs_arr = hogs
             else:
                 hogs_arr = np.concatenate([hogs_arr,hogs],0)
+
+
             new_lands_list.append(new_lands)
 
         new_lands = []
@@ -827,7 +829,7 @@ if __name__ == '__main__':
 
     import cv2
     from feat import Detector   
-    detector = Detector(face_model='retinaface', landmark_model='mobilenet', au_model='logistic', emotion_model='rf') 
+    detector = Detector(face_model='mtcnn', landmark_model='mobilenet', au_model='logistic', emotion_model='rf') 
     #imgfile = '/home/tiankang/src/py-feat/feat/tests/data/input.jpg'
     #imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/input.jpg'
     imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'
@@ -835,7 +837,7 @@ if __name__ == '__main__':
     frame = cv2.imread(imgfile)
     frame = np.expand_dims(frame,0)
     #frame = np.concatenate([frame,frame],0)
-    a,b = detector.process_frame(frames=frame)
+    #a,b = detector.process_frame(frames=frame)
     detected_faces = detector.detect_faces(frame)        
     landmarks = detector.detect_landmarks(frame, detected_faces)
 
