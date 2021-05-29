@@ -49,7 +49,6 @@ import json
 from torchvision.datasets.utils import download_url
 import zipfile
 
-
 class Detector(object):
     def __init__(
         self,
@@ -482,14 +481,13 @@ class Detector(object):
                                    verts=list(
                                        zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0]))
                                    )
-
         mask[0:np.min([new_landmarks[0][1], new_landmarks[16][1]]),
              new_landmarks[0][0]:new_landmarks[16][0]] = True
         aligned_img[~mask] = 0
         resized_face_np = aligned_img
         resized_face_np = cv2.cvtColor(resized_face_np, cv2.COLOR_BGR2RGB)
 
-        return resized_face_np, new_landmarks
+        return resized_face_np, new_landmarks#, hull, mask, np.array(aligned_img).shape, list(zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0])), origin_mask
 
     def extract_hog(self, frame, orientation=8, pixels_per_cell=(8, 8), cells_per_block=(2, 2), visualize=False):
         """Extract HOG features from a SINGLE frame.
@@ -618,85 +616,87 @@ class Detector(object):
             frames = np.expand_dims(frames,0)
         assert frames.ndim==4, "Frame needs to be 4 dimensions (list of images)"
         out = None
-        # try:
-        detected_faces = self.detect_faces(frame=frames)        
-        landmarks = self.detect_landmarks(frame=frames, detected_faces=detected_faces)
-        index_len = [len(ii) for ii in landmarks]
+        try:
+            detected_faces = self.detect_faces(frame=frames)        
+            landmarks = self.detect_landmarks(frame=frames, detected_faces=detected_faces)
+            index_len = [len(ii) for ii in landmarks]
 
-        if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
-            hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
-            au_occur = self.detect_aus(frame=hog_arr, landmarks=new_lands)
-        else:
-            au_occur = self.detect_aus(
-                frame=frames, landmarks=landmarks)
+            if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
+                #landmarks_2 = round_vals(landmarks,3)
+                landmarks_2 = landmarks
+                hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks_2)
+                au_occur = self.detect_aus(frame=hog_arr, landmarks=new_lands)
+            else:
+                au_occur = self.detect_aus(
+                    frame=frames, landmarks=landmarks)
 
-        if self["emotion_model"].lower() in ['svm', 'rf']:
-            hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
-            emo_pred = self.detect_emotions(
-                frame=hog_arr, facebox=None, landmarks=new_lands)
-        else:
-            emo_pred = self.detect_emotions(
-                frame=frames, facebox=detected_faces, landmarks=landmarks)
+            if self["emotion_model"].lower() in ['svm', 'rf']:
+                hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
+                emo_pred = self.detect_emotions(
+                    frame=hog_arr, facebox=None, landmarks=new_lands)
+            else:
+                emo_pred = self.detect_emotions(
+                    frame=frames, facebox=detected_faces, landmarks=landmarks)
 
-        my_aus = self._concatenate_au_batch(indexed_length=index_len, au_results=au_occur)
-        my_emo = self._concatenate_au_batch(indexed_length=index_len, au_results=emo_pred)
+            my_aus = self._concatenate_au_batch(indexed_length=index_len, au_results=au_occur)
+            my_emo = self._concatenate_au_batch(indexed_length=index_len, au_results=emo_pred)
 
-        for i, sessions in enumerate(detected_faces):
-            for j, faces in enumerate(sessions):
-                facebox_df = pd.DataFrame(
-                    [
+            for i, sessions in enumerate(detected_faces):
+                for j, faces in enumerate(sessions):
+                    facebox_df = pd.DataFrame(
                         [
-                            faces[0],
-                            faces[1],
-                            faces[2] - faces[0],
-                            faces[3] - faces[1],
-                            faces[4],
-                        ]
-                    ],
-                    columns=self["face_detection_columns"],
-                    index=[counter + j],
-                )
+                            [
+                                faces[0],
+                                faces[1],
+                                faces[2] - faces[0],
+                                faces[3] - faces[1],
+                                faces[4],
+                            ]
+                        ],
+                        columns=self["face_detection_columns"],
+                        index=[counter + j],
+                    )
 
-                landmarks_df = pd.DataFrame(
-                    [landmarks[i][j].flatten(order="F")],
-                    columns=self["face_landmark_columns"],
-                    index=[counter + j],
-                )
+                    landmarks_df = pd.DataFrame(
+                        [landmarks[i][j].flatten(order="F")],
+                        columns=self["face_landmark_columns"],
+                        index=[counter + j],
+                    )
 
-                au_occur_df = pd.DataFrame(
-                    my_aus[i][j,:].reshape(1,len(self["au_presence_columns"])), columns=self["au_presence_columns"], index=[
-                        counter + j]
-                )
+                    au_occur_df = pd.DataFrame(
+                        my_aus[i][j,:].reshape(1,len(self["au_presence_columns"])), columns=self["au_presence_columns"], index=[
+                            counter + j]
+                    )
 
-                emo_pred_df = pd.DataFrame(
-                    my_emo[i][j,:].reshape(1,len(FEAT_EMOTION_COLUMNS)), columns=FEAT_EMOTION_COLUMNS, index=[counter + j]
-                )
+                    emo_pred_df = pd.DataFrame(
+                        my_emo[i][j,:].reshape(1,len(FEAT_EMOTION_COLUMNS)), columns=FEAT_EMOTION_COLUMNS, index=[counter + j]
+                    )
 
-                tmp_df = pd.concat(
-                    [facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1
-                )
-                tmp_df[FEAT_TIME_COLUMNS] = counter
-                if out is None:
-                    out = tmp_df
-                else:
-                    out = pd.concat([out, tmp_df], axis=0)
-                #out[FEAT_TIME_COLUMNS] = counter
+                    tmp_df = pd.concat(
+                        [facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1
+                    )
+                    tmp_df[FEAT_TIME_COLUMNS] = counter
+                    if out is None:
+                        out = tmp_df
+                    else:
+                        out = pd.concat([out, tmp_df], axis=0)
+                    #out[FEAT_TIME_COLUMNS] = counter
 
-            counter += 1
-            
-        return(out, counter)
+                counter += 1
+                
+            return(out, counter)
 
-        # except:
-        #     print("exception occurred")
-        #     emotion_df = self._empty_emotion.reindex(index=[counter])
-        #     facebox_df = self._empty_facebox.reindex(index=[counter])
-        #     landmarks_df = self._empty_landmark.reindex(index=[counter])
-        #     au_occur_df = self._empty_auoccurence.reindex(index=[counter])
+        except:
+            print("exception occurred")
+            emotion_df = self._empty_emotion.reindex(index=[counter])
+            facebox_df = self._empty_facebox.reindex(index=[counter])
+            landmarks_df = self._empty_landmark.reindex(index=[counter])
+            au_occur_df = self._empty_auoccurence.reindex(index=[counter])
 
-        #     out = pd.concat([facebox_df, landmarks_df,
-        #                      au_occur_df, emotion_df], axis=1)
-        #     out[FEAT_TIME_COLUMNS] = counter
-        #     return(out, counter)
+            out = pd.concat([facebox_df, landmarks_df,
+                             au_occur_df, emotion_df], axis=1)
+            out[FEAT_TIME_COLUMNS] = counter
+            return(out, counter)
 
     def detect_video(self, inputFname, batch_size=5, outputFname=None, skip_frames=1, verbose=False):
         """Detects FEX from a video file.
@@ -825,27 +825,7 @@ class Detector(object):
                 detector="Feat",
             )
 
-if __name__ == '__main__':
 
-    import cv2
-    from feat import Detector   
-    detector = Detector(face_model='mtcnn', landmark_model='mobilenet', au_model='logistic', emotion_model='rf') 
-    #imgfile = '/home/tiankang/src/py-feat/feat/tests/data/input.jpg'
-    #imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/input.jpg'
-    imgfile = '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg'
 
-    frame = cv2.imread(imgfile)
-    frame = np.expand_dims(frame,0)
-    #frame = np.concatenate([frame,frame],0)
-    #a,b = detector.process_frame(frames=frame)
-    detected_faces = detector.detect_faces(frame)        
-    landmarks = detector.detect_landmarks(frame, detected_faces)
 
-    rand1,rand2 = detector._batch_hog(frames = frame, detected_faces = detected_faces, landmarks = landmarks)
 
-    my_aus = detector.detect_aus(frame,landmarks=landmarks)
-    my_emo = detector.detect_emotions(frame=frame, facebox=detected_faces, landmarks=None)#s, landmarks=landmarks)
-
-    good_aus_result = detector._concatenate_au_batch(indexed_length=rand2, au_results=my_aus)
-
-    print(good_aus_result)
