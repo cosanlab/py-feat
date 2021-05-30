@@ -825,10 +825,3 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
-
-if __name__ == '__main__':
-    from feat.detector import Detector
-    detector = Detector(face_model='retinaface', landmark_model='mobilefacenet',au_model='svm',emotion_model="resmasknet") #initialize methods. These are the methods I like to use
-    test_video = "/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/input.mp4" #PATJ to your video
-    video_result = detector.detect_video(test_video, batch_size=48, skip_frames=1) # We have a new input: batch size, which is the batch size you want to process at one time!
-    print("finished")
