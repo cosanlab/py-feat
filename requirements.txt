@@ -10,5 +10,5 @@ Pillow>=6.0.0
 opencv-contrib-python>=4.4.0.46
 torch
 torchvision
-scikit-image >= 0.18.0
+scikit-image >= 0.18.0rc1
 joblib
