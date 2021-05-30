@@ -704,6 +704,7 @@ class Detector(object):
         Args:
             inputFname (str): Path to video file
             outputFname (str, optional): Path to output file. Defaults to None.
+            bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
             
         Returns:
@@ -825,7 +826,9 @@ class Detector(object):
                 detector="Feat",
             )
 
-
-
-
-
+if __name__ == '__main__':
+    from feat.detector import Detector
+    detector = Detector(face_model='retinaface', landmark_model='mobilefacenet',au_model='svm',emotion_model="resmasknet") #initialize methods. These are the methods I like to use
+    test_video = "/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/input.mp4" #PATJ to your video
+    video_result = detector.detect_video(test_video, batch_size=48, skip_frames=1) # We have a new input: batch size, which is the batch size you want to process at one time!
+    print("finished")
