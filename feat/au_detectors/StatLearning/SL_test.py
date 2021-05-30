@@ -74,7 +74,6 @@ class SVMClassifier():
         pca_transformed_frame = self.pca_model.transform(
             self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
-        #np.save("/home/tiankang/AU_Dataset/src/compare_dat/au_feature_cbd.npy",feature_cbd)
         pred_aus = []
         for keys in self.classifier:
             au_pred = self.classifier[keys].predict(feature_cbd)
@@ -107,7 +106,6 @@ class LogisticClassifier():
         pca_transformed_frame = self.pca_model.transform(
             self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
-        np.save("/home/tiankang/AU_Dataset/src/compare_dat/au_feature_cbd.npy",feature_cbd)
         pred_aus = []
         for keys in self.classifier:
             au_pred = self.classifier[keys].predict_proba(feature_cbd)
