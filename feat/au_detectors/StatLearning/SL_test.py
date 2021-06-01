@@ -49,7 +49,7 @@ class RandomForestClassifier():
             au_pred = self.classifier[keys].predict_proba(feature_cbd)
             au_pred = au_pred[:, 1]
             pred_aus.append(au_pred)
-        print("halt")
+        #print("halt")
         pred_aus = np.array(pred_aus).T
         return pred_aus
 

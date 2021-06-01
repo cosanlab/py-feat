@@ -871,3 +871,10 @@ def align_face_68pts(img, img_land, box_enlarge, img_size=112):
     new_land = np.array(list(zip(new_land[:,0], new_land[:,1]))).astype(int)
 
     return aligned_img, new_land
+
+def round_vals(list_of_arrays, ndigits):
+    list_of_arrays2 = list_of_arrays.copy()
+    for i, arr0 in enumerate(list_of_arrays):
+        for j, arr1 in enumerate(list_of_arrays):
+            list_of_arrays2[i][j] = np.around(list_of_arrays[i][j], ndigits)
+    return list_of_arrays2
