@@ -1,340 +1,299 @@
-import numpy as np
-from PIL import Image
+"""
+NOTE:
+The codes in this file comes from the original codes at:
+    https://github.com/timesler/facenet-pytorch/blob/master/models/mtcnn.py
+The original paper on MTCNN is:
+K. Zhang, Z. Zhang, Z. Li and Y. Qiao. Joint Face Detection and Alignment Using Multitask Cascaded Convolutional Networks, IEEE Signal Processing Letters, 2016
+"""
 import torch
-import math
+from torch import nn
+import numpy as np
+import os
+from torch.nn.functional import interpolate
+from torchvision.ops.boxes import batched_nms
 
+def nms_numpy(boxes, scores, threshold, method):
+    if boxes.size == 0:
+        return np.empty((0, 3))
 
-def nms(boxes, overlap_threshold=0.5, mode="union"):
-    """Non-maximum suppression.
+    x1 = boxes[:, 0].copy()
+    y1 = boxes[:, 1].copy()
+    x2 = boxes[:, 2].copy()
+    y2 = boxes[:, 3].copy()
+    s = scores
+    area = (x2 - x1 + 1) * (y2 - y1 + 1)
 
-    Arguments:
-        boxes: a float numpy array of shape [n, 5],
-            where each row is (xmin, ymin, xmax, ymax, score).
-        overlap_threshold: a float number.
-        mode: 'union' or 'min'.
+    I = np.argsort(s)
+    pick = np.zeros_like(s, dtype=np.int16)
+    counter = 0
+    while I.size > 0:
+        i = I[-1]
+        pick[counter] = i
+        counter += 1
+        idx = I[0:-1]
 
-    Returns:
-        list with indices of the selected boxes
-    """
+        xx1 = np.maximum(x1[i], x1[idx]).copy()
+        yy1 = np.maximum(y1[i], y1[idx]).copy()
+        xx2 = np.minimum(x2[i], x2[idx]).copy()
+        yy2 = np.minimum(y2[i], y2[idx]).copy()
 
-    # if there are no boxes, return the empty list
-    if len(boxes) == 0:
-        return []
+        w = np.maximum(0.0, xx2 - xx1 + 1).copy()
+        h = np.maximum(0.0, yy2 - yy1 + 1).copy()
 
-    # list of picked indices
-    pick = []
-
-    # grab the coordinates of the bounding boxes
-    x1, y1, x2, y2, score = [boxes[:, i] for i in range(5)]
-
-    area = (x2 - x1 + 1.0) * (y2 - y1 + 1.0)
-    ids = np.argsort(score)  # in increasing order
-
-    while len(ids) > 0:
-
-        # grab index of the largest value
-        last = len(ids) - 1
-        i = ids[last]
-        pick.append(i)
-
-        # compute intersections
-        # of the box with the largest score
-        # with the rest of boxes
-
-        # left top corner of intersection boxes
-        ix1 = np.maximum(x1[i], x1[ids[:last]])
-        iy1 = np.maximum(y1[i], y1[ids[:last]])
-
-        # right bottom corner of intersection boxes
-        ix2 = np.minimum(x2[i], x2[ids[:last]])
-        iy2 = np.minimum(y2[i], y2[ids[:last]])
-
-        # width and height of intersection boxes
-        w = np.maximum(0.0, ix2 - ix1 + 1.0)
-        h = np.maximum(0.0, iy2 - iy1 + 1.0)
-
-        # intersections' areas
         inter = w * h
-        if mode == "min":
-            overlap = inter / np.minimum(area[i], area[ids[:last]])
-        elif mode == "union":
-            # intersection over union (IoU)
-            overlap = inter / (area[i] + area[ids[:last]] - inter)
+        if method == 'Min':
+            o = inter / np.minimum(area[i], area[idx])
+        else:
+            o = inter / (area[i] + area[idx] - inter)
+        I = I[np.where(o <= threshold)]
 
-        # delete all boxes where overlap is too big
-        ids = np.delete(
-            ids, np.concatenate([[last], np.where(overlap > overlap_threshold)[0]])
-        )
-
+    pick = pick[:counter].copy()
     return pick
 
-
-def convert_to_square(bboxes):
-    """Convert bounding boxes to a square form.
-
-    Arguments:
-        bboxes: a float numpy array of shape [n, 5].
-
-    Returns:
-        a float numpy array of shape [n, 5],
-            squared bounding boxes.
-    """
-
-    square_bboxes = np.zeros_like(bboxes)
-    x1, y1, x2, y2 = [bboxes[:, i] for i in range(4)]
-    h = y2 - y1 + 1.0
-    w = x2 - x1 + 1.0
-    max_side = np.maximum(h, w)
-    square_bboxes[:, 0] = x1 + w * 0.5 - max_side * 0.5
-    square_bboxes[:, 1] = y1 + h * 0.5 - max_side * 0.5
-    square_bboxes[:, 2] = square_bboxes[:, 0] + max_side - 1.0
-    square_bboxes[:, 3] = square_bboxes[:, 1] + max_side - 1.0
-    return square_bboxes
+def batched_nms_numpy(boxes, scores, idxs, threshold, method):
+    device = boxes.device
+    if boxes.numel() == 0:
+        return torch.empty((0,), dtype=torch.int64, device=device)
+    # strategy: in order to perform NMS independently per class.
+    # we add an offset to all the boxes. The offset is dependent
+    # only on the class idx, and is large enough so that boxes
+    # from different classes do not overlap
+    max_coordinate = boxes.max()
+    offsets = idxs.to(boxes) * (max_coordinate + 1)
+    boxes_for_nms = boxes + offsets[:, None]
+    boxes_for_nms = boxes_for_nms.cpu().numpy()
+    scores = scores.cpu().numpy()
+    keep = nms_numpy(boxes_for_nms, scores, threshold, method)
+    return torch.as_tensor(keep, dtype=torch.long, device=device)
 
 
-def calibrate_box(bboxes, offsets):
-    """Transform bounding boxes to be more like true bounding boxes.
-    'offsets' is one of the outputs of the nets.
+def bbreg(boundingbox, reg):
+    if reg.shape[1] == 1:
+        reg = torch.reshape(reg, (reg.shape[2], reg.shape[3]))
 
-    Arguments:
-        bboxes: a float numpy array of shape [n, 5].
-        offsets: a float numpy array of shape [n, 4].
+    w = boundingbox[:, 2] - boundingbox[:, 0] + 1
+    h = boundingbox[:, 3] - boundingbox[:, 1] + 1
+    b1 = boundingbox[:, 0] + reg[:, 0] * w
+    b2 = boundingbox[:, 1] + reg[:, 1] * h
+    b3 = boundingbox[:, 2] + reg[:, 2] * w
+    b4 = boundingbox[:, 3] + reg[:, 3] * h
+    boundingbox[:, :4] = torch.stack([b1, b2, b3, b4]).permute(1, 0)
 
-    Returns:
-        a float numpy array of shape [n, 5].
-    """
-    x1, y1, x2, y2 = [bboxes[:, i] for i in range(4)]
-    w = x2 - x1 + 1.0
-    h = y2 - y1 + 1.0
-    w = np.expand_dims(w, 1)
-    h = np.expand_dims(h, 1)
+    return boundingbox
 
-    # this is what happening here:
-    # tx1, ty1, tx2, ty2 = [offsets[:, i] for i in range(4)]
-    # x1_true = x1 + tx1*w
-    # y1_true = y1 + ty1*h
-    # x2_true = x2 + tx2*w
-    # y2_true = y2 + ty2*h
-    # below is just more compact form of this
+def fixed_batch_process(im_data, model):
+    batch_size = 512
+    out = []
+    for i in range(0, len(im_data), batch_size):
+        batch = im_data[i:(i+batch_size)]
+        out.append(model(batch))
 
-    # are offsets always such that
-    # x1 < x2 and y1 < y2 ?
+    return tuple(torch.cat(v, dim=0) for v in zip(*out))
 
-    translation = np.hstack([w, h, w, h]) * offsets
-    bboxes[:, 0:4] = bboxes[:, 0:4] + translation
-    return bboxes
+def pad(boxes, w, h):
+    boxes = boxes.trunc().int().cpu().numpy()
+    x = boxes[:, 0]
+    y = boxes[:, 1]
+    ex = boxes[:, 2]
+    ey = boxes[:, 3]
 
+    x[x < 1] = 1
+    y[y < 1] = 1
+    ex[ex > w] = w
+    ey[ey > h] = h
 
-def get_image_boxes(bounding_boxes, img, size=24):
-    """Cut out boxes from the image.
+    return y, ey, x, ex
 
-    Arguments:
-        bounding_boxes: a float numpy array of shape [n, 5].
-        img: an instance of PIL.Image.
-        size: an integer, size of cutouts.
+def rerec(bboxA):
+    h = bboxA[:, 3] - bboxA[:, 1]
+    w = bboxA[:, 2] - bboxA[:, 0]
+    
+    l = torch.max(w, h)
+    bboxA[:, 0] = bboxA[:, 0] + w * 0.5 - l * 0.5
+    bboxA[:, 1] = bboxA[:, 1] + h * 0.5 - l * 0.5
+    bboxA[:, 2:4] = bboxA[:, :2] + l.repeat(2, 1).permute(1, 0)
 
-    Returns:
-        a float numpy array of shape [n, 3, size, size].
-    """
+    return bboxA
 
-    num_boxes = len(bounding_boxes)
-    width, height = img.size
-
-    [dy, edy, dx, edx, y, ey, x, ex, w, h] = correct_bboxes(
-        bounding_boxes, width, height
-    )
-    img_boxes = np.zeros((num_boxes, 3, size, size), "float32")
-
-    for i in range(num_boxes):
-        img_box = np.zeros((h[i], w[i], 3), "uint8")
-
-        img_array = np.asarray(img, "uint8")
-        img_box[dy[i] : (edy[i] + 1), dx[i] : (edx[i] + 1), :] = img_array[
-            y[i] : (ey[i] + 1), x[i] : (ex[i] + 1), :
-        ]
-
-        # resize
-        img_box = Image.fromarray(img_box)
-        img_box = img_box.resize((size, size), Image.BILINEAR)
-        img_box = np.asarray(img_box, "float32")
-
-        img_boxes[i, :, :, :] = _preprocess(img_box)
-
-    return img_boxes
-
-
-def correct_bboxes(bboxes, width, height):
-    """Crop boxes that are too big and get coordinates
-    with respect to cutouts.
-
-    Arguments:
-        bboxes: a float numpy array of shape [n, 5],
-            where each row is (xmin, ymin, xmax, ymax, score).
-        width: a float number.
-        height: a float number.
-
-    Returns:
-        dy, dx, edy, edx: a int numpy arrays of shape [n],
-            coordinates of the boxes with respect to the cutouts.
-        y, x, ey, ex: a int numpy arrays of shape [n],
-            corrected ymin, xmin, ymax, xmax.
-        h, w: a int numpy arrays of shape [n],
-            just heights and widths of boxes.
-
-        in the following order:
-            [dy, edy, dx, edx, y, ey, x, ex, w, h].
-    """
-
-    x1, y1, x2, y2 = [bboxes[:, i] for i in range(4)]
-    w, h = x2 - x1 + 1.0, y2 - y1 + 1.0
-    num_boxes = bboxes.shape[0]
-
-    # 'e' stands for end
-    # (x, y) -> (ex, ey)
-    x, y, ex, ey = x1, y1, x2, y2
-
-    # we need to cut out a box from the image.
-    # (x, y, ex, ey) are corrected coordinates of the box
-    # in the image.
-    # (dx, dy, edx, edy) are coordinates of the box in the cutout
-    # from the image.
-    dx, dy = np.zeros((num_boxes,)), np.zeros((num_boxes,))
-    edx, edy = w.copy() - 1.0, h.copy() - 1.0
-
-    # if box's bottom right corner is too far right
-    ind = np.where(ex > width - 1.0)[0]
-    edx[ind] = w[ind] + width - 2.0 - ex[ind]
-    ex[ind] = width - 1.0
-
-    # if box's bottom right corner is too low
-    ind = np.where(ey > height - 1.0)[0]
-    edy[ind] = h[ind] + height - 2.0 - ey[ind]
-    ey[ind] = height - 1.0
-
-    # if box's top left corner is too far left
-    ind = np.where(x < 0.0)[0]
-    dx[ind] = 0.0 - x[ind]
-    x[ind] = 0.0
-
-    # if box's top left corner is too high
-    ind = np.where(y < 0.0)[0]
-    dy[ind] = 0.0 - y[ind]
-    y[ind] = 0.0
-
-    return_list = [dy, edy, dx, edx, y, ey, x, ex, w, h]
-    return_list = [i.astype("int32") for i in return_list]
-
-    return return_list
-
-
-def _preprocess(img):
-    """Preprocessing step before feeding the network.
-
-    Arguments:
-        img: a float numpy array of shape [h, w, c].
-
-    Returns:
-        a float numpy array of shape [1, c, h, w].
-    """
-    img = img.transpose((2, 0, 1))
-    img = np.expand_dims(img, 0)
-    img = (img - 127.5) * 0.0078125
-    return img
-
-
-def run_first_stage(image, net, scale, threshold):
-    """Run P-Net, generate bounding boxes, and do NMS.
-
-    Arguments:
-        image: an instance of PIL.Image.
-        net: an instance of pytorch's nn.Module, P-Net.
-        scale: a float number,
-            scale width and height of the image by this number.
-        threshold: a float number,
-            threshold on the probability of a face when generating
-            bounding boxes from predictions of the net.
-
-    Returns:
-        a float numpy array of shape [n_boxes, 9],
-            bounding boxes with scores and offsets (4 + 1 + 4).
-    """
-
-    # scale the image and convert it to a float array
-    if isinstance(image, np.ndarray):
-        image = Image.fromarray(image)
-
-    width, height = image.size
-    sw, sh = math.ceil(width * scale), math.ceil(height * scale)
-    img = image.resize((sw, sh), Image.BILINEAR)
-    img = np.asarray(img, "float32")
-    # img = Variable(torch.FloatTensor(_preprocess(img)), volatile=True)
-    with torch.no_grad():
-        img = torch.FloatTensor(_preprocess(img))
-    output = net(img)
-    probs = output[1].data.numpy()[0, 1, :, :]
-    offsets = output[0].data.numpy()
-    # probs: probability of a face at each sliding window
-    # offsets: transformations to true bounding boxes
-
-    boxes = _generate_bboxes(probs, offsets, scale, threshold)
-    if len(boxes) == 0:
-        return None
-
-    keep = nms(boxes[:, 0:5], overlap_threshold=0.5)
-    return boxes[keep]
-
-
-def _generate_bboxes(probs, offsets, scale, threshold):
-    """Generate bounding boxes at places
-    where there is probably a face.
-
-    Arguments:
-        probs: a float numpy array of shape [n, m].
-        offsets: a float numpy array of shape [1, 4, n, m].
-        scale: a float number,
-            width and height of the image were scaled by this number.
-        threshold: a float number.
-
-    Returns:
-        a float numpy array of shape [n_boxes, 9]
-    """
-
-    # applying P-Net is equivalent, in some sense, to
-    # moving 12x12 window with stride 2
+def generateBoundingBox(reg, probs, scale, thresh):
     stride = 2
-    cell_size = 12
+    cellsize = 12
 
-    # indices of boxes where there is probably a face
-    inds = np.where(probs > threshold)
+    reg = reg.permute(1, 0, 2, 3)
 
-    if inds[0].size == 0:
-        return np.array([])
+    mask = probs >= thresh
+    mask_inds = mask.nonzero()
+    image_inds = mask_inds[:, 0]
+    score = probs[mask]
+    reg = reg[:, mask].permute(1, 0)
+    bb = mask_inds[:, 1:].type(reg.dtype).flip(1)
+    q1 = ((stride * bb + 1) / scale).floor()
+    q2 = ((stride * bb + cellsize - 1 + 1) / scale).floor()
+    boundingbox = torch.cat([q1, q2, score.unsqueeze(1), reg], dim=1)
+    return boundingbox, image_inds
 
-    # transformations of bounding boxes
-    tx1, ty1, tx2, ty2 = [offsets[0, i, inds[0], inds[1]] for i in range(4)]
-    # they are defined as:
-    # w = x2 - x1 + 1
-    # h = y2 - y1 + 1
-    # x1_true = x1 + tx1*w
-    # x2_true = x2 + tx2*w
-    # y1_true = y1 + ty1*h
-    # y2_true = y2 + ty2*h
+def imresample(img, sz):
+    im_data = interpolate(img, size=sz, mode="area")
+    return im_data
 
-    offsets = np.array([tx1, ty1, tx2, ty2])
-    score = probs[inds[0], inds[1]]
+def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
+    if isinstance(imgs, (np.ndarray, torch.Tensor)):
+        if isinstance(imgs,np.ndarray):
+            imgs = torch.as_tensor(imgs.copy(), device=device)
 
-    # P-Net is applied to scaled images
-    # so we need to rescale bounding boxes back
-    bounding_boxes = np.vstack(
-        [
-            np.round((stride * inds[1] + 1.0) / scale),
-            np.round((stride * inds[0] + 1.0) / scale),
-            np.round((stride * inds[1] + 1.0 + cell_size) / scale),
-            np.round((stride * inds[0] + 1.0 + cell_size) / scale),
-            score,
-            offsets,
-        ]
-    )
-    # why one is added?
+        if isinstance(imgs,torch.Tensor):
+            imgs = torch.as_tensor(imgs, device=device)
 
-    return bounding_boxes.T
+        if len(imgs.shape) == 3:
+            imgs = imgs.unsqueeze(0)
+    else:
+        if not isinstance(imgs, (list, tuple)):
+            imgs = [imgs]
+        if any(img.size != imgs[0].size for img in imgs):
+            raise Exception("MTCNN batch processing only compatible with equal-dimension images.")
+        imgs = np.stack([np.uint8(img) for img in imgs])
+        imgs = torch.as_tensor(imgs.copy(), device=device)
+
+    
+
+    model_dtype = next(pnet.parameters()).dtype
+    imgs = imgs.permute(0, 3, 1, 2).type(model_dtype)
+
+    batch_size = len(imgs)
+    h, w = imgs.shape[2:4]
+    m = 12.0 / minsize
+    minl = min(h, w)
+    minl = minl * m
+
+    # Create scale pyramid
+    scale_i = m
+    scales = []
+    while minl >= 12:
+        scales.append(scale_i)
+        scale_i = scale_i * factor
+        minl = minl * factor
+
+    # First stage
+    boxes = []
+    image_inds = []
+
+    scale_picks = []
+
+    all_i = 0
+    offset = 0
+    for scale in scales:
+        im_data = imresample(imgs, (int(h * scale + 1), int(w * scale + 1)))
+        im_data = (im_data - 127.5) * 0.0078125
+        reg, probs = pnet(im_data)
+    
+        boxes_scale, image_inds_scale = generateBoundingBox(reg, probs[:, 1], scale, threshold[0])
+        boxes.append(boxes_scale)
+        image_inds.append(image_inds_scale)
+
+        pick = batched_nms(boxes_scale[:, :4], boxes_scale[:, 4], image_inds_scale, 0.5)
+        scale_picks.append(pick + offset)
+        offset += boxes_scale.shape[0]
+
+    boxes = torch.cat(boxes, dim=0)
+    image_inds = torch.cat(image_inds, dim=0)
+
+    scale_picks = torch.cat(scale_picks, dim=0)
+
+    # NMS within each scale + image
+    boxes, image_inds = boxes[scale_picks], image_inds[scale_picks]
+
+
+    # NMS within each image
+    pick = batched_nms(boxes[:, :4], boxes[:, 4], image_inds, 0.7)
+    boxes, image_inds = boxes[pick], image_inds[pick]
+
+    regw = boxes[:, 2] - boxes[:, 0]
+    regh = boxes[:, 3] - boxes[:, 1]
+    qq1 = boxes[:, 0] + boxes[:, 5] * regw
+    qq2 = boxes[:, 1] + boxes[:, 6] * regh
+    qq3 = boxes[:, 2] + boxes[:, 7] * regw
+    qq4 = boxes[:, 3] + boxes[:, 8] * regh
+    boxes = torch.stack([qq1, qq2, qq3, qq4, boxes[:, 4]]).permute(1, 0)
+    boxes = rerec(boxes)
+    y, ey, x, ex = pad(boxes, w, h)
+    
+    # Second stage
+    if len(boxes) > 0:
+        im_data = []
+        for k in range(len(y)):
+            if ey[k] > (y[k] - 1) and ex[k] > (x[k] - 1):
+                img_k = imgs[image_inds[k], :, (y[k] - 1):ey[k], (x[k] - 1):ex[k]].unsqueeze(0)
+                im_data.append(imresample(img_k, (24, 24)))
+        im_data = torch.cat(im_data, dim=0)
+        im_data = (im_data - 127.5) * 0.0078125
+
+        # This is equivalent to out = rnet(im_data) to avoid GPU out of memory.
+        out = fixed_batch_process(im_data, rnet)
+
+        out0 = out[0].permute(1, 0)
+        out1 = out[1].permute(1, 0)
+        score = out1[1, :]
+        ipass = score > threshold[1]
+        boxes = torch.cat((boxes[ipass, :4], score[ipass].unsqueeze(1)), dim=1)
+        image_inds = image_inds[ipass]
+        mv = out0[:, ipass].permute(1, 0)
+
+        # NMS within each image
+        pick = batched_nms(boxes[:, :4], boxes[:, 4], image_inds, 0.7)
+        boxes, image_inds, mv = boxes[pick], image_inds[pick], mv[pick]
+        boxes = bbreg(boxes, mv)
+        boxes = rerec(boxes)
+
+    # Third stage
+    points = torch.zeros(0, 5, 2, device=device)
+    if len(boxes) > 0:
+        y, ey, x, ex = pad(boxes, w, h)
+        im_data = []
+        for k in range(len(y)):
+            if ey[k] > (y[k] - 1) and ex[k] > (x[k] - 1):
+                img_k = imgs[image_inds[k], :, (y[k] - 1):ey[k], (x[k] - 1):ex[k]].unsqueeze(0)
+                im_data.append(imresample(img_k, (48, 48)))
+        im_data = torch.cat(im_data, dim=0)
+        im_data = (im_data - 127.5) * 0.0078125
+        
+        # This is equivalent to out = onet(im_data) to avoid GPU out of memory.
+        out = fixed_batch_process(im_data, onet)
+
+        out0 = out[0].permute(1, 0)
+        out1 = out[1].permute(1, 0)
+        out2 = out[2].permute(1, 0)
+        score = out2[1, :]
+        points = out1
+        ipass = score > threshold[2]
+        points = points[:, ipass]
+        boxes = torch.cat((boxes[ipass, :4], score[ipass].unsqueeze(1)), dim=1)
+        image_inds = image_inds[ipass]
+        mv = out0[:, ipass].permute(1, 0)
+
+        w_i = boxes[:, 2] - boxes[:, 0] + 1
+        h_i = boxes[:, 3] - boxes[:, 1] + 1
+        points_x = w_i.repeat(5, 1) * points[:5, :] + boxes[:, 0].repeat(5, 1) - 1
+        points_y = h_i.repeat(5, 1) * points[5:10, :] + boxes[:, 1].repeat(5, 1) - 1
+        points = torch.stack((points_x, points_y)).permute(2, 1, 0)
+        boxes = bbreg(boxes, mv)
+
+        # NMS within each image using "Min" strategy
+        # pick = batched_nms(boxes[:, :4], boxes[:, 4], image_inds, 0.7)
+        pick = batched_nms_numpy(boxes[:, :4], boxes[:, 4], image_inds, 0.7, 'Min')
+        boxes, image_inds, points = boxes[pick], image_inds[pick], points[pick]
+
+    boxes = boxes.cpu().numpy()
+    points = points.cpu().numpy()
+
+    image_inds = image_inds.cpu()
+
+    batch_boxes = []
+    batch_points = []
+    for b_i in range(batch_size):
+        b_i_inds = np.where(image_inds == b_i)
+        batch_boxes.append(boxes[b_i_inds].copy())
+        batch_points.append(points[b_i_inds].copy())
+
+    batch_boxes, batch_points = np.array(batch_boxes), np.array(batch_points)
+
+    return batch_boxes, batch_points

@@ -127,15 +127,22 @@ class Retinaface:
         # resize = 1
 
     def __call__(self, img_):
+        """
+        forward function
+        img_: (B,H,W,C), B is batch number, H is image height, W is width and C is channel.
+        """
+        #img_ = np.expand_dims(img_,0)
+        #img_ = np.concatenate([img_,img_],0)
+
         img_raw = img_.copy()
 
         img = np.float32(img_raw)
 
-        im_height, im_width, _ = img.shape
-        scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
-        img -= (104, 117, 123)
-        img = img.transpose(2, 0, 1)
-        img = torch.from_numpy(img).unsqueeze(0)
+        _, im_height, im_width, _ = img.shape
+        scale = torch.Tensor([img.shape[2], img.shape[1], img.shape[2], img.shape[1]])
+        img[:,...,:] -= (104, 117, 123)
+        img = img.transpose(0, 3, 1, 2)
+        img = torch.from_numpy(img)#.unsqueeze(0)
         img = img.to(self.device)
         scale = scale.to(self.device)
 
@@ -143,6 +150,18 @@ class Retinaface:
         loc, conf, landms = self.net(img)  # forward pass
         # print('net forward time: {:.4f}'.format(time.time() - tic))
 
+        total_boxes = []
+        for i in range(loc.shape[0]):
+            tmp_box = self._calculate_boxinfo(im_height=im_height, im_width=im_width, loc=loc[i], conf=conf[i], landms=landms[i], scale=scale, img=img)
+            total_boxes.append(tmp_box)
+
+        return(total_boxes)
+
+
+    def _calculate_boxinfo(self, im_height, im_width, loc, conf, landms, scale, img):
+        """
+        helper function to calculate deep learning results
+        """
         priorbox = PriorBox(self.cfg, image_size=(im_height, im_width))
         priors = priorbox.forward()
         priors = priors.to(self.device)

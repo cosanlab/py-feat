@@ -34,21 +34,23 @@ class RandomForestClassifier():
         """
         Note that here frame is represented by hogs
         """
-        if len(frame.shape) < 2:
-            frame = frame.reshape(1, -1)
-        if len(landmarks.shape) > 1:
-            landmarks = landmarks.flatten().reshape(1, -1)
-
+        #if len(frame.shape) < 2:
+        #    frame = frame.reshape(1, -1)
+        #if len(landmarks.shape) > 1:
+        #    landmarks = landmarks.flatten().reshape(1, -1)
+        landmarks = np.array(landmarks)
+        landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
         pca_transformed_frame = self.pca_model.transform(
             self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_aus = []
         for keys in self.classifier:
             au_pred = self.classifier[keys].predict_proba(feature_cbd)
-            au_pred = au_pred[0, 1]
+            au_pred = au_pred[:, 1]
             pred_aus.append(au_pred)
-
-        pred_aus = np.array(pred_aus).reshape(1, -1)
+        #print("halt")
+        pred_aus = np.array(pred_aus).T
         return pred_aus
 
 
@@ -65,10 +67,9 @@ class SVMClassifier():
         """
         Note that here frame is represented by hogs
         """
-        if len(frame.shape) < 2:
-            frame = frame.reshape(1, -1)
-        if len(landmarks.shape) > 1:
-            landmarks = landmarks.flatten().reshape(1, -1)
+        landmarks = np.array(landmarks)
+        landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
             self.scaler.fit_transform(frame))
@@ -76,10 +77,10 @@ class SVMClassifier():
         pred_aus = []
         for keys in self.classifier:
             au_pred = self.classifier[keys].predict(feature_cbd)
-            au_pred = au_pred[0]  # probably need to delete this
+            au_pred = au_pred  # probably need to delete this
             pred_aus.append(au_pred)
 
-        pred_aus = np.array(pred_aus).reshape(1, -1)
+        pred_aus = np.array(pred_aus).T
         return pred_aus
 
 
@@ -97,10 +98,10 @@ class LogisticClassifier():
         """
         Note that here frame is represented by hogs
         """
-        if len(frame.shape) < 2:
-            frame = frame.reshape(1, -1)
-        if len(landmarks.shape) > 1:
-            landmarks = landmarks.flatten().reshape(1, -1)
+
+        landmarks = np.array(landmarks)
+        landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
             self.scaler.fit_transform(frame))
@@ -108,8 +109,8 @@ class LogisticClassifier():
         pred_aus = []
         for keys in self.classifier:
             au_pred = self.classifier[keys].predict_proba(feature_cbd)
-            au_pred = au_pred[0, 1]
+            au_pred = au_pred[:, 1]
             pred_aus.append(au_pred)
 
-        pred_aus = np.array(pred_aus).reshape(1, -1)
+        pred_aus = np.array(pred_aus).T
         return pred_aus

@@ -87,12 +87,21 @@ class FaceBoxes:
         self.timer_flag = timer_flag
 
     def __call__(self, img_):
+        """
+        Let's actually assume that img_ is of shape BxHxWxC
+        """
+        ##CONSTRUCTION SITE:
+        #assert len(img_.shape) == 4, 'make sure that the image file is of shpae BxHxWxC!'
+        #img_ = np.expand_dims(img_,0)
+        #img_ = np.concatenate([img_,img_],0)
+        #######################
+        
         img_raw = img_.copy()
 
         # scaling to speed up
         scale = 1
         if scale_flag:
-            h, w = img_raw.shape[:2]
+            h, w = img_raw.shape[1:3]
             if h > HEIGHT:
                 scale = HEIGHT / h
             if w * scale > WIDTH:
@@ -104,7 +113,10 @@ class FaceBoxes:
                 h_s = int(scale * h)
                 w_s = int(scale * w)
                 # print(h_s, w_s)
-                img_raw_scale = cv2.resize(img_raw, dsize=(w_s, h_s))
+                img_raw_scale = np.zeros((img_raw.shape[0],h_s,w_s,img_raw.shape[3]))
+                for i in range(img_raw.shape[0]):
+                    img_raw_scale[i] = cv2.resize(img_raw[i,:,:,:], dsize=(w_s, h_s))
+                #img_raw_scale = cv2.resize(img_raw, dsize=(w_s, h_s))
                 # print(img_raw_scale.shape)
 
             img = np.float32(img_raw_scale)
@@ -113,18 +125,28 @@ class FaceBoxes:
 
         # forward
         _t = {"forward_pass": Timer(), "misc": Timer()}
-        im_height, im_width, _ = img.shape
+        _, im_height, im_width, _ = img.shape
         scale_bbox = torch.Tensor(
-            [img.shape[1], img.shape[0], img.shape[1], img.shape[0]]
+            [img.shape[2], img.shape[1], img.shape[2], img.shape[1]]
         )
-        img -= (104, 117, 123)
-        img = img.transpose(2, 0, 1)
-        img = torch.from_numpy(img).unsqueeze(0)
+        img[:,...,:] -= (104, 117, 123)
+        img = img.transpose(0, 3, 1, 2)
+        img = torch.from_numpy(img)#.unsqueeze(0)
 
-        _t["forward_pass"].tic()
+        #_t["forward_pass"].tic()
         loc, conf = self.net(img)  # forward pass
-        _t["forward_pass"].toc()
-        _t["misc"].tic()
+        #_t["forward_pass"].toc()
+        #_t["misc"].tic()
+        
+        total_boxes = []
+        for i in range(loc.shape[0]):
+            tmp_box = self._calculate_boxinfo(im_height=im_height, im_width=im_width, loc=loc[i], conf=conf[i], scale=scale, img=img, scale_bbox=scale_bbox)
+            total_boxes.append(tmp_box)
+
+        return(total_boxes)
+
+    def _calculate_boxinfo(self, im_height, im_width, loc, conf, scale, img, scale_bbox):
+
         priorbox = PriorBox(image_size=(im_height, im_width))
         priors = priorbox.forward()
         prior_data = priors.data
@@ -155,14 +177,14 @@ class FaceBoxes:
 
         # keep top-K faster NMS
         dets = dets[:keep_top_k, :]
-        _t["misc"].toc()
+        #_t["misc"].toc()
 
-        if self.timer_flag:
-            print(
-                "Detection: {:d}/{:d} forward_pass_time: {:.4f}s misc: {:.4f}s".format(
-                    1, 1, _t["forward_pass"].average_time, _t["misc"].average_time
-                )
-            )
+        # if self.timer_flag:
+        #     print(
+        #         "Detection: {:d}/{:d} forward_pass_time: {:.4f}s misc: {:.4f}s".format(
+        #             1, 1, _t["forward_pass"].average_time, _t["misc"].average_time
+        #         )
+        #     )
 
         # filter using vis_thres
         det_bboxes = []

@@ -20,6 +20,7 @@ __all__ = [
     "registration",
     "neutral",
     "load_h5",
+    "read_pictures"
 ]
 __author__ = ["Jin Hyun Cheong, Tiankang Xie"]
 
@@ -784,6 +785,30 @@ def padding(img, expected_size):
     return ImageOps.expand(img, padding)
 
 
+def read_pictures(imgname_list):
+        """
+        NEW
+        Reads in a list of pictures and concatenate these pictures into batches of images.
+
+        Args:
+            imgname_list (list of string): a list of filenames for the facial pictures
+        
+        Returns:
+            img_batch_arr (np.array): np array of shape BxHxWxC 
+        """
+
+        img_batch_arr = None
+        for img_name in imgname_list:
+            frame = cv2.imread(img_name)
+            frame = np.expand_dims(frame,0)
+            if img_batch_arr is None:
+                img_batch_arr = frame
+            else:
+                assert img_batch_arr.shape[1::] == frame.shape[1::], 'please make sure that the input images are of the same shape! otherwise you need to process each image individually'
+                img_batch_arr = np.concatenate([img_batch_arr,frame],0)
+
+        return img_batch_arr
+
 def resize_with_padding(img, expected_size):
     """
     DOCUMENTATION GOES HERE
@@ -846,3 +871,10 @@ def align_face_68pts(img, img_land, box_enlarge, img_size=112):
     new_land = np.array(list(zip(new_land[:,0], new_land[:,1]))).astype(int)
 
     return aligned_img, new_land
+
+def round_vals(list_of_arrays, ndigits):
+    list_of_arrays2 = list_of_arrays.copy()
+    for i, arr0 in enumerate(list_of_arrays):
+        for j, arr1 in enumerate(list_of_arrays):
+            list_of_arrays2[i][j] = np.around(list_of_arrays[i][j], ndigits)
+    return list_of_arrays2
