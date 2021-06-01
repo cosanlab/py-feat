@@ -37,7 +37,7 @@ class EmoRandomForestClassifier():
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.transform(frame))
+            self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_emo = []
         for keys in self.classifier:
@@ -67,7 +67,7 @@ class EmoSVMClassifier():
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.transform(frame))
+            self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_emo = []
         for keys in self.classifier:
