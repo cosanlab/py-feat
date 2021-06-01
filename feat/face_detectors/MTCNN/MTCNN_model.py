@@ -1,177 +1,161 @@
+"""
+NOTE:
+The codes in this file comes from the original codes at:
+    https://github.com/timesler/facenet-pytorch/blob/master/models/mtcnn.py
+The original paper on MTCNN is:
+K. Zhang, Z. Zhang, Z. Li and Y. Qiao. Joint Face Detection and Alignment Using Multitask Cascaded Convolutional Networks, IEEE Signal Processing Letters, 2016
+"""
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from collections import OrderedDict
+from torch import nn
 import numpy as np
 import os
+from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
 from feat.utils import get_resource_path
 
 
-class Flatten(nn.Module):
-    def __init__(self):
-        super(Flatten, self).__init__()
-
-    def forward(self, x):
-        """
-        Arguments:
-            x: a float tensor with shape [batch_size, c, h, w].
-        Returns:
-            a float tensor with shape [batch_size, c*h*w].
-        """
-
-        # without this pretrained model isn't working
-        x = x.transpose(3, 2).contiguous()
-
-        return x.view(x.size(0), -1)
-
-
 class PNet(nn.Module):
-    def __init__(self):
+    """MTCNN PNet.
+    
+    Keyword Arguments:
+        pretrained {bool} -- Whether or not to load saved pretrained weights (default: {True})
+    """
 
-        super(PNet, self).__init__()
+    def __init__(self, pretrained=True):
+        super().__init__()
 
-        # suppose we have input with size HxW, then
-        # after first layer: H - 2,
-        # after pool: ceil((H - 2)/2),
-        # after second conv: ceil((H - 2)/2) - 2,
-        # after last conv: ceil((H - 2)/2) - 4,
-        # and the same for W
+        self.conv1 = nn.Conv2d(3, 10, kernel_size=3)
+        self.prelu1 = nn.PReLU(10)
+        self.pool1 = nn.MaxPool2d(2, 2, ceil_mode=True)
+        self.conv2 = nn.Conv2d(10, 16, kernel_size=3)
+        self.prelu2 = nn.PReLU(16)
+        self.conv3 = nn.Conv2d(16, 32, kernel_size=3)
+        self.prelu3 = nn.PReLU(32)
+        self.conv4_1 = nn.Conv2d(32, 2, kernel_size=1)
+        self.softmax4_1 = nn.Softmax(dim=1)
+        self.conv4_2 = nn.Conv2d(32, 4, kernel_size=1)
 
-        self.features = nn.Sequential(
-            OrderedDict(
-                [
-                    ("conv1", nn.Conv2d(3, 10, 3, 1)),
-                    ("prelu1", nn.PReLU(10)),
-                    ("pool1", nn.MaxPool2d(2, 2, ceil_mode=True)),
-                    ("conv2", nn.Conv2d(10, 16, 3, 1)),
-                    ("prelu2", nn.PReLU(16)),
-                    ("conv3", nn.Conv2d(16, 32, 3, 1)),
-                    ("prelu3", nn.PReLU(32)),
-                ]
-            )
-        )
+        self.training = False
 
-        self.conv4_1 = nn.Conv2d(32, 2, 1, 1)
-        self.conv4_2 = nn.Conv2d(32, 4, 1, 1)
-
-        weights = np.load(
-            os.path.join(get_resource_path(), "pnet.npy"), allow_pickle=True
-        )[()]
-        for n, p in self.named_parameters():
-            p.data = torch.FloatTensor(weights[n])
+        if pretrained:
+            state_dict_path = os.path.join(get_resource_path(), "pnet.pt")
+            state_dict = torch.load(state_dict_path)
+            self.load_state_dict(state_dict)
 
     def forward(self, x):
-        """
-        Arguments:
-            x: a float tensor with shape [batch_size, 3, h, w].
-        Returns:
-            b: a float tensor with shape [batch_size, 4, h', w'].
-            a: a float tensor with shape [batch_size, 2, h', w'].
-        """
-        x = self.features(x)
+        x = self.conv1(x)
+        x = self.prelu1(x)
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = self.prelu2(x)
+        x = self.conv3(x)
+        x = self.prelu3(x)
         a = self.conv4_1(x)
+        a = self.softmax4_1(a)
         b = self.conv4_2(x)
-        # print(a.shape)
-        a = F.softmax(a, dim=1)
         return b, a
 
 
 class RNet(nn.Module):
-    def __init__(self):
+    """MTCNN RNet.
+    
+    Keyword Arguments:
+        pretrained {bool} -- Whether or not to load saved pretrained weights (default: {True})
+    """
 
-        super(RNet, self).__init__()
+    def __init__(self, pretrained=True):
+        super().__init__()
 
-        self.features = nn.Sequential(
-            OrderedDict(
-                [
-                    ("conv1", nn.Conv2d(3, 28, 3, 1)),
-                    ("prelu1", nn.PReLU(28)),
-                    ("pool1", nn.MaxPool2d(3, 2, ceil_mode=True)),
-                    ("conv2", nn.Conv2d(28, 48, 3, 1)),
-                    ("prelu2", nn.PReLU(48)),
-                    ("pool2", nn.MaxPool2d(3, 2, ceil_mode=True)),
-                    ("conv3", nn.Conv2d(48, 64, 2, 1)),
-                    ("prelu3", nn.PReLU(64)),
-                    ("flatten", Flatten()),
-                    ("conv4", nn.Linear(576, 128)),
-                    ("prelu4", nn.PReLU(128)),
-                ]
-            )
-        )
+        self.conv1 = nn.Conv2d(3, 28, kernel_size=3)
+        self.prelu1 = nn.PReLU(28)
+        self.pool1 = nn.MaxPool2d(3, 2, ceil_mode=True)
+        self.conv2 = nn.Conv2d(28, 48, kernel_size=3)
+        self.prelu2 = nn.PReLU(48)
+        self.pool2 = nn.MaxPool2d(3, 2, ceil_mode=True)
+        self.conv3 = nn.Conv2d(48, 64, kernel_size=2)
+        self.prelu3 = nn.PReLU(64)
+        self.dense4 = nn.Linear(576, 128)
+        self.prelu4 = nn.PReLU(128)
+        self.dense5_1 = nn.Linear(128, 2)
+        self.softmax5_1 = nn.Softmax(dim=1)
+        self.dense5_2 = nn.Linear(128, 4)
 
-        self.conv5_1 = nn.Linear(128, 2)
-        self.conv5_2 = nn.Linear(128, 4)
+        self.training = False
 
-        weights = np.load(
-            os.path.join(get_resource_path(), "rnet.npy"), allow_pickle=True
-        )[()]
-        for n, p in self.named_parameters():
-            p.data = torch.FloatTensor(weights[n])
+        if pretrained:
+            state_dict_path = os.path.join(get_resource_path(), "rnet.pt")
+            state_dict = torch.load(state_dict_path)
+            self.load_state_dict(state_dict)
 
     def forward(self, x):
-        """
-        Arguments:
-            x: a float tensor with shape [batch_size, 3, h, w].
-        Returns:
-            b: a float tensor with shape [batch_size, 4].
-            a: a float tensor with shape [batch_size, 2].
-        """
-        x = self.features(x)
-        a = self.conv5_1(x)
-        b = self.conv5_2(x)
-        a = F.softmax(a, dim=1)
+        x = self.conv1(x)
+        x = self.prelu1(x)
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = self.prelu2(x)
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = self.prelu3(x)
+        x = x.permute(0, 3, 2, 1).contiguous()
+        x = self.dense4(x.view(x.shape[0], -1))
+        x = self.prelu4(x)
+        a = self.dense5_1(x)
+        a = self.softmax5_1(a)
+        b = self.dense5_2(x)
         return b, a
 
 
 class ONet(nn.Module):
-    def __init__(self):
+    """MTCNN ONet.
+    
+    Keyword Arguments:
+        pretrained {bool} -- Whether or not to load saved pretrained weights (default: {True})
+    """
 
-        super(ONet, self).__init__()
+    def __init__(self, pretrained=True):
+        super().__init__()
 
-        self.features = nn.Sequential(
-            OrderedDict(
-                [
-                    ("conv1", nn.Conv2d(3, 32, 3, 1)),
-                    ("prelu1", nn.PReLU(32)),
-                    ("pool1", nn.MaxPool2d(3, 2, ceil_mode=True)),
-                    ("conv2", nn.Conv2d(32, 64, 3, 1)),
-                    ("prelu2", nn.PReLU(64)),
-                    ("pool2", nn.MaxPool2d(3, 2, ceil_mode=True)),
-                    ("conv3", nn.Conv2d(64, 64, 3, 1)),
-                    ("prelu3", nn.PReLU(64)),
-                    ("pool3", nn.MaxPool2d(2, 2, ceil_mode=True)),
-                    ("conv4", nn.Conv2d(64, 128, 2, 1)),
-                    ("prelu4", nn.PReLU(128)),
-                    ("flatten", Flatten()),
-                    ("conv5", nn.Linear(1152, 256)),
-                    ("drop5", nn.Dropout(0.25)),
-                    ("prelu5", nn.PReLU(256)),
-                ]
-            )
-        )
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3)
+        self.prelu1 = nn.PReLU(32)
+        self.pool1 = nn.MaxPool2d(3, 2, ceil_mode=True)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
+        self.prelu2 = nn.PReLU(64)
+        self.pool2 = nn.MaxPool2d(3, 2, ceil_mode=True)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3)
+        self.prelu3 = nn.PReLU(64)
+        self.pool3 = nn.MaxPool2d(2, 2, ceil_mode=True)
+        self.conv4 = nn.Conv2d(64, 128, kernel_size=2)
+        self.prelu4 = nn.PReLU(128)
+        self.dense5 = nn.Linear(1152, 256)
+        self.prelu5 = nn.PReLU(256)
+        self.dense6_1 = nn.Linear(256, 2)
+        self.softmax6_1 = nn.Softmax(dim=1)
+        self.dense6_2 = nn.Linear(256, 4)
+        self.dense6_3 = nn.Linear(256, 10)
 
-        self.conv6_1 = nn.Linear(256, 2)
-        self.conv6_2 = nn.Linear(256, 4)
-        self.conv6_3 = nn.Linear(256, 10)
+        self.training = False
 
-        weights = np.load(
-            os.path.join(get_resource_path(), "onet.npy"), allow_pickle=True
-        )[()]
-        for n, p in self.named_parameters():
-            p.data = torch.FloatTensor(weights[n])
+        if pretrained:
+            state_dict_path = os.path.join(get_resource_path(), "onet.pt")
+            state_dict = torch.load(state_dict_path)
+            self.load_state_dict(state_dict)
 
     def forward(self, x):
-        """
-        Arguments:
-            x: a float tensor with shape [batch_size, 3, h, w].
-        Returns:
-            c: a float tensor with shape [batch_size, 10].
-            b: a float tensor with shape [batch_size, 4].
-            a: a float tensor with shape [batch_size, 2].
-        """
-        x = self.features(x)
-        a = self.conv6_1(x)
-        b = self.conv6_2(x)
-        c = self.conv6_3(x)
-        a = F.softmax(a, dim=1)
-        return c, b, a
+        x = self.conv1(x)
+        x = self.prelu1(x)
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = self.prelu2(x)
+        x = self.pool2(x)
+        x = self.conv3(x)
+        x = self.prelu3(x)
+        x = self.pool3(x)
+        x = self.conv4(x)
+        x = self.prelu4(x)
+        x = x.permute(0, 3, 2, 1).contiguous()
+        x = self.dense5(x.view(x.shape[0], -1))
+        x = self.prelu5(x)
+        a = self.dense6_1(x)
+        a = self.softmax6_1(a)
+        b = self.dense6_2(x)
+        c = self.dense6_3(x)
+        return b, c, a
