@@ -44,7 +44,7 @@
         "retinaface": {
             "urls":["https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet0.25_Final.pth"]},
         "mtcnn": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/onet.npy", "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.npy", "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.npy"
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/onet.pt", "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.pt", "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.pt"
             ]},
         "faceboxes": {
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"]}
