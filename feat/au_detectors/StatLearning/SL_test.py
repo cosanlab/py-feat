@@ -42,7 +42,7 @@ class RandomForestClassifier():
         landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.transform(frame))
+            self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_aus = []
         for keys in self.classifier:
@@ -104,7 +104,7 @@ class LogisticClassifier():
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.transform(frame))
+            self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_aus = []
         for keys in self.classifier:
