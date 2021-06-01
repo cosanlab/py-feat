@@ -60,22 +60,22 @@ def test_retinaface():
     assert len(out[0]) == 5
     assert bbox_x > 180 and bbox_x < 200
 
-# def test_mtcnn():
-#     detector03 = Detector(
-#         face_model="MTCNN",
-#         landmark_model=None,
-#         au_model=None,
-#         emotion_model=None,
-#         n_jobs=1,
-#     )
-#     out = detector03.detect_faces(img01)
-#     bbox_x = out[0][0]
-#     assert bbox_x != None
-#     bbox_width = out[0][1]
-#     bbox_y = out[0][2]
-#     bbox_height = out[0][3]
-#     assert len(out[0]) == 5
-#     assert bbox_x > 180 and bbox_x < 200
+def test_mtcnn():
+    detector03 = Detector(
+        face_model="MTCNN",
+        landmark_model=None,
+        au_model=None,
+        emotion_model=None,
+        n_jobs=1,
+    )
+    out = detector03.detect_faces(img01)[0]
+    bbox_x = out[0][0]
+    assert bbox_x != None
+    bbox_width = out[0][1]
+    bbox_y = out[0][2]
+    bbox_height = out[0][3]
+    assert len(out[0]) == 5
+    assert bbox_x > 180 and bbox_x < 200
 
 def test_mobilefacenet():
     # Landmark Detector Test Case:
