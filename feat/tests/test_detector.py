@@ -310,7 +310,5 @@ def test_simultaneous():
     )
     files = detector04.process_frame(img01, 0)
 
-
-
 if __name__ == '__main__':
-    test_multiface()
+    test_detect_image()
