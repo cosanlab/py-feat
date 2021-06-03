@@ -878,3 +878,7 @@ def round_vals(list_of_arrays, ndigits):
         for j, arr1 in enumerate(list_of_arrays):
             list_of_arrays2[i][j] = np.around(list_of_arrays[i][j], ndigits)
     return list_of_arrays2
+
+class FaceDetectionError(Exception):
+    """Error when face detection failed in a batch"""
+    pass
