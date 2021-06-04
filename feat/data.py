@@ -1576,6 +1576,54 @@ class Fex(DataFrame):
                 return ax
             except Exception as e:
                 print("Unable to plot data:", e)
+        if self.detector =="feat":
+            feats = [
+                    "AU01",
+                    "AU02",
+                    "AU04",
+                    "AU05",
+                    "AU06",
+                    "AU07",
+                    "AU09",
+                    "AU10",
+                    "AU12",
+                    "AU14",
+                    "AU15",
+                    "AU17",
+                    "AU18",
+                    "AU20",
+                    "AU23",
+                    "AU24",
+                    "AU25",
+                    "AU26",
+                    "AU28",
+                    "AU43",
+                    ]
+            if row_n > len(self):
+                raise ValueError("Row number out of range.")
+            try:
+                au = []
+                for feat in feats:
+                    if feat=="AU18":
+                        au.append(0)
+                    else:
+                        aun = self[feat]
+                        au.append(aun.copy()[row_n])
+                ax = plot_face(
+                    au=np.array(au),
+                    vectorfield=vectorfield,
+                    muscles=muscles,
+                    ax=ax,
+                    color=color,
+                    linewidth=linewidth,
+                    linestyle=linestyle,
+                    gaze=gaze,
+                    *args,
+                    **kwargs,
+                )
+                return ax
+            except Exception as e:
+                print("Unable to plot data:", e)
 
     def plot_detections(self, draw_landmarks=True, draw_facelines=True, muscle=False):
         """Plots detection results by Feat.

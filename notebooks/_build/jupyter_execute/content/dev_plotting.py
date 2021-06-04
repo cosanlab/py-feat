@@ -64,49 +64,53 @@ feature_range = (0,2)
 f,axes = plt.subplots(1, 4, figsize=(15,4))
 ax = axes[0]
 import seaborn as sns
-sns.set_context("paper", font_scale=1.5)
+sns.set_context("paper", font_scale=1.6)
 # Add data, AU is ordered as such: 
 # AU 1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 18, 20, 23, 24, 25, 26, 28, 43
 
 # Activate AU1: Inner brow raiser 
 au = np.array([intensity, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 vectors = {'target': predict(au, feature_range=feature_range),
-           'reference':  neutral, 'color': 'blue'}
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
 
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'}, feature_range=feature_range,
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'}, feature_range=feature_range,
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("AU1: Inner brow raiser")
 
 ax = axes[1]
 au = np.array([0, 0, 0, 0, 0, 0, 0, 0, intensity, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 vectors = {'target': predict(au, feature_range=feature_range),
-           'reference':  neutral, 'color': 'blue'}
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
 
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'},feature_range=feature_range,
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},feature_range=feature_range,
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("AU12: Lip corner puller")
 
 ax = axes[2]
 au = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, intensity, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 vectors = {'target': predict(au, feature_range=feature_range),
-           'reference':  neutral, 'color': 'blue'}
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'},feature_range=feature_range,
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},feature_range=feature_range,
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("AU15: Lip corner depressor")
 
 ax = axes[3]
 au = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, intensity])
 vectors = {'target': predict(au, feature_range=feature_range),
-           'reference':  neutral, 'color': 'blue'}
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
 
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'},feature_range=feature_range,
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},feature_range=feature_range,
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("AU43: Eye closer")
 
 f,axes = plt.subplots(1, 4, figsize=(15,4))
 ax = axes[0]
 import seaborn as sns
-sns.set_context("paper", font_scale=1.5)
+sns.set_context("paper", font_scale=1.6)
 # Add data, AU is ordered as such: 
 # AU 1, 2, 4, 5, 6, 
 # 7, 9, 10, 12, 14, 
@@ -135,9 +139,10 @@ au = np.array([0,
                0, 
                0])
 vectors = {'target': predict(au),
-           'reference':  neutral, 'color': 'blue'}
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
 
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'},
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("Happiness")
 
@@ -147,36 +152,126 @@ au = np.array([intensity/2,
                intensity/2, 
                0, 0, 0, 0, 0, 0, 0, intensity, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 vectors = {'target': predict(au),
-           'reference':  neutral, 'color': 'blue'}
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
 
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'},
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("Sadness")
 
 ax = axes[2]
-au = np.array([intensity, intensity, 0, intensity, 0, 
+au = np.array([intensity, intensity/2, 0, intensity, 0, 
                0, 0, 0, 0, 0, 
                0, 0, 0, 0, 0, 
                0, 0, intensity/2, 0, 0])
 vectors = {'target': predict(au),
-           'reference':  neutral, 'color': 'blue'}
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'},
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("Surprise")
 
 ax = axes[3]
 
 # FEAR
-au = np.array([intensity, intensity, intensity, intensity, 0, 
+au = np.array([intensity/3, intensity/3, intensity/2, intensity/2, 0, 
                intensity, 0, 0, 0, 0, 
-               0, 0, 0, intensity/2, 0, 
+               0, 0, 0, intensity, 0, 
                0, 0, intensity/2, 0, 0])
 vectors = {'target': predict(au),
-           'reference':  neutral, 'color': 'blue'}
+           'reference':  neutral, 'color': 'blue',
+          'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
 
-plot_face(model=None, vectorfield = vectors, muscles = {'all': 'heatmap'},
+plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},
           ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-')
 ax.set_title("Fear")
+
+# Create face initialize with actual vector
+
+from feat import Detector
+from PIL import Image
+import numpy as np
+
+0=neutral, 1=anger, 2=contempt, 3=disgust, 4=fear, 5=happy, 6=sadness, 7=surprise)
+
+detector = Detector()
+
+aus = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 18, 20, 23, 24, 25, 26, 28, 43]
+aulist = [f"AU"+str(au).zfill(2) for au in aus]
+
+from feat.plotting import plot_face, predict
+import numpy as np
+import matplotlib.pyplot as plt
+au = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+neutral = predict(np.zeros(len(au)))
+
+# happy
+imgfile = "/Storage/Data/CK+/cohn-kanade-images/S010/006/S010_006_00000008.png"
+img = Image.open(imgfile)
+out = detector.detect_image(imgfile)
+happyau = out.aus().assign(AU18=0)[aulist].values[0]
+
+# sadness
+imgfile = "/Storage/Data/CK+/cohn-kanade-images/S011/002/S011_002_00000008.png"
+out = detector.detect_image(imgfile)
+sadau = out.aus().assign(AU18=0)[aulist].values[0]
+
+# surprise
+imgfile = "/Storage/Data/CK+/cohn-kanade-images/S010/002/S010_002_00000008.png"
+out = detector.detect_image(imgfile)
+surpriseau = out.aus().assign(AU18=0)[aulist].values[0]
+
+# fear
+imgfile = "/Storage/Data/CK+/cohn-kanade-images/S011/003/S011_003_00000008.png"
+out = detector.detect_image(imgfile)
+fearau = out.aus().assign(AU18=0)[aulist].values[0]
+
+#disgust 
+imgfile = "/Storage/Data/CK+/cohn-kanade-images/S005/001/S005_001_00000008.png"
+out = detector.detect_image(imgfile)
+disgustau = out.aus().assign(AU18=0)[aulist].values[0]
+
+# anger
+imgfile = "/Storage/Data/CK+/cohn-kanade-images/S010/004/S010_004_00000012.png"
+out = detector.detect_image(imgfile)
+angerau = out.aus().assign(AU18=0)[aulist].values[0]
+
+f,axes = plt.subplots(1, 4, figsize=(15,4))
+titles = ['Happy', "Sad", "Surprise", "Anger"]
+for ix, au in enumerate([happyau, sadau, surpriseau, angerau]):
+    ax = axes[ix]
+    vectors = {'target': predict(au),
+               'reference':  neutral, 
+              'color': 'orangered', "headlength": 5, "headwidth": 5, "width":.005}
+    plot_face(model=None, vectorfield = None, muscles = {'all': 'heatmap'},
+              ax = ax, au = np.array(au), color='k', linewidth=1, linestyle='-', feature_range=(0,2))
+    ax.set(title = titles[ix])
+
+# disgust
+img = Image.open("/Storage/Data/CK+/cohn-kanade-images/S005/001/S005_001_00000008.png")
+img
+
+# surprise
+img = Image.open("/Storage/Data/CK+/cohn-kanade-images/S010/002/S010_002_00000008.png")
+img
+
+# anger
+img = Image.open("/Storage/Data/CK+/cohn-kanade-images/S010/004/S010_004_00000012.png")
+img
+
+# fear
+img = Image.open("/Storage/Data/CK+/cohn-kanade-images/S011/003/S011_003_00000008.png")
+img
+
+# sadness
+img = Image.open("/Storage/Data/CK+/cohn-kanade-images/S011/002/S011_002_00000008.png")
+img
+
+
+
+
+
+
 
 au = np.array([intensity, intensity, 0, intensity, 0, 0, 0, 0, 0, 0, 
                0, 0, 0, 0, 0, 0, 0, intensity, 0, 0])
