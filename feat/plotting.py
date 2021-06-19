@@ -6,6 +6,8 @@ import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 import matplotlib.pyplot as plt
 from feat.utils import load_h5
+from math import sin, cos
+
 
 # from utils import load_h5
 import warnings
@@ -982,6 +984,54 @@ def predict(au, model=None, feature_range=None):
     landmarks = np.reshape(model.predict(au), (2, 68))
     # landmarks[1, :] = -1 * landmarks[1, :]  # this might not generalize to other models
     return landmarks
+
+
+def draw_facepose(pose, facebox, ax):
+    """
+    Draw the face pose axes on the passed image for the passed facebox.
+    Adapted from draw_axis function at:
+    https://github.com/natanielruiz/deep-head-pose/blob/master/code/utils.py
+    Args:
+      img: a PIL image
+      pose: [pitch, roll, yaw] array
+      facebox: [x1, x2, width, height] array
+      ax = pyplot axis to draw on
+    """
+
+    # Center axis on facebox
+    x1, y1, w, h = facebox[:4]
+    x2, y2 = x1 + w, y1 + h
+    tdx = (x1 + x2) / 2
+    tdy = (y1 + y2) / 2
+
+    # Make rotation axis lines proportional to facebox size
+    size = min(x2 - x1, y2 - y1) // 2
+
+    # Get pose axes
+    pitch, roll, yaw = pose
+    pitch = pitch * np.pi / 180
+    yaw = -(yaw * np.pi / 180)
+    roll = roll * np.pi / 180
+
+    # X-Axis pointing to right. drawn in red
+    x1 = size * (cos(yaw) * cos(roll)) + tdx
+    y1 = size * (cos(pitch) * sin(roll) + cos(roll) * sin(pitch) * sin(yaw)) + tdy
+
+    # Y-Axis | drawn in green
+    x2 = size * (-cos(yaw) * sin(roll)) + tdx
+    y2 = size * (cos(pitch) * cos(roll) - sin(pitch) * sin(yaw) * sin(roll)) + tdy
+
+    # Z-Axis (out of the screen) drawn in blue
+    x3 = size * (sin(yaw)) + tdx
+    y3 = size * (-cos(yaw) * sin(pitch)) + tdy
+
+    # Draw face and pose axes
+    # ax.imshow(img)
+    ax.plot((tdx, x1), (tdy, y1), color='red', linewidth=2)
+    ax.plot((tdx, x2), (tdy, y2), color='green', linewidth=2)
+    ax.plot((tdx, x3), (tdy, y3), color='blue', linewidth=2)
+
+    return ax
 
 
 def _create_empty_figure(figsize=(4, 5), xlim=[25, 172], ylim=[240, 50]):
