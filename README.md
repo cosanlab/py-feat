@@ -52,6 +52,7 @@ Face detection models
 - [FaceBoxes](https://github.com/zisianw/FaceBoxes.PyTorch)
 - [MTCNN](https://github.com/ipazc/mtcnn)
 - [RetinaFace](https://github.com/deepinsight/insightface/)
+- [img2pose](https://github.com/vitoralbiero/img2pose)
 
 Facial landmark detection models
 - [MobileNet](https://github.com/cunjian/pytorch_face_landmark)
@@ -70,6 +71,10 @@ Emotion detection models
 - FEAT-Logistic
 - [FerNet](https://www.kaggle.com/gauravsharma99/facial-emotion-recognition?select=fer2013)
 - [ResMaskNet: Residual Masking Network](https://github.com/phamquiluan/ResidualMaskingNetwork)
+
+Head pose estimation models
+- [img2pose](https://github.com/vitoralbiero/img2pose)
+- Perspective-n-Point algorithm to solve 3D head pose from 2D facial landmarks (via `cv2`)
 
 ## Contributing
 1. Fork the repository on GitHub. 

@@ -1686,9 +1686,9 @@ class Fex(DataFrame):
                 )
                 ax.add_patch(rect)
 
-            # facepose
-            if pose:
-                draw_facepose(pose=row.facepose().values[0], facebox=facebox, ax=ax)
+                # facepose
+                if pose:
+                    draw_facepose(pose=row.facepose().values[0], facebox=facebox, ax=ax)
 
             if image_exists:
                 if sub_data.input().any():
