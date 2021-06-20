@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Py-Feat: Python Facial Expression Analysis Toolbox &#8212; Py-Feat</title>
     
-  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
 
     
   <link rel="stylesheet"
@@ -19,14 +20,10 @@
 
     
       
-  <link rel="stylesheet"
-    href="../_static/vendor/open-sans_all/1.44.1/index.css">
-  <link rel="stylesheet"
-    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
 
     
-    <link rel="stylesheet" href="../_static/sphinx-book-theme.37f24b989f4638ff9c27c22dc7559d4f.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
@@ -34,18 +31,17 @@
     <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
 
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script src="../_static/togglebutton.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <script src="../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
     <script >
         const thebe_selector = ".thebe"
@@ -56,14 +52,14 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Installation example" href="installation.html" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
-
-
-
+    
   </head>
   <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
     
 
     <div class="container-xl">
@@ -72,62 +68,52 @@
 <div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
     
         <div class="navbar-brand-box">
-<a class="navbar-brand text-wrap" href="../index.html">
-  
-  <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
-  
-  
-  <h1 class="site-logo" id="site-title">Py-Feat</h1>
-  
-</a>
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+      
+    </a>
 </div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form>
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-    <ul class="nav sidenav_l1">
- <li class="toctree-l1 current active">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1 current">
   <a class="reference internal" href="#">
    Py-Feat: Python Facial Expression Analysis Toolbox
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Installation
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="installation.html">
    Installation example
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Tutorials
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="detector.html">
    Detecting FEX from images
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="detector.html#detecting-fex-from-videos">
-   Detecting FEX from videos
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="analysis.html">
    Preprocessing FEX data
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="analysis.html#analyzing-fex-data">
-   Analyzing FEX data
   </a>
  </li>
  <li class="toctree-l1">
@@ -156,54 +142,24 @@
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   API
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="../api/index.html">
    API Reference
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.detector">
-   feat.detector module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.data">
-   feat.data module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.plotting">
-   feat.plotting module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.utils">
-   feat.utils module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.version">
-   feat.version module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat">
-   Module contents
-  </a>
- </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Contributing
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
    Contribute
@@ -212,12 +168,11 @@
  <li class="toctree-l1">
   <a class="reference external" href="https://github.com/cosanlab/py-feat">
    GitHub Repository
-   <i class="fas fa-external-link-alt">
-   </i>
   </a>
  </li>
 </ul>
 
+    </div>
 </nav> <!-- To handle the deprecated key -->
 
 <div class="navbar_extra_footer">
@@ -283,12 +238,12 @@
     </div>
 </div>
 
-
             <!-- Full screen (wrap in <a> to have style consistency -->
-            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-                    title="Fullscreen mode"><i
-                        class="fas fa-expand"></i></button></a>
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
 
             <!-- Launch buttons -->
 
@@ -297,11 +252,11 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
-        <div class="tocsection onthispage pt-5 pb-3">
-            <i class="fas fa-list"></i> Contents
-        </div>
-        <nav id="bd-toc-nav">
-            <ul class="nav section-nav flex-column">
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#why-you-should-use-py-feat">
    Why you should use Py-Feat
@@ -347,6 +302,11 @@
      Facial landmark detection
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#face-head-pose-estimation">
+     Face/Head pose estimation
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -358,13 +318,10 @@
   <a class="reference internal nav-link" href="#license">
    License
   </a>
-  <ul class="nav section-nav flex-column">
-  </ul>
  </li>
 </ul>
 
-        </nav>
-        
+            </nav>
         </div>
     </div>
 </div>
@@ -456,6 +413,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">MTCNN</span></code>: Multi-task cascaded convolutional networks by (<a class="reference external" href="https://arxiv.org/pdf/1604.02878.pdf">Zhang et al., 2016</a>; <a class="reference external" href="https://ieeexplore.ieee.org/document/9239720">Zhang et al., 2020</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">FaceBoxes</span></code>: A CPU real-time fae detector with high accuracy by (<a class="reference external" href="https://arxiv.org/pdf/1708.05234v4.pdf">Zhang et al., 2018</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">RetinaFace</span></code>: Single-stage dense face localisation in the wild by (<a class="reference external" href="https://arxiv.org/pdf/1905.00641v2.pdf">Deng et al., 2019</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">img2pose-c</span></code>: A ‘constrained’ version of the above model, fine-tuned on images of frontal faces with pitch, roll, yaw measures in the range of (-90, 90) degrees. Shows lesser performance on difficult face detection tasks, but state-of-the-art performance on face pose estimation for frontal faces</p></li>
 </ul>
 </div>
 <div class="section" id="facial-landmark-detection">
@@ -466,6 +425,14 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">MobileNet</span></code>: Efficient convolutional neural networks for mobile vision applications (<a class="reference external" href="https://arxiv.org/pdf/1704.04861v1.pdf">Howard et al, 2017</a>)</p></li>
 </ul>
 </div>
+<div class="section" id="face-head-pose-estimation">
+<h3>Face/Head pose estimation<a class="headerlink" href="#face-head-pose-estimation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">img2pose-c</span></code>: A ‘constrained’ version of the above model, fine-tuned on images of frontal faces with pitch, roll, yaw measures in the range of (-90, 90) degrees. Shows lesser performance on hard face detection tasks, but state-of-the-art performance on head pose estimation for frontal faces.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Perspective-n-Point</span></code>: <a class="reference external" href="https://link.springer.com/article/10.1007/s11263-008-0152-6">Efficient PnP (EPnP)</a> method implemented via <code class="docutils literal notranslate"><span class="pre">cv2</span></code> to solve the <a class="reference external" href="https://en.wikipedia.org/wiki/Perspective-n-Point">Perspective n Point</a> (PnP) problem to obtain 3D head pose from 2D facial landmarks</p></li>
+</ul>
+</div>
 </div>
 <div class="section" id="contributions">
 <h2>Contributions<a class="headerlink" href="#contributions" title="Permalink to this headline">¶</a></h2>
@@ -474,7 +441,6 @@
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>Py-FEAT is provided under the  <a class="reference external" href="https://github.com/cosanlab/py-feat/blob/master/LICENSE">MIT license</a>. You also need to cite and respect the licenses of each model you are using. Please see the LICENSE file for links to each model’s license information.</p>
-<div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
 </div>
@@ -482,6 +448,7 @@
 </div>
 <div class="toctree-wrapper compound">
 </div>
+<div class="toctree-wrapper compound">
 </div>
 </div>
 
@@ -531,11 +498,9 @@
 
       </div>
     </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
 
-    
-  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
-
-
-    
+  
   </body>
 </html>

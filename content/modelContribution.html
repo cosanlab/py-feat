@@ -6,17 +6,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contributing new detectors &#8212; Py-Feat</title>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113777015-5"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'UA-113777015-5');
-    </script>    
-        
-  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
 
     
   <link rel="stylesheet"
@@ -28,14 +20,10 @@
 
     
       
-  <link rel="stylesheet"
-    href="../_static/vendor/open-sans_all/1.44.1/index.css">
-  <link rel="stylesheet"
-    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
 
     
-    <link rel="stylesheet" href="../_static/sphinx-book-theme.37f24b989f4638ff9c27c22dc7559d4f.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
@@ -43,18 +31,17 @@
     <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
 
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script src="../_static/togglebutton.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <script src="../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
     <script >
         const thebe_selector = ".thebe"
@@ -66,14 +53,14 @@
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API Reference" href="../api/index.html" />
     <link rel="prev" title="Training AU visualization model" href="trainAUvisModel.html" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
-
-
-
+    
   </head>
   <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
     
 
     <div class="container-xl">
@@ -82,62 +69,52 @@
 <div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
     
         <div class="navbar-brand-box">
-<a class="navbar-brand text-wrap" href="../index.html">
-  
-  <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
-  
-  
-  <h1 class="site-logo" id="site-title">Py-Feat</h1>
-  
-</a>
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+      
+    </a>
 </div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form>
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-    <ul class="nav sidenav_l1">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="intro.html">
    Py-Feat: Python Facial Expression Analysis Toolbox
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Installation
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="installation.html">
    Installation example
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Tutorials
  </span>
 </p>
-<ul class="current nav sidenav_l1">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="detector.html">
    Detecting FEX from images
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="detector.html#detecting-fex-from-videos">
-   Detecting FEX from videos
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="analysis.html">
    Preprocessing FEX data
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="analysis.html#analyzing-fex-data">
-   Analyzing FEX data
   </a>
  </li>
  <li class="toctree-l1">
@@ -166,54 +143,24 @@
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   API
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="../api/index.html">
    API Reference
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.detector">
-   feat.detector module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.data">
-   feat.data module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.plotting">
-   feat.plotting module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.utils">
-   feat.utils module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.version">
-   feat.version module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat">
-   Module contents
-  </a>
- </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Contributing
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
    Contribute
@@ -222,12 +169,11 @@
  <li class="toctree-l1">
   <a class="reference external" href="https://github.com/cosanlab/py-feat">
    GitHub Repository
-   <i class="fas fa-external-link-alt">
-   </i>
   </a>
  </li>
 </ul>
 
+    </div>
 </nav> <!-- To handle the deprecated key -->
 
 <div class="navbar_extra_footer">
@@ -293,12 +239,12 @@
     </div>
 </div>
 
-
             <!-- Full screen (wrap in <a> to have style consistency -->
-            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-                    title="Fullscreen mode"><i
-                        class="fas fa-expand"></i></button></a>
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
 
             <!-- Launch buttons -->
 
@@ -307,11 +253,11 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
-        <div class="tocsection onthispage pt-5 pb-3">
-            <i class="fas fa-list"></i> Contents
-        </div>
-        <nav id="bd-toc-nav">
-            <ul class="nav section-nav flex-column">
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#develop-a-model">
    1. Develop a model
@@ -329,8 +275,7 @@
  </li>
 </ul>
 
-        </nav>
-        
+            </nav>
         </div>
     </div>
 </div>
@@ -351,6 +296,7 @@
 <li><p>emotion_detectors</p></li>
 <li><p>face_detectors</p></li>
 <li><p>landmark_detectors</p></li>
+<li><p>facepose_detectors</p></li>
 </ul>
 <p>Therefore any model you develop that fall into those categories can be added. If there is a new category you would like us to implement (e.g. gaze, head pose) please submit a pull request.</p>
 </div>
@@ -362,13 +308,14 @@
 <li><p>emotion_detectors: AffNet</p></li>
 <li><p>face_detectors: WIDER</p></li>
 <li><p>landmark_detectors: 300W</p></li>
+<li><p>facepose_detectors: BIWI</p></li>
 </ul>
 </div>
 <div class="section" id="add-models-to-the-toolbox">
 <h2>3. Add models to the toolbox.<a class="headerlink" href="#add-models-to-the-toolbox" title="Permalink to this headline">¶</a></h2>
 <p>Adding a new model to the Py-FEAT toolbox is easy if you are familiar with Python, Github, and package development. Here is 10 simple steps to adding a new model.</p>
 <ol class="simple">
-<li><p>For the Py-FEAT repository from <a class="reference external" href="https://github.com/cosanlab/feat">https://github.com/cosanlab/feat</a></p></li>
+<li><p>For the Py-FEAT repository from https://github.com/cosanlab/feat</p></li>
 <li><p>Install the package to your computer in development mode. This will allow you to quickly test your code as you develop.
 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
 <li><p>Make sure everything is working using <code class="docutils literal notranslate"><span class="pre">pytest</span></code></p></li>
@@ -454,11 +401,9 @@ This will allow us to download the model files when necessary.</p></li>
 
       </div>
     </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
 
-    
-  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
-
-
-    
+  
   </body>
 </html>
