@@ -26,7 +26,7 @@ from feat.utils import (
     load_h5,
     get_resource_path,
 )
-from feat.plotting import plot_face, draw_lineface, draw_muscles
+from feat.plotting import plot_face, draw_lineface, draw_muscles, draw_facepose
 from nilearn.signal import clean
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
@@ -116,6 +116,13 @@ class FexSeries(Series):
             DataFrame: landmark data
         """
         return self[self.landmark_columns]
+
+    def facepose(self):
+        """Returns the facepose data
+        Returns:
+            DataFrame: facepose data
+        """
+        return self[self.facepose_columns]
 
     def input(self):
         """Returns input column as string
@@ -392,6 +399,14 @@ class Fex(DataFrame):
             DataFrame: landmark data
         """
         return self[self.landmark_columns]
+
+    def facepose(self):
+        """Returns the facepose data
+        Returns facepose data using the columns set in fex.facepose_columns
+        Returns:
+            DataFrame: facepose data
+        """
+        return self[self.facepose_columns]
 
     def input(self):
         """Returns input column as string
@@ -1577,13 +1592,14 @@ class Fex(DataFrame):
             except Exception as e:
                 print("Unable to plot data:", e)
 
-    def plot_detections(self, draw_landmarks=True, draw_facelines=True, muscle=False):
+    def plot_detections(self, draw_landmarks=True, draw_facelines=True, muscle=False, pose=False):
         """Plots detection results by Feat.
 
         Args:
             draw_landmarks (bool, optional): Whether to draw landmarks. Defaults to True.
             draw_facelines (bool, optional): Whether to draw face lines. Defaults to True.
             muscle (bool, optional): Whether to draw muscle activations. Defaults to False.
+            pose (bool, optional): Whether to draw head pose axes. Defaults to False.
 
         Returns:
             axes: handle to plot
@@ -1669,6 +1685,10 @@ class Fex(DataFrame):
                     fill=False,
                 )
                 ax.add_patch(rect)
+
+            # facepose
+            if pose:
+                draw_facepose(pose=row.facepose().values[0], facebox=facebox, ax=ax)
 
             if image_exists:
                 if sub_data.input().any():

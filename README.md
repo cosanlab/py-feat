@@ -6,7 +6,6 @@
 [![DOI](https://zenodo.org/badge/118517740.svg)](https://zenodo.org/badge/latestdoi/118517740)
 
 
-
 Py-FEAT is a suite for facial expressions (FEX) research written in Python. This package includes tools to detect faces, extract emotional facial expressions (e.g., happiness, sadness, anger), facial muscle movements (e.g., action units), and facial landmarks, from videos and images of faces, as well as methods to preprocess, analyze, and visualize FEX data. 
 
 For detailed examples, tutorials, and API please refer to the [Py-FEAT website](https://cosanlab.github.io/py-feat/). 
