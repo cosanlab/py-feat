@@ -1,7 +1,13 @@
-# Training AU visualization model
-You will first need to gather the datasets for training. In this tutorial we use the datasets EmotioNet, DISFA Plus, and BP4d. After you download each model you should extract the labels and landmarks from each dataset. Detailed code on how to do that is described at the bottom of this tutorial. Once you have the labels and landmark files for each dataset you can train the AU visualization model with the following. 
+#!/usr/bin/env python
+# coding: utf-8
 
-%matplotlib inline
+# # Training AU visualization model
+# You will first need to gather the datasets for training. In this tutorial we use the datasets EmotioNet, DISFA Plus, and BP4d. After you download each model you should extract the labels and landmarks from each dataset. Detailed code on how to do that is described at the bottom of this tutorial. Once you have the labels and landmark files for each dataset you can train the AU visualization model with the following. 
+
+# In[98]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
 import pandas as pd, numpy as np, matplotlib.pyplot as plt
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import KFold
@@ -29,7 +35,11 @@ landmarks_bp4d = pd.read_csv(os.path.join(base_dir, "bp4d_landmarks.csv"))
 bp4d_pruned_idx = labels_bp4d.replace({9: np.nan})[au_cols].dropna(axis=1).index
 print("BP4D: ", len(labels_bp4d))
 
-We aggregate the datasets and specify the AUs we want to train. 
+
+# We aggregate the datasets and specify the AUs we want to train. 
+
+# In[100]:
+
 
 labels = pd.concat([
                     labels_emotionet.replace({999: np.nan}), 
@@ -48,7 +58,11 @@ au_cols = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 18, 20, 23, 24, 25, 26, 28, 
 au_cols = [f"AU{au}" for au in au_cols]
 labels = labels[au_cols].fillna(0)
 
-We train our model using PLSRegression with a minimum of 500 samples for each AU activation. We evaluate the model in a 3-fold split and retrain the model with all the data which is distributed with the package.
+
+# We train our model using PLSRegression with a minimum of 500 samples for each AU activation. We evaluate the model in a 3-fold split and retrain the model with all the data which is distributed with the package.
+
+# In[115]:
+
 
 min_pos_sample = 500
 
@@ -84,7 +98,11 @@ clf = PLSRegression(n_components=n_components, max_iter=2000)
 clf.fit(X,y)
 print('N_comp:',n_components,'Rsquare', np.round(clf.score(X,y),2))
 
-We visualize the results of our model. The regression was trained on labels 0-1 so we do not recommend exceeding 1 for the intensity. Setting the intensity to 2 will exaggerate the face and anything beyond that might give you strange faces. 
+
+# We visualize the results of our model. The regression was trained on labels 0-1 so we do not recommend exceeding 1 for the intensity. Setting the intensity to 2 will exaggerate the face and anything beyond that might give you strange faces. 
+
+# In[116]:
+
 
 # Plot results for each action unit
 f,axes = plt.subplots(5,4,figsize=(12,18))
@@ -110,7 +128,11 @@ for aui, auname in enumerate(axes):
         ax.axes.get_xaxis().set_visible(False)
         ax.axes.get_yaxis().set_visible(False)
 
-Here is how we would export our model into an h5 format which can be loaded using our load_h5 function. 
+
+# Here is how we would export our model into an h5 format which can be loaded using our load_h5 function. 
+
+# In[ ]:
+
 
 # save out trained model
 # import h5py
@@ -121,8 +143,12 @@ Here is how we would export our model into an h5 format which can be loaded usin
 # hf.create_dataset('y_mean', data=clf._y_mean)
 # hf.close()
 
-## Interactive visualization plot
-Here we share an interactive plot to visualize what each activation unit activation looks like from our visualization model.
+
+# ## Interactive visualization plot
+# Here we share an interactive plot to visualize what each activation unit activation looks like from our visualization model.
+
+# In[15]:
+
 
 from feat.plotting import plot_face, predict
 import pandas as pd, numpy as np
@@ -184,18 +210,34 @@ def visualize_autolandmark(df, width=800, height=600):
     })
     fig.show()
 
+
+# In[5]:
+
+
 from IPython.core.display import display, HTML
 display(HTML('au_to_landmark1.html'))
 
+
+# In[6]:
+
+
 display(HTML('au_to_landmark2.html'))
+
+
+# In[7]:
+
 
 display(HTML('au_to_landmark3.html'))
 
-Note that we are using intensities up to 3 for visualization but the true scale of the models is between 0 and 1. 
 
-## Preprocessing datasets
-Here we provide sample code for how you might preprocess the datasets to be used in this tutorial. 
+# Note that we are using intensities up to 3 for visualization but the true scale of the models is between 0 and 1. 
 
+# ## Preprocessing datasets
+# Here we provide sample code for how you might preprocess the datasets to be used in this tutorial. 
+# 
+# 
+
+# In[ ]:
 
 
 from PIL import Image, ImageOps
@@ -300,7 +342,11 @@ def extract_hog(image, detector):
 
     return fd, hog_image, points
 
-Replace the paths so that it points to your local dataset directory.
+
+# Replace the paths so that it points to your local dataset directory.
+
+# In[ ]:
+
 
 detector = Detector(face_model = "retinaface", landmark_model="mobilenet")
 # Correct path to your downloaded dataset.
@@ -341,3 +387,4 @@ for ix, image in enumerate(tqdm(EmotioNet_images)):
             writer.writerow(points.T.flatten())
     except:
         print(f"failed {image}")
+

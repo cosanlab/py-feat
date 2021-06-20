@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Detecting FEX from images &#8212; Py-Feat</title>
     
-  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
 
     
   <link rel="stylesheet"
@@ -19,14 +20,10 @@
 
     
       
-  <link rel="stylesheet"
-    href="../_static/vendor/open-sans_all/1.44.1/index.css">
-  <link rel="stylesheet"
-    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
 
     
-    <link rel="stylesheet" href="../_static/sphinx-book-theme.37f24b989f4638ff9c27c22dc7559d4f.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
@@ -34,18 +31,17 @@
     <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
 
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script src="../_static/togglebutton.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <script src="../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
     <script >
         const thebe_selector = ".thebe"
@@ -57,14 +53,14 @@
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Preprocessing FEX data" href="analysis.html" />
     <link rel="prev" title="Installation example" href="installation.html" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
-
-
-
+    
   </head>
   <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
     
 
     <div class="container-xl">
@@ -73,62 +69,52 @@
 <div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
     
         <div class="navbar-brand-box">
-<a class="navbar-brand text-wrap" href="../index.html">
-  
-  <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
-  
-  
-  <h1 class="site-logo" id="site-title">Py-Feat</h1>
-  
-</a>
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+      
+    </a>
 </div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form>
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-    <ul class="nav sidenav_l1">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="intro.html">
    Py-Feat: Python Facial Expression Analysis Toolbox
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Installation
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="installation.html">
    Installation example
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Tutorials
  </span>
 </p>
-<ul class="current nav sidenav_l1">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
    Detecting FEX from images
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="#detecting-fex-from-videos">
-   Detecting FEX from videos
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="analysis.html">
    Preprocessing FEX data
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="analysis.html#analyzing-fex-data">
-   Analyzing FEX data
   </a>
  </li>
  <li class="toctree-l1">
@@ -157,54 +143,24 @@
   </a>
  </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   API
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="../api/index.html">
    API Reference
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.detector">
-   feat.detector module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.data">
-   feat.data module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.plotting">
-   feat.plotting module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.utils">
-   feat.utils module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat.version">
-   feat.version module
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/index.html#module-feat">
-   Module contents
-  </a>
- </li>
 </ul>
-<p class="caption collapsible-parent">
+<p class="caption">
  <span class="caption-text">
   Contributing
  </span>
 </p>
-<ul class="nav sidenav_l1">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="contribute.html">
    Contribute
@@ -213,12 +169,11 @@
  <li class="toctree-l1">
   <a class="reference external" href="https://github.com/cosanlab/py-feat">
    GitHub Repository
-   <i class="fas fa-external-link-alt">
-   </i>
   </a>
  </li>
 </ul>
 
+    </div>
 </nav> <!-- To handle the deprecated key -->
 
 <div class="navbar_extra_footer">
@@ -284,12 +239,12 @@
     </div>
 </div>
 
-
             <!-- Full screen (wrap in <a> to have style consistency -->
-            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-                    title="Fullscreen mode"><i
-                        class="fas fa-expand"></i></button></a>
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
 
             <!-- Launch buttons -->
 
@@ -326,16 +281,16 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
-        <div class="tocsection onthispage pt-5 pb-3">
-            <i class="fas fa-list"></i> Contents
-        </div>
-        <nav id="bd-toc-nav">
-            <ul class="nav section-nav flex-column">
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#">
    Detecting FEX from images
   </a>
-  <ul class="nav section-nav flex-column">
+  <ul class="visible nav section-nav flex-column">
    <li class="toc-h2 nav-item toc-entry">
     <a class="reference internal nav-link" href="#how-to-use-the-feat-detector-class">
      How to use the Feat Detector class.
@@ -390,8 +345,7 @@
  </li>
 </ul>
 
-        </nav>
-        
+            </nav>
         </div>
     </div>
 </div>
@@ -406,10 +360,10 @@
 <h2>How to use the Feat Detector class.<a class="headerlink" href="#how-to-use-the-feat-detector-class" title="Permalink to this headline">¶</a></h2>
 <p><em>Written by Jin Hyun Cheong</em></p>
 <p>Here is an example of how to use the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class to detect faces, facial landmarks, Action Units, and emotions, from face images or videos.</p>
-<p>Let’s start by installing Py-FEAT if you have not already done so or usign this from Google Colab</p>
+<p>Let’s start by installing Py-FEAT if you have not already done so or are using this notebook from Google Colab</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip install -q py-feat
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># !pip install -q py-feat</span>
 </pre></div>
 </div>
 </div>
@@ -430,25 +384,24 @@
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/root/miniconda3/lib/python3.8/site-packages/nilearn/datasets/__init__.py:87: FutureWarning: Fetchers from the nilearn.datasets module will be updated in version 0.9 to return python strings instead of bytes and Pandas dataframes instead of Numpy arrays.
+  warn(&quot;Fetchers from the nilearn.datasets module will be &quot;
+</pre></div>
+</div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  retinaface
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet0.25_Final.pth
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/RF_568.joblib
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/mobilenet0.25_Final.pth
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/RF_568.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
 Loading Face Landmark model:  mobilenet
 Loading au model:  rf
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator PCA from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
-  warnings.warn(
-/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator DecisionTreeClassifier from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
-  warnings.warn(
-/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator RandomForestClassifier from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
-  warnings.warn(
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading emotion model:  resmasknet
+Loading emotion model:  resmasknet
+Loading facepose model:  pnp
 </pre></div>
 </div>
 </div>
@@ -519,8 +472,8 @@ Loading au model:  rf
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU28</th>
-      <th>AU43</th>
+      <th>Roll</th>
+      <th>Yaw</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -534,7 +487,7 @@ Loading au model:  rf
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.0</td>
+      <td>0</td>
       <td>196.976852</td>
       <td>140.997742</td>
       <td>173.810471</td>
@@ -545,8 +498,8 @@ Loading au model:  rf
       <td>192.874615</td>
       <td>197.39479</td>
       <td>...</td>
-      <td>0.117955</td>
-      <td>0.143632</td>
+      <td>-1.903961</td>
+      <td>4.869264</td>
       <td>0.000369</td>
       <td>0.000026</td>
       <td>0.000485</td>
@@ -554,11 +507,11 @@ Loading au model:  rf
       <td>0.000046</td>
       <td>0.01201</td>
       <td>0.000068</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/i...</td>
     </tr>
   </tbody>
 </table>
-<p>1 rows × 170 columns</p>
+<p>1 rows × 173 columns</p>
 </div></div></div>
 </div>
 <p>The output is a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> class instance which allows you to run the built-in methods for <code class="docutils literal notranslate"><span class="pre">Fex</span></code>.</p>
@@ -574,6 +527,17 @@ Loading au model:  rf
 </div>
 <div class="cell_output docutils container">
 <img alt="../_images/detector_11_0.png" src="../_images/detector_11_0.png" />
+</div>
+</div>
+<p>If you are interested in visualizing the head pose, you can do so simply by setting <code class="docutils literal notranslate"><span class="pre">pose=True</span></code>. This setting will overlay the x,y, and z-axis of the head onto the image.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">pose</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/detector_13_0.png" src="../_images/detector_13_0.png" />
 </div>
 </div>
 </div>
@@ -675,26 +639,26 @@ Loading au model:  rf
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.592975</td>
-      <td>0.487862</td>
-      <td>0.182525</td>
-      <td>0.175082</td>
-      <td>0.890265</td>
-      <td>0.687173</td>
-      <td>0.361338</td>
-      <td>0.929177</td>
-      <td>0.464157</td>
-      <td>0.959261</td>
-      <td>0.657362</td>
-      <td>0.350172</td>
-      <td>0.248738</td>
-      <td>0.269894</td>
-      <td>0.248381</td>
-      <td>0.044258</td>
-      <td>0.963012</td>
-      <td>0.358748</td>
-      <td>0.117955</td>
-      <td>0.143632</td>
+      <td>0.56313</td>
+      <td>0.510732</td>
+      <td>0.18804</td>
+      <td>0.17787</td>
+      <td>0.874216</td>
+      <td>0.694585</td>
+      <td>0.319272</td>
+      <td>0.927146</td>
+      <td>0.4151</td>
+      <td>0.964379</td>
+      <td>0.646568</td>
+      <td>0.339296</td>
+      <td>0.2386</td>
+      <td>0.25925</td>
+      <td>0.224025</td>
+      <td>0.039379</td>
+      <td>0.966135</td>
+      <td>0.389137</td>
+      <td>0.142019</td>
+      <td>0.141042</td>
     </tr>
   </tbody>
 </table>
@@ -744,6 +708,47 @@ Loading au model:  rf
       <td>0.000046</td>
       <td>0.01201</td>
       <td>0.000068</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_prediction</span><span class="o">.</span><span class="n">facepose</span><span class="p">()</span> <span class="c1"># (in degrees)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Pitch</th>
+      <th>Roll</th>
+      <th>Yaw</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.968232</td>
+      <td>-1.903961</td>
+      <td>4.869264</td>
     </tr>
   </tbody>
 </table>
@@ -808,8 +813,8 @@ Loading au model:  rf
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU28</th>
-      <th>AU43</th>
+      <th>Roll</th>
+      <th>Yaw</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -823,7 +828,7 @@ Loading au model:  rf
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.0</td>
+      <td>0</td>
       <td>196.976852</td>
       <td>140.997742</td>
       <td>173.810471</td>
@@ -834,8 +839,8 @@ Loading au model:  rf
       <td>192.874615</td>
       <td>197.39479</td>
       <td>...</td>
-      <td>0.117955</td>
-      <td>0.143632</td>
+      <td>-1.903961</td>
+      <td>4.869264</td>
       <td>0.000369</td>
       <td>0.000026</td>
       <td>0.000485</td>
@@ -843,11 +848,11 @@ Loading au model:  rf
       <td>0.000046</td>
       <td>0.01201</td>
       <td>0.000068</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/i...</td>
     </tr>
   </tbody>
 </table>
-<p>1 rows × 170 columns</p>
+<p>1 rows × 173 columns</p>
 </div></div></div>
 </div>
 <div class="cell docutils container">
@@ -889,8 +894,8 @@ Loading au model:  rf
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU28</th>
-      <th>AU43</th>
+      <th>Roll</th>
+      <th>Yaw</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -904,7 +909,7 @@ Loading au model:  rf
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.0</td>
+      <td>0</td>
       <td>196.976852</td>
       <td>140.997742</td>
       <td>173.810471</td>
@@ -915,8 +920,8 @@ Loading au model:  rf
       <td>192.874615</td>
       <td>197.39479</td>
       <td>...</td>
-      <td>0.117955</td>
-      <td>0.143632</td>
+      <td>-1.903961</td>
+      <td>4.869264</td>
       <td>0.000369</td>
       <td>0.000026</td>
       <td>0.000485</td>
@@ -924,11 +929,11 @@ Loading au model:  rf
       <td>0.000046</td>
       <td>0.01201</td>
       <td>0.000068</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/i...</td>
     </tr>
   </tbody>
 </table>
-<p>1 rows × 170 columns</p>
+<p>1 rows × 173 columns</p>
 </div></div></div>
 </div>
 </div>
@@ -937,11 +942,13 @@ Loading au model:  rf
 <p>Feat’s Detector can find multiple faces in a single image. Let’s also practice switching the emotion detector</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">face_model</span> <span class="o">=</span> <span class="s2">&quot;mtcnn&quot;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">face_model</span> <span class="o">=</span> <span class="s2">&quot;img2pose&quot;</span> <span class="c1"># img2pose acts as both a face detector and a face pose estimator</span>
 <span class="n">landmark_model</span> <span class="o">=</span> <span class="s2">&quot;mobilenet&quot;</span>
 <span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;logistic&quot;</span>
 <span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;fer&quot;</span>
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span> <span class="o">=</span> <span class="n">face_model</span><span class="p">,</span> <span class="n">landmark_model</span> <span class="o">=</span> <span class="n">landmark_model</span><span class="p">,</span> <span class="n">au_model</span> <span class="o">=</span> <span class="n">au_model</span><span class="p">,</span> <span class="n">emotion_model</span> <span class="o">=</span> <span class="n">emotion_model</span><span class="p">)</span>
+<span class="n">facepose_model</span> <span class="o">=</span> <span class="s2">&quot;img2pose&quot;</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="n">face_model</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="n">landmark_model</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="n">au_model</span><span class="p">,</span> 
+                    <span class="n">emotion_model</span><span class="o">=</span><span class="n">emotion_model</span><span class="p">,</span> <span class="n">facepose_model</span><span class="o">=</span><span class="n">facepose_model</span><span class="p">)</span>
 
 <span class="n">test_image</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;tim-mossholder-hOF1bWoet_Q-unsplash.jpg&quot;</span><span class="p">)</span>
 <span class="n">image_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">test_image</span><span class="p">)</span>
@@ -951,23 +958,23 @@ Loading au model:  rf
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  mtcnn
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/onet.npy
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/pnet.npy
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/rnet.npy
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/Logistic_520.joblib
-Using downloaded and verified file: /home/jcheong/packages/feat/feat/resources/best_ferModel.pth
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  img2pose
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/img2pose_v1.pth
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/WIDER_train_pose_mean_v1.npy
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/WIDER_train_pose_stddev_v1.npy
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/reference_3d_68_points_trans.npy
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/Logistic_520.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /tf/notebooks/second-py-feat/feat/resources/best_ferModel.pth
 Loading Face Landmark model:  mobilenet
 Loading au model:  logistic
 Loading emotion model:  fer
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator PCA from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
-  warnings.warn(
-/home/jcheong/anaconda3/lib/python3.8/site-packages/sklearn/base.py:329: UserWarning: Trying to unpickle estimator LogisticRegression from version 0.24.1 when using version 0.23.2. This might lead to breaking code or invalid results. Use at your own risk.
-  warnings.warn(
+Loading facepose model:  img2pose
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -999,8 +1006,8 @@ Loading emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU28</th>
-      <th>AU43</th>
+      <th>Roll</th>
+      <th>Yaw</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1015,126 +1022,126 @@ Loading emotion model:  fer
     <tr>
       <th>0</th>
       <td>0</td>
-      <td>686.666818</td>
-      <td>293.999382</td>
-      <td>101.031716</td>
-      <td>120.632281</td>
-      <td>1.000000</td>
-      <td>686.673264</td>
-      <td>684.464720</td>
-      <td>683.203394</td>
-      <td>683.556753</td>
+      <td>307.0</td>
+      <td>230.0</td>
+      <td>107.0</td>
+      <td>126.0</td>
+      <td>0.994716</td>
+      <td>315.429249</td>
+      <td>316.183640</td>
+      <td>317.912851</td>
+      <td>321.205881</td>
       <td>...</td>
-      <td>0.041033</td>
-      <td>0.000191</td>
-      <td>0.000488</td>
-      <td>0.004986</td>
-      <td>0.000750</td>
-      <td>0.950166</td>
-      <td>0.001690</td>
-      <td>0.004727</td>
-      <td>0.037192</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>-2.973651</td>
+      <td>-4.679367</td>
+      <td>0.000101</td>
+      <td>0.002426</td>
+      <td>0.000216</td>
+      <td>0.914512</td>
+      <td>0.001248</td>
+      <td>0.001236</td>
+      <td>0.080261</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>1</th>
       <td>0</td>
-      <td>317.520424</td>
-      <td>235.865105</td>
-      <td>91.047654</td>
-      <td>119.294925</td>
-      <td>0.999948</td>
-      <td>314.853761</td>
-      <td>315.877231</td>
-      <td>317.895325</td>
-      <td>321.337098</td>
+      <td>529.0</td>
+      <td>303.0</td>
+      <td>110.0</td>
+      <td>132.0</td>
+      <td>0.994049</td>
+      <td>536.733620</td>
+      <td>534.369016</td>
+      <td>533.012366</td>
+      <td>533.194444</td>
       <td>...</td>
-      <td>0.015860</td>
-      <td>0.000025</td>
-      <td>0.000108</td>
-      <td>0.002324</td>
-      <td>0.000214</td>
-      <td>0.917784</td>
-      <td>0.001381</td>
-      <td>0.001332</td>
-      <td>0.076859</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>4.255120</td>
+      <td>8.171329</td>
+      <td>0.000269</td>
+      <td>0.006189</td>
+      <td>0.001372</td>
+      <td>0.973058</td>
+      <td>0.000859</td>
+      <td>0.000572</td>
+      <td>0.017682</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>2</th>
       <td>0</td>
-      <td>435.751950</td>
-      <td>212.001750</td>
-      <td>76.493827</td>
-      <td>95.736649</td>
-      <td>0.999937</td>
-      <td>439.072266</td>
-      <td>438.872138</td>
-      <td>439.476009</td>
-      <td>440.813668</td>
+      <td>676.0</td>
+      <td>283.0</td>
+      <td>120.0</td>
+      <td>140.0</td>
+      <td>0.993604</td>
+      <td>686.931943</td>
+      <td>685.053395</td>
+      <td>684.001543</td>
+      <td>684.407677</td>
       <td>...</td>
-      <td>0.300772</td>
-      <td>0.000001</td>
-      <td>0.001694</td>
-      <td>0.022541</td>
-      <td>0.000762</td>
-      <td>0.649048</td>
-      <td>0.043860</td>
-      <td>0.000816</td>
-      <td>0.281279</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>9.734631</td>
+      <td>6.029474</td>
+      <td>0.000677</td>
+      <td>0.005988</td>
+      <td>0.001107</td>
+      <td>0.953000</td>
+      <td>0.001957</td>
+      <td>0.005966</td>
+      <td>0.031306</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>3</th>
       <td>0</td>
-      <td>533.900150</td>
-      <td>308.100535</td>
-      <td>91.076060</td>
-      <td>119.357605</td>
-      <td>0.999775</td>
-      <td>535.784887</td>
-      <td>533.329005</td>
-      <td>531.925614</td>
-      <td>532.258772</td>
+      <td>215.0</td>
+      <td>45.0</td>
+      <td>102.0</td>
+      <td>125.0</td>
+      <td>0.990833</td>
+      <td>220.173312</td>
+      <td>218.134724</td>
+      <td>216.974434</td>
+      <td>217.157989</td>
       <td>...</td>
-      <td>0.035089</td>
-      <td>0.011815</td>
-      <td>0.000310</td>
-      <td>0.005809</td>
-      <td>0.000977</td>
-      <td>0.972369</td>
-      <td>0.000534</td>
-      <td>0.000787</td>
-      <td>0.019214</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>14.068018</td>
+      <td>-4.917812</td>
+      <td>0.001056</td>
+      <td>0.005686</td>
+      <td>0.000178</td>
+      <td>0.930699</td>
+      <td>0.000242</td>
+      <td>0.001177</td>
+      <td>0.060962</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>4</th>
       <td>0</td>
-      <td>214.450517</td>
-      <td>64.650659</td>
-      <td>91.337077</td>
-      <td>111.502833</td>
-      <td>0.995610</td>
-      <td>220.870587</td>
-      <td>218.820371</td>
-      <td>217.513163</td>
-      <td>217.441024</td>
+      <td>430.0</td>
+      <td>208.0</td>
+      <td>85.0</td>
+      <td>100.0</td>
+      <td>0.990231</td>
+      <td>439.764975</td>
+      <td>439.281783</td>
+      <td>439.591148</td>
+      <td>440.700340</td>
       <td>...</td>
-      <td>0.035445</td>
-      <td>0.000021</td>
-      <td>0.000504</td>
-      <td>0.004014</td>
-      <td>0.000283</td>
-      <td>0.926783</td>
-      <td>0.000241</td>
-      <td>0.001621</td>
-      <td>0.066554</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>1.971143</td>
+      <td>-4.030670</td>
+      <td>0.001312</td>
+      <td>0.018950</td>
+      <td>0.000629</td>
+      <td>0.665189</td>
+      <td>0.040488</td>
+      <td>0.000821</td>
+      <td>0.272612</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 170 columns</p>
+<p>5 rows × 173 columns</p>
 </div></div></div>
 </div>
 </div>
@@ -1142,12 +1149,12 @@ Loading emotion model:  fer
 <h2>Visualize multiple faces in a single image.<a class="headerlink" href="#visualize-multiple-faces-in-a-single-image" title="Permalink to this headline">¶</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">();</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">pose</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_24_0.png" src="../_images/detector_24_0.png" />
+<img alt="../_images/detector_27_0.png" src="../_images/detector_27_0.png" />
 </div>
 </div>
 </div>
@@ -1160,7 +1167,8 @@ Loading emotion model:  fer
 <span class="kn">from</span> <span class="nn">feat.tests.utils</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
 <span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span>
 <span class="n">test_data_dir</span> <span class="o">=</span> <span class="n">get_test_data_path</span><span class="p">()</span>
-<span class="n">test_images</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;*.jpg&quot;</span><span class="p">))</span>
+<span class="n">test_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;*.jpg&quot;</span><span class="p">))</span>
+               <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;no-face&#39;</span><span class="p">)]</span>  <span class="c1"># Avoid the test image with no face contained in it</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">test_images</span><span class="p">)</span>
 
 <span class="n">image_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">test_images</span><span class="p">)</span>
@@ -1169,7 +1177,7 @@ Loading emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/home/jcheong/packages/feat/feat/tests/data/input.jpg&#39;, &#39;/home/jcheong/packages/feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg&#39;]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/tf/notebooks/second-py-feat/feat/tests/data/input.jpg&#39;, &#39;/tf/notebooks/second-py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg&#39;]
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -1201,8 +1209,8 @@ Loading emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU28</th>
-      <th>AU43</th>
+      <th>Roll</th>
+      <th>Yaw</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1216,151 +1224,151 @@ Loading emotion model:  fer
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.0</td>
-      <td>185.127976</td>
-      <td>151.353452</td>
-      <td>180.762838</td>
-      <td>234.933019</td>
-      <td>0.998658</td>
-      <td>193.944269</td>
-      <td>192.360442</td>
-      <td>193.323525</td>
-      <td>197.581484</td>
+      <td>0</td>
+      <td>185.0</td>
+      <td>139.0</td>
+      <td>205.0</td>
+      <td>267.0</td>
+      <td>0.989039</td>
+      <td>194.488554</td>
+      <td>192.784420</td>
+      <td>193.521747</td>
+      <td>197.423195</td>
       <td>...</td>
-      <td>0.080031</td>
-      <td>0.000019</td>
-      <td>0.001407</td>
-      <td>0.017716</td>
-      <td>0.001101</td>
-      <td>0.944522</td>
-      <td>0.000425</td>
-      <td>0.000589</td>
-      <td>0.034241</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/in...</td>
+      <td>-3.737930</td>
+      <td>6.101128</td>
+      <td>0.001600</td>
+      <td>0.017335</td>
+      <td>0.000693</td>
+      <td>0.950639</td>
+      <td>0.000309</td>
+      <td>0.000382</td>
+      <td>0.029042</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/i...</td>
     </tr>
     <tr>
       <th>0</th>
-      <td>0.0</td>
-      <td>686.666818</td>
-      <td>293.999382</td>
-      <td>101.031716</td>
-      <td>120.632281</td>
-      <td>1.000000</td>
-      <td>686.673264</td>
-      <td>684.464720</td>
-      <td>683.203394</td>
-      <td>683.556753</td>
+      <td>0</td>
+      <td>307.0</td>
+      <td>230.0</td>
+      <td>107.0</td>
+      <td>126.0</td>
+      <td>0.994716</td>
+      <td>315.429249</td>
+      <td>316.183640</td>
+      <td>317.912851</td>
+      <td>321.205881</td>
       <td>...</td>
-      <td>0.041033</td>
-      <td>0.000191</td>
-      <td>0.000488</td>
-      <td>0.004986</td>
-      <td>0.000750</td>
-      <td>0.950166</td>
-      <td>0.001690</td>
-      <td>0.004727</td>
-      <td>0.037192</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>-2.973651</td>
+      <td>-4.679367</td>
+      <td>0.000101</td>
+      <td>0.002426</td>
+      <td>0.000216</td>
+      <td>0.914512</td>
+      <td>0.001248</td>
+      <td>0.001236</td>
+      <td>0.080261</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.0</td>
-      <td>317.520424</td>
-      <td>235.865105</td>
-      <td>91.047654</td>
-      <td>119.294925</td>
-      <td>0.999948</td>
-      <td>314.853761</td>
-      <td>315.877231</td>
-      <td>317.895325</td>
-      <td>321.337098</td>
+      <td>0</td>
+      <td>529.0</td>
+      <td>303.0</td>
+      <td>110.0</td>
+      <td>132.0</td>
+      <td>0.994049</td>
+      <td>536.733620</td>
+      <td>534.369016</td>
+      <td>533.012366</td>
+      <td>533.194444</td>
       <td>...</td>
-      <td>0.015860</td>
-      <td>0.000025</td>
-      <td>0.000108</td>
-      <td>0.002324</td>
-      <td>0.000214</td>
-      <td>0.917784</td>
-      <td>0.001381</td>
-      <td>0.001332</td>
-      <td>0.076859</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>4.255120</td>
+      <td>8.171329</td>
+      <td>0.000269</td>
+      <td>0.006189</td>
+      <td>0.001372</td>
+      <td>0.973058</td>
+      <td>0.000859</td>
+      <td>0.000572</td>
+      <td>0.017682</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0.0</td>
-      <td>435.751950</td>
-      <td>212.001750</td>
-      <td>76.493827</td>
-      <td>95.736649</td>
-      <td>0.999937</td>
-      <td>439.072266</td>
-      <td>438.872138</td>
-      <td>439.476009</td>
-      <td>440.813668</td>
+      <td>0</td>
+      <td>676.0</td>
+      <td>283.0</td>
+      <td>120.0</td>
+      <td>140.0</td>
+      <td>0.993604</td>
+      <td>686.931943</td>
+      <td>685.053395</td>
+      <td>684.001543</td>
+      <td>684.407677</td>
       <td>...</td>
-      <td>0.300772</td>
-      <td>0.000001</td>
-      <td>0.001694</td>
-      <td>0.022541</td>
-      <td>0.000762</td>
-      <td>0.649048</td>
-      <td>0.043860</td>
-      <td>0.000816</td>
-      <td>0.281279</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>9.734631</td>
+      <td>6.029474</td>
+      <td>0.000677</td>
+      <td>0.005988</td>
+      <td>0.001107</td>
+      <td>0.953000</td>
+      <td>0.001957</td>
+      <td>0.005966</td>
+      <td>0.031306</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>0.0</td>
-      <td>533.900150</td>
-      <td>308.100535</td>
-      <td>91.076060</td>
-      <td>119.357605</td>
-      <td>0.999775</td>
-      <td>535.784887</td>
-      <td>533.329005</td>
-      <td>531.925614</td>
-      <td>532.258772</td>
+      <td>0</td>
+      <td>215.0</td>
+      <td>45.0</td>
+      <td>102.0</td>
+      <td>125.0</td>
+      <td>0.990833</td>
+      <td>220.173312</td>
+      <td>218.134724</td>
+      <td>216.974434</td>
+      <td>217.157989</td>
       <td>...</td>
-      <td>0.035089</td>
-      <td>0.011815</td>
-      <td>0.000310</td>
-      <td>0.005809</td>
-      <td>0.000977</td>
-      <td>0.972369</td>
-      <td>0.000534</td>
-      <td>0.000787</td>
-      <td>0.019214</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>14.068018</td>
+      <td>-4.917812</td>
+      <td>0.001056</td>
+      <td>0.005686</td>
+      <td>0.000178</td>
+      <td>0.930699</td>
+      <td>0.000242</td>
+      <td>0.001177</td>
+      <td>0.060962</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>0.0</td>
-      <td>214.450517</td>
-      <td>64.650659</td>
-      <td>91.337077</td>
-      <td>111.502833</td>
-      <td>0.995610</td>
-      <td>220.870587</td>
-      <td>218.820371</td>
-      <td>217.513163</td>
-      <td>217.441024</td>
+      <td>0</td>
+      <td>430.0</td>
+      <td>208.0</td>
+      <td>85.0</td>
+      <td>100.0</td>
+      <td>0.990231</td>
+      <td>439.764975</td>
+      <td>439.281783</td>
+      <td>439.591148</td>
+      <td>440.700340</td>
       <td>...</td>
-      <td>0.035445</td>
-      <td>0.000021</td>
-      <td>0.000504</td>
-      <td>0.004014</td>
-      <td>0.000283</td>
-      <td>0.926783</td>
-      <td>0.000241</td>
-      <td>0.001621</td>
-      <td>0.066554</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/ti...</td>
+      <td>1.971143</td>
+      <td>-4.030670</td>
+      <td>0.001312</td>
+      <td>0.018950</td>
+      <td>0.000629</td>
+      <td>0.665189</td>
+      <td>0.040488</td>
+      <td>0.000821</td>
+      <td>0.272612</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/t...</td>
     </tr>
   </tbody>
 </table>
-<p>6 rows × 170 columns</p>
+<p>6 rows × 173 columns</p>
 </div></div></div>
 </div>
 <p>When you have multiple images, you can still call the plot_detection which will plot results for all input images. If you have a lot of images, we recommend checking one by one using slicing.</p>
@@ -1371,8 +1379,8 @@ Loading emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_28_0.png" src="../_images/detector_28_0.png" />
-<img alt="../_images/detector_28_1.png" src="../_images/detector_28_1.png" />
+<img alt="../_images/detector_31_0.png" src="../_images/detector_31_0.png" />
+<img alt="../_images/detector_31_1.png" src="../_images/detector_31_1.png" />
 </div>
 </div>
 <p>You can use the slicing function to plot specific rows in the detection results or for a particular input file.</p>
@@ -1383,7 +1391,7 @@ Loading emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_30_0.png" src="../_images/detector_30_0.png" />
+<img alt="../_images/detector_33_0.png" src="../_images/detector_33_0.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1394,7 +1402,7 @@ Loading emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/detector_31_0.png" src="../_images/detector_31_0.png" />
+<img alt="../_images/detector_34_0.png" src="../_images/detector_34_0.png" />
 </div>
 </div>
 </div>
@@ -1460,8 +1468,8 @@ Loading emotion model:  fer
       <th>x_2</th>
       <th>x_3</th>
       <th>...</th>
-      <th>AU28</th>
-      <th>AU43</th>
+      <th>Roll</th>
+      <th>Yaw</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1475,127 +1483,127 @@ Loading emotion model:  fer
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.0</td>
-      <td>320.202412</td>
-      <td>57.558373</td>
-      <td>213.289391</td>
-      <td>280.135407</td>
-      <td>0.999956</td>
-      <td>328.068297</td>
-      <td>330.247982</td>
-      <td>335.995479</td>
-      <td>344.494300</td>
+      <td>0</td>
+      <td>323.0</td>
+      <td>47.0</td>
+      <td>235.0</td>
+      <td>312.0</td>
+      <td>0.977491</td>
+      <td>329.818614</td>
+      <td>331.513568</td>
+      <td>336.909859</td>
+      <td>345.183024</td>
       <td>...</td>
-      <td>0.280955</td>
-      <td>0.003971</td>
-      <td>0.002144</td>
-      <td>0.017533</td>
-      <td>0.004198</td>
-      <td>0.052163</td>
-      <td>0.656592</td>
-      <td>0.000451</td>
-      <td>0.266918</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
+      <td>-4.564210</td>
+      <td>12.390758</td>
+      <td>0.002020</td>
+      <td>0.018194</td>
+      <td>0.005440</td>
+      <td>0.034191</td>
+      <td>0.696466</td>
+      <td>0.000493</td>
+      <td>0.243196</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
     </tr>
     <tr>
       <th>24</th>
-      <td>24.0</td>
-      <td>342.495606</td>
-      <td>65.060999</td>
-      <td>201.611214</td>
-      <td>272.792829</td>
-      <td>0.998452</td>
-      <td>347.370955</td>
-      <td>347.782018</td>
-      <td>350.472735</td>
-      <td>355.718191</td>
+      <td>24</td>
+      <td>343.0</td>
+      <td>48.0</td>
+      <td>230.0</td>
+      <td>304.0</td>
+      <td>0.977991</td>
+      <td>349.081134</td>
+      <td>348.934064</td>
+      <td>351.482635</td>
+      <td>357.244207</td>
       <td>...</td>
-      <td>0.370595</td>
-      <td>0.435345</td>
-      <td>0.000546</td>
-      <td>0.007087</td>
-      <td>0.053077</td>
-      <td>0.005362</td>
-      <td>0.926105</td>
-      <td>0.000480</td>
-      <td>0.007343</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
+      <td>-3.138015</td>
+      <td>14.580710</td>
+      <td>0.000623</td>
+      <td>0.007809</td>
+      <td>0.057685</td>
+      <td>0.006284</td>
+      <td>0.918457</td>
+      <td>0.000548</td>
+      <td>0.008594</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
     </tr>
     <tr>
       <th>48</th>
-      <td>48.0</td>
-      <td>342.608143</td>
-      <td>47.947295</td>
-      <td>203.172812</td>
-      <td>276.045015</td>
-      <td>0.999960</td>
-      <td>342.359266</td>
-      <td>340.776404</td>
-      <td>341.667753</td>
-      <td>344.410859</td>
+      <td>48</td>
+      <td>328.0</td>
+      <td>40.0</td>
+      <td>225.0</td>
+      <td>292.0</td>
+      <td>0.971741</td>
+      <td>342.229085</td>
+      <td>340.880180</td>
+      <td>342.069887</td>
+      <td>345.335482</td>
       <td>...</td>
-      <td>0.171885</td>
-      <td>0.065533</td>
-      <td>0.001262</td>
-      <td>0.016965</td>
-      <td>0.026640</td>
-      <td>0.006251</td>
-      <td>0.939121</td>
-      <td>0.000101</td>
-      <td>0.009660</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
+      <td>2.120170</td>
+      <td>3.003317</td>
+      <td>0.002116</td>
+      <td>0.022376</td>
+      <td>0.018798</td>
+      <td>0.005275</td>
+      <td>0.940417</td>
+      <td>0.000094</td>
+      <td>0.010924</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
     </tr>
     <tr>
       <th>72</th>
-      <td>72.0</td>
-      <td>300.303537</td>
-      <td>64.434191</td>
-      <td>217.068643</td>
-      <td>281.385054</td>
-      <td>0.997365</td>
-      <td>317.485745</td>
-      <td>318.096879</td>
-      <td>321.099939</td>
-      <td>325.844969</td>
+      <td>72</td>
+      <td>307.0</td>
+      <td>62.0</td>
+      <td>229.0</td>
+      <td>297.0</td>
+      <td>0.962885</td>
+      <td>319.267734</td>
+      <td>319.683374</td>
+      <td>322.066300</td>
+      <td>325.635348</td>
       <td>...</td>
-      <td>0.134151</td>
-      <td>0.001940</td>
-      <td>0.006043</td>
-      <td>0.018187</td>
-      <td>0.028824</td>
-      <td>0.001597</td>
-      <td>0.939004</td>
-      <td>0.000300</td>
-      <td>0.006044</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
+      <td>1.996883</td>
+      <td>6.923205</td>
+      <td>0.005471</td>
+      <td>0.017503</td>
+      <td>0.022918</td>
+      <td>0.001278</td>
+      <td>0.947946</td>
+      <td>0.000177</td>
+      <td>0.004706</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
     </tr>
     <tr>
       <th>96</th>
-      <td>96.0</td>
-      <td>325.272769</td>
-      <td>97.683995</td>
-      <td>211.820777</td>
-      <td>270.068090</td>
-      <td>0.998955</td>
-      <td>342.997087</td>
-      <td>344.506875</td>
-      <td>349.551777</td>
-      <td>358.010617</td>
+      <td>96</td>
+      <td>323.0</td>
+      <td>77.0</td>
+      <td>235.0</td>
+      <td>282.0</td>
+      <td>0.959169</td>
+      <td>356.820100</td>
+      <td>358.856912</td>
+      <td>364.081503</td>
+      <td>371.658019</td>
       <td>...</td>
-      <td>0.297714</td>
-      <td>0.000106</td>
-      <td>0.028032</td>
-      <td>0.132029</td>
-      <td>0.023023</td>
-      <td>0.005211</td>
-      <td>0.774166</td>
-      <td>0.006976</td>
-      <td>0.030563</td>
-      <td>/home/jcheong/packages/feat/feat/tests/data/Wo...</td>
+      <td>-0.717578</td>
+      <td>6.199123</td>
+      <td>0.093571</td>
+      <td>0.085851</td>
+      <td>0.032598</td>
+      <td>0.032805</td>
+      <td>0.681749</td>
+      <td>0.016508</td>
+      <td>0.056917</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 170 columns</p>
+<p>5 rows × 173 columns</p>
 </div></div></div>
 </div>
 <p>You can also plot the detection results from a video. The frames are not extracted from the video (that will result in thousands of images) so the visualization only shows the detected face without the underlying image.</p>
@@ -1607,23 +1615,23 @@ Loading emotion model:  fer
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Input image /home/jcheong/packages/feat/feat/tests/data/WolfgangLanger_Pexels.mp4 not found.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Input image /tf/notebooks/second-py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4 not found.
 </pre></div>
 </div>
-<img alt="../_images/detector_37_1.png" src="../_images/detector_37_1.png" />
+<img alt="../_images/detector_40_1.png" src="../_images/detector_40_1.png" />
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">17</span><span class="o">*</span><span class="mi">24</span><span class="p">]]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">();</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">17</span><span class="o">*</span><span class="mi">24</span><span class="p">]]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">pose</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Input image /home/jcheong/packages/feat/feat/tests/data/WolfgangLanger_Pexels.mp4 not found.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Input image /tf/notebooks/second-py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4 not found.
 </pre></div>
 </div>
-<img alt="../_images/detector_38_1.png" src="../_images/detector_38_1.png" />
+<img alt="../_images/detector_41_1.png" src="../_images/detector_41_1.png" />
 </div>
 </div>
 <p>We can also leverage existing pandas plotting functions to show how emotions unfold over time. We can clearly see how her emotions change from sadness to happiness.</p>
@@ -1637,7 +1645,7 @@ Loading emotion model:  fer
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:&gt;
 </pre></div>
 </div>
-<img alt="../_images/detector_40_1.png" src="../_images/detector_40_1.png" />
+<img alt="../_images/detector_43_1.png" src="../_images/detector_43_1.png" />
 </div>
 </div>
 <p>In situations you want to predict EVERY frame of the video, you can ust leave out the <code class="docutils literal notranslate"><span class="pre">skip_frames</span></code> argument. Speed of processing may vary depending on the detector you use.</p>
@@ -1648,6 +1656,317 @@ Loading emotion model:  fer
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>frame</th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+      <th>x_0</th>
+      <th>x_1</th>
+      <th>x_2</th>
+      <th>x_3</th>
+      <th>...</th>
+      <th>Roll</th>
+      <th>Yaw</th>
+      <th>anger</th>
+      <th>disgust</th>
+      <th>fear</th>
+      <th>happiness</th>
+      <th>sadness</th>
+      <th>surprise</th>
+      <th>neutral</th>
+      <th>input</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>323.0</td>
+      <td>47.0</td>
+      <td>235.0</td>
+      <td>312.0</td>
+      <td>0.977491</td>
+      <td>329.818614</td>
+      <td>331.513568</td>
+      <td>336.909859</td>
+      <td>345.183024</td>
+      <td>...</td>
+      <td>-4.564210</td>
+      <td>12.390758</td>
+      <td>0.002020</td>
+      <td>0.018194</td>
+      <td>0.005440</td>
+      <td>0.034191</td>
+      <td>0.696466</td>
+      <td>0.000493</td>
+      <td>0.243196</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>323.0</td>
+      <td>48.0</td>
+      <td>235.0</td>
+      <td>311.0</td>
+      <td>0.977724</td>
+      <td>330.346721</td>
+      <td>331.945293</td>
+      <td>337.248512</td>
+      <td>345.495249</td>
+      <td>...</td>
+      <td>-4.624625</td>
+      <td>12.266683</td>
+      <td>0.001962</td>
+      <td>0.018491</td>
+      <td>0.005570</td>
+      <td>0.031792</td>
+      <td>0.711259</td>
+      <td>0.000534</td>
+      <td>0.230391</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>323.0</td>
+      <td>48.0</td>
+      <td>235.0</td>
+      <td>311.0</td>
+      <td>0.977435</td>
+      <td>330.346721</td>
+      <td>331.945293</td>
+      <td>337.248512</td>
+      <td>345.495249</td>
+      <td>...</td>
+      <td>-4.591380</td>
+      <td>12.527656</td>
+      <td>0.001962</td>
+      <td>0.018491</td>
+      <td>0.005570</td>
+      <td>0.031792</td>
+      <td>0.711259</td>
+      <td>0.000534</td>
+      <td>0.230391</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>324.0</td>
+      <td>48.0</td>
+      <td>235.0</td>
+      <td>311.0</td>
+      <td>0.977355</td>
+      <td>330.522167</td>
+      <td>331.923996</td>
+      <td>337.043412</td>
+      <td>345.127962</td>
+      <td>...</td>
+      <td>-4.616693</td>
+      <td>12.561322</td>
+      <td>0.001581</td>
+      <td>0.016927</td>
+      <td>0.006598</td>
+      <td>0.033978</td>
+      <td>0.737987</td>
+      <td>0.000562</td>
+      <td>0.202368</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4</td>
+      <td>323.0</td>
+      <td>48.0</td>
+      <td>235.0</td>
+      <td>311.0</td>
+      <td>0.977767</td>
+      <td>330.456886</td>
+      <td>332.272330</td>
+      <td>337.569289</td>
+      <td>345.518215</td>
+      <td>...</td>
+      <td>-4.579893</td>
+      <td>12.156491</td>
+      <td>0.001513</td>
+      <td>0.017296</td>
+      <td>0.007165</td>
+      <td>0.024062</td>
+      <td>0.825967</td>
+      <td>0.000414</td>
+      <td>0.123583</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>467</th>
+      <td>467</td>
+      <td>355.0</td>
+      <td>35.0</td>
+      <td>243.0</td>
+      <td>324.0</td>
+      <td>0.947179</td>
+      <td>392.216824</td>
+      <td>381.626835</td>
+      <td>373.784916</td>
+      <td>369.873185</td>
+      <td>...</td>
+      <td>23.179896</td>
+      <td>9.352515</td>
+      <td>0.000687</td>
+      <td>0.005894</td>
+      <td>0.001631</td>
+      <td>0.936086</td>
+      <td>0.004037</td>
+      <td>0.001321</td>
+      <td>0.050343</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>468</th>
+      <td>468</td>
+      <td>356.0</td>
+      <td>36.0</td>
+      <td>244.0</td>
+      <td>323.0</td>
+      <td>0.945765</td>
+      <td>392.416689</td>
+      <td>381.849898</td>
+      <td>374.077784</td>
+      <td>370.271937</td>
+      <td>...</td>
+      <td>22.789468</td>
+      <td>9.918881</td>
+      <td>0.000690</td>
+      <td>0.005891</td>
+      <td>0.001611</td>
+      <td>0.934415</td>
+      <td>0.003950</td>
+      <td>0.001374</td>
+      <td>0.052069</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>469</th>
+      <td>469</td>
+      <td>354.0</td>
+      <td>35.0</td>
+      <td>244.0</td>
+      <td>324.0</td>
+      <td>0.945626</td>
+      <td>392.165666</td>
+      <td>381.671055</td>
+      <td>373.987436</td>
+      <td>370.186268</td>
+      <td>...</td>
+      <td>22.736667</td>
+      <td>9.693153</td>
+      <td>0.000638</td>
+      <td>0.005629</td>
+      <td>0.001689</td>
+      <td>0.940763</td>
+      <td>0.003765</td>
+      <td>0.001202</td>
+      <td>0.046315</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>470</th>
+      <td>470</td>
+      <td>353.0</td>
+      <td>35.0</td>
+      <td>244.0</td>
+      <td>324.0</td>
+      <td>0.947247</td>
+      <td>392.060495</td>
+      <td>381.614833</td>
+      <td>374.002719</td>
+      <td>370.288185</td>
+      <td>...</td>
+      <td>22.655560</td>
+      <td>9.591950</td>
+      <td>0.000679</td>
+      <td>0.005598</td>
+      <td>0.001803</td>
+      <td>0.942961</td>
+      <td>0.003441</td>
+      <td>0.001292</td>
+      <td>0.044227</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+    <tr>
+      <th>471</th>
+      <td>471</td>
+      <td>352.0</td>
+      <td>35.0</td>
+      <td>245.0</td>
+      <td>324.0</td>
+      <td>0.947656</td>
+      <td>390.843145</td>
+      <td>380.212420</td>
+      <td>372.476744</td>
+      <td>368.872680</td>
+      <td>...</td>
+      <td>22.713829</td>
+      <td>10.294234</td>
+      <td>0.000803</td>
+      <td>0.006394</td>
+      <td>0.001936</td>
+      <td>0.936143</td>
+      <td>0.004329</td>
+      <td>0.001410</td>
+      <td>0.048985</td>
+      <td>/tf/notebooks/second-py-feat/feat/tests/data/W...</td>
+    </tr>
+  </tbody>
+</table>
+<p>472 rows × 173 columns</p>
+</div></div></div>
 </div>
 </div>
 
@@ -1660,16 +1979,16 @@ Loading emotion model:  fer
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "python"
+            mode: "base"
         },
         kernelOptions: {
-            kernelName: "python3",
+            kernelName: "base",
             path: "./content"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'python3'</script>
+    <script>kernelName = 'base'</script>
 
               </div>
               
@@ -1698,11 +2017,9 @@ Loading emotion model:  fer
 
       </div>
     </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
 
-    
-  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
-
-
-    
+  
   </body>
 </html>

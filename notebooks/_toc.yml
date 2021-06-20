@@ -1,28 +1,22 @@
-# Table of content
-# Learn more at https://jupyterbook.org/customize/toc.html
-# Intro
-- file: content/intro
-
-# T.O.C
-- part: Installation
+format: jb-book
+root: content/intro
+parts:
+- caption: Installation
   chapters:
-    - file: content/installation
-
-- part: Tutorials 
+  - file: content/installation
+- caption: Tutorials
   chapters:
-    - file: content/detector
-    - file: content/analysis
-    - file: content/plotting
-    - file: content/loadingOtherFiles
-    - file: content/train_hogs
-    - file: content/trainAUvisModel
-    - file: content/modelContribution
-
-- part: API
+  - file: content/detector
+  - file: content/analysis
+  - file: content/plotting
+  - file: content/loadingOtherFiles
+  - file: content/train_hogs
+  - file: content/trainAUvisModel
+  - file: content/modelContribution
+- caption: API
   chapters:
-    - file: api/index
-    
-- part: Contributing
+  - file: api/index
+- caption: Contributing
   chapters:
   - file: content/contribute
   - url: https://github.com/cosanlab/py-feat
