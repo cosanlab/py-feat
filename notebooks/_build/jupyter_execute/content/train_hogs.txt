@@ -1,13 +1,3 @@
-# Training HOG-based AU detectors
-*written by Tiankang Xie*  
-
-In the tutorial we will demonstrate how to train the HOG-based AU models as described in our paper. 
-The tutorial is split into 3 parts, where the first part demonstrates how to extract hog features from the dataset,
-and the second part demonstrates how to use the extracted hogs to perform statistical learning, the third part will be
-to demonstrate how to test the trained models with additional test data
-
-## Part 1: Extracting HOGs and Landmarks
-
 from PIL import Image, ImageOps
 import math
 from scipy.spatial import ConvexHull
@@ -133,8 +123,6 @@ plt.show()
 # Save the master file
 master_file.to_csv(write_path+"HOG_master_file.csv")
 
-## Part 2: Train Models with Hog
-
 import pandas as pd
 import numpy as np
 from sklearn.metrics import classification_report
@@ -259,8 +247,6 @@ def fit_transform_test(hog_features, au_matrix, AuNum_list, method='SVM'):
     return(all_svm_params)
 
 trained_svm = fit_transform_test(hog_features=x_features,au_matrix=master_ylabels,AuNum_list=AU_LABELS, method='SVM')
-
-## 3. Validate the results on benchmark data
 
 # If we have a test data:
 test_master_file = pd.read_csv("/home/tiankang/AU_Dataset/DISFA/toy_test.csv",index_col=0)

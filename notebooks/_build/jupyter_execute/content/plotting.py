@@ -1,21 +1,31 @@
-# Plotting examples
-*written by Jin Hyun Cheong*
+#!/usr/bin/env python
+# coding: utf-8
 
-Included in the toolbox are two models for Action Units to landmark visualization. The 'pyfeat_aus_to_landmarks.h5' model was created by using landmarks extracted using Py-FEAT to align each face in the dataset to a neutral face with numpy's least squares function. Then the PLS model was trained using Action Unit labels to predict transformed landmark data. 
+# # Plotting examples
+# *written by Jin Hyun Cheong*
 
-Draw a standard neutral face. Figsize can be altered but a ratio of 4:5 is recommended. 
+# Included in the toolbox are two models for Action Units to landmark visualization. The 'pyfeat_aus_to_landmarks.h5' model was created by using landmarks extracted using Py-FEAT to align each face in the dataset to a neutral face with numpy's least squares function. Then the PLS model was trained using Action Unit labels to predict transformed landmark data. 
+# 
+# Draw a standard neutral face. Figsize can be altered but a ratio of 4:5 is recommended. 
+
+# In[1]:
+
 
 # Load modules
-%matplotlib inline
+get_ipython().run_line_magic('matplotlib', 'inline')
 from feat.plotting import plot_face
 import numpy as np
 import matplotlib.pyplot as plt
 
 plot_face(au=np.zeros(20))
 
-## Draw lineface using input vector
 
-Affectiva vectors should be divided by twenty for use with our 'blue' model. 
+# ## Draw lineface using input vector
+
+# Affectiva vectors should be divided by twenty for use with our 'blue' model. 
+
+# In[42]:
+
 
 from feat.plotting import plot_face
 import numpy as np
@@ -32,7 +42,11 @@ fig, axes = plt.subplots(1,2)
 plot_face(model=None, ax = axes[0], au = np.zeros(20), color='k', linewidth=1, linestyle='-')
 plot_face(model=None, ax = axes[1], au = np.array(au), color='k', linewidth=1, linestyle='-')
 
-## Add a vectorfield with arrows from the changed face back to neutral and vice versa 
+
+# ## Add a vectorfield with arrows from the changed face back to neutral and vice versa 
+
+# In[10]:
+
 
 from feat.plotting import plot_face, predict
 from feat.utils import load_h5
@@ -59,7 +73,11 @@ plot_face(model = model, ax = axes[0], au = np.array(au),
 plot_face(model = model, ax = axes[1], au = np.zeros(len(au)), 
             vectorfield = vectors, color='k', linewidth=1, linestyle='-')
 
-## Add muscle heatmaps to the plot
+
+# ## Add muscle heatmaps to the plot
+
+# In[11]:
+
 
 from feat.plotting import plot_face
 from feat.utils import load_h5
@@ -78,6 +96,10 @@ muscles = {'all': 'heatmap'}
 plot_face(model=model, au = np.array(au), 
           muscles = muscles, color='k', linewidth=1, linestyle='-')
 
+
+# In[12]:
+
+
 from feat.plotting import plot_face
 from feat.utils import load_h5
 import numpy as np
@@ -94,7 +116,11 @@ muscles = {'all': 'heatmap'}
 # Plot face
 plot_face(model=None, au = np.array(au), muscles = muscles, color='k', linewidth=1, linestyle='-')
 
-## Make sure muscle array contains 'facet' for a facet heatmap
+
+# ## Make sure muscle array contains 'facet' for a facet heatmap
+
+# In[13]:
+
 
 from feat.plotting import plot_face
 from feat.utils import load_h5
@@ -114,9 +140,13 @@ muscles = {'all': 'heatmap', 'facet': 1}
 # Plot face
 plot_face(model=model, au = au, muscles = muscles, color='k', linewidth=1, linestyle='-')
 
-## Add gaze vectors
-Add gaze vectors to indicate where the eyes are looking.   
-Gaze vectors are length 4 (lefteye_x, lefteye_y, righteye_x, righteye_y) where the y orientation is positive for looking upwards.
+
+# ## Add gaze vectors
+# Add gaze vectors to indicate where the eyes are looking.   
+# Gaze vectors are length 4 (lefteye_x, lefteye_y, righteye_x, righteye_y) where the y orientation is positive for looking upwards.
+
+# In[14]:
+
 
 from feat.plotting import plot_face
 from feat.utils import load_h5
@@ -132,10 +162,14 @@ gaze = [-1, 5, 1, 5]
 # Plot face
 plot_face(model=None, au = au, gaze = gaze, color='k', linewidth=1, linestyle='-')
 
-## Call plot method on Fex instances
-It is possible to call the `plot_aus` method within openface, facet, affdex fex instances
 
-OpenFace
+# ## Call plot method on Fex instances
+# It is possible to call the `plot_aus` method within openface, facet, affdex fex instances
+
+# OpenFace
+
+# In[20]:
+
 
 from feat.plotting import plot_face
 import numpy as np
@@ -147,3 +181,4 @@ from os.path import join
 test_file = join(get_test_data_path(),'OpenFace_Test.csv')
 openface = read_openface(test_file)
 openface.plot_aus(12, muscles={'all': "heatmap"}, gaze = None)
+
