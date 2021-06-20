@@ -47,8 +47,25 @@
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/onet.pt", "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.pt", "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.pt"
             ]},
         "faceboxes": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"]}
+            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"]
         },
+        "img2pose": {
+            "urls": [
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/img2pose_v1.pth",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_mean_v1.npy",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_stddev_v1.npy",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy"
+            ]
+        },
+         "img2pose-c": {
+            "urls": [
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/img2pose_v1_ft_300w_lp.pth",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_mean_v1.npy",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_stddev_v1.npy",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy"
+            ]
+        }
+    },
     "landmark_detectors": {
         "lbfmodel": {
             "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"]
