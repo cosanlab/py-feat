@@ -6,7 +6,6 @@
 [![DOI](https://zenodo.org/badge/118517740.svg)](https://zenodo.org/badge/latestdoi/118517740)
 
 
-
 Py-FEAT is a suite for facial expressions (FEX) research written in Python. This package includes tools to detect faces, extract emotional facial expressions (e.g., happiness, sadness, anger), facial muscle movements (e.g., action units), and facial landmarks, from videos and images of faces, as well as methods to preprocess, analyze, and visualize FEX data. 
 
 For detailed examples, tutorials, and API please refer to the [Py-FEAT website](https://cosanlab.github.io/py-feat/). 
@@ -53,6 +52,7 @@ Face detection models
 - [FaceBoxes](https://github.com/zisianw/FaceBoxes.PyTorch)
 - [MTCNN](https://github.com/ipazc/mtcnn)
 - [RetinaFace](https://github.com/deepinsight/insightface/)
+- [img2pose](https://github.com/vitoralbiero/img2pose)
 
 Facial landmark detection models
 - [MobileNet](https://github.com/cunjian/pytorch_face_landmark)
@@ -71,6 +71,10 @@ Emotion detection models
 - FEAT-Logistic
 - [FerNet](https://www.kaggle.com/gauravsharma99/facial-emotion-recognition?select=fer2013)
 - [ResMaskNet: Residual Masking Network](https://github.com/phamquiluan/ResidualMaskingNetwork)
+
+Head pose estimation models
+- [img2pose](https://github.com/vitoralbiero/img2pose)
+- Perspective-n-Point algorithm to solve 3D head pose from 2D facial landmarks (via `cv2`)
 
 ## Contributing
 1. Fork the repository on GitHub. 
