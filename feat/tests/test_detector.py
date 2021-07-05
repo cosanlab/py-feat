@@ -364,36 +364,3 @@ def test_simultaneous():
         au_model="jaanet",
     )
     files = detector04.process_frame(img01, 0)
-
-    # Test with different set of detectors
-    detector05 = Detector(
-        face_model="img2pose",
-        emotion_model="rf",
-        landmark_model="mobilenet",
-        au_model="svm",
-        facepose_model="img2pose"
-    )
-    files = detector05.process_frame(img01, 0)
-
-
-def test_no_face_detected():
-    detector = Detector(
-        face_model="RetinaFace",
-        emotion_model="fer",
-        landmark_model="PFLD",
-        au_model="jaanet",
-        facepose_model="PnP"
-    )
-    faceless_img_file = os.path.join(get_test_data_path(), "no-face.jpg")
-    faceless_img = cv2.imread(faceless_img_file)
-    prediction_with_face = detector.process_frame(img01)[0]
-    prediction_without_face = detector.process_frame(faceless_img)[0]
-
-    # Check that both predictions contain same FEX columns
-    assert prediction_with_face.columns.to_list() == prediction_without_face.columns.to_list()
-    # Check that the detector did not detect a face in the faceless image
-    assert prediction_without_face.drop(columns=['frame']).isnull().values.all()
-
-
-if __name__ == '__main__':
-    test_emotionrf()
