@@ -1,6 +1,7 @@
 from __future__ import division
 
 """Functions to help detect face, landmarks, emotions, action units from images and videos"""
+import traceback # REMOVE LATER
 
 from collections import deque
 from multiprocessing.pool import ThreadPool
@@ -24,6 +25,7 @@ from feat.utils import (
     FEAT_EMOTION_MAPPER,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
+    FACET_FACEPOSE_COLUMNS,
     FEAT_TIME_COLUMNS,
     FACET_TIME_COLUMNS,
     BBox,
@@ -46,6 +48,8 @@ from feat.face_detectors.Retinaface import Retinaface_test
 from feat.landmark_detectors.basenet_test import MobileNet_GDConv
 from feat.landmark_detectors.pfld_compressed_test import PFLDInference
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
+from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
+from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 import json
 from torchvision.datasets.utils import download_url
 import zipfile
@@ -57,6 +61,7 @@ class Detector(object):
         landmark_model="mobilenet",
         au_model="rf",
         emotion_model="resmasknet",
+        facepose_model="pnp",
         n_jobs=1,
     ):
         """Detector class to detect FEX from images or videos.
@@ -73,8 +78,10 @@ class Detector(object):
                 landmark_model (str, default=mobilenet): Nam eof landmark model
                 au_model (str, default=rf): Name of Action Unit detection model
                 emotion_model (str, default=resmasknet): Path to emotion detection model.
+                facepose_model (str, default=pnp): Name of headpose detection model.
                 face_detection_columns (list): Column names for face detection ouput (x, y, w, h)
                 face_landmark_columns (list): Column names for face landmark output (x0, y0, x1, y1, ...)
+                emotion_model_columns (list): Column names for emotion model output
                 emotion_model_columns (list): Column names for emotion model output
                 mapper (dict): Class names for emotion model output by index.
                 input_shape (dict)
@@ -95,6 +102,12 @@ class Detector(object):
             self.map_location = lambda storage, loc: storage.cuda()
         else:
             self.map_location = "cpu"
+
+        # Handle img2pose mismatch error
+        if facepose_model and "img2pose" in facepose_model.lower() and facepose_model.lower() != face_model.lower():
+            print(facepose_model, " is both a face detector and pose estimator, and cannot be used with a different "
+                                  "face detector. Setting face detector to use ", facepose_model, '.', sep='')
+            face_model = facepose_model
 
         """ LOAD UP THE MODELS """
         print("Loading Face Detection model: ", face_model)
@@ -138,6 +151,14 @@ class Detector(object):
                 self.face_detector = Retinaface_test.Retinaface()
             elif face_model.lower() == "mtcnn":
                 self.face_detector = MTCNN()
+            elif "img2pose" in face_model.lower():
+                # Check if user selected unconstrained or constrained version
+                constrained = False  # use by default
+                if face_model.lower() == "img2pose-c":
+                    constrained = True
+                # Used as both face detector and facepose estimator
+                self.face_detector = Img2Pose(cpu_mode=self.map_location == "cpu", constrained=constrained)
+                self.facepose_detector = self.face_detector
 
         self.info["face_model"] = face_model
         facebox_columns = FEAT_FACEBOX_COLUMNS
@@ -241,13 +262,27 @@ class Detector(object):
         empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
         self._empty_auoccurence = empty_au_occurs
 
+        print("Loading facepose model: ", facepose_model)
+        self.info["facepose_model"] = facepose_model
+        if facepose_model:
+            if facepose_model.lower() == "pnp":
+                self.facepose_detector = PerspectiveNPoint()
+            # Note that img2pose case is handled under face_model loading
+
+        self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
+        predictions = np.empty((1, len(FACET_FACEPOSE_COLUMNS)))
+        predictions[:] = np.nan
+        empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
+        self._empty_facepose = empty_facepose
+
         self.info["output_columns"] = (
-            FEAT_TIME_COLUMNS
-            + facebox_columns
-            + landmark_columns
-            + auoccur_columns
-            + FEAT_EMOTION_COLUMNS
-            + ["input"]
+                FEAT_TIME_COLUMNS
+                + facebox_columns
+                + landmark_columns
+                + auoccur_columns
+                + FACET_FACEPOSE_COLUMNS
+                + FEAT_EMOTION_COLUMNS
+                + ["input"]
         )
 
     def __getitem__(self, i):
@@ -260,21 +295,24 @@ class Detector(object):
             frame (array): image array
 
         Returns:
-            array: face detection results (x, y, x2, y2)
+            list: face detection results (x, y, x2, y2)
 
-        Examples: 
+        Examples:
             >>> import cv2
             >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
-            >>> detector = Detector()        
+            >>> detector = Detector()
             >>> detector.detect_faces(frame)
         """
         # check if frame is 4d
-        if frame.ndim==3:
-            frame = np.expand_dims(frame,0)
-        assert frame.ndim==4, "Frame needs to be 4 dimensions (list of images)"
-        #height, width, _ = frame.shape
-        faces = self.face_detector(frame)
+        if frame.ndim == 3:
+            frame = np.expand_dims(frame, 0)
+        assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+        # height, width, _ = frame.shape
+        if "img2pose" in self.info["face_model"]:
+            faces, poses = self.face_detector(frame)
+        else:
+            faces = self.face_detector(frame)
 
         if len(faces) == 0:
             print("Warning: NO FACE is detected")
@@ -596,6 +634,54 @@ class Detector(object):
             raise ValueError(
                 'Cannot recognize input emo model! Please try to re-type emotion model')
 
+    def detect_facepose(self, frame, detected_faces=None, landmarks=None):
+        """ Detect facepose from image or video frame.
+
+        - When used with img2pose, returns *all* detected poses, and facebox and landmarks are ignored.
+          Use `detect_face` method in order to obtain bounding boxes corresponding to the detected poses returned
+          by this method.
+
+        - When used with pnp model, 'facebox' param is ignored, and the passed 2D landmarks are used to
+          compute the head pose for the single face associated with the passed landmarks.
+            frame (np.ndarray): list of cv2 images
+            detected_faces (list): (num_images, num_faces, 4) faceboxes representing faces in the list of images
+            landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images
+
+        Returns:
+            np.ndarray: (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in degrees) for each face within in
+                        each image
+
+
+        Examples:
+            # With img2pose
+            >>> import cv2
+            >>> frame = [cv2.imread(imgfile)]
+            >>> from feat import Detector
+            >>> detector = Detector(face_model='imgpose', facepose_model='img2pose')
+            >>> detector.detect_facepose([frame]) # one shot computation
+
+            # With PnP
+            >>> import cv2
+            >>> frame = [cv2.imread(imgfile)]
+            >>> from feat import Detector
+            >>> detector = Detector(face_model='retinaface', landmark_model='mobilefacenet', facepose_model='pnp')
+            >>> faces = detector.detect_faces(frame)
+            >>> landmarks = detector.detect_landmarks(detected_faces=faces)
+            >>> detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
+        """
+        # check if frame is 4d
+        if frame.ndim == 3:
+            frame = np.expand_dims(frame, 0)
+        assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+
+        # height, width, _ = frame.shape
+        if "img2pose" in self.info["face_model"]:
+            faces, poses = self.facepose_detector(frame)
+        else:
+            poses = self.facepose_detector(frame, landmarks)
+
+        return poses
+
 
     def process_frame(self, frames, counter=0, singleframe4error=False):
         """function to run face detection, landmark detection, and emotion detection on a frame.
@@ -607,33 +693,33 @@ class Detector(object):
             singleframe4error (bool, default = False): When exception occurs inside a batch, instead of nullify
                                                 the whole batch, process each img in batch individually 
         Returns:
-            out (pandas dataframe): Prediction results dataframe.
-            counter: the updated number of counter. Used to track the batch size and image number
-
-        Example:
+            feat.data.Fex (dataframe): Prediction results dataframe.
+            int: counter - the updated number of counter. Used to track the batch size and image number
 
         """
         # check if frame is 4d
-        if frames.ndim==3:
-            frames = np.expand_dims(frames,0)
-        assert frames.ndim==4, "Frame needs to be 4 dimensions (list of images)"
+        if frames.ndim == 3:
+            frames = np.expand_dims(frames, 0)
+        assert frames.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
         out = None
         try:
-            detected_faces = self.detect_faces(frame=frames)        
+            detected_faces = self.detect_faces(frame=frames)
             landmarks = self.detect_landmarks(frame=frames, detected_faces=detected_faces)
+            poses = self.detect_facepose(frame=frames, detected_faces=detected_faces, landmarks=landmarks)
             index_len = [len(ii) for ii in landmarks]
 
             if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
-                #landmarks_2 = round_vals(landmarks,3)
+                # landmarks_2 = round_vals(landmarks,3)
                 landmarks_2 = landmarks
-                hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks_2)
+                hog_arr, new_lands = self._batch_hog(frames=frames, detected_faces=detected_faces,
+                                                     landmarks=landmarks_2)
                 au_occur = self.detect_aus(frame=hog_arr, landmarks=new_lands)
             else:
                 au_occur = self.detect_aus(
                     frame=frames, landmarks=landmarks)
 
             if self["emotion_model"].lower() in ['svm', 'rf']:
-                hog_arr, new_lands = self._batch_hog(frames = frames, detected_faces = detected_faces, landmarks = landmarks)
+                hog_arr, new_lands = self._batch_hog(frames=frames, detected_faces=detected_faces, landmarks=landmarks)
                 emo_pred = self.detect_emotions(
                     frame=hog_arr, facebox=None, landmarks=new_lands)
             else:
@@ -659,6 +745,12 @@ class Detector(object):
                         index=[counter + j],
                     )
 
+                    facepose_df = pd.DataFrame(
+                        [poses[i][j].flatten(order="F")], 
+                        columns=self["facepose_model_columns"], 
+                        index=[counter + j]
+                    )
+
                     landmarks_df = pd.DataFrame(
                         [landmarks[i][j].flatten(order="F")],
                         columns=self["face_landmark_columns"],
@@ -666,29 +758,31 @@ class Detector(object):
                     )
 
                     au_occur_df = pd.DataFrame(
-                        my_aus[i][j,:].reshape(1,len(self["au_presence_columns"])), columns=self["au_presence_columns"], index=[
+                        my_aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
+                        columns=self["au_presence_columns"], index=[
                             counter + j]
                     )
 
                     emo_pred_df = pd.DataFrame(
-                        my_emo[i][j,:].reshape(1,len(FEAT_EMOTION_COLUMNS)), columns=FEAT_EMOTION_COLUMNS, index=[counter + j]
+                        my_emo[i][j, :].reshape(1, len(FEAT_EMOTION_COLUMNS)), columns=FEAT_EMOTION_COLUMNS,
+                        index=[counter + j]
                     )
 
                     tmp_df = pd.concat(
-                        [facebox_df, landmarks_df, au_occur_df, emo_pred_df], axis=1
+                        [facebox_df, landmarks_df, au_occur_df, facepose_df, emo_pred_df], axis=1
                     )
                     tmp_df[FEAT_TIME_COLUMNS] = counter
                     if out is None:
                         out = tmp_df
                     else:
                         out = pd.concat([out, tmp_df], axis=0)
-                    #out[FEAT_TIME_COLUMNS] = counter
+                    # out[FEAT_TIME_COLUMNS] = counter
 
                 counter += 1
-                
-            return(out, counter)
+            return out, counter
 
         except:
+            traceback.print_exc()
             print("exception occurred in the batch")
             if singleframe4error:
                 print("Trying to process one image at a time in the batch")
@@ -814,6 +908,7 @@ class Detector(object):
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
                 landmark_columns=openface_2d_landmark_columns,
+                facepose_columns=FACET_FACEPOSE_COLUMNS,
                 time_columns=FEAT_TIME_COLUMNS,
                 detector="Feat",
             )
@@ -924,6 +1019,7 @@ class Detector(object):
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
                 landmark_columns=openface_2d_landmark_columns,
+                facepose_columns=FACET_FACEPOSE_COLUMNS,
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )

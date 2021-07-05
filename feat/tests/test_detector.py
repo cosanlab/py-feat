@@ -18,6 +18,7 @@ inputFname = os.path.join(get_test_data_path(), "input.jpg")
 img01 = read_pictures([inputFname])
 _, h, w, _ = img01.shape
 
+
 def test_detector():
     detector = Detector(n_jobs=1)
     assert detector["n_jobs"] == 1
@@ -31,6 +32,7 @@ def test_faceboxes():
         landmark_model=None,
         au_model=None,
         emotion_model=None,
+        facepose_model=None,
         n_jobs=1,
     )
     out = detector01.detect_faces(img01)[0]
@@ -40,7 +42,7 @@ def test_faceboxes():
     bbox_y = out[0][2]
     bbox_height = out[0][3]
     assert len(out[0]) == 5
-    assert bbox_x > 180 and bbox_x < 200
+    assert 180 < bbox_x < 200
 
 
 def test_retinaface():
@@ -49,6 +51,7 @@ def test_retinaface():
         landmark_model=None,
         au_model=None,
         emotion_model=None,
+        facepose_model=None,
         n_jobs=1,
     )
     out = detector02.detect_faces(img01)[0]
@@ -58,7 +61,8 @@ def test_retinaface():
     bbox_y = out[0][2]
     bbox_height = out[0][3]
     assert len(out[0]) == 5
-    assert bbox_x > 180 and bbox_x < 200
+    assert 180 < bbox_x < 200
+
 
 def test_mtcnn():
     detector03 = Detector(
@@ -66,6 +70,7 @@ def test_mtcnn():
         landmark_model=None,
         au_model=None,
         emotion_model=None,
+        facepose_model=None,
         n_jobs=1,
     )
     out = detector03.detect_faces(img01)[0]
@@ -76,6 +81,38 @@ def test_mtcnn():
     bbox_height = out[0][3]
     assert len(out[0]) == 5
     assert bbox_x > 180 and bbox_x < 200
+
+
+def test_img2pose():
+    # Test that both face detection and facepose estimation work
+    detector = Detector(
+        face_model="img2pose", facepose_model="img2pose"
+    )
+    # Face detection
+    faces = detector.detect_faces(img01)[0]
+    bbox_x = faces[0][0]
+    assert bbox_x is not None
+    assert len(faces[0]) == 5
+    assert 180 < bbox_x < 200
+
+    # Pose estimation
+    poses = detector.detect_facepose(img01)[0]
+    pose_to_test = poses[0][0]  # first image and first face
+    pitch, roll, yaw = pose_to_test.reshape(-1)
+    assert -10 < pitch < 10
+    assert -5 < roll < 5
+    assert -10 < yaw < 10
+
+
+def test_img2pose_mismatch():
+    # Check that `detector` properly handles case where user selects img2pose as face pose estimator
+    # but selects a different face detector. Detector should tell user they must use img2pose as both face detector and
+    # pose estimator, and force face model to be `img2pose`.
+    detector = Detector(
+        face_model="RetinaFace", facepose_model="img2pose-c"
+    )
+    assert detector.info["face_model"] == "img2pose-c"
+
 
 def test_mobilefacenet():
     # Landmark Detector Test Case:
@@ -227,6 +264,24 @@ def test_emotionrf():
     out = detector1.detect_image(inputFname)
     assert out.emotions()["happiness"].values > 0.0
 
+
+def test_pnp():
+    # Test that facepose can be estimated properly using landmarks + pnp algorithm
+    detector = Detector(
+        face_model="RetinaFace",
+        landmark_model="MobileFaceNet",
+        facepose_model="PnP"
+    )
+    bboxes = detector.detect_faces(frame=img01)
+    lms = detector.detect_landmarks(frame=img01, detected_faces=bboxes)
+    poses = detector.detect_facepose(frame=img01, landmarks=lms)
+    pose_to_test = poses[0][0]  # first image and first face
+    pitch, roll, yaw = pose_to_test.reshape(-1)
+    assert -10 < pitch < 10
+    assert -5 < roll < 5
+    assert -10 < yaw < 10
+
+
 def test_wrongmodelname():
     with pytest.raises(KeyError):
         detector1 = Detector(emotion_model="badmodelname")
@@ -309,6 +364,3 @@ def test_simultaneous():
         au_model="jaanet",
     )
     files = detector04.process_frame(img01, 0)
-
-if __name__ == '__main__':
-    test_detect_image()
