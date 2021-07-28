@@ -725,7 +725,7 @@ class Detector(object):
             else:
                 emo_pred = self.detect_emotions(
                     frame=frames, facebox=detected_faces, landmarks=landmarks)
-
+        
             my_aus = self._concatenate_batch(indexed_length=index_len, au_results=au_occur)
             my_emo = self._concatenate_batch(indexed_length=index_len, au_results=emo_pred)
 
@@ -777,7 +777,7 @@ class Detector(object):
                     else:
                         out = pd.concat([out, tmp_df], axis=0)
                     # out[FEAT_TIME_COLUMNS] = counter
-
+                    
                 counter += 1
             return out, counter
 
@@ -794,11 +794,12 @@ class Detector(object):
                 for cter in range(frames.shape[0]):
                     emotion_df = self._empty_emotion.reindex(index=[counter+cter])
                     facebox_df = self._empty_facebox.reindex(index=[counter+cter])
+                    facepose_df = self._empty_facepose.reindex(index=[counter+cter])
                     landmarks_df = self._empty_landmark.reindex(index=[counter+cter])
                     au_occur_df = self._empty_auoccurence.reindex(index=[counter+cter])
 
                     out = pd.concat([facebox_df, landmarks_df,
-                                    au_occur_df, emotion_df], axis=1)
+                                    au_occur_df, facepose_df, emotion_df], axis=1)
                     out[FEAT_TIME_COLUMNS] = counter+cter
                     if newdf is None:
                         newdf = out
