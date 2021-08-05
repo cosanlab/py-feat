@@ -38,9 +38,13 @@ class RandomForestClassifier():
         #    frame = frame.reshape(1, -1)
         #if len(landmarks.shape) > 1:
         #    landmarks = landmarks.flatten().reshape(1, -1)
-        landmarks = np.array(landmarks)
-        landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        # landmarks = np.array(landmarks)
+        # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        # landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
+
+        landmarks = np.concatenate(landmarks)
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
+
         pca_transformed_frame = self.pca_model.transform(
             self.scaler.fit_transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
@@ -67,8 +71,10 @@ class SVMClassifier():
         """
         Note that here frame is represented by hogs
         """
-        landmarks = np.array(landmarks)
-        landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        # landmarks = np.array(landmarks)
+        # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        # landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
+        landmarks = np.concatenate(landmarks)
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
@@ -99,8 +105,9 @@ class LogisticClassifier():
         Note that here frame is represented by hogs
         """
 
-        landmarks = np.array(landmarks)
-        landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
+        # landmarks = np.array(landmarks)
+        landmarks = np.concatenate(landmarks)
+        #landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(

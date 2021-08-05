@@ -702,6 +702,7 @@ class Detector(object):
             frames = np.expand_dims(frames, 0)
         assert frames.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
         out = None
+        # TODO Changed here
         try:
             detected_faces = self.detect_faces(frame=frames)
             landmarks = self.detect_landmarks(frame=frames, detected_faces=detected_faces)
@@ -712,7 +713,7 @@ class Detector(object):
                 # landmarks_2 = round_vals(landmarks,3)
                 landmarks_2 = landmarks
                 hog_arr, new_lands = self._batch_hog(frames=frames, detected_faces=detected_faces,
-                                                     landmarks=landmarks_2)
+                                                        landmarks=landmarks_2)
                 au_occur = self.detect_aus(frame=hog_arr, landmarks=new_lands)
             else:
                 au_occur = self.detect_aus(
