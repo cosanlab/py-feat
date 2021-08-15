@@ -683,7 +683,7 @@ class Detector(object):
         return poses
 
 
-    def process_frame(self, frames, counter=0, singleframe4error=False):
+    def process_frame(self, frames, counter=0, singleframe4error=False, skip_frame_rate = 1):
         """function to run face detection, landmark detection, and emotion detection on a frame.
         TODO: probably need to add exceptions. The exception handling is not great yet
         NEW
@@ -779,7 +779,7 @@ class Detector(object):
                         out = pd.concat([out, tmp_df], axis=0)
                     # out[FEAT_TIME_COLUMNS] = counter
                     
-                counter += 1
+                counter += skip_frame_rate
             return out, counter
 
         except:
@@ -842,27 +842,28 @@ class Detector(object):
             frame_got, frame = cap.read()
             if frame_got:
                 if counter % skip_frames == 0:
+                    # if the 
                     if concat_frame is None:
                         concat_frame = np.expand_dims(frame,0)
                         tmp_counter = counter
                     else:
                         concat_frame = np.concatenate([concat_frame,
                                                     np.expand_dims(frame,0)],0)
-                if (counter % batch_size == 0) and (concat_frame is not None) and (counter != 0):
+                if (concat_frame is not None) and (counter != 0) and (concat_frame.shape[0] % batch_size == 0): # I think it's probably this error
                     if singleframe4error: 
                         try:
-                            df, _ = self.process_frame(concat_frame, counter=tmp_counter, singleframe4error=singleframe4error)
+                            df, _ = self.process_frame(concat_frame, counter=tmp_counter, singleframe4error=singleframe4error, skip_frame_rate=skip_frames)
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
-                                tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False)
+                                tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False, skip_frame_rate=skip_frames)
                                 tmp_counter += 1
                                 if df is None:
                                     df = tmp_df
                                 else:
                                     df = pd.concat((df, tmp_df),0)
                     else:
-                        df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                        df, _ = self.process_frame(concat_frame, counter=tmp_counter, skip_frame_rate=skip_frames)
 
                     df["input"] = inputFname
                     if outputFname:
@@ -879,18 +880,18 @@ class Detector(object):
                 if concat_frame is not None:
                     if singleframe4error: 
                         try:
-                            df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                            df, _ = self.process_frame(concat_frame, counter=tmp_counter, skip_frame_rate=skip_frames)
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
-                                tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False)
+                                tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False, skip_frame_rate=skip_frames)
                                 tmp_counter += 1
                                 if df is None:
                                     df = tmp_df
                                 else:
                                     df = pd.concat((df, tmp_df),0)
                     else:
-                        df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                        df, _ = self.process_frame(concat_frame, counter=tmp_counter, skip_frame_rate=skip_frames)
                     df["input"] = inputFname
                     if outputFname:
                         df[init_df.columns].to_csv(
