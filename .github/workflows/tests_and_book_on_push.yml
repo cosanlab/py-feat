@@ -123,7 +123,7 @@ jobs:
       - name: Build book
         run: |
           jupyter-book build notebooks
-          echo 'py-feat.org' > ./notebooks/html/CNAME
+          echo 'py-feat.org' > ./notebooks/_build/html/CNAME
 
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
