@@ -203,6 +203,8 @@ def get_resource_path():
     # return os.path.join(os.path.dirname(__file__), 'resources')
 
 
+# FIXME: PLSRegression from sklearn no longer has the attributes we're passing to it and
+# produces a set attribute error.
 def load_h5(file_name="pyfeat_aus_to_landmarks.h5"):
     """Load the h5 PLS model for plotting.
 
@@ -220,6 +222,8 @@ def load_h5(file_name="pyfeat_aus_to_landmarks.h5"):
         d4 = hf.get("x_std")
         model = PLSRegression(len(d1))
         model.coef_ = np.array(d1)
+        # NOTE: Need to convert to  x_weights_, y_weights_,
+        # x_loadings_, y_loadings_, x_rotations_, y_rotations_
         if int(__version__.split(".")[1]) < 24:
             model.x_mean_ = np.array(d2)
             model.y_mean_ = np.array(d3)
