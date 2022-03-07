@@ -1,4 +1,4 @@
-name: Tests
+name: Tests and Book on push
 
 on:
   push:
@@ -27,22 +27,22 @@ jobs:
       fail-fast: false
       matrix:
         # OSs to test
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         # Python versions to test
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8]
         # By default everything should pass for the workflow to pass
-        ok-fail: [false]
-        include:
-          # Rather than include 3.9 in the python versions, do it here so we can ignore failures on mac and windows with 3.9 (they have install issues)
-          - os: ubuntu-latest
-            python-version: 3.9
-            ok-fail: true
-          - os: macos-latest
-            python-version: 3.9
-            ok-fail: true
-          - os: windows-latest
-            python-version: 3.9
-            ok-fail: true
+        ok-fail: [true]
+        # include:
+        #   # Rather than include 3.9 in the python versions, do it here so we can ignore failures on mac and windows with 3.9 (they have install issues)
+        #   - os: ubuntu-latest
+        #     python-version: 3.9
+        #     ok-fail: true
+        #   - os: macos-latest
+        #     python-version: 3.9
+        #     ok-fail: true
+        #   - os: windows-latest
+        #     python-version: 3.9
+        #     ok-fail: true
     steps:
       # Step up miniconda
       - name: Download and setup Miniconda
@@ -95,3 +95,38 @@ jobs:
           coveralls --service=github --finish || coveralls --service=github-actions --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job (3): Build and deploy docs
+  docs:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    name: Build & deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Upgrade pip
+        run: |
+          # install pip=>20.1 to use "pip cache dir"
+          python3 -m pip install --upgrade pip
+
+      - name: Install deps
+        run: |
+          python3 -m pip install . -r requirements.txt
+          python3 -m pip install -r ./requirements-dev.txt
+
+      - name: Build book
+        run: |
+          jupyter-book build notebooks
+          echo 'py-feat.org' > ./notebooks/html/CNAME
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./notebooks/html
