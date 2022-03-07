@@ -404,21 +404,23 @@ def test_stats():
     assert b.shape == (2, 17)
     assert res.mean().mean() < 1
 
-    clf = openface.predict(X = ["AU02_c"], y = "AU04_c")
+    clf = openface.predict(X=["AU02_c"], y="AU04_c")
     assert clf.coef_ < 0
 
-    clf = openface.predict(X = openface[["AU02_c"]], y = openface["AU04_c"])
+    clf = openface.predict(X=openface[["AU02_c"]], y=openface["AU04_c"])
     assert clf.coef_ < 0
 
     t, p = openface[["AU02_c"]].ttest_1samp()
     assert t > 0
 
-    a = openface.aus().assign(input = "0")
-    b = openface.aus().apply(lambda x: x+np.random.rand(100)).assign(input = "1")
+    a = openface.aus().assign(input="0")
+    b = openface.aus().apply(lambda x: x + np.random.rand(100)).assign(input="1")
     doubled = pd.concat([a, b])
-    doubled.sessions = doubled['input']
-    t, p = doubled.ttest_ind(col="AU12_r", sessions = ("0", "1"))
-    assert(t < 0)
+    doubled.sessions = doubled["input"]
+    t, p = doubled.ttest_ind(col="AU12_r", sessions=("0", "1"))
+    assert t < 0
 
-    frame = np.concatenate([np.array(range(int(len(doubled)/2))), np.array(range(int(len(doubled)/2)))])
-    assert(doubled.assign(frame = frame).isc(col = "AU04_r").iloc[0,0] == 1)
+    frame = np.concatenate(
+        [np.array(range(int(len(doubled) / 2))), np.array(range(int(len(doubled) / 2)))]
+    )
+    assert doubled.assign(frame=frame).isc(col="AU04_r").iloc[0, 0] == 1

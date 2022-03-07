@@ -1,7 +1,7 @@
 from __future__ import division
 
 """Functions to help detect face, landmarks, emotions, action units from images and videos"""
-import traceback # REMOVE LATER
+import traceback  # REMOVE LATER
 
 from collections import deque
 from multiprocessing.pool import ThreadPool
@@ -33,14 +33,21 @@ from feat.utils import (
     padding,
     resize_with_padding,
     align_face_68pts,
-    FaceDetectionError
+    FaceDetectionError,
 )
 from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
-from feat.au_detectors.StatLearning.SL_test import RandomForestClassifier, SVMClassifier, LogisticClassifier
+from feat.au_detectors.StatLearning.SL_test import (
+    RandomForestClassifier,
+    SVMClassifier,
+    LogisticClassifier,
+)
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
-from feat.emo_detectors.StatLearning.EmoSL_test import EmoRandomForestClassifier, EmoSVMClassifier
+from feat.emo_detectors.StatLearning.EmoSL_test import (
+    EmoRandomForestClassifier,
+    EmoSVMClassifier,
+)
 import torch
 from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
 from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
@@ -53,6 +60,7 @@ from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 import json
 from torchvision.datasets.utils import download_url
 import zipfile
+
 
 class Detector(object):
     def __init__(
@@ -104,9 +112,19 @@ class Detector(object):
             self.map_location = "cpu"
 
         # Handle img2pose mismatch error
-        if facepose_model and "img2pose" in facepose_model.lower() and facepose_model.lower() != face_model.lower():
-            print(facepose_model, " is both a face detector and pose estimator, and cannot be used with a different "
-                                  "face detector. Setting face detector to use ", facepose_model, '.', sep='')
+        if (
+            facepose_model
+            and "img2pose" in facepose_model.lower()
+            and facepose_model.lower() != face_model.lower()
+        ):
+            print(
+                facepose_model,
+                " is both a face detector and pose estimator, and cannot be used with a different "
+                "face detector. Setting face detector to use ",
+                facepose_model,
+                ".",
+                sep="",
+            )
             face_model = facepose_model
 
         """ LOAD UP THE MODELS """
@@ -127,22 +145,33 @@ class Detector(object):
                 download_url(url, get_resource_path())
                 if ".zip" in url:
                     import zipfile
-                    with zipfile.ZipFile(os.path.join(get_resource_path(), "JAANetparams.zip"), 'r') as zip_ref:
+
+                    with zipfile.ZipFile(
+                        os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
+                    ) as zip_ref:
                         zip_ref.extractall(os.path.join(get_resource_path()))
-                if au_model.lower() in ['logistic', 'svm', 'rf']:
+                if au_model.lower() in ["logistic", "svm", "rf"]:
                     download_url(
-                        model_urls["au_detectors"]['hog-pca']['urls'][0], get_resource_path())
+                        model_urls["au_detectors"]["hog-pca"]["urls"][0],
+                        get_resource_path(),
+                    )
                     download_url(
-                        model_urls["au_detectors"]['au_scalar']['urls'][0], get_resource_path())
+                        model_urls["au_detectors"]["au_scalar"]["urls"][0],
+                        get_resource_path(),
+                    )
 
         if emotion_model:
             for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
                 download_url(url, get_resource_path())
-                if emotion_model.lower() in ['svm', 'rf']:
+                if emotion_model.lower() in ["svm", "rf"]:
                     download_url(
-                        model_urls["emotion_detectors"]['emo_pca']['urls'][0], get_resource_path())
+                        model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
+                        get_resource_path(),
+                    )
                     download_url(
-                        model_urls["emotion_detectors"]['emo_scalar']['urls'][0], get_resource_path())
+                        model_urls["emotion_detectors"]["emo_scalar"]["urls"][0],
+                        get_resource_path(),
+                    )
 
         if face_model:
             if face_model.lower() == "faceboxes":
@@ -157,7 +186,9 @@ class Detector(object):
                 if face_model.lower() == "img2pose-c":
                     constrained = True
                 # Used as both face detector and facepose estimator
-                self.face_detector = Img2Pose(cpu_mode=self.map_location == "cpu", constrained=constrained)
+                self.face_detector = Img2Pose(
+                    cpu_mode=self.map_location == "cpu", constrained=constrained
+                )
                 self.facepose_detector = self.face_detector
 
         self.info["face_model"] = face_model
@@ -172,8 +203,7 @@ class Detector(object):
         if landmark_model:
             if landmark_model.lower() == "mobilenet":
                 self.landmark_detector = MobileNet_GDConv(136)
-                self.landmark_detector = torch.nn.DataParallel(
-                    self.landmark_detector)
+                self.landmark_detector = torch.nn.DataParallel(self.landmark_detector)
                 checkpoint = torch.load(
                     os.path.join(
                         get_resource_path(),
@@ -181,18 +211,15 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                self.landmark_detector.load_state_dict(
-                    checkpoint["state_dict"])
+                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
             elif landmark_model.lower() == "pfld":
                 self.landmark_detector = PFLDInference()
                 checkpoint = torch.load(
-                    os.path.join(get_resource_path(),
-                                 "pfld_model_best.pth.tar"),
+                    os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
                     map_location=self.map_location,
                 )
-                self.landmark_detector.load_state_dict(
-                    checkpoint["state_dict"])
+                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
             elif landmark_model.lower() == "mobilefacenet":
                 self.landmark_detector = MobileFaceNet([112, 112], 136)
@@ -202,8 +229,7 @@ class Detector(object):
                     ),
                     map_location=self.map_location,
                 )
-                self.landmark_detector.load_state_dict(
-                    checkpoint["state_dict"])
+                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
         self.info["landmark_model"] = landmark_model
         self.info["mapper"] = openface_2d_landmark_columns
@@ -225,10 +251,10 @@ class Detector(object):
                 self.au_model = LogisticClassifier()
             elif au_model.lower() == "svm":
                 self.au_model = SVMClassifier()
-            elif au_model.lower() == 'rf':
+            elif au_model.lower() == "rf":
                 self.au_model = RandomForestClassifier()
 
-        if (au_model is None) or (au_model.lower() in ['jaanet', 'drml']):
+        if (au_model is None) or (au_model.lower() in ["jaanet", "drml"]):
             auoccur_columns = jaanet_AU_presence
         else:
             auoccur_columns = RF_AU_presence
@@ -246,9 +272,9 @@ class Detector(object):
                 self.emotion_model = ferNetModule()
             elif emotion_model.lower() == "resmasknet":
                 self.emotion_model = ResMaskNet()
-            elif emotion_model.lower() == 'svm':
+            elif emotion_model.lower() == "svm":
                 self.emotion_model = EmoSVMClassifier()
-            elif emotion_model.lower() == 'rf':
+            elif emotion_model.lower() == "rf":
                 self.emotion_model = EmoRandomForestClassifier()
 
         self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
@@ -276,13 +302,13 @@ class Detector(object):
         self._empty_facepose = empty_facepose
 
         self.info["output_columns"] = (
-                FEAT_TIME_COLUMNS
-                + facebox_columns
-                + landmark_columns
-                + auoccur_columns
-                + FACET_FACEPOSE_COLUMNS
-                + FEAT_EMOTION_COLUMNS
-                + ["input"]
+            FEAT_TIME_COLUMNS
+            + facebox_columns
+            + landmark_columns
+            + auoccur_columns
+            + FACET_FACEPOSE_COLUMNS
+            + FEAT_EMOTION_COLUMNS
+            + ["input"]
         )
 
     def __getitem__(self, i):
@@ -320,27 +346,27 @@ class Detector(object):
 
     def detect_landmarks(self, frame, detected_faces):
         """Detect landmarks from image or video frame
-        
+
         Args:
             frame (array): image array
-            detected_faces (array): 
+            detected_faces (array):
 
         Returns:
             list: x and y landmark coordinates (1,68,2)
 
-        Examples: 
+        Examples:
             >>> import cv2
             >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
             >>> detector = Detector()
-            >>> detected_faces = detector.detect_faces(frame)        
+            >>> detected_faces = detector.detect_faces(frame)
             >>> detector.detect_landmarks(frame, detected_faces)
         """
         # check if frame is 4d
-        if frame.ndim==3:
-            frame = np.expand_dims(frame,0)
-        assert frame.ndim==4, "Frame needs to be 4 dimensions (list of images)"
- 
+        if frame.ndim == 3:
+            frame = np.expand_dims(frame, 0)
+        assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
         self.landmark_detector.eval()
@@ -353,14 +379,21 @@ class Detector(object):
         _, height, width, _ = frame.shape
         landmark_list = []
 
-        concate_arr, len_frames_faces, bbox_list = self._face_preprocesing(frame=frame, detected_faces=detected_faces, mean=mean, std=std, out_size=out_size, height=height, width=width)
+        concate_arr, len_frames_faces, bbox_list = self._face_preprocesing(
+            frame=frame,
+            detected_faces=detected_faces,
+            mean=mean,
+            std=std,
+            out_size=out_size,
+            height=height,
+            width=width,
+        )
         # Run through the deep leanring model
-        input = torch.from_numpy(concate_arr).float() 
+        input = torch.from_numpy(concate_arr).float()
         input = torch.autograd.Variable(input)
         if self.info["landmark_model"]:
             if self.info["landmark_model"].lower() == "mobilefacenet":
-                landmark = self.landmark_detector(
-                    input)[0].cpu().data.numpy()
+                landmark = self.landmark_detector(input)[0].cpu().data.numpy()
             else:
                 landmark = self.landmark_detector(input).cpu().data.numpy()
 
@@ -369,13 +402,13 @@ class Detector(object):
         landmark = landmark.reshape(landmark.shape[0], -1, 2)
 
         for ik in range(landmark.shape[0]):
-            landmark2 = bbox_list[ik].reprojectLandmark(landmark[ik,:,:])
+            landmark2 = bbox_list[ik].reprojectLandmark(landmark[ik, :, :])
             landmark_results.append(landmark2)
-        
+
         list_concat = []
-        new_lens = np.insert(np.cumsum(len_frames_faces),0,0)
+        new_lens = np.insert(np.cumsum(len_frames_faces), 0, 0)
         for ij in range(len(len_frames_faces)):
-            list_concat.append(landmark_results[new_lens[ij]:new_lens[ij+1]])
+            list_concat.append(landmark_results[new_lens[ij] : new_lens[ij + 1]])
 
         return list_concat
 
@@ -388,7 +421,7 @@ class Detector(object):
 
         len_index = [len(aa) for aa in landmarks]
         lenth_cumu = np.cumsum(len_index)
-        lenth_cumu2 = np.insert(lenth_cumu,0,0)
+        lenth_cumu2 = np.insert(lenth_cumu, 0, 0)
         new_lands_list = []
         flat_faces = [item for sublist in detected_faces for item in sublist]
         flat_land = [item for sublist in landmarks for item in sublist]
@@ -397,40 +430,46 @@ class Detector(object):
         for i in range(len(flat_land)):
 
             frame_assignment = np.where(i < lenth_cumu)[0][0]
-            
+
             convex_hull, new_lands = self.extract_face(
-                frame=frames[frame_assignment], detected_faces=[flat_faces[i][0:4]], landmarks=flat_land[i], size_output=112)
-            hogs = self.extract_hog(frame=convex_hull, visualize=False).reshape(1,-1)
+                frame=frames[frame_assignment],
+                detected_faces=[flat_faces[i][0:4]],
+                landmarks=flat_land[i],
+                size_output=112,
+            )
+            hogs = self.extract_hog(frame=convex_hull, visualize=False).reshape(1, -1)
             if hogs_arr is None:
                 hogs_arr = hogs
             else:
-                hogs_arr = np.concatenate([hogs_arr,hogs],0)
-
+                hogs_arr = np.concatenate([hogs_arr, hogs], 0)
 
             new_lands_list.append(new_lands)
 
         new_lands = []
         for i in range(len(lenth_cumu)):
-            new_lands.append(new_lands_list[lenth_cumu2[i]:(lenth_cumu2[i+1])])
+            new_lands.append(new_lands_list[lenth_cumu2[i] : (lenth_cumu2[i + 1])])
 
         return (hogs_arr, new_lands)
 
-
-    def _face_preprocesing(self, frame, detected_faces, mean, std, out_size, height, width):
+    def _face_preprocesing(
+        self, frame, detected_faces, mean, std, out_size, height, width
+    ):
         """
         NEW
         Helper function used in batch detecting landmarks
-        Let's assume that frame is of shape B x H x W x 3 
+        Let's assume that frame is of shape B x H x W x 3
         """
         lenth_index = [len(ama) for ama in detected_faces]
         lenth_cumu = np.cumsum(lenth_index)
 
-        flat_faces = [item for sublist in detected_faces for item in sublist] # Flatten the faces
+        flat_faces = [
+            item for sublist in detected_faces for item in sublist
+        ]  # Flatten the faces
 
         concatenated_face = None
         bbox_list = []
         for k, face in enumerate(flat_faces):
-            frame_assignment = np.where(k<=lenth_cumu)[0][0] # which frame is it?
+            frame_assignment = np.where(k <= lenth_cumu)[0][0]  # which frame is it?
             x1 = face[0]
             y1 = face[1]
             x2 = face[2]
@@ -457,7 +496,9 @@ class Detector(object):
             new_bbox = list(map(int, [x1, x2, y1, y2]))
             new_bbox = BBox(new_bbox)
             cropped = frame[
-                frame_assignment, new_bbox.top: new_bbox.bottom, new_bbox.left: new_bbox.right
+                frame_assignment,
+                new_bbox.top : new_bbox.bottom,
+                new_bbox.left : new_bbox.right,
             ]
             bbox_list.append(new_bbox)
 
@@ -486,10 +527,9 @@ class Detector(object):
             if concatenated_face is None:
                 concatenated_face = test_face
             else:
-                concatenated_face = np.concatenate([concatenated_face, test_face],0)
+                concatenated_face = np.concatenate([concatenated_face, test_face], 0)
 
         return (concatenated_face, lenth_index, bbox_list)
-
 
     def extract_face(self, frame, detected_faces, landmarks, size_output=112):
         """Extract a face in a frame with a convex hull of landmarks.
@@ -512,23 +552,41 @@ class Detector(object):
         detected_faces = detected_faces.astype(int)
 
         aligned_img, new_landmarks = align_face_68pts(
-            frame, landmarks.flatten(), 2.5, img_size=size_output)
+            frame, landmarks.flatten(), 2.5, img_size=size_output
+        )
 
         hull = ConvexHull(new_landmarks)
-        mask = grid_points_in_poly(shape=np.array(aligned_img).shape,
-                                   # for some reason verts need to be flipped
-                                   verts=list(
-                                       zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0]))
-                                   )
-        mask[0:np.min([new_landmarks[0][1], new_landmarks[16][1]]),
-             new_landmarks[0][0]:new_landmarks[16][0]] = True
+        mask = grid_points_in_poly(
+            shape=np.array(aligned_img).shape,
+            # for some reason verts need to be flipped
+            verts=list(
+                zip(
+                    new_landmarks[hull.vertices][:, 1],
+                    new_landmarks[hull.vertices][:, 0],
+                )
+            ),
+        )
+        mask[
+            0 : np.min([new_landmarks[0][1], new_landmarks[16][1]]),
+            new_landmarks[0][0] : new_landmarks[16][0],
+        ] = True
         aligned_img[~mask] = 0
         resized_face_np = aligned_img
         resized_face_np = cv2.cvtColor(resized_face_np, cv2.COLOR_BGR2RGB)
 
-        return resized_face_np, new_landmarks#, hull, mask, np.array(aligned_img).shape, list(zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0])), origin_mask
+        return (
+            resized_face_np,
+            new_landmarks,
+        )  # , hull, mask, np.array(aligned_img).shape, list(zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0])), origin_mask
 
-    def extract_hog(self, frame, orientation=8, pixels_per_cell=(8, 8), cells_per_block=(2, 2), visualize=False):
+    def extract_hog(
+        self,
+        frame,
+        orientation=8,
+        pixels_per_cell=(8, 8),
+        cells_per_block=(2, 2),
+        visualize=False,
+    ):
         """Extract HOG features from a SINGLE frame.
 
         Args:
@@ -542,8 +600,14 @@ class Detector(object):
             hog_output: array of HOG features, and the HOG image if visualize is True.
         """
 
-        hog_output = hog(frame, orientations=orientation, pixels_per_cell=pixels_per_cell,
-                         cells_per_block=cells_per_block, visualize=visualize, multichannel=True)
+        hog_output = hog(
+            frame,
+            orientations=orientation,
+            pixels_per_cell=pixels_per_cell,
+            cells_per_block=cells_per_block,
+            visualize=visualize,
+            multichannel=True,
+        )
         if visualize:
             return (hog_output[0], hog_output[1])
         else:
@@ -559,20 +623,19 @@ class Detector(object):
         Returns:
             array: Action Unit predictions
 
-        Examples: 
+        Examples:
             >>> import cv2
             >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
-            >>> detector = Detector()        
+            >>> detector = Detector()
             >>> detector.detect_aus(frame)
         """
         # Assume that the Raw landmark is given in the format (n_land,2)
 
-        #landmarks = np.transpose(landmarks)
-        #if landmarks.shape[-1] == 68:
+        # landmarks = np.transpose(landmarks)
+        # if landmarks.shape[-1] == 68:
         #    landmarks = convert68to49(landmarks)
         return self.au_model.detect_au(frame, landmarks)
-
 
     def _concatenate_batch(self, indexed_length, au_results):
         """
@@ -587,15 +650,14 @@ class Detector(object):
                         au/emotion models
         Returns:
             list_concat: (list of list). The list which contains the number of faces. for example
-            if you process 2 frames and each frame contains 4 faces, it will return: 
+            if you process 2 frames and each frame contains 4 faces, it will return:
                 [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
         """
         list_concat = []
-        new_lens = np.insert(np.cumsum(indexed_length),0,0)
+        new_lens = np.insert(np.cumsum(indexed_length), 0, 0)
         for ij in range(len(indexed_length)):
-            list_concat.append(au_results[new_lens[ij]:new_lens[ij+1],:])
+            list_concat.append(au_results[new_lens[ij] : new_lens[ij + 1], :])
         return list_concat
-        
 
     def detect_emotions(self, frame, facebox, landmarks):
         """Detect emotions from image or video frame
@@ -608,34 +670,35 @@ class Detector(object):
         Returns:
             array: Action Unit predictions
 
-        Examples: 
+        Examples:
             >>> import cv2
             >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
-            >>> detector = Detector()        
+            >>> detector = Detector()
             >>> detected_faces = detector.detect_faces(frame)
             >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
             >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
         """
-        if self.info["emotion_model"].lower() == 'fer':
-            #landmarks = np.transpose(landmarks)
-            #if landmarks.shape[-1] == 68:
+        if self.info["emotion_model"].lower() == "fer":
+            # landmarks = np.transpose(landmarks)
+            # if landmarks.shape[-1] == 68:
             #    landmarks = convert68to49(landmarks)
             #    landmarks = landmarks.T
             return self.emotion_model.detect_emo(frame, landmarks)
 
-        elif self.info["emotion_model"].lower() == 'resmasknet':
+        elif self.info["emotion_model"].lower() == "resmasknet":
             return self.emotion_model.detect_emo(frame, facebox)
 
-        elif self.info["emotion_model"].lower() in ['svm', 'rf']:
+        elif self.info["emotion_model"].lower() in ["svm", "rf"]:
             return self.emotion_model.detect_emo(frame, landmarks)
 
         else:
             raise ValueError(
-                'Cannot recognize input emo model! Please try to re-type emotion model')
+                "Cannot recognize input emo model! Please try to re-type emotion model"
+            )
 
     def detect_facepose(self, frame, detected_faces=None, landmarks=None):
-        """ Detect facepose from image or video frame.
+        """Detect facepose from image or video frame.
 
         - When used with img2pose, returns *all* detected poses, and facebox and landmarks are ignored.
           Use `detect_face` method in order to obtain bounding boxes corresponding to the detected poses returned
@@ -682,8 +745,9 @@ class Detector(object):
 
         return poses
 
-
-    def process_frame(self, frames, counter=0, singleframe4error=False, skip_frame_rate = 1):
+    def process_frame(
+        self, frames, counter=0, singleframe4error=False, skip_frame_rate=1
+    ):
         """function to run face detection, landmark detection, and emotion detection on a frame.
         TODO: probably need to add exceptions. The exception handling is not great yet
         NEW
@@ -691,7 +755,7 @@ class Detector(object):
             frames (np.array): batch of frames, of shape BxHxWxC (read from cv2)
             counter (int, str, default=0): Index used for the prediction results dataframe. tracks the batches
             singleframe4error (bool, default = False): When exception occurs inside a batch, instead of nullify
-                                                the whole batch, process each img in batch individually 
+                                                the whole batch, process each img in batch individually
         Returns:
             feat.data.Fex (dataframe): Prediction results dataframe.
             int: counter - the updated number of counter. Used to track the batch size and image number
@@ -705,30 +769,42 @@ class Detector(object):
         # TODO Changed here
         try:
             detected_faces = self.detect_faces(frame=frames)
-            landmarks = self.detect_landmarks(frame=frames, detected_faces=detected_faces)
-            poses = self.detect_facepose(frame=frames, detected_faces=detected_faces, landmarks=landmarks)
+            landmarks = self.detect_landmarks(
+                frame=frames, detected_faces=detected_faces
+            )
+            poses = self.detect_facepose(
+                frame=frames, detected_faces=detected_faces, landmarks=landmarks
+            )
             index_len = [len(ii) for ii in landmarks]
 
-            if self["au_model"].lower() in ['logistic', 'svm', 'rf']:
+            if self["au_model"].lower() in ["logistic", "svm", "rf"]:
                 # landmarks_2 = round_vals(landmarks,3)
                 landmarks_2 = landmarks
-                hog_arr, new_lands = self._batch_hog(frames=frames, detected_faces=detected_faces,
-                                                        landmarks=landmarks_2)
+                hog_arr, new_lands = self._batch_hog(
+                    frames=frames, detected_faces=detected_faces, landmarks=landmarks_2
+                )
                 au_occur = self.detect_aus(frame=hog_arr, landmarks=new_lands)
             else:
-                au_occur = self.detect_aus(
-                    frame=frames, landmarks=landmarks)
+                au_occur = self.detect_aus(frame=frames, landmarks=landmarks)
 
-            if self["emotion_model"].lower() in ['svm', 'rf']:
-                hog_arr, new_lands = self._batch_hog(frames=frames, detected_faces=detected_faces, landmarks=landmarks)
+            if self["emotion_model"].lower() in ["svm", "rf"]:
+                hog_arr, new_lands = self._batch_hog(
+                    frames=frames, detected_faces=detected_faces, landmarks=landmarks
+                )
                 emo_pred = self.detect_emotions(
-                    frame=hog_arr, facebox=None, landmarks=new_lands)
+                    frame=hog_arr, facebox=None, landmarks=new_lands
+                )
             else:
                 emo_pred = self.detect_emotions(
-                    frame=frames, facebox=detected_faces, landmarks=landmarks)
-        
-            my_aus = self._concatenate_batch(indexed_length=index_len, au_results=au_occur)
-            my_emo = self._concatenate_batch(indexed_length=index_len, au_results=emo_pred)
+                    frame=frames, facebox=detected_faces, landmarks=landmarks
+                )
+
+            my_aus = self._concatenate_batch(
+                indexed_length=index_len, au_results=au_occur
+            )
+            my_emo = self._concatenate_batch(
+                indexed_length=index_len, au_results=emo_pred
+            )
 
             for i, sessions in enumerate(detected_faces):
                 for j, faces in enumerate(sessions):
@@ -747,9 +823,9 @@ class Detector(object):
                     )
 
                     facepose_df = pd.DataFrame(
-                        [poses[i][j].flatten(order="F")], 
-                        columns=self["facepose_model_columns"], 
-                        index=[counter + j]
+                        [poses[i][j].flatten(order="F")],
+                        columns=self["facepose_model_columns"],
+                        index=[counter + j],
                     )
 
                     landmarks_df = pd.DataFrame(
@@ -760,17 +836,25 @@ class Detector(object):
 
                     au_occur_df = pd.DataFrame(
                         my_aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
-                        columns=self["au_presence_columns"], index=[
-                            counter + j]
+                        columns=self["au_presence_columns"],
+                        index=[counter + j],
                     )
 
                     emo_pred_df = pd.DataFrame(
-                        my_emo[i][j, :].reshape(1, len(FEAT_EMOTION_COLUMNS)), columns=FEAT_EMOTION_COLUMNS,
-                        index=[counter + j]
+                        my_emo[i][j, :].reshape(1, len(FEAT_EMOTION_COLUMNS)),
+                        columns=FEAT_EMOTION_COLUMNS,
+                        index=[counter + j],
                     )
 
                     tmp_df = pd.concat(
-                        [facebox_df, landmarks_df, au_occur_df, facepose_df, emo_pred_df], axis=1
+                        [
+                            facebox_df,
+                            landmarks_df,
+                            au_occur_df,
+                            facepose_df,
+                            emo_pred_df,
+                        ],
+                        axis=1,
                     )
                     tmp_df[FEAT_TIME_COLUMNS] = counter
                     if out is None:
@@ -778,7 +862,7 @@ class Detector(object):
                     else:
                         out = pd.concat([out, tmp_df], axis=0)
                     # out[FEAT_TIME_COLUMNS] = counter
-                    
+
                 counter += skip_frame_rate
             return out, counter
 
@@ -788,28 +872,48 @@ class Detector(object):
             if singleframe4error:
                 print("Trying to process one image at a time in the batch")
                 raise FaceDetectionError
-                
+
             else:
-                print("Since singleframe4error=FALSE, giving up this entire batch result")
+                print(
+                    "Since singleframe4error=FALSE, giving up this entire batch result"
+                )
                 newdf = None
                 for cter in range(frames.shape[0]):
-                    emotion_df = self._empty_emotion.reindex(index=[counter+cter])
-                    facebox_df = self._empty_facebox.reindex(index=[counter+cter])
-                    facepose_df = self._empty_facepose.reindex(index=[counter+cter])
-                    landmarks_df = self._empty_landmark.reindex(index=[counter+cter])
-                    au_occur_df = self._empty_auoccurence.reindex(index=[counter+cter])
+                    emotion_df = self._empty_emotion.reindex(index=[counter + cter])
+                    facebox_df = self._empty_facebox.reindex(index=[counter + cter])
+                    facepose_df = self._empty_facepose.reindex(index=[counter + cter])
+                    landmarks_df = self._empty_landmark.reindex(index=[counter + cter])
+                    au_occur_df = self._empty_auoccurence.reindex(
+                        index=[counter + cter]
+                    )
 
-                    out = pd.concat([facebox_df, landmarks_df,
-                                    au_occur_df, facepose_df, emotion_df], axis=1)
-                    out[FEAT_TIME_COLUMNS] = counter+cter
+                    out = pd.concat(
+                        [
+                            facebox_df,
+                            landmarks_df,
+                            au_occur_df,
+                            facepose_df,
+                            emotion_df,
+                        ],
+                        axis=1,
+                    )
+                    out[FEAT_TIME_COLUMNS] = counter + cter
                     if newdf is None:
                         newdf = out
                     else:
                         newdf = pd.concat([newdf, out], axis=0)
-                    
-                return(newdf, counter+frames.shape[0])
 
-    def detect_video(self, inputFname, batch_size=5, outputFname=None, skip_frames=1, verbose=False, singleframe4error=False):
+                return (newdf, counter + frames.shape[0])
+
+    def detect_video(
+        self,
+        inputFname,
+        batch_size=5,
+        outputFname=None,
+        skip_frames=1,
+        verbose=False,
+        singleframe4error=False,
+    ):
         """Detects FEX from a video file.
 
         Args:
@@ -817,8 +921,8 @@ class Detector(object):
             outputFname (str, optional): Path to output file. Defaults to None.
             bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
-            singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in 
-                                                        batch individually 
+            singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in
+                                                        batch individually
         Returns:
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
@@ -842,28 +946,47 @@ class Detector(object):
             frame_got, frame = cap.read()
             if frame_got:
                 if counter % skip_frames == 0:
-                    # if the 
+                    # if the
                     if concat_frame is None:
-                        concat_frame = np.expand_dims(frame,0)
+                        concat_frame = np.expand_dims(frame, 0)
                         tmp_counter = counter
                     else:
-                        concat_frame = np.concatenate([concat_frame,
-                                                    np.expand_dims(frame,0)],0)
-                if (concat_frame is not None) and (counter != 0) and (concat_frame.shape[0] % batch_size == 0): # I think it's probably this error
-                    if singleframe4error: 
+                        concat_frame = np.concatenate(
+                            [concat_frame, np.expand_dims(frame, 0)], 0
+                        )
+                if (
+                    (concat_frame is not None)
+                    and (counter != 0)
+                    and (concat_frame.shape[0] % batch_size == 0)
+                ):  # I think it's probably this error
+                    if singleframe4error:
                         try:
-                            df, _ = self.process_frame(concat_frame, counter=tmp_counter, singleframe4error=singleframe4error, skip_frame_rate=skip_frames)
+                            df, _ = self.process_frame(
+                                concat_frame,
+                                counter=tmp_counter,
+                                singleframe4error=singleframe4error,
+                                skip_frame_rate=skip_frames,
+                            )
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
-                                tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False, skip_frame_rate=skip_frames)
+                                tmp_df, _ = self.process_frame(
+                                    concat_frame[id_fr : (id_fr + 1)],
+                                    counter=tmp_counter,
+                                    singleframe4error=False,
+                                    skip_frame_rate=skip_frames,
+                                )
                                 tmp_counter += 1
                                 if df is None:
                                     df = tmp_df
                                 else:
-                                    df = pd.concat((df, tmp_df),0)
+                                    df = pd.concat((df, tmp_df), 0)
                     else:
-                        df, _ = self.process_frame(concat_frame, counter=tmp_counter, skip_frame_rate=skip_frames)
+                        df, _ = self.process_frame(
+                            concat_frame,
+                            counter=tmp_counter,
+                            skip_frame_rate=skip_frames,
+                        )
 
                     df["input"] = inputFname
                     if outputFname:
@@ -878,20 +1001,33 @@ class Detector(object):
             else:
                 # process remaining frames
                 if concat_frame is not None:
-                    if singleframe4error: 
+                    if singleframe4error:
                         try:
-                            df, _ = self.process_frame(concat_frame, counter=tmp_counter, skip_frame_rate=skip_frames)
+                            df, _ = self.process_frame(
+                                concat_frame,
+                                counter=tmp_counter,
+                                skip_frame_rate=skip_frames,
+                            )
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
-                                tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False, skip_frame_rate=skip_frames)
+                                tmp_df, _ = self.process_frame(
+                                    concat_frame[id_fr : (id_fr + 1)],
+                                    counter=tmp_counter,
+                                    singleframe4error=False,
+                                    skip_frame_rate=skip_frames,
+                                )
                                 tmp_counter += 1
                                 if df is None:
                                     df = tmp_df
                                 else:
-                                    df = pd.concat((df, tmp_df),0)
+                                    df = pd.concat((df, tmp_df), 0)
                     else:
-                        df, _ = self.process_frame(concat_frame, counter=tmp_counter, skip_frame_rate=skip_frames)
+                        df, _ = self.process_frame(
+                            concat_frame,
+                            counter=tmp_counter,
+                            skip_frame_rate=skip_frames,
+                        )
                     df["input"] = inputFname
                     if outputFname:
                         df[init_df.columns].to_csv(
@@ -916,15 +1052,22 @@ class Detector(object):
                 detector="Feat",
             )
 
-    def detect_image(self, inputFname, batch_size=5, outputFname=None, verbose=False, singleframe4error=False):
+    def detect_image(
+        self,
+        inputFname,
+        batch_size=5,
+        outputFname=None,
+        verbose=False,
+        singleframe4error=False,
+    ):
         """Detects FEX from an image file.
 
         Args:
             inputFname (list of str): Path to a list of paths to image files.
             bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             outputFname (str, optional): Path to output file. Defaults to None.
-            singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in 
-                                                        batch individually 
+            singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in
+                                                        batch individually
         Rseturns:
             Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
@@ -946,30 +1089,37 @@ class Detector(object):
         concat_frame = None
         input_names = []
         while counter < len(inputFname):
-            #if counter % skip_frames == 0:
-            frame = np.expand_dims(cv2.imread(inputFname[counter]),0)
+            # if counter % skip_frames == 0:
+            frame = np.expand_dims(cv2.imread(inputFname[counter]), 0)
             if concat_frame is None:
                 concat_frame = frame
                 tmp_counter = counter
             else:
-                concat_frame = np.concatenate([concat_frame,
-                                            frame],0)
+                concat_frame = np.concatenate([concat_frame, frame], 0)
             input_names.append(inputFname[counter])
             counter = counter + 1
 
             if (counter % batch_size == 0) and (concat_frame is not None):
-                if singleframe4error: 
+                if singleframe4error:
                     try:
-                        df, _ = self.process_frame(concat_frame, counter=tmp_counter, singleframe4error=singleframe4error)
+                        df, _ = self.process_frame(
+                            concat_frame,
+                            counter=tmp_counter,
+                            singleframe4error=singleframe4error,
+                        )
                     except FaceDetectionError:
                         df = None
                         for id_fr in range(concat_frame.shape[0]):
-                            tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False)
+                            tmp_df, _ = self.process_frame(
+                                concat_frame[id_fr : (id_fr + 1)],
+                                counter=tmp_counter,
+                                singleframe4error=False,
+                            )
                             tmp_counter += 1
                             if df is None:
                                 df = tmp_df
                             else:
-                                df = pd.concat((df, tmp_df),0)
+                                df = pd.concat((df, tmp_df), 0)
                 else:
                     df, _ = self.process_frame(concat_frame, counter=tmp_counter)
 
@@ -985,22 +1135,25 @@ class Detector(object):
                 tmp_counter = None
                 input_names = []
 
-
         if len(inputFname) % batch_size != 0:
             # process remaining frames
             if concat_frame is not None:
-                if singleframe4error: 
+                if singleframe4error:
                     try:
                         df, _ = self.process_frame(concat_frame, counter=tmp_counter)
                     except FaceDetectionError:
                         df = None
                         for id_fr in range(concat_frame.shape[0]):
-                            tmp_df, _ = self.process_frame(concat_frame[id_fr:(id_fr+1)], counter = tmp_counter, singleframe4error=False)
+                            tmp_df, _ = self.process_frame(
+                                concat_frame[id_fr : (id_fr + 1)],
+                                counter=tmp_counter,
+                                singleframe4error=False,
+                            )
                             tmp_counter += 1
                             if df is None:
                                 df = tmp_df
                             else:
-                                df = pd.concat((df, tmp_df),0)
+                                df = pd.concat((df, tmp_df), 0)
                 else:
                     df, _ = self.process_frame(concat_frame, counter=tmp_counter)
                 df["input"] = input_names
@@ -1010,7 +1163,6 @@ class Detector(object):
                     )
                 else:
                     init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
-         
 
         if outputFname:
             return True
@@ -1018,7 +1170,7 @@ class Detector(object):
             return Fex(
                 init_df,
                 filename=inputFname,
-                au_columns=self['au_presence_columns'],
+                au_columns=self["au_presence_columns"],
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
                 landmark_columns=openface_2d_landmark_columns,
@@ -1027,14 +1179,27 @@ class Detector(object):
                 detector="Feat",
             )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     my_file_path = "/home/tiankang/AU_Dataset/test_case/"
-    all_imgs = [my_file_path+'f'+str(i)+".jpg" for i in range(1,12)] + ["/home/tiankang/AU_Dataset/test_case/"+"f12.png"]
-    detector = Detector(face_model='retinaface', landmark_model='mobilefacenet',au_model='svm',emotion_model="resmasknet") #initialize methods. These are the methods I like to use
+    all_imgs = [my_file_path + "f" + str(i) + ".jpg" for i in range(1, 12)] + [
+        "/home/tiankang/AU_Dataset/test_case/" + "f12.png"
+    ]
+    detector = Detector(
+        face_model="retinaface",
+        landmark_model="mobilefacenet",
+        au_model="svm",
+        emotion_model="resmasknet",
+    )  # initialize methods. These are the methods I like to use
     # Test the video
-    outs2 = detector.detect_video("/home/tiankang/AU_Dataset/test_case/songA.mp4",batch_size=512,skip_frames=1, singleframe4error=True)
+    outs2 = detector.detect_video(
+        "/home/tiankang/AU_Dataset/test_case/songA.mp4",
+        batch_size=512,
+        skip_frames=1,
+        singleframe4error=True,
+    )
     # Test the pictures
-    outs = detector.detect_image(all_imgs, batch_size=5, outputFname=None, verbose=False, singleframe4error=True)
+    outs = detector.detect_image(
+        all_imgs, batch_size=5, outputFname=None, verbose=False, singleframe4error=True
+    )
     print("finished")
-
-
