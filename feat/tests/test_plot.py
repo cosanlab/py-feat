@@ -89,7 +89,7 @@ def test_plot_face():
     assert_plot_shape(plt.gca())
     plt.close()
 
-    plot_face(au=au, vectorfield={"reference": predict(au2)}, feature_range=(0,1))
+    plot_face(au=au, vectorfield={"reference": predict(au2)}, feature_range=(0, 1))
     assert_plot_shape(plt.gca())
     plt.close()
 
@@ -122,7 +122,7 @@ def test_plot_detections():
     axes = image_prediction.plot_detections(muscle=True)
     assert axes[1].get_xlim() == (0.0, 1.1)
     plt.close()
-    
+
     axes = image_prediction.plot_detections(pose=True)
     assert axes[1].get_xlim() == (0.0, 1.1)
     plt.close()
