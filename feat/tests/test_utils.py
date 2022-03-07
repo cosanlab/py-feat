@@ -28,6 +28,7 @@ def test_read_feat():
     fex = read_feat(join(get_test_data_path(), "output.csv"))
     assert type(fex) == Fex
 
+
 def test_utils():
     sample = read_openface(join(get_test_data_path(), "OpenFace_Test.csv"))
     lm_cols = ["x_" + str(i) for i in range(0, 68)] + [

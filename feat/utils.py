@@ -20,13 +20,14 @@ __all__ = [
     "registration",
     "neutral",
     "load_h5",
-    "read_pictures"
+    "read_pictures",
 ]
 __author__ = ["Jin Hyun Cheong, Tiankang Xie"]
 
 
 import os, math, pywt, pickle, h5py
 from sklearn.cross_decomposition import PLSRegression
+
 # setattr(PLSRegression, "_x_mean", None)
 # setattr(PLSRegression, "_y_mean", None)
 # setattr(PLSRegression, "_x_std", None)
@@ -102,7 +103,7 @@ openface_3d_landmark_columns = (
 )
 
 jaanet_AU_list = [1, 2, 4, 6, 7, 10, 12, 14, 15, 17, 23, 24]
-RF_AU_list = [1,2,4,5,6,7,9,10,11,12,14,15,17,20,23,24,25,26,28,43]
+RF_AU_list = [1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43]
 jaanet_AU_presence = [f"AU" + str(i).zfill(2) for i in jaanet_AU_list]
 jaanet_AU_presence.sort()
 RF_AU_presence = [f"AU" + str(i).zfill(2) for i in RF_AU_list]
@@ -196,10 +197,11 @@ def face_rect_to_coords(rectangle):
 
 
 def get_resource_path():
-    """ Get path to feat resource directory. """
+    """Get path to feat resource directory."""
     return os.path.join(feat.__path__[0], "resources")  # points to the package folder.
     # return ("F:/feat/feat/") # points to the package folder.
     # return os.path.join(os.path.dirname(__file__), 'resources')
+
 
 def load_h5(file_name="pyfeat_aus_to_landmarks.h5"):
     """Load the h5 PLS model for plotting.
@@ -478,7 +480,7 @@ def read_affectiva(affectivafile, orig_cols=False):
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.0):
     """Create a complex Morlet wavelet.
-    
+
     Creates a complex Morlet wavelet by windowing a cosine function by a Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13
 
     Args:
@@ -508,7 +510,7 @@ def calc_hist_auc(vals, hist_range=None):
     This function follows the bag of temporal feature analysis as described in Bartlett, M. S., Littlewort, G. C., Frank, M. G., & Lee, K. (2014). Automatic decoding of facial movements reveals deceptive pain expressions. Current Biology, 24(7), 738-743. The function receives convolved data, squares the values, finds 0 crossings to calculate the AUC(area under the curve) and generates a 6 exponentially-spaced-bin histogram for each data.
 
     Args:
-        vals: 
+        vals:
 
     Returns:
         Series of histograms
@@ -675,7 +677,7 @@ def convert68to49(points):
     """Convert landmark form 68 to 49
 
     Function slightly modified from https://github.com/D-X-Y/landmark-detection/blob/7bc7a5dbdbda314653124a4596f3feaf071e8589/SAN/lib/datasets/dataset_utils.py#L169 to fit pytorch tensors. Converts 68 point landmarks to 49 point landmarks
-    
+
     Args:
         points: landmark points of shape (2,68) or (3,68)
 
@@ -744,7 +746,7 @@ def drawLandmark(img, bbox, landmark):
 
     Returns:
         img marked with landmark and bbox
-    """ 
+    """
     img_ = img.copy()
     cv2.rectangle(
         img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2
@@ -758,7 +760,7 @@ def drawLandmark_multiple(img, bbox, landmark):
     """Draw multiple landmarks.
 
     From https://github.com/cunjian/pytorch_face_landmark/
-    
+
     Args:
         img ([type]): gray or RGB
         bbox ([type]): type of BBox
@@ -766,11 +768,12 @@ def drawLandmark_multiple(img, bbox, landmark):
 
     Returns:
         img marked with landmark and bbox
-    """    
+    """
     cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2)
     for x, y in landmark:
         cv2.circle(img, (int(x), int(y)), 2, (0, 255, 0), -1)
     return img
+
 
 def padding(img, expected_size):
     """
@@ -781,33 +784,41 @@ def padding(img, expected_size):
     delta_height = desired_size - img.size[1]
     pad_width = delta_width // 2
     pad_height = delta_height // 2
-    padding = (pad_width, pad_height, delta_width - pad_width, delta_height - pad_height)
+    padding = (
+        pad_width,
+        pad_height,
+        delta_width - pad_width,
+        delta_height - pad_height,
+    )
     return ImageOps.expand(img, padding)
 
 
 def read_pictures(imgname_list):
-        """
-        NEW
-        Reads in a list of pictures and concatenate these pictures into batches of images.
+    """
+    NEW
+    Reads in a list of pictures and concatenate these pictures into batches of images.
 
-        Args:
-            imgname_list (list of string): a list of filenames for the facial pictures
-        
-        Returns:
-            img_batch_arr (np.array): np array of shape BxHxWxC 
-        """
+    Args:
+        imgname_list (list of string): a list of filenames for the facial pictures
 
-        img_batch_arr = None
-        for img_name in imgname_list:
-            frame = cv2.imread(img_name)
-            frame = np.expand_dims(frame,0)
-            if img_batch_arr is None:
-                img_batch_arr = frame
-            else:
-                assert img_batch_arr.shape[1::] == frame.shape[1::], 'please make sure that the input images are of the same shape! otherwise you need to process each image individually'
-                img_batch_arr = np.concatenate([img_batch_arr,frame],0)
+    Returns:
+        img_batch_arr (np.array): np array of shape BxHxWxC
+    """
 
-        return img_batch_arr
+    img_batch_arr = None
+    for img_name in imgname_list:
+        frame = cv2.imread(img_name)
+        frame = np.expand_dims(frame, 0)
+        if img_batch_arr is None:
+            img_batch_arr = frame
+        else:
+            assert (
+                img_batch_arr.shape[1::] == frame.shape[1::]
+            ), "please make sure that the input images are of the same shape! otherwise you need to process each image individually"
+            img_batch_arr = np.concatenate([img_batch_arr, frame], 0)
+
+    return img_batch_arr
+
 
 def resize_with_padding(img, expected_size):
     """
@@ -819,58 +830,109 @@ def resize_with_padding(img, expected_size):
     delta_height = expected_size[1] - img.size[1]
     pad_width = delta_width // 2
     pad_height = delta_height // 2
-    padding = (pad_width, pad_height, delta_width - pad_width, delta_height - pad_height)
+    padding = (
+        pad_width,
+        pad_height,
+        delta_width - pad_width,
+        delta_height - pad_height,
+    )
     return ImageOps.expand(img, padding)
 
 
 def align_face_68pts(img, img_land, box_enlarge, img_size=112):
     """Performs affine transformation to align the images by eyes.
 
-    Performs affine alignment including eyes. 
-    
+    Performs affine alignment including eyes.
+
     Args:
         img: gray or RGB
-        img_land: 68 system flattened landmarks, shape:(136) 
+        img_land: 68 system flattened landmarks, shape:(136)
         box_enlarge: relative size of face on the image. Smaller value indicate larger proportion
         img_size = output image size
     Return:
         aligned_img: the aligned image
-        new_land: the new landmarks 
+        new_land: the new landmarks
     """
-    leftEye0 = (img_land[2 * 36] + img_land[2 * 37] + img_land[2 * 38] + img_land[2 * 39] + img_land[2 * 40] +
-                img_land[2 * 41]) / 6.0
-    leftEye1 = (img_land[2 * 36 + 1] + img_land[2 * 37 + 1] + img_land[2 * 38 + 1] + img_land[2 * 39 + 1] +
-                img_land[2 * 40 + 1] + img_land[2 * 41 + 1]) / 6.0
-    rightEye0 = (img_land[2 * 42] + img_land[2 * 43] + img_land[2 * 44] + img_land[2 * 45] + img_land[2 * 46] +
-                img_land[2 * 47]) / 6.0
-    rightEye1 = (img_land[2 * 42 + 1] + img_land[2 * 43 + 1] + img_land[2 * 44 + 1] + img_land[2 * 45 + 1] +
-                img_land[2 * 46 + 1] + img_land[2 * 47 + 1]) / 6.0
-    deltaX = (rightEye0 - leftEye0)
-    deltaY = (rightEye1 - leftEye1)
+    leftEye0 = (
+        img_land[2 * 36]
+        + img_land[2 * 37]
+        + img_land[2 * 38]
+        + img_land[2 * 39]
+        + img_land[2 * 40]
+        + img_land[2 * 41]
+    ) / 6.0
+    leftEye1 = (
+        img_land[2 * 36 + 1]
+        + img_land[2 * 37 + 1]
+        + img_land[2 * 38 + 1]
+        + img_land[2 * 39 + 1]
+        + img_land[2 * 40 + 1]
+        + img_land[2 * 41 + 1]
+    ) / 6.0
+    rightEye0 = (
+        img_land[2 * 42]
+        + img_land[2 * 43]
+        + img_land[2 * 44]
+        + img_land[2 * 45]
+        + img_land[2 * 46]
+        + img_land[2 * 47]
+    ) / 6.0
+    rightEye1 = (
+        img_land[2 * 42 + 1]
+        + img_land[2 * 43 + 1]
+        + img_land[2 * 44 + 1]
+        + img_land[2 * 45 + 1]
+        + img_land[2 * 46 + 1]
+        + img_land[2 * 47 + 1]
+    ) / 6.0
+    deltaX = rightEye0 - leftEye0
+    deltaY = rightEye1 - leftEye1
     l = math.sqrt(deltaX * deltaX + deltaY * deltaY)
     sinVal = deltaY / l
     cosVal = deltaX / l
     mat1 = np.mat([[cosVal, sinVal, 0], [-sinVal, cosVal, 0], [0, 0, 1]])
-    mat2 = np.mat([[leftEye0, leftEye1, 1], [rightEye0, rightEye1, 1], [img_land[2 * 30], img_land[2 * 30 + 1], 1],
-                [img_land[2 * 48], img_land[2 * 48 + 1], 1], [img_land[2 * 54], img_land[2 * 54 + 1], 1]])
+    mat2 = np.mat(
+        [
+            [leftEye0, leftEye1, 1],
+            [rightEye0, rightEye1, 1],
+            [img_land[2 * 30], img_land[2 * 30 + 1], 1],
+            [img_land[2 * 48], img_land[2 * 48 + 1], 1],
+            [img_land[2 * 54], img_land[2 * 54 + 1], 1],
+        ]
+    )
     mat2 = (mat1 * mat2.T).T
     cx = float((max(mat2[:, 0]) + min(mat2[:, 0]))) * 0.5
     cy = float((max(mat2[:, 1]) + min(mat2[:, 1]))) * 0.5
-    if (float(max(mat2[:, 0]) - min(mat2[:, 0])) > float(max(mat2[:, 1]) - min(mat2[:, 1]))):
+    if float(max(mat2[:, 0]) - min(mat2[:, 0])) > float(
+        max(mat2[:, 1]) - min(mat2[:, 1])
+    ):
         halfSize = 0.5 * box_enlarge * float((max(mat2[:, 0]) - min(mat2[:, 0])))
     else:
         halfSize = 0.5 * box_enlarge * float((max(mat2[:, 1]) - min(mat2[:, 1])))
     scale = (img_size - 1) / 2.0 / halfSize
-    mat3 = np.mat([[scale, 0, scale * (halfSize - cx)], [0, scale, scale * (halfSize - cy)], [0, 0, 1]])
+    mat3 = np.mat(
+        [
+            [scale, 0, scale * (halfSize - cx)],
+            [0, scale, scale * (halfSize - cy)],
+            [0, 0, 1],
+        ]
+    )
     mat = mat3 * mat1
-    aligned_img = cv2.warpAffine(img, mat[0:2, :], (img_size, img_size), cv2.INTER_LINEAR, borderValue=(128, 128, 128))
-    land_3d = np.ones((int(len(img_land)/2), 3))
-    land_3d[:, 0:2] = np.reshape(np.array(img_land), (int(len(img_land)/2), 2))
+    aligned_img = cv2.warpAffine(
+        img,
+        mat[0:2, :],
+        (img_size, img_size),
+        cv2.INTER_LINEAR,
+        borderValue=(128, 128, 128),
+    )
+    land_3d = np.ones((int(len(img_land) / 2), 3))
+    land_3d[:, 0:2] = np.reshape(np.array(img_land), (int(len(img_land) / 2), 2))
     mat_land_3d = np.mat(land_3d)
     new_land = np.array((mat * mat_land_3d.T).T)
-    new_land = np.array(list(zip(new_land[:,0], new_land[:,1]))).astype(int)
+    new_land = np.array(list(zip(new_land[:, 0], new_land[:, 1]))).astype(int)
 
     return aligned_img, new_land
+
 
 def round_vals(list_of_arrays, ndigits):
     list_of_arrays2 = list_of_arrays.copy()
@@ -879,6 +941,8 @@ def round_vals(list_of_arrays, ndigits):
             list_of_arrays2[i][j] = np.around(list_of_arrays[i][j], ndigits)
     return list_of_arrays2
 
+
 class FaceDetectionError(Exception):
     """Error when face detection failed in a batch"""
+
     pass
