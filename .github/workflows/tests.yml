@@ -60,13 +60,8 @@ jobs:
         run: |
           conda activate test
           conda env list
-          conda install -y -c conda-forge pytest pytest-cov pytest-xdist pytest-sugar coveralls black
+          conda install -y -c conda-forge pytest pytest-cov pytest-xdist pytest-sugar coveralls
           pip install . -r requirements.txt
-      # Check code formatting
-      - name: Check code formatting
-        run: |
-          conda activate test
-          black . --check --diff
       # Actually run the tests with coverage
       - name: Run Tests
         run: |
