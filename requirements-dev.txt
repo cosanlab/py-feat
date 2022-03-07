@@ -1,0 +1,8 @@
+-r requirements.txt
+pytest
+black
+pycodestyle
+sphinx
+sphinx-rtd-theme
+jupyter-book
+ghp-import
