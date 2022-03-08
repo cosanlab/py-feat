@@ -147,6 +147,11 @@ const thebe_selector_output = ".output, .cell_output"
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../content/extract_labels_and_landmarks.html">
+   Extracting labels and landmarks
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../content/modelContribution.html">
    Contributing new detectors
   </a>
@@ -425,24 +430,19 @@ landmarks ([type]): [description]</p>
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_facepose">
 <span class="sig-name descname"><span class="pre">detect_facepose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_facepose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect facepose from image or video frame.</p>
-<ul>
-<li><p>When used with img2pose, returns <em>all</em> detected poses, and facebox and landmarks are ignored.
-Use <cite>detect_face</cite> method in order to obtain bounding boxes corresponding to the detected poses returned
-by this method.</p></li>
-<li><p>When used with pnp model, ‘facebox’ param is ignored, and the passed 2D landmarks are used to
-compute the head pose for the single face associated with the passed landmarks.</p>
-<blockquote>
-<div><p>frame (np.ndarray): list of cv2 images
+<p>When used with img2pose, returns <em>all</em> detected poses, and facebox and landmarks
+are ignored. Use <cite>detect_face</cite> method in order to obtain bounding boxes
+corresponding to the detected poses returned by this method.</p>
+<p>When used with pnp model, ‘facebox’ param is ignored, and the passed 2D
+landmarks are used to compute the head pose for the single face associated with
+the passed landmarks.</p>
+<dl>
+<dt>Args:</dt><dd><p>frame (np.ndarray): list of cv2 images
 detected_faces (list): (num_images, num_faces, 4) faceboxes representing faces in the list of images
 landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images</p>
-</div></blockquote>
-</li>
-</ul>
-<dl>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>np.ndarray: (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in degrees) for each face within in</dt><dd><p>each image</p>
 </dd>
-</dl>
+<dt>Returns:</dt><dd><p>np.ndarray: (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
+degrees) for each face within in each image</p>
 </dd>
 <dt>Examples:</dt><dd><p># With img2pose
 &gt;&gt;&gt; import cv2
@@ -486,16 +486,15 @@ landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces c
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_image">
 <span class="sig-name descname"><span class="pre">detect_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputFname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detects FEX from an image file.</p>
-<dl>
+<dl class="simple">
 <dt>Args:</dt><dd><p>inputFname (list of str): Path to a list of paths to image files.
 bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
 outputFname (str, optional): Path to output file. Defaults to None.
-singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in</p>
-<blockquote>
-<div><p>batch individually</p>
-</div></blockquote>
+singleframe4error (bool, default = False): When set True, when exception
+occurs inside a batch, instead of nullify the whole batch, process each img
+in batch individually</p>
 </dd>
-<dt>Rseturns:</dt><dd><p>Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.</p>
+<dt>Returns:</dt><dd><p>Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -526,15 +525,14 @@ detected_faces (array):</p>
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_video">
 <span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputFname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detects FEX from a video file.</p>
-<dl>
+<dl class="simple">
 <dt>Args:</dt><dd><p>inputFname (str): Path to video file
 outputFname (str, optional): Path to output file. Defaults to None.
 bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
 skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
-singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in</p>
-<blockquote>
-<div><p>batch individually</p>
-</div></blockquote>
+singleframe4error (bool, default = False): When set True, when exception
+occurs inside a batch, instead of nullify the whole batch, process each img
+in batch individually</p>
 </dd>
 <dt>Returns:</dt><dd><p>dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.</p>
 </dd>
@@ -577,19 +575,16 @@ visualize (bool, optional): Whether to provide the HOG image. Defaults to False.
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.process_frame">
 <span class="sig-name descname"><span class="pre">process_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frame_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.process_frame" title="Permalink to this definition">¶</a></dt>
-<dd><p>function to run face detection, landmark detection, and emotion detection on a frame.
-TODO: probably need to add exceptions. The exception handling is not great yet
-NEW
-Args:</p>
-<blockquote>
-<div><p>frames (np.array): batch of frames, of shape BxHxWxC (read from cv2)
-counter (int, str, default=0): Index used for the prediction results dataframe. tracks the batches
-singleframe4error (bool, default = False): When exception occurs inside a batch, instead of nullify</p>
-<blockquote>
-<div><p>the whole batch, process each img in batch individually</p>
-</div></blockquote>
-</div></blockquote>
+<dd><p>Function to run face detection, landmark detection, and emotion detection on
+a frame.</p>
 <dl class="simple">
+<dt>Args:</dt><dd><p>frames (np.array): batch of frames, of shape BxHxWxC (read from cv2)
+counter (int, str, default=0): Index used for the prediction results
+dataframe. Tracks the batches
+singleframe4error (bool, default = False): When exception occurs inside a
+batch, instead of nullify the whole batch, process each img in batch
+individually</p>
+</dd>
 <dt>Returns:</dt><dd><p>feat.data.Fex (dataframe): Prediction results dataframe.
 int: counter - the updated number of counter. Used to track the batch size and image number</p>
 </dd>
@@ -667,15 +662,7 @@ ignore_sessions: (bool) If True, will ignore Fex.sessions information. Otherwise
 detrend, etc.</p>
 <p>See <a class="reference external" href="http://nilearn.github.io/modules/generated/nilearn.signal.clean.html">http://nilearn.github.io/modules/generated/nilearn.signal.clean.html</a></p>
 <p>This function can do several things on the input signals, in
-the following order:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>detrend</p></li>
-<li><p>standardize</p></li>
-<li><p>remove confounds</p></li>
-<li><p>low- and high-pass filter</p></li>
-</ul>
-</div></blockquote>
+the following order: detrend, standardize, remove confounds, low and high-pass filter</p>
 <p>If Fex.sessions is not None, sessions will be cleaned separately.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>confounds: (numpy.ndarray, str or list of Confounds timeseries) Shape must be (instant number, confound number), or just (instant number,). The number of time instants in signals and confounds must be identical (i.e. signals.shape[0] == confounds.shape[0]). If a string is provided, it is assumed to be the name of a csv file containing signals as columns, with an optional one-line header. If a list is provided, all confounds are removed from the input signal, as if all were in the same array.
@@ -734,14 +721,11 @@ n_components: (int) number of components. If None then retain as many as possibl
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.downsample">
 <span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.downsample" title="Permalink to this definition">¶</a></dt>
-<dd><dl>
+<dd><dl class="simple">
 <dt>Downsample Fex columns. Relies on nltools.stats.downsample,</dt><dd><p>but ensures that returned object is a Fex object.</p>
 </dd>
-<dt>Args:</dt><dd><dl class="simple">
-<dt>target(float): downsampling target, typically in samples not</dt><dd><p>seconds</p>
-</dd>
-</dl>
-<p>kwargs: additional inputs to nltools.stats.downsample</p>
+<dt>Args:</dt><dd><p>target(float): downsampling target, typically in samples not seconds
+kwargs: additional inputs to nltools.stats.downsample</p>
 </dd>
 </dl>
 </dd></dl>
@@ -870,12 +854,11 @@ ignore_sessions: (bool) ignore sessions or extract separately by sessions if ava
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.facepose">
 <span class="sig-name descname"><span class="pre">facepose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.facepose" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the facepose data
-Returns facepose data using the columns set in fex.facepose_columns
-Returns:</p>
-<blockquote>
-<div><p>DataFrame: facepose data</p>
-</div></blockquote>
+<dd><p>Returns the facepose data using the columns set in fex.facepose_columns</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>DataFrame: facepose data</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -983,7 +966,7 @@ pose (bool, optional): Whether to draw head pose axes. Defaults to False.</p>
 <dt>Args:</dt><dd><p>X (list or DataFrame): List of column names or dataframe to be used as features for prediction
 y (string or array): y values to be predicted
 model (class, optional): Any sklearn model. Defaults to LinearRegression.
-<a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs: Model arguments</p>
+args, kwargs: Model arguments</p>
 </dd>
 <dt>Returns:</dt><dd><p>model: Fit model instance.</p>
 </dd>
@@ -1125,14 +1108,11 @@ threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None.
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.upsample">
 <span class="sig-name descname"><span class="pre">upsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hz'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.upsample" title="Permalink to this definition">¶</a></dt>
-<dd><dl>
+<dd><dl class="simple">
 <dt>Upsample Fex columns. Relies on nltools.stats.upsample,</dt><dd><p>but ensures that returned object is a Fex object.</p>
 </dd>
-<dt>Args:</dt><dd><dl class="simple">
-<dt>target(float): upsampling target, default ‘hz’ (also ‘samples’,</dt><dd><p>‘seconds’)</p>
-</dd>
-</dl>
-<p>kwargs: additional inputs to nltools.stats.upsample</p>
+<dt>Args:</dt><dd><p>target(float): upsampling target, default ‘hz’ (also ‘samples’, ‘seconds’)
+kwargs: additional inputs to nltools.stats.upsample</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1190,11 +1170,11 @@ All methods should be called on Fex below.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.FexSeries.facepose">
 <span class="sig-name descname"><span class="pre">facepose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries.facepose" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the facepose data
-Returns:</p>
-<blockquote>
-<div><p>DataFrame: facepose data</p>
-</div></blockquote>
+<dd><p>Returns the facepose data</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>DataFrame: facepose data</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1350,16 +1330,14 @@ ignore_sessions: (bool) ignore sessions or extract separately by sessions if ava
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.summary">
 <span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.summary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract summary of multiple features
-Args:</p>
-<blockquote>
-<div><p>fex_object: (Fex) Fex instance to extract features from.
+<dd><p>Extract summary of multiple features</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>fex_object: (Fex) Fex instance to extract features from.
 mean: (bool) extract mean of features
 max: (bool) extract max of features
 min: (bool) extract min of features
 ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.</p>
-</div></blockquote>
-<dl class="simple">
+</dd>
 <dt>Returns:</dt><dd><p>fex: (Fex)</p>
 </dd>
 </dl>
@@ -1488,10 +1466,15 @@ feature_range (tuple, default: None): If a tuple with (min, max),  scale input A
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.load_h5">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">load_h5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pyfeat_aus_to_landmarks.h5'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_h5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the h5 PLS model for plotting.</p>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">load_h5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pyfeat_aus_to_landmarks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefer_joblib_if_version_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
+major and minor versions match those the model was trained with (3.8.x and 1.0.x
+respectively), otherwise will reconstruct the model object using h5 data.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>file_name (str, optional): Specify model to load.. Defaults to ‘blue.h5’.</p>
+<dt>Args:</dt><dd><p>file_name (str, optional): Specify model to load.. Defaults to ‘blue.h5’.
+prefer_joblib_if_version_match (bool, optional): If the sklearn and python major.minor versions
+match then return the pickled PLSRegression object. Otherwise build it from
+scratch using .h5 data. Default True</p>
 </dd>
 <dt>Returns:</dt><dd><p>model: PLS model</p>
 </dd>
@@ -1691,9 +1674,9 @@ Use with Evidence values from FACET.</p>
     <footer class="footer">
   <p>
     
-      By Jin Hyun Cheong<br/>
+      By Jin Hyun Cheong, Tiankang Xie, Eshin Jolly<br/>
     
-        &copy; Copyright 2020.<br/>
+        &copy; Copyright 2022.<br/>
   </p>
 </footer>
 </main>
