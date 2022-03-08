@@ -117,6 +117,7 @@ class FexSeries(Series):
 
     def facepose(self):
         """Returns the facepose data
+
         Returns:
             DataFrame: facepose data
         """
@@ -399,8 +400,8 @@ class Fex(DataFrame):
         return self[self.landmark_columns]
 
     def facepose(self):
-        """Returns the facepose data
-        Returns facepose data using the columns set in fex.facepose_columns
+        """Returns the facepose data using the columns set in fex.facepose_columns
+
         Returns:
             DataFrame: facepose data
         """
@@ -741,7 +742,7 @@ class Fex(DataFrame):
             X (list or DataFrame): List of column names or dataframe to be used as features for prediction
             y (string or array): y values to be predicted
             model (class, optional): Any sklearn model. Defaults to LinearRegression.
-            *args, **kwargs: Model arguments
+            args, kwargs: Model arguments
 
         Returns:
             model: Fit model instance.
@@ -764,8 +765,7 @@ class Fex(DataFrame):
            but ensures that returned object is a Fex object.
 
         Args:
-            target(float): downsampling target, typically in samples not
-                            seconds
+            target(float): downsampling target, typically in samples not seconds
             kwargs: additional inputs to nltools.stats.downsample
 
         """
@@ -810,8 +810,7 @@ class Fex(DataFrame):
             but ensures that returned object is a Fex object.
 
         Args:
-            target(float): upsampling target, default 'hz' (also 'samples',
-                           'seconds')
+            target(float): upsampling target, default 'hz' (also 'samples', 'seconds')
             kwargs: additional inputs to nltools.stats.upsample
 
         """
@@ -973,11 +972,7 @@ class Fex(DataFrame):
         See http://nilearn.github.io/modules/generated/nilearn.signal.clean.html
 
         This function can do several things on the input signals, in
-        the following order:
-            - detrend
-            - standardize
-            - remove confounds
-            - low- and high-pass filter
+        the following order: detrend, standardize, remove confounds, low and high-pass filter
 
         If Fex.sessions is not None, sessions will be cleaned separately.
 
@@ -1794,6 +1789,7 @@ class Fextractor:
         **kwargs,
     ):
         """Extract summary of multiple features
+
         Args:
             fex_object: (Fex) Fex instance to extract features from.
             mean: (bool) extract mean of features
