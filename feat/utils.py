@@ -25,13 +25,11 @@ __all__ = [
 __author__ = ["Jin Hyun Cheong, Tiankang Xie"]
 
 
-import os, math, pywt, pickle, h5py
+import os, math, pywt, pickle, h5py, sys
+import warnings
 from sklearn.cross_decomposition import PLSRegression
-
-# setattr(PLSRegression, "_x_mean", None)
-# setattr(PLSRegression, "_y_mean", None)
-# setattr(PLSRegression, "_x_std", None)
-from sklearn import __version__
+from joblib import load
+from sklearn import __version__ as skversion
 import numpy as np, pandas as pd
 from scipy import signal
 from scipy.integrate import simps
@@ -203,38 +201,59 @@ def get_resource_path():
     # return os.path.join(os.path.dirname(__file__), 'resources')
 
 
-# FIXME: PLSRegression from sklearn no longer has the attributes we're passing to it and
-# produces a set attribute error.
-def load_h5(file_name="pyfeat_aus_to_landmarks.h5"):
-    """Load the h5 PLS model for plotting.
+def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=True):
+    """Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
+    major and minor versions match those the model was trained with (3.8.x and 1.0.x
+    respectively), otherwise will reconstruct the model object using h5 data.
 
     Args:
         file_name (str, optional): Specify model to load.. Defaults to 'blue.h5'.
+        prefer_joblib_if_version_match (bool, optional): If the sklearn and python major.minor versions
+        match then return the pickled PLSRegression object. Otherwise build it from
+        scratch using .h5 data. Default True
 
     Returns:
         model: PLS model
     """
-    try:
-        hf = h5py.File(os.path.join(get_resource_path(), file_name), "r")
-        d1 = hf.get("coef")
-        d2 = hf.get("x_mean")
-        d3 = hf.get("y_mean")
-        d4 = hf.get("x_std")
-        model = PLSRegression(len(d1))
-        model.coef_ = np.array(d1)
-        # NOTE: Need to convert to  x_weights_, y_weights_,
-        # x_loadings_, y_loadings_, x_rotations_, y_rotations_
-        if int(__version__.split(".")[1]) < 24:
-            model.x_mean_ = np.array(d2)
-            model.y_mean_ = np.array(d3)
-            model.x_std_ = np.array(d4)
-        else:
-            model._x_mean = np.array(d2)
-            model._y_mean = np.array(d3)
-            model._x_std = np.array(d4)
-        hf.close()
-    except Exception as e:
-        print("Unable to load data ", file_name, ":", e)
+    my_skmajor, my_skminor, my_skpatch = skversion.split(".")
+    my_pymajor, my_pyminor, my_pymicro, *_ = sys.version_info
+
+    pymajor, pyminor, skmajor, skminor = 3, 8, 1, 0
+    if (
+        int(my_skmajor) == skmajor
+        and int(my_skminor) == skminor
+        and int(my_pymajor) == pymajor
+        and int(my_pyminor) == pyminor
+        and prefer_joblib_if_version_match
+    ):
+        return load(os.path.join(get_resource_path(), f"{file_name}.joblib"))
+    else:
+        warnings.warn(
+            f"Python and sklearn version mismatch for AU viz model loading via joblib. Falling back to hdf5....\nExpected:\n sklearn: {skmajor}.{skminor}.X\n Python: {pymajor}.{pyminor}.X\n\nCurrently installed:\n sklearn: {my_skmajor}.{my_skminor}.{my_skpatch}\n Python: {my_pymajor}.{my_pyminor}.{my_pymicro}"
+        )
+        try:
+            hf = h5py.File(os.path.join(get_resource_path(), f"{file_name}.h5"), "r")
+            d1 = hf.get("coef")
+            d2 = hf.get("x_mean")
+            d3 = hf.get("y_mean")
+            d4 = hf.get("x_std")
+            x_train = hf.get("x_train")
+            y_train = hf.get("y_train")
+            model = PLSRegression(len(d1))
+            model.coef_ = np.array(d1)
+            if int(skversion.split(".")[0]) < 1:
+                model.x_mean_ = np.array(d2)
+                model.y_mean_ = np.array(d3)
+                model.x_std_ = np.array(d4)
+            else:
+                model._x_mean = np.array(d2)
+                model._y_mean = np.array(d3)
+                model._x_std = np.array(d4)
+            model.X_train = np.array(x_train)
+            model.Y_train = np.array(y_train)
+            hf.close()
+        except Exception as e:
+            print("Unable to load data ", file_name, ":", e)
     return model
 
 

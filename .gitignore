@@ -1,7 +1,6 @@
 # OS generated files #
 ######################
-.DS_Store
-.DS_Store?
+*.DS_Store*
 ._*
 .Spotlight-V100
 .Trashes
@@ -88,3 +87,10 @@ target/
 # Jupyter
 _Notebooks/
 .ipynb_checkpoints
+
+# Ignore data files for AU viz model building
+data/*
+!data/.gitkeep
+
+# Ignore jupyter-book build artifacts as they'll get auto-built via github actions
+notebooks/_build/*

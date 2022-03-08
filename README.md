@@ -83,5 +83,14 @@ Head pose estimation models
 4. Run the tests again with `pytest tests/` to make sure everything still passes, including your new feature. If you broke something, edit your feature so that it doesn't break existing code. 
 5. Create a pull request to the main repository's `master` branch.
 
+### Adding new notebook examples
+1. Make sure to install the development requirements: `pip install -r requirements-dev.txt`
+2. Add notebooks or markdown to the `notebooks/content` directory
+3. Add images to the `notebooks/content/images` directory
+4. Update the TOC as needed: `notebooks/_toc.yml` file
+5. Build the HTML: `jupyter-book build notebooks`
+6. View the rendered HTML by open the following in your browser: `notebooks/_build/html/index.html`
+*Note*: There's no need to commit these built files to git as github actions will auto-generate and deploy them to the `gh-pages` branch of the repo
+
 ## Licenses
 Py-FEAT is provided under the MIT license. You also need to respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 

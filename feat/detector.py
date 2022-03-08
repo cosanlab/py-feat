@@ -700,19 +700,22 @@ class Detector(object):
     def detect_facepose(self, frame, detected_faces=None, landmarks=None):
         """Detect facepose from image or video frame.
 
-        - When used with img2pose, returns *all* detected poses, and facebox and landmarks are ignored.
-          Use `detect_face` method in order to obtain bounding boxes corresponding to the detected poses returned
-          by this method.
+        When used with img2pose, returns *all* detected poses, and facebox and landmarks
+        are ignored. Use `detect_face` method in order to obtain bounding boxes
+        corresponding to the detected poses returned by this method.
 
-        - When used with pnp model, 'facebox' param is ignored, and the passed 2D landmarks are used to
-          compute the head pose for the single face associated with the passed landmarks.
+        When used with pnp model, 'facebox' param is ignored, and the passed 2D
+        landmarks are used to compute the head pose for the single face associated with
+        the passed landmarks.
+
+        Args:
             frame (np.ndarray): list of cv2 images
             detected_faces (list): (num_images, num_faces, 4) faceboxes representing faces in the list of images
             landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images
 
         Returns:
-            np.ndarray: (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in degrees) for each face within in
-                        each image
+            np.ndarray: (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
+            degrees) for each face within in each image
 
 
         Examples:
@@ -745,17 +748,21 @@ class Detector(object):
 
         return poses
 
+    # TODO: probably need to add exceptions. The exception handling is not great yet
     def process_frame(
         self, frames, counter=0, singleframe4error=False, skip_frame_rate=1
     ):
-        """function to run face detection, landmark detection, and emotion detection on a frame.
-        TODO: probably need to add exceptions. The exception handling is not great yet
-        NEW
+        """Function to run face detection, landmark detection, and emotion detection on
+        a frame.
+
         Args:
             frames (np.array): batch of frames, of shape BxHxWxC (read from cv2)
-            counter (int, str, default=0): Index used for the prediction results dataframe. tracks the batches
-            singleframe4error (bool, default = False): When exception occurs inside a batch, instead of nullify
-                                                the whole batch, process each img in batch individually
+            counter (int, str, default=0): Index used for the prediction results
+            dataframe. Tracks the batches
+            singleframe4error (bool, default = False): When exception occurs inside a
+            batch, instead of nullify the whole batch, process each img in batch
+            individually
+
         Returns:
             feat.data.Fex (dataframe): Prediction results dataframe.
             int: counter - the updated number of counter. Used to track the batch size and image number
@@ -921,8 +928,10 @@ class Detector(object):
             outputFname (str, optional): Path to output file. Defaults to None.
             bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
-            singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in
-                                                        batch individually
+            singleframe4error (bool, default = False): When set True, when exception
+            occurs inside a batch, instead of nullify the whole batch, process each img
+            in batch individually
+
         Returns:
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
@@ -1066,9 +1075,11 @@ class Detector(object):
             inputFname (list of str): Path to a list of paths to image files.
             bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             outputFname (str, optional): Path to output file. Defaults to None.
-            singleframe4error (bool, default = False): When set True, when exception occurs inside a batch, instead of nullify the whole batch, process each img in
-                                                        batch individually
-        Rseturns:
+            singleframe4error (bool, default = False): When set True, when exception
+            occurs inside a batch, instead of nullify the whole batch, process each img
+            in batch individually
+
+        Returns:
             Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
         assert (
