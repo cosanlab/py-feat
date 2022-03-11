@@ -93,4 +93,4 @@ data/*
 !data/.gitkeep
 
 # Ignore jupyter-book build artifacts as they'll get auto-built via github actions
-notebooks/_build/*
+notebooks/_build
