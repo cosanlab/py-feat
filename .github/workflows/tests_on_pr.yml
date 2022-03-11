@@ -63,7 +63,7 @@ jobs:
         run: |
           conda activate test
           conda env list
-          pytest --cov=feat -rs -n auto
+          pytest --cov=feat -rs
 
   # Job (3): Just build jupyter book but don't deploy it.
   docs:
