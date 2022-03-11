@@ -24,7 +24,7 @@ __all__ = [
     "get_heat",
     "predict",
 ]
-__author__ = ["Sophie Byrne", "Jin Hyun Cheong", "Luke Chang"]
+__author__ = ["Sophie Byrne", "Jin Hyun Cheong", "Eshin Jolly", "Luke Chang"]
 
 
 def draw_lineface(

@@ -22,7 +22,7 @@ __all__ = [
     "load_h5",
     "read_pictures",
 ]
-__author__ = ["Jin Hyun Cheong, Tiankang Xie"]
+__author__ = ["Jin Hyun Cheong, Tiankang Xie, Eshin Jolly"]
 
 
 import os, math, pywt, pickle, h5py, sys
