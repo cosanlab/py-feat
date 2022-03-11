@@ -1,4 +1,4 @@
-name: (Auto-On-Release) Deploy Docs and PyPi
+name: (Auto-On-Release) Deploy PyPi and Docs
 
 on:
   workflow_dispatch:

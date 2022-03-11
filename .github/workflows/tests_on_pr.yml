@@ -1,4 +1,4 @@
-name: Tests on PR (or manual)
+name: Tests on PR
 
 on:
   workflow_dispatch:
@@ -56,7 +56,7 @@ jobs:
         run: |
           conda activate test
           conda env list
-          conda install -y -c conda-forge pytest pytest-cov pytest-xdist pytest-sugar coveralls
+          conda install -y -c conda-forge pytest pytest-cov pytest-sugar coveralls
           pip install . -r requirements.txt
       # Actually run the tests with coverage
       - name: Run Tests
@@ -68,7 +68,7 @@ jobs:
   # Job (3): Just build jupyter book but don't deploy it.
   docs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    name: Build & deploy docs
+    name: Build docs only
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
