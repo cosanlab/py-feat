@@ -2,8 +2,8 @@
 # Learn more at https://jupyterbook.org/customize/config.html
 
 title: Py-Feat
-author: Jin Hyun Cheong
-copyright: "2020"
+author: Jin Hyun Cheong, Tiankang Xie, Eshin Jolly
+copyright: "2022"
 logo: "content/images/logo/pyfeat_logo_small.png"
 exclude_patterns            : [ README.md, _build, Thumbs.db, .DS_Store, "**.ipynb_checkpoints"]
 

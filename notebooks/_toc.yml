@@ -1,23 +1,24 @@
 format: jb-book
 root: content/intro
 parts:
-- caption: Installation
-  chapters:
-  - file: content/installation
-- caption: Tutorials
-  chapters:
-  - file: content/detector
-  - file: content/analysis
-  - file: content/plotting
-  - file: content/loadingOtherFiles
-  - file: content/train_hogs
-  - file: content/trainAUvisModel
-  - file: content/modelContribution
-- caption: API
-  chapters:
-  - file: api/index
-- caption: Contributing
-  chapters:
-  - file: content/contribute
-  - url: https://github.com/cosanlab/py-feat
-    title: GitHub Repository
+  - caption: Installation
+    chapters:
+      - file: content/installation
+  - caption: Tutorials
+    chapters:
+      - file: content/detector
+      - file: content/analysis
+      - file: content/plotting
+      - file: content/loadingOtherFiles
+      - file: content/train_hogs
+      - file: content/trainAUvisModel
+      - file: content/extract_labels_and_landmarks
+      - file: content/modelContribution
+  - caption: API
+    chapters:
+      - file: api/index
+  - caption: Contributing
+    chapters:
+      - file: content/contribute
+      - url: https://github.com/cosanlab/py-feat
+        title: GitHub Repository
