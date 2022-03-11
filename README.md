@@ -100,7 +100,7 @@ Automated testing is handled by Github Actions according to the following rules:
 2. On PRs against the main branch, a full test-suite will be run and docs will be built but *not* deployed
 3. On publishing a release via github, the package will be uploaded to PyPI and docs will be built and deployed
 
-*Note*: Each of these workflows can also be run manually
+*Note*: Each of these workflows can also be run manually. They can also be skipped by adding 'skip ci' anywhere inside your commit message.
 
 ## Licenses
 Py-FEAT is provided under the MIT license. You also need to respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 
