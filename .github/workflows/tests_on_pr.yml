@@ -23,11 +23,11 @@ jobs:
       fail-fast: false
       matrix:
         # OSs to test
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         # Python versions to test
         python-version: [3.7, 3.8, 3.9]
         # By default everything should pass for the workflow to pass
-        ok-fail: [true]
+        ok-fail: [false]
         # include:
         #   # Rather than include 3.9 in the python versions, do it here so we can ignore failures on mac and windows with 3.9 (they have install issues)
         #   - os: ubuntu-latest
