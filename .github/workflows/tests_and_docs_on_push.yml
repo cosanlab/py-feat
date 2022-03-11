@@ -63,7 +63,7 @@ jobs:
         run: |
           conda activate test
           conda env list
-          pytest --cov=feat -rs -n auto
+          pytest --cov=feat -rs
 
       # Send coverage to coveralls.io but waiting on parallelization to finish
       # Not using the official github action in the marketplace to upload because it requires a .lcov file, which pytest doesn't generate. It's just easier to use the coveralls python library which does the same thing, but works with pytest.
