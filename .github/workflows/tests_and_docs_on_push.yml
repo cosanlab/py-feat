@@ -1,4 +1,4 @@
-name: Tests, Coverage, and Docs on push
+name: Tests and Docs deploy on push
 
 on:
   workflow_dispatch:
@@ -56,7 +56,7 @@ jobs:
         run: |
           conda activate test
           conda env list
-          conda install -y -c conda-forge pytest pytest-cov pytest-xdist pytest-sugar coveralls
+          conda install -y -c conda-forge pytest pytest-cov pytest-sugar coveralls
           pip install . -r requirements.txt
       # Actually run the tests with coverage
       - name: Run Tests
