@@ -1,8 +1,10 @@
-name: Tests on PR
+name: Tests and Docs
 
 on:
   workflow_dispatch:
-  pull_request:
+  schedule:
+    - cron: "0 0 * * 0"
+  push:
     branches:
       - main
       - master
@@ -54,10 +56,37 @@ jobs:
           conda env list
           pytest --cov=feat -rs
 
-  # Job (3): Just build jupyter book but don't deploy it.
+      # Send coverage to coveralls.io but waiting on parallelization to finish
+      # Not using the official github action in the marketplace to upload because it requires a .lcov file, which pytest doesn't generate. It's just easier to use the coveralls python library which does the same thing, but works with pytest.
+      - name: Upload Coverage
+        # The coveralls python package has some 422 server issues with uploads from github-actions so try both service providers, for more see:
+        # https://github.com/TheKevJames/coveralls-python/issues/252
+        run: coveralls --service=github || coveralls --service=github-actions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: $${{ matrix}}
+          COVERALLS_PARALLEL: true
+
+  # Job (2): Send a finish notification to coveralls.io to integrate coverage across parallel tests
+  coveralls:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    name: Coveralls.io Upload
+    needs: test
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    continue-on-error: true
+    steps:
+      - name: Finished
+        run: |
+          pip3 install --upgrade coveralls
+          coveralls --service=github --finish || coveralls --service=github-actions --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job (3): Build and deploy docs
   docs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    name: Build docs only
+    name: Build & deploy docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -81,3 +110,10 @@ jobs:
       - name: Build book
         run: |
           jupyter-book build notebooks
+          echo 'py-feat.org' > ./notebooks/_build/html/CNAME
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./notebooks/_build/html
