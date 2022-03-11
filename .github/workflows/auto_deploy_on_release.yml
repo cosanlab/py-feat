@@ -1,0 +1,64 @@
+name: (Auto-On-Release) Deploy Docs and PyPi
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    name: Build & deploy package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Pypa build
+        run: |
+          python3 -m pip install build --user
+      - name: Wheel and source build
+        run: |
+          python3 -m build --sdist --wheel --outdir dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  docs:
+    name: Build & deploy docs
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Upgrade pip
+        run: |
+          # install pip=>20.1 to use "pip cache dir"
+          python3 -m pip install --upgrade pip
+
+      - name: Install deps
+        run: |
+          python3 -m pip install . -r requirements.txt
+          python3 -m pip install -r ./requirements-dev.txt
+
+      - name: Build book
+        run: |
+          jupyter-book build notebooks
+          echo 'py-feat.org' > ./notebooks/_build/html/CNAME
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./notebooks/_build/html
