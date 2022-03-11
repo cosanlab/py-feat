@@ -22,6 +22,7 @@ au = np.ones(feature_length)
 au2 = np.ones(feature_length) * 3
 
 
+# Fails: predict() -> load_h5() error
 def testpredict():
     landmarks = predict(au)
     assert landmarks.shape == (2, 68)
@@ -31,6 +32,7 @@ def testpredict():
         predict(au[:-1])
 
 
+# Fails: predict() -> load_h5() error
 def test_draw_lineface():
     landmarks = predict(au)
     draw_lineface(currx=landmarks[0, :], curry=landmarks[1, :])
@@ -38,6 +40,7 @@ def test_draw_lineface():
     plt.close()
 
 
+# Fails: predict() -> load_h5() error
 def test_draw_vectorfield():
     draw_vectorfield(reference=predict(au), target=predict(au=au2))
     assert_plot_shape(plt.gca())
@@ -52,6 +55,7 @@ def test_draw_vectorfield():
         )
 
 
+# Fails: .plot_aus() -> plot_face() -> predict() -> load_h5() error
 def test_plot_face():
     # test plotting method
     fx = Fex(
@@ -89,7 +93,7 @@ def test_plot_face():
     assert_plot_shape(plt.gca())
     plt.close()
 
-    plot_face(au=au, vectorfield={"reference": predict(au2)}, feature_range=(0,1))
+    plot_face(au=au, vectorfield={"reference": predict(au2)}, feature_range=(0, 1))
     assert_plot_shape(plt.gca())
     plt.close()
 
@@ -101,6 +105,7 @@ def test_plot_face():
         plot_face(model=au, au=au, vectorfield={"noreference": predict(au2)})
 
 
+# Fails: .plot_aus() -> plot_face() -> predict() -> load_h5() error
 def test_plot_muscle():
     test_file = join(get_test_data_path(), "OpenFace_Test.csv")
     _, ax = plt.subplots(figsize=(4, 5))
@@ -122,7 +127,7 @@ def test_plot_detections():
     axes = image_prediction.plot_detections(muscle=True)
     assert axes[1].get_xlim() == (0.0, 1.1)
     plt.close()
-    
+
     axes = image_prediction.plot_detections(pose=True)
     assert axes[1].get_xlim() == (0.0, 1.1)
     plt.close()

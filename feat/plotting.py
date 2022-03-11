@@ -856,7 +856,7 @@ def get_heat(muscle, au, log):
     else:
         num = int(au[unit])
     # set alpha (opacity)
-    alpha = au[unit]/100
+    alpha = au[unit] / 100
     # color = colors.to_hex(q[num])
     # return str(color)
     color = colors.to_rgba(q[num], alpha=alpha)
@@ -907,8 +907,8 @@ def plot_face(
             "Don't forget to pass an 'au' vector of len(20), "
             "using neutral as default"
         )
-        
-    landmarks = predict(au, model, feature_range = feature_range)
+
+    landmarks = predict(au, model, feature_range=feature_range)
     currx, curry = [landmarks[x, :] for x in range(2)]
 
     if ax is None:
@@ -916,7 +916,7 @@ def plot_face(
 
     if muscles is not None:
         # Muscles are always scaled 0 - 100 b/c color palette is 0-100
-        au = minmax_scale(au, feature_range=(0,100))
+        au = minmax_scale(au, feature_range=(0, 100))
         if not isinstance(muscles, dict):
             raise ValueError("muscles must be a dictionary ")
         draw_muscles(currx, curry, ax=ax, au=au, **muscles)
@@ -1027,9 +1027,9 @@ def draw_facepose(pose, facebox, ax):
 
     # Draw face and pose axes
     # ax.imshow(img)
-    ax.plot((tdx, x1), (tdy, y1), color='red', linewidth=2)
-    ax.plot((tdx, x2), (tdy, y2), color='green', linewidth=2)
-    ax.plot((tdx, x3), (tdy, y3), color='blue', linewidth=2)
+    ax.plot((tdx, x1), (tdy, y1), color="red", linewidth=2)
+    ax.plot((tdx, x2), (tdy, y2), color="green", linewidth=2)
+    ax.plot((tdx, x3), (tdy, y3), color="blue", linewidth=2)
 
     return ax
 

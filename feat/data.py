@@ -85,9 +85,7 @@ class FexSeries(Series):
         return Fex
 
     def __finalize__(self, other, method=None, **kwargs):
-        """Propagate metadata from other to self
-        
-        """
+        """Propagate metadata from other to self"""
         # NOTE: backported from pandas master (upcoming v0.13)
         for name in self._metadata:
             object.__setattr__(self, name, getattr(other, name, None))
@@ -119,6 +117,7 @@ class FexSeries(Series):
 
     def facepose(self):
         """Returns the facepose data
+
         Returns:
             DataFrame: facepose data
         """
@@ -185,7 +184,7 @@ class FexSeries(Series):
 
 class Fex(DataFrame):
     """Fex is a class to represent facial expression (Fex) data
-    
+
     Fex class is  an enhanced pandas dataframe, with extra attributes and methods to help with facial expression data analysis.
 
     Args:
@@ -217,7 +216,7 @@ class Fex(DataFrame):
     ]
 
     def __finalize__(self, other, method=None, **kwargs):
-        """Propagate metadata from other to self """
+        """Propagate metadata from other to self"""
         self = super().__finalize__(other, method=method, **kwargs)
         # merge operation: using metadata of the left object
         if method == "merge":
@@ -401,8 +400,8 @@ class Fex(DataFrame):
         return self[self.landmark_columns]
 
     def facepose(self):
-        """Returns the facepose data
-        Returns facepose data using the columns set in fex.facepose_columns
+        """Returns the facepose data using the columns set in fex.facepose_columns
+
         Returns:
             DataFrame: facepose data
         """
@@ -449,7 +448,7 @@ class Fex(DataFrame):
         Returns:
             DataFrame: facebox data
         """
-            
+
         return self[self.facebox_columns]
 
     def time(self):
@@ -475,7 +474,7 @@ class Fex(DataFrame):
     def read_file(self, *args, **kwargs):
         """Loads file into FEX class
 
-        This function checks the detector set in fex.detector and calls the appropriate read function that helps utilize functionalities of Feat. 
+        This function checks the detector set in fex.detector and calls the appropriate read function that helps utilize functionalities of Feat.
 
         Available detectors include:
             FACET
@@ -499,7 +498,7 @@ class Fex(DataFrame):
 
     def info(self):
         """Print all meta data of fex
-        
+
         Loops through metadata set in self._metadata and prints out the information.
         """
         attr_list = []
@@ -516,7 +515,7 @@ class Fex(DataFrame):
 
         Returns:
             Fex
-        """ 
+        """
         # Check if filename exists in metadata.
         if not filename:
             try:
@@ -527,14 +526,14 @@ class Fex(DataFrame):
         return result
 
     def read_facet(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from FACET 
+        """Reads facial expression detection results from FACET
 
         Args:
             filename (string, optional): Path to file. Defaults to None.
 
         Returns:
             Fex
-        """ 
+        """
         # Check if filename exists in metadata.
         if not filename:
             try:
@@ -549,7 +548,7 @@ class Fex(DataFrame):
         return result
 
     def read_openface(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from OpenFace 
+        """Reads facial expression detection results from OpenFace
 
         Args:
             filename (string, optional): Path to file. Defaults to None.
@@ -570,7 +569,7 @@ class Fex(DataFrame):
         return result
 
     def read_affectiva(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from Affectiva 
+        """Reads facial expression detection results from Affectiva
 
         Args:
             filename (string, optional): Path to file. Defaults to None.
@@ -743,7 +742,7 @@ class Fex(DataFrame):
             X (list or DataFrame): List of column names or dataframe to be used as features for prediction
             y (string or array): y values to be predicted
             model (class, optional): Any sklearn model. Defaults to LinearRegression.
-            *args, **kwargs: Model arguments
+            args, kwargs: Model arguments
 
         Returns:
             model: Fit model instance.
@@ -766,8 +765,7 @@ class Fex(DataFrame):
            but ensures that returned object is a Fex object.
 
         Args:
-            target(float): downsampling target, typically in samples not
-                            seconds
+            target(float): downsampling target, typically in samples not seconds
             kwargs: additional inputs to nltools.stats.downsample
 
         """
@@ -786,7 +784,7 @@ class Fex(DataFrame):
         return df_ds
         # return self.__class__(df_ds, sampling_freq=target, features=ds_features)
 
-    def isc(self, col, index="frame", columns="input", method="pearson"):   
+    def isc(self, col, index="frame", columns="input", method="pearson"):
         """[summary]
 
         Args:
@@ -796,22 +794,23 @@ class Fex(DataFrame):
             method (str, optional): Method to use for correlation pearson, kendall, or spearman. Defaults to "pearson".
 
         Returns:
-            DataFrame: Correlation matrix with index as colmns 
-        """                 
+            DataFrame: Correlation matrix with index as colmns
+        """
         if index == None:
-            index = 'frame'
+            index = "frame"
         if columns == None:
             columns = "input"
-        mat = pd.pivot_table(self, index = index, columns=columns, values=col).corr(method=method)
-        return mat 
+        mat = pd.pivot_table(self, index=index, columns=columns, values=col).corr(
+            method=method
+        )
+        return mat
 
     def upsample(self, target, target_type="hz", **kwargs):
         """Upsample Fex columns. Relies on nltools.stats.upsample,
             but ensures that returned object is a Fex object.
 
         Args:
-            target(float): upsampling target, default 'hz' (also 'samples',
-                           'seconds')
+            target(float): upsampling target, default 'hz' (also 'samples', 'seconds')
             kwargs: additional inputs to nltools.stats.upsample
 
         """
@@ -973,11 +972,7 @@ class Fex(DataFrame):
         See http://nilearn.github.io/modules/generated/nilearn.signal.clean.html
 
         This function can do several things on the input signals, in
-        the following order:
-            - detrend
-            - standardize
-            - remove confounds
-            - low- and high-pass filter
+        the following order: detrend, standardize, remove confounds, low and high-pass filter
 
         If Fex.sessions is not None, sessions will be cleaned separately.
 
@@ -1011,7 +1006,7 @@ class Fex(DataFrame):
                     high_pass=high_pass,
                     ensure_finite=ensure_finite,
                     t_r=1.0 / np.float(self.sampling_freq),
-                    sessions=sessions,
+                    runs=sessions,
                     *args,
                     **kwargs,
                 ),
@@ -1119,7 +1114,7 @@ class Fex(DataFrame):
 
         Args:
             ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
-        
+
         Returns:
             Fex: (Fex) minimum values for each feature
         """
@@ -1254,7 +1249,7 @@ class Fex(DataFrame):
             num_cyc: (float) number of cycles for wavelet
             mode: (str) feature to extract, e.g., 'complex','filtered','phase','magnitude','power']
             ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
-        
+
         Returns:
             convolved: (Fex instance)
 
@@ -1592,7 +1587,9 @@ class Fex(DataFrame):
             except Exception as e:
                 print("Unable to plot data:", e)
 
-    def plot_detections(self, draw_landmarks=True, draw_facelines=True, muscle=False, pose=False):
+    def plot_detections(
+        self, draw_landmarks=True, draw_facelines=True, muscle=False, pose=False
+    ):
         """Plots detection results by Feat.
 
         Args:
@@ -1610,6 +1607,7 @@ class Fex(DataFrame):
         from matplotlib.patches import Rectangle
         import seaborn as sns
         from textwrap import wrap
+
         sns.set_context("paper", font_scale=2.0)
 
         # check how many images.
@@ -1693,10 +1691,15 @@ class Fex(DataFrame):
             if image_exists:
                 if sub_data.input().any():
                     ax.set_title(
-                        "\n".join(wrap(sub_data.input().unique()[0], 30)), loc="left", wrap=True, fontsize=14
+                        "\n".join(wrap(sub_data.input().unique()[0], 30)),
+                        loc="left",
+                        wrap=True,
+                        fontsize=14,
                     )
             else:
-                ax.set_title("\n".join(wrap(imagefile, 30)), loc="left", wrap=True, fontsize=14)
+                ax.set_title(
+                    "\n".join(wrap(imagefile, 30)), loc="left", wrap=True, fontsize=14
+                )
                 ax.set(ylim=ax.get_ylim()[::-1])
                 ax.set_aspect("equal", "box")
 
@@ -1786,13 +1789,14 @@ class Fextractor:
         **kwargs,
     ):
         """Extract summary of multiple features
+
         Args:
             fex_object: (Fex) Fex instance to extract features from.
             mean: (bool) extract mean of features
             max: (bool) extract max of features
             min: (bool) extract min of features
             ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
-       
+
         Returns:
             fex: (Fex)
         """
@@ -1826,7 +1830,7 @@ class Fextractor:
         self, fex_object, min_freq=0.06, max_freq=0.66, bank=8, *args, **kwargs
     ):
         """Convolve with a bank of morlet wavelets.
-        
+
         Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.
 
         Args:
@@ -1868,10 +1872,10 @@ class Fextractor:
 
     def merge(self, out_format="long"):
         """Merge all extracted features to a single dataframe
-        
+
         Args:
             format: (str) Output format of merged data. Can be set to 'long' or 'wide'. Defaults to long.
-        
+
         Returns:
             merged: (DataFrame) DataFrame containing merged features extracted from a Fex instance.
         """

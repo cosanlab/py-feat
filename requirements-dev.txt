@@ -5,4 +5,4 @@ pycodestyle
 sphinx
 sphinx-rtd-theme
 jupyter-book
-ghp-import
+plotly>=5.6.0

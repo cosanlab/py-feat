@@ -1,10 +1,9 @@
 # Py-FEAT: Python Facial Expression Analysis Toolbox
 [![Package versioning](https://img.shields.io/pypi/v/py-feat.svg)](https://pypi.org/project/py-feat/)
-[![Build Status](https://api.travis-ci.org/cosanlab/py-feat.svg?branch=master)](https://travis-ci.org/cosanlab/py-feat/)
+[![Tests](https://github.com/cosanlab/py-feat/actions/workflows/tests_and_docs.yml/badge.svg)](https://github.com/cosanlab/py-feat/actions/workflows/tests_and_docs.yml)
 [![Coverage Status](https://coveralls.io/repos/github/cosanlab/py-feat/badge.svg?branch=master)](https://coveralls.io/github/cosanlab/py-feat?branch=master)
-![Python Versions](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
+![Python Versions](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)
 [![DOI](https://zenodo.org/badge/118517740.svg)](https://zenodo.org/badge/latestdoi/118517740)
-
 
 Py-FEAT is a suite for facial expressions (FEX) research written in Python. This package includes tools to detect faces, extract emotional facial expressions (e.g., happiness, sadness, anger), facial muscle movements (e.g., action units), and facial landmarks, from videos and images of faces, as well as methods to preprocess, analyze, and visualize FEX data. 
 
@@ -82,6 +81,26 @@ Head pose estimation models
 3. Create your feature AND add tests to make sure they are working. 
 4. Run the tests again with `pytest tests/` to make sure everything still passes, including your new feature. If you broke something, edit your feature so that it doesn't break existing code. 
 5. Create a pull request to the main repository's `master` branch.
+
+### Adding new notebook examples
+*Note*: You should execute all notebook example cells *locally* before committing changes to github as our CI workflow **does not** execute notebooks; it just renders them into pages. That's why there's also no need to commit `notebooks/_build` to git as github actions will auto-generate that folder and deploy it to the `gh-pages` branch of the repo.
+
+1. Make sure to install the development requirements: `pip install -r requirements-dev.txt`
+2. Add notebooks or markdown to the `notebooks/content` directory
+3. Add images to the `notebooks/content/images` directory
+4. Update the TOC as needed: `notebooks/_toc.yml` file
+5. Build the HTML: `jupyter-book build notebooks`
+6. View the rendered HTML by open the following in your browser: `notebooks/_build/html/index.html`  
+
+
+## Continuous Integration
+
+Automated testing is handled by Github Actions according to the following rules:
+1. On pushes to the main branch and every week on Sundays, a full test-suite will be run and docs will be built and deployed
+2. On PRs against the main branch, a full test-suite will be run and docs will be built but *not* deployed
+3. On publishing a release via github, the package will be uploaded to PyPI and docs will be built and deployed
+
+*Note*: Each of these workflows can also be run manually. They can also be skipped by adding 'skip ci' anywhere inside your commit message.
 
 ## Licenses
 Py-FEAT is provided under the MIT license. You also need to respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 
