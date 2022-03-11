@@ -215,6 +215,21 @@ def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=
     Returns:
         model: PLS model
     """
+
+    # If they pass in a file with an extension prefer that loading method
+    # Otherwise try to load .joblib first assuming version checks pass otherwise
+    # fallback to .h5
+
+    if file_name.endswith(".h5") or file_name.endswith(".hdf5"):
+        load_h5 = True
+    elif file_name.endswith(".joblib"):
+        load_h5 = False
+    elif "." in file_name:
+        raise TypeError("Only .h5 or .joblib file extensions are supported")
+    else:
+        load_h5 = False
+
+    # Check sklearn and python version to see if we can load joblib
     my_skmajor, my_skminor, my_skpatch = skversion.split(".")
     my_pymajor, my_pyminor, my_pymicro, *_ = sys.version_info
 
@@ -225,14 +240,19 @@ def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=
         and int(my_pymajor) == pymajor
         and int(my_pyminor) == pyminor
         and prefer_joblib_if_version_match
+        and not load_h5
     ):
-        return load(os.path.join(get_resource_path(), f"{file_name}.joblib"))
+        can_load_joblib = True
+        file_name = f"{file_name.split('.')[0]}.joblib"
     else:
-        warnings.warn(
-            f"Python and sklearn version mismatch for AU viz model loading via joblib. Falling back to hdf5....\nExpected:\n sklearn: {skmajor}.{skminor}.X\n Python: {pymajor}.{pyminor}.X\n\nCurrently installed:\n sklearn: {my_skmajor}.{my_skminor}.{my_skpatch}\n Python: {my_pymajor}.{my_pyminor}.{my_pymicro}"
-        )
+        can_load_joblib = False
+        file_name = f"{file_name.split('.')[0]}.h5"
+
+    if can_load_joblib:
+        return load(os.path.join(get_resource_path(), file_name))
+    else:
         try:
-            hf = h5py.File(os.path.join(get_resource_path(), f"{file_name}.h5"), "r")
+            hf = h5py.File(os.path.join(get_resource_path(), file_name), "r")
             d1 = hf.get("coef")
             d2 = hf.get("x_mean")
             d3 = hf.get("y_mean")
