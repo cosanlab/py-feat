@@ -315,6 +315,12 @@ def test_detect_image():
     out = pd.read_csv(outputFname)
     assert out.happiness.values[0] > 0
 
+    # Test multiple face detection from a single image
+    inputFname = os.path.join(
+        get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
+    )
+    out = detector.detect_image(inputFname=inputFname)
+
 
 def test_multiface():
     # Test multiple faces
