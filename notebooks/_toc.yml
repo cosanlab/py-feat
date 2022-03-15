@@ -1,9 +1,10 @@
 format: jb-book
 root: content/intro
 parts:
-  - caption: Installation
+  - caption: Getting Started
     chapters:
       - file: content/installation
+      - file: content/models
   - caption: Tutorials
     chapters:
       - file: content/detector
