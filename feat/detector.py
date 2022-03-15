@@ -1167,6 +1167,13 @@ class Detector(object):
                                 df = pd.concat((df, tmp_df), 0)
                 else:
                     df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+
+                # Handle pandas assignment issue where we have a single file name, but
+                # our dataframe contains multiple faces (i.e. multiple rows). So we need
+                # to broadcast the *contents* of input_names since it's length doesn't
+                # match the number of rows
+                if df.shape[0] > 1 and len(input_names) == 1:
+                    input_names = input_names[0]
                 df["input"] = input_names
                 if outputFname:
                     df[init_df.columns].to_csv(
