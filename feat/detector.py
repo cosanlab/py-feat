@@ -1134,6 +1134,7 @@ class Detector(object):
                 else:
                     df, _ = self.process_frame(concat_frame, counter=tmp_counter)
 
+                # TODO: Update me like below?
                 df["input"] = input_names
                 if outputFname:
                     df[init_df.columns].to_csv(
@@ -1168,6 +1169,7 @@ class Detector(object):
                 else:
                     df, _ = self.process_frame(concat_frame, counter=tmp_counter)
 
+                # TODO: Doesn't work when handling multiple mutli-face images
                 # Handle pandas assignment issue where we have a single file name, but
                 # our dataframe contains multiple faces (i.e. multiple rows). So we need
                 # to broadcast the *contents* of input_names since it's length doesn't
