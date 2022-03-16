@@ -300,26 +300,45 @@ def test_nofile():
 
 
 def test_detect_image():
-    # Test detect image
+
+    single_face = os.path.join(get_test_data_path(), "input.jpg")
+    multi_face = os.path.join(
+        get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
+    )
+    outputFname = os.path.join(get_test_data_path(), "output.csv")
+
+    # NUM IMAGES < BATCH SIZE
+    # Test single face from single image
     detector = Detector()
-    inputFname = os.path.join(get_test_data_path(), "input.jpg")
-    out = detector.detect_image(inputFname=inputFname)
+    out = detector.detect_image(inputFname=single_face)
     assert type(out) == Fex
     assert len(out) == 1
     assert out.happiness.values[0] > 0
 
-    outputFname = os.path.join(get_test_data_path(), "output.csv")
-    out = detector.detect_image(inputFname=inputFname, outputFname=outputFname)
+    # Test writing out detection
+    out = detector.detect_image(inputFname=single_face, outputFname=outputFname)
     assert out
     assert os.path.exists(outputFname)
     out = pd.read_csv(outputFname)
     assert out.happiness.values[0] > 0
 
+    # Test single face from multiple images
+    out = detector.detect_image(inputFname=[single_face, single_face])
+
     # Test multiple face detection from a single image
-    inputFname = os.path.join(
-        get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
-    )
-    out = detector.detect_image(inputFname=inputFname)
+    out = detector.detect_image(inputFname=multi_face)
+
+    # TODO: Test starts failing from here, see notes in detector.py
+    # Test multi face from multiple images
+    # out = detector.detect_image(inputFname=[multi_face, multi_face])
+
+    # Test mixture of single and multi faces from multiple images
+    # out = detector.detect_image(inputFname=[single_face, multi_face])
+
+    # NUM IMAGES >= BATCH SIZE
+    # out = detector.detect_image(inputFname=[single_face] * 6)
+    # out = detector.detect_image(inputFname=[multi_face] * 6)
+    # out = detector.detect_image(inputFname=[single_face] * 3 + [multi_face] * 3)
 
 
 def test_multiface():
