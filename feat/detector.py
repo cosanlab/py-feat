@@ -1107,7 +1107,7 @@ class Detector(object):
 
         Args:
             inputFname (list of str): Path to a list of paths to image files.
-            bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
+            batch_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             outputFname (str, optional): Path to output file. Defaults to None.
             singleframe4error (bool, default = False): When set True, when exception
             occurs inside a batch, instead of nullify the whole batch, process each img

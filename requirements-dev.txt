@@ -4,5 +4,6 @@ black
 pycodestyle
 sphinx
 sphinx-rtd-theme
+sphinxcontrib-napoleon
 jupyter-book
 plotly>=5.6.0
