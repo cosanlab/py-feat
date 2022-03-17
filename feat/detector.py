@@ -321,7 +321,9 @@ class Detector(object):
             frame (array): image array
 
         Returns:
-            list: face detection results (x, y, x2, y2)
+            list: list of lists with the same length as the number of frames. Each list
+            item is a list containing the (x1, y1, x2, y2) coordinates of each detected
+            face in that frame.
 
         Examples:
             >>> import cv2
@@ -750,13 +752,14 @@ class Detector(object):
 
     # TODO: probably need to add exceptions. The exception handling is not great yet
     def process_frame(
-        self, frames, counter=0, singleframe4error=False, skip_frame_rate=1
+        self, frames, input_names, counter=0, singleframe4error=False, skip_frame_rate=1
     ):
         """Function to run face detection, landmark detection, and emotion detection on
         a frame.
 
         Args:
             frames (np.array): batch of frames, of shape BxHxWxC (read from cv2)
+            input_names (list): file names for each frame in the batch
             counter (int, str, default=0): Index used for the prediction results
             dataframe. Tracks the batches
             singleframe4error (bool, default = False): When exception occurs inside a
@@ -772,6 +775,9 @@ class Detector(object):
         if frames.ndim == 3:
             frames = np.expand_dims(frames, 0)
         assert frames.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+        assert frames.shape[0] == len(
+            input_names
+        ), "Number of input_names needs to match the number of frames to process"
         out = None
         # TODO Changed here
         try:
@@ -814,6 +820,7 @@ class Detector(object):
             )
 
             for i, sessions in enumerate(detected_faces):
+                # NOTE: add image name handling in the inner loop here
                 for j, faces in enumerate(sessions):
                     facebox_df = pd.DataFrame(
                         [
@@ -864,6 +871,7 @@ class Detector(object):
                         axis=1,
                     )
                     tmp_df[FEAT_TIME_COLUMNS] = counter
+                    tmp_df["input"] = input_names[i]
                     if out is None:
                         out = tmp_df
                     else:
@@ -1106,7 +1114,13 @@ class Detector(object):
                 concat_frame = frame
                 tmp_counter = counter
             else:
-                concat_frame = np.concatenate([concat_frame, frame], 0)
+                # TODO: This should really be refactored to use utils.read_pictures
+                try:
+                    concat_frame = np.concatenate([concat_frame, frame], 0)
+                except ValueError as e:
+                    raise ValueError(
+                        f"Image size mis-match error. All of your images do not have the same dimensions. See these details from numpy: {str(e)}"
+                    )
             input_names.append(inputFname[counter])
             counter = counter + 1
 
@@ -1115,6 +1129,7 @@ class Detector(object):
                     try:
                         df, _ = self.process_frame(
                             concat_frame,
+                            input_names,
                             counter=tmp_counter,
                             singleframe4error=singleframe4error,
                         )
@@ -1123,6 +1138,7 @@ class Detector(object):
                         for id_fr in range(concat_frame.shape[0]):
                             tmp_df, _ = self.process_frame(
                                 concat_frame[id_fr : (id_fr + 1)],
+                                input_names[id_fr : (id_fr + 1)],
                                 counter=tmp_counter,
                                 singleframe4error=False,
                             )
@@ -1132,10 +1148,12 @@ class Detector(object):
                             else:
                                 df = pd.concat((df, tmp_df), 0)
                 else:
-                    df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                    df, _ = self.process_frame(
+                        concat_frame, input_names, counter=tmp_counter
+                    )
 
                 # TODO: Update me like below?
-                df["input"] = input_names
+                # df["input"] = input_names
                 if outputFname:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"
@@ -1152,12 +1170,15 @@ class Detector(object):
             if concat_frame is not None:
                 if singleframe4error:
                     try:
-                        df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                        df, _ = self.process_frame(
+                            concat_frame, input_names, counter=tmp_counter
+                        )
                     except FaceDetectionError:
                         df = None
                         for id_fr in range(concat_frame.shape[0]):
                             tmp_df, _ = self.process_frame(
                                 concat_frame[id_fr : (id_fr + 1)],
+                                input_names[id_fr : (id_fr + 1)],
                                 counter=tmp_counter,
                                 singleframe4error=False,
                             )
@@ -1167,16 +1188,18 @@ class Detector(object):
                             else:
                                 df = pd.concat((df, tmp_df), 0)
                 else:
-                    df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                    df, _ = self.process_frame(
+                        concat_frame, input_names, counter=tmp_counter
+                    )
 
                 # TODO: Doesn't work when handling multiple mutli-face images
                 # Handle pandas assignment issue where we have a single file name, but
                 # our dataframe contains multiple faces (i.e. multiple rows). So we need
                 # to broadcast the *contents* of input_names since it's length doesn't
                 # match the number of rows
-                if df.shape[0] > 1 and len(input_names) == 1:
-                    input_names = input_names[0]
-                df["input"] = input_names
+                # if df.shape[0] > 1 and len(input_names) == 1:
+                #     input_names = input_names[0]
+                # df["input"] = input_names
                 if outputFname:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"

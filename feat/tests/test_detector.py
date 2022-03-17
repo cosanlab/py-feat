@@ -19,6 +19,7 @@ img01 = read_pictures([inputFname])
 _, h, w, _ = img01.shape
 
 
+# TODO: Since most of these are parameterization tests, refactor using pytest fixtures
 def test_detector():
     detector = Detector(n_jobs=1)
     assert detector["n_jobs"] == 1
@@ -299,6 +300,7 @@ def test_nofile():
         out = detector1.detect_image(inputFname)
 
 
+# TODO: Refactor this test with test_multiface
 def test_detect_image():
 
     single_face = os.path.join(get_test_data_path(), "input.jpg")
@@ -312,33 +314,38 @@ def test_detect_image():
     detector = Detector()
     out = detector.detect_image(inputFname=single_face)
     assert type(out) == Fex
-    assert len(out) == 1
+    # Default detectors return 173 attributes
+    assert out.shape == (1, 173)
     assert out.happiness.values[0] > 0
 
-    # Test writing out detection
+    # # Test writing out detection
     out = detector.detect_image(inputFname=single_face, outputFname=outputFname)
-    assert out
+    assert out is not None
     assert os.path.exists(outputFname)
     out = pd.read_csv(outputFname)
     assert out.happiness.values[0] > 0
 
     # Test single face from multiple images
     out = detector.detect_image(inputFname=[single_face, single_face])
+    assert out.shape == (2, 173)
 
     # Test multiple face detection from a single image
     out = detector.detect_image(inputFname=multi_face)
+    assert out.shape == (5, 173)
 
-    # TODO: Test starts failing from here, see notes in detector.py
     # Test multi face from multiple images
-    # out = detector.detect_image(inputFname=[multi_face, multi_face])
+    out = detector.detect_image(inputFname=[multi_face, multi_face])
+    assert out.shape == (10, 173)
 
-    # Test mixture of single and multi faces from multiple images
-    # out = detector.detect_image(inputFname=[single_face, multi_face])
+    # TODO: We should be able to handle this without failing! It also allows us to test
+    # that Fex shape is always sum(faces_in_image for image in images) not num_images
+    # and or num_faces
+    with pytest.raises(ValueError):
+        _ = detector.detect_image(inputFname=[single_face, multi_face])
 
     # NUM IMAGES >= BATCH SIZE
-    # out = detector.detect_image(inputFname=[single_face] * 6)
-    # out = detector.detect_image(inputFname=[multi_face] * 6)
-    # out = detector.detect_image(inputFname=[single_face] * 3 + [multi_face] * 3)
+    out = detector.detect_image(inputFname=[single_face] * 6)
+    assert out.shape == (6, 173)
 
 
 def test_multiface():
