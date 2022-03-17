@@ -308,17 +308,17 @@ def test_detect_image():
         get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
     )
     outputFname = os.path.join(get_test_data_path(), "output.csv")
+    detector = Detector()
 
     # NUM IMAGES < BATCH SIZE
     # Test single face from single image
-    detector = Detector()
     out = detector.detect_image(inputFname=single_face)
     assert type(out) == Fex
     # Default detectors return 173 attributes
     assert out.shape == (1, 173)
     assert out.happiness.values[0] > 0
 
-    # # Test writing out detection
+    # Test writing out detection
     out = detector.detect_image(inputFname=single_face, outputFname=outputFname)
     assert out is not None
     assert os.path.exists(outputFname)
@@ -337,12 +337,15 @@ def test_detect_image():
     out = detector.detect_image(inputFname=[multi_face, multi_face])
     assert out.shape == (10, 173)
 
-    # TODO: We should be able to handle this without failing! It also allows us to test
-    # that Fex shape is always sum(faces_in_image for image in images) not num_images
-    # and or num_faces
+    # Test batch failing on batching mis-matched image sizes
     with pytest.raises(ValueError):
         _ = detector.detect_image(inputFname=[single_face, multi_face])
 
+    # If we don't batch then we effectively process them separately and concat the
+    # results. So always make sure  the results are sum(faces_in_image for image in
+    # images) not num_images or num_faces
+    out = detector.detect_image(inputFname=[single_face, multi_face], batch_size=1)
+    assert out.shape == (6, 173)
     # NUM IMAGES >= BATCH SIZE
     out = detector.detect_image(inputFname=[single_face] * 6)
     assert out.shape == (6, 173)
@@ -372,8 +375,8 @@ def test_detect_video():
     # Test detect video
     detector = Detector(n_jobs=1)
     inputFname = os.path.join(get_test_data_path(), "input.mp4")
-    out = detector.detect_video(inputFname=inputFname, skip_frames=60)
-    assert len(out) == 2
+    out = detector.detect_video(inputFname=inputFname, skip_frames=24)
+    assert len(out) == 3
 
 
 def test_detect_video_parallel():

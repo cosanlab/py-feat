@@ -34,6 +34,7 @@ from feat.utils import (
     resize_with_padding,
     align_face_68pts,
     FaceDetectionError,
+    validate_input,
 )
 from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
@@ -752,7 +753,13 @@ class Detector(object):
 
     # TODO: probably need to add exceptions. The exception handling is not great yet
     def process_frame(
-        self, frames, input_names, counter=0, singleframe4error=False, skip_frame_rate=1
+        self,
+        frames,
+        input_names,
+        counter=0,
+        singleframe4error=False,
+        skip_frame_rate=1,
+        is_video_frame=False,
     ):
         """Function to run face detection, landmark detection, and emotion detection on
         a frame.
@@ -765,6 +772,10 @@ class Detector(object):
             singleframe4error (bool, default = False): When exception occurs inside a
             batch, instead of nullify the whole batch, process each img in batch
             individually
+            is_video_frame (bool): Whether processing is happening over batches of
+            otherwise independent IMAGES so len(frames) == len(input_names) or over
+            VIDEOFRAMES so len(input_names) == 1 and len(frames) > len(input_names);
+            Default False
 
         Returns:
             feat.data.Fex (dataframe): Prediction results dataframe.
@@ -775,9 +786,10 @@ class Detector(object):
         if frames.ndim == 3:
             frames = np.expand_dims(frames, 0)
         assert frames.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
-        assert frames.shape[0] == len(
-            input_names
-        ), "Number of input_names needs to match the number of frames to process"
+        if not is_video_frame:
+            assert frames.shape[0] == len(
+                input_names
+            ), "Number of input_names needs to match the number of frames to process"
         out = None
         # TODO Changed here
         try:
@@ -820,7 +832,6 @@ class Detector(object):
             )
 
             for i, sessions in enumerate(detected_faces):
-                # NOTE: add image name handling in the inner loop here
                 for j, faces in enumerate(sessions):
                     facebox_df = pd.DataFrame(
                         [
@@ -871,7 +882,9 @@ class Detector(object):
                         axis=1,
                     )
                     tmp_df[FEAT_TIME_COLUMNS] = counter
-                    tmp_df["input"] = input_names[i]
+                    tmp_df["input"] = (
+                        input_names[0] if is_video_frame else input_names[i]
+                    )
                     if out is None:
                         out = tmp_df
                     else:
@@ -943,13 +956,14 @@ class Detector(object):
         Returns:
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
-        self.info["inputFname"] = inputFname
+        self.info["inputFname"] = validate_input(inputFname)
+
         self.info["outputFname"] = outputFname
         init_df = pd.DataFrame(columns=self["output_columns"])
         if outputFname:
             init_df.to_csv(outputFname, index=False, header=True)
 
-        cap = cv2.VideoCapture(inputFname)
+        cap = cv2.VideoCapture(self.info["inputFname"][0])
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frames_to_process = int(np.ceil(length / skip_frames))
 
@@ -980,18 +994,22 @@ class Detector(object):
                         try:
                             df, _ = self.process_frame(
                                 concat_frame,
+                                self.info["inputFname"],
                                 counter=tmp_counter,
                                 singleframe4error=singleframe4error,
                                 skip_frame_rate=skip_frames,
+                                is_video_frame=True,
                             )
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
                                 tmp_df, _ = self.process_frame(
                                     concat_frame[id_fr : (id_fr + 1)],
+                                    self.info["inputFname"][id_fr : (id_fr + 1)],
                                     counter=tmp_counter,
                                     singleframe4error=False,
                                     skip_frame_rate=skip_frames,
+                                    is_video_frame=True,
                                 )
                                 tmp_counter += 1
                                 if df is None:
@@ -1001,11 +1019,12 @@ class Detector(object):
                     else:
                         df, _ = self.process_frame(
                             concat_frame,
+                            self.info["inputFname"],
                             counter=tmp_counter,
                             skip_frame_rate=skip_frames,
+                            is_video_frame=True,
                         )
 
-                    df["input"] = inputFname
                     if outputFname:
                         df[init_df.columns].to_csv(
                             outputFname, index=False, header=False, mode="a"
@@ -1022,17 +1041,21 @@ class Detector(object):
                         try:
                             df, _ = self.process_frame(
                                 concat_frame,
+                                self.info["inputFname"],
                                 counter=tmp_counter,
                                 skip_frame_rate=skip_frames,
+                                is_video_frame=True,
                             )
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
                                 tmp_df, _ = self.process_frame(
                                     concat_frame[id_fr : (id_fr + 1)],
+                                    self.info["inputFname"][id_fr : (id_fr + 1)],
                                     counter=tmp_counter,
                                     singleframe4error=False,
                                     skip_frame_rate=skip_frames,
+                                    is_video_frame=True,
                                 )
                                 tmp_counter += 1
                                 if df is None:
@@ -1042,8 +1065,10 @@ class Detector(object):
                     else:
                         df, _ = self.process_frame(
                             concat_frame,
+                            self.info["inputFname"],
                             counter=tmp_counter,
                             skip_frame_rate=skip_frames,
+                            is_video_frame=True,
                         )
                     df["input"] = inputFname
                     if outputFname:
@@ -1059,7 +1084,7 @@ class Detector(object):
         else:
             return Fex(
                 init_df,
-                filename=inputFname,
+                filename=self.info["inputFname"],
                 au_columns=self["au_presence_columns"],
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
@@ -1090,15 +1115,8 @@ class Detector(object):
         Returns:
             Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
-        assert (
-            type(inputFname) == str or type(inputFname) == list
-        ), "inputFname must be a string path to image or list of image paths"
-        if type(inputFname) == str:
-            inputFname = [inputFname]
-        for inputF in inputFname:
-            if not os.path.exists(inputF):
-                raise FileNotFoundError(f"File {inputF} not found.")
-        self.info["inputFname"] = inputFname
+
+        self.info["inputFname"] = validate_input(inputFname)
 
         init_df = pd.DataFrame(columns=self["output_columns"])
         if outputFname:
@@ -1107,9 +1125,8 @@ class Detector(object):
         counter = 0
         concat_frame = None
         input_names = []
-        while counter < len(inputFname):
-            # if counter % skip_frames == 0:
-            frame = np.expand_dims(cv2.imread(inputFname[counter]), 0)
+        while counter < len(self.info["inputFname"]):
+            frame = np.expand_dims(cv2.imread(self.info["inputFname"][counter]), 0)
             if concat_frame is None:
                 concat_frame = frame
                 tmp_counter = counter
@@ -1121,7 +1138,7 @@ class Detector(object):
                     raise ValueError(
                         f"Image size mis-match error. All of your images do not have the same dimensions. See these details from numpy: {str(e)}"
                     )
-            input_names.append(inputFname[counter])
+            input_names.append(self.info["inputFname"][counter])
             counter = counter + 1
 
             if (counter % batch_size == 0) and (concat_frame is not None):
@@ -1152,8 +1169,6 @@ class Detector(object):
                         concat_frame, input_names, counter=tmp_counter
                     )
 
-                # TODO: Update me like below?
-                # df["input"] = input_names
                 if outputFname:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"
@@ -1165,7 +1180,7 @@ class Detector(object):
                 tmp_counter = None
                 input_names = []
 
-        if len(inputFname) % batch_size != 0:
+        if len(self.info["inputFname"]) % batch_size != 0:
             # process remaining frames
             if concat_frame is not None:
                 if singleframe4error:
@@ -1192,14 +1207,6 @@ class Detector(object):
                         concat_frame, input_names, counter=tmp_counter
                     )
 
-                # TODO: Doesn't work when handling multiple mutli-face images
-                # Handle pandas assignment issue where we have a single file name, but
-                # our dataframe contains multiple faces (i.e. multiple rows). So we need
-                # to broadcast the *contents* of input_names since it's length doesn't
-                # match the number of rows
-                # if df.shape[0] > 1 and len(input_names) == 1:
-                #     input_names = input_names[0]
-                # df["input"] = input_names
                 if outputFname:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"
@@ -1212,7 +1219,7 @@ class Detector(object):
         else:
             return Fex(
                 init_df,
-                filename=inputFname,
+                filename=self.info["inputFname"],
                 au_columns=self["au_presence_columns"],
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
