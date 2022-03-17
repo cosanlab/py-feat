@@ -21,6 +21,7 @@ __all__ = [
     "neutral",
     "load_h5",
     "read_pictures",
+    "validate_input",
 ]
 __author__ = ["Jin Hyun Cheong, Tiankang Xie, Eshin Jolly"]
 
@@ -594,6 +595,34 @@ def softmax(x):
         x: value to softmax
     """
     return 1.0 / (1 + 10.0 ** -(x))
+
+
+def validate_input(inputFname):
+    """
+    Given a string filename or list containing string files names, ensures that the
+    file(s) exist. Always returns a non-nested list, potentionally containing a single element.
+
+    Args:
+        inputFname (str or list): file name(s)
+
+    Raises:
+        FileNotFoundError: if any file name(s) don't exist
+
+    Returns:
+        list: list of file names (even if input was a str)
+    """
+
+    assert isinstance(
+        inputFname, (str, list)
+    ), "inputFname must be a string path to image or list of image paths"
+
+    if type(inputFname) == str:
+        inputFname = [inputFname]
+
+    for inputF in inputFname:
+        if not os.path.exists(inputF):
+            raise FileNotFoundError(f"File {inputF} not found.")
+    return inputFname
 
 
 ### Functions for face registration ###
