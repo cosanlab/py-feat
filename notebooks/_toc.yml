@@ -7,7 +7,8 @@ parts:
       - file: content/models
   - caption: Tutorials
     chapters:
-      - file: content/detector
+      - file: content/01_basics
+      - file: content/02_detector
       - file: content/analysis
       - file: content/plotting
       - file: content/loadingOtherFiles
