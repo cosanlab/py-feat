@@ -15,6 +15,8 @@ import seaborn as sns
 import matplotlib.colors as colors
 from collections import OrderedDict
 from sklearn.preprocessing import minmax_scale
+from pathlib import Path
+from PIL import Image
 
 __all__ = [
     "draw_lineface",
@@ -23,6 +25,7 @@ __all__ = [
     "draw_muscles",
     "get_heat",
     "predict",
+    "imshow",
 ]
 __author__ = ["Sophie Byrne", "Jin Hyun Cheong", "Eshin Jolly", "Luke Chang"]
 
@@ -1043,3 +1046,21 @@ def _create_empty_figure(figsize=(4, 5), xlim=[25, 172], ylim=[240, 50]):
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     return ax
+
+
+def imshow(obj, figsize=None, aspect="equal"):
+    """
+    Convenience wrapper function around matplotlib imshow that creates figure and axis
+    boilerplate for single image plotting
+
+    Args:
+        obj (str/Path/PIL.Imag): string or Path to image file or pre-loaded PIL.Image instance
+        figsize (tuple, optional): matplotlib figure size. Defaults to None.
+        aspect (str, optional): passed to matplotlib imshow. Defaults to "equal".
+    """
+    if isinstance(obj, (str, Path)):
+        obj = Image.open(obj)
+
+    _, ax = plt.subplots(figsize=figsize)
+    _ = ax.imshow(obj, aspect=aspect)
+    _ = ax.axis("off")
