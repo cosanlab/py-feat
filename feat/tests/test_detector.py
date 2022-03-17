@@ -367,7 +367,7 @@ def test_multiface():
         landmark_model="PFLD",
         au_model="jaanet",
     )
-    files, _ = detector.process_frame(img02, 0)
+    files, _ = detector.process_frame(img02, inputFname2, counter=0)
     assert files.shape[0] == 5
 
 
@@ -398,10 +398,12 @@ def test_detect_video_parallel():
 
 def test_simultaneous():
     # Test processing everything:
+    inputFname = os.path.join(get_test_data_path(), "input.jpg")
+    img01 = read_pictures([inputFname])
     detector04 = Detector(
         face_model="RetinaFace",
         emotion_model="resmasknet",
         landmark_model="PFLD",
         au_model="jaanet",
     )
-    files = detector04.process_frame(img01, 0)
+    files = detector04.process_frame(img01, inputFname, counter=0)
