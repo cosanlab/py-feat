@@ -67,5 +67,5 @@ repository:
 #######################################################################################
 # Advanced and power-user settings
 sphinx:
-  extra_extensions          :   ['sphinx.ext.autodoc'] # A list of extra extensions to load by Sphinx (added to those already used by JB).
+  extra_extensions          :   ['sphinx.ext.autodoc', 'sphinx.ext.napoleon'] # A list of extra extensions to load by Sphinx (added to those already used by JB).
   config                    :   # key-value pairs to directly over-ride the Sphinx configuration
