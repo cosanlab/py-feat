@@ -925,6 +925,7 @@ class Detector(object):
                         ],
                         axis=1,
                     )
+                    out["input"] = input_names[0] if is_video_frame else input_names[i]
                     out[FEAT_TIME_COLUMNS] = counter + cter
                     if newdf is None:
                         newdf = out
@@ -1136,7 +1137,7 @@ class Detector(object):
                     concat_frame = np.concatenate([concat_frame, frame], 0)
                 except ValueError as e:
                     raise ValueError(
-                        f"Image size mis-match error. All of your images do not have the same dimensions. See these details from numpy: {str(e)}"
+                        f"Image batching size mis-match error. You set batch_size to{batch_size}, but all of your images don't have the same dimensions. You need to either resize you images prior to using py-feat or you can set batch_size = 1 to prevent any image batching during processing. See these additional error details from numpy: {str(e)}"
                     )
             input_names.append(self.info["inputFname"][counter])
             counter = counter + 1
