@@ -22,11 +22,12 @@ __all__ = [
     "load_h5",
     "read_pictures",
     "validate_input",
+    "download_url",
 ]
 __author__ = ["Jin Hyun Cheong, Tiankang Xie, Eshin Jolly"]
 
 
-import os, math, pywt, pickle, h5py, sys
+import os, math, pywt, pickle, h5py, sys, io, contextlib
 import warnings
 from sklearn.cross_decomposition import PLSRegression
 from joblib import load
@@ -39,6 +40,7 @@ import cv2
 import math
 from PIL import Image
 import torch
+from torchvision.datasets.utils import download_url as tv_download_url
 
 """ DEFINE IMPORTANT VARIABLES """
 # FEAT columns
@@ -1012,6 +1014,19 @@ def round_vals(list_of_arrays, ndigits):
         for j, arr1 in enumerate(list_of_arrays):
             list_of_arrays2[i][j] = np.around(list_of_arrays[i][j], ndigits)
     return list_of_arrays2
+
+
+def download_url(*args, **kwargs):
+    """By default just call download_url from torch vision, but we pass a verbose =
+    False keyword argument, then call download_url with a special context manager than
+    supresses the print messages"""
+    verbose = kwargs.pop("verbose", True)
+
+    if verbose:
+        return tv_download_url(*args, **kwargs)
+
+    with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+        return tv_download_url(*args, **kwargs)
 
 
 class FaceDetectionError(Exception):

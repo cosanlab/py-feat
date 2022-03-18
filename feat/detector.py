@@ -6,6 +6,7 @@ import traceback  # REMOVE LATER
 from collections import deque
 from multiprocessing.pool import ThreadPool
 import os
+import sklearn
 import numpy as np
 import pandas as pd
 from PIL import Image, ImageDraw, ImageOps
@@ -35,6 +36,7 @@ from feat.utils import (
     align_face_68pts,
     FaceDetectionError,
     validate_input,
+    download_url,
 )
 from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.DRML.DRML_test import DRMLNet
@@ -59,8 +61,9 @@ from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 import json
-from torchvision.datasets.utils import download_url
 import zipfile
+import logging
+import warnings
 
 
 class Detector(object):
@@ -72,6 +75,7 @@ class Detector(object):
         emotion_model="resmasknet",
         facepose_model="pnp",
         n_jobs=1,
+        verbose=False,
     ):
         """Detector class to detect FEX from images or videos.
 
@@ -106,6 +110,13 @@ class Detector(object):
         """
         self.info = {}
         self.info["n_jobs"] = n_jobs
+        self.logger = logging.getLogger("Detector")
+        if verbose:
+            log_level = logging.INFO
+        else:
+            log_level = logging.WARNING
+            warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
+        self.logger.setLevel(log_level)
 
         if torch.cuda.is_available():
             self.map_location = lambda storage, loc: storage.cuda()
@@ -118,7 +129,7 @@ class Detector(object):
             and "img2pose" in facepose_model.lower()
             and facepose_model.lower() != face_model.lower()
         ):
-            print(
+            self.logger.info(
                 facepose_model,
                 " is both a face detector and pose estimator, and cannot be used with a different "
                 "face detector. Setting face detector to use ",
@@ -129,21 +140,25 @@ class Detector(object):
             face_model = facepose_model
 
         """ LOAD UP THE MODELS """
-        print("Loading Face Detection model: ", face_model)
+        self.logger.info("Loading Face Detection model: ", face_model)
         # Check if model files have been downloaded. Otherwise download model.
         # get model url.
         with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
             model_urls = json.load(f)
 
+        # NOTE: Annoying that there's no verbosity arg to torch vision's download_url()
+        # so we can't rely on the logger. Could try creating a closure in utils that
+        # returns torch vision's url or our own decorated version by inspecting verbose
+        # on init, e.g. https://www.codegrepper.com/code-examples/python/python+suppress+print+output+from+function
         if face_model:
             for url in model_urls["face_detectors"][face_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
+                download_url(url, get_resource_path(), verbose=verbose)
         if landmark_model:
             for url in model_urls["landmark_detectors"][landmark_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
+                download_url(url, get_resource_path(), verbose=verbose)
         if au_model:
             for url in model_urls["au_detectors"][au_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
+                download_url(url, get_resource_path(), verbose=verbose)
                 if ".zip" in url:
                     import zipfile
 
@@ -155,23 +170,27 @@ class Detector(object):
                     download_url(
                         model_urls["au_detectors"]["hog-pca"]["urls"][0],
                         get_resource_path(),
+                        verbose=verbose,
                     )
                     download_url(
                         model_urls["au_detectors"]["au_scalar"]["urls"][0],
                         get_resource_path(),
+                        verbose=verbose,
                     )
 
         if emotion_model:
             for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
+                download_url(url, get_resource_path(), verbose=verbose)
                 if emotion_model.lower() in ["svm", "rf"]:
                     download_url(
                         model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
                         get_resource_path(),
+                        verbose=verbose,
                     )
                     download_url(
                         model_urls["emotion_detectors"]["emo_scalar"]["urls"][0],
                         get_resource_path(),
+                        verbose=verbose,
                     )
 
         if face_model:
@@ -200,7 +219,7 @@ class Detector(object):
         empty_facebox = pd.DataFrame(predictions, columns=facebox_columns)
         self._empty_facebox = empty_facebox
 
-        print("Loading Face Landmark model: ", landmark_model)
+        self.logger.info("Loading Face Landmark model: ", landmark_model)
         if landmark_model:
             if landmark_model.lower() == "mobilenet":
                 self.landmark_detector = MobileNet_GDConv(136)
@@ -241,7 +260,7 @@ class Detector(object):
         empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
         self._empty_landmark = empty_landmarks
 
-        print("Loading au model: ", au_model)
+        self.logger.info("Loading au model: ", au_model)
         self.info["au_model"] = au_model
         if au_model:
             if au_model.lower() == "jaanet":
@@ -266,7 +285,7 @@ class Detector(object):
         empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
         self._empty_auoccurence = empty_au_occurs
 
-        print("Loading emotion model: ", emotion_model)
+        self.logger.info("Loading emotion model: ", emotion_model)
         self.info["emotion_model"] = emotion_model
         if emotion_model:
             if emotion_model.lower() == "fer":
@@ -289,7 +308,7 @@ class Detector(object):
         empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
         self._empty_auoccurence = empty_au_occurs
 
-        print("Loading facepose model: ", facepose_model)
+        self.logger.info("Loading facepose model: ", facepose_model)
         self.info["facepose_model"] = facepose_model
         if facepose_model:
             if facepose_model.lower() == "pnp":
@@ -347,7 +366,7 @@ class Detector(object):
             faces = self.face_detector(frame)
 
         if len(faces) == 0:
-            print("Warning: NO FACE is detected")
+            self.logger.warning("Warning: NO FACE is detected")
         return faces
 
     def detect_landmarks(self, frame, detected_faces):
@@ -899,13 +918,15 @@ class Detector(object):
 
         except:
             traceback.print_exc()
-            print("exception occurred in the batch")
+            self.logger.error("exception occurred in the batch")
             if singleframe4error:
-                print("Trying to process one image at a time in the batch")
+                self.logger.warning(
+                    "Trying to process one image at a time in the batch"
+                )
                 raise FaceDetectionError
 
             else:
-                print(
+                self.logger.warning(
                     "Since singleframe4error=FALSE, giving up this entire batch result"
                 )
                 newdf = None
@@ -943,7 +964,6 @@ class Detector(object):
         batch_size=5,
         outputFname=None,
         skip_frames=1,
-        verbose=False,
         singleframe4error=False,
     ):
         """Detects FEX from a video file.
@@ -973,8 +993,7 @@ class Detector(object):
 
         counter = 0
         frame_got = True
-        if verbose:
-            print("Processing video.")
+        self.logger.info("Processing video.")
         #  single core
         concat_frame = None
         while True:
