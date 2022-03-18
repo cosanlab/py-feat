@@ -367,7 +367,7 @@ def test_multiface():
         landmark_model="PFLD",
         au_model="jaanet",
     )
-    files, _ = detector.process_frame(img02, inputFname2, counter=0)
+    files, _ = detector.process_frame([img02], inputFname2, counter=0)
     assert files.shape[0] == 5
 
 
@@ -406,4 +406,4 @@ def test_simultaneous():
         landmark_model="PFLD",
         au_model="jaanet",
     )
-    files = detector04.process_frame(img01, inputFname, counter=0)
+    files = detector04.process_frame([img01], inputFname, counter=0)
