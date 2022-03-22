@@ -805,6 +805,8 @@ class Detector(object):
 
         """
         # check if frame is 4d
+        if not isinstance(frames, np.ndarray):
+            raise TypeError("frames needs to be a 3 or 4d numpy array of image data")
         if frames.ndim == 3:
             frames = np.expand_dims(frames, 0)
         assert frames.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
