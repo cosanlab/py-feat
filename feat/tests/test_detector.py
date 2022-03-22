@@ -14,16 +14,73 @@ import cv2
 import numpy as np
 import pytest
 
-inputFname = os.path.join(get_test_data_path(), "input.jpg")
-img01 = read_pictures([inputFname])
-_, h, w, _ = img01.shape
+# inputFname = os.path.join(get_test_data_path(), "input.jpg")
+# img01 = read_pictures([inputFname])
+# _, h, w, _ = img01.shape
 
 
-# TODO: Since most of these are parameterization tests, refactor using pytest fixtures
-def test_detector():
-    detector = Detector(n_jobs=1)
-    assert detector["n_jobs"] == 1
-    assert type(detector) == Detector
+def test_detect_single_face(default_detector, single_face_img):
+    """Test detection of single face from single image. Default detector returns 173 attributes"""
+    out = default_detector.detect_image(single_face_img)
+
+    assert type(out) == Fex
+    assert out.shape == (1, 173)
+    assert out.happiness.values[0] > 0
+
+
+def test_detect_read_write(default_detector, single_face_img, data_path):
+    """Test detection and writing of results to csv"""
+
+    outputFname = os.path.join(data_path, "output.csv")
+    _ = default_detector.detect_image(single_face_img, outputFname=outputFname)
+    assert os.path.exists(outputFname)
+    loaded = pd.read_csv(outputFname)
+    assert loaded.shape == (1, 173)
+    assert loaded.happiness.values[0] > 0
+
+
+def test_detect_multi_face(default_detector, multi_face_img):
+    """Test detection of multiple faces from single image"""
+    out = default_detector.detect_image(multi_face_img)
+
+    assert type(out) == Fex
+    assert out.shape == (5, 173)
+
+
+def test_detect_single_face_multiple_images(default_detector, single_face_img):
+    """Test detection of single face from multiple images"""
+    out = default_detector.detect_image([single_face_img, single_face_img])
+    assert out.shape == (2, 173)
+
+
+def test_detect_multi_face_multiple_images(default_detector, multi_face_img):
+    """Test detection of multiple faces from multiple images"""
+    out = default_detector.detect_image([multi_face_img, multi_face_img])
+    assert out.shape == (10, 173)
+
+
+def test_detect_images_with_batching(default_detector, single_face_img):
+    """Test if batching works by passing in more images than the default batch size"""
+
+    # Num images > default batch size of 5 so more than one batch to process
+    out = default_detector.detect_image([single_face_img] * 6)
+    assert out.shape == (6, 173)
+
+
+def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_face_img):
+    """We don't currently support images of different dimensions in a single batch, but
+    do if we don't batch them"""
+
+    # Fail with default batch size of 5
+    with pytest.raises(ValueError):
+        _ = default_detector.detect_image([multi_face_img, single_face_img])
+
+    # But not if we explicitly don't batch as each image is processed separately and
+    # then results are concatenated
+    out = default_detector.detect_image(
+        inputFname=[single_face_img, multi_face_img], batch_size=1
+    )
+    assert out.shape == (6, 173)
 
 
 def test_faceboxes():
@@ -298,57 +355,6 @@ def test_nofile():
         inputFname = os.path.join(get_test_data_path(), "nosuchfile.jpg")
         detector1 = Detector(emotion_model="svm")
         out = detector1.detect_image(inputFname)
-
-
-# TODO: Refactor this test with test_multiface
-def test_detect_image():
-
-    single_face = os.path.join(get_test_data_path(), "input.jpg")
-    multi_face = os.path.join(
-        get_test_data_path(), "tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
-    )
-    outputFname = os.path.join(get_test_data_path(), "output.csv")
-    detector = Detector()
-
-    # NUM IMAGES < BATCH SIZE
-    # Test single face from single image
-    out = detector.detect_image(inputFname=single_face)
-    assert type(out) == Fex
-    # Default detectors return 173 attributes
-    assert out.shape == (1, 173)
-    assert out.happiness.values[0] > 0
-
-    # Test writing out detection
-    out = detector.detect_image(inputFname=single_face, outputFname=outputFname)
-    assert out is not None
-    assert os.path.exists(outputFname)
-    out = pd.read_csv(outputFname)
-    assert out.happiness.values[0] > 0
-
-    # Test single face from multiple images
-    out = detector.detect_image(inputFname=[single_face, single_face])
-    assert out.shape == (2, 173)
-
-    # Test multiple face detection from a single image
-    out = detector.detect_image(inputFname=multi_face)
-    assert out.shape == (5, 173)
-
-    # Test multi face from multiple images
-    out = detector.detect_image(inputFname=[multi_face, multi_face])
-    assert out.shape == (10, 173)
-
-    # Test batch failing on batching mis-matched image sizes
-    with pytest.raises(ValueError):
-        _ = detector.detect_image(inputFname=[single_face, multi_face])
-
-    # If we don't batch then we effectively process them separately and concat the
-    # results. So always make sure  the results are sum(faces_in_image for image in
-    # images) not num_images or num_faces
-    out = detector.detect_image(inputFname=[single_face, multi_face], batch_size=1)
-    assert out.shape == (6, 173)
-    # NUM IMAGES >= BATCH SIZE
-    out = detector.detect_image(inputFname=[single_face] * 6)
-    assert out.shape == (6, 173)
 
 
 def test_multiface():

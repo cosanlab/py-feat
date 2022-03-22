@@ -1239,6 +1239,13 @@ class Detector(object):
                 else:
                     init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
 
+        # TODO: We should really change this so we always return a Fex instance. What if
+        # a user wants to save and work with the Fex object? Currently they need to rund
+        # the detector twice to do that which seems weird. @tiankang can you change the
+        # logic here so the processing isn't dependent on whether we're saving and
+        # always return a Fex object? If I just remove the  if/else below it saves
+        # properly but returns an empty Fex object
+
         if outputFname:
             return True
         else:
