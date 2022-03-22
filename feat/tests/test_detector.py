@@ -5,10 +5,9 @@
 
 from feat.detector import Detector
 from feat.data import Fex
-from feat.utils import get_resource_path, read_pictures
+from feat.utils import read_pictures
 from feat.tests.utils import get_test_data_path
 import pandas as pd
-import feat
 import os
 import cv2
 import numpy as np

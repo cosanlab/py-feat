@@ -24,7 +24,7 @@ Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 ##  Emotion detection
 - `rf`: Random Forest model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
 - `svm`: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
-- `fernet`: Deep convolutional network
+- `fer`: Deep convolutional network
 - `ResMaskNet`: Facial expression recognition using residual masking network by ([Pham et al., 2020](https://ailb-web.ing.unimore.it/icpr/author/3818))
 
 ##  Face detection

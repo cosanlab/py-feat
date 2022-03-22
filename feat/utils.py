@@ -27,7 +27,7 @@ __all__ = [
 __author__ = ["Jin Hyun Cheong, Tiankang Xie, Eshin Jolly"]
 
 
-import os, math, pywt, pickle, h5py, sys, io, contextlib
+import os, math, pywt, pickle, h5py, sys, io, contextlib, json
 import warnings
 from sklearn.cross_decomposition import PLSRegression
 from joblib import load
@@ -199,9 +199,7 @@ def face_rect_to_coords(rectangle):
 
 def get_resource_path():
     """Get path to feat resource directory."""
-    return os.path.join(feat.__path__[0], "resources")  # points to the package folder.
-    # return ("F:/feat/feat/") # points to the package folder.
-    # return os.path.join(os.path.dirname(__file__), 'resources')
+    return os.path.join(feat.__path__[0], "resources")
 
 
 def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=True):
