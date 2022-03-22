@@ -36,32 +36,9 @@ from feat.utils import (
     align_face_68pts,
     FaceDetectionError,
     validate_input,
-    download_url,
 )
-from feat.au_detectors.JAANet.JAA_test import JAANet
-from feat.au_detectors.DRML.DRML_test import DRMLNet
-from feat.au_detectors.StatLearning.SL_test import (
-    RandomForestClassifier,
-    SVMClassifier,
-    LogisticClassifier,
-)
-from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
-from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
-from feat.emo_detectors.StatLearning.EmoSL_test import (
-    EmoRandomForestClassifier,
-    EmoSVMClassifier,
-)
+from feat.pretrained import get_pretrained_models, fetch_model
 import torch
-from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
-from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
-from feat.face_detectors.Retinaface import Retinaface_test
-from feat.landmark_detectors.basenet_test import MobileNet_GDConv
-from feat.landmark_detectors.pfld_compressed_test import PFLDInference
-from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
-from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
-from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
-import json
-import zipfile
 import logging
 import warnings
 
@@ -123,208 +100,109 @@ class Detector(object):
         else:
             self.map_location = "cpu"
 
-        # Handle img2pose mismatch error
-        if (
-            facepose_model
-            and "img2pose" in facepose_model.lower()
-            and facepose_model.lower() != face_model.lower()
-        ):
-            self.logger.info(
-                facepose_model,
-                " is both a face detector and pose estimator, and cannot be used with a different "
-                "face detector. Setting face detector to use ",
-                facepose_model,
-                ".",
-                sep="",
+        # Verify model names and download if necessary
+        face, landmark, au, emotion, facepose = get_pretrained_models(
+            face_model, landmark_model, au_model, emotion_model, facepose_model, verbose
+        )
+
+        # Initialize model instances and any additional setup
+        # FACE MODEL
+        self.logger.info(f"Loading Face model: {face}")
+        self.face_detector = fetch_model("face_model", face)
+        # img2pose is used both as face detector and pose estimator
+        if "img2pose" in face:
+            self.face_detector = self.face_detector(
+                cpu_mode=self.map_location == "cpu", constrained="img2pose-c" == face
             )
-            face_model = facepose_model
+            self.facepose_detector = self.facepose_detector
+        else:
+            self.face_detector = self.face_detector()
 
-        """ LOAD UP THE MODELS """
-        self.logger.info("Loading Face Detection model: ", face_model)
-        # Check if model files have been downloaded. Otherwise download model.
-        # get model url.
-        with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
-            model_urls = json.load(f)
-
-        # NOTE: Annoying that there's no verbosity arg to torch vision's download_url()
-        # so we can't rely on the logger. Could try creating a closure in utils that
-        # returns torch vision's url or our own decorated version by inspecting verbose
-        # on init, e.g. https://www.codegrepper.com/code-examples/python/python+suppress+print+output+from+function
-        if face_model:
-            for url in model_urls["face_detectors"][face_model.lower()]["urls"]:
-                download_url(url, get_resource_path(), verbose=verbose)
-        if landmark_model:
-            for url in model_urls["landmark_detectors"][landmark_model.lower()]["urls"]:
-                download_url(url, get_resource_path(), verbose=verbose)
-        if au_model:
-            for url in model_urls["au_detectors"][au_model.lower()]["urls"]:
-                download_url(url, get_resource_path(), verbose=verbose)
-                if ".zip" in url:
-                    import zipfile
-
-                    with zipfile.ZipFile(
-                        os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
-                    ) as zip_ref:
-                        zip_ref.extractall(os.path.join(get_resource_path()))
-                if au_model.lower() in ["logistic", "svm", "rf"]:
-                    download_url(
-                        model_urls["au_detectors"]["hog-pca"]["urls"][0],
-                        get_resource_path(),
-                        verbose=verbose,
-                    )
-                    download_url(
-                        model_urls["au_detectors"]["au_scalar"]["urls"][0],
-                        get_resource_path(),
-                        verbose=verbose,
-                    )
-
-        if emotion_model:
-            for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
-                download_url(url, get_resource_path(), verbose=verbose)
-                if emotion_model.lower() in ["svm", "rf"]:
-                    download_url(
-                        model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
-                        get_resource_path(),
-                        verbose=verbose,
-                    )
-                    download_url(
-                        model_urls["emotion_detectors"]["emo_scalar"]["urls"][0],
-                        get_resource_path(),
-                        verbose=verbose,
-                    )
-
-        if face_model:
-            if face_model.lower() == "faceboxes":
-                self.face_detector = FaceBoxes()
-            elif face_model.lower() == "retinaface":
-                self.face_detector = Retinaface_test.Retinaface()
-            elif face_model.lower() == "mtcnn":
-                self.face_detector = MTCNN()
-            elif "img2pose" in face_model.lower():
-                # Check if user selected unconstrained or constrained version
-                constrained = False  # use by default
-                if face_model.lower() == "img2pose-c":
-                    constrained = True
-                # Used as both face detector and facepose estimator
-                self.face_detector = Img2Pose(
-                    cpu_mode=self.map_location == "cpu", constrained=constrained
-                )
-                self.facepose_detector = self.face_detector
-
-        self.info["face_model"] = face_model
-        facebox_columns = FEAT_FACEBOX_COLUMNS
-        self.info["face_detection_columns"] = facebox_columns
-        predictions = np.empty((1, len(facebox_columns)))
-        predictions[:] = np.nan
-        empty_facebox = pd.DataFrame(predictions, columns=facebox_columns)
+        self.info["face_model"] = face
+        self.info["face_detection_columns"] = FEAT_FACEBOX_COLUMNS
+        predictions = np.full_like(np.atleast_2d(FEAT_FACEBOX_COLUMNS), np.nan)
+        empty_facebox = pd.DataFrame(predictions, columns=FEAT_FACEBOX_COLUMNS)
         self._empty_facebox = empty_facebox
 
-        self.logger.info("Loading Face Landmark model: ", landmark_model)
-        if landmark_model:
-            if landmark_model.lower() == "mobilenet":
-                self.landmark_detector = MobileNet_GDConv(136)
-                self.landmark_detector = torch.nn.DataParallel(self.landmark_detector)
-                checkpoint = torch.load(
-                    os.path.join(
-                        get_resource_path(),
-                        "mobilenet_224_model_best_gdconv_external.pth.tar",
-                    ),
-                    map_location=self.map_location,
-                )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+        # LANDMARK MODEL
+        self.logger.info(f"Loading Facial Landmark model: {landmark}")
+        self.landmark_detector = fetch_model("landmark_model", landmark)
+        if landmark == "mobilenet":
+            self.landmark_detector = self.landmark_detector(136)
+            self.landmark_detector = torch.nn.DataParallel(self.landmark_detector)
+            checkpoint = torch.load(
+                os.path.join(
+                    get_resource_path(),
+                    "mobilenet_224_model_best_gdconv_external.pth.tar",
+                ),
+                map_location=self.map_location,
+            )
+            self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+        elif landmark == "pfld":
+            self.landmark_detector = self.landmark_detector()
+            checkpoint = torch.load(
+                os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
+                map_location=self.map_location,
+            )
+            self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+        elif landmark == "mobilefacenet":
+            self.landmark_detector = self.landmark_detector([112, 112], 136)
+            checkpoint = torch.load(
+                os.path.join(get_resource_path(), "mobilefacenet_model_best.pth.tar"),
+                map_location=self.map_location,
+            )
+            self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
-            elif landmark_model.lower() == "pfld":
-                self.landmark_detector = PFLDInference()
-                checkpoint = torch.load(
-                    os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
-                    map_location=self.map_location,
-                )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-
-            elif landmark_model.lower() == "mobilefacenet":
-                self.landmark_detector = MobileFaceNet([112, 112], 136)
-                checkpoint = torch.load(
-                    os.path.join(
-                        get_resource_path(), "mobilefacenet_model_best.pth.tar"
-                    ),
-                    map_location=self.map_location,
-                )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-
-        self.info["landmark_model"] = landmark_model
+        self.info["landmark_model"] = landmark
         self.info["mapper"] = openface_2d_landmark_columns
-        landmark_columns = openface_2d_landmark_columns
-        self.info["face_landmark_columns"] = landmark_columns
-        predictions = np.empty((1, len(openface_2d_landmark_columns)))
-        predictions[:] = np.nan
-        empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
+        self.info["face_landmark_columns"] = openface_2d_landmark_columns
+        predictions = np.full_like(np.atleast_2d(openface_2d_landmark_columns), np.nan)
+        empty_landmarks = pd.DataFrame(
+            predictions, columns=openface_2d_landmark_columns
+        )
         self._empty_landmark = empty_landmarks
 
-        self.logger.info("Loading au model: ", au_model)
-        self.info["au_model"] = au_model
-        if au_model:
-            if au_model.lower() == "jaanet":
-                self.au_model = JAANet()
-            elif au_model.lower() == "drml":
-                self.au_model = DRMLNet()
-            elif au_model.lower() == "logistic":
-                self.au_model = LogisticClassifier()
-            elif au_model.lower() == "svm":
-                self.au_model = SVMClassifier()
-            elif au_model.lower() == "rf":
-                self.au_model = RandomForestClassifier()
-
-        if (au_model is None) or (au_model.lower() in ["jaanet", "drml"]):
+        # AU MODEL
+        self.logger.info(f"Loading AU model: {au}")
+        self.au_model = fetch_model("au_model", au)
+        self.au_model = self.au_model()
+        if (au is None) or (au in ["jaanet", "drml"]):
             auoccur_columns = jaanet_AU_presence
         else:
             auoccur_columns = RF_AU_presence
-
+        self.info["au_model"] = au
         self.info["au_presence_columns"] = auoccur_columns
-        predictions = np.empty((1, len(auoccur_columns)))
-        predictions[:] = np.nan
+        predictions = np.full_like(np.atleast_2d(auoccur_columns), np.nan)
         empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
         self._empty_auoccurence = empty_au_occurs
 
+        # EMOTION MODEL
         self.logger.info("Loading emotion model: ", emotion_model)
-        self.info["emotion_model"] = emotion_model
-        if emotion_model:
-            if emotion_model.lower() == "fer":
-                self.emotion_model = ferNetModule()
-            elif emotion_model.lower() == "resmasknet":
-                self.emotion_model = ResMaskNet()
-            elif emotion_model.lower() == "svm":
-                self.emotion_model = EmoSVMClassifier()
-            elif emotion_model.lower() == "rf":
-                self.emotion_model = EmoRandomForestClassifier()
-
+        self.emotion_model = fetch_model("emotion_model", emotion)
+        self.emotion_model = self.emotion_model()
+        self.info["emotion_model"] = emotion
         self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
-        predictions = np.empty((1, len(FEAT_EMOTION_COLUMNS)))
-        predictions[:] = np.nan
+        predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
         empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
         self._empty_emotion = empty_emotion
 
-        predictions = np.empty((1, len(auoccur_columns)))
-        predictions[:] = np.nan
-        empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
-        self._empty_auoccurence = empty_au_occurs
-
+        # FACEPOSE MODEL
         self.logger.info("Loading facepose model: ", facepose_model)
-        self.info["facepose_model"] = facepose_model
-        if facepose_model:
-            if facepose_model.lower() == "pnp":
-                self.facepose_detector = PerspectiveNPoint()
-            # Note that img2pose case is handled under face_model loading
+        _m = fetch_model("facepose_model", facepose)
+        # Only assign it if it's not img2pose, otherwise it's already set by face model
+        if _m is not None:
+            self.facepose_detector = _m()
+        self.info["facepose_model"] = facepose
 
         self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
-        predictions = np.empty((1, len(FACET_FACEPOSE_COLUMNS)))
-        predictions[:] = np.nan
+        predictions = np.full_like(np.atleast_2d(FACET_FACEPOSE_COLUMNS), np.nan)
         empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
         self._empty_facepose = empty_facepose
 
         self.info["output_columns"] = (
             FEAT_TIME_COLUMNS
-            + facebox_columns
-            + landmark_columns
+            + FEAT_FACEBOX_COLUMNS
+            + openface_2d_landmark_columns
             + auoccur_columns
             + FACET_FACEPOSE_COLUMNS
             + FEAT_EMOTION_COLUMNS
