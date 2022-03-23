@@ -1,17 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `feat` package."""
-
 import pytest
 import pandas as pd
-from pandas import DataFrame, Series
+from pandas import DataFrame
 import numpy as np
 import os
 from feat.data import Fex, Fextractor
 from feat.utils import read_facet, read_openface, read_affectiva, get_test_data_path
 from nltools.data import Adjacency
-import unittest
 
 
 def test_info(capsys):

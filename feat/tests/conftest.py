@@ -1,4 +1,5 @@
-"""This file defines pytest fixtures: reusable bits of code that are shared between
+"""
+This file defines pytest fixtures: reusable bits of code that are shared between
 tests. To use them, just add them as an argument to any test function, e.g.
 
 def test_detect_single_face(default_detector, single_face_img):

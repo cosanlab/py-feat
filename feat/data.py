@@ -1,19 +1,18 @@
-from __future__ import division
+"""
+Main Fex data class. The Fex class is a pandas DataFrame subclass that makes it
+easier to work with the results output from a Detector
+"""
 
-"""Class definitions."""
-
-import os, warnings
-from os.path import join
+import os
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series, Index
 from copy import deepcopy
 from functools import reduce
-from nltools.data import Adjacency, design_matrix
-from nltools.stats import downsample, upsample, transform_pairwise, regress
+from nltools.data import Adjacency
+from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
-from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
-from sklearn.utils import check_random_state
+from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
 
 from feat.utils import (
@@ -24,7 +23,6 @@ from feat.utils import (
     wavelet,
     calc_hist_auc,
     load_h5,
-    get_resource_path,
 )
 from feat.plotting import plot_face, draw_lineface, draw_muscles, draw_facepose
 from nilearn.signal import clean
