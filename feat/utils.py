@@ -867,7 +867,6 @@ def padding(img, expected_size):
 
 def read_pictures(imgname_list):
     """
-    NEW
     Reads in a list of pictures and concatenate these pictures into batches of images.
 
     Args:

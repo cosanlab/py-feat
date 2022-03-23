@@ -9,6 +9,7 @@ def test_detect_single_face(default_detector, single_face_img):
 from pytest import fixture
 import os
 from feat.detector import Detector
+from feat.utils import read_pictures
 
 
 @fixture(scope="module")
@@ -25,6 +26,12 @@ def default_detector():
 @fixture(scope="module")
 def single_face_img(data_path):
     return os.path.join(data_path, "single_face.jpg")
+
+
+@fixture(scope="module")
+def single_face_img_data(single_face_img):
+    """The actual numpy array of img data"""
+    return read_pictures([single_face_img])
 
 
 @fixture(scope="module")

@@ -49,7 +49,11 @@ PRETRAINED_MODELS = {
         {"svm": EmoSVMClassifier},
         {"fer": ferNetModule},
     ],
-    "facepose_model": [{"pnp": PerspectiveNPoint}, "img2pose", "img2pose-c"],
+    "facepose_model": [
+        {"pnp": PerspectiveNPoint},
+        {"img2pose": None},
+        {"img2pose-c": None},
+    ],
 }
 
 
@@ -65,100 +69,106 @@ def get_pretrained_models(
 
     get_names = lambda s: list(
         map(
-            lambda e: list(e.keys())[0] if isinstance(e, dict) else e,
+            lambda e: list(e.keys())[0],
             PRETRAINED_MODELS[s],
         )
     )
 
     # Face model
-    if face_model.lower() not in get_names("face_model"):
-        raise ValueError(
-            f"Requested face_model was {face_model}. Must be one of {PRETRAINED_MODELS['face_model']}"
-        )
-    for url in model_urls["face_detectors"][face_model.lower()]["urls"]:
-        download_url(url, get_resource_path(), verbose=verbose)
+    if face_model is not None:
+        face_model = face_model.lower()
+        if face_model not in get_names("face_model"):
+            raise ValueError(
+                f"Requested face_model was {face_model}. Must be one of {PRETRAINED_MODELS['face_model']}"
+            )
+        for url in model_urls["face_detectors"][face_model]["urls"]:
+            download_url(url, get_resource_path(), verbose=verbose)
 
     # Landmark model
-    if landmark_model.lower() not in get_names("landmark_model"):
-        raise ValueError(
-            f"Requested landmark_model was {landmark_model}. Must be one of {PRETRAINED_MODELS['landmark_model']}"
-        )
-    for url in model_urls["landmark_detectors"][landmark_model.lower()]["urls"]:
-        download_url(url, get_resource_path(), verbose=verbose)
+    if landmark_model is not None:
+        landmark_model = landmark_model.lower()
+        if landmark_model not in get_names("landmark_model"):
+            raise ValueError(
+                f"Requested landmark_model was {landmark_model}. Must be one of {PRETRAINED_MODELS['landmark_model']}"
+            )
+        for url in model_urls["landmark_detectors"][landmark_model]["urls"]:
+            download_url(url, get_resource_path(), verbose=verbose)
 
     # AU model
-    if au_model.lower() not in get_names("au_model"):
-        raise ValueError(
-            f"Requested au_model was {au_model}. Must be one of {PRETRAINED_MODELS['au_model']}"
-        )
-    for url in model_urls["au_detectors"][au_model.lower()]["urls"]:
-        download_url(url, get_resource_path(), verbose=verbose)
-        if ".zip" in url:
-            import zipfile
+    if au_model is not None:
+        au_model = au_model.lower()
+        if au_model not in get_names("au_model"):
+            raise ValueError(
+                f"Requested au_model was {au_model}. Must be one of {PRETRAINED_MODELS['au_model']}"
+            )
+        for url in model_urls["au_detectors"][au_model]["urls"]:
+            download_url(url, get_resource_path(), verbose=verbose)
+            if ".zip" in url:
+                import zipfile
 
-            with zipfile.ZipFile(
-                os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
-            ) as zip_ref:
-                zip_ref.extractall(os.path.join(get_resource_path()))
-        if au_model.lower() in ["logistic", "svm", "rf"]:
-            download_url(
-                model_urls["au_detectors"]["hog-pca"]["urls"][0],
-                get_resource_path(),
-                verbose=verbose,
-            )
-            download_url(
-                model_urls["au_detectors"]["au_scalar"]["urls"][0],
-                get_resource_path(),
-                verbose=verbose,
-            )
+                with zipfile.ZipFile(
+                    os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
+                ) as zip_ref:
+                    zip_ref.extractall(os.path.join(get_resource_path()))
+            if au_model in ["logistic", "svm", "rf"]:
+                download_url(
+                    model_urls["au_detectors"]["hog-pca"]["urls"][0],
+                    get_resource_path(),
+                    verbose=verbose,
+                )
+                download_url(
+                    model_urls["au_detectors"]["au_scalar"]["urls"][0],
+                    get_resource_path(),
+                    verbose=verbose,
+                )
 
     # Emotion model
-    if emotion_model.lower() not in get_names("emotion_model"):
-        raise ValueError(
-            f"Requested emotion_model was {emotion_model}. Must be one of {PRETRAINED_MODELS['emotion_model']}"
-        )
-    for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
-        download_url(url, get_resource_path(), verbose=verbose)
-        if emotion_model.lower() in ["svm", "rf"]:
-            download_url(
-                model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
-                get_resource_path(),
-                verbose=verbose,
+    if emotion_model is not None:
+        emotion_model = emotion_model.lower()
+        if emotion_model not in get_names("emotion_model"):
+            raise ValueError(
+                f"Requested emotion_model was {emotion_model}. Must be one of {PRETRAINED_MODELS['emotion_model']}"
             )
-            download_url(
-                model_urls["emotion_detectors"]["emo_scalar"]["urls"][0],
-                get_resource_path(),
-                verbose=verbose,
-            )
+        for url in model_urls["emotion_detectors"][emotion_model]["urls"]:
+            download_url(url, get_resource_path(), verbose=verbose)
+            if emotion_model in ["svm", "rf"]:
+                download_url(
+                    model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
+                    get_resource_path(),
+                    verbose=verbose,
+                )
+                download_url(
+                    model_urls["emotion_detectors"]["emo_scalar"]["urls"][0],
+                    get_resource_path(),
+                    verbose=verbose,
+                )
 
     # Facepose model
     # Just validate as it's handled by the face_model loading
-    if facepose_model.lower() not in get_names("facepose_model"):
-        raise ValueError(
-            f"Requested facepose_model was {facepose_model}. Must be one of {PRETRAINED_MODELS['facepose_model']}"
-        )
-    if (
-        "img2pose" in facepose_model.lower()
-        and facepose_model.lower() != facepose_model.lower()
-    ):
-        raise ValueError(
-            f"{facepose_model} is both a face detector and a pose estimator and cannot be used with a different face detector. Please set face_model to {facepose_model} as well"
-        )
+    if facepose_model is not None:
+        facepose_model = facepose_model.lower()
+        if facepose_model not in get_names("facepose_model"):
+            raise ValueError(
+                f"Requested facepose_model was {facepose_model}. Must be one of {PRETRAINED_MODELS['facepose_model']}"
+            )
+        if "img2pose" in facepose_model and facepose_model != face_model:
+            raise ValueError(
+                f"{facepose_model} is both a face detector and a pose estimator and cannot be used with a different face detector. Please set face_model to {facepose_model} as well"
+            )
 
     return (
-        face_model.lower(),
-        landmark_model.lower(),
-        au_model.lower(),
-        emotion_model.lower(),
-        facepose_model.lower(),
+        face_model,
+        landmark_model,
+        au_model,
+        emotion_model,
+        facepose_model,
     )
 
 
 def fetch_model(model_type, model_name):
     """Fetch a pre-trained model class constructor. Used by detector init"""
-    return [
-        model[model_name]
-        if isinstance(model, dict) and model_name in model.keys()
-        else None
-        for model in PRETRAINED_MODELS[model_type]
-    ][0]
+    if model_name is None:
+        return None
+    model_type = PRETRAINED_MODELS[model_type]
+    matches = list(filter(lambda e: model_name in e.keys(), model_type))[0]
+    return list(matches.values())[0]

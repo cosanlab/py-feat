@@ -3,6 +3,7 @@
 
 """Tests for `feat` package."""
 
+from email.policy import default
 from feat.detector import Detector
 from feat.data import Fex
 from feat.utils import read_pictures
@@ -16,6 +17,17 @@ import pytest
 # inputFname = os.path.join(get_test_data_path(), "input.jpg")
 # img01 = read_pictures([inputFname])
 # _, h, w, _ = img01.shape
+
+
+def test_empty_init():
+    detector = Detector(
+        face_model=None,
+        emotion_model=None,
+        au_model=None,
+        facepose_model=None,
+        landmark_model=None,
+    )
+    assert isinstance(detector, Detector)
 
 
 def test_detect_single_face(default_detector, single_face_img):
@@ -82,98 +94,72 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (6, 173)
 
 
-def test_faceboxes():
-    # Face Detector Test Case:
-    detector01 = Detector(
-        face_model="FaceBoxes",
-        landmark_model=None,
-        au_model=None,
-        emotion_model=None,
-        facepose_model=None,
-        n_jobs=1,
-    )
-    out = detector01.detect_faces(img01)[0]
-    bbox_x = out[0][0]
-    assert bbox_x != None
-    bbox_width = out[0][1]
-    bbox_y = out[0][2]
-    bbox_height = out[0][3]
+def test_faceboxes(default_detector, single_face_img):
+    """Since .detect_faces expects image data to be loaded already, this also serves as
+    a test for .read_images"""
+    default_detector.change_model(face_model="FaceBoxes")
+    img_data = default_detector.read_images(single_face_img)
+    # Returns number of images length list
+    out = default_detector.detect_faces(img_data)[0]
+    # Returns bounding boxes for each face in image as list
+    assert all(e is not None for e in out[0])
     assert len(out[0]) == 5
+    bbox_x = out[0][0]
     assert 180 < bbox_x < 200
 
 
-def test_retinaface():
-    detector02 = Detector(
-        face_model="RetinaFace",
-        landmark_model=None,
-        au_model=None,
-        emotion_model=None,
-        facepose_model=None,
-        n_jobs=1,
-    )
-    out = detector02.detect_faces(img01)[0]
-    bbox_x = out[0][0]
-    assert bbox_x != None
-    bbox_width = out[0][1]
-    bbox_y = out[0][2]
-    bbox_height = out[0][3]
+def test_retinaface(default_detector, single_face_img_data):
+    default_detector.change_model(face_model="RetinaFace")
+    # This time just use preloaded image data for convenience
+    out = default_detector.detect_faces(single_face_img_data)[0]
+    assert all(e is not None for e in out[0])
     assert len(out[0]) == 5
+    bbox_x = out[0][0]
     assert 180 < bbox_x < 200
 
 
-def test_mtcnn():
-    detector03 = Detector(
-        face_model="MTCNN",
-        landmark_model=None,
-        au_model=None,
-        emotion_model=None,
-        facepose_model=None,
-        n_jobs=1,
-    )
-    out = detector03.detect_faces(img01)[0]
-    bbox_x = out[0][0]
-    assert bbox_x != None
-    bbox_width = out[0][1]
-    bbox_y = out[0][2]
-    bbox_height = out[0][3]
+def test_mtcnn(default_detector, single_face_img_data):
+    default_detector.change_model(face_model="MTCNN")
+    out = default_detector.detect_faces(single_face_img_data)[0]
+    assert all(e is not None for e in out[0])
     assert len(out[0]) == 5
-    assert bbox_x > 180 and bbox_x < 200
+    bbox_x = out[0][0]
+    assert 180 < bbox_x < 200
 
 
-def test_img2pose():
+def test_img2pose(default_detector, single_face_img_data):
     # Test that both face detection and facepose estimation work
-    detector = Detector(face_model="img2pose", facepose_model="img2pose")
+    default_detector.change_model(face_model="img2pose", facepose_model="img2pose")
+
     # Face detection
-    faces = detector.detect_faces(img01)[0]
-    bbox_x = faces[0][0]
-    assert bbox_x is not None
+    faces = default_detector.detect_faces(single_face_img_data)[0]
+    assert all(e is not None for e in faces[0])
     assert len(faces[0]) == 5
+    bbox_x = faces[0][0]
     assert 180 < bbox_x < 200
 
     # Pose estimation
-    poses = detector.detect_facepose(img01)[0]
+    poses = default_detector.detect_facepose(single_face_img_data)[0]
     pose_to_test = poses[0][0]  # first image and first face
     pitch, roll, yaw = pose_to_test.reshape(-1)
     assert -10 < pitch < 10
     assert -5 < roll < 5
     assert -10 < yaw < 10
 
-
-def test_img2pose_mismatch():
-    # Check that `detector` properly handles case where user selects img2pose as face pose estimator
-    # but selects a different face detector. Detector should tell user they must use img2pose as both face detector and
-    # pose estimator, and force face model to be `img2pose`.
-    detector = Detector(face_model="RetinaFace", facepose_model="img2pose-c")
-    assert detector.info["face_model"] == "img2pose-c"
+    # Test using mismatched face and pose model
+    with pytest.raises(ValueError):
+        default_detector.change_model(face_model="MTCNN", facepost_model="img2pose")
 
 
-def test_mobilefacenet():
-    # Landmark Detector Test Case:
-    detector01 = Detector(
-        face_model="RetinaFace", emotion_model=None, landmark_model="MobileFaceNet"
+def test_mobilefacenet(default_detector, single_face_img):
+    default_detector.change_model(
+        face_model="RetinaFace", landmark_model="MobileFaceNet"
     )
-    bboxes = detector01.detect_faces(img01)
-    landmarks = detector01.detect_landmarks(img01, bboxes)[0]
+    img_data = default_detector.read_images(single_face_img)
+    _, h, w, _ = img_data.shape
+
+    bboxes = default_detector.detect_faces(img_data)
+    landmarks = default_detector.detect_landmarks(img_data, bboxes)[0]
     assert landmarks[0].shape == (68, 2)
     assert (
         np.any(landmarks[0][:, 0] > 0)
@@ -183,12 +169,13 @@ def test_mobilefacenet():
     )
 
 
-def test_mobilenet():
-    detector02 = Detector(
-        face_model="RetinaFace", emotion_model=None, landmark_model="MobileNet"
-    )
-    bboxes = detector02.detect_faces(img01)[0]
-    landmarks = detector02.detect_landmarks(img01, [bboxes])[0]
+def test_mobilenet(default_detector, single_face_img):
+    default_detector.change_model(face_model="RetinaFace", landmark_model="MobileNet")
+    img_data = default_detector.read_images(single_face_img)
+    _, h, w, _ = img_data.shape
+
+    bboxes = default_detector.detect_faces(img_data)
+    landmarks = default_detector.detect_landmarks(img_data, bboxes)[0]
     assert landmarks[0].shape == (68, 2)
     assert (
         np.any(landmarks[0][:, 0] > 0)
@@ -198,12 +185,13 @@ def test_mobilenet():
     )
 
 
-def test_pfld():
-    detector03 = Detector(
-        face_model="RetinaFace", emotion_model=None, landmark_model="PFLD"
-    )
-    bboxes = detector03.detect_faces(img01)[0]
-    landmarks = detector03.detect_landmarks(img01, [bboxes])[0]
+def test_pfld(default_detector, single_face_img):
+    default_detector.change_model(face_model="RetinaFace", landmark_model="PFLD")
+    img_data = default_detector.read_images(single_face_img)
+    _, h, w, _ = img_data.shape
+
+    bboxes = default_detector.detect_faces(img_data)
+    landmarks = default_detector.detect_landmarks(img_data, bboxes)[0]
     assert landmarks[0].shape == (68, 2)
     assert (
         np.any(landmarks[0][:, 0] > 0)
@@ -213,23 +201,24 @@ def test_pfld():
     )
 
 
-def test_jaanet():
-    # AU Detection Case:
-    detector1 = Detector(
+def test_jaanet(default_detector, single_face_img):
+    default_detector.change_model(
         face_model="RetinaFace",
         emotion_model=None,
         landmark_model="MobileFaceNet",
         au_model="jaanet",
     )
+    img_data = default_detector.read_images(single_face_img)
 
-    detected_faces = detector1.detect_faces(img01)
-    landmarks = detector1.detect_landmarks(img01, detected_faces)
+    detected_faces = default_detector.detect_faces(img_data)
+    landmarks = default_detector.detect_landmarks(img_data, detected_faces)
+    aus = default_detector.detect_aus(img_data, landmarks)
 
-    aus = detector1.detect_aus(img01, landmarks)
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 12
 
 
+# TODO: Continue updating tests from here
 def test_logistic():
     # AU Detection Case:
     detector1 = Detector(

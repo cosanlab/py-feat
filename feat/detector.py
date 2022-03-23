@@ -36,6 +36,7 @@ from feat.utils import (
     align_face_68pts,
     FaceDetectionError,
     validate_input,
+    read_pictures,
 )
 from feat.pretrained import get_pretrained_models, fetch_model
 import torch
@@ -85,10 +86,20 @@ class Detector(object):
             >> detector.detect_image(["input.jpg"])
             >> detector.detect_video("input.mp4")
         """
-        self.info = {}
-        self.info["n_jobs"] = n_jobs
+
+        # Initial info dict with model names only
+        self.info = dict(
+            face_model=None,
+            landmark_model=None,
+            emotion_model=None,
+            facepose_model=None,
+            au_model=None,
+            n_jobs=n_jobs,
+        )
+        # Setup verbosity and CUDA
         self.logger = logging.getLogger("Detector")
-        if verbose:
+        self.verbose = verbose
+        if self.verbose:
             log_level = logging.INFO
         else:
             log_level = logging.WARNING
@@ -104,100 +115,147 @@ class Detector(object):
         face, landmark, au, emotion, facepose = get_pretrained_models(
             face_model, landmark_model, au_model, emotion_model, facepose_model, verbose
         )
-
-        # Initialize model instances and any additional setup
-        # FACE MODEL
-        self.logger.info(f"Loading Face model: {face}")
-        self.face_detector = fetch_model("face_model", face)
-        # img2pose is used both as face detector and pose estimator
-        if "img2pose" in face:
-            self.face_detector = self.face_detector(
-                cpu_mode=self.map_location == "cpu", constrained="img2pose-c" == face
-            )
-            self.facepose_detector = self.facepose_detector
-        else:
-            self.face_detector = self.face_detector()
-
-        self.info["face_model"] = face
-        self.info["face_detection_columns"] = FEAT_FACEBOX_COLUMNS
-        predictions = np.full_like(np.atleast_2d(FEAT_FACEBOX_COLUMNS), np.nan)
-        empty_facebox = pd.DataFrame(predictions, columns=FEAT_FACEBOX_COLUMNS)
-        self._empty_facebox = empty_facebox
-
-        # LANDMARK MODEL
-        self.logger.info(f"Loading Facial Landmark model: {landmark}")
-        self.landmark_detector = fetch_model("landmark_model", landmark)
-        if landmark == "mobilenet":
-            self.landmark_detector = self.landmark_detector(136)
-            self.landmark_detector = torch.nn.DataParallel(self.landmark_detector)
-            checkpoint = torch.load(
-                os.path.join(
-                    get_resource_path(),
-                    "mobilenet_224_model_best_gdconv_external.pth.tar",
-                ),
-                map_location=self.map_location,
-            )
-            self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-        elif landmark == "pfld":
-            self.landmark_detector = self.landmark_detector()
-            checkpoint = torch.load(
-                os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
-                map_location=self.map_location,
-            )
-            self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-        elif landmark == "mobilefacenet":
-            self.landmark_detector = self.landmark_detector([112, 112], 136)
-            checkpoint = torch.load(
-                os.path.join(get_resource_path(), "mobilefacenet_model_best.pth.tar"),
-                map_location=self.map_location,
-            )
-            self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-
-        self.info["landmark_model"] = landmark
-        self.info["mapper"] = openface_2d_landmark_columns
-        self.info["face_landmark_columns"] = openface_2d_landmark_columns
-        predictions = np.full_like(np.atleast_2d(openface_2d_landmark_columns), np.nan)
-        empty_landmarks = pd.DataFrame(
-            predictions, columns=openface_2d_landmark_columns
-        )
-        self._empty_landmark = empty_landmarks
-
-        # AU MODEL
-        self.logger.info(f"Loading AU model: {au}")
-        self.au_model = fetch_model("au_model", au)
-        self.au_model = self.au_model()
         if (au is None) or (au in ["jaanet", "drml"]):
             auoccur_columns = jaanet_AU_presence
         else:
             auoccur_columns = RF_AU_presence
-        self.info["au_model"] = au
-        self.info["au_presence_columns"] = auoccur_columns
-        predictions = np.full_like(np.atleast_2d(auoccur_columns), np.nan)
-        empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
-        self._empty_auoccurence = empty_au_occurs
+
+        self._init_detectors(
+            face,
+            landmark,
+            au,
+            emotion,
+            facepose,
+            auoccur_columns,
+            openface_2d_landmark_columns,
+        )
+
+    def __repr__(self):
+        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']})"
+
+    def __getitem__(self, i):
+        return self.info[i]
+
+    def _init_detectors(
+        self,
+        face,
+        landmark,
+        au,
+        emotion,
+        facepose,
+        auoccur_columns,
+        openface_2d_landmark_columns,
+    ):
+        """Helper function called by __init__ and change_model to (re)initialize one of
+        the supported detectors"""
+
+        # Initialize model instances and any additional post init setup
+        # Only initialize a model if the currently initialized model is diff than the
+        # requested one. Lets us re-use this with .change_model
+
+        # FACE MODEL
+        if self.info["face_model"] != face:
+            self.logger.info(f"Loading Face model: {face}")
+            self.face_detector = fetch_model("face_model", face)
+            self.info["face_model"] = face
+            self.info["face_detection_columns"] = FEAT_FACEBOX_COLUMNS
+            predictions = np.full_like(np.atleast_2d(FEAT_FACEBOX_COLUMNS), np.nan)
+            empty_facebox = pd.DataFrame(predictions, columns=FEAT_FACEBOX_COLUMNS)
+            self._empty_facebox = empty_facebox
+            if self.face_detector is not None:
+                # img2pose is used both as face detector and pose estimator
+                if "img2pose" in face:
+                    self.face_detector = self.face_detector(
+                        cpu_mode=self.map_location == "cpu",
+                        constrained="img2pose-c" == face,
+                    )
+                    self.facepose_detector = self.face_detector
+                else:
+                    self.face_detector = self.face_detector()
+
+        # LANDMARK MODEL
+        if self.info["landmark_model"] != landmark:
+            self.logger.info(f"Loading Facial Landmark model: {landmark}")
+            self.landmark_detector = fetch_model("landmark_model", landmark)
+            if self.landmark_detector is not None:
+                if landmark == "mobilenet":
+                    self.landmark_detector = self.landmark_detector(136)
+                    self.landmark_detector = torch.nn.DataParallel(
+                        self.landmark_detector
+                    )
+                    checkpoint = torch.load(
+                        os.path.join(
+                            get_resource_path(),
+                            "mobilenet_224_model_best_gdconv_external.pth.tar",
+                        ),
+                        map_location=self.map_location,
+                    )
+                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                elif landmark == "pfld":
+                    self.landmark_detector = self.landmark_detector()
+                    checkpoint = torch.load(
+                        os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
+                        map_location=self.map_location,
+                    )
+                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                elif landmark == "mobilefacenet":
+                    self.landmark_detector = self.landmark_detector([112, 112], 136)
+                    checkpoint = torch.load(
+                        os.path.join(
+                            get_resource_path(), "mobilefacenet_model_best.pth.tar"
+                        ),
+                        map_location=self.map_location,
+                    )
+                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+
+            self.info["landmark_model"] = landmark
+            self.info["mapper"] = openface_2d_landmark_columns
+            self.info["face_landmark_columns"] = openface_2d_landmark_columns
+            predictions = np.full_like(
+                np.atleast_2d(openface_2d_landmark_columns), np.nan
+            )
+            empty_landmarks = pd.DataFrame(
+                predictions, columns=openface_2d_landmark_columns
+            )
+            self._empty_landmark = empty_landmarks
+
+        # AU MODEL
+        if self.info["au_model"] != au:
+            self.logger.info(f"Loading AU model: {au}")
+            self.au_model = fetch_model("au_model", au)
+            self.info["au_model"] = au
+            if self.au_model is not None:
+                self.au_model = self.au_model()
+                self.info["au_presence_columns"] = auoccur_columns
+                predictions = np.full_like(np.atleast_2d(auoccur_columns), np.nan)
+                empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
+                self._empty_auoccurence = empty_au_occurs
 
         # EMOTION MODEL
-        self.logger.info("Loading emotion model: ", emotion_model)
-        self.emotion_model = fetch_model("emotion_model", emotion)
-        self.emotion_model = self.emotion_model()
-        self.info["emotion_model"] = emotion
-        self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
-        predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
-        empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
-        self._empty_emotion = empty_emotion
+        if self.info["emotion_model"] != emotion:
+            self.logger.info("Loading emotion model: ", emotion)
+            self.emotion_model = fetch_model("emotion_model", emotion)
+            self.info["emotion_model"] = emotion
+            if self.emotion_model is not None:
+                self.emotion_model = self.emotion_model()
+                self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
+                predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
+                empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
+                self._empty_emotion = empty_emotion
 
         # FACEPOSE MODEL
-        self.logger.info("Loading facepose model: ", facepose_model)
-        _m = fetch_model("facepose_model", facepose)
-        # Only assign it if it's not img2pose, otherwise it's already set by face model
-        if _m is not None:
-            self.facepose_detector = _m()
-        self.info["facepose_model"] = facepose
+        if self.info["facepose_model"] != facepose:
+            self.logger.info("Loading facepose model: ", facepose)
+            # Only assign it if it's not img2pose, otherwise it's already set by face model
+            _m = fetch_model("facepose_model", facepose)
+            if _m is not None:
+                self.facepose_detector = _m()
+            self.info["facepose_model"] = facepose
 
-        self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
-        predictions = np.full_like(np.atleast_2d(FACET_FACEPOSE_COLUMNS), np.nan)
-        empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
-        self._empty_facepose = empty_facepose
+            self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
+            predictions = np.full_like(np.atleast_2d(FACET_FACEPOSE_COLUMNS), np.nan)
+            empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
+            self._empty_facepose = empty_facepose
 
         self.info["output_columns"] = (
             FEAT_TIME_COLUMNS
@@ -209,11 +267,39 @@ class Detector(object):
             + ["input"]
         )
 
-    def __repr__(self):
-        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']})"
+    def change_model(self, **kwargs):
+        """Swap one or more pre-trained detector models for another one. Just pass in
+        the the new models to use as kwargs, e.g. emotion_model='rf'"""
 
-    def __getitem__(self, i):
-        return self.info[i]
+        face_model = kwargs.get("face_model", self.info["face_model"])
+        landmark_model = kwargs.get("landmark_model", self.info["landmark_model"])
+        au_model = kwargs.get("au_model", self.info["au_model"])
+        emotion_model = kwargs.get("emotion_model", self.info["emotion_model"])
+        facepose_model = kwargs.get("facepose_model", self.info["facepose_model"])
+
+        # Verify model names and download if necessary
+        face, landmark, au, emotion, facepose = get_pretrained_models(
+            face_model,
+            landmark_model,
+            au_model,
+            emotion_model,
+            facepose_model,
+            self.verbose,
+        )
+        if (au is None) or (au in ["jaanet", "drml"]):
+            auoccur_columns = jaanet_AU_presence
+        else:
+            auoccur_columns = RF_AU_presence
+
+        self._init_detectors(
+            face,
+            landmark,
+            au,
+            emotion,
+            facepose,
+            auoccur_columns,
+            openface_2d_landmark_columns,
+        )
 
     def detect_faces(self, frame):
         """Detect faces from image or video frame
@@ -233,6 +319,10 @@ class Detector(object):
             >>> detector = Detector()
             >>> detector.detect_faces(frame)
         """
+        if not isinstance(frame, np.ndarray):
+            raise TypeError(
+                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+            )
         # check if frame is 4d
         if frame.ndim == 3:
             frame = np.expand_dims(frame, 0)
@@ -265,6 +355,11 @@ class Detector(object):
             >>> detected_faces = detector.detect_faces(frame)
             >>> detector.detect_landmarks(frame, detected_faces)
         """
+
+        if not isinstance(frame, np.ndarray):
+            raise TypeError(
+                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+            )
         # check if frame is 4d
         if frame.ndim == 3:
             frame = np.expand_dims(frame, 0)
@@ -1138,6 +1233,20 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
+
+    def read_images(self, imgname_list):
+        """
+        Given a string filepath or list of filepath, load the image(s) as a numpy array
+
+        Args:
+            imgname_list (list/str): filename or list of filenames
+
+        Returns:
+            np.ndarry: 3d or 4d numpy array
+        """
+        if not isinstance(imgname_list, list):
+            imgname_list = [imgname_list]
+        return read_pictures(imgname_list)
 
 
 if __name__ == "__main__":
