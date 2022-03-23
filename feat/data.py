@@ -1092,13 +1092,15 @@ class Fex(DataFrame):
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.mean()).T
         else:
-            feats = pd.DataFrame()
+            feats = []
             for k, v in self.itersessions():
-                feats = feats.append(pd.Series(v.mean(), name=k))
+                # TODO: Update to use pd.concat
+                feats.append(pd.Series(v.mean(), name=k))
+            feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
         for attr_name in [
             "au_columns",
@@ -1128,9 +1130,10 @@ class Fex(DataFrame):
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.min()).T
         else:
-            feats = pd.DataFrame()
+            feats = []
             for k, v in self.itersessions():
-                feats = feats.append(pd.Series(v.min(), name=k))
+                feats.append(pd.Series(v.min(), name=k))
+            feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)
@@ -1164,9 +1167,10 @@ class Fex(DataFrame):
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.max()).T
         else:
-            feats = pd.DataFrame()
+            feats = []
             for k, v in self.itersessions():
-                feats = feats.append(pd.Series(v.max(), name=k))
+                feats.append(pd.Series(v.max(), name=k))
+            feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)

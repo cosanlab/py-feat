@@ -5,12 +5,14 @@ parts:
     chapters:
       - file: content/installation
       - file: content/models
-  - caption: Tutorials
+  - caption: Basic Tutorials
     chapters:
       - file: content/01_basics
       - file: content/02_detector_imgs
       - file: content/03_detector_vids
-      - file: content/analysis
+      - file: content/04_fex_analysis
+  - caption: Advanced Tutorials
+    chapters:
       - file: content/plotting
       - file: content/loadingOtherFiles
       - file: content/train_hogs
