@@ -614,7 +614,7 @@ def validate_input(inputFname):
         inputFname, (str, list)
     ), "inputFname must be a string path to image or list of image paths"
 
-    if type(inputFname) == str:
+    if isinstance(inputFname, str):
         inputFname = [inputFname]
 
     for inputF in inputFname:
