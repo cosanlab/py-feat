@@ -1,27 +1,15 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `feat` package."""
-
 import pytest
-import pandas as pd
-from pandas import DataFrame, Series
 import numpy as np
-from os.path import join, exists
+from os.path import join
 from feat.utils import (
     read_feat,
-    read_facet,
     read_openface,
-    read_affectiva,
     registration,
-    neutral,
     softmax,
     load_h5,
     get_test_data_path,
 )
 from feat import Fex
-from nltools.data import Adjacency
-import unittest
 
 
 def test_read_feat():

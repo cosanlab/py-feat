@@ -1,38 +1,29 @@
-from __future__ import division
+"""
+Main Detector class. The Detector class wraps other pre-trained models
+(e.g. face detector, au detecto) and provides a high-level API to make it easier to
+perform detection
+"""
 
-"""Functions to help detect face, landmarks, emotions, action units from images and videos"""
 import traceback  # REMOVE LATER
-
-from collections import deque
-from multiprocessing.pool import ThreadPool
 import os
-import sklearn
 import numpy as np
 import pandas as pd
-from PIL import Image, ImageDraw, ImageOps
-import math
 from scipy.spatial import ConvexHull
 from skimage.morphology.convex_hull import grid_points_in_poly
 from skimage.feature import hog
 import cv2
-import feat
 from feat.data import Fex
 from feat.utils import (
     get_resource_path,
-    face_rect_to_coords,
     openface_2d_landmark_columns,
     jaanet_AU_presence,
     RF_AU_presence,
-    FEAT_EMOTION_MAPPER,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FACET_FACEPOSE_COLUMNS,
     FEAT_TIME_COLUMNS,
     FACET_TIME_COLUMNS,
     BBox,
-    convert68to49,
-    padding,
-    resize_with_padding,
     align_face_68pts,
     FaceDetectionError,
     validate_input,
@@ -1133,7 +1124,8 @@ class Detector(object):
                 concat_frame = frame
                 tmp_counter = counter
             else:
-                # TODO: This should really be refactored to use utils.read_pictures
+                # NOTE: We need to handle batch counting and divisibility properly which
+                # is why we don't use utils.read_pictures or self.read_pictures here
                 try:
                     concat_frame = np.concatenate([concat_frame, frame], 0)
                 except ValueError as e:
@@ -1216,12 +1208,12 @@ class Detector(object):
                 else:
                     init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
 
-        # TODO: We should really change this so we always return a Fex instance. What if
-        # a user wants to save and work with the Fex object? Currently they need to rund
-        # the detector twice to do that which seems weird. @tiankang can you change the
-        # logic here so the processing isn't dependent on whether we're saving and
-        # always return a Fex object? If I just remove the  if/else below it saves
-        # properly but returns an empty Fex object
+        # TODO: @tiangkang We should really change this so we always return a Fex
+        # instance. What if a user wants to save and work with the Fex object? Currently
+        # they need to rund the detector twice to do that which seems weird. @tiankang
+        # can you change the logic here so the processing isn't dependent on whether
+        # we're saving and always return a Fex object? If I just remove the  if/else
+        # below it saves properly but returns an empty Fex object
 
         if outputFname:
             return True
@@ -1251,28 +1243,3 @@ class Detector(object):
         if not isinstance(imgname_list, list):
             imgname_list = [imgname_list]
         return read_pictures(imgname_list)
-
-
-if __name__ == "__main__":
-    my_file_path = "/home/tiankang/AU_Dataset/test_case/"
-    all_imgs = [my_file_path + "f" + str(i) + ".jpg" for i in range(1, 12)] + [
-        "/home/tiankang/AU_Dataset/test_case/" + "f12.png"
-    ]
-    detector = Detector(
-        face_model="retinaface",
-        landmark_model="mobilefacenet",
-        au_model="svm",
-        emotion_model="resmasknet",
-    )  # initialize methods. These are the methods I like to use
-    # Test the video
-    outs2 = detector.detect_video(
-        "/home/tiankang/AU_Dataset/test_case/songA.mp4",
-        batch_size=512,
-        skip_frames=1,
-        singleframe4error=True,
-    )
-    # Test the pictures
-    outs = detector.detect_image(
-        all_imgs, batch_size=5, outputFname=None, verbose=False, singleframe4error=True
-    )
-    print("finished")

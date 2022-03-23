@@ -1,19 +1,15 @@
-from __future__ import division
-
-"""Plotting Functions"""
+"""
+Helper functions for plotting
+"""
 
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 import matplotlib.pyplot as plt
 from feat.utils import load_h5
 from math import sin, cos
-
-
-# from utils import load_h5
 import warnings
 import seaborn as sns
 import matplotlib.colors as colors
-from collections import OrderedDict
 from sklearn.preprocessing import minmax_scale
 from pathlib import Path
 from PIL import Image
@@ -27,7 +23,6 @@ __all__ = [
     "predict",
     "imshow",
 ]
-__author__ = ["Sophie Byrne", "Jin Hyun Cheong", "Eshin Jolly", "Luke Chang"]
 
 
 def draw_lineface(

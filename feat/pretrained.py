@@ -1,3 +1,7 @@
+"""
+Helper functions specifically for working with included pre-trained models
+"""
+
 from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
 from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
@@ -20,7 +24,8 @@ from feat.emo_detectors.StatLearning.EmoSL_test import (
     EmoSVMClassifier,
 )
 from feat.utils import get_resource_path, download_url
-import os, json
+import os
+import json
 
 # Currently supported pre-trained detectors
 PRETRAINED_MODELS = {

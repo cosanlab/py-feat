@@ -1,14 +1,24 @@
-from __future__ import division
-
 """
-    FEAT Utils Class
-    ==========================================
-    read_facet: read in iMotions-FACET formatted files
-    read_affdex: read in iMotions-affdex formatted files
-    read_affectiva: read in affectiva-api formatted files
-    read_openface: read in openface formatted files
-
+Feat utility and helper functions. Some of these functions can be used directly, while
+other underly the functionality of various Detector or Fex methods.
 """
+
+import os
+import math
+import h5py
+import sys
+import contextlib
+from sklearn.cross_decomposition import PLSRegression
+from joblib import load
+from sklearn import __version__ as skversion
+import numpy as np
+import pandas as pd
+from scipy.integrate import simps
+import feat
+import cv2
+import math
+import torch
+from torchvision.datasets.utils import download_url as tv_download_url
 
 __all__ = [
     "get_resource_path",
@@ -24,23 +34,6 @@ __all__ = [
     "validate_input",
     "download_url",
 ]
-__author__ = ["Jin Hyun Cheong, Tiankang Xie, Eshin Jolly"]
-
-
-import os, math, pywt, pickle, h5py, sys, io, contextlib, json
-import warnings
-from sklearn.cross_decomposition import PLSRegression
-from joblib import load
-from sklearn import __version__ as skversion
-import numpy as np, pandas as pd
-from scipy import signal
-from scipy.integrate import simps
-import feat
-import cv2
-import math
-from PIL import Image
-import torch
-from torchvision.datasets.utils import download_url as tv_download_url
 
 """ DEFINE IMPORTANT VARIABLES """
 # FEAT columns

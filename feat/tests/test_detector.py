@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `feat` package."""
-
 from feat.detector import Detector
 from feat.data import Fex
 from feat.utils import get_test_data_path
