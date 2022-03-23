@@ -8,9 +8,8 @@ import pandas as pd
 from pandas import DataFrame, Series
 import numpy as np
 import os
-from feat.tests.utils import get_test_data_path
 from feat.data import Fex, Fextractor
-from feat.utils import read_facet, read_openface, read_affectiva
+from feat.utils import read_facet, read_openface, read_affectiva, get_test_data_path
 from nltools.data import Adjacency
 import unittest
 

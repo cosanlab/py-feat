@@ -305,7 +305,7 @@ class Detector(object):
         """Detect faces from image or video frame
 
         Args:
-            frame (array): image array
+            frame (np.ndarray): 3d (single) or 4d (multiple) image array
 
         Returns:
             list: list of lists with the same length as the number of frames. Each list
@@ -341,7 +341,7 @@ class Detector(object):
         """Detect landmarks from image or video frame
 
         Args:
-            frame (array): image array
+            frame (np.ndarray): 3d (single) or 4d (multiple) image array
             detected_faces (array):
 
         Returns:
@@ -615,7 +615,7 @@ class Detector(object):
         """Detect Action Units from image or video frame
 
         Args:
-            frame (array): image loaded in array format (n, m, 3)
+            frame (np.ndarray): image loaded in array format (n, m, 3)
             landmarks (array): 68 landmarks used to localize face.
 
         Returns:
@@ -633,6 +633,10 @@ class Detector(object):
         # landmarks = np.transpose(landmarks)
         # if landmarks.shape[-1] == 68:
         #    landmarks = convert68to49(landmarks)
+        if not isinstance(frame, np.ndarray):
+            raise TypeError(
+                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+            )
         return self.au_model.detect_au(frame, landmarks)
 
     def _concatenate_batch(self, indexed_length, au_results):
