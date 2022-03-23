@@ -3,6 +3,10 @@ Main Fex data class. The Fex class is a pandas DataFrame subclass that makes it
 easier to work with the results output from a Detector
 """
 
+import warnings
+
+# Suppress nilearn warnings that come from importing nltools
+warnings.filterwarnings("ignore", category=FutureWarning, module="nilearn")
 import os
 import numpy as np
 import pandas as pd
@@ -180,6 +184,7 @@ class FexSeries(Series):
         print(f"{self.__class__}\n" + "".join(attr_list))
 
 
+# TODO: Switch all print statements to respect verbose
 class Fex(DataFrame):
     """Fex is a class to represent facial expression (Fex) data
 
@@ -211,6 +216,7 @@ class Fex(DataFrame):
         "features",
         "sessions",
         "detector",
+        "verbose",
     ]
 
     def __finalize__(self, other, method=None, **kwargs):
@@ -244,6 +250,8 @@ class Fex(DataFrame):
         self.detector = kwargs.pop("detector", None)
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
+
+        self.verbose = kwargs.pop("verbose", False)
 
         super().__init__(*args, **kwargs)
         if self.sessions is not None:
@@ -1626,7 +1634,8 @@ class Fex(DataFrame):
                     color = "k"
             except:
                 color = "k"
-                print(f"Input image {imagefile} not found.")
+                if self.verbose:
+                    print(f"Input image {imagefile} not found.")
                 image_exists = False
 
             sub_data = self.query("input==@imagefile")
