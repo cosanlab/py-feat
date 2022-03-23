@@ -202,6 +202,11 @@ def get_resource_path():
     return os.path.join(feat.__path__[0], "resources")
 
 
+def get_test_data_path():
+    """Get path to feat test data directory."""
+    return os.path.join(feat.__path__[0], "tests", "data")
+
+
 def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=True):
     """Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
     major and minor versions match those the model was trained with (3.8.x and 1.0.x
