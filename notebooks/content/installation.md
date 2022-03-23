@@ -1,4 +1,4 @@
-# How to install py-feat
+# How to install Py-Feat
 
 ## Basic setup
 You can either install the latest stable version from Pypi using:
