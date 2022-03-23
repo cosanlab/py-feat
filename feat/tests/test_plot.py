@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from os.path import join
-from .utils import get_test_data_path
 from feat import Fex, Detector
-from feat.utils import read_openface, read_affectiva
+from feat.utils import read_openface, read_affectiva, get_test_data_path
 from feat.plotting import plot_face, draw_lineface, draw_vectorfield, predict
 import matplotlib
 import pytest

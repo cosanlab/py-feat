@@ -881,6 +881,7 @@ def read_pictures(imgname_list):
         img_batch_arr (np.array): np array of shape BxHxWxC
     """
 
+    imgname_list = validate_input(imgname_list)
     img_batch_arr = None
     for img_name in imgname_list:
         frame = cv2.imread(img_name)

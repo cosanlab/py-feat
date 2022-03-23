@@ -8,7 +8,6 @@ import pandas as pd
 from pandas import DataFrame, Series
 import numpy as np
 from os.path import join, exists
-from .utils import get_test_data_path
 from feat.utils import (
     read_feat,
     read_facet,
@@ -18,6 +17,7 @@ from feat.utils import (
     neutral,
     softmax,
     load_h5,
+    get_test_data_path,
 )
 from feat import Fex
 from nltools.data import Adjacency
