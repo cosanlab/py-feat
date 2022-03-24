@@ -12,7 +12,53 @@ import os
 from feat.detector import Detector
 from feat.utils import read_pictures
 
+# DETECTOR COMBINATIONS
+@fixture(
+    scope="module",
+    params=["retinaface", "faceboxes", "mtcnn", "img2pose", "img2pose-c"],
+)
+def face_model(request):
+    """Supported face detectors"""
+    return request.param
 
+
+@fixture(
+    scope="module",
+    params=["mobilenet", "mobilefacenet", "pfld"],
+)
+def landmark_model(request):
+    """Supported landmark detectors"""
+    return request.param
+
+
+@fixture(
+    scope="module",
+    params=["rf", "svm", "logistic", "jaanet", "drml"],
+)
+def au_model(request):
+    """Supported au detectors"""
+    return request.param
+
+
+@fixture(
+    scope="module",
+    params=["resmasknet", "rf", "svm", "fer"],
+)
+def emotion_model(request):
+    """Supported emotion detectors"""
+    return request.param
+
+
+@fixture(
+    scope="module",
+    params=["pnp", "img2pose", "img2pose-c"],
+)
+def facepose_model(request):
+    """Supported pose detectors"""
+    return request.param
+
+
+# IMAGE AND VIDEO SAMPLES
 @fixture(scope="module")
 def data_path():
     return os.path.join(os.path.dirname(__file__), "data")

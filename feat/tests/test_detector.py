@@ -7,6 +7,36 @@ import numpy as np
 import pytest
 
 
+@pytest.mark.skip(
+    reason="75 out of 900 detector combinations fail to initialize. See issue #118 for a list of combinations"
+)
+def test_detector_combos(
+    face_model, landmark_model, au_model, emotion_model, facepose_model
+):
+    """Builds a grid a of tests using all supported detector combinations defined in
+    conftest.py"""
+
+    # Test init
+    if "img2pose" in facepose_model and facepose_model != face_model:
+        with pytest.raises(ValueError):
+            _ = Detector(
+                face_model=face_model,
+                landmark_model=landmark_model,
+                au_model=au_model,
+                emotion_model=emotion_model,
+                facepose_model=facepose_model,
+            )
+    else:
+        detector = Detector(
+            face_model=face_model,
+            landmark_model=landmark_model,
+            au_model=au_model,
+            emotion_model=emotion_model,
+            facepose_model=facepose_model,
+        )
+        print(detector)
+
+
 def test_empty_init():
     detector = Detector(
         face_model=None,
