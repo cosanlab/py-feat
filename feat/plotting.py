@@ -5,7 +5,7 @@ Helper functions for plotting
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 import matplotlib.pyplot as plt
-from feat.utils import load_h5
+from feat.utils import load_h5, RF_AU_presence
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -34,7 +34,7 @@ def draw_lineface(
     linewidth=1,
     gaze=None,
     *args,
-    **kwargs
+    **kwargs,
 ):
     """Plot Line Face
 
@@ -91,7 +91,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     eye_l = plt.Line2D(
@@ -101,7 +101,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     eye_r = plt.Line2D(
@@ -111,7 +111,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     eyebrow_l = plt.Line2D(
@@ -121,7 +121,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     eyebrow_r = plt.Line2D(
@@ -131,7 +131,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     lips1 = plt.Line2D(
@@ -169,7 +169,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     lips2 = plt.Line2D(
@@ -207,7 +207,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     nose1 = plt.Line2D(
@@ -217,7 +217,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
 
     nose2 = plt.Line2D(
@@ -227,7 +227,7 @@ def draw_lineface(
         linestyle=linestyle,
         linewidth=linewidth,
         *args,
-        **kwargs
+        **kwargs,
     )
     if gaze is None:
         gaze = [0, 0, 0, 0]
@@ -311,7 +311,7 @@ def draw_vectorfield(
         scale_units="xy",
         scale=scale,
         *args,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -873,7 +873,7 @@ def plot_face(
     linestyle="-",
     gaze=None,
     *args,
-    **kwargs
+    **kwargs,
 ):
     """Function to plot facesself
 
@@ -935,7 +935,7 @@ def plot_face(
         ax=ax,
         gaze=gaze,
         *args,
-        **kwargs
+        **kwargs,
     )
     if vectorfield is not None:
         if not isinstance(vectorfield, dict):
@@ -1032,14 +1032,18 @@ def draw_facepose(pose, facebox, ax):
     return ax
 
 
-def _create_empty_figure(figsize=(4, 5), xlim=[25, 172], ylim=[240, 50]):
+def _create_empty_figure(
+    figsize=(4, 5), xlim=[25, 172], ylim=[240, 50], return_fig=False
+):
     """Create an empty figure"""
-    plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     ax = plt.gca()
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
+    if return_fig:
+        return ax, fig
     return ax
 
 
@@ -1059,3 +1063,143 @@ def imshow(obj, figsize=None, aspect="equal"):
     _, ax = plt.subplots(figsize=figsize)
     _ = ax.imshow(obj, aspect=aspect)
     _ = ax.axis("off")
+
+
+def _interpolate_aus(
+    start,
+    end,
+    num_frames,
+    interp_func=None,
+    num_padding_frames=None,
+    include_reverse=True,
+):
+    """
+    Helper function to interpolate between starting and ending AU values using
+    non-linear easing functions
+
+    Args:
+        start (np.ndarray): array of starting intensities
+        end (np.ndarray): array of ending intensities
+        num_frames (int): number of frames to interpolate over
+        interp_func (callable, optional): easing function. Defaults to None.
+        num_padding_frames (int, optional): number of additional freeze frames to add
+        before the first frame and after the last frame. Defaults to None.
+        include_reverse (bool, optional): return the reverse interpolation appended to
+        the end of the interpolation. Useful for animating start -> end -> start. Defaults to True.
+
+    Returns:
+        np.ndarray: frames x au 2d array
+    """
+
+    from easing_functions import CubicEaseInOut
+
+    func = CubicEaseInOut if interp_func is None else func
+    # Loop over each AU and generate a cubic bezier style interpolation from its
+    # starting intensity to its ending intensity
+    au_interpolations = []
+    for au_start, au_end in zip(start, end):
+        interp_func = func(au_start, au_end)
+        intensities = [*map(interp_func, np.linspace(0, 1, num_frames))]
+        au_interpolations.append(intensities)
+
+    au_interpolations = np.column_stack(au_interpolations)
+
+    if num_padding_frames is not None:
+        begin_padding = np.tile(au_interpolations[0], (num_padding_frames, 1))
+        end_padding = np.tile(au_interpolations[-1], (num_padding_frames, 1))
+        au_interpolations = np.vstack([begin_padding, au_interpolations, end_padding])
+
+    if include_reverse:
+        au_interpolations = np.vstack([au_interpolations, au_interpolations[::-1, :]])
+    return au_interpolations
+
+
+def animate_face(
+    AU=None, start=None, end=None, save=None, include_reverse=True, **kwargs
+):
+    """
+    Create a matplotlib animation interpolating between a starting and ending face. Can
+    either work like `plot_face` by taking an array of AU intensities for `start` and
+    `end`, or by animating a single AU using the `AU` keyword argument and setting
+    `start` and `end` to a scalar value
+
+    Args:
+        AU (str/int, optional): action unit id (e.g. 12 or 'AU12'). Defaults to None.
+        start (float/np.ndarray, optional): AU intensity to start at. Defaults to None.
+        end (float/np.ndarray, optional): AU intensity(s) to end at. We don't recommend
+        going beyond 3. Defaults to None.
+        save (str, optional): file to save animation to. Defaults to None.
+        include_reverse (bool, optional): Whether to also reverse the animation, i.e.
+        start -> end -> start. Defaults to True.
+        title (str, optional): plot title. Defaults to None.
+        fps (int, optional): frame-rate; Defaults to 15fps
+        duration (float, optional): length of animation in seconds. Defaults to 0.5
+        padding (float, optional): additional time to wait in seconds on the first and
+        last frame of the animation. Useful when you plan to loop the animation.
+        Defaults to 0.25
+        interp_func (callable, optional): interpolation function that takes a start and
+        end keyword argument and returns a function that will be applied to values
+        np.linspace(0, 1, num_frames); Defaults to CubicEaseInOut. See
+        https://github.com/semitable/easing-functions for other options.
+
+
+    Returns:
+        matplotlib Animation
+    """
+    from celluloid import Camera
+
+    color = kwargs.pop("color", "k")
+    linewidth = kwargs.pop("linewidth", 1)
+    linestyle = kwargs.pop("linestyle", "-")
+    title = kwargs.pop("title", None)
+    fps = kwargs.pop("fps", 15)
+    duration = kwargs.pop("duration", 0.5)
+    padding = kwargs.pop("padding", 0.25)
+    num_frames = int(np.ceil(fps * duration))
+    interp_func = kwargs.pop("interp_func", None)
+
+    if AU is not None:
+        if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+            raise TypeError("If AU is specified start and end should be single numbers")
+
+        if isinstance(AU, int):
+            AU = f"AU{str(AU).zfill(2)}"
+        au_map = dict(zip(RF_AU_presence, list(range(20))))
+        au_idx = au_map[AU.upper()]
+        _start, _end = np.zeros(20), np.zeros(20)
+        _start[au_idx] = start
+        _end[au_idx] = end
+        start, end = _start, _end
+
+    # Loop over each AU and generate a cubic bezier style interpolation from its
+    # starting intensity to its ending intensity
+    num_padding_frames = padding if padding is None else int(np.ceil(fps * padding))
+    au_interpolations = _interpolate_aus(
+        start,
+        end,
+        interp_func=interp_func,
+        num_frames=num_frames,
+        num_padding_frames=num_padding_frames,
+        include_reverse=include_reverse,
+    )
+
+    ax, fig = _create_empty_figure(return_fig=True)
+    camera = Camera(fig)
+
+    for aus in au_interpolations:
+        ax = plot_face(
+            model=None,
+            ax=ax,
+            au=aus,
+            color=color,
+            linewidth=linewidth,
+            linestyle=linestyle,
+            **kwargs,
+        )
+        if title is not None:
+            _ = ax.set(title=title)
+        _ = camera.snap()
+    animation = camera.animate()
+    if save is not None:
+        animation.save(save, fps=fps)
+    return animation
