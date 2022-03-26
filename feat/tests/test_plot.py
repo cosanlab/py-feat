@@ -1,9 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from os.path import join
+from os.path import join, exists
+from os import remove
 from feat import Fex
 from feat.utils import read_openface, get_test_data_path
-from feat.plotting import plot_face, draw_lineface, draw_vectorfield, predict
+from feat.plotting import (
+    plot_face,
+    draw_lineface,
+    draw_vectorfield,
+    predict,
+    animate_face,
+)
 import matplotlib
 import pytest
 
@@ -127,3 +134,29 @@ def test_plot_detections(default_detector, single_face_img):
     axes = image_prediction2.plot_detections()
     assert axes[1].get_xlim() == (0.0, 1.1)
     plt.close()
+
+
+def test_animate_face():
+
+    # Start with neutral face
+    starting_aus = np.zeros(20)
+    ending_aus = np.zeros(20)
+    # Just animate the intensity of the first AU
+    ending_aus[0] = 3
+
+    animation = animate_face(starting_aus, ending_aus, save="test.gif")
+
+    assert animation is not None
+    assert exists("test.gif")
+
+    # # Clean up
+    remove("test.gif")
+
+    # Test different init style
+    animation = animate_face(AU=1, start=0, end=3, save="test.gif")
+
+    assert animation is not None
+    assert exists("test.gif")
+
+    # Clean up
+    remove("test.gif")
