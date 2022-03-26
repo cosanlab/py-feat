@@ -144,7 +144,7 @@ def test_animate_face():
     # Just animate the intensity of the first AU
     ending_aus[0] = 3
 
-    animation = animate_face(starting_aus, ending_aus, save="test.gif")
+    animation = animate_face(start=starting_aus, end=ending_aus, save="test.gif")
 
     assert animation is not None
     assert exists("test.gif")
