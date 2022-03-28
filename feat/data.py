@@ -125,6 +125,7 @@ class FexSeries(Series):
         """
         return self[self.facepose_columns]
 
+    @property
     def input(self):
         """Returns input column as string
 
@@ -413,6 +414,7 @@ class Fex(DataFrame):
         """
         return self[self.facepose_columns]
 
+    @property
     def input(self):
         """Returns input column as string
 
@@ -1670,7 +1672,7 @@ class Fex(DataFrame):
         sns.set_context("paper", font_scale=2.0)
 
         # check how many images.
-        inputs = self.input().unique()
+        inputs = self.input.unique()
         all_axes = []
         for imagefile in inputs:
             f, axes = plt.subplots(1, 3, figsize=(15, 7))
@@ -1749,9 +1751,9 @@ class Fex(DataFrame):
                     draw_facepose(pose=row.facepose().values[0], facebox=facebox, ax=ax)
 
             if image_exists:
-                if sub_data.input().any():
+                if sub_data.input.any():
                     ax.set_title(
-                        "\n".join(wrap(sub_data.input().unique()[0], 30)),
+                        "\n".join(wrap(sub_data.input.unique()[0], 30)),
                         loc="left",
                         wrap=True,
                         fontsize=14,
