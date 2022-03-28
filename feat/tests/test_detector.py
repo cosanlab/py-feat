@@ -71,7 +71,7 @@ def test_detect_single_face(default_detector, single_face_img):
 def test_detect_read_write(default_detector, single_face_img, data_path):
     """Test detection and writing of results to csv"""
 
-    outputFname = os.path.join(data_path, "output.csv")
+    outputFname = os.path.join(data_path, "test_detect.csv")
     fex = default_detector.detect_image(single_face_img, outputFname=outputFname)
     assert isinstance(fex, Fex)
     assert os.path.exists(outputFname)
@@ -372,7 +372,7 @@ def test_detect_video(default_detector, single_face_mov):
 
 
 def test_detect_video_and_save(default_detector, single_face_mov):
-    outputFname = os.path.join(get_test_data_path(), "output.csv")
+    outputFname = os.path.join(get_test_data_path(), "test_detect.csv")
     out = default_detector.detect_video(
         inputFname=single_face_mov, outputFname=outputFname, skip_frames=10
     )

@@ -1597,35 +1597,35 @@ class Fex(DataFrame):
                 return ax
             except Exception as e:
                 print("Unable to plot data:", e)
-        if self.detector =="feat":
+        if self.detector == "feat":
             feats = [
-                    "AU01",
-                    "AU02",
-                    "AU04",
-                    "AU05",
-                    "AU06",
-                    "AU07",
-                    "AU09",
-                    "AU10",
-                    "AU12",
-                    "AU14",
-                    "AU15",
-                    "AU17",
-                    "AU18",
-                    "AU20",
-                    "AU23",
-                    "AU24",
-                    "AU25",
-                    "AU26",
-                    "AU28",
-                    "AU43",
-                    ]
+                "AU01",
+                "AU02",
+                "AU04",
+                "AU05",
+                "AU06",
+                "AU07",
+                "AU09",
+                "AU10",
+                "AU12",
+                "AU14",
+                "AU15",
+                "AU17",
+                "AU18",
+                "AU20",
+                "AU23",
+                "AU24",
+                "AU25",
+                "AU26",
+                "AU28",
+                "AU43",
+            ]
             if row_n > len(self):
                 raise ValueError("Row number out of range.")
             try:
                 au = []
                 for feat in feats:
-                    if feat=="AU18":
+                    if feat == "AU18":
                         au.append(0)
                     else:
                         aun = self[feat]
@@ -1776,8 +1776,8 @@ class Fex(DataFrame):
             axes[2].set(xlim=[0, 1.1], title="Emotions")
 
             plt.tight_layout()
-            plt.show()
             all_axes.append(axes)
+            plt.close()
         return axes
 
 
