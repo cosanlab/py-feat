@@ -22,6 +22,7 @@ from torchvision.datasets.utils import download_url as tv_download_url
 
 __all__ = [
     "get_resource_path",
+    "get_test_data_path",
     "read_facet",
     "read_affdex",
     "read_affectiva",

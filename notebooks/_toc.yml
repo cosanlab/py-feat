@@ -11,9 +11,9 @@ parts:
       - file: content/02_detector_imgs
       - file: content/03_detector_vids
       - file: content/04_fex_analysis
+      - file: content/05_plotting
   - caption: Advanced Tutorials
     chapters:
-      - file: content/05_plotting
       - file: content/loadingOtherFiles
       - file: content/train_hogs
       - file: content/trainAUvisModel
