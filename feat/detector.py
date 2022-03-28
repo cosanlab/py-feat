@@ -931,6 +931,7 @@ class Detector(object):
         inputFname,
         batch_size=5,
         outputFname=None,
+        return_detection=True,
         skip_frames=1,
         singleframe4error=False,
     ):
@@ -938,8 +939,11 @@ class Detector(object):
 
         Args:
             inputFname (str): Path to video file
+            batch_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             outputFname (str, optional): Path to output file. Defaults to None.
-            bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
+            return_detection (bool, optional): whether to return a Fex object of all
+            concatenated detections. To save memory you can process results directly to
+            a file by setting this to False and providing an outputFname; Default True
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
             singleframe4error (bool, default = False): When set True, when exception
             occurs inside a batch, instead of nullify the whole batch, process each img
@@ -949,10 +953,14 @@ class Detector(object):
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
         self.info["inputFname"] = validate_input(inputFname)
+        if not (outputFname or return_detection):
+            raise ValueError(
+                "If return_detection is False then you must provide an outputFname"
+            )
 
         self.info["outputFname"] = outputFname
         init_df = pd.DataFrame(columns=self["output_columns"])
-        if outputFname:
+        if outputFname is not None:
             init_df.to_csv(outputFname, index=False, header=True)
 
         cap = cv2.VideoCapture(self.info["inputFname"][0])
@@ -1020,7 +1028,7 @@ class Detector(object):
                         df[init_df.columns].to_csv(
                             outputFname, index=False, header=False, mode="a"
                         )
-                    else:
+                    if return_detection:
                         init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
                     concat_frame = None
                     tmp_counter = None
@@ -1062,17 +1070,15 @@ class Detector(object):
                             is_video_frame=True,
                         )
                     df["input"] = inputFname
-                    if outputFname:
+                    if outputFname is not None:
                         df[init_df.columns].to_csv(
                             outputFname, index=False, header=False, mode="a"
                         )
-                    else:
+                    if return_detection:
                         init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
                 break
         cap.release()
-        if outputFname:
-            return True
-        else:
+        if return_detection:
             return Fex(
                 init_df,
                 filename=self.info["inputFname"],
@@ -1084,13 +1090,15 @@ class Detector(object):
                 time_columns=FEAT_TIME_COLUMNS,
                 detector="Feat",
             )
+        # Not returning any detection to save memory
+        return True
 
     def detect_image(
         self,
         inputFname,
         batch_size=5,
         outputFname=None,
-        verbose=False,
+        return_detection=True,
         singleframe4error=False,
     ):
         """Detects FEX from an image file.
@@ -1099,6 +1107,9 @@ class Detector(object):
             inputFname (list of str): Path to a list of paths to image files.
             batch_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             outputFname (str, optional): Path to output file. Defaults to None.
+            return_detection (bool, optional): whether to return a Fex object of all
+            concatenated detections. To save memory you can process results directly to
+            a file by setting this to False and providing an outputFname; Default True
             singleframe4error (bool, default = False): When set True, when exception
             occurs inside a batch, instead of nullify the whole batch, process each img
             in batch individually
@@ -1108,9 +1119,13 @@ class Detector(object):
         """
 
         self.info["inputFname"] = validate_input(inputFname)
+        if not (outputFname or return_detection):
+            raise ValueError(
+                "If return_detection is False then you must provide an outputFname"
+            )
 
         init_df = pd.DataFrame(columns=self["output_columns"])
-        if outputFname:
+        if outputFname is not None:
             init_df.to_csv(outputFname, index=False, header=True)
 
         counter = 0
@@ -1161,11 +1176,11 @@ class Detector(object):
                         concat_frame, input_names, counter=tmp_counter
                     )
 
-                if outputFname:
+                if outputFname is not None:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"
                     )
-                else:
+                if return_detection:
                     init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
 
                 concat_frame = None
@@ -1199,23 +1214,14 @@ class Detector(object):
                         concat_frame, input_names, counter=tmp_counter
                     )
 
-                if outputFname:
+                if outputFname is not None:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"
                     )
-                else:
+                if return_detection:
                     init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
 
-        # TODO: @tiangkang We should really change this so we always return a Fex
-        # instance. What if a user wants to save and work with the Fex object? Currently
-        # they need to rund the detector twice to do that which seems weird. @tiankang
-        # can you change the logic here so the processing isn't dependent on whether
-        # we're saving and always return a Fex object? If I just remove the  if/else
-        # below it saves properly but returns an empty Fex object
-
-        if outputFname:
-            return True
-        else:
+        if return_detection:
             return Fex(
                 init_df,
                 filename=self.info["inputFname"],
@@ -1227,6 +1233,8 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
+        # Not returning any detection to save memory
+        return True
 
     def read_images(self, imgname_list):
         """

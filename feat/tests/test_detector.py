@@ -72,11 +72,29 @@ def test_detect_read_write(default_detector, single_face_img, data_path):
     """Test detection and writing of results to csv"""
 
     outputFname = os.path.join(data_path, "output.csv")
-    _ = default_detector.detect_image(single_face_img, outputFname=outputFname)
+    fex = default_detector.detect_image(single_face_img, outputFname=outputFname)
+    assert isinstance(fex, Fex)
     assert os.path.exists(outputFname)
     loaded = pd.read_csv(outputFname)
     assert loaded.shape == (1, 173)
     assert loaded.happiness.values[0] > 0
+    os.remove(outputFname)
+
+    out = default_detector.detect_image(
+        single_face_img, outputFname=outputFname, return_detection=False
+    )
+    assert out is True
+    assert os.path.exists(outputFname)
+    loaded = pd.read_csv(outputFname)
+    assert loaded.shape == (1, 173)
+    assert loaded.happiness.values[0] > 0
+    os.remove(outputFname)
+
+    # Can't not save and not return detection
+    with pytest.raises(ValueError):
+        out = default_detector.detect_image(
+            single_face_img, outputFname=None, return_detection=False
+        )
 
 
 def test_detect_multi_face(default_detector, multi_face_img):
@@ -358,7 +376,27 @@ def test_detect_video_and_save(default_detector, single_face_mov):
     out = default_detector.detect_video(
         inputFname=single_face_mov, outputFname=outputFname, skip_frames=10
     )
-    assert out
+    assert isinstance(out, Fex)
     assert os.path.exists(outputFname)
     out = pd.read_csv(outputFname)
     assert out.happiness.values.max() > 0
+    os.remove(outputFname)
+
+    out = default_detector.detect_video(
+        inputFname=single_face_mov,
+        outputFname=outputFname,
+        skip_frames=10,
+        return_detection=False,
+    )
+    assert out is True
+    assert os.path.exists(outputFname)
+    os.remove(outputFname)
+
+    # Can't not save and not return detection
+    with pytest.raises(ValueError):
+        out = default_detector.detect_video(
+            inputFname=single_face_mov,
+            outputFname=None,
+            skip_frames=10,
+            return_detection=False,
+        )
