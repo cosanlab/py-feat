@@ -380,8 +380,8 @@ def test_feat():
     filename = os.path.join(get_test_data_path(), "output.csv")
     fex = Fex(filename=filename, detector="Feat")
     fex = fex.read_file()
-    # test input
-    assert fex.input().values[0] == fex.iloc[0].input()
+    # test input property
+    assert fex.input.values[0] == fex.iloc[0].input
 
 
 def test_stats():
