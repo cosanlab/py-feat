@@ -1406,6 +1406,7 @@ class Fex(DataFrame):
             )
         return out.__finalize__(self)
 
+    # TODO: Needs docstring
     def plot_aus(
         self,
         row_n,

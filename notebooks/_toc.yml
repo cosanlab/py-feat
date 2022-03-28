@@ -13,7 +13,7 @@ parts:
       - file: content/04_fex_analysis
   - caption: Advanced Tutorials
     chapters:
-      - file: content/plotting
+      - file: content/05_plotting
       - file: content/loadingOtherFiles
       - file: content/train_hogs
       - file: content/trainAUvisModel

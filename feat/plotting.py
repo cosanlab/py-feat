@@ -10,7 +10,7 @@ from math import sin, cos
 import warnings
 import seaborn as sns
 import matplotlib.colors as colors
-from sklearn.preprocessing import minmax_scale
+from sklearn.preprocessing import minmax_scale, MinMaxScaler
 from pathlib import Path
 from PIL import Image
 
@@ -22,6 +22,7 @@ __all__ = [
     "get_heat",
     "predict",
     "imshow",
+    "interpolate_aus",
 ]
 
 
@@ -861,6 +862,7 @@ def get_heat(muscle, au, log):
     return color
 
 
+# TODO: fix bug when using muscles={'facet': 1}
 def plot_face(
     model=None,
     au=None,
@@ -872,6 +874,7 @@ def plot_face(
     linewidth=1,
     linestyle="-",
     gaze=None,
+    muscle_scaler=None,
     *args,
     **kwargs,
 ):
@@ -893,6 +896,9 @@ def plot_face(
         ax: plot handle
     """
 
+    # NOTE: Ejolly copied this from the plotting notebook, where does it need to happen?
+    # "Affectiva vectors should be divided by twenty for use with our 'blue' model"
+
     if model is None:
         model = load_h5()
     else:
@@ -913,10 +919,13 @@ def plot_face(
         ax = _create_empty_figure()
 
     if muscles is not None:
-        # Muscles are always scaled 0 - 100 b/c color palette is 0-100
-        au = minmax_scale(au, feature_range=(0, 100))
         if not isinstance(muscles, dict):
             raise ValueError("muscles must be a dictionary ")
+        if muscle_scaler is None:
+            # Muscles are always scaled 0 - 100 b/c color palette is 0-100
+            au = minmax_scale(au, feature_range=(0, 100))
+        else:
+            au = muscle_scaler.transform(np.array(au).reshape(-1, 1)).squeeze()
         draw_muscles(currx, curry, ax=ax, au=au, **muscles)
 
     if gaze is not None and len((gaze)) != 4:
@@ -926,6 +935,7 @@ def plot_face(
         )
         gaze = None
 
+    title = kwargs.pop("title", None)
     draw_lineface(
         currx,
         curry,
@@ -949,6 +959,8 @@ def plot_face(
     ax.set_ylim((240, 50))
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
+    if title is not None:
+        ax.set(title=title)
     return ax
 
 
@@ -1065,7 +1077,7 @@ def imshow(obj, figsize=None, aspect="equal"):
     _ = ax.axis("off")
 
 
-def _interpolate_aus(
+def interpolate_aus(
     start,
     end,
     num_frames,
@@ -1151,7 +1163,6 @@ def animate_face(
     color = kwargs.pop("color", "k")
     linewidth = kwargs.pop("linewidth", 1)
     linestyle = kwargs.pop("linestyle", "-")
-    title = kwargs.pop("title", None)
     fps = kwargs.pop("fps", 15)
     duration = kwargs.pop("duration", 0.5)
     padding = kwargs.pop("padding", 0.25)
@@ -1171,12 +1182,33 @@ def animate_face(
         _end[au_idx] = end
         start, end = _start, _end
 
+    # To properly animate muscles we need to min-max scale referenced against the ending
+    # AU intensities rather than the AUs of any given frame of the animation which is
+    # what plot_face does if muscle_scaler is None
+    if "muscles" in kwargs:
+        muscle_scaler = MinMaxScaler(feature_range=(0, 100))
+        # MinMaxScaler defaults to per-feature normalization so reshape like we have
+        # multiple observations of a single feature
+        _ = muscle_scaler.fit(np.array(end).reshape(-1, 1))
+    else:
+        muscle_scaler = None
+
     # Loop over each AU and generate a cubic bezier style interpolation from its
     # starting intensity to its ending intensity
     num_padding_frames = padding if padding is None else int(np.ceil(fps * padding))
-    au_interpolations = _interpolate_aus(
+    au_interpolations = interpolate_aus(
         start,
         end,
+        interp_func=interp_func,
+        num_frames=num_frames,
+        num_padding_frames=num_padding_frames,
+        include_reverse=include_reverse,
+    )
+    gaze_start = kwargs.pop("gaze_start", np.array([0, 0, 0, 0]))
+    gaze_end = kwargs.pop("gaze_end", np.array([0, 0, 0, 0]))
+    gaze_interpolations = interpolate_aus(
+        gaze_start,
+        gaze_end,
         interp_func=interp_func,
         num_frames=num_frames,
         num_padding_frames=num_padding_frames,
@@ -1186,18 +1218,20 @@ def animate_face(
     ax, fig = _create_empty_figure(return_fig=True)
     camera = Camera(fig)
 
-    for aus in au_interpolations:
+    for aus, gaze in zip(au_interpolations, gaze_interpolations):
         ax = plot_face(
             model=None,
             ax=ax,
             au=aus,
+            gaze=gaze,
             color=color,
             linewidth=linewidth,
             linestyle=linestyle,
+            muscle_scaler=muscle_scaler,
             **kwargs,
         )
-        if title is not None:
-            _ = ax.set(title=title)
+        # if title is not None:
+        #     _ = ax.set(title=title)
         _ = camera.snap()
     animation = camera.animate()
     if save is not None:
