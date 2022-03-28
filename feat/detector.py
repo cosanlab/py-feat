@@ -1,6 +1,6 @@
 """
 Main Detector class. The Detector class wraps other pre-trained models
-(e.g. face detector, au detecto) and provides a high-level API to make it easier to
+(e.g. face detector, au detector) and provides a high-level API to make it easier to
 perform detection
 """
 
@@ -304,9 +304,9 @@ class Detector(object):
             face in that frame.
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> img_data = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detector.detect_faces(frame)
         """
@@ -339,9 +339,9 @@ class Detector(object):
             list: x and y landmark coordinates (1,68,2)
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> img_data = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detected_faces = detector.detect_faces(frame)
             >>> detector.detect_landmarks(frame, detected_faces)
@@ -613,9 +613,9 @@ class Detector(object):
             array: Action Unit predictions
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> frame = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detector.detect_aus(frame)
         """
@@ -664,9 +664,9 @@ class Detector(object):
             array: Action Unit predictions
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> img_data = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detected_faces = detector.detect_faces(frame)
             >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
@@ -712,21 +712,19 @@ class Detector(object):
 
 
         Examples:
-            # With img2pose
-            >>> import cv2
-            >>> frame = [cv2.imread(imgfile)]
             >>> from feat import Detector
-            >>> detector = Detector(face_model='imgpose', facepose_model='img2pose')
-            >>> detector.detect_facepose([frame]) # one shot computation
+            >>> from feat.utils import read_pictures
+            >>> frame = read_pictures(['my_image.jpg'])
 
-            # With PnP
-            >>> import cv2
-            >>> frame = [cv2.imread(imgfile)]
-            >>> from feat import Detector
-            >>> detector = Detector(face_model='retinaface', landmark_model='mobilefacenet', facepose_model='pnp')
-            >>> faces = detector.detect_faces(frame)
-            >>> landmarks = detector.detect_landmarks(detected_faces=faces)
-            >>> detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
+            >>> # Imgpose detector
+            >>> imgpose_detector = Detector(face_model='imgpose', facepose_model='img2pose')
+            >>> imgpose_detector.detect_facepose(frame) # one shot computation
+
+            >>> # Retina face detector
+            >>> retinaface_detector = Detector(face_model='retinaface', landmark_model='mobilefacenet', facepose_model='pnp')
+            >>> faces = retinaface_detector.detect_faces(frame)
+            >>> landmarks = retinaface_detector.detect_landmarks(detected_faces=faces)
+            >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
         """
         # check if frame is 4d
         if frame.ndim == 3:

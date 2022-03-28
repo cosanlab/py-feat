@@ -27,6 +27,7 @@ from feat.utils import get_resource_path, download_url
 import os
 import json
 
+__all__ = ["get_pretrained_models", "fetch_model"]
 # Currently supported pre-trained detectors
 PRETRAINED_MODELS = {
     "face_model": [

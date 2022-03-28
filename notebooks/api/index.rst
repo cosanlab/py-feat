@@ -35,19 +35,10 @@ feat\.utils module
     :undoc-members:
     :show-inheritance:
 
-feat\.version module
+feat\.pretrained module
 =======================
 
-.. automodule:: feat.version
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
-=======================
-
-.. automodule:: feat
+.. automodule:: feat.pretrained
     :members:
     :undoc-members:
     :show-inheritance:

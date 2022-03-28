@@ -23,6 +23,7 @@ __all__ = [
     "predict",
     "imshow",
     "interpolate_aus",
+    "animate_face",
 ]
 
 
