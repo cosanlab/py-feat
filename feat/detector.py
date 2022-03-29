@@ -732,8 +732,8 @@ class Detector(object):
         assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
 
         # height, width, _ = frame.shape
-        if "img2pose" in self.info["face_model"]:
-            faces, poses = self.facepose_detector(frame)
+        if "img2pose" in self.info["facepose_model"]:
+            _, poses = self.facepose_detector(frame)
         else:
             poses = self.facepose_detector(frame, landmarks)
 
