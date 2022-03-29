@@ -47,13 +47,13 @@ jobs:
         run: |
           conda activate test
           conda env list
-          conda install -y -c conda-forge pytest pytest-cov pytest-sugar coveralls
-          pip install . -r requirements.txt
+          pip install . -r requirements-dev.txt
       # Actually run the tests with coverage
       - name: Run Tests
         run: |
           conda activate test
           conda env list
+          black --check --verbose .
           pytest --cov=feat -rs
 
       # Send coverage to coveralls.io but waiting on parallelization to finish
