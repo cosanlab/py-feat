@@ -1,64 +1,68 @@
 # Contributing new detectors
 
-*written by Jin Hyun Cheong*
+We would love to developers and researchers to contribute new models to Py-Feat so they can gain a wider audience for their work, while allowing end-users to make more informed choices when selecting models for use. 
 
-In this tutorial we outline the necessary steps for users to contribute new models to the Py-FEAT toolbox. This will allow developers to gain a wide audience for their work and researchers can also benefit from making informed choices for selecting models.
+## 1. Develop a detector
+Currently we have organized our detectors into the following categories:
+- Action Unit Detectors
+- Emotion Detectors
+- Face Detectors
+- Landmark Detectors
+- Facepose Detectors
 
-## 1. Develop a model
-Currently we have organized our models into the following categories:
-- au_detectors
-- emotion_detectors
-- face_detectors
-- landmark_detectors
-- facepose_detectors
+Therefore any model you develop should fall into one those categories to be added. If there is a new model  category you would like us to implement (e.g. gaze) please let us know on github!
 
-Therefore any model you develop that fall into those categories can be added. If there is a new category you would like us to implement (e.g. gaze, head pose) please submit a pull request.
+## 2. Benchmark your detector
 
-## 2. Benchmark your model.
-We benchmark each model on a specified dataset. These are quite standard datasets. We employ an honor system that your model should not be using these datasets for training. We will also add new benchmark dataset and results as needed.
+We benchmark each model on a standard datasets used in the field. We employ an honor system that your model should not be using these datasets for training. We can also add new benchmark dataset and results as needed.
 
-- au_detectors: DISFA Plus
-- emotion_detectors: AffNet
-- face_detectors: WIDER
-- landmark_detectors: 300W
-- facepose_detectors: BIWI
+- Action Unit Detectors: **DIFSA Plus**
+- Emotion Detectors: **AffNet**
+- Face Detectors: **WIDER**
+- Landmark Detectors: **300W**
+- Facepose Detectors: **BIWI**
 
-## 3. Add models to the toolbox.
-Adding a new model to the Py-FEAT toolbox is easy if you are familiar with Python, Github, and package development. Here is 10 simple steps to adding a new model.
-1. For the Py-FEAT repository from https://github.com/cosanlab/feat
-2. Install the package to your computer in development mode. This will allow you to quickly test your code as you develop.
-   `python setup.py install -e .`
-3. Make sure everything is working using `pytest`
-4. If you are testing in a Jupyter Notebook enviornment, enable autoreload so that every change you make on the toolbox is immediately loaded.
-```
-%load_ext autoreload
-%autoreload 2
-```
-5. Create a directory for your model.
-   If you are adding a new emotion detector, and your model name is MYNEWMODEL, create folder `feat/emo_detectors/MYNEWMODEL`
-6. Add an empty `__init__.py` file so that it is recognized as a submodule by Python.
-   `touch __init__.py`
-7. Create the model file, class, and methods.
-   For example, this model file could be named `mynewmodel.py` which defines a class called `myNewModel()` which has a method `detect_emo()`
-```
-class myNewModel(): 
-    ## code to init and load model
-    
-    detect_emo(self, imgs, *args **kwargs):
-        ## code to detect emotions
-    
-        return [array with probabilities for 7 emotions]
+## 3. Add your code to Py-Feat
+
+Adding a new model to the Py-FEAT toolbox is easy if you are familiar with Python, Github, package development, and follow the steps below.
+
+```{note}
+It can be helpful to install Py-Feat in development mode so that changes to source files are immediately reflected in any scripts or notebooks that import Py-Feat. To do so, after cloning the code base, install Py-Feat using: `pip install -e .` For more details see the [general contribution guidelines](./contribute.md)
 ```
 
-8. Add your model info and download url link to `model_list.json`
-   This will allow us to download the model files when necessary.
+Pre-trained models in Py-Feat are organized into sub-folders in the source code based on the detector type:
 
-9. Lastly, add your method to `detector.py` so that it is accessible.
+```
+feat/
+  au_detectors/
+  emo_detectors/
+  face_detectors/
+  facepose_detectors/
+  landmark_detectors/
+```
 
-10. Before submitting a pull request please run `pytest` to make sure other parts of the package is not broken.
+1. Create a folder for the model you are adding in the appropriate model sub-directory 
+2. Add your model code which can be a single `.py` file ending in `_test` (e.g. `feat/landmark_detectors/mobilefacenet_test.py`) or a separate sub-directory containing at least 3 files one of which ends in `_model` and the other that ends in `__test` (see `feat/au_detectors/JAANET` for an example): 
+    - `__init__.py` (this can be empty)
+    - `mynewmodel_model.py` (this should end in `_model`)
+    - `mynewmodel_test.py` (this should end in `_test`)
+4. Your model should be a class that has the appropriate method that a `Detector` can call. For example, Emotion detectors should have the method `mynewmodel.detect_emotions()` that can be called: 
+    ```
+    class myNewModel(): 
+        ## code to init and load model
+        
+        detect_emotions(self, imgs, *args **kwargs):
+            ## code to detect emotions
+        
+            return [array with probabilities for 7 emotions]
+    ```
+5. Add your model to list of models in `feat/pretrained.py` 
+6. Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to `feat/resources/model_list.json`. 
+7. Follow the [general contribution guidelines](./contribute.md) to add tests and format your code
+8. When your tests pass create a pull-request against the `master`/`main` branch on github!
 
-
-
-```python
-
+```{note}
+If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don't require you to restart the kernel:   
+`%load_ext autoreload`  
+`%autoreload 2`
 ```

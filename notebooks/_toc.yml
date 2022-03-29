@@ -18,12 +18,12 @@ parts:
       - file: content/train_hogs
       - file: content/trainAUvisModel
       - file: content/extract_labels_and_landmarks
-      - file: content/modelContribution
   - caption: API
     chapters:
       - file: api/index
   - caption: Contributing
     chapters:
       - file: content/contribute
+      - file: content/modelContribution
       - url: https://github.com/cosanlab/py-feat
         title: GitHub Repository

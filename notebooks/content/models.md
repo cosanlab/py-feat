@@ -1,6 +1,6 @@
-# Included pre-trained models
+# Included pre-trained detectors
 
-Below is a list of models implemented in Py-Feat and ready to use. The model names are in the titles followed by the reference publications.
+Below is a list of detectors included in Py-Feat and ready to use. The model names are in the titles followed by the reference publications.
 
 You can specify any of these models for use in the `Detector` class by passing in the name as a string, e.g.
 
@@ -12,6 +12,10 @@ detector = Detector(au_model='rf', emotion_model='ResMaskNet')
 
 ```{note}
 Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
+```
+
+```{caution}
+If you plan to use a Histogram-based Action Unit model (e.g. `rf`, `svm`, `logistic`) you should *also* use a Histogram-based Emotion detection model (e.g. `rf`, `svm`). It's not advised to mix Histogram-based models for Action Unit detection with deep-learning models for emotion detection and visa-versa.
 ```
 
 ## Action Unit detection
