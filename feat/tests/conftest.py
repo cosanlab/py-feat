@@ -7,7 +7,7 @@ def test_detect_single_face(default_detector, single_face_img):
 
 """
 
-from pytest import fixture
+from pytest import fixture, hookimpl
 import os
 from feat.detector import Detector
 from feat.utils import read_pictures
@@ -89,3 +89,16 @@ def single_face_mov(data_path):
 @fixture(scope="module")
 def multi_face_img(data_path):
     return os.path.join(data_path, "multi_face.jpg")
+
+
+@hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    # execute all other hooks to obtain the report object
+    outcome = yield
+    rep = outcome.get_result()
+
+    # we only look at actual failing test calls, not setup/teardown
+    if rep.when == "call" and rep.failed:
+        mode = "a" if os.path.exists("bad_model_combos.txt") else "w"
+        with open("bad_model_combos.txt", mode) as f:
+            f.write(rep.longreprtext + "\n")

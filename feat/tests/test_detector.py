@@ -7,11 +7,8 @@ import numpy as np
 import pytest
 
 
-@pytest.mark.skip(
-    reason="75 out of 900 detector combinations fail to initialize. See issue #118 for a list of combinations"
-)
 def test_detector_combos(
-    face_model, landmark_model, au_model, emotion_model, facepose_model
+    face_model, landmark_model, au_model, emotion_model, facepose_model, single_face_img
 ):
     """Builds a grid a of tests using all supported detector combinations defined in
     conftest.py"""
@@ -34,7 +31,9 @@ def test_detector_combos(
             emotion_model=emotion_model,
             facepose_model=facepose_model,
         )
-        print(detector)
+        out = detector.detect_image(single_face_img)
+        assert type(out) == Fex
+        assert out.shape[0] == 1
 
 
 def test_empty_init():
