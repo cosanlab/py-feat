@@ -56,9 +56,9 @@ class DRMLNet(nn.Module):
 
         img_concat_tensor = None
 
-        for batch in imgs.shape[0]:
+        for batch in range(imgs.shape[0]):
             img = Image.fromarray(imgs[batch])
-            input = img_transforms(imgs)
+            input = img_transforms(img)
             input.unsqueeze_(0)
             if img_concat_tensor is None:
                 img_concat_tensor = input
