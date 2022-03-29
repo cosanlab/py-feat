@@ -70,5 +70,15 @@ class DRMLNet(nn.Module):
 
         pred_au = self.drml_net(img_concat_tensor)
         all_pred_au = pred_au.data.cpu().float()
+        all_pred_au = torch.argmax(all_pred_au, 1)
         all_pred_au = all_pred_au.data.numpy()
         return all_pred_au
+
+
+if __name__ == '__main__':
+    # Quick test for DRML models
+    import numpy as np
+    myModel = DRMLNet()
+    myDat = np.random.randint(0, 224, (10, 224, 224, 3), dtype=np.uint8)
+    out = myModel.detect_au(myDat)
+    print(out.shape)
