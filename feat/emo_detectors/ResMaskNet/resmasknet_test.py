@@ -732,28 +732,29 @@ class ResMaskNet:
         #     )
 
         self.model = resmasking_dropout1(in_channels=3, num_classes=7)
-        
+
         if self.use_gpu:
             self.model.load_state_dict(
                 torch.load(
                     os.path.join(
-                        get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
-                        )
-                    )['net']
-                )
+                        get_resource_path(),
+                        "ResMaskNet_Z_resmasking_dropout1_rot30.pth",
+                    )
+                )["net"]
+            )
             self.model.cuda()
 
         else:
             self.model.load_state_dict(
                 torch.load(
                     os.path.join(
-                        get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+                        get_resource_path(),
+                        "ResMaskNet_Z_resmasking_dropout1_rot30.pth",
                     ),
-                map_location={"cuda:0": "cpu"},
-                )['net']
+                    map_location={"cuda:0": "cpu"},
+                )["net"]
             )
         self.model.eval()
-
 
     def detect_emo(self, frame, detected_face, *args, **kwargs):
         """Detect emotions.
@@ -765,33 +766,30 @@ class ResMaskNet:
             List of predicted emotions in probability: [angry, disgust, fear, happy, sad, surprise, neutral]
         """
 
-
         face = self._batch_make(frame=frame, detected_face=detected_face)
-            
-        with torch.no_grad():    
+
+        with torch.no_grad():
             output = self.model(face)
             proba = torch.softmax(output, 1)
             proba_np = proba.cpu().numpy()
             return proba_np
 
     def _batch_make(self, frame, detected_face, *args, **kwargs):
-        
+
         len_index = [len(aa) for aa in detected_face]
         lenth_cumu = np.cumsum(len_index)
-        
+
         flat_faces = [item for sublist in detected_face for item in sublist]
 
         concat_batch = None
         for i in range(len(flat_faces)):
             frame_choice = np.where(i <= lenth_cumu)[0][0]
-            
+
             frame0 = np.fliplr(frame[frame_choice]).astype(np.uint8)
             h, w = frame0.shape[:2]
             gray = cv2.cvtColor(frame0, cv2.COLOR_BGR2GRAY)
 
-            start_x, start_y, end_x, end_y, conf = np.array(flat_faces[i]).astype(
-                int
-            )
+            start_x, start_y, end_x, end_y, conf = np.array(flat_faces[i]).astype(int)
             # covnert to square images
             center_x, center_y = (start_x + end_x) // 2, (start_y + end_y) // 2
             square_length = ((end_x - start_x) + (end_y - start_y)) // 2 // 2
@@ -816,6 +814,6 @@ class ResMaskNet:
             if concat_batch is None:
                 concat_batch = face
             else:
-                concat_batch = torch.cat((concat_batch,face),0)
-        
+                concat_batch = torch.cat((concat_batch, face), 0)
+
         return concat_batch

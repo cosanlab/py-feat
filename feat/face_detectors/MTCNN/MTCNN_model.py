@@ -15,7 +15,7 @@ from feat.utils import get_resource_path
 
 class PNet(nn.Module):
     """MTCNN PNet.
-    
+
     Keyword Arguments:
         pretrained {bool} -- Whether or not to load saved pretrained weights (default: {True})
     """
@@ -57,7 +57,7 @@ class PNet(nn.Module):
 
 class RNet(nn.Module):
     """MTCNN RNet.
-    
+
     Keyword Arguments:
         pretrained {bool} -- Whether or not to load saved pretrained weights (default: {True})
     """
@@ -106,7 +106,7 @@ class RNet(nn.Module):
 
 class ONet(nn.Module):
     """MTCNN ONet.
-    
+
     Keyword Arguments:
         pretrained {bool} -- Whether or not to load saved pretrained weights (default: {True})
     """

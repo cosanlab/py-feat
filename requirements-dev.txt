@@ -1,7 +1,9 @@
 -r requirements.txt
 pytest
-black
+pytest-cov
+coveralls
 pycodestyle
+black==22.3.0
 sphinx
 sphinx-rtd-theme
 sphinxcontrib-napoleon

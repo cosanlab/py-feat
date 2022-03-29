@@ -91,6 +91,7 @@ class DRML_net(nn.Module):
 
 if __name__ == "__main__":
     from torch.autograd import Variable
+
     pic_x = Variable(torch.rand(8, 3, 170, 170))
     net = DRML_net(AU_num=12)
     print(net)

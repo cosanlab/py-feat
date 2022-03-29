@@ -65,9 +65,9 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"FEAT"
+project = "FEAT"
 copyright = (
-    u"2019, Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Eshin Jolly, Luke Chang "
+    "2019, Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Eshin Jolly, Luke Chang "
 )
 
 # The version info for the project you're documenting, acts as replacement
@@ -221,8 +221,8 @@ latex_documents = [
     (
         "index",
         "feat.tex",
-        u"FEAT Documentation",
-        u"Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Eshin Jolly, Luke Chang ",
+        "FEAT Documentation",
+        "Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Eshin Jolly, Luke Chang ",
         "manual",
     ),
 ]
@@ -256,8 +256,8 @@ man_pages = [
     (
         "index",
         "feat",
-        u"FEAT Documentation",
-        [u"Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Eshin Jolly, Luke Chang "],
+        "FEAT Documentation",
+        ["Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Eshin Jolly, Luke Chang "],
         1,
     )
 ]
@@ -275,8 +275,8 @@ texinfo_documents = [
     (
         "index",
         "feat",
-        u"FEAT Documentation",
-        u"Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Eshin Jolly, Luke Chang ",
+        "FEAT Documentation",
+        "Jin Hyun Cheong, TianKang Xie, Sophie Byrne, Eshin Jolly, Luke Chang ",
         "feat",
         "One line description of project.",
         "Miscellaneous",

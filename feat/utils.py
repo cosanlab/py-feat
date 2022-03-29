@@ -542,7 +542,7 @@ def wavelet(freq, num_cyc=3, sampling_freq=30.0):
 
     # Gaussian component
     sd = num_cyc / (2 * np.pi * freq)  # standard deviation
-    gaus = np.exp(-(time ** 2.0) / (2.0 * sd ** 2.0))
+    gaus = np.exp(-(time**2.0) / (2.0 * sd**2.0))
 
     return sin * gaus
 
@@ -559,7 +559,7 @@ def calc_hist_auc(vals, hist_range=None):
         Series of histograms
     """
     # Square values
-    vals = [elem ** 2 if elem > 0 else -1 * elem ** 2 for elem in vals]
+    vals = [elem**2 if elem > 0 else -1 * elem**2 for elem in vals]
     # Get 0 crossings
     crossings = np.where(np.diff(np.sign(vals)))[0]
     pos, neg = [], []

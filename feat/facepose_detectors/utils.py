@@ -17,5 +17,5 @@ def convert_to_euler(rotvec, is_rotvec=True):
     if is_rotvec:
         rotvec = Rotation.from_rotvec(rotvec).as_matrix()
     rot_mat_2 = np.transpose(rotvec)
-    angle = Rotation.from_matrix(rot_mat_2).as_euler('xyz', degrees=True)
+    angle = Rotation.from_matrix(rot_mat_2).as_euler("xyz", degrees=True)
     return np.array([angle[0], -angle[2], -angle[1]])  # pitch, roll, yaw

@@ -19,12 +19,14 @@ keep_top_k = 750
 vis_thres = 0.5
 POSE_MEAN = os.path.join(get_resource_path(), "WIDER_train_pose_mean_v1.npy")
 POSE_STDDEV = os.path.join(get_resource_path(), "WIDER_train_pose_stddev_v1.npy")
-THREED_FACE_MODEL = os.path.join(get_resource_path(), "reference_3d_68_points_trans.npy")
+THREED_FACE_MODEL = os.path.join(
+    get_resource_path(), "reference_3d_68_points_trans.npy"
+)
 
 
 class Img2Pose:
     def __init__(self, cpu_mode, constrained=True):
-        """ Creates an img2pose model. Constrained model is optimized for face detection/ pose estimation for
+        """Creates an img2pose model. Constrained model is optimized for face detection/ pose estimation for
         front-facing faces ( [-90, 90] degree range) only. Unconstrained model can detect faces and poses at any angle,
         but shows slightly dampened performance on face pose estimation.
 
@@ -39,17 +41,19 @@ class Img2Pose:
         threed_points = np.load(THREED_FACE_MODEL, allow_pickle=True)
 
         self.model = img2poseModel(
-            DEPTH, MIN_SIZE, MAX_SIZE,
-            pose_mean=pose_mean, pose_stddev=pose_stddev,
-            threed_68_points=threed_points
+            DEPTH,
+            MIN_SIZE,
+            MAX_SIZE,
+            pose_mean=pose_mean,
+            pose_stddev=pose_stddev,
+            threed_68_points=threed_points,
         )
         self.transform = transforms.Compose([transforms.ToTensor()])
 
         # Load the constrained model
         model_file = "img2pose_v1_ft_300w_lp.pth" if constrained else "img2pose_v1.pth"
         self.load_model(
-            os.path.join(get_resource_path(), model_file),
-            cpu_mode=cpu_mode
+            os.path.join(get_resource_path(), model_file), cpu_mode=cpu_mode
         )
         self.model.evaluate()
 
@@ -57,7 +61,7 @@ class Img2Pose:
         self.detection_threshold = vis_thres
 
     def load_model(self, model_path, optimizer=None, cpu_mode=False):
-        """ Loads model weights for the img2pose model
+        """Loads model weights for the img2pose model
         Args:
             model_path (str): file path to saved model weights
             optimizer (torch.optim.Optimizer): An optimizer to load (pass an optimizer when model_path also contains a
@@ -69,7 +73,7 @@ class Img2Pose:
         """
 
         if cpu_mode:
-            checkpoint = torch.load(model_path, map_location=torch.device('cpu'))
+            checkpoint = torch.load(model_path, map_location=torch.device("cpu"))
         else:
             checkpoint = torch.load(model_path)
 
@@ -81,7 +85,7 @@ class Img2Pose:
             print("Optimizer not found in model path - cannot be loaded")
 
     def __call__(self, img_):
-        """ Runs scale_and_predict on each image in the passed image list
+        """Runs scale_and_predict on each image in the passed image list
         Args:
             img_ (np.ndarray): (B,H,W,C), B is batch number, H is image height, W is width and C is channel.
 
@@ -93,14 +97,13 @@ class Img2Pose:
         poses = []
         for img in img_:
             preds = self.scale_and_predict(img)
-            faces.append(preds['boxes'])
-            poses.append(preds['poses'])
+            faces.append(preds["boxes"])
+            poses.append(preds["poses"])
 
         return faces, poses
 
-
     def scale_and_predict(self, img, euler=True):
-        """ Runs a prediction on the passed image. Returns detected faces and associates poses.
+        """Runs a prediction on the passed image. Returns detected faces and associates poses.
         Args:
             img (np.ndarray): A cv2 image
             euler (bool): set to True to obtain euler angles, False to obtain rotation vector
@@ -130,17 +133,24 @@ class Img2Pose:
 
         # If the prediction is unsuccessful, try adding a white border to the image. This can improve bounding box
         # performance on images where face takes up entire frame, and images located at edge of frame.
-        if len(preds['boxes']) == 0:
+        if len(preds["boxes"]) == 0:
             WHITE = [255, 255, 255]
             border_size = BORDER_SIZE
-            img = cv2.copyMakeBorder(src=img, top=border_size, bottom=border_size, left=border_size, right=border_size,
-                                     borderType=cv2.BORDER_CONSTANT, value=WHITE)
+            img = cv2.copyMakeBorder(
+                src=img,
+                top=border_size,
+                bottom=border_size,
+                left=border_size,
+                right=border_size,
+                borderType=cv2.BORDER_CONSTANT,
+                value=WHITE,
+            )
             preds = self.predict(img, border_size, scale)
 
         return preds
 
     def predict(self, img, border_size=0, scale=1.0, euler=True):
-        """ Runs the img2pose model on the passed image and returns bboxes and face poses.
+        """Runs the img2pose model on the passed image and returns bboxes and face poses.
 
         Args:
             img (np.ndarray): A cv2 image
@@ -157,9 +167,9 @@ class Img2Pose:
 
         # Obtain prediction
         pred = self.model.predict([self.transform(img)])[0]
-        boxes = pred['boxes'].cpu().numpy().astype('float')
-        scores = pred['scores'].cpu().numpy().astype('float')
-        dofs = pred['dofs'].cpu().numpy().astype('float')
+        boxes = pred["boxes"].cpu().numpy().astype("float")
+        scores = pred["scores"].cpu().numpy().astype("float")
+        dofs = pred["dofs"].cpu().numpy().astype("float")
 
         # Obtain boxes sorted by score
         inds = np.where(scores > nms_inclusion_threshold)[0]
@@ -199,10 +209,10 @@ class Img2Pose:
             three_dof_pose = three_dof_pose.reshape(1, -1)
             det_pose.append(three_dof_pose)
 
-        return {'boxes': det_bboxes, 'poses': det_pose}
+        return {"boxes": det_bboxes, "poses": det_pose}
 
     def set_threshold(self, threshold):
-        """ Alter the threshold for face detection.
+        """Alter the threshold for face detection.
 
         Args:
             threshold (float): A number representing the face detection score threshold to use
