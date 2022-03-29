@@ -93,6 +93,7 @@ class FexSeries(Series):
             object.__setattr__(self, name, getattr(other, name, None))
         return self
 
+    @property
     def aus(self):
         """Returns the Action Units data
 
@@ -101,6 +102,7 @@ class FexSeries(Series):
         """
         return self[self.au_columns]
 
+    @property
     def emotions(self):
         """Returns the emotion data
 
@@ -109,6 +111,7 @@ class FexSeries(Series):
         """
         return self[self.emotion_columns]
 
+    @property
     def landmark(self):
         """Returns the landmark data
 
@@ -117,6 +120,7 @@ class FexSeries(Series):
         """
         return self[self.landmark_columns]
 
+    @property
     def facepose(self):
         """Returns the facepose data
 
@@ -134,6 +138,7 @@ class FexSeries(Series):
         """
         return self["input"]
 
+    @property
     def landmark_x(self):
         """Returns the x landmarks.
 
@@ -144,6 +149,7 @@ class FexSeries(Series):
         x_cols = [col for col in self.landmark_columns if "x" in col]
         return self[x_cols]
 
+    @property
     def landmark_y(self):
         """Returns the y landmarks.
 
@@ -153,6 +159,7 @@ class FexSeries(Series):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    @property
     def facebox(self):
         """Returns the facebox data
 
@@ -161,6 +168,7 @@ class FexSeries(Series):
         """
         return self[self.facebox_columns]
 
+    @property
     def time(self):
         """Returns the time data
 
@@ -169,6 +177,7 @@ class FexSeries(Series):
         """
         return self[self.time_columns]
 
+    @property
     def design(self):
         """Returns the design data
 
@@ -177,6 +186,7 @@ class FexSeries(Series):
         """
         return self[self.design_columns]
 
+    @property
     def info(self):
         """Print class meta data."""
         attr_list = []
@@ -376,6 +386,7 @@ class Fex(DataFrame):
                 result._set_as_cached(label, self)
                 return result
 
+    @property
     def aus(self):
         """Returns the Action Units data
 
@@ -386,6 +397,7 @@ class Fex(DataFrame):
         """
         return self[self.au_columns]
 
+    @property
     def emotions(self):
         """Returns the emotion data
 
@@ -396,6 +408,7 @@ class Fex(DataFrame):
         """
         return self[self.emotion_columns]
 
+    @property
     def landmark(self):
         """Returns the landmark data
 
@@ -406,6 +419,7 @@ class Fex(DataFrame):
         """
         return self[self.landmark_columns]
 
+    @property
     def facepose(self):
         """Returns the facepose data using the columns set in fex.facepose_columns
 
@@ -425,6 +439,7 @@ class Fex(DataFrame):
         """
         return self["input"]
 
+    @property
     def landmark_x(self):
         """Returns the x landmarks.
 
@@ -437,6 +452,7 @@ class Fex(DataFrame):
         x_cols = [col for col in self.landmark_columns if "x" in col]
         return self[x_cols]
 
+    @property
     def landmark_y(self):
         """Returns the y landmarks.
 
@@ -448,6 +464,7 @@ class Fex(DataFrame):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    @property
     def facebox(self):
         """Returns the facebox data
 
@@ -459,6 +476,7 @@ class Fex(DataFrame):
 
         return self[self.facebox_columns]
 
+    @property
     def time(self):
         """Returns the time data
 
@@ -469,6 +487,7 @@ class Fex(DataFrame):
         """
         return self[self.time_columns]
 
+    @property
     def design(self):
         """Returns the design data
 
@@ -504,6 +523,7 @@ class Fex(DataFrame):
         else:
             print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
 
+    @property
     def info(self):
         """Print all meta data of fex
 
@@ -1697,7 +1717,7 @@ class Fex(DataFrame):
             for i in range(len(sub_data)):
                 # draw landmarks
                 row = sub_data.iloc[[i]]
-                landmark = row.landmark().values[0]
+                landmark = row.landmark.values[0]
                 currx = landmark[:68]
                 curry = landmark[68:]
                 if draw_landmarks:
@@ -1732,10 +1752,10 @@ class Fex(DataFrame):
                             43,
                         ]
                     ]
-                    aus = row.aus().T.reindex(index=au20index).fillna(0).T.values[0]
+                    aus = row.aus.T.reindex(index=au20index).fillna(0).T.values[0]
                     draw_muscles(currx, curry, au=aus, ax=ax, all="heatmap")
                 # facebox
-                facebox = row.facebox().values[0]
+                facebox = row.facebox.values[0]
                 rect = Rectangle(
                     (facebox[0], facebox[1]),
                     facebox[2],
@@ -1748,7 +1768,7 @@ class Fex(DataFrame):
 
                 # facepose
                 if pose:
-                    draw_facepose(pose=row.facepose().values[0], facebox=facebox, ax=ax)
+                    draw_facepose(pose=row.facepose.values[0], facebox=facebox, ax=ax)
 
             if image_exists:
                 if sub_data.input.any():
@@ -1766,13 +1786,13 @@ class Fex(DataFrame):
                 ax.set_aspect("equal", "box")
 
             # plot AUs
-            sub_data.aus().T.plot(kind="barh", ax=axes[1])
+            sub_data.aus.T.plot(kind="barh", ax=axes[1])
             axes[1].invert_yaxis()
             axes[1].get_legend().remove()
             axes[1].set(xlim=[0, 1.1], title="Action Units")
 
             # plot emotions
-            sub_data.emotions().T.plot(kind="barh", ax=axes[2])
+            sub_data.emotions.T.plot(kind="barh", ax=axes[2])
             axes[2].invert_yaxis()
             axes[2].get_legend().remove()
             axes[2].set(xlim=[0, 1.1], title="Emotions")

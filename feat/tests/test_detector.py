@@ -333,20 +333,20 @@ def test_drml(default_detector, single_face_img_data):
 def test_resmasknet(default_detector, single_face_img):
     default_detector.change_model(emotion_model="resmasknet")
     out = default_detector.detect_image(single_face_img)
-    assert out.emotions()["happiness"].values > 0.5
+    assert out.emotions["happiness"].values > 0.5
 
 
 def test_emotionsvm(default_detector, single_face_img):
     default_detector.change_model(emotion_model="svm")
     out = default_detector.detect_image(single_face_img)
-    assert out.emotions()["happiness"].values > 0.5
+    assert out.emotions["happiness"].values > 0.5
 
 
 def test_emotionrf(default_detector, single_face_img):
     # Emotion RF models is not good
     default_detector.change_model(emotion_model="rf")
     out = default_detector.detect_image(single_face_img)
-    assert out.emotions()["happiness"].values > 0.0
+    assert out.emotions["happiness"].values > 0.0
 
 
 def test_pnp(default_detector, single_face_img_data):

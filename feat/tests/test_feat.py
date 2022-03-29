@@ -11,7 +11,7 @@ from nltools.data import Adjacency
 def test_info(capsys):
     importantstring = "ThisStringMustBeIncluded"
     fex = Fex(filename=importantstring)
-    fex.info()
+    fex.info
     captured = capsys.readouterr()
     assert importantstring in captured.out
 
@@ -36,22 +36,22 @@ def test_fex():
     df = read_facet(filename)
 
     # Test slicing functions.
-    assert df.aus().shape == (519, 20)
+    assert df.aus.shape == (519, 20)
 
-    assert df.emotions().shape == (519, 12)
+    assert df.emotions.shape == (519, 12)
 
-    assert df.facebox().shape == (519, 4)
+    assert df.facebox.shape == (519, 4)
 
-    assert df.time().shape[-1] == 4
+    assert df.time.shape[-1] == 4
 
-    assert df.design().shape[-1] == 4
+    assert df.design.shape[-1] == 4
 
     # Test metadata propagation to sliced series
-    assert df.iloc[0].aus().shape == (20,)
-    assert df.iloc[0].emotions().shape == (12,)
-    assert df.iloc[0].facebox().shape == (4,)
-    assert df.iloc[0].time().shape == (4,)
-    assert df.iloc[0].design().shape == (4,)
+    assert df.iloc[0].aus.shape == (20,)
+    assert df.iloc[0].emotions.shape == (12,)
+    assert df.iloc[0].facebox.shape == (4,)
+    assert df.iloc[0].time.shape == (4,)
+    assert df.iloc[0].design.shape == (4,)
 
     sessions = np.array([[x] * 10 for x in range(1 + int(len(df) / 10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
@@ -357,12 +357,10 @@ def test_openface():
     assert len(openface) == 100
 
     # Test landmark methods
-    assert openface.landmark().shape[1] == 136
-    assert openface.iloc[0].landmark().shape[0] == 136
-    assert openface.landmark_x().shape[1] == openface.landmark_y().shape[1]
-    assert (
-        openface.iloc[0].landmark_x().shape[0] == openface.iloc[0].landmark_y().shape[0]
-    )
+    assert openface.landmark.shape[1] == 136
+    assert openface.iloc[0].landmark.shape[0] == 136
+    assert openface.landmark_x.shape[1] == openface.landmark_y.shape[1]
+    assert openface.iloc[0].landmark_x.shape[0] == openface.iloc[0].landmark_y.shape[0]
 
     # Test PSPI calculation b/c diff from facet
     assert len(openface.calc_pspi()) == len(openface)
@@ -389,7 +387,7 @@ def test_stats():
     openface = Fex(filename=filename, sampling_freq=30, detector="OpenFace")
     openface = openface.read_file()
 
-    aus = openface.aus()
+    aus = openface.aus
     aus.sessions = range(len(aus))
     y = aus[[i for i in aus.columns if "_r" in i]]
     X = pd.DataFrame(aus.sessions)
@@ -406,8 +404,8 @@ def test_stats():
     t, p = openface[["AU02_c"]].ttest_1samp()
     assert t > 0
 
-    a = openface.aus().assign(input="0")
-    b = openface.aus().apply(lambda x: x + np.random.rand(100)).assign(input="1")
+    a = openface.aus.assign(input="0")
+    b = openface.aus.apply(lambda x: x + np.random.rand(100)).assign(input="1")
     doubled = pd.concat([a, b])
     doubled.sessions = doubled["input"]
     t, p = doubled.ttest_ind(col="AU12_r", sessions=("0", "1"))
