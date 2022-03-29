@@ -49,8 +49,7 @@ jobs:
 
       - name: Install deps
         run: |
-          python3 -m pip install . -r requirements.txt
-          python3 -m pip install -r ./requirements-dev.txt
+          python3 -m pip install . -r requirements-dev.txt
 
       - name: Build book
         run: |
