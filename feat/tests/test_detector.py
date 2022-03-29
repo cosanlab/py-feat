@@ -8,10 +8,10 @@ import pytest
 
 
 @pytest.mark.skip(
-    reason="75 out of 900 detector combinations fail to initialize. See issue #118 for a list of combinations"
+    reason="This tests all 900 model detector combinations which takes ~20-30min. Run locally using test-detector-combos branch which will output results to file."
 )
 def test_detector_combos(
-    face_model, landmark_model, au_model, emotion_model, facepose_model
+    face_model, landmark_model, au_model, emotion_model, facepose_model, single_face_img
 ):
     """Builds a grid a of tests using all supported detector combinations defined in
     conftest.py"""
@@ -34,7 +34,9 @@ def test_detector_combos(
             emotion_model=emotion_model,
             facepose_model=facepose_model,
         )
-        print(detector)
+        out = detector.detect_image(single_face_img)
+        assert type(out) == Fex
+        assert out.shape[0] == 1
 
 
 def test_empty_init():
@@ -72,8 +74,7 @@ def test_detect_read_write(default_detector, single_face_img, data_path):
     """Test detection and writing of results to csv"""
 
     outputFname = os.path.join(data_path, "test_detect.csv")
-    fex = default_detector.detect_image(
-        single_face_img, outputFname=outputFname)
+    fex = default_detector.detect_image(single_face_img, outputFname=outputFname)
     assert isinstance(fex, Fex)
     assert os.path.exists(outputFname)
     loaded = pd.read_csv(outputFname)
@@ -194,8 +195,7 @@ def test_mobilefacenet(default_detector, single_face_img):
 
 
 def test_mobilenet(default_detector, single_face_img):
-    default_detector.change_model(
-        face_model="RetinaFace", landmark_model="MobileNet")
+    default_detector.change_model(face_model="RetinaFace", landmark_model="MobileNet")
     img_data = default_detector.read_images(single_face_img)
     _, h, w, _ = img_data.shape
 
@@ -211,8 +211,7 @@ def test_mobilenet(default_detector, single_face_img):
 
 
 def test_pfld(default_detector, single_face_img):
-    default_detector.change_model(
-        face_model="RetinaFace", landmark_model="PFLD")
+    default_detector.change_model(face_model="RetinaFace", landmark_model="PFLD")
     img_data = default_detector.read_images(single_face_img)
     _, h, w, _ = img_data.shape
 
@@ -236,8 +235,7 @@ def test_jaanet(default_detector, single_face_img_data):
     )
 
     detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(
-        single_face_img_data, detected_faces)
+    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
     aus = default_detector.detect_aus(single_face_img_data, landmarks)
 
     assert np.sum(np.isnan(aus)) == 0
@@ -253,8 +251,7 @@ def test_logistic(default_detector, single_face_img_data):
     )
 
     detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(
-        single_face_img_data, detected_faces)
+    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
     # TODO: Add explanation of why we need to pass the output of ._batch_hog() to
     # .detect_aus() for this model but not others
     hogs, new_lands = default_detector._batch_hog(
@@ -276,8 +273,7 @@ def test_svm(default_detector, single_face_img_data):
     )
 
     detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(
-        single_face_img_data, detected_faces)
+    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
     # TODO: Add explanation of why we need to pass the output of ._batch_hog() to
     # .detect_aus() for this model but not others
     hogs, new_lands = default_detector._batch_hog(
@@ -299,8 +295,7 @@ def test_rf(default_detector, single_face_img_data):
     )
 
     detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(
-        single_face_img_data, detected_faces)
+    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
     # TODO: Add explanation of why we need to pass the output of ._batch_hog() to
     # .detect_aus() for this model but not others
     hogs, new_lands = default_detector._batch_hog(
@@ -313,15 +308,7 @@ def test_rf(default_detector, single_face_img_data):
     assert aus.shape[-1] == 20
 
 
-# TODO: Need to standardize the input shape that .detect_aus receives. On this branch I
-# always pass it a 4d numpy array which is the output of utils.read_pictures (or the
-# detector method which uses that function). On the master branch tho, some tests were
-# using read_pictures which returns a 4d numpy array (1st dim is batch), whereas other
-# were using cv.imread which returns a 3d numpy array. Jaanet above doesn't care, but
-# gives different results for AU detection. However, DRML here, crashes on 4d but works
-# on 3d. Master branch was never testing 4d case.
 def test_drml(default_detector, single_face_img_data):
-    # AU Detection Case2:
     default_detector.change_model(
         face_model="RetinaFace",
         emotion_model=None,
@@ -330,8 +317,7 @@ def test_drml(default_detector, single_face_img_data):
     )
 
     bboxes = default_detector.detect_faces(single_face_img_data)[0]
-    lands = default_detector.detect_landmarks(
-        single_face_img_data, [bboxes])[0]
+    lands = default_detector.detect_landmarks(single_face_img_data, [bboxes])[0]
     aus = default_detector.detect_aus(single_face_img_data, lands)
     assert np.sum(np.isnan(aus)) == 0
     assert aus.shape[-1] == 12
@@ -365,8 +351,7 @@ def test_pnp(default_detector, single_face_img_data):
     lms = default_detector.detect_landmarks(
         frame=single_face_img_data, detected_faces=bboxes
     )
-    poses = default_detector.detect_facepose(
-        frame=single_face_img_data, landmarks=lms)
+    poses = default_detector.detect_facepose(frame=single_face_img_data, landmarks=lms)
     pose_to_test = poses[0][0]  # first image and first face
     pitch, roll, yaw = pose_to_test.reshape(-1)
     assert -10 < pitch < 10
@@ -375,8 +360,7 @@ def test_pnp(default_detector, single_face_img_data):
 
 
 def test_detect_video(default_detector, single_face_mov):
-    out = default_detector.detect_video(
-        inputFname=single_face_mov, skip_frames=24)
+    out = default_detector.detect_video(inputFname=single_face_mov, skip_frames=24)
     assert len(out) == 3
 
 

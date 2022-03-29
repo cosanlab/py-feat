@@ -1033,7 +1033,7 @@ class Fex(DataFrame):
                     low_pass=low_pass,
                     high_pass=high_pass,
                     ensure_finite=ensure_finite,
-                    t_r=1.0 / np.float(self.sampling_freq),
+                    t_r=1.0 / np.float64(self.sampling_freq),
                     runs=sessions,
                     *args,
                     **kwargs,

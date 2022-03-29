@@ -90,7 +90,9 @@ def test_plot_face():
     plt.close()
 
     # test plot in util
-    plot_face()
+    with pytest.warns(UserWarning):
+        plot_face()
+
     assert_plot_shape(plt.gca())
     plt.close()
 
