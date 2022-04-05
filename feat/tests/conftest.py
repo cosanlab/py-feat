@@ -11,6 +11,18 @@ from pytest import fixture
 import os
 from feat.detector import Detector
 from feat.utils import read_pictures
+import numpy as np
+
+# AU constants for plotting
+@fixture(scope="module")
+def au():
+    return np.ones(20)
+
+
+@fixture(scope="module")
+def au2():
+    return np.ones(20) * 3
+
 
 # DETECTOR COMBINATIONS
 @fixture(

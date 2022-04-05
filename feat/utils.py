@@ -288,7 +288,7 @@ def read_feat(fexfile):
     """
     d = pd.read_csv(fexfile)
     au_columns = [col for col in d.columns if "AU" in col]
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=fexfile,
         au_columns=au_columns,
@@ -298,6 +298,8 @@ def read_feat(fexfile):
         time_columns=FEAT_TIME_COLUMNS,
         detector="Feat",
     )
+    fex["input"] = fexfile
+    return fex
 
 
 def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
@@ -351,7 +353,7 @@ def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
             d.columns = [col.replace(" ", "") for col in d.columns]
             # d._metadata = fex_columns
     au_columns = [col for col in d.columns if "AU" in col]
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=facetfile,
         au_columns=au_columns,
@@ -363,6 +365,8 @@ def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
         detector="FACET",
         sampling_freq=sampling_freq,
     )
+    fex["input"] = facetfile
+    return fex
 
 
 def read_openface(openfacefile, features=None):
@@ -444,7 +448,7 @@ def read_openface(openfacefile, features=None):
             d = d[features]
         except:
             pass
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=openfacefile,
         au_columns=openface_AU_columns,
@@ -456,6 +460,8 @@ def read_openface(openfacefile, features=None):
         time_columns=openface_time_columns,
         detector="OpenFace",
     )
+    fex["input"] = openfacefile
+    return fex
 
 
 def read_affectiva(affectivafile, orig_cols=False):
@@ -503,6 +509,7 @@ def read_affectiva(affectivafile, orig_cols=False):
         "upperLipRaise": "AU10",
     }
     affectiva_au_columns = [col for col in rep_dict.values() if "AU" in col]
+    detector = "Affectiva" if "AU01" in affectiva_au_columns else "Affectiva-named"
     affectiva_emotion_columns = list(set(rep_dict.values()) - set(affectiva_au_columns))
     if not orig_cols:
         new_cols = []
@@ -512,13 +519,15 @@ def read_affectiva(affectivafile, orig_cols=False):
             except:
                 new_cols.append(col)
         d.columns = new_cols
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=affectivafile,
         au_columns=affectiva_au_columns,
         emotion_columns=affectiva_emotion_columns,
-        detector="Affectiva",
+        detector=detector,
     )
+    fex["input"] = affectivafile
+    return fex
 
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.0):

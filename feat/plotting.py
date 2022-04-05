@@ -13,6 +13,7 @@ import matplotlib.colors as colors
 from sklearn.preprocessing import minmax_scale, MinMaxScaler
 from pathlib import Path
 from PIL import Image
+from textwrap import wrap
 
 __all__ = [
     "draw_lineface",
@@ -274,6 +275,7 @@ def draw_lineface(
             scale_units="xy",
             scale=1,
         )
+    return ax
 
 
 def draw_vectorfield(
@@ -315,6 +317,7 @@ def draw_vectorfield(
         *args,
         **kwargs,
     )
+    return ax
 
 
 def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
@@ -863,7 +866,6 @@ def get_heat(muscle, au, log):
     return color
 
 
-# TODO: fix bug when using muscles={'facet': 1}
 def plot_face(
     model=None,
     au=None,
@@ -879,10 +881,11 @@ def plot_face(
     *args,
     **kwargs,
 ):
-    """Function to plot facesself
+    """Core face plotting function
 
     Args:
-        model: sklearn PLSRegression instance
+        model: sklearn PLSRegression instance; Default None which uses Py-Feat's
+        landmark AU model
         au: vector of action units (same length as model.n_components)
         vectorfield: (dict) {'target':target_array,'reference':reference_array}
         muscles: (dict) {'muscle': color}
@@ -896,9 +899,6 @@ def plot_face(
     Returns:
         ax: plot handle
     """
-
-    # NOTE: Ejolly copied this from the plotting notebook, where does it need to happen?
-    # "Affectiva vectors should be divided by twenty for use with our 'blue' model"
 
     if model is None:
         model = load_h5()
@@ -927,7 +927,7 @@ def plot_face(
             au = minmax_scale(au, feature_range=(0, 100))
         else:
             au = muscle_scaler.transform(np.array(au).reshape(-1, 1)).squeeze()
-        draw_muscles(currx, curry, ax=ax, au=au, **muscles)
+        ax = draw_muscles(currx, curry, ax=ax, au=au, **muscles)
 
     if gaze is not None and len((gaze)) != 4:
         warnings.warn(
@@ -937,7 +937,7 @@ def plot_face(
         gaze = None
 
     title = kwargs.pop("title", None)
-    draw_lineface(
+    ax = draw_lineface(
         currx,
         curry,
         color=color,
@@ -955,13 +955,18 @@ def plot_face(
             raise ValueError("vectorfield must contain 'reference' key")
         if "target" not in vectorfield.keys():
             vectorfield["target"] = landmarks
-        draw_vectorfield(ax=ax, **vectorfield)
+        ax = draw_vectorfield(ax=ax, **vectorfield)
     ax.set_xlim([25, 172])
     ax.set_ylim((240, 50))
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
-        ax.set(title=title)
+        _ = ax.set_title(
+            "\n".join(wrap(title)),
+            loc="left",
+            wrap=True,
+            fontsize=14,
+        )
     return ax
 
 

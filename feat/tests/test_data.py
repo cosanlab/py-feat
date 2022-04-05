@@ -371,7 +371,7 @@ def test_affectiva():
         get_test_data_path(), "sample_affectiva-api-app_output.json"
     )
     affdex = Fex(read_affectiva(filename), sampling_freq=1, detector="Affectiva")
-    assert affdex.shape[1] == 32
+    assert affdex.shape[1] == 33
 
 
 def test_feat():

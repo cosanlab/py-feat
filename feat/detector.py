@@ -34,6 +34,9 @@ import torch
 import logging
 import warnings
 
+# Supress sklearn warning about pickled estimators and diff sklearn versions
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
+
 
 class Detector(object):
     def __init__(
@@ -94,7 +97,6 @@ class Detector(object):
             log_level = logging.INFO
         else:
             log_level = logging.WARNING
-            warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
         self.logger.setLevel(log_level)
 
         if torch.cuda.is_available():
