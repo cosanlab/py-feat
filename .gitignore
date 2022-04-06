@@ -12,6 +12,7 @@ feat/tests/data/cond_pain_2017-03-30_s20_r01.txt
 notebooks/content/*.csv
 notebooks/content/*.mp4
 notebooks/content/dev_*
+notebooks/content/dev.ipynb
 
 #Ignoreresources folder.
 resources/

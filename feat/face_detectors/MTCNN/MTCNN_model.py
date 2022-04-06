@@ -1,5 +1,4 @@
 """
-NOTE:
 The codes in this file comes from the original codes at:
     https://github.com/timesler/facenet-pytorch/blob/master/models/mtcnn.py
 The original paper on MTCNN is:

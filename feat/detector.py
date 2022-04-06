@@ -43,7 +43,7 @@ class Detector(object):
         self,
         face_model="retinaface",
         landmark_model="mobilenet",
-        au_model="rf",
+        au_model="jaanet",
         emotion_model="resmasknet",
         facepose_model="pnp",
         n_jobs=1,
@@ -783,7 +783,6 @@ class Detector(object):
                 input_names
             ), "Number of input_names needs to match the number of frames to process"
         out = None
-        # TODO Changed here
         try:
             detected_faces = self.detect_faces(frame=frames)
             landmarks = self.detect_landmarks(
