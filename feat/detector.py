@@ -920,7 +920,7 @@ class Detector(object):
         batch_size=5,
         outputFname=None,
         skip_frames=1,
-        verbose=False,
+        verbose=True,
         singleframe4error=False,
     ):
         """Detects FEX from a video file.
@@ -949,12 +949,12 @@ class Detector(object):
 
         counter = 0
         frame_got = True
-        if verbose:
-            print("Processing video.")
         #  single core
         concat_frame = None
 
-        with tqdm(desc="Progress", total=length, leave=True) as pbar:
+        with tqdm(
+            desc="Progress", total=length, leave=True, disable=not verbose
+        ) as pbar:
             while True:
                 frame_got, frame = cap.read()
                 pbar.update(1)
