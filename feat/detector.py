@@ -61,6 +61,8 @@ import json
 from torchvision.datasets.utils import download_url
 import zipfile
 
+from tqdm import tqdm
+
 
 class Detector(object):
     def __init__(
@@ -951,100 +953,103 @@ class Detector(object):
             print("Processing video.")
         #  single core
         concat_frame = None
-        while True:
-            frame_got, frame = cap.read()
-            if frame_got:
-                if counter % skip_frames == 0:
-                    # if the
-                    if concat_frame is None:
-                        concat_frame = np.expand_dims(frame, 0)
-                        tmp_counter = counter
-                    else:
-                        concat_frame = np.concatenate(
-                            [concat_frame, np.expand_dims(frame, 0)], 0
-                        )
-                if (
-                    (concat_frame is not None)
-                    and (counter != 0)
-                    and (concat_frame.shape[0] % batch_size == 0)
-                ):  # I think it's probably this error
-                    if singleframe4error:
-                        try:
-                            df, _ = self.process_frame(
-                                concat_frame,
-                                counter=tmp_counter,
-                                singleframe4error=singleframe4error,
-                                skip_frame_rate=skip_frames,
-                            )
-                        except FaceDetectionError:
-                            df = None
-                            for id_fr in range(concat_frame.shape[0]):
-                                tmp_df, _ = self.process_frame(
-                                    concat_frame[id_fr : (id_fr + 1)],
-                                    counter=tmp_counter,
-                                    singleframe4error=False,
-                                    skip_frame_rate=skip_frames,
-                                )
-                                tmp_counter += 1
-                                if df is None:
-                                    df = tmp_df
-                                else:
-                                    df = pd.concat((df, tmp_df), 0)
-                    else:
-                        df, _ = self.process_frame(
-                            concat_frame,
-                            counter=tmp_counter,
-                            skip_frame_rate=skip_frames,
-                        )
 
-                    df["input"] = inputFname
-                    if outputFname:
-                        df[init_df.columns].to_csv(
-                            outputFname, index=False, header=False, mode="a"
-                        )
-                    else:
-                        init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
-                    concat_frame = None
-                    tmp_counter = None
-                counter = counter + 1
-            else:
-                # process remaining frames
-                if concat_frame is not None:
-                    if singleframe4error:
-                        try:
+        with tqdm(desc="Progress", total=length, leave=True) as pbar:
+            while True:
+                frame_got, frame = cap.read()
+                pbar.update(1)
+                if frame_got:
+                    if counter % skip_frames == 0:
+                        # if the
+                        if concat_frame is None:
+                            concat_frame = np.expand_dims(frame, 0)
+                            tmp_counter = counter
+                        else:
+                            concat_frame = np.concatenate(
+                                [concat_frame, np.expand_dims(frame, 0)], 0
+                            )
+                    if (
+                        (concat_frame is not None)
+                        and (counter != 0)
+                        and (concat_frame.shape[0] % batch_size == 0)
+                    ):  # I think it's probably this error
+                        if singleframe4error:
+                            try:
+                                df, _ = self.process_frame(
+                                    concat_frame,
+                                    counter=tmp_counter,
+                                    singleframe4error=singleframe4error,
+                                    skip_frame_rate=skip_frames,
+                                )
+                            except FaceDetectionError:
+                                df = None
+                                for id_fr in range(concat_frame.shape[0]):
+                                    tmp_df, _ = self.process_frame(
+                                        concat_frame[id_fr : (id_fr + 1)],
+                                        counter=tmp_counter,
+                                        singleframe4error=False,
+                                        skip_frame_rate=skip_frames,
+                                    )
+                                    tmp_counter += 1
+                                    if df is None:
+                                        df = tmp_df
+                                    else:
+                                        df = pd.concat((df, tmp_df), 0)
+                        else:
                             df, _ = self.process_frame(
                                 concat_frame,
                                 counter=tmp_counter,
                                 skip_frame_rate=skip_frames,
                             )
-                        except FaceDetectionError:
-                            df = None
-                            for id_fr in range(concat_frame.shape[0]):
-                                tmp_df, _ = self.process_frame(
-                                    concat_frame[id_fr : (id_fr + 1)],
+
+                        df["input"] = inputFname
+                        if outputFname:
+                            df[init_df.columns].to_csv(
+                                outputFname, index=False, header=False, mode="a"
+                            )
+                        else:
+                            init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
+                        concat_frame = None
+                        tmp_counter = None
+                    counter = counter + 1
+                else:
+                    # process remaining frames
+                    if concat_frame is not None:
+                        if singleframe4error:
+                            try:
+                                df, _ = self.process_frame(
+                                    concat_frame,
                                     counter=tmp_counter,
-                                    singleframe4error=False,
                                     skip_frame_rate=skip_frames,
                                 )
-                                tmp_counter += 1
-                                if df is None:
-                                    df = tmp_df
-                                else:
-                                    df = pd.concat((df, tmp_df), 0)
-                    else:
-                        df, _ = self.process_frame(
-                            concat_frame,
-                            counter=tmp_counter,
-                            skip_frame_rate=skip_frames,
-                        )
-                    df["input"] = inputFname
-                    if outputFname:
-                        df[init_df.columns].to_csv(
-                            outputFname, index=False, header=False, mode="a"
-                        )
-                    else:
-                        init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
-                break
+                            except FaceDetectionError:
+                                df = None
+                                for id_fr in range(concat_frame.shape[0]):
+                                    tmp_df, _ = self.process_frame(
+                                        concat_frame[id_fr : (id_fr + 1)],
+                                        counter=tmp_counter,
+                                        singleframe4error=False,
+                                        skip_frame_rate=skip_frames,
+                                    )
+                                    tmp_counter += 1
+                                    if df is None:
+                                        df = tmp_df
+                                    else:
+                                        df = pd.concat((df, tmp_df), 0)
+                        else:
+                            df, _ = self.process_frame(
+                                concat_frame,
+                                counter=tmp_counter,
+                                skip_frame_rate=skip_frames,
+                            )
+                        df["input"] = inputFname
+                        if outputFname:
+                            df[init_df.columns].to_csv(
+                                outputFname, index=False, header=False, mode="a"
+                            )
+                        else:
+                            init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
+                    break
         cap.release()
         if outputFname:
             return True

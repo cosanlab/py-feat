@@ -12,3 +12,4 @@ torch
 torchvision
 scikit-image>=0.18.0rc1
 joblib
+tqdm
