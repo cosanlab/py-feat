@@ -606,7 +606,7 @@ class Detector(object):
             pixels_per_cell=pixels_per_cell,
             cells_per_block=cells_per_block,
             visualize=visualize,
-            multichannel=True,
+            channel_axis=2,
         )
         if visualize:
             return (hog_output[0], hog_output[1])
