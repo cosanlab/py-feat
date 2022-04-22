@@ -43,7 +43,7 @@ class Detector(object):
         self,
         face_model="retinaface",
         landmark_model="mobilenet",
-        au_model="jaanet",
+        au_model="rf",
         emotion_model="resmasknet",
         facepose_model="pnp",
         n_jobs=1,

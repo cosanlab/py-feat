@@ -7,7 +7,7 @@ You can specify any of these models for use in the `Detector` class by passing i
 ```
 from feat import Detector
 
-detector = Detector(au_model='rf', emotion_model='ResMaskNet')
+detector = Detector(au_model='rf', emotion_model='svm')
 ```
 
 ```{note}

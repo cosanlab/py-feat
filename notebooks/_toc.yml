@@ -5,6 +5,7 @@ parts:
     chapters:
       - file: content/installation
       - file: content/models
+      - file: content/au_reference
   - caption: Basic Tutorials
     chapters:
       - file: content/01_basics
