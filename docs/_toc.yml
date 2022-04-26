@@ -26,5 +26,6 @@ parts:
     chapters:
       - file: pages/contribute
       - file: pages/modelContribution
+      - file: pages/changelog
       - url: https://github.com/cosanlab/py-feat
         title: GitHub Repository
