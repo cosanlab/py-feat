@@ -23,8 +23,8 @@ class JAANet(nn.Module):
         """
         # self.imgs = img_data
         # self.land_data = land_data
-        super(JAANet,self).__init__()
-        
+        super(JAANet, self).__init__()
+
         self.params = {
             "config_unit_dim": 8,
             "config_crop_size": 176,
@@ -34,7 +34,7 @@ class JAANet(nn.Module):
             "config_fill_coeff": 0.56,
             "config_write_path_prefix": get_resource_path(),
         }
-        
+
         config_unit_dim = self.params["config_unit_dim"]
         config_crop_size = self.params["config_crop_size"]
         config_map_size = self.params["config_map_size"]
@@ -68,9 +68,8 @@ class JAANet(nn.Module):
         self.au_net = network.network_dict["AUNet"](
             au_num=config_au_num, input_dim=12000, unit_dim=config_unit_dim
         )
-        
-        self.use_gpu = torch.cuda.is_available()
 
+        self.use_gpu = torch.cuda.is_available()
 
         if self.use_gpu:
             self.region_learning = self.region_learning.cuda()
@@ -154,7 +153,6 @@ class JAANet(nn.Module):
         self.local_au_net.eval()
         self.global_au_feat.eval()
         self.au_net.eval()
-
 
     def align_face_49pts(self, img, img_land, box_enlarge=2.9, img_size=200):
         """
@@ -260,14 +258,16 @@ class JAANet(nn.Module):
         return aligned_img, new_land
 
     def detect_au(self, imgs, land_data):
-        
+
         lenth_index = [len(ama) for ama in land_data]
         lenth_cumu = np.cumsum(lenth_index)
 
-        flat_faces = np.array([item for sublist in land_data for item in sublist]) # Flatten the faces
-        flat_faces = flat_faces.transpose(0,2,1)
+        flat_faces = np.array(
+            [item for sublist in land_data for item in sublist]
+        )  # Flatten the faces
+        flat_faces = flat_faces.transpose(0, 2, 1)
         pt49_array = None
-        
+
         img_transforms = transforms.Compose(
             [
                 transforms.CenterCrop(176),
@@ -279,14 +279,16 @@ class JAANet(nn.Module):
         input_torch = None
         land_torch = None
         for i in range(flat_faces.shape[0]):
-            
-            frame_assignment = np.where(i<=lenth_cumu)[0][0] # which frame is it?
+
+            frame_assignment = np.where(i <= lenth_cumu)[0][0]  # which frame is it?
 
             land_convert = convert68to49(flat_faces[i]).T
             new_land_data = land_convert.flatten()
-            new_img, new_land = self.align_face_49pts(imgs[frame_assignment], new_land_data)
+            new_img, new_land = self.align_face_49pts(
+                imgs[frame_assignment], new_land_data
+            )
             new_img = cv2.cvtColor(new_img, cv2.COLOR_BGR2RGB)
-            im_pil = Image.fromarray(new_img) 
+            im_pil = Image.fromarray(new_img)
             input = img_transforms(im_pil)
             if len(input.shape) < 4:
                 input.unsqueeze_(0)
@@ -295,11 +297,11 @@ class JAANet(nn.Module):
             if input_torch is None:
                 input_torch = input
             else:
-                input_torch = torch.cat((input_torch,input),0)
+                input_torch = torch.cat((input_torch, input), 0)
             if land_torch is None:
                 land_torch = new_land
             else:
-                land_torch = torch.cat((land_torch,new_land),0)
+                land_torch = torch.cat((land_torch, new_land), 0)
 
         if self.use_gpu:
             input_torch, land_torch = input_torch.cuda(), land_torch.cuda()
@@ -309,7 +311,9 @@ class JAANet(nn.Module):
         if self.use_gpu:
             aus_map = aus_map.cuda()
         output_aus_map = self.local_attention_refine(aus_map.detach())
-        local_au_out_feat, local_aus_output = self.local_au_net(region_feat, output_aus_map)
+        local_au_out_feat, local_aus_output = self.local_au_net(
+            region_feat, output_aus_map
+        )
         local_aus_output = (local_aus_output[:, 1, :]).exp()
         global_au_out_feat = self.global_au_feat(region_feat)
         concat_au_feat = torch.cat(
