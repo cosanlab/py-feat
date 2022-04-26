@@ -14,7 +14,7 @@ def decode(loc, priors, variances):
     Return:
         decoded bounding box predictions
     """
-    
+
     boxes = torch.cat(
         (
             priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
@@ -50,6 +50,7 @@ def decode_landm(pre, priors, variances):
         dim=1,
     )
     return landms
+
 
 # --------------------------------------------------------
 # Fast R-CNN

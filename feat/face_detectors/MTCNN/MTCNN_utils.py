@@ -1,5 +1,4 @@
 """
-NOTE:
 The codes in this file comes from the original codes at:
     https://github.com/timesler/facenet-pytorch/blob/master/models/mtcnn.py
 The original paper on MTCNN is:
@@ -11,6 +10,7 @@ import numpy as np
 import os
 from torch.nn.functional import interpolate
 from torchvision.ops.boxes import batched_nms
+
 
 def nms_numpy(boxes, scores, threshold, method):
     if boxes.size == 0:
@@ -41,7 +41,7 @@ def nms_numpy(boxes, scores, threshold, method):
         h = np.maximum(0.0, yy2 - yy1 + 1).copy()
 
         inter = w * h
-        if method == 'Min':
+        if method == "Min":
             o = inter / np.minimum(area[i], area[idx])
         else:
             o = inter / (area[i] + area[idx] - inter)
@@ -49,6 +49,7 @@ def nms_numpy(boxes, scores, threshold, method):
 
     pick = pick[:counter].copy()
     return pick
+
 
 def batched_nms_numpy(boxes, scores, idxs, threshold, method):
     device = boxes.device
@@ -81,14 +82,16 @@ def bbreg(boundingbox, reg):
 
     return boundingbox
 
+
 def fixed_batch_process(im_data, model):
     batch_size = 512
     out = []
     for i in range(0, len(im_data), batch_size):
-        batch = im_data[i:(i+batch_size)]
+        batch = im_data[i : (i + batch_size)]
         out.append(model(batch))
 
     return tuple(torch.cat(v, dim=0) for v in zip(*out))
+
 
 def pad(boxes, w, h):
     boxes = boxes.trunc().int().cpu().numpy()
@@ -104,16 +107,18 @@ def pad(boxes, w, h):
 
     return y, ey, x, ex
 
+
 def rerec(bboxA):
     h = bboxA[:, 3] - bboxA[:, 1]
     w = bboxA[:, 2] - bboxA[:, 0]
-    
+
     l = torch.max(w, h)
     bboxA[:, 0] = bboxA[:, 0] + w * 0.5 - l * 0.5
     bboxA[:, 1] = bboxA[:, 1] + h * 0.5 - l * 0.5
     bboxA[:, 2:4] = bboxA[:, :2] + l.repeat(2, 1).permute(1, 0)
 
     return bboxA
+
 
 def generateBoundingBox(reg, probs, scale, thresh):
     stride = 2
@@ -132,16 +137,18 @@ def generateBoundingBox(reg, probs, scale, thresh):
     boundingbox = torch.cat([q1, q2, score.unsqueeze(1), reg], dim=1)
     return boundingbox, image_inds
 
+
 def imresample(img, sz):
     im_data = interpolate(img, size=sz, mode="area")
     return im_data
 
+
 def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
     if isinstance(imgs, (np.ndarray, torch.Tensor)):
-        if isinstance(imgs,np.ndarray):
+        if isinstance(imgs, np.ndarray):
             imgs = torch.as_tensor(imgs.copy(), device=device)
 
-        if isinstance(imgs,torch.Tensor):
+        if isinstance(imgs, torch.Tensor):
             imgs = torch.as_tensor(imgs, device=device)
 
         if len(imgs.shape) == 3:
@@ -150,11 +157,11 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
         if any(img.size != imgs[0].size for img in imgs):
-            raise Exception("MTCNN batch processing only compatible with equal-dimension images.")
+            raise Exception(
+                "MTCNN batch processing only compatible with equal-dimension images."
+            )
         imgs = np.stack([np.uint8(img) for img in imgs])
         imgs = torch.as_tensor(imgs.copy(), device=device)
-
-    
 
     model_dtype = next(pnet.parameters()).dtype
     imgs = imgs.permute(0, 3, 1, 2).type(model_dtype)
@@ -185,8 +192,10 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
         im_data = imresample(imgs, (int(h * scale + 1), int(w * scale + 1)))
         im_data = (im_data - 127.5) * 0.0078125
         reg, probs = pnet(im_data)
-    
-        boxes_scale, image_inds_scale = generateBoundingBox(reg, probs[:, 1], scale, threshold[0])
+
+        boxes_scale, image_inds_scale = generateBoundingBox(
+            reg, probs[:, 1], scale, threshold[0]
+        )
         boxes.append(boxes_scale)
         image_inds.append(image_inds_scale)
 
@@ -202,7 +211,6 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
     # NMS within each scale + image
     boxes, image_inds = boxes[scale_picks], image_inds[scale_picks]
 
-
     # NMS within each image
     pick = batched_nms(boxes[:, :4], boxes[:, 4], image_inds, 0.7)
     boxes, image_inds = boxes[pick], image_inds[pick]
@@ -216,13 +224,15 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
     boxes = torch.stack([qq1, qq2, qq3, qq4, boxes[:, 4]]).permute(1, 0)
     boxes = rerec(boxes)
     y, ey, x, ex = pad(boxes, w, h)
-    
+
     # Second stage
     if len(boxes) > 0:
         im_data = []
         for k in range(len(y)):
             if ey[k] > (y[k] - 1) and ex[k] > (x[k] - 1):
-                img_k = imgs[image_inds[k], :, (y[k] - 1):ey[k], (x[k] - 1):ex[k]].unsqueeze(0)
+                img_k = imgs[
+                    image_inds[k], :, (y[k] - 1) : ey[k], (x[k] - 1) : ex[k]
+                ].unsqueeze(0)
                 im_data.append(imresample(img_k, (24, 24)))
         im_data = torch.cat(im_data, dim=0)
         im_data = (im_data - 127.5) * 0.0078125
@@ -251,11 +261,13 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
         im_data = []
         for k in range(len(y)):
             if ey[k] > (y[k] - 1) and ex[k] > (x[k] - 1):
-                img_k = imgs[image_inds[k], :, (y[k] - 1):ey[k], (x[k] - 1):ex[k]].unsqueeze(0)
+                img_k = imgs[
+                    image_inds[k], :, (y[k] - 1) : ey[k], (x[k] - 1) : ex[k]
+                ].unsqueeze(0)
                 im_data.append(imresample(img_k, (48, 48)))
         im_data = torch.cat(im_data, dim=0)
         im_data = (im_data - 127.5) * 0.0078125
-        
+
         # This is equivalent to out = onet(im_data) to avoid GPU out of memory.
         out = fixed_batch_process(im_data, onet)
 
@@ -279,7 +291,7 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
 
         # NMS within each image using "Min" strategy
         # pick = batched_nms(boxes[:, :4], boxes[:, 4], image_inds, 0.7)
-        pick = batched_nms_numpy(boxes[:, :4], boxes[:, 4], image_inds, 0.7, 'Min')
+        pick = batched_nms_numpy(boxes[:, :4], boxes[:, 4], image_inds, 0.7, "Min")
         boxes, image_inds, points = boxes[pick], image_inds[pick], points[pick]
 
     boxes = boxes.cpu().numpy()

@@ -1,17 +1,28 @@
-from __future__ import division
-
 """
-    FEAT Utils Class
-    ==========================================
-    read_facet: read in iMotions-FACET formatted files
-    read_affdex: read in iMotions-affdex formatted files
-    read_affectiva: read in affectiva-api formatted files
-    read_openface: read in openface formatted files
-
+Feat utility and helper functions. Some of these functions can be used directly, while
+other underly the functionality of various Detector or Fex methods.
 """
+
+import os
+import math
+import h5py
+import sys
+import contextlib
+from sklearn.cross_decomposition import PLSRegression
+from joblib import load
+from sklearn import __version__ as skversion
+import numpy as np
+import pandas as pd
+from scipy.integrate import simps
+import feat
+import cv2
+import math
+import torch
+from torchvision.datasets.utils import download_url as tv_download_url
 
 __all__ = [
     "get_resource_path",
+    "get_test_data_path",
     "read_facet",
     "read_affdex",
     "read_affectiva",
@@ -21,23 +32,9 @@ __all__ = [
     "neutral",
     "load_h5",
     "read_pictures",
+    "validate_input",
+    "download_url",
 ]
-__author__ = ["Jin Hyun Cheong, Tiankang Xie, Eshin Jolly"]
-
-
-import os, math, pywt, pickle, h5py, sys
-import warnings
-from sklearn.cross_decomposition import PLSRegression
-from joblib import load
-from sklearn import __version__ as skversion
-import numpy as np, pandas as pd
-from scipy import signal
-from scipy.integrate import simps
-import feat
-import cv2
-import math
-from PIL import Image
-import torch
 
 """ DEFINE IMPORTANT VARIABLES """
 # FEAT columns
@@ -196,9 +193,12 @@ def face_rect_to_coords(rectangle):
 
 def get_resource_path():
     """Get path to feat resource directory."""
-    return os.path.join(feat.__path__[0], "resources")  # points to the package folder.
-    # return ("F:/feat/feat/") # points to the package folder.
-    # return os.path.join(os.path.dirname(__file__), 'resources')
+    return os.path.join(feat.__path__[0], "resources")
+
+
+def get_test_data_path():
+    """Get path to feat test data directory."""
+    return os.path.join(feat.__path__[0], "tests", "data")
 
 
 def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=True):
@@ -288,7 +288,7 @@ def read_feat(fexfile):
     """
     d = pd.read_csv(fexfile)
     au_columns = [col for col in d.columns if "AU" in col]
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=fexfile,
         au_columns=au_columns,
@@ -298,6 +298,8 @@ def read_feat(fexfile):
         time_columns=FEAT_TIME_COLUMNS,
         detector="Feat",
     )
+    fex["input"] = fexfile
+    return fex
 
 
 def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
@@ -351,7 +353,7 @@ def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
             d.columns = [col.replace(" ", "") for col in d.columns]
             # d._metadata = fex_columns
     au_columns = [col for col in d.columns if "AU" in col]
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=facetfile,
         au_columns=au_columns,
@@ -363,6 +365,8 @@ def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
         detector="FACET",
         sampling_freq=sampling_freq,
     )
+    fex["input"] = facetfile
+    return fex
 
 
 def read_openface(openfacefile, features=None):
@@ -444,7 +448,7 @@ def read_openface(openfacefile, features=None):
             d = d[features]
         except:
             pass
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=openfacefile,
         au_columns=openface_AU_columns,
@@ -456,6 +460,8 @@ def read_openface(openfacefile, features=None):
         time_columns=openface_time_columns,
         detector="OpenFace",
     )
+    fex["input"] = openfacefile
+    return fex
 
 
 def read_affectiva(affectivafile, orig_cols=False):
@@ -503,6 +509,7 @@ def read_affectiva(affectivafile, orig_cols=False):
         "upperLipRaise": "AU10",
     }
     affectiva_au_columns = [col for col in rep_dict.values() if "AU" in col]
+    detector = "Affectiva" if "AU01" in affectiva_au_columns else "Affectiva-named"
     affectiva_emotion_columns = list(set(rep_dict.values()) - set(affectiva_au_columns))
     if not orig_cols:
         new_cols = []
@@ -512,13 +519,15 @@ def read_affectiva(affectivafile, orig_cols=False):
             except:
                 new_cols.append(col)
         d.columns = new_cols
-    return feat.Fex(
+    fex = feat.Fex(
         d,
         filename=affectivafile,
         au_columns=affectiva_au_columns,
         emotion_columns=affectiva_emotion_columns,
-        detector="Affectiva",
+        detector=detector,
     )
+    fex["input"] = affectivafile
+    return fex
 
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.0):
@@ -542,7 +551,7 @@ def wavelet(freq, num_cyc=3, sampling_freq=30.0):
 
     # Gaussian component
     sd = num_cyc / (2 * np.pi * freq)  # standard deviation
-    gaus = np.exp(-(time ** 2.0) / (2.0 * sd ** 2.0))
+    gaus = np.exp(-(time**2.0) / (2.0 * sd**2.0))
 
     return sin * gaus
 
@@ -559,7 +568,7 @@ def calc_hist_auc(vals, hist_range=None):
         Series of histograms
     """
     # Square values
-    vals = [elem ** 2 if elem > 0 else -1 * elem ** 2 for elem in vals]
+    vals = [elem**2 if elem > 0 else -1 * elem**2 for elem in vals]
     # Get 0 crossings
     crossings = np.where(np.diff(np.sign(vals)))[0]
     pos, neg = [], []
@@ -594,6 +603,34 @@ def softmax(x):
         x: value to softmax
     """
     return 1.0 / (1 + 10.0 ** -(x))
+
+
+def validate_input(inputFname):
+    """
+    Given a string filename or list containing string files names, ensures that the
+    file(s) exist. Always returns a non-nested list, potentionally containing a single element.
+
+    Args:
+        inputFname (str or list): file name(s)
+
+    Raises:
+        FileNotFoundError: if any file name(s) don't exist
+
+    Returns:
+        list: list of file names (even if input was a str)
+    """
+
+    assert isinstance(
+        inputFname, (str, list)
+    ), "inputFname must be a string path to image or list of image paths"
+
+    if isinstance(inputFname, str):
+        inputFname = [inputFname]
+
+    for inputF in inputFname:
+        if not os.path.exists(inputF):
+            raise FileNotFoundError(f"File {inputF} not found.")
+    return inputFname
 
 
 ### Functions for face registration ###
@@ -838,7 +875,6 @@ def padding(img, expected_size):
 
 def read_pictures(imgname_list):
     """
-    NEW
     Reads in a list of pictures and concatenate these pictures into batches of images.
 
     Args:
@@ -848,6 +884,7 @@ def read_pictures(imgname_list):
         img_batch_arr (np.array): np array of shape BxHxWxC
     """
 
+    imgname_list = validate_input(imgname_list)
     img_batch_arr = None
     for img_name in imgname_list:
         frame = cv2.imread(img_name)
@@ -983,6 +1020,19 @@ def round_vals(list_of_arrays, ndigits):
         for j, arr1 in enumerate(list_of_arrays):
             list_of_arrays2[i][j] = np.around(list_of_arrays[i][j], ndigits)
     return list_of_arrays2
+
+
+def download_url(*args, **kwargs):
+    """By default just call download_url from torch vision, but we pass a verbose =
+    False keyword argument, then call download_url with a special context manager than
+    supresses the print messages"""
+    verbose = kwargs.pop("verbose", True)
+
+    if verbose:
+        return tv_download_url(*args, **kwargs)
+
+    with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+        return tv_download_url(*args, **kwargs)
 
 
 class FaceDetectionError(Exception):
