@@ -15,8 +15,12 @@ docs/**/*.csv
 docs/**/*.mp4
 docs/_build
 
-#Ignoreresources folder.
+#Ignore resources folder except config files and viz model
 resources/
+!resources/pyfeat_aus_to_landmarks.h5
+!resources/pyfeat_aus_to_landmarks.joblib
+!resources/ResMaskNet_fer2013_config.json
+!resources/model_list.json
 
 # PytestCache
 .pytest_cache/

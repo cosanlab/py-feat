@@ -375,7 +375,7 @@ def test_affectiva():
 
 
 def test_feat():
-    filename = os.path.join(get_test_data_path(), "output.csv")
+    filename = os.path.join(get_test_data_path(), "Feat_Test.csv")
     fex = Fex(filename=filename, detector="Feat")
     fex = fex.read_file()
     # test input property
