@@ -1,0 +1,30 @@
+format: jb-book
+root: pages/intro
+parts:
+  - caption: Getting Started
+    chapters:
+      - file: pages/installation
+      - file: pages/models
+      - file: pages/au_reference
+  - caption: Basic Tutorials
+    chapters:
+      - file: basic_tutorials/01_basics
+      - file: basic_tutorials/02_detector_imgs
+      - file: basic_tutorials/03_detector_vids
+      - file: basic_tutorials/04_plotting
+      - file: basic_tutorials/05_fex_analysis
+  - caption: Advanced Tutorials
+    chapters:
+      - file: extra_tutorials/loadingOtherFiles
+      - file: extra_tutorials/train_hogs
+      - file: extra_tutorials/trainAUvisModel
+      - file: extra_tutorials/extract_labels_and_landmarks
+  - caption: API
+    chapters:
+      - file: pages/api
+  - caption: Contributing
+    chapters:
+      - file: pages/contribute
+      - file: pages/modelContribution
+      - url: https://github.com/cosanlab/py-feat
+        title: GitHub Repository
