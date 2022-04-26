@@ -13,7 +13,7 @@ from feat import Fex
 
 
 def test_read_feat():
-    fex = read_feat(join(get_test_data_path(), "output.csv"))
+    fex = read_feat(join(get_test_data_path(), "Feat_Test.csv"))
     assert type(fex) == Fex
 
 

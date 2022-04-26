@@ -195,16 +195,6 @@ class ferNetModule(nn.Module):
             else:
                 land_torch = torch.cat((land_torch, new_land), 0)
 
-        # land_data = land_data.reshape(1, -1)
-        # img, land = self.align_face_49pts(imgs, land_data[0], img_size=200)
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        # im_pil = Image.fromarray(img)
-        # im_pil = ImageOps.grayscale(im_pil)
-
-        # images.shape #torch.Size([64,3,28,28])
-        # img1 = input_torch[0] #torch.Size([3,28,28]
-        # save_image(img1, '/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/img1.png')
-
         self.net0.eval()
 
         if self.use_gpu:

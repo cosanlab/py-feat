@@ -1,64 +1,106 @@
 {
     "au_detectors": {
         "svm": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib", "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
+                "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib"
+            ]
         },
         "rf": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib", "https://github.com/cosanlab/feat/releases/download/v0.1/RF_568.joblib"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
+                "https://github.com/cosanlab/feat/releases/download/v0.1/RF_568.joblib"
+            ]
         },
         "logistic": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib", "https://github.com/cosanlab/feat/releases/download/v0.1/Logistic_520.joblib"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
+                "https://github.com/cosanlab/feat/releases/download/v0.1/Logistic_520.joblib"
+            ]
         },
         "hog-pca": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib"
+            ]
         },
         "au_scalar": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/hog_scalar_aus.joblib"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_scalar_aus.joblib"
+            ]
         },
         "jaanet": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip"
+            ]
         },
         "drml": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"
+            ]
         }
     },
     "emotion_detectors": {
         "fer": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
+            ]
         },
         "resmasknet": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth"]},
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth"
+            ]
+        },
         "rf": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emoRF36.joblib"]},
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/emoRF36.joblib"
+            ]
+        },
         "svm": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emoSVM38.joblib"]},
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/emoSVM38.joblib"
+            ]
+        },
         "emo_scalar": {
-                "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_scalar.joblib"]
-            },
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_scalar.joblib"
+            ]
+        },
         "emo_pca": {
-                "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_pca.joblib"]
-            }
-
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_pca.joblib"
+            ]
+        }
     },
     "face_detectors": {
         "retinaface": {
-            "urls":["https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet0.25_Final.pth"]},
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet0.25_Final.pth"
+            ]
+        },
         "mtcnn": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/onet.pt", "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.pt", "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.pt"
-            ]},
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/onet.pt",
+                "https://github.com/cosanlab/feat/releases/download/v0.1/pnet.pt",
+                "https://github.com/cosanlab/feat/releases/download/v0.1/rnet.pt"
+            ]
+        },
         "faceboxes": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/FaceBoxesProd.pth"
+            ]
         },
         "img2pose": {
             "urls": [
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/img2pose_v1.pth",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_mean_v1.npy",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_stddev_v1.npy"
             ]
         },
-         "img2pose-c": {
+        "img2pose-c": {
             "urls": [
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/img2pose_v1_ft_300w_lp.pth",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_mean_v1.npy",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_stddev_v1.npy"
             ]
@@ -66,15 +108,24 @@
     },
     "landmark_detectors": {
         "lbfmodel": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/lbfmodel.yaml"
+            ]
         },
         "mobilefacenet": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/mobilefacenet_model_best.pth.tar"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/mobilefacenet_model_best.pth.tar"
+            ]
         },
         "mobilenet": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet_224_model_best_gdconv_external.pth.tar"]
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/mobilenet_224_model_best_gdconv_external.pth.tar"
+            ]
         },
         "pfld": {
-            "urls": ["https://github.com/cosanlab/feat/releases/download/v0.1/pfld_model_best.pth.tar"]}
+            "urls": [
+                "https://github.com/cosanlab/feat/releases/download/v0.1/pfld_model_best.pth.tar"
+            ]
+        }
     }
 }
