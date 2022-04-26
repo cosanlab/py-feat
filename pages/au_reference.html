@@ -1,0 +1,481 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Action Unit Reference &#8212; Py-Feat</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet">
+  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="1. Py-Feat basics" href="../basic_tutorials/01_basics.html" />
+    <link rel="prev" title="Included pre-trained detectors" href="models.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="intro.html">
+   Py-Feat: Python Facial Expression Analysis Toolbox
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Getting Started
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   How to install Py-Feat
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="models.html">
+   Included pre-trained detectors
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Action Unit Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Basic Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/01_basics.html">
+   1. Py-Feat basics
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">
+   2. Detecting facial expressions from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/03_detector_vids.html">
+   3. Detecting facial expressions from videos
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/04_plotting.html">
+   4. Visualizing Facial Expressions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">
+   5. Running a full analysis
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Advanced Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
+   Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
+   Training HOG-based AU detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
+   Training AU visualization model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
+   Extracting labels and landmarks
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="api.html">
+   API Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Contributing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="contribute.html">
+   General contributions guidelines
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="modelContribution.html">
+   Contributing new detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/cosanlab/py-feat">
+   GitHub Repository
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/pages/au_reference.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/cosanlab/py-feat"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fpages/au_reference.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Action Unit Reference</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="action-unit-reference">
+<h1>Action Unit Reference<a class="headerlink" href="#action-unit-reference" title="Permalink to this headline">¶</a></h1>
+<p><em>Written by Eshin Jolly</em></p>
+<p>The Facial Action Coding System (FACS) is a system to taxonimize human facial movements based upon their underlying musculature. It was first developed by Carl-Herman Hjortsö in 1978 and then adopted and expanded upon by Paul Ekman and Wallace V. Friesen in 2002. The table below lists most of the possible Action Units (AUs) that are coded for along with with their muscular basis, expression involvement, and model support (not all models are trained to detect all AUs). Most models support a subset of of about 25 AUs corresponding specifically to <em>facial</em> muscles. Additional AUs are part of the FACS system but not commonly used to train models as they are associated with eye or head movement.</p>
+<p>You can sort the table by clicking on any column (shift+click to sort by multiple columns). You can also use the search bar (case insensitive) to filter the table by any of its content such as:</p>
+<ul class="simple">
+<li><p>which AUs are commonly associated with which expressions (e.g. search “happiness”)</p></li>
+<li><p>which muscles are associated with which AUs (e.g. search “corrugator”)</p></li>
+<li><p>which Py-Feat models support which AUs (e.g. search “svm”)</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Emotion expressions (e.g. <em>sadness</em>) are often characterized by patterns of AUs (AU1 + AU4 + AU15), but <strong>individuals vary</strong> in the way the exact ways that they emote. For this reason, some AUs may not be observed on some faces for the same expression and some expressions may consists of <em>additional</em> AUs.</p>
+</div>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<div id="wrapper"></div>
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<script defer>
+    const grid = new gridjs.Grid({
+        search: true,
+        sort: true,
+        resizable: false,
+        autoWidth: false,
+        fixedHeader: true,
+        height: '52rem',
+        width: 'initial',
+        style: {
+            container: {
+                'overflow': 'scroll'
+            },
+            table: {
+                'font-size': '14px',
+                'text-overflow': 'scroll',
+            },
+        },
+        columns: [{name:'AU', formatter: (cell) => `AU${cell}`}, 'FACS Name', 'Muscles', 'FACS Category', 'Related Expression', 'Models', 'Notes'],
+        data: [
+            [1, 'Inner Brow Raiser', 'Frontalis (medial)', 'main', 'sadness, surprise, fear', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [2, 'Outer Brow Raiser', 'Frontalis (lateral)', 'main', 'surprise, fear', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [3, 'Inner corner Brow Tightener', 'Procerus, Depressor Supercilii, Corrugator Supercilii', 'extended (Baby FACS)', '', 'none', 'Only in babies! Analogue of AU4 in adults'],
+            [4, 'Brow Lowerer', 'Procerus, Depressor Supercilii, Corrugator Supercilii', 'main', 'sadness, fear, anger', 'rf, svm, logistic, JAANET, Py-Feat viz', ''],
+            [5, 'Upper Lid Raiser', 'Levator Palpebrae Superioris, Superior Tarsal Muscle', 'main', 'surprise, fear, anger', 'rf, svm, logistic, JAANET, Py-Feat viz', ''],
+            [6, 'Cheek Raiser', 'Orbicularis Oculi (orbital)', 'main', 'happiness, disgust, contempt', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [7, 'Lid Tightener', 'Orbicularis Oculi (palpebral)', 'main', 'fear, anger', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [8, 'Lips Toward Each Other', 'Orbicularis Oris', 'main', 'none', ''],
+            [9, 'Nose Wrinkler', 'Levator Labii Superioris Alaeque Nasi', 'main', 'disgust', 'rf, svm, logistic, Py-Feat viz', ''],
+            [10, 'Upper Lip Raiser', 'Levator Labii Superioris', 'main', '', 'rf, svm, logistic, JAANET, Py-Feat viz', ''],
+            [11, 'Nasolabial Deepener', 'Zygomaticus Minor', 'main', 'disgust, fear', 'rf, svm, logistic', ''],
+            [12, 'Lip Corner Puller', 'Zygomaticus Major', 'main', 'happiness, contempt', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [13, 'Sharp Lip Puller', 'Levator Anguli Oris/Caninus', 'main', '', 'none', ''],
+            [14, 'Dimpler', 'Buccinator', 'main', 'contempt', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [15, 'Lip Corner Depressor', 'Depressor Anguli Oris', 'main', 'sadness, disgust', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [16, 'Lower Lip Depressor', 'Depressor Labii Inferioris', 'main', '', 'none', ''],
+            [17, 'Chin Raiser', 'Mentalis', 'main', 'disgust', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [18, 'Lip Pucker', 'Incisvii Labii Superioris, Incisvii Labii Inferioris', 'main', '', 'Py-Feat viz', ''],
+            [19, 'Tongue Show', 'Genioglossus, Medial Pterygoid, Masseter', 'main', '', 'none', ''],
+            [20, 'Lip Stretcher', 'Risorius, Platysma', 'main', 'fear', 'rf, svm, logistic, Py-Feat viz', ''],
+            [21, 'Neck Tightener', 'Platysma', 'main', '', 'none', ''],
+            [22, 'Lip Funneler', 'Orbicularis Oris', 'main', '', 'none', ''],
+            [23, 'Lip Tightener', 'Orbicularis Oris', 'main', 'anger', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [24, 'Lip Pressor', 'Orbicularis Oris', 'main', '', 'rf, svm, logistic, JAANET, DRML, Py-Feat viz', ''],
+            [25, 'Lip Part', 'Depressor Labii Inferioris', 'main', 'happiness, surprise, fear', 'rf, svm, logistic, Py-Feat viz', ''],
+            [26, 'Jaw Drop', 'Masseter, Temporalis, Medial Pterygoid', 'main', 'fear, surprise', 'rf, svm, logistic, Py-Feat viz', ''],
+            [27, 'Mouth Stretch', 'Pterygoids, Digastric', 'main', '', 'none', ''],
+            [28, 'Lip Suck', 'Orbicularis Oris', 'main', '', 'rf, svm, logistic, Py-Feat viz', ''],
+            [29, 'Jaw Thrust', 'Pterygoids, Masseter', 'behavioral', '', 'none', ''],
+            [30, 'Jaw Sideways', 'Pterygoids, Masseter, Temporalis', 'behavioral', '', 'none', ''],
+            [31, 'Jaw Clencher', 'Masseter', 'behavioral', '', 'none', ''],
+            [32, 'Lip Bite', 'Masseter', 'behavioral', '', 'none', ''],
+            [33, 'Cheek Blow', 'Buccinator, Orbicularis Oris, Mentalis', 'behavioral', '', 'none', ''],
+            [34, 'Cheek Puff', 'Buccinator, Orbicularis Oris, Mentalis, Depressor Depti Nasi', 'behavioral', '', 'none', ''],
+            [35, 'Cheek Suck', 'Buccinator', 'behavioral', '', 'none', ''],
+            [37, 'Lip Wipe', 'Pterygoids, Masseter, Genioglossus', 'behavioral', '', 'none', ''],
+            [38, 'Nostril Dilator', 'Nasalis (alaris), Dilator Naris Anterior, Depressor Septi Nasi', 'behavioral', 'anger', 'none', ''],
+            [39, 'Nostril Compressor', 'Nasalis (transverse), Compressor Narium Minor', 'behavioral', '', 'none', ''],
+            [40, 'Sniff', '', 'behavioral', '', 'none', ''],
+            [41, 'Lid Drop', 'Levator Palpebrae Superioris (relaxation)', 'behavioral', '', 'none', ''],
+            [42, 'Slit', 'Depressor Supercilii', 'behavioral', '', 'none', 'Different muscular strand than AU4'],
+            [43, 'Eyes Closed', 'Levator Palebrae Superioris (relaxation)', 'behavioral', '', 'rf, svm, logistic, Py-Feat viz', ''],
+            [44, 'Squint', 'Corrugator Supercilii', 'behavioral', '', 'none', 'Different muscular strand than AU4'],
+            [45, 'Blink', 'Levator Palebrae Superioris (relaxation), Orbicularis Oculi (contraction)', 'behavioral','', 'none', 'Different muscular strand than AU4'],
+            [46, 'Wink', 'Orbicularis Oculi', 'behavioral', '', 'none', ''],
+            [51, 'Head turn left', '', 'head', '', 'none', ''],
+            [52, 'Head turn right', '', 'head', '', 'none', ''],
+            [53, 'Head up', '', 'head', '', 'none', ''],
+            [54, 'Head down', '', 'head', '', 'none', ''],
+            [55, 'Head tilt left', '', 'head', '', 'none', ''],
+            [56, 'Head tilt right', '', 'head', '', 'none', ''],
+            [57, 'Head forward', '', 'head', '', 'none', ''],
+            [58, 'Head backward', '', 'head', '', 'none', ''],
+            [61, 'Eyes turn left', 'Medial Rectus (right eye), Lateral Rectus (left eye)', 'eyes', '', 'none', ''],
+            [62, 'Eyes turn right', 'Medial Rectus (left eye), Lateral Rectus (right eye)', 'eyes', '', 'none', ''],
+            [63, 'Eyes up', 'Superior Rectus, Inferior Oblique', 'eyes', '', 'none', ''],
+            [64, 'Eyes down', 'Inferior Rectus, Superior Oblique', 'eyes', '', 'none', ''],
+            [65, 'Strabismus', '', 'eyes', '', 'none', 'Misaligned eyes when gazing'],
+            [66, 'Cross-eyed', 'Medial Rectus', 'eyes', '', 'none', ''],
+        ]
+    });
+    grid.render(document.getElementById('wrapper'))
+</script>
+<style>
+    th {
+        min-width: 175px !important;
+    }
+</style></div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./pages"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="models.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Included pre-trained detectors</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../basic_tutorials/01_basics.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">1. Py-Feat basics</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,1681 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>5. Running a full analysis &#8212; Py-Feat</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet">
+  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Loading data from other detectors" href="../extra_tutorials/loadingOtherFiles.html" />
+    <link rel="prev" title="4. Visualizing Facial Expressions" href="04_plotting.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/intro.html">
+   Py-Feat: Python Facial Expression Analysis Toolbox
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Getting Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/installation.html">
+   How to install Py-Feat
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/models.html">
+   Included pre-trained detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/au_reference.html">
+   Action Unit Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Basic Tutorials
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="01_basics.html">
+   1. Py-Feat basics
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="02_detector_imgs.html">
+   2. Detecting facial expressions from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="03_detector_vids.html">
+   3. Detecting facial expressions from videos
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="04_plotting.html">
+   4. Visualizing Facial Expressions
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   5. Running a full analysis
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Advanced Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
+   Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
+   Training HOG-based AU detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
+   Training AU visualization model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
+   Extracting labels and landmarks
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/api.html">
+   API Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Contributing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/contribute.html">
+   General contributions guidelines
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/modelContribution.html">
+   Contributing new detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/cosanlab/py-feat">
+   GitHub Repository
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/basic_tutorials/05_fex_analysis.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/cosanlab/py-feat"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fbasic_tutorials/05_fex_analysis.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/basic_tutorials/05_fex_analysis.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        <a class="jupyterhub-button" href="https://jhub.dartmouth.edu//hub/user-redirect/git-pull?repo=https://github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/basic_tutorials/05_fex_analysis.ipynb&branch=master"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch JupyterHub" data-toggle="tooltip"
+                data-placement="left"><img class="jupyterhub-button-logo"
+                    src="../_static/images/logo_jupyterhub.svg"
+                    alt="Interact on JupyterHub">JupyterHub</button></a>
+        
+        
+        <a class="colab-button" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/basic_tutorials/05_fex_analysis.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
+                title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
+                    src="../_static/images/logo_colab.png"
+                    alt="Interact on Colab">Colab</button></a>
+        
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#download-the-data">
+   5.1 Download the data
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#process-videos-with-a-detector">
+   5.2 Process videos with a Detector
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#summary-statistics-and-feature-extraction">
+   5.3 Summary statistics and feature extraction
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#evaluting-overall-au-intensity-with-a-one-sample-t-test">
+   5.4 Evaluting overall AU intensity with a one-sample t-test
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#comparing-conditions">
+   5.5 Comparing conditions
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#looking-at-condition-ifferences-for-a-single-au-using-a-t-test">
+     5.5.1 Looking at condition ifferences for a single AU using a t-test
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#comparing-all-aus-across-conditions-using-regression">
+     5.5.2 Comparing all AUs across conditions using regression
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#compare-conditions-with-a-classifier-and-emotion-features">
+   5.6 Compare conditions with a classifier and emotion features
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#time-series-correlations">
+   5.7 Time-series correlations
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>5. Running a full analysis</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#download-the-data">
+   5.1 Download the data
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#process-videos-with-a-detector">
+   5.2 Process videos with a Detector
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#summary-statistics-and-feature-extraction">
+   5.3 Summary statistics and feature extraction
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#evaluting-overall-au-intensity-with-a-one-sample-t-test">
+   5.4 Evaluting overall AU intensity with a one-sample t-test
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#comparing-conditions">
+   5.5 Comparing conditions
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#looking-at-condition-ifferences-for-a-single-au-using-a-t-test">
+     5.5.1 Looking at condition ifferences for a single AU using a t-test
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#comparing-all-aus-across-conditions-using-regression">
+     5.5.2 Comparing all AUs across conditions using regression
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#compare-conditions-with-a-classifier-and-emotion-features">
+   5.6 Compare conditions with a classifier and emotion features
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#time-series-correlations">
+   5.7 Time-series correlations
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="running-a-full-analysis">
+<h1>5. Running a full analysis<a class="headerlink" href="#running-a-full-analysis" title="Permalink to this headline">¶</a></h1>
+<p><em>Written by Jin Hyun Cheong and Eshin Jolly</em></p>
+<p>In this tutorial we’ll perform a real analysis on the dataset from <a class="reference external" href="https://journals.plos.org/ploscompbiol/article/peerReview?id=10.1371/journal.pcbi.1008335">“A Data-Driven Characterisation Of Natural Facial Expressions When Giving Good And Bad News”</a> by Watson &amp; Johnston 2020.  You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/04_fex_analysis.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
+<p>In this analysis, we’ll explore any differences in facial expressions people made when receiving good or bad news (see the original paper for more details). The full dataset is available on <a class="reference external" href="https://osf.io/6tbwj/">OSF</a>, so we’ll first download the videos and their metadata. Then, we’ll load up some pre-trained emotion and action-unit (AU) detectors and use them to extract AU intensity from the videos in the dataset. Finally, we’ll demonstrate how easy it is to perform several different kinds of comparisons acoss experimental conditions (good vs bad) using the <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data class.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
+<span class="c1"># !pip install -q py-feat</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="download-the-data">
+<h2>5.1 Download the data<a class="headerlink" href="#download-the-data" title="Permalink to this headline">¶</a></h2>
+<p>First we’ll need to download all 20 video files and their corresponding attributes CSV files from OSF. The next cell should run quickly on Google Collab, but will depend on your own internet conection if you’re executing this notebook locally. You can rerun this cell in case the download fails for any reason, as it should skip downloading existing files:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;talk&quot;</span><span class="p">)</span>
+
+<span class="n">files_to_download</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;4c5mb&quot;</span><span class="p">:</span> <span class="s1">&#39;clip_attrs.csv&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;n6rt3&quot;</span><span class="p">:</span> <span class="s1">&#39;001.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;3gh8v&quot;</span><span class="p">:</span> <span class="s1">&#39;002.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;twqxs&quot;</span><span class="p">:</span> <span class="s1">&#39;003.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;nc7d9&quot;</span><span class="p">:</span> <span class="s1">&#39;004.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;nrwcm&quot;</span><span class="p">:</span> <span class="s1">&#39;005.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;2rk9c&quot;</span><span class="p">:</span> <span class="s1">&#39;006.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;mxkzq&quot;</span><span class="p">:</span> <span class="s1">&#39;007.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;c2na7&quot;</span><span class="p">:</span> <span class="s1">&#39;008.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;wj7zy&quot;</span><span class="p">:</span> <span class="s1">&#39;009.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;mxywn&quot;</span><span class="p">:</span> <span class="s1">&#39;010.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;6bn3g&quot;</span><span class="p">:</span> <span class="s1">&#39;011.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;jkwsp&quot;</span><span class="p">:</span> <span class="s1">&#39;012.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;54gtv&quot;</span><span class="p">:</span> <span class="s1">&#39;013.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;c3hpm&quot;</span><span class="p">:</span> <span class="s1">&#39;014.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;utdqj&quot;</span><span class="p">:</span> <span class="s1">&#39;015.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;hpw4a&quot;</span><span class="p">:</span> <span class="s1">&#39;016.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;94swe&quot;</span><span class="p">:</span> <span class="s1">&#39;017.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;qte5y&quot;</span><span class="p">:</span> <span class="s1">&#39;018.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;aykvu&quot;</span><span class="p">:</span> <span class="s1">&#39;019.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;3d5ry&quot;</span><span class="p">:</span> <span class="s1">&#39;020.mp4&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="n">fid</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files_to_download</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;wget -O </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> --content-disposition https://osf.io/</span><span class="si">{</span><span class="n">fid</span><span class="si">}</span><span class="s2">/download&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Already downloaded: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clip_attrs.csv&quot;</span><span class="p">)</span>
+<span class="n">videos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.mp4&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">videos</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Already downloaded: clip_attrs.csv
+Already downloaded: 001.mp4
+Already downloaded: 002.mp4
+Already downloaded: 003.mp4
+Already downloaded: 004.mp4
+Already downloaded: 005.mp4
+Already downloaded: 006.mp4
+Already downloaded: 007.mp4
+Already downloaded: 008.mp4
+Already downloaded: 009.mp4
+Already downloaded: 010.mp4
+Already downloaded: 011.mp4
+Already downloaded: 012.mp4
+Already downloaded: 013.mp4
+Already downloaded: 014.mp4
+Already downloaded: 015.mp4
+Already downloaded: 016.mp4
+Already downloaded: 017.mp4
+Already downloaded: 018.mp4
+Already downloaded: 019.mp4
+Already downloaded: 020.mp4
+[&#39;001.mp4&#39; &#39;002.mp4&#39; &#39;003.mp4&#39; &#39;004.mp4&#39; &#39;005.mp4&#39; &#39;006.mp4&#39; &#39;007.mp4&#39;
+ &#39;008.mp4&#39; &#39;009.mp4&#39; &#39;010.mp4&#39; &#39;011.mp4&#39; &#39;012.mp4&#39; &#39;013.mp4&#39; &#39;014.mp4&#39;
+ &#39;015.mp4&#39; &#39;016.mp4&#39; &#39;017.mp4&#39; &#39;018.mp4&#39; &#39;019.mp4&#39; &#39;020.mp4&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="process-videos-with-a-detector">
+<h2>5.2 Process videos with a Detector<a class="headerlink" href="#process-videos-with-a-detector" title="Permalink to this headline">¶</a></h2>
+<p>Now we’ll initialize a new <code class="docutils literal notranslate"><span class="pre">Detector</span></code> and process each frame of each video, saving the results to csv files named after the video.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;rf&quot;</span><span class="p">,</span> <span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;resmasknet&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">videos</span><span class="p">:</span> 
+    <span class="n">out_name</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_name</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Already processed: </span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing: </span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">inputFname</span> <span class="o">=</span> <span class="n">video</span><span class="p">,</span> <span class="n">outputFname</span> <span class="o">=</span> <span class="n">out_name</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Already processed: 001.mp4
+Already processed: 002.mp4
+Already processed: 003.mp4
+Already processed: 004.mp4
+Already processed: 005.mp4
+Already processed: 006.mp4
+Already processed: 007.mp4
+Already processed: 008.mp4
+Already processed: 009.mp4
+Already processed: 010.mp4
+Already processed: 011.mp4
+Already processed: 012.mp4
+Already processed: 013.mp4
+Already processed: 014.mp4
+Already processed: 015.mp4
+Already processed: 016.mp4
+Already processed: 017.mp4
+Already processed: 018.mp4
+Already processed: 019.mp4
+Already processed: 020.mp4
+</pre></div>
+</div>
+</div>
+</div>
+<p>Then we can use <code class="docutils literal notranslate"><span class="pre">read_feat</span></code> to load each CSV file and concatenate them together:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_feat</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="k">for</span> <span class="n">ix</span> <span class="p">,</span><span class="n">video</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">videos</span><span class="p">):</span>
+    <span class="n">out_name</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ix</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
+        <span class="n">fex</span> <span class="o">=</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">out_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">fex</span><span class="p">,</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">out_name</span><span class="p">)])</span>
+
+<span class="n">fex</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>frame</th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+      <th>x_0</th>
+      <th>x_1</th>
+      <th>x_2</th>
+      <th>x_3</th>
+      <th>...</th>
+      <th>Roll</th>
+      <th>Yaw</th>
+      <th>anger</th>
+      <th>disgust</th>
+      <th>fear</th>
+      <th>happiness</th>
+      <th>sadness</th>
+      <th>surprise</th>
+      <th>neutral</th>
+      <th>input</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>353.55045</td>
+      <td>284.39127</td>
+      <td>391.98178</td>
+      <td>528.90220</td>
+      <td>0.999796</td>
+      <td>361.880771</td>
+      <td>364.289369</td>
+      <td>370.594672</td>
+      <td>380.223391</td>
+      <td>...</td>
+      <td>-2.339310</td>
+      <td>1.250120</td>
+      <td>0.000156</td>
+      <td>0.000084</td>
+      <td>0.000831</td>
+      <td>0.962823</td>
+      <td>0.001139</td>
+      <td>0.029125</td>
+      <td>0.005842</td>
+      <td>001.mp4</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>353.57070</td>
+      <td>284.55023</td>
+      <td>391.95688</td>
+      <td>528.65340</td>
+      <td>0.999795</td>
+      <td>361.880771</td>
+      <td>364.289369</td>
+      <td>370.594672</td>
+      <td>380.223391</td>
+      <td>...</td>
+      <td>-2.339310</td>
+      <td>1.250120</td>
+      <td>0.000156</td>
+      <td>0.000084</td>
+      <td>0.000831</td>
+      <td>0.962823</td>
+      <td>0.001139</td>
+      <td>0.029125</td>
+      <td>0.005842</td>
+      <td>001.mp4</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>356.05103</td>
+      <td>284.03060</td>
+      <td>390.63580</td>
+      <td>527.54846</td>
+      <td>0.999777</td>
+      <td>361.573799</td>
+      <td>363.808128</td>
+      <td>370.042310</td>
+      <td>379.564765</td>
+      <td>...</td>
+      <td>-2.135026</td>
+      <td>1.276191</td>
+      <td>0.000164</td>
+      <td>0.000071</td>
+      <td>0.001515</td>
+      <td>0.851698</td>
+      <td>0.000759</td>
+      <td>0.141473</td>
+      <td>0.004320</td>
+      <td>001.mp4</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>372.93625</td>
+      <td>282.33966</td>
+      <td>387.16977</td>
+      <td>529.44080</td>
+      <td>0.999792</td>
+      <td>361.860681</td>
+      <td>364.592245</td>
+      <td>371.379240</td>
+      <td>381.879548</td>
+      <td>...</td>
+      <td>-2.460083</td>
+      <td>1.462515</td>
+      <td>0.000224</td>
+      <td>0.000105</td>
+      <td>0.001229</td>
+      <td>0.867401</td>
+      <td>0.000670</td>
+      <td>0.127383</td>
+      <td>0.002988</td>
+      <td>001.mp4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4</td>
+      <td>360.22266</td>
+      <td>280.82220</td>
+      <td>387.91090</td>
+      <td>522.95844</td>
+      <td>0.999802</td>
+      <td>366.604045</td>
+      <td>369.182709</td>
+      <td>375.583051</td>
+      <td>385.617726</td>
+      <td>...</td>
+      <td>-2.483959</td>
+      <td>1.655841</td>
+      <td>0.000161</td>
+      <td>0.000186</td>
+      <td>0.000778</td>
+      <td>0.964715</td>
+      <td>0.001320</td>
+      <td>0.029267</td>
+      <td>0.003572</td>
+      <td>001.mp4</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 173 columns</p>
+</div></div></div>
+</div>
+<p>Lastly we can match the processed file names to the text that participants heard in the experiment using the attributes file:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load in attributes</span>
+<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clip_attrs.csv&quot;</span><span class="p">)</span>
+
+<span class="c1"># Add in file names and rename conditions</span>
+<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+    <span class="nb">input</span><span class="o">=</span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">clipN</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.mp4&quot;</span><span class="p">),</span>
+    <span class="n">condition</span><span class="o">=</span><span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;gn&quot;</span><span class="p">:</span> <span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="s2">&quot;ists&quot;</span><span class="p">:</span> <span class="s2">&quot;badNews&quot;</span><span class="p">}),</span>
+<span class="p">)</span>
+
+<span class="n">clip_attrs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>clipN</th>
+      <th>class</th>
+      <th>phraseN</th>
+      <th>phrase_txt</th>
+      <th>input</th>
+      <th>condition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>gn</td>
+      <td>1</td>
+      <td>your loan has been approved</td>
+      <td>001.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>gn</td>
+      <td>2</td>
+      <td>you've got the job</td>
+      <td>002.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>gn</td>
+      <td>3</td>
+      <td>the vendor has accepted your offer</td>
+      <td>003.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>gn</td>
+      <td>4</td>
+      <td>your tests have come back clear</td>
+      <td>004.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>gn</td>
+      <td>5</td>
+      <td>your application has been accepted</td>
+      <td>005.mp4</td>
+      <td>goodNews</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</div>
+<div class="section" id="summary-statistics-and-feature-extraction">
+<h2>5.3 Summary statistics and feature extraction<a class="headerlink" href="#summary-statistics-and-feature-extraction" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">Fex</span></code> data classes have a special attribute called <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> that allow you to more easily compute summary statistics while respecting the grouping of an experimental setup. For example, if we set <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> to the name of each video, then we can easily calculate mean AU intensity separately for each video using <code class="docutils literal notranslate"><span class="pre">.extract_mean()</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set sessions to the input filenames</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span>
+
+<span class="c1"># Now extracting the mean is grouped by video </span>
+<span class="n">average_au_intensity_per_video</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
+<span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/Documents/pypackages/py-feat/feat/data.py:1098: FutureWarning: Dropping of nuisance columns in DataFrame reductions (with &#39;numeric_only=None&#39;) is deprecated; in a future version this will raise TypeError.  Select only valid columns before calling the reduction.
+  feats.append(pd.Series(v.mean(), name=k))
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean_frame</th>
+      <th>mean_FaceRectX</th>
+      <th>mean_FaceRectY</th>
+      <th>mean_FaceRectWidth</th>
+      <th>mean_FaceRectHeight</th>
+      <th>mean_FaceScore</th>
+      <th>mean_x_0</th>
+      <th>mean_x_1</th>
+      <th>mean_x_2</th>
+      <th>mean_x_3</th>
+      <th>...</th>
+      <th>mean_Pitch</th>
+      <th>mean_Roll</th>
+      <th>mean_Yaw</th>
+      <th>mean_anger</th>
+      <th>mean_disgust</th>
+      <th>mean_fear</th>
+      <th>mean_happiness</th>
+      <th>mean_sadness</th>
+      <th>mean_surprise</th>
+      <th>mean_neutral</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>001.mp4</th>
+      <td>15.333333</td>
+      <td>363.440811</td>
+      <td>276.011551</td>
+      <td>389.400380</td>
+      <td>531.317063</td>
+      <td>0.999798</td>
+      <td>363.315102</td>
+      <td>366.280346</td>
+      <td>373.149525</td>
+      <td>383.261043</td>
+      <td>...</td>
+      <td>0.177313</td>
+      <td>-2.114715</td>
+      <td>1.180729</td>
+      <td>0.000413</td>
+      <td>0.000135</td>
+      <td>0.004354</td>
+      <td>0.807167</td>
+      <td>0.002137</td>
+      <td>0.180481</td>
+      <td>0.005313</td>
+    </tr>
+    <tr>
+      <th>002.mp4</th>
+      <td>13.500000</td>
+      <td>357.046632</td>
+      <td>271.387664</td>
+      <td>388.206440</td>
+      <td>534.764812</td>
+      <td>0.999801</td>
+      <td>356.668935</td>
+      <td>359.150546</td>
+      <td>365.668823</td>
+      <td>375.458671</td>
+      <td>...</td>
+      <td>0.283955</td>
+      <td>-1.140242</td>
+      <td>-0.137504</td>
+      <td>0.000334</td>
+      <td>0.000193</td>
+      <td>0.003266</td>
+      <td>0.689485</td>
+      <td>0.003445</td>
+      <td>0.296081</td>
+      <td>0.007197</td>
+    </tr>
+    <tr>
+      <th>003.mp4</th>
+      <td>23.000000</td>
+      <td>346.714941</td>
+      <td>270.177871</td>
+      <td>386.564368</td>
+      <td>536.648572</td>
+      <td>0.999812</td>
+      <td>350.511296</td>
+      <td>351.734623</td>
+      <td>356.819917</td>
+      <td>365.767994</td>
+      <td>...</td>
+      <td>0.338764</td>
+      <td>-0.764419</td>
+      <td>-0.115190</td>
+      <td>0.000173</td>
+      <td>0.000066</td>
+      <td>0.003915</td>
+      <td>0.390239</td>
+      <td>0.000757</td>
+      <td>0.602745</td>
+      <td>0.002105</td>
+    </tr>
+    <tr>
+      <th>004.mp4</th>
+      <td>22.000000</td>
+      <td>334.102018</td>
+      <td>280.312059</td>
+      <td>386.093014</td>
+      <td>530.022378</td>
+      <td>0.999812</td>
+      <td>335.403217</td>
+      <td>338.709198</td>
+      <td>345.324274</td>
+      <td>355.286428</td>
+      <td>...</td>
+      <td>1.916862</td>
+      <td>-2.290477</td>
+      <td>0.568985</td>
+      <td>0.000567</td>
+      <td>0.000201</td>
+      <td>0.005668</td>
+      <td>0.657875</td>
+      <td>0.004872</td>
+      <td>0.324604</td>
+      <td>0.006213</td>
+    </tr>
+    <tr>
+      <th>005.mp4</th>
+      <td>22.000000</td>
+      <td>320.158563</td>
+      <td>295.608988</td>
+      <td>386.956427</td>
+      <td>528.865910</td>
+      <td>0.999818</td>
+      <td>321.261506</td>
+      <td>324.980402</td>
+      <td>332.101778</td>
+      <td>342.213722</td>
+      <td>...</td>
+      <td>1.006443</td>
+      <td>-2.907811</td>
+      <td>0.906388</td>
+      <td>0.000209</td>
+      <td>0.000059</td>
+      <td>0.002261</td>
+      <td>0.870938</td>
+      <td>0.001409</td>
+      <td>0.121527</td>
+      <td>0.003597</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 172 columns</p>
+</div></div></div>
+</div>
+<p>However, you can set <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> to any grouping you desire. For the current analysis, setting <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> equal to the condition each frame belonged to, allows us to easily calculate mean AU intensity per condition using <code class="docutils literal notranslate"><span class="pre">.extract_mean()</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assign each processed frame to the condition it came from</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">],</span> <span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;condition&#39;</span><span class="p">]))</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+
+<span class="c1"># Now extracting the mean is grouped by session (experimental condition)</span>
+<span class="n">average_au_intensity_per_condition</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
+<span class="n">average_au_intensity_per_condition</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/Documents/pypackages/py-feat/feat/data.py:1098: FutureWarning: Dropping of nuisance columns in DataFrame reductions (with &#39;numeric_only=None&#39;) is deprecated; in a future version this will raise TypeError.  Select only valid columns before calling the reduction.
+  feats.append(pd.Series(v.mean(), name=k))
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean_frame</th>
+      <th>mean_FaceRectX</th>
+      <th>mean_FaceRectY</th>
+      <th>mean_FaceRectWidth</th>
+      <th>mean_FaceRectHeight</th>
+      <th>mean_FaceScore</th>
+      <th>mean_x_0</th>
+      <th>mean_x_1</th>
+      <th>mean_x_2</th>
+      <th>mean_x_3</th>
+      <th>...</th>
+      <th>mean_Pitch</th>
+      <th>mean_Roll</th>
+      <th>mean_Yaw</th>
+      <th>mean_anger</th>
+      <th>mean_disgust</th>
+      <th>mean_fear</th>
+      <th>mean_happiness</th>
+      <th>mean_sadness</th>
+      <th>mean_surprise</th>
+      <th>mean_neutral</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>badNews</th>
+      <td>28.089720</td>
+      <td>324.400708</td>
+      <td>301.247496</td>
+      <td>391.827660</td>
+      <td>532.716661</td>
+      <td>0.999816</td>
+      <td>322.016527</td>
+      <td>328.383112</td>
+      <td>339.664185</td>
+      <td>355.110626</td>
+      <td>...</td>
+      <td>-5.782593</td>
+      <td>-3.816183</td>
+      <td>-2.723817</td>
+      <td>0.020171</td>
+      <td>0.014992</td>
+      <td>0.097006</td>
+      <td>0.013134</td>
+      <td>0.086385</td>
+      <td>0.697528</td>
+      <td>0.070784</td>
+    </tr>
+    <tr>
+      <th>goodNews</th>
+      <td>20.646766</td>
+      <td>340.821428</td>
+      <td>275.474329</td>
+      <td>387.800142</td>
+      <td>533.403960</td>
+      <td>0.999813</td>
+      <td>341.648032</td>
+      <td>344.112135</td>
+      <td>350.285509</td>
+      <td>359.913069</td>
+      <td>...</td>
+      <td>0.752362</td>
+      <td>-1.497069</td>
+      <td>-0.174644</td>
+      <td>0.000287</td>
+      <td>0.000095</td>
+      <td>0.004073</td>
+      <td>0.618644</td>
+      <td>0.001715</td>
+      <td>0.371462</td>
+      <td>0.003724</td>
+    </tr>
+  </tbody>
+</table>
+<p>2 rows × 172 columns</p>
+</div></div></div>
+</div>
+</div>
+<div class="section" id="evaluting-overall-au-intensity-with-a-one-sample-t-test">
+<h2>5.4 Evaluting overall AU intensity with a one-sample t-test<a class="headerlink" href="#evaluting-overall-au-intensity-with-a-one-sample-t-test" title="Permalink to this headline">¶</a></h2>
+<p>One analyses we might be interested in is if the average activation of any AUs are significantly higher than .5 (chance) when participants received good news. We can do this by running a one-sample t-test over the mean AU activity per video using the <code class="docutils literal notranslate"><span class="pre">.ttest_1samp()</span></code> method.</p>
+<p>The results suggests more than half the AUs are significantly active beyond chance:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the session of the summary Fe instance to the experiental conditions</span>
+<span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+    <span class="n">conditions</span>
+<span class="p">)</span>
+
+<span class="c1"># Then we can perform a test for one condition only</span>
+<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">average_au_intensity_per_video</span><span class="p">[</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span> <span class="o">==</span> <span class="s1">&#39;goodNews&#39;</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">aus</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Show significance start based on bonferroni correction</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">p</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">au_columns</span>
+<span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sig</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">p</span> <span class="o">&lt;</span> <span class="mf">0.05</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;sig&#39;</span><span class="p">)</span>
+<span class="n">results</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>t</th>
+      <th>p</th>
+      <th>sig</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>mean_AU01</th>
+      <td>-3.083360</td>
+      <td>1.306884e-02</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>mean_AU25</th>
+      <td>3.540150</td>
+      <td>6.312618e-03</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>mean_AU24</th>
+      <td>-2.462283</td>
+      <td>3.602344e-02</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>mean_AU06</th>
+      <td>3.189709</td>
+      <td>1.101172e-02</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>mean_AU23</th>
+      <td>-0.640517</td>
+      <td>5.378009e-01</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>mean_AU17</th>
+      <td>0.021491</td>
+      <td>9.833231e-01</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>mean_AU28</th>
+      <td>-2.146230</td>
+      <td>6.040604e-02</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>mean_AU26</th>
+      <td>-6.413477</td>
+      <td>1.233055e-04</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU20</th>
+      <td>-19.486802</td>
+      <td>1.141779e-08</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU15</th>
+      <td>-8.882221</td>
+      <td>9.508308e-06</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU12</th>
+      <td>10.020338</td>
+      <td>3.518224e-06</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU11</th>
+      <td>-15.701840</td>
+      <td>7.578798e-08</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU10</th>
+      <td>8.198208</td>
+      <td>1.819405e-05</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU09</th>
+      <td>-12.475848</td>
+      <td>5.524955e-07</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU07</th>
+      <td>4.371391</td>
+      <td>1.793454e-03</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU05</th>
+      <td>-8.110445</td>
+      <td>1.983488e-05</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU04</th>
+      <td>-47.979968</td>
+      <td>3.718765e-12</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU02</th>
+      <td>-4.691807</td>
+      <td>1.133177e-03</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU14</th>
+      <td>19.664849</td>
+      <td>1.053837e-08</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>mean_AU43</th>
+      <td>-44.777964</td>
+      <td>6.907718e-12</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</div>
+<div class="section" id="comparing-conditions">
+<h2>5.5 Comparing conditions<a class="headerlink" href="#comparing-conditions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="looking-at-condition-ifferences-for-a-single-au-using-a-t-test">
+<h3>5.5.1 Looking at condition ifferences for a single AU using a t-test<a class="headerlink" href="#looking-at-condition-ifferences-for-a-single-au-using-a-t-test" title="Permalink to this headline">¶</a></h3>
+<p>More likely we want to compare experimental conditions using a two-sample t-test. This allows us to answer separately for each AU: was intensity significantly different when participants received good vs bad news? We can do this using the <code class="docutils literal notranslate"><span class="pre">.ttest_ind()</span></code> method which takes a column and sessions to compare:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">columns2compare</span> <span class="o">=</span> <span class="s2">&quot;mean_AU12&quot;</span>
+<span class="n">sessions</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">)</span>
+
+<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">ttest_ind</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="n">columns2compare</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">sessions</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T-test between </span><span class="si">{</span><span class="n">sessions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">sessions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">: t=</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2">, p=</span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">columns2compare</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">average_au_intensity_per_video</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>T-test between goodNews vs badNews: t=15, p=9.63e-12
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:ylabel=&#39;mean_AU12&#39;&gt;
+</pre></div>
+</div>
+<img alt="../_images/05_fex_analysis_18_2.png" src="../_images/05_fex_analysis_18_2.png" />
+</div>
+</div>
+</div>
+<div class="section" id="comparing-all-aus-across-conditions-using-regression">
+<h3>5.5.2 Comparing all AUs across conditions using regression<a class="headerlink" href="#comparing-all-aus-across-conditions-using-regression" title="Permalink to this headline">¶</a></h3>
+<p>More likely we’ll want to run this comparison for <em>all</em> AUs. Because t-tests are just regression we can using the <code class="docutils literal notranslate"><span class="pre">.regress()</span></code> method along with numerical contrasts to corresponding to the condition means to run a test at every AU.</p>
+<p>This is analogous to the “mass-univariate” GLM approach in fMRI researchnd allows us to identify what AUs are significantly more active in condition vs another:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This time replace the labels for each condition with a numerical contrast code</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;goodNews&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">})</span>
+
+<span class="c1"># We&#39;ll use these contrasts are predictors in our regression</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span>
+<span class="c1"># Add an intercept to the regression</span>
+<span class="n">X</span><span class="p">[</span><span class="s2">&quot;intercept&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># The dependent variable is AU intensity</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span>
+<span class="c1"># Now we get a t-test at every AU</span>
+<span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">regress</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Betas comparing the contrast of good news AU intensity &gt; bad news AU intensity&quot;</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">b</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;betas&quot;</span><span class="p">}),</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;t-stats&quot;</span><span class="p">}),</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;p-values&quot;</span><span class="p">}),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">results</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Betas comparing the contrast of good news AU intensity &gt; bad news AU intensity
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/nltools/stats.py:1076: FutureWarning: Support for multi-dimensional indexing (e.g. `obj[:, None]`) is deprecated and will be removed in a future version.  Convert to a numpy array before indexing instead.
+  * sigma[np.newaxis, :]
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>AU01</th>
+      <th>AU02</th>
+      <th>AU04</th>
+      <th>AU05</th>
+      <th>AU06</th>
+      <th>AU07</th>
+      <th>AU09</th>
+      <th>AU10</th>
+      <th>AU11</th>
+      <th>AU12</th>
+      <th>AU14</th>
+      <th>AU15</th>
+      <th>AU17</th>
+      <th>AU20</th>
+      <th>AU23</th>
+      <th>AU24</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>AU28</th>
+      <th>AU43</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>betas</th>
+      <td>0.025</td>
+      <td>0.035</td>
+      <td>-0.042</td>
+      <td>-0.168</td>
+      <td>0.396</td>
+      <td>0.231</td>
+      <td>0.123</td>
+      <td>0.318</td>
+      <td>0.012</td>
+      <td>0.469</td>
+      <td>0.029</td>
+      <td>0.083</td>
+      <td>0.064</td>
+      <td>0.050</td>
+      <td>-0.033</td>
+      <td>-0.249</td>
+      <td>0.247</td>
+      <td>0.085</td>
+      <td>-0.008</td>
+      <td>0.031</td>
+    </tr>
+    <tr>
+      <th>t-stats</th>
+      <td>3.859</td>
+      <td>6.291</td>
+      <td>-11.573</td>
+      <td>-26.156</td>
+      <td>41.112</td>
+      <td>30.929</td>
+      <td>22.875</td>
+      <td>32.094</td>
+      <td>8.169</td>
+      <td>42.164</td>
+      <td>6.404</td>
+      <td>14.822</td>
+      <td>13.344</td>
+      <td>12.006</td>
+      <td>-7.492</td>
+      <td>-21.745</td>
+      <td>18.964</td>
+      <td>13.772</td>
+      <td>-1.538</td>
+      <td>6.681</td>
+    </tr>
+    <tr>
+      <th>p-values</th>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.124</td>
+      <td>0.000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="compare-conditions-with-a-classifier-and-emotion-features">
+<h2>5.6 Compare conditions with a classifier and emotion features<a class="headerlink" href="#compare-conditions-with-a-classifier-and-emotion-features" title="Permalink to this headline">¶</a></h2>
+<p>Another way we can look at differences between conditions is by testing what combination of features can classify between good news or bad news conditions. To do this, we’ll train a Logistc Regression classifier using detected emotion intensity as features. We can use the <code class="docutils literal notranslate"><span class="pre">.predict()</span></code> method to help us out.</p>
+<p>The results suggest that happy expressions have a very high feature weight when predicting good news:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="c1"># Features = emotion predictions for each frame</span>
+<span class="c1"># Labels = experimental condition the frame belonged to</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">(),</span> <span class="n">y</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;liblinear&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;score: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">(),</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;coefficients for predicting class: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">classes_</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">()</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>score: 0.939
+coefficients for predicting class: goodNews
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>anger</th>
+      <th>disgust</th>
+      <th>fear</th>
+      <th>happiness</th>
+      <th>sadness</th>
+      <th>surprise</th>
+      <th>neutral</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-0.768841</td>
+      <td>-0.555749</td>
+      <td>-2.98863</td>
+      <td>8.392172</td>
+      <td>-2.308798</td>
+      <td>-0.094914</td>
+      <td>-3.108111</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</div>
+<div class="section" id="time-series-correlations">
+<h2>5.7 Time-series correlations<a class="headerlink" href="#time-series-correlations" title="Permalink to this headline">¶</a></h2>
+<p>Finally we might be interested in looking the similarity of the detected AU time-series across videos, sessions, or people. To compare the similarity of signals over time, we can use the <code class="docutils literal notranslate"><span class="pre">.isc()</span></code> method which takes an input column. Below we just look at AU 1 and we can get a sense of similar videos were to each other based how AU 1 changed over time.</p>
+<p>Warmer colors indicate a pair of videos elicited more <em>similar</em> AU 1 activity over time. We can see just by looking at this AU, how two video cluster seem to emerge reflecting the two experimental conditions: good news and bad news.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set sessions back to unique videos</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span>
+
+<span class="c1"># ISC returns a video x video pearson correlation matrix</span>
+<span class="n">isc</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">isc</span><span class="p">(</span><span class="n">col</span> <span class="o">=</span> <span class="s2">&quot;AU01&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pearson&#39;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">isc</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/05_fex_analysis_24_0.png" src="../_images/05_fex_analysis_24_0.png" />
+</div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./basic_tutorials"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="04_plotting.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">4. Visualizing Facial Expressions</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../extra_tutorials/loadingOtherFiles.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Loading data from other detectors</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+      By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie<br/>
+    
+        &copy; Copyright 2022.<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>
