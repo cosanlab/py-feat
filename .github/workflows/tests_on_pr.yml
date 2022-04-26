@@ -80,4 +80,4 @@ jobs:
 
       - name: Build book
         run: |
-          jupyter-book build notebooks
+          jupyter-book build docs

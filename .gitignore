@@ -9,10 +9,11 @@ Thumbs.db
 feat/tests/data/sampler0000.jpg
 feat/tests/data/fex_s20_cv_20170330.txt
 feat/tests/data/cond_pain_2017-03-30_s20_r01.txt
-notebooks/content/*.csv
-notebooks/content/*.mp4
-notebooks/content/dev_*
-notebooks/content/dev.ipynb
+
+# Ignore jupyter-book build artifacts as they'll get auto-built via github actions
+docs/**/*.csv
+docs/**/*.mp4
+docs/_build
 
 #Ignoreresources folder.
 resources/
@@ -91,6 +92,3 @@ _Notebooks/
 # Ignore data files for AU viz model building
 data/*
 !data/.gitkeep
-
-# Ignore jupyter-book build artifacts as they'll get auto-built via github actions
-notebooks/_build
