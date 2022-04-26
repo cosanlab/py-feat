@@ -91,11 +91,11 @@ class FaceBoxes:
         Let's actually assume that img_ is of shape BxHxWxC
         """
         ##CONSTRUCTION SITE:
-        #assert len(img_.shape) == 4, 'make sure that the image file is of shpae BxHxWxC!'
-        #img_ = np.expand_dims(img_,0)
-        #img_ = np.concatenate([img_,img_],0)
+        # assert len(img_.shape) == 4, 'make sure that the image file is of shpae BxHxWxC!'
+        # img_ = np.expand_dims(img_,0)
+        # img_ = np.concatenate([img_,img_],0)
         #######################
-        
+
         img_raw = img_.copy()
 
         # scaling to speed up
@@ -113,10 +113,10 @@ class FaceBoxes:
                 h_s = int(scale * h)
                 w_s = int(scale * w)
                 # print(h_s, w_s)
-                img_raw_scale = np.zeros((img_raw.shape[0],h_s,w_s,img_raw.shape[3]))
+                img_raw_scale = np.zeros((img_raw.shape[0], h_s, w_s, img_raw.shape[3]))
                 for i in range(img_raw.shape[0]):
-                    img_raw_scale[i] = cv2.resize(img_raw[i,:,:,:], dsize=(w_s, h_s))
-                #img_raw_scale = cv2.resize(img_raw, dsize=(w_s, h_s))
+                    img_raw_scale[i] = cv2.resize(img_raw[i, :, :, :], dsize=(w_s, h_s))
+                # img_raw_scale = cv2.resize(img_raw, dsize=(w_s, h_s))
                 # print(img_raw_scale.shape)
 
             img = np.float32(img_raw_scale)
@@ -129,23 +129,33 @@ class FaceBoxes:
         scale_bbox = torch.Tensor(
             [img.shape[2], img.shape[1], img.shape[2], img.shape[1]]
         )
-        img[:,...,:] -= (104, 117, 123)
+        img[:, ..., :] -= (104, 117, 123)
         img = img.transpose(0, 3, 1, 2)
-        img = torch.from_numpy(img)#.unsqueeze(0)
+        img = torch.from_numpy(img)  # .unsqueeze(0)
 
-        #_t["forward_pass"].tic()
+        # _t["forward_pass"].tic()
         loc, conf = self.net(img)  # forward pass
-        #_t["forward_pass"].toc()
-        #_t["misc"].tic()
-        
+        # _t["forward_pass"].toc()
+        # _t["misc"].tic()
+
         total_boxes = []
         for i in range(loc.shape[0]):
-            tmp_box = self._calculate_boxinfo(im_height=im_height, im_width=im_width, loc=loc[i], conf=conf[i], scale=scale, img=img, scale_bbox=scale_bbox)
+            tmp_box = self._calculate_boxinfo(
+                im_height=im_height,
+                im_width=im_width,
+                loc=loc[i],
+                conf=conf[i],
+                scale=scale,
+                img=img,
+                scale_bbox=scale_bbox,
+            )
             total_boxes.append(tmp_box)
 
-        return(total_boxes)
+        return total_boxes
 
-    def _calculate_boxinfo(self, im_height, im_width, loc, conf, scale, img, scale_bbox):
+    def _calculate_boxinfo(
+        self, im_height, im_width, loc, conf, scale, img, scale_bbox
+    ):
 
         priorbox = PriorBox(image_size=(im_height, im_width))
         priors = priorbox.forward()
@@ -177,7 +187,7 @@ class FaceBoxes:
 
         # keep top-K faster NMS
         dets = dets[:keep_top_k, :]
-        #_t["misc"].toc()
+        # _t["misc"].toc()
 
         # if self.timer_flag:
         #     print(

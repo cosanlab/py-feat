@@ -2,12 +2,11 @@ from .pnp_model import PerspectiveNPointModel
 
 
 class PerspectiveNPoint:
-
     def __init__(self):
         self.model = PerspectiveNPointModel()
 
     def __call__(self, frames, landmarks):
-        """ Determines headpose using passed 68 2D landmarks
+        """Determines headpose using passed 68 2D landmarks
         Args:
             frames (np.ndarray) : A list of cv2 images from which the landmarks were produced
             landmarks (np.ndarray) : The landmarks used to produce headpose estimates

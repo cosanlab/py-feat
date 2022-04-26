@@ -1,19 +1,21 @@
-from __future__ import division
+"""
+Main Fex data class. The Fex class is a pandas DataFrame subclass that makes it
+easier to work with the results output from a Detector
+"""
 
-"""Class definitions."""
+import warnings
 
-import os, warnings
-from os.path import join
+# Suppress nilearn warnings that come from importing nltools
+warnings.filterwarnings("ignore", category=FutureWarning, module="nilearn")
 import numpy as np
 import pandas as pd
-from pandas import DataFrame, Series, Index
+from pandas import DataFrame, Series
 from copy import deepcopy
 from functools import reduce
-from nltools.data import Adjacency, design_matrix
-from nltools.stats import downsample, upsample, transform_pairwise, regress
+from nltools.data import Adjacency
+from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
-from sklearn.metrics.pairwise import pairwise_distances, cosine_similarity
-from sklearn.utils import check_random_state
+from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
 
 from feat.utils import (
@@ -24,12 +26,17 @@ from feat.utils import (
     wavelet,
     calc_hist_auc,
     load_h5,
-    get_resource_path,
 )
-from feat.plotting import plot_face, draw_lineface, draw_muscles, draw_facepose
+from feat.plotting import plot_face, draw_lineface, draw_facepose
+from feat.pretrained import AU_LANDMARK_MAP
 from nilearn.signal import clean
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
+from PIL import Image
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+import seaborn as sns
+from textwrap import wrap
 
 
 class FexSeries(Series):
@@ -39,23 +46,6 @@ class FexSeries(Series):
     Fex class, i.e. how slicing is typically handled in pandas.
     All methods should be called on Fex below.
     """
-
-    _metadata = [
-        "au_columns",
-        "emotion_columns",
-        "facebox_columns",
-        "landmark_columns",
-        "facepose_columns",
-        "gaze_columns",
-        "time_columns",
-        "design_columns",
-        "fex_columns",
-        "filename",
-        "sampling_freq",
-        "features",
-        "sessions",
-        "detector",
-    ]
 
     def __init__(self, *args, **kwargs):
         ### Columns ###
@@ -76,128 +66,6 @@ class FexSeries(Series):
         self.sessions = kwargs.pop("sessions", None)
         super().__init__(*args, **kwargs)
 
-    @property
-    def _constructor(self):
-        return FexSeries
-
-    @property
-    def _constructor_expanddim(self):
-        return Fex
-
-    def __finalize__(self, other, method=None, **kwargs):
-        """Propagate metadata from other to self"""
-        # NOTE: backported from pandas master (upcoming v0.13)
-        for name in self._metadata:
-            object.__setattr__(self, name, getattr(other, name, None))
-        return self
-
-    def aus(self):
-        """Returns the Action Units data
-
-        Returns:
-            DataFrame: Action Units data
-        """
-        return self[self.au_columns]
-
-    def emotions(self):
-        """Returns the emotion data
-
-        Returns:
-            DataFrame: emotion data
-        """
-        return self[self.emotion_columns]
-
-    def landmark(self):
-        """Returns the landmark data
-
-        Returns:
-            DataFrame: landmark data
-        """
-        return self[self.landmark_columns]
-
-    def facepose(self):
-        """Returns the facepose data
-
-        Returns:
-            DataFrame: facepose data
-        """
-        return self[self.facepose_columns]
-
-    def input(self):
-        """Returns input column as string
-
-        Returns:
-            string: path to input image
-        """
-        return self["input"]
-
-    def landmark_x(self):
-        """Returns the x landmarks.
-
-        Returns:
-            DataFrame: x landmarks.
-        """
-        ######## TODO: NATSORT columns before returning #######
-        x_cols = [col for col in self.landmark_columns if "x" in col]
-        return self[x_cols]
-
-    def landmark_y(self):
-        """Returns the y landmarks.
-
-        Returns:
-            DataFrame: y landmarks.
-        """
-        y_cols = [col for col in self.landmark_columns if "y" in col]
-        return self[y_cols]
-
-    def facebox(self):
-        """Returns the facebox data
-
-        Returns:
-            DataFrame: facebox data
-        """
-        return self[self.facebox_columns]
-
-    def time(self):
-        """Returns the time data
-
-        Returns:
-            DataFrame: time data
-        """
-        return self[self.time_columns]
-
-    def design(self):
-        """Returns the design data
-
-        Returns:
-            DataFrame: time data
-        """
-        return self[self.design_columns]
-
-    def info(self):
-        """Print class meta data."""
-        attr_list = []
-        for name in self._metadata:
-            attr_list.append(name + ": " + str(getattr(self, name, None)) + "\n")
-        print(f"{self.__class__}\n" + "".join(attr_list))
-
-
-class Fex(DataFrame):
-    """Fex is a class to represent facial expression (Fex) data
-
-    Fex class is  an enhanced pandas dataframe, with extra attributes and methods to help with facial expression data analysis.
-
-    Args:
-        filename: (str, optional) path to file
-        detector: (str, optional) name of software used to extract Fex. (Feat, FACET, OpenFace, or Affectiva)
-        sampling_freq (float, optional): sampling rate of each row in Hz; defaults to None
-        features (pd.Dataframe, optional): features that correspond to each Fex row
-        sessions: Unique values indicating rows associated with a specific session (e.g., trial, subject, etc).Must be a 1D array of n_samples elements; defaults to None
-    """
-
-    # __metaclass__  = abc.ABCMeta
-
-    # Need to specify attributes for pandas.
     _metadata = [
         "au_columns",
         "emotion_columns",
@@ -213,6 +81,158 @@ class Fex(DataFrame):
         "features",
         "sessions",
         "detector",
+        "verbose",
+    ]
+
+    @property
+    def _constructor(self):
+        return FexSeries
+
+    @property
+    def _constructor_expanddim(self):
+        return Fex
+
+    def __finalize__(self, other, method=None, **kwargs):
+        """Propagate metadata from other to self"""
+        for name in self._metadata:
+            object.__setattr__(self, name, getattr(other, name, None))
+        return self
+
+    @property
+    def aus(self):
+        """Returns the Action Units data
+
+        Returns:
+            DataFrame: Action Units data
+        """
+        return self[self.au_columns]
+
+    @property
+    def emotions(self):
+        """Returns the emotion data
+
+        Returns:
+            DataFrame: emotion data
+        """
+        return self[self.emotion_columns]
+
+    @property
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns:
+            DataFrame: landmark data
+        """
+        return self[self.landmark_columns]
+
+    @property
+    def facepose(self):
+        """Returns the facepose data
+
+        Returns:
+            DataFrame: facepose data
+        """
+        return self[self.facepose_columns]
+
+    @property
+    def input(self):
+        """Returns input column as string
+
+        Returns:
+            string: path to input image
+        """
+        return self["input"]
+
+    @property
+    def landmark_x(self):
+        """Returns the x landmarks.
+
+        Returns:
+            DataFrame: x landmarks.
+        """
+        x_cols = [col for col in self.landmark_columns if "x" in col]
+        return self[x_cols]
+
+    @property
+    def landmark_y(self):
+        """Returns the y landmarks.
+
+        Returns:
+            DataFrame: y landmarks.
+        """
+        y_cols = [col for col in self.landmark_columns if "y" in col]
+        return self[y_cols]
+
+    @property
+    def facebox(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """
+        return self[self.facebox_columns]
+
+    @property
+    def time(self):
+        """Returns the time data
+
+        Returns:
+            DataFrame: time data
+        """
+        return self[self.time_columns]
+
+    @property
+    def design(self):
+        """Returns the design data
+
+        Returns:
+            DataFrame: time data
+        """
+        return self[self.design_columns]
+
+    @property
+    def info(self):
+        """Print class meta data."""
+        attr_list = []
+        for name in self._metadata:
+            attr_list.append(name + ": " + str(getattr(self, name, None)) + "\n")
+        print(f"{self.__class__}\n" + "".join(attr_list))
+
+    def plot_detections(self, *args, **kwargs):
+        """Alias for Fex.plot_detections"""
+        return Fex(self).T.__finalize__(self).plot_detections(*args, **kwargs)
+
+
+# TODO: Switch all print statements to respect verbose
+class Fex(DataFrame):
+    """Fex is a class to represent facial expression (Fex) data
+
+    Fex class is  an enhanced pandas dataframe, with extra attributes and methods to help with facial expression data analysis.
+
+    Args:
+        filename: (str, optional) path to file
+        detector: (str, optional) name of software used to extract Fex. (Feat, FACET, OpenFace, or Affectiva)
+        sampling_freq (float, optional): sampling rate of each row in Hz; defaults to None
+        features (pd.Dataframe, optional): features that correspond to each Fex row
+        sessions: Unique values indicating rows associated with a specific session (e.g., trial, subject, etc).Must be a 1D array of n_samples elements; defaults to None
+    """
+
+    _metadata = [
+        "au_columns",
+        "emotion_columns",
+        "facebox_columns",
+        "landmark_columns",
+        "facepose_columns",
+        "gaze_columns",
+        "time_columns",
+        "design_columns",
+        "fex_columns",
+        "filename",
+        "sampling_freq",
+        "features",
+        "sessions",
+        "detector",
+        "verbose",
     ]
 
     def __finalize__(self, other, method=None, **kwargs):
@@ -247,6 +267,8 @@ class Fex(DataFrame):
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
 
+        self.verbose = kwargs.pop("verbose", False)
+
         super().__init__(*args, **kwargs)
         if self.sessions is not None:
             if not len(self.sessions) == len(self):
@@ -269,106 +291,27 @@ class Fex(DataFrame):
 
     @property
     def _constructor_sliced(self):
-        return FexSeries
-
-    def _ixs(self, i, axis=0):
-        """Override indexing to ensure Fex._metadata is propogated correctly
-            when integer indexing
-
-        i : int, slice, or sequence of integers
-        axis : int
         """
-        result = super()._ixs(i, axis=axis)
+        Propagating custom metadata from sub-classed dfs to sub-classed series is not
+        automatically handled. See: https://github.com/pandas-dev/pandas/issues/19850
+        _constructor_sliced (which dataframes call when their return type is a series
+        can only return a function definition or class definition. So to make sure we
+        propagate attributes from Fex -> FexSeries we define another
+        function that calls .__finalize__ on the returned FexSeries
 
-        # Override columns
-        if axis == 0:
-            if isinstance(i, slice):
-                return self[i]
-            else:
-                label = self.index[i]
-                if isinstance(label, Index):
-                    # a location index by definition
-                    result = self.take(i, axis=axis)
-                    copy = True
-                else:
-                    new_values = self._data.fast_xs(i)
+        Inspired by how GeoPandas subclasses dataframes. See their _constructor_sliced
+        here:
+        https://github.com/geopandas/geopandas/blob/2eac5e212a7e2ebbca71f35707a2a196e4b09527/geopandas/geodataframe.py#L1460
 
-                    # if we are a copy, mark as such
-                    copy = (
-                        isinstance(new_values, np.ndarray) and new_values.base is None
-                    )
-                    result = self._constructor_sliced(
-                        new_values,
-                        index=self.columns,
-                        name=self.index[i],
-                        dtype=new_values.dtype,
-                        au_columns=self.au_columns,
-                        emotion_columns=self.emotion_columns,
-                        facebox_columns=self.facebox_columns,
-                        landmark_columns=self.landmark_columns,
-                        facepose_columns=self.facepose_columns,
-                        gaze_columns=self.gaze_columns,
-                        time_columns=self.time_columns,
-                        design_columns=self.design_columns,
-                        filename=self.filename,
-                        sampling_freq=self.sampling_freq,
-                        detector=self.detector,
-                        features=self.features,
-                        sessions=self.sessions,
-                    )
-                result._set_is_copy(self, copy=copy)
-                return result
+        And their constructor function here: https://github.com/geopandas/geopandas/blob/2eac5e212a7e2ebbca71f35707a2a196e4b09527/geopandas/geoseries.py#L31
+        """
 
-        else:
-            """
-            Notes
-            -----
-            If slice passed, the resulting data will be a view
-            """
+        def _fexseries_constructor(*args, **kwargs):
+            return FexSeries(*args, **kwargs).__finalize__(self)
 
-            label = self.columns[i]
-            if isinstance(i, slice):
-                # need to return view
-                lab_slice = slice(label[0], label[-1])
-                return self.loc[:, lab_slice]
-            else:
-                if isinstance(label, Index):
-                    return self._take(i, axis=1, convert=True)
+        return _fexseries_constructor
 
-                index_len = len(self.index)
-
-                # if the values returned are not the same length
-                # as the index (iow a not found value), iget returns
-                # a 0-len ndarray. This is effectively catching
-                # a numpy error (as numpy should really raise)
-                values = self._data.iget(i)
-
-                if index_len and not len(values):
-                    values = np.array([np.nan] * index_len, dtype=object)
-                result = self._constructor_sliced(
-                    values,
-                    index=self.index,
-                    name=label,
-                    fastpath=True,
-                    au_columns=self.au_columns,
-                    emotion_columns=self.emotion_columns,
-                    facebox_columns=self.facebox_columns,
-                    landmark_columns=self.landmark_columns,
-                    facepose_columns=self.facepose_columns,
-                    gaze_columns=self.gaze_columns,
-                    time_columns=self.time_columns,
-                    design_columns=self.design_columns,
-                    filename=self.filename,
-                    sampling_freq=self.sampling_freq,
-                    detector=self.detector,
-                    features=self.features,
-                    sessions=self.sessions,
-                )
-
-                # this is a cached value, mark it so
-                result._set_as_cached(label, self)
-                return result
-
+    @property
     def aus(self):
         """Returns the Action Units data
 
@@ -379,6 +322,7 @@ class Fex(DataFrame):
         """
         return self[self.au_columns]
 
+    @property
     def emotions(self):
         """Returns the emotion data
 
@@ -389,6 +333,7 @@ class Fex(DataFrame):
         """
         return self[self.emotion_columns]
 
+    @property
     def landmark(self):
         """Returns the landmark data
 
@@ -399,6 +344,7 @@ class Fex(DataFrame):
         """
         return self[self.landmark_columns]
 
+    @property
     def facepose(self):
         """Returns the facepose data using the columns set in fex.facepose_columns
 
@@ -407,6 +353,7 @@ class Fex(DataFrame):
         """
         return self[self.facepose_columns]
 
+    @property
     def input(self):
         """Returns input column as string
 
@@ -417,6 +364,7 @@ class Fex(DataFrame):
         """
         return self["input"]
 
+    @property
     def landmark_x(self):
         """Returns the x landmarks.
 
@@ -425,10 +373,10 @@ class Fex(DataFrame):
         Returns:
             DataFrame: x landmarks.
         """
-        ######## TODO: NATSORT columns before returning #######
         x_cols = [col for col in self.landmark_columns if "x" in col]
         return self[x_cols]
 
+    @property
     def landmark_y(self):
         """Returns the y landmarks.
 
@@ -440,6 +388,7 @@ class Fex(DataFrame):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    @property
     def facebox(self):
         """Returns the facebox data
 
@@ -451,6 +400,7 @@ class Fex(DataFrame):
 
         return self[self.facebox_columns]
 
+    @property
     def time(self):
         """Returns the time data
 
@@ -461,6 +411,7 @@ class Fex(DataFrame):
         """
         return self[self.time_columns]
 
+    @property
     def design(self):
         """Returns the design data
 
@@ -496,6 +447,7 @@ class Fex(DataFrame):
         else:
             print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
 
+    @property
     def info(self):
         """Print all meta data of fex
 
@@ -1005,7 +957,7 @@ class Fex(DataFrame):
                     low_pass=low_pass,
                     high_pass=high_pass,
                     ensure_finite=ensure_finite,
-                    t_r=1.0 / np.float(self.sampling_freq),
+                    t_r=1.0 / np.float64(self.sampling_freq),
                     runs=sessions,
                     *args,
                     **kwargs,
@@ -1086,13 +1038,15 @@ class Fex(DataFrame):
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.mean()).T
         else:
-            feats = pd.DataFrame()
+            feats = []
             for k, v in self.itersessions():
-                feats = feats.append(pd.Series(v.mean(), name=k))
+                # TODO: Update to use pd.concat
+                feats.append(pd.Series(v.mean(), name=k))
+            feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
         for attr_name in [
             "au_columns",
@@ -1122,9 +1076,10 @@ class Fex(DataFrame):
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.min()).T
         else:
-            feats = pd.DataFrame()
+            feats = []
             for k, v in self.itersessions():
-                feats = feats.append(pd.Series(v.min(), name=k))
+                feats.append(pd.Series(v.min(), name=k))
+            feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)
@@ -1158,9 +1113,10 @@ class Fex(DataFrame):
         if self.sessions is None or ignore_sessions:
             feats = pd.DataFrame(self.max()).T
         else:
-            feats = pd.DataFrame()
+            feats = []
             for k, v in self.itersessions():
-                feats = feats.append(pd.Series(v.max(), name=k))
+                feats.append(pd.Series(v.max(), name=k))
+            feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)
@@ -1396,329 +1352,231 @@ class Fex(DataFrame):
             )
         return out.__finalize__(self)
 
-    def plot_aus(
-        self,
-        row_n,
-        model=None,
-        vectorfield=None,
-        muscles=None,
-        ax=None,
-        color="k",
-        linewidth=1,
-        linestyle="-",
-        gaze=None,
-        *args,
-        **kwargs,
-    ):
-        if self.detector == "FACET":
-            feats = [
-                "AU1",
-                "AU2",
-                "AU4",
-                "AU5",
-                "AU6",
-                "AU7",
-                "AU9",
-                "AU10",
-                "AU12",
-                "AU14",
-                "AU15",
-                "AU17",
-                "AU18",
-                "AU20",
-                "AU23",
-                "AU24",
-                "AU25",
-                "AU26",
-                "AU28",
-                "AU43",
-                "Pitch",
-                "Roll",
-                "Yaw",
-            ]
-            if row_n > len(self):
-                raise ValueError("Row number out of range.")
-            try:
-                au = []
-                for feat in feats:
-                    aun = self[feat]
-                    au.append(aun.copy()[row_n])
-                au = np.array(au)
-                if model is None:
-                    model = load_h5("facet.h5")
-                if muscles is not None:
-                    muscles["facet"] = 1
-                ax = plot_face(
-                    model=model,
-                    au=au,
-                    vectorfield=vectorfield,
-                    muscles=muscles,
-                    ax=ax,
-                    color=color,
-                    linewidth=linewidth,
-                    linestyle=linestyle,
-                    gaze=gaze,
-                    *args,
-                    **kwargs,
-                )
-                return ax
-            except Exception as e:
-                print("Unable to plot data:", e)
-        if self.detector == "OpenFace":
-            feats = [
-                "AU01_r",
-                "AU02_r",
-                "AU04_r",
-                "AU05_r",
-                "AU06_r",
-                "AU07_r",
-                "AU09_r",
-                "AU10_r",
-                "AU12_r",
-                "AU14_r",
-                "AU15_r",
-                "AU17_r",
-                "AU20_r",
-                "AU23_r",
-                "AU25_r",
-                "AU26_r",
-                "AU45_r",
-            ]
-            if row_n > len(self):
-                raise ValueError("Row number out of range.")
-            try:
-                au = []
-                for feat in feats:
-                    aun = self[feat]
-                    au.append(aun.copy()[row_n])
-                au = np.array(au + [0, 0, 0])
+    def _prepare_plot_aus(self, row, muscles, gaze):
 
-                if gaze:
-                    gaze_dat = ["gaze_0_x", "gaze_0_y", "gaze_1_x", "gaze_1_y"]
-                    gaze = []
-                    for i in range(4):
-                        gaze.append(self[gaze_dat[i]][row_n])
-                    if gaze_vecs:
-                        gaze.append(1)
-                    else:
-                        gaze.append(0)
-                else:
-                    gaze = None
-
-                ax = plot_face(
-                    model=model,
-                    au=au,
-                    vectorfield=vectorfield,
-                    muscles=muscles,
-                    ax=ax,
-                    color=color,
-                    linewidth=linewidth,
-                    linestyle=linestyle,
-                    gaze=gaze,
-                    *args,
-                    **kwargs,
-                )
-                return ax
-            except Exception as e:
-                print("Unable to plot data:", e)
-        if self.detector == "Affectiva":
-            if "AU01" not in self.au_columns:
-                feats = [
-                    "innerBrowRaise",
-                    "browRaise",
-                    "browFurrow",
-                    "eyeWiden",
-                    "cheekRaise",
-                    "lidTighten",
-                    "noseWrinkle",
-                    "upperLipRaise",
-                    "smile",
-                    "dimpler",
-                    "lipCornerDepressor",
-                    "chinRaise",
-                    "lipStretch",
-                    "lipPress",
-                    "mouthOpen",
-                    "jawDrop",
-                    "eyeClosure",
-                ]
-            else:
-                feats = [
-                    "AU01",
-                    "AU02",
-                    "AU04",
-                    "AU05",
-                    "AU06",
-                    "AU07",
-                    "AU09",
-                    "AU10",
-                    "AU12",
-                    "AU14",
-                    "AU15",
-                    "AU17",
-                    "AU20",
-                    "AU24",
-                    "AU25",
-                    "AU26",
-                    "AU43",
-                ]
-            if row_n > len(self):
-                raise ValueError("Row number out of range.")
-            try:
-                au = []
-                for feat in feats:
-                    aun = self[feat]
-                    au.append(aun.copy()[row_n] / 20)
-                au = np.array(au + [0, 0, 0])
-                ax = plot_face(
-                    model=model,
-                    au=au,
-                    vectorfield=vectorfield,
-                    muscles=muscles,
-                    ax=ax,
-                    color=color,
-                    linewidth=linewidth,
-                    linestyle=linestyle,
-                    gaze=gaze,
-                    *args,
-                    **kwargs,
-                )
-                return ax
-            except Exception as e:
-                print("Unable to plot data:", e)
-
-    def plot_detections(
-        self, draw_landmarks=True, draw_facelines=True, muscle=False, pose=False
-    ):
-        """Plots detection results by Feat.
+        """
+        Plot one or more faces based on their AU representation. This method is just a
+        convenient wrapper for feat.plotting.plot_face. See that function for additional
+        plotting args and kwargs.
 
         Args:
-            draw_landmarks (bool, optional): Whether to draw landmarks. Defaults to True.
-            draw_facelines (bool, optional): Whether to draw face lines. Defaults to True.
-            muscle (bool, optional): Whether to draw muscle activations. Defaults to False.
-            pose (bool, optional): Whether to draw head pose axes. Defaults to False.
+            force_separate_plot_per_detection (bool, optional): Whether to create a new
+            figure for each detected face or plot to the same figure for multiple
+            detections. Useful when you're know you're plotting multiple detections of a
+           *single* face from multiple video frames. Default False
 
-        Returns:
-            axes: handle to plot
         """
 
-        from PIL import Image
-        import matplotlib.pyplot as plt
-        from matplotlib.patches import Rectangle
-        import seaborn as sns
-        from textwrap import wrap
+        # Get AU labels based on detector type
+        feats = AU_LANDMARK_MAP[self.detector]
+        model = None
+
+        if self.detector == "FACET":
+            model = load_h5("facet.h5")
+            au = row[feats].to_numpy().squeeze()
+            if muscles is not None:
+                muscles["facet"] = 1
+            gaze = None
+
+        elif self.detector == "OpenFace":
+            au = row[feats].to_numpy().squeeze().tolist()
+            au = np.array(au + [0, 0, 0])
+
+            if gaze:
+                gaze_dat = ["gaze_0_x", "gaze_0_y", "gaze_1_x", "gaze_1_y"]
+                gaze = row[gaze_dat].to_numpy().squeeze().tolist()
+
+        elif self.detector == "Affectiva":
+            au = row[feats].to_numpy().squeeze() / 20
+            au = au.tolist()
+            au = np.array(au + [0, 0, 0])
+
+        elif self.detector == "Feat":
+            rrow = row.copy()
+            rrow["AU18"] = 0
+            au = rrow[feats].to_numpy().squeeze()
+
+        gaze = None if isinstance(gaze, bool) else gaze
+        return au, gaze, muscles, model
+
+    def plot_detections(
+        self,
+        faces="landmarks",
+        faceboxes=True,
+        muscles=False,
+        poses=False,
+        gazes=False,
+        add_titles=True,
+        au_barplot=True,
+        emotion_barplot=True,
+    ):
+        """
+        Plots detection results by Feat. Can control plotting of face, AU barplot and
+        Emotion barplot. The faces kwarg controls whether facial landmarks are draw on
+        top of input images or whether faces are visualized using Py-Feat's AU
+        visualization model using detected AUs. If detection was performed on a video an
+        faces = 'landmarks', only an outline of the face will be draw without loading
+        the underlying vidoe frame to save memory.
+
+
+        Args:
+            faces (str, optional): 'landmarks' to draw detected landmarks or 'aus' to
+            generate a face from AU detections using Py-Feat's AU landmark model.
+            Defaults to 'landmarks'.
+            faceboxes (bool, optional): Whether to draw the bounding box around detected
+            faces. Only applies if faces='landmarks'. Defaults to True.
+            muscles (bool, optional): Whether to draw muscles from AU activity. Only
+            applies if faces='aus'. Defaults to False.
+            poses (bool, optional): Whether to draw facial poses. Only applies if
+            faces='landmarks'. Defaults to False.
+            gazes (bool, optional): Whether to draw gaze vectors. Only applies if faces='aus'. Defaults to False.
+            add_titles (bool, optional): Whether to add the file name as a title above
+            the face. Defaults to True.
+            au_barplot (bool, optional): Whether to include a subplot for au detections. Defaults to True.
+            emotion_barplot (bool, optional): Whether to include a subplot for emotion detections. Defaults to True.
+
+
+        Returns:
+            list: list of matplotlib figures
+        """
+
+        # Plotting logic, eventually refactor me!:
+        # Possible detections:
+        # 1. Single image - single-face
+        # 2. Single image - multi-face
+        # 3. Multi image - single-face per image
+        # 4. Multi image - multi-face per image
+        # 5. Multi image - single and multi-face mix per image
+        # 6. Video - single-face for all frames
+        # 7. Video - multi-face for all frames
+        # 8. Video - single and multi-face mix across frames
 
         sns.set_context("paper", font_scale=2.0)
+        all_figs = []
+        num_subplots = bool(faces) + au_barplot + emotion_barplot
+        if faces is not False and faces not in ["aus", "landmarks"]:
+            raise ValueError("faces should be one of 'False', 'landmarks', or 'aus'")
 
-        # check how many images.
-        inputs = self.input().unique()
-        all_axes = []
-        for imagefile in inputs:
-            f, axes = plt.subplots(1, 3, figsize=(15, 7))
-            ax = axes[0]
-            try:
-                if os.path.exists(imagefile):
-                    color = "w"
-                    # draw base image
-                    im = Image.open(imagefile)
-                    ax.imshow(im)
-                    image_exists = True
-                else:
-                    image_exists = False
-                    color = "k"
-            except:
-                color = "k"
-                print(f"Input image {imagefile} not found.")
-                image_exists = False
+        for _, frame in enumerate(self.frame.unique()):
+            # Determine figure width based on how many subplots we have
+            f = plt.figure(figsize=(5 * num_subplots, 7))
+            spec = f.add_gridspec(ncols=num_subplots, nrows=1)
+            col_count = 0
+            plot_data = self.query("frame == @frame")
+            face_ax, au_ax, emo_ax = None, None, None
+            if faces is not False:
+                face_ax = f.add_subplot(spec[0, col_count])
+                col_count += 1
+            if au_barplot:
+                au_ax = f.add_subplot(spec[0, col_count])
+                col_count += 1
+            if emotion_barplot:
+                emo_ax = f.add_subplot(spec[0, col_count])
+                col_count += 1
 
-            sub_data = self.query("input==@imagefile")
-            for i in range(len(sub_data)):
-                # draw landmarks
-                row = sub_data.iloc[[i]]
-                landmark = row.landmark().values[0]
-                currx = landmark[:68]
-                curry = landmark[68:]
-                if draw_landmarks:
-                    if draw_facelines:
-                        draw_lineface(currx, curry, ax=ax, color=color, linewidth=3)
-                    else:
-                        draw_lineface(currx, curry, ax=ax, color=color, linewidth=0)
-                # muscle
-                if muscle:
-                    au20index = [
-                        f"AU{str(i).zfill(2)}"
-                        for i in [
-                            1,
-                            2,
-                            4,
-                            5,
-                            6,
-                            7,
-                            9,
-                            10,
-                            12,
-                            14,
-                            15,
-                            17,
-                            18,
-                            20,
-                            23,
-                            24,
-                            25,
-                            26,
-                            28,
-                            43,
-                        ]
-                    ]
-                    aus = row.aus().T.reindex(index=au20index).fillna(0).T.values[0]
-                    draw_muscles(currx, curry, au=aus, ax=ax, all="heatmap")
-                # facebox
-                facebox = row.facebox().values[0]
-                rect = Rectangle(
-                    (facebox[0], facebox[1]),
-                    facebox[2],
-                    facebox[3],
-                    linewidth=2,
-                    edgecolor="cyan",
-                    fill=False,
-                )
-                ax.add_patch(rect)
+            for _, row in plot_data.iterrows():
 
-                # facepose
-                if pose:
-                    draw_facepose(pose=row.facepose().values[0], facebox=facebox, ax=ax)
+                # DRAW LANDMARKS ON IMAGE OR AU FACE
+                if face_ax is not None:
 
-            if image_exists:
-                if sub_data.input().any():
-                    ax.set_title(
-                        "\n".join(wrap(sub_data.input().unique()[0], 30)),
-                        loc="left",
-                        wrap=True,
-                        fontsize=14,
-                    )
-            else:
-                ax.set_title(
-                    "\n".join(wrap(imagefile, 30)), loc="left", wrap=True, fontsize=14
-                )
-                ax.set(ylim=ax.get_ylim()[::-1])
-                ax.set_aspect("equal", "box")
+                    if faces == "landmarks":
+                        # Try to load image file as background
+                        # Will fail if input is a video
+                        try:
+                            face_ax.imshow(Image.open(row["input"]))
+                            color = "w"
+                        except Exception as e:
+                            if self.verbose:
+                                print(f"{e}")
+                            color = "k"
 
-            # plot AUs
-            sub_data.aus().T.plot(kind="barh", ax=axes[1])
-            axes[1].invert_yaxis()
-            axes[1].get_legend().remove()
-            axes[1].set(xlim=[0, 1.1], title="Action Units")
+                        landmark = row[self.landmark_columns].values
+                        currx = landmark[:68]
+                        curry = landmark[68:]
+                        facebox = row[self.facebox_columns].values
 
-            # plot emotions
-            sub_data.emotions().T.plot(kind="barh", ax=axes[2])
-            axes[2].invert_yaxis()
-            axes[2].get_legend().remove()
-            axes[2].set(xlim=[0, 1.1], title="Emotions")
+                        # facelines
+                        face_ax = draw_lineface(
+                            currx, curry, ax=face_ax, color=color, linewidth=3
+                        )
+                        # facebox
+                        if faceboxes:
+                            rect = Rectangle(
+                                (facebox[0], facebox[1]),
+                                facebox[2],
+                                facebox[3],
+                                linewidth=2,
+                                edgecolor="cyan",
+                                fill=False,
+                            )
+                            face_ax.add_patch(rect)
 
-            plt.tight_layout()
-            plt.show()
-            all_axes.append(axes)
-        return axes
+                        # facepose
+                        if poses:
+                            face_ax = draw_facepose(
+                                pose=row[self.facepose_columns].values,
+                                facebox=facebox,
+                                ax=face_ax,
+                            )
+
+                        # filename title
+                        if add_titles:
+                            _ = face_ax.set_title(
+                                "\n".join(wrap(row["input"])),
+                                loc="left",
+                                wrap=True,
+                                fontsize=14,
+                            )
+
+                        face_ax.axes.get_xaxis().set_visible(False)
+                        face_ax.axes.get_yaxis().set_visible(False)
+
+                        # Flip images for video frames
+                        if row["input"].endswith(".mov") or row["input"].endswith(
+                            ".mp4"
+                        ):
+                            _ = face_ax.invert_yaxis()
+
+                    if faces == "aus":
+                        # Generate face from AU landmark model
+                        if any(self.groupby("frame").size() > 1):
+                            raise NotImplementedError(
+                                "Plotting using AU landmark model is not currently supported for detections that contain multiple faces"
+                            )
+                        if muscles:
+                            muscles = {"all": "heatmap"}
+                        else:
+                            muscles = {}
+                        aus, gaze, muscles, model = self._prepare_plot_aus(
+                            row, muscles=muscles, gaze=gazes
+                        )
+                        title = row["input"] if add_titles else None
+                        face_ax = plot_face(
+                            model=model,
+                            au=aus,
+                            gaze=gaze,
+                            ax=face_ax,
+                            muscles=muscles,
+                            title=title,
+                        )
+
+            # DRAW AU BARPLOT
+            if au_ax is not None:
+                _ = plot_data.aus.T.plot(kind="barh", ax=au_ax)
+                _ = au_ax.invert_yaxis()
+                _ = au_ax.legend().remove()
+                _ = au_ax.set(xlim=[0, 1.1], title="Action Units")
+
+            # DRAW EMOTION BARPLOT
+            if emo_ax is not None:
+                _ = plot_data.emotions.T.plot(kind="barh", ax=emo_ax)
+                _ = emo_ax.invert_yaxis()
+                _ = emo_ax.legend().remove()
+                _ = emo_ax.set(xlim=[0, 1.1], title="Emotions")
+
+            f.tight_layout()
+            all_figs.append(f)
+        return all_figs
 
 
 class Fextractor:

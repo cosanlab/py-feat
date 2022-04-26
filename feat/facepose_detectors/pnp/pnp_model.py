@@ -3,11 +3,14 @@ import cv2
 import numpy as np
 from feat.utils import get_resource_path
 from feat.facepose_detectors.utils import convert_to_euler
-THREED_FACE_MODEL = os.path.join(get_resource_path(), "reference_3d_68_points_trans.npy")
+
+THREED_FACE_MODEL = os.path.join(
+    get_resource_path(), "reference_3d_68_points_trans.npy"
+)
 
 
 class PerspectiveNPointModel:
-    """ Class that leverages 68 2D facial landmark points to estimate head pose using the Perspective-n-Point
+    """Class that leverages 68 2D facial landmark points to estimate head pose using the Perspective-n-Point
     algorithm.
 
     Code adapted from https://github.com/yinguobing/head-pose-estimation/ and
@@ -17,12 +20,12 @@ class PerspectiveNPointModel:
     """
 
     def __init__(self):
-        """ Initializes the model, with a reference 3D model (xyz coordinates) of a standard face"""
+        """Initializes the model, with a reference 3D model (xyz coordinates) of a standard face"""
         # self.model_points = get_full_model_points(os.path.join(get_resource_path(), "3d_face_model.txt"))
         self.model_points = np.load(THREED_FACE_MODEL, allow_pickle=True)
 
     def predict(self, img, landmarks):
-        """ Determines headpose using passed 68 2D landmarks
+        """Determines headpose using passed 68 2D landmarks
 
         Args:
             img (np.ndarray) : The cv2 image from which the landmarks were produced
@@ -35,15 +38,20 @@ class PerspectiveNPointModel:
         # code to pass their own camera matrix and distortion coefficients if they happen to have calibrated their
         # camera: https://learnopencv.com/camera-calibration-using-opencv/
         h, w = img.shape[:2]
-        camera_matrix = np.array([[w + h, 0, w // 2],
-                                  [0, w + h, h // 2],
-                                  [0, 0, 1]], dtype='float32')
-        dist_coeffs = np.zeros((4, 1), dtype='float32')  # Assuming no lens distortion
+        camera_matrix = np.array(
+            [[w + h, 0, w // 2], [0, w + h, h // 2], [0, 0, 1]], dtype="float32"
+        )
+        dist_coeffs = np.zeros((4, 1), dtype="float32")  # Assuming no lens distortion
 
         # Solve PnP using all 68 points:
-        landmarks = landmarks.astype('float32')
-        _, rotation_vector, translation_vector = cv2.solvePnP(self.model_points, landmarks, camera_matrix, dist_coeffs,
-                                                              flags=cv2.SOLVEPNP_EPNP)
+        landmarks = landmarks.astype("float32")
+        _, rotation_vector, translation_vector = cv2.solvePnP(
+            self.model_points,
+            landmarks,
+            camera_matrix,
+            dist_coeffs,
+            flags=cv2.SOLVEPNP_EPNP,
+        )
 
         # Convert to Euler Angles
         euler_angles = convert_to_euler(np.squeeze(rotation_vector))

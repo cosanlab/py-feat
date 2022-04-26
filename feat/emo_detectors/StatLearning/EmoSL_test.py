@@ -15,18 +15,23 @@ from feat.utils import get_resource_path
 import joblib
 import os
 
+
 def load_classifier(cf_path):
     clf = joblib.load(cf_path)
     return clf
 
-class EmoRandomForestClassifier():
+
+class EmoRandomForestClassifier:
     def __init__(self) -> None:
-        self.pca_model = load_classifier(os.path.join(
-            get_resource_path(), "emo_hog_pca.joblib"))
+        self.pca_model = load_classifier(
+            os.path.join(get_resource_path(), "emo_hog_pca.joblib")
+        )
         self.classifier = load_classifier(
-            os.path.join(get_resource_path(), "emoRF36.joblib"))
-        self.scaler = load_classifier(os.path.join(
-            get_resource_path(), "emo_hog_scalar.joblib"))
+            os.path.join(get_resource_path(), "emoRF36.joblib")
+        )
+        self.scaler = load_classifier(
+            os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
+        )
 
     def detect_emo(self, frame, landmarks):
         """
@@ -36,11 +41,11 @@ class EmoRandomForestClassifier():
         # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         # landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
         landmarks = np.concatenate(landmarks)
-        landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
-
+        landmarks = landmarks.reshape(-1, landmarks.shape[1] * landmarks.shape[2])
 
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.fit_transform(frame))
+            self.scaler.fit_transform(frame)
+        )
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_emo = []
         for keys in self.classifier:
@@ -52,14 +57,17 @@ class EmoRandomForestClassifier():
         return pred_emo
 
 
-class EmoSVMClassifier():
+class EmoSVMClassifier:
     def __init__(self) -> None:
-        self.pca_model = load_classifier(os.path.join(
-            get_resource_path(), "emo_hog_pca.joblib"))
+        self.pca_model = load_classifier(
+            os.path.join(get_resource_path(), "emo_hog_pca.joblib")
+        )
         self.classifier = load_classifier(
-            os.path.join(get_resource_path(), "emoSVM38.joblib"))
-        self.scaler = load_classifier(os.path.join(
-            get_resource_path(), "emo_hog_scalar.joblib"))
+            os.path.join(get_resource_path(), "emoSVM38.joblib")
+        )
+        self.scaler = load_classifier(
+            os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
+        )
 
     def detect_emo(self, frame, landmarks):
         """
@@ -69,11 +77,11 @@ class EmoSVMClassifier():
         # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         # landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
         landmarks = np.concatenate(landmarks)
-        landmarks = landmarks.reshape(-1,landmarks.shape[1]*landmarks.shape[2])
+        landmarks = landmarks.reshape(-1, landmarks.shape[1] * landmarks.shape[2])
 
-        
         pca_transformed_frame = self.pca_model.transform(
-            self.scaler.fit_transform(frame))
+            self.scaler.fit_transform(frame)
+        )
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         pred_emo = []
         for keys in self.classifier:

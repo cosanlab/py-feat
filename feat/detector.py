@@ -1,65 +1,41 @@
-from __future__ import division
+"""
+Main Detector class. The Detector class wraps other pre-trained models
+(e.g. face detector, au detector) and provides a high-level API to make it easier to
+perform detection
+"""
 
-"""Functions to help detect face, landmarks, emotions, action units from images and videos"""
 import traceback  # REMOVE LATER
-
-from collections import deque
-from multiprocessing.pool import ThreadPool
 import os
 import numpy as np
 import pandas as pd
-from PIL import Image, ImageDraw, ImageOps
-import math
 from scipy.spatial import ConvexHull
 from skimage.morphology.convex_hull import grid_points_in_poly
 from skimage.feature import hog
 import cv2
-import feat
 from feat.data import Fex
 from feat.utils import (
     get_resource_path,
-    face_rect_to_coords,
     openface_2d_landmark_columns,
     jaanet_AU_presence,
     RF_AU_presence,
-    FEAT_EMOTION_MAPPER,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FACET_FACEPOSE_COLUMNS,
     FEAT_TIME_COLUMNS,
     FACET_TIME_COLUMNS,
     BBox,
-    convert68to49,
-    padding,
-    resize_with_padding,
     align_face_68pts,
     FaceDetectionError,
+    validate_input,
+    read_pictures,
 )
-from feat.au_detectors.JAANet.JAA_test import JAANet
-from feat.au_detectors.DRML.DRML_test import DRMLNet
-from feat.au_detectors.StatLearning.SL_test import (
-    RandomForestClassifier,
-    SVMClassifier,
-    LogisticClassifier,
-)
-from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
-from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
-from feat.emo_detectors.StatLearning.EmoSL_test import (
-    EmoRandomForestClassifier,
-    EmoSVMClassifier,
-)
+from feat.pretrained import get_pretrained_models, fetch_model
 import torch
-from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
-from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
-from feat.face_detectors.Retinaface import Retinaface_test
-from feat.landmark_detectors.basenet_test import MobileNet_GDConv
-from feat.landmark_detectors.pfld_compressed_test import PFLDInference
-from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
-from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
-from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
-import json
-from torchvision.datasets.utils import download_url
-import zipfile
+import logging
+import warnings
+
+# Supress sklearn warning about pickled estimators and diff sklearn versions
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
 
 class Detector(object):
@@ -71,6 +47,7 @@ class Detector(object):
         emotion_model="resmasknet",
         facepose_model="pnp",
         n_jobs=1,
+        verbose=False,
     ):
         """Detector class to detect FEX from images or videos.
 
@@ -103,233 +80,242 @@ class Detector(object):
             >> detector.detect_image(["input.jpg"])
             >> detector.detect_video("input.mp4")
         """
-        self.info = {}
-        self.info["n_jobs"] = n_jobs
+
+        # Initial info dict with model names only
+        self.info = dict(
+            face_model=None,
+            landmark_model=None,
+            emotion_model=None,
+            facepose_model=None,
+            au_model=None,
+            n_jobs=n_jobs,
+        )
+        # Setup verbosity and CUDA
+        self.logger = logging.getLogger("Detector")
+        self.verbose = verbose
+        if self.verbose:
+            log_level = logging.INFO
+        else:
+            log_level = logging.WARNING
+        self.logger.setLevel(log_level)
 
         if torch.cuda.is_available():
             self.map_location = lambda storage, loc: storage.cuda()
         else:
             self.map_location = "cpu"
 
-        # Handle img2pose mismatch error
-        if (
-            facepose_model
-            and "img2pose" in facepose_model.lower()
-            and facepose_model.lower() != face_model.lower()
-        ):
-            print(
-                facepose_model,
-                " is both a face detector and pose estimator, and cannot be used with a different "
-                "face detector. Setting face detector to use ",
-                facepose_model,
-                ".",
-                sep="",
-            )
-            face_model = facepose_model
-
-        """ LOAD UP THE MODELS """
-        print("Loading Face Detection model: ", face_model)
-        # Check if model files have been downloaded. Otherwise download model.
-        # get model url.
-        with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
-            model_urls = json.load(f)
-
-        if face_model:
-            for url in model_urls["face_detectors"][face_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
-        if landmark_model:
-            for url in model_urls["landmark_detectors"][landmark_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
-        if au_model:
-            for url in model_urls["au_detectors"][au_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
-                if ".zip" in url:
-                    import zipfile
-
-                    with zipfile.ZipFile(
-                        os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
-                    ) as zip_ref:
-                        zip_ref.extractall(os.path.join(get_resource_path()))
-                if au_model.lower() in ["logistic", "svm", "rf"]:
-                    download_url(
-                        model_urls["au_detectors"]["hog-pca"]["urls"][0],
-                        get_resource_path(),
-                    )
-                    download_url(
-                        model_urls["au_detectors"]["au_scalar"]["urls"][0],
-                        get_resource_path(),
-                    )
-
-        if emotion_model:
-            for url in model_urls["emotion_detectors"][emotion_model.lower()]["urls"]:
-                download_url(url, get_resource_path())
-                if emotion_model.lower() in ["svm", "rf"]:
-                    download_url(
-                        model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
-                        get_resource_path(),
-                    )
-                    download_url(
-                        model_urls["emotion_detectors"]["emo_scalar"]["urls"][0],
-                        get_resource_path(),
-                    )
-
-        if face_model:
-            if face_model.lower() == "faceboxes":
-                self.face_detector = FaceBoxes()
-            elif face_model.lower() == "retinaface":
-                self.face_detector = Retinaface_test.Retinaface()
-            elif face_model.lower() == "mtcnn":
-                self.face_detector = MTCNN()
-            elif "img2pose" in face_model.lower():
-                # Check if user selected unconstrained or constrained version
-                constrained = False  # use by default
-                if face_model.lower() == "img2pose-c":
-                    constrained = True
-                # Used as both face detector and facepose estimator
-                self.face_detector = Img2Pose(
-                    cpu_mode=self.map_location == "cpu", constrained=constrained
-                )
-                self.facepose_detector = self.face_detector
-
-        self.info["face_model"] = face_model
-        facebox_columns = FEAT_FACEBOX_COLUMNS
-        self.info["face_detection_columns"] = facebox_columns
-        predictions = np.empty((1, len(facebox_columns)))
-        predictions[:] = np.nan
-        empty_facebox = pd.DataFrame(predictions, columns=facebox_columns)
-        self._empty_facebox = empty_facebox
-
-        print("Loading Face Landmark model: ", landmark_model)
-        if landmark_model:
-            if landmark_model.lower() == "mobilenet":
-                self.landmark_detector = MobileNet_GDConv(136)
-                self.landmark_detector = torch.nn.DataParallel(self.landmark_detector)
-                checkpoint = torch.load(
-                    os.path.join(
-                        get_resource_path(),
-                        "mobilenet_224_model_best_gdconv_external.pth.tar",
-                    ),
-                    map_location=self.map_location,
-                )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-
-            elif landmark_model.lower() == "pfld":
-                self.landmark_detector = PFLDInference()
-                checkpoint = torch.load(
-                    os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
-                    map_location=self.map_location,
-                )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-
-            elif landmark_model.lower() == "mobilefacenet":
-                self.landmark_detector = MobileFaceNet([112, 112], 136)
-                checkpoint = torch.load(
-                    os.path.join(
-                        get_resource_path(), "mobilefacenet_model_best.pth.tar"
-                    ),
-                    map_location=self.map_location,
-                )
-                self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-
-        self.info["landmark_model"] = landmark_model
-        self.info["mapper"] = openface_2d_landmark_columns
-        landmark_columns = openface_2d_landmark_columns
-        self.info["face_landmark_columns"] = landmark_columns
-        predictions = np.empty((1, len(openface_2d_landmark_columns)))
-        predictions[:] = np.nan
-        empty_landmarks = pd.DataFrame(predictions, columns=landmark_columns)
-        self._empty_landmark = empty_landmarks
-
-        print("Loading au model: ", au_model)
-        self.info["au_model"] = au_model
-        if au_model:
-            if au_model.lower() == "jaanet":
-                self.au_model = JAANet()
-            elif au_model.lower() == "drml":
-                self.au_model = DRMLNet()
-            elif au_model.lower() == "logistic":
-                self.au_model = LogisticClassifier()
-            elif au_model.lower() == "svm":
-                self.au_model = SVMClassifier()
-            elif au_model.lower() == "rf":
-                self.au_model = RandomForestClassifier()
-
-        if (au_model is None) or (au_model.lower() in ["jaanet", "drml"]):
+        # Verify model names and download if necessary
+        face, landmark, au, emotion, facepose = get_pretrained_models(
+            face_model, landmark_model, au_model, emotion_model, facepose_model, verbose
+        )
+        if (au is None) or (au in ["jaanet", "drml"]):
             auoccur_columns = jaanet_AU_presence
         else:
             auoccur_columns = RF_AU_presence
 
-        self.info["au_presence_columns"] = auoccur_columns
-        predictions = np.empty((1, len(auoccur_columns)))
-        predictions[:] = np.nan
-        empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
-        self._empty_auoccurence = empty_au_occurs
+        self._init_detectors(
+            face,
+            landmark,
+            au,
+            emotion,
+            facepose,
+            auoccur_columns,
+            openface_2d_landmark_columns,
+        )
 
-        print("Loading emotion model: ", emotion_model)
-        self.info["emotion_model"] = emotion_model
-        if emotion_model:
-            if emotion_model.lower() == "fer":
-                self.emotion_model = ferNetModule()
-            elif emotion_model.lower() == "resmasknet":
-                self.emotion_model = ResMaskNet()
-            elif emotion_model.lower() == "svm":
-                self.emotion_model = EmoSVMClassifier()
-            elif emotion_model.lower() == "rf":
-                self.emotion_model = EmoRandomForestClassifier()
+    def __repr__(self):
+        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']})"
 
-        self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
-        predictions = np.empty((1, len(FEAT_EMOTION_COLUMNS)))
-        predictions[:] = np.nan
-        empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
-        self._empty_emotion = empty_emotion
+    def __getitem__(self, i):
+        return self.info[i]
 
-        predictions = np.empty((1, len(auoccur_columns)))
-        predictions[:] = np.nan
-        empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
-        self._empty_auoccurence = empty_au_occurs
+    def _init_detectors(
+        self,
+        face,
+        landmark,
+        au,
+        emotion,
+        facepose,
+        auoccur_columns,
+        openface_2d_landmark_columns,
+    ):
+        """Helper function called by __init__ and change_model to (re)initialize one of
+        the supported detectors"""
 
-        print("Loading facepose model: ", facepose_model)
-        self.info["facepose_model"] = facepose_model
-        if facepose_model:
-            if facepose_model.lower() == "pnp":
-                self.facepose_detector = PerspectiveNPoint()
-            # Note that img2pose case is handled under face_model loading
+        # Initialize model instances and any additional post init setup
+        # Only initialize a model if the currently initialized model is diff than the
+        # requested one. Lets us re-use this with .change_model
 
-        self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
-        predictions = np.empty((1, len(FACET_FACEPOSE_COLUMNS)))
-        predictions[:] = np.nan
-        empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
-        self._empty_facepose = empty_facepose
+        # FACE MODEL
+        if self.info["face_model"] != face:
+            self.logger.info(f"Loading Face model: {face}")
+            self.face_detector = fetch_model("face_model", face)
+            self.info["face_model"] = face
+            self.info["face_detection_columns"] = FEAT_FACEBOX_COLUMNS
+            predictions = np.full_like(np.atleast_2d(FEAT_FACEBOX_COLUMNS), np.nan)
+            empty_facebox = pd.DataFrame(predictions, columns=FEAT_FACEBOX_COLUMNS)
+            self._empty_facebox = empty_facebox
+            if self.face_detector is not None:
+                # img2pose is used both as face detector and pose estimator
+                if "img2pose" in face:
+                    self.face_detector = self.face_detector(
+                        cpu_mode=self.map_location == "cpu",
+                        constrained="img2pose-c" == face,
+                    )
+                    self.facepose_detector = self.face_detector
+                else:
+                    self.face_detector = self.face_detector()
+
+        # LANDMARK MODEL
+        if self.info["landmark_model"] != landmark:
+            self.logger.info(f"Loading Facial Landmark model: {landmark}")
+            self.landmark_detector = fetch_model("landmark_model", landmark)
+            if self.landmark_detector is not None:
+                if landmark == "mobilenet":
+                    self.landmark_detector = self.landmark_detector(136)
+                    self.landmark_detector = torch.nn.DataParallel(
+                        self.landmark_detector
+                    )
+                    checkpoint = torch.load(
+                        os.path.join(
+                            get_resource_path(),
+                            "mobilenet_224_model_best_gdconv_external.pth.tar",
+                        ),
+                        map_location=self.map_location,
+                    )
+                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                elif landmark == "pfld":
+                    self.landmark_detector = self.landmark_detector()
+                    checkpoint = torch.load(
+                        os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
+                        map_location=self.map_location,
+                    )
+                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                elif landmark == "mobilefacenet":
+                    self.landmark_detector = self.landmark_detector([112, 112], 136)
+                    checkpoint = torch.load(
+                        os.path.join(
+                            get_resource_path(), "mobilefacenet_model_best.pth.tar"
+                        ),
+                        map_location=self.map_location,
+                    )
+                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+
+            self.info["landmark_model"] = landmark
+            self.info["mapper"] = openface_2d_landmark_columns
+            self.info["face_landmark_columns"] = openface_2d_landmark_columns
+            predictions = np.full_like(
+                np.atleast_2d(openface_2d_landmark_columns), np.nan
+            )
+            empty_landmarks = pd.DataFrame(
+                predictions, columns=openface_2d_landmark_columns
+            )
+            self._empty_landmark = empty_landmarks
+
+        # AU MODEL
+        if self.info["au_model"] != au:
+            self.logger.info(f"Loading AU model: {au}")
+            self.au_model = fetch_model("au_model", au)
+            self.info["au_model"] = au
+            if self.au_model is not None:
+                self.au_model = self.au_model()
+                self.info["au_presence_columns"] = auoccur_columns
+                predictions = np.full_like(np.atleast_2d(auoccur_columns), np.nan)
+                empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
+                self._empty_auoccurence = empty_au_occurs
+
+        # EMOTION MODEL
+        if self.info["emotion_model"] != emotion:
+            self.logger.info("Loading emotion model: ", emotion)
+            self.emotion_model = fetch_model("emotion_model", emotion)
+            self.info["emotion_model"] = emotion
+            if self.emotion_model is not None:
+                self.emotion_model = self.emotion_model()
+                self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
+                predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
+                empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
+                self._empty_emotion = empty_emotion
+
+        # FACEPOSE MODEL
+        if self.info["facepose_model"] != facepose:
+            self.logger.info("Loading facepose model: ", facepose)
+            # Only assign it if it's not img2pose, otherwise it's already set by face model
+            _m = fetch_model("facepose_model", facepose)
+            if _m is not None:
+                self.facepose_detector = _m()
+            self.info["facepose_model"] = facepose
+
+            self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
+            predictions = np.full_like(np.atleast_2d(FACET_FACEPOSE_COLUMNS), np.nan)
+            empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
+            self._empty_facepose = empty_facepose
 
         self.info["output_columns"] = (
             FEAT_TIME_COLUMNS
-            + facebox_columns
-            + landmark_columns
+            + FEAT_FACEBOX_COLUMNS
+            + openface_2d_landmark_columns
             + auoccur_columns
             + FACET_FACEPOSE_COLUMNS
             + FEAT_EMOTION_COLUMNS
             + ["input"]
         )
 
-    def __getitem__(self, i):
-        return self.info[i]
+    def change_model(self, **kwargs):
+        """Swap one or more pre-trained detector models for another one. Just pass in
+        the the new models to use as kwargs, e.g. emotion_model='rf'"""
+
+        face_model = kwargs.get("face_model", self.info["face_model"])
+        landmark_model = kwargs.get("landmark_model", self.info["landmark_model"])
+        au_model = kwargs.get("au_model", self.info["au_model"])
+        emotion_model = kwargs.get("emotion_model", self.info["emotion_model"])
+        facepose_model = kwargs.get("facepose_model", self.info["facepose_model"])
+
+        # Verify model names and download if necessary
+        face, landmark, au, emotion, facepose = get_pretrained_models(
+            face_model,
+            landmark_model,
+            au_model,
+            emotion_model,
+            facepose_model,
+            self.verbose,
+        )
+        if (au is None) or (au in ["jaanet", "drml"]):
+            auoccur_columns = jaanet_AU_presence
+        else:
+            auoccur_columns = RF_AU_presence
+
+        self._init_detectors(
+            face,
+            landmark,
+            au,
+            emotion,
+            facepose,
+            auoccur_columns,
+            openface_2d_landmark_columns,
+        )
 
     def detect_faces(self, frame):
         """Detect faces from image or video frame
 
         Args:
-            frame (array): image array
+            frame (np.ndarray): 3d (single) or 4d (multiple) image array
 
         Returns:
-            list: face detection results (x, y, x2, y2)
+            list: list of lists with the same length as the number of frames. Each list
+            item is a list containing the (x1, y1, x2, y2) coordinates of each detected
+            face in that frame.
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> img_data = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detector.detect_faces(frame)
         """
+        if not isinstance(frame, np.ndarray):
+            raise TypeError(
+                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+            )
         # check if frame is 4d
         if frame.ndim == 3:
             frame = np.expand_dims(frame, 0)
@@ -341,27 +327,32 @@ class Detector(object):
             faces = self.face_detector(frame)
 
         if len(faces) == 0:
-            print("Warning: NO FACE is detected")
+            self.logger.warning("Warning: NO FACE is detected")
         return faces
 
     def detect_landmarks(self, frame, detected_faces):
         """Detect landmarks from image or video frame
 
         Args:
-            frame (array): image array
+            frame (np.ndarray): 3d (single) or 4d (multiple) image array
             detected_faces (array):
 
         Returns:
             list: x and y landmark coordinates (1,68,2)
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> img_data = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detected_faces = detector.detect_faces(frame)
             >>> detector.detect_landmarks(frame, detected_faces)
         """
+
+        if not isinstance(frame, np.ndarray):
+            raise TypeError(
+                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+            )
         # check if frame is 4d
         if frame.ndim == 3:
             frame = np.expand_dims(frame, 0)
@@ -606,7 +597,7 @@ class Detector(object):
             pixels_per_cell=pixels_per_cell,
             cells_per_block=cells_per_block,
             visualize=visualize,
-            multichannel=True,
+            channel_axis=-1,
         )
         if visualize:
             return (hog_output[0], hog_output[1])
@@ -617,16 +608,16 @@ class Detector(object):
         """Detect Action Units from image or video frame
 
         Args:
-            frame (array): image loaded in array format (n, m, 3)
+            frame (np.ndarray): image loaded in array format (n, m, 3)
             landmarks (array): 68 landmarks used to localize face.
 
         Returns:
             array: Action Unit predictions
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> frame = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detector.detect_aus(frame)
         """
@@ -635,6 +626,10 @@ class Detector(object):
         # landmarks = np.transpose(landmarks)
         # if landmarks.shape[-1] == 68:
         #    landmarks = convert68to49(landmarks)
+        if not isinstance(frame, np.ndarray):
+            raise TypeError(
+                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+            )
         return self.au_model.detect_au(frame, landmarks)
 
     def _concatenate_batch(self, indexed_length, au_results):
@@ -671,9 +666,9 @@ class Detector(object):
             array: Action Unit predictions
 
         Examples:
-            >>> import cv2
-            >>> frame = cv2.imread(imgfile)
             >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> img_data = read_pictures(['my_image.jpg'])
             >>> detector = Detector()
             >>> detected_faces = detector.detect_faces(frame)
             >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
@@ -719,21 +714,19 @@ class Detector(object):
 
 
         Examples:
-            # With img2pose
-            >>> import cv2
-            >>> frame = [cv2.imread(imgfile)]
             >>> from feat import Detector
-            >>> detector = Detector(face_model='imgpose', facepose_model='img2pose')
-            >>> detector.detect_facepose([frame]) # one shot computation
+            >>> from feat.utils import read_pictures
+            >>> frame = read_pictures(['my_image.jpg'])
 
-            # With PnP
-            >>> import cv2
-            >>> frame = [cv2.imread(imgfile)]
-            >>> from feat import Detector
-            >>> detector = Detector(face_model='retinaface', landmark_model='mobilefacenet', facepose_model='pnp')
-            >>> faces = detector.detect_faces(frame)
-            >>> landmarks = detector.detect_landmarks(detected_faces=faces)
-            >>> detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
+            >>> # Imgpose detector
+            >>> imgpose_detector = Detector(face_model='imgpose', facepose_model='img2pose')
+            >>> imgpose_detector.detect_facepose(frame) # one shot computation
+
+            >>> # Retina face detector
+            >>> retinaface_detector = Detector(face_model='retinaface', landmark_model='mobilefacenet', facepose_model='pnp')
+            >>> faces = retinaface_detector.detect_faces(frame)
+            >>> landmarks = retinaface_detector.detect_landmarks(detected_faces=faces)
+            >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
         """
         # check if frame is 4d
         if frame.ndim == 3:
@@ -741,8 +734,8 @@ class Detector(object):
         assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
 
         # height, width, _ = frame.shape
-        if "img2pose" in self.info["face_model"]:
-            faces, poses = self.facepose_detector(frame)
+        if "img2pose" in self.info["facepose_model"]:
+            _, poses = self.facepose_detector(frame)
         else:
             poses = self.facepose_detector(frame, landmarks)
 
@@ -750,18 +743,29 @@ class Detector(object):
 
     # TODO: probably need to add exceptions. The exception handling is not great yet
     def process_frame(
-        self, frames, counter=0, singleframe4error=False, skip_frame_rate=1
+        self,
+        frames,
+        input_names,
+        counter=0,
+        singleframe4error=False,
+        skip_frame_rate=1,
+        is_video_frame=False,
     ):
         """Function to run face detection, landmark detection, and emotion detection on
         a frame.
 
         Args:
             frames (np.array): batch of frames, of shape BxHxWxC (read from cv2)
+            input_names (list): file names for each frame in the batch
             counter (int, str, default=0): Index used for the prediction results
             dataframe. Tracks the batches
             singleframe4error (bool, default = False): When exception occurs inside a
             batch, instead of nullify the whole batch, process each img in batch
             individually
+            is_video_frame (bool): Whether processing is happening over batches of
+            otherwise independent IMAGES so len(frames) == len(input_names) or over
+            VIDEOFRAMES so len(input_names) == 1 and len(frames) > len(input_names);
+            Default False
 
         Returns:
             feat.data.Fex (dataframe): Prediction results dataframe.
@@ -769,11 +773,16 @@ class Detector(object):
 
         """
         # check if frame is 4d
+        if not isinstance(frames, np.ndarray):
+            raise TypeError("frames needs to be a 3 or 4d numpy array of image data")
         if frames.ndim == 3:
             frames = np.expand_dims(frames, 0)
         assert frames.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+        if not is_video_frame:
+            assert frames.shape[0] == len(
+                input_names
+            ), "Number of input_names needs to match the number of frames to process"
         out = None
-        # TODO Changed here
         try:
             detected_faces = self.detect_faces(frame=frames)
             landmarks = self.detect_landmarks(
@@ -864,6 +873,9 @@ class Detector(object):
                         axis=1,
                     )
                     tmp_df[FEAT_TIME_COLUMNS] = counter
+                    tmp_df["input"] = (
+                        input_names[0] if is_video_frame else input_names[i]
+                    )
                     if out is None:
                         out = tmp_df
                     else:
@@ -875,13 +887,15 @@ class Detector(object):
 
         except:
             traceback.print_exc()
-            print("exception occurred in the batch")
+            self.logger.error("exception occurred in the batch")
             if singleframe4error:
-                print("Trying to process one image at a time in the batch")
+                self.logger.warning(
+                    "Trying to process one image at a time in the batch"
+                )
                 raise FaceDetectionError
 
             else:
-                print(
+                self.logger.warning(
                     "Since singleframe4error=FALSE, giving up this entire batch result"
                 )
                 newdf = None
@@ -904,6 +918,7 @@ class Detector(object):
                         ],
                         axis=1,
                     )
+                    out["input"] = input_names[0] if is_video_frame else input_names[i]
                     out[FEAT_TIME_COLUMNS] = counter + cter
                     if newdf is None:
                         newdf = out
@@ -917,16 +932,19 @@ class Detector(object):
         inputFname,
         batch_size=5,
         outputFname=None,
+        return_detection=True,
         skip_frames=1,
-        verbose=False,
         singleframe4error=False,
     ):
         """Detects FEX from a video file.
 
         Args:
             inputFname (str): Path to video file
+            batch_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             outputFname (str, optional): Path to output file. Defaults to None.
-            bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
+            return_detection (bool, optional): whether to return a Fex object of all
+            concatenated detections. To save memory you can process results directly to
+            a file by setting this to False and providing an outputFname; Default True
             skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
             singleframe4error (bool, default = False): When set True, when exception
             occurs inside a batch, instead of nullify the whole batch, process each img
@@ -935,20 +953,24 @@ class Detector(object):
         Returns:
             dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
-        self.info["inputFname"] = inputFname
+        self.info["inputFname"] = validate_input(inputFname)
+        if not (outputFname or return_detection):
+            raise ValueError(
+                "If return_detection is False then you must provide an outputFname"
+            )
+
         self.info["outputFname"] = outputFname
         init_df = pd.DataFrame(columns=self["output_columns"])
-        if outputFname:
+        if outputFname is not None:
             init_df.to_csv(outputFname, index=False, header=True)
 
-        cap = cv2.VideoCapture(inputFname)
+        cap = cv2.VideoCapture(self.info["inputFname"][0])
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frames_to_process = int(np.ceil(length / skip_frames))
 
         counter = 0
         frame_got = True
-        if verbose:
-            print("Processing video.")
+        self.logger.info("Processing video.")
         #  single core
         concat_frame = None
         while True:
@@ -972,18 +994,22 @@ class Detector(object):
                         try:
                             df, _ = self.process_frame(
                                 concat_frame,
+                                self.info["inputFname"],
                                 counter=tmp_counter,
                                 singleframe4error=singleframe4error,
                                 skip_frame_rate=skip_frames,
+                                is_video_frame=True,
                             )
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
                                 tmp_df, _ = self.process_frame(
                                     concat_frame[id_fr : (id_fr + 1)],
+                                    self.info["inputFname"][id_fr : (id_fr + 1)],
                                     counter=tmp_counter,
                                     singleframe4error=False,
                                     skip_frame_rate=skip_frames,
+                                    is_video_frame=True,
                                 )
                                 tmp_counter += 1
                                 if df is None:
@@ -993,16 +1019,17 @@ class Detector(object):
                     else:
                         df, _ = self.process_frame(
                             concat_frame,
+                            self.info["inputFname"],
                             counter=tmp_counter,
                             skip_frame_rate=skip_frames,
+                            is_video_frame=True,
                         )
 
-                    df["input"] = inputFname
                     if outputFname:
                         df[init_df.columns].to_csv(
                             outputFname, index=False, header=False, mode="a"
                         )
-                    else:
+                    if return_detection:
                         init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
                     concat_frame = None
                     tmp_counter = None
@@ -1014,17 +1041,21 @@ class Detector(object):
                         try:
                             df, _ = self.process_frame(
                                 concat_frame,
+                                self.info["inputFname"],
                                 counter=tmp_counter,
                                 skip_frame_rate=skip_frames,
+                                is_video_frame=True,
                             )
                         except FaceDetectionError:
                             df = None
                             for id_fr in range(concat_frame.shape[0]):
                                 tmp_df, _ = self.process_frame(
                                     concat_frame[id_fr : (id_fr + 1)],
+                                    self.info["inputFname"][id_fr : (id_fr + 1)],
                                     counter=tmp_counter,
                                     singleframe4error=False,
                                     skip_frame_rate=skip_frames,
+                                    is_video_frame=True,
                                 )
                                 tmp_counter += 1
                                 if df is None:
@@ -1034,24 +1065,24 @@ class Detector(object):
                     else:
                         df, _ = self.process_frame(
                             concat_frame,
+                            self.info["inputFname"],
                             counter=tmp_counter,
                             skip_frame_rate=skip_frames,
+                            is_video_frame=True,
                         )
                     df["input"] = inputFname
-                    if outputFname:
+                    if outputFname is not None:
                         df[init_df.columns].to_csv(
                             outputFname, index=False, header=False, mode="a"
                         )
-                    else:
+                    if return_detection:
                         init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
                 break
         cap.release()
-        if outputFname:
-            return True
-        else:
+        if return_detection:
             return Fex(
                 init_df,
-                filename=inputFname,
+                filename=self.info["inputFname"],
                 au_columns=self["au_presence_columns"],
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
@@ -1060,21 +1091,26 @@ class Detector(object):
                 time_columns=FEAT_TIME_COLUMNS,
                 detector="Feat",
             )
+        # Not returning any detection to save memory
+        return True
 
     def detect_image(
         self,
         inputFname,
         batch_size=5,
         outputFname=None,
-        verbose=False,
+        return_detection=True,
         singleframe4error=False,
     ):
         """Detects FEX from an image file.
 
         Args:
             inputFname (list of str): Path to a list of paths to image files.
-            bacth_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
+            batch_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             outputFname (str, optional): Path to output file. Defaults to None.
+            return_detection (bool, optional): whether to return a Fex object of all
+            concatenated detections. To save memory you can process results directly to
+            a file by setting this to False and providing an outputFname; Default True
             singleframe4error (bool, default = False): When set True, when exception
             occurs inside a batch, instead of nullify the whole batch, process each img
             in batch individually
@@ -1082,32 +1118,35 @@ class Detector(object):
         Returns:
             Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
         """
-        assert (
-            type(inputFname) == str or type(inputFname) == list
-        ), "inputFname must be a string path to image or list of image paths"
-        if type(inputFname) == str:
-            inputFname = [inputFname]
-        for inputF in inputFname:
-            if not os.path.exists(inputF):
-                raise FileNotFoundError(f"File {inputF} not found.")
-        self.info["inputFname"] = inputFname
+
+        self.info["inputFname"] = validate_input(inputFname)
+        if not (outputFname or return_detection):
+            raise ValueError(
+                "If return_detection is False then you must provide an outputFname"
+            )
 
         init_df = pd.DataFrame(columns=self["output_columns"])
-        if outputFname:
+        if outputFname is not None:
             init_df.to_csv(outputFname, index=False, header=True)
 
         counter = 0
         concat_frame = None
         input_names = []
-        while counter < len(inputFname):
-            # if counter % skip_frames == 0:
-            frame = np.expand_dims(cv2.imread(inputFname[counter]), 0)
+        while counter < len(self.info["inputFname"]):
+            frame = np.expand_dims(cv2.imread(self.info["inputFname"][counter]), 0)
             if concat_frame is None:
                 concat_frame = frame
                 tmp_counter = counter
             else:
-                concat_frame = np.concatenate([concat_frame, frame], 0)
-            input_names.append(inputFname[counter])
+                # NOTE: We need to handle batch counting and divisibility properly which
+                # is why we don't use utils.read_pictures or self.read_pictures here
+                try:
+                    concat_frame = np.concatenate([concat_frame, frame], 0)
+                except ValueError as e:
+                    raise ValueError(
+                        f"Image batching size mis-match error. You set batch_size to{batch_size}, but all of your images don't have the same dimensions. You need to either resize you images prior to using py-feat or you can set batch_size = 1 to prevent any image batching during processing. See these additional error details from numpy: {str(e)}"
+                    )
+            input_names.append(self.info["inputFname"][counter])
             counter = counter + 1
 
             if (counter % batch_size == 0) and (concat_frame is not None):
@@ -1115,6 +1154,7 @@ class Detector(object):
                     try:
                         df, _ = self.process_frame(
                             concat_frame,
+                            input_names,
                             counter=tmp_counter,
                             singleframe4error=singleframe4error,
                         )
@@ -1123,6 +1163,7 @@ class Detector(object):
                         for id_fr in range(concat_frame.shape[0]):
                             tmp_df, _ = self.process_frame(
                                 concat_frame[id_fr : (id_fr + 1)],
+                                input_names[id_fr : (id_fr + 1)],
                                 counter=tmp_counter,
                                 singleframe4error=False,
                             )
@@ -1132,31 +1173,35 @@ class Detector(object):
                             else:
                                 df = pd.concat((df, tmp_df), 0)
                 else:
-                    df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                    df, _ = self.process_frame(
+                        concat_frame, input_names, counter=tmp_counter
+                    )
 
-                df["input"] = input_names
-                if outputFname:
+                if outputFname is not None:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"
                     )
-                else:
+                if return_detection:
                     init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
 
                 concat_frame = None
                 tmp_counter = None
                 input_names = []
 
-        if len(inputFname) % batch_size != 0:
+        if len(self.info["inputFname"]) % batch_size != 0:
             # process remaining frames
             if concat_frame is not None:
                 if singleframe4error:
                     try:
-                        df, _ = self.process_frame(concat_frame, counter=tmp_counter)
+                        df, _ = self.process_frame(
+                            concat_frame, input_names, counter=tmp_counter
+                        )
                     except FaceDetectionError:
                         df = None
                         for id_fr in range(concat_frame.shape[0]):
                             tmp_df, _ = self.process_frame(
                                 concat_frame[id_fr : (id_fr + 1)],
+                                input_names[id_fr : (id_fr + 1)],
                                 counter=tmp_counter,
                                 singleframe4error=False,
                             )
@@ -1166,21 +1211,21 @@ class Detector(object):
                             else:
                                 df = pd.concat((df, tmp_df), 0)
                 else:
-                    df, _ = self.process_frame(concat_frame, counter=tmp_counter)
-                df["input"] = input_names
-                if outputFname:
+                    df, _ = self.process_frame(
+                        concat_frame, input_names, counter=tmp_counter
+                    )
+
+                if outputFname is not None:
                     df[init_df.columns].to_csv(
                         outputFname, index=False, header=False, mode="a"
                     )
-                else:
+                if return_detection:
                     init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
 
-        if outputFname:
-            return True
-        else:
+        if return_detection:
             return Fex(
                 init_df,
-                filename=inputFname,
+                filename=self.info["inputFname"],
                 au_columns=self["au_presence_columns"],
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
@@ -1189,28 +1234,19 @@ class Detector(object):
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
             )
+        # Not returning any detection to save memory
+        return True
 
+    def read_images(self, imgname_list):
+        """
+        Given a string filepath or list of filepath, load the image(s) as a numpy array
 
-if __name__ == "__main__":
-    my_file_path = "/home/tiankang/AU_Dataset/test_case/"
-    all_imgs = [my_file_path + "f" + str(i) + ".jpg" for i in range(1, 12)] + [
-        "/home/tiankang/AU_Dataset/test_case/" + "f12.png"
-    ]
-    detector = Detector(
-        face_model="retinaface",
-        landmark_model="mobilefacenet",
-        au_model="svm",
-        emotion_model="resmasknet",
-    )  # initialize methods. These are the methods I like to use
-    # Test the video
-    outs2 = detector.detect_video(
-        "/home/tiankang/AU_Dataset/test_case/songA.mp4",
-        batch_size=512,
-        skip_frames=1,
-        singleframe4error=True,
-    )
-    # Test the pictures
-    outs = detector.detect_image(
-        all_imgs, batch_size=5, outputFname=None, verbose=False, singleframe4error=True
-    )
-    print("finished")
+        Args:
+            imgname_list (list/str): filename or list of filenames
+
+        Returns:
+            np.ndarry: 3d or 4d numpy array
+        """
+        if not isinstance(imgname_list, list):
+            imgname_list = [imgname_list]
+        return read_pictures(imgname_list)

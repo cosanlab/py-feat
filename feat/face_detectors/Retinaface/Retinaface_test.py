@@ -77,7 +77,7 @@ def check_keys(model, pretrained_state_dict):
 
 
 def remove_prefix(state_dict, prefix):
-    """ Old style model is stored with all names of parameters sharing common prefix 'module.' """
+    """Old style model is stored with all names of parameters sharing common prefix 'module.'"""
     # print('remove prefix \'{}\''.format(prefix))
     f = lambda x: x.split(prefix, 1)[-1] if x.startswith(prefix) else x
     return {f(key): value for key, value in state_dict.items()}
@@ -131,8 +131,8 @@ class Retinaface:
         forward function
         img_: (B,H,W,C), B is batch number, H is image height, W is width and C is channel.
         """
-        #img_ = np.expand_dims(img_,0)
-        #img_ = np.concatenate([img_,img_],0)
+        # img_ = np.expand_dims(img_,0)
+        # img_ = np.concatenate([img_,img_],0)
 
         img_raw = img_.copy()
 
@@ -140,9 +140,9 @@ class Retinaface:
 
         _, im_height, im_width, _ = img.shape
         scale = torch.Tensor([img.shape[2], img.shape[1], img.shape[2], img.shape[1]])
-        img[:,...,:] -= (104, 117, 123)
+        img[:, ..., :] -= (104, 117, 123)
         img = img.transpose(0, 3, 1, 2)
-        img = torch.from_numpy(img)#.unsqueeze(0)
+        img = torch.from_numpy(img)  # .unsqueeze(0)
         img = img.to(self.device)
         scale = scale.to(self.device)
 
@@ -152,11 +152,18 @@ class Retinaface:
 
         total_boxes = []
         for i in range(loc.shape[0]):
-            tmp_box = self._calculate_boxinfo(im_height=im_height, im_width=im_width, loc=loc[i], conf=conf[i], landms=landms[i], scale=scale, img=img)
+            tmp_box = self._calculate_boxinfo(
+                im_height=im_height,
+                im_width=im_width,
+                loc=loc[i],
+                conf=conf[i],
+                landms=landms[i],
+                scale=scale,
+                img=img,
+            )
             total_boxes.append(tmp_box)
 
-        return(total_boxes)
-
+        return total_boxes
 
     def _calculate_boxinfo(self, im_height, im_width, loc, conf, landms, scale, img):
         """
