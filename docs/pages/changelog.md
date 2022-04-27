@@ -11,6 +11,9 @@
 - Revamped pre-trained detector handling in new `feat.pretrained` module
 - More tests including testing all detector combinations
 
+#### Breaking Changes
+- Columns of interest on `Fex` data classes were previously accessed like class *methods*, i.e. `fex.aus()`. These have now been changed to class *attributes*, i.e. `fex.aus`
+
 ### Fixes
 - [#80](https://github.com/cosanlab/py-feat/issues/80)
 - [#94](https://github.com/cosanlab/py-feat/issues/94)
