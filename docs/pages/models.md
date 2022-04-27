@@ -29,7 +29,7 @@ If you plan to use a Histogram-based Action Unit model (e.g. `rf`, `svm`, `logis
 - `rf`: Random Forest model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
 - `svm`: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
 - `fer`: Deep convolutional network
-- `ResMaskNet`: Facial expression recognition using residual masking network by ([Pham et al., 2020](https://ailb-web.ing.unimore.it/icpr/author/3818))
+- `ResMaskNet`: Facial expression recognition using residual masking network by ([Pham et al., 2020](https://ieeexplore.ieee.org/document/9411919))
 
 ##  Face detection
 - `MTCNN`: Multi-task cascaded convolutional networks by ([Zhang et al., 2016](https://arxiv.org/pdf/1604.02878.pdf); [Zhang et al., 2020](https://ieeexplore.ieee.org/document/9239720))
