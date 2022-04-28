@@ -24,6 +24,10 @@ cd feat && python setup.py install -e .
 
 **Note:** If you forked or cloned this repo prior to 04/26/2022, you'll want to create a new fork or clone as we've used `git-filter-repo` to clean up large files in the history. If you prefer to keep working on that old version, you can find an [archival repo here](https://github.com/cosanlab/py-feat-archive)
 
+## Testing
+
+The test have been relocated to `feat/tests/`.
+Please ensure all tests pass before creating any pull request or larger change to the code base.
 
 ## Continuous Integration
 

@@ -14,3 +14,4 @@ scikit-image>=0.18.0rc1
 joblib
 easing_functions
 celluloid
+tqdm
