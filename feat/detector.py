@@ -975,8 +975,13 @@ class Detector(object):
         self.logger.info("Processing video.")
         #  single core
         concat_frame = None
-        
-        with tqdm(total=frames_to_process, desc="Progress", leave=True, disable=not self.verbose) as pbar:
+
+        with tqdm(
+            total=frames_to_process,
+            desc="Progress",
+            leave=True,
+            disable=not self.verbose,
+        ) as pbar:
             while True:
                 frame_got, frame = cap.read()
                 if frame_got:
