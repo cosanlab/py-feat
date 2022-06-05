@@ -4,11 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>API Reference &#8212; Py-Feat</title>
     
-  <link href="../_static/css/theme.css" rel="stylesheet">
-  <link href="../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -18,20 +20,16 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin
     href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
-    
-      
-
-    
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
     
-  <link rel="preload" as="script" href="../_static/js/index.be7d3bbb2ef33a8344ce.js">
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
@@ -39,12 +37,13 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/sphinx-book-theme.d59cb220de22ca1c485ebbdc042f0030.js"></script>
+    <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
@@ -62,7 +61,21 @@ const thebe_selector_output = ".output, .cell_output"
     <!-- Google Analytics -->
     
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
     
     <div class="container-fluid" id="banner"></div>
 
@@ -71,9 +84,10 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="container-xl">
       <div class="row">
           
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
-    
-        <div class="navbar-brand-box">
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="../index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
@@ -91,14 +105,15 @@ const thebe_selector_output = ".output, .cell_output"
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="intro.html">
-   Py-Feat: Python Facial Expression Analysis Toolbox
-  </a>
- </li>
-</ul>
-<p aria-level="2" class="caption" role="heading">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Py-Feat: Python Facial Expression Analysis Toolbox
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Getting Started
  </span>
@@ -220,90 +235,180 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 
     </div>
-</nav> <!-- To handle the deprecated key -->
-
-<div class="navbar_extra_footer">
-  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-</div>
-
-</div>
-
-
-          
-
-
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="topbar container-xl fixed-top">
-    <div class="topbar-contents row">
-        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
-        <div class="col pl-md-4 topbar-main">
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
             
-            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-                <i class="fas fa-bars"></i>
-                <i class="fas fa-arrow-left"></i>
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            
-            
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../_sources/pages/api.rst"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.rst</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-</div>
-
-            <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/cosanlab/py-feat"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        <a class="issues-button"
-            href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fpages/api.html&body=Your%20issue%20content%20here."><button
-                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
-                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        
-    </div>
-</div>
-
-            <!-- Full screen (wrap in <a> to have style consistency -->
-
-<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
-        title="Fullscreen mode"><i
-            class="fas fa-expand"></i></button></a>
-
-            <!-- Launch buttons -->
-
-        </div>
-
-        <!-- Table of contents -->
-        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
-            
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
             </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/cosanlab/py-feat"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fpages/api.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/pages/api.rst"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.rst</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#">
    API Reference
@@ -336,12 +441,11 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
 </ul>
 
-            </nav>
-        </div>
-    </div>
+    </nav>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
                 <h1>API Reference</h1>
@@ -390,32 +494,33 @@ const thebe_selector_output = ".output, .cell_output"
                     </div>
                 </div>
             </div>
-            
+            <main id="main-content" role="main">
+                
               <div>
                 
-  <div class="section" id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">#</a></h1>
 <p>This reference provides detailed documentation for all the features in FEAT</p>
-</div>
-<div class="section" id="module-feat.detector">
-<span id="feat-detector-module"></span><h1>feat.detector module<a class="headerlink" href="#module-feat.detector" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="module-feat.detector">
+<span id="feat-detector-module"></span><h1>feat.detector module<a class="headerlink" href="#module-feat.detector" title="Permalink to this headline">#</a></h1>
 <p>Main Detector class. The Detector class wraps other pre-trained models
 (e.g. face detector, au detector) and provides a high-level API to make it easier to
 perform detection</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.detector.Detector">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'retinaface'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mobilenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resmasknet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pnp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'retinaface'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mobilenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resmasknet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pnp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.change_model">
-<span class="sig-name descname"><span class="pre">change_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.change_model" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">change_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.change_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Swap one or more pre-trained detector models for another one. Just pass in
 the the new models to use as kwargs, e.g. emotion_model=’rf’</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_aus">
-<span class="sig-name descname"><span class="pre">detect_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_aus" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">detect_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_aus" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect Action Units from image or video frame</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -443,7 +548,7 @@ the the new models to use as kwargs, e.g. emotion_model=’rf’</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_emotions">
-<span class="sig-name descname"><span class="pre">detect_emotions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_emotions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">detect_emotions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_emotions" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect emotions from image or video frame</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -474,7 +579,7 @@ the the new models to use as kwargs, e.g. emotion_model=’rf’</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_facepose">
-<span class="sig-name descname"><span class="pre">detect_facepose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_facepose" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">detect_facepose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_facepose" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect facepose from image or video frame.</p>
 <p>When used with img2pose, returns <em>all</em> detected poses, and facebox and landmarks
 are ignored. Use <cite>detect_face</cite> method in order to obtain bounding boxes
@@ -520,7 +625,7 @@ degrees) for each face within in each image</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_faces">
-<span class="sig-name descname"><span class="pre">detect_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_faces" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">detect_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_faces" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect faces from image or video frame</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -547,7 +652,7 @@ face in that frame.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_image">
-<span class="sig-name descname"><span class="pre">detect_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputFname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_detection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_image" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">detect_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputFname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_detection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_image" title="Permalink to this definition">#</a></dt>
 <dd><p>Detects FEX from an image file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -576,7 +681,7 @@ face in that frame.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_landmarks">
-<span class="sig-name descname"><span class="pre">detect_landmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_landmarks" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">detect_landmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_landmarks" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect landmarks from image or video frame</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -605,7 +710,7 @@ face in that frame.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_video">
-<span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputFname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_detection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputFname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_detection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">#</a></dt>
 <dd><p>Detects FEX from a video file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -635,7 +740,7 @@ face in that frame.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.extract_face">
-<span class="sig-name descname"><span class="pre">extract_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">112</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.extract_face" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">112</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.extract_face" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract a face in a frame with a convex hull of landmarks.</p>
 <p>This function extracts the faces of the frame with convex hulls and masks out the rest.</p>
 <dl class="field-list simple">
@@ -659,7 +764,7 @@ new_landmarks: landmarks of aligned face</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.extract_hog">
-<span class="sig-name descname"><span class="pre">extract_hog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixels_per_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(8,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cells_per_block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(2,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.extract_hog" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_hog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixels_per_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(8,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cells_per_block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(2,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.extract_hog" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract HOG features from a SINGLE frame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -682,7 +787,7 @@ new_landmarks: landmarks of aligned face</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.process_frame">
-<span class="sig-name descname"><span class="pre">process_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frame_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_video_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.process_frame" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">process_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleframe4error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frame_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_video_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.process_frame" title="Permalink to this definition">#</a></dt>
 <dd><p>Function to run face detection, landmark detection, and emotion detection on
 a frame.</p>
 <dl class="field-list simple">
@@ -715,7 +820,7 @@ int: counter - the updated number of counter. Used to track the batch size and i
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.read_images">
-<span class="sig-name descname"><span class="pre">read_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgname_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.read_images" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgname_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.read_images" title="Permalink to this definition">#</a></dt>
 <dd><p>Given a string filepath or list of filepath, load the image(s) as a numpy array</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -732,14 +837,14 @@ int: counter - the updated number of counter. Used to track the batch size and i
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-feat.data">
-<span id="feat-data-module"></span><h1>feat.data module<a class="headerlink" href="#module-feat.data" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="module-feat.data">
+<span id="feat-data-module"></span><h1>feat.data module<a class="headerlink" href="#module-feat.data" title="Permalink to this headline">#</a></h1>
 <p>Main Fex data class. The Fex class is a pandas DataFrame subclass that makes it
 easier to work with the results output from a Detector</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.data.Fex">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">Fex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">Fex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.frame.DataFrame</span></code></p>
 <p>Fex is a class to represent facial expression (Fex) data</p>
 <p>Fex class is  an enhanced pandas dataframe, with extra attributes and methods to help with facial expression data analysis.</p>
@@ -756,7 +861,7 @@ easier to work with the results output from a Detector</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.append">
-<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.append" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.append" title="Permalink to this definition">#</a></dt>
 <dd><p>Append a new Fex object to an existing object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -774,7 +879,7 @@ easier to work with the results output from a Detector</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.aus">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aus</span></span><a class="headerlink" href="#feat.data.Fex.aus" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aus</span></span><a class="headerlink" href="#feat.data.Fex.aus" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the Action Units data</p>
 <p>Returns Action Unit data using the columns set in fex.au_columns.</p>
 <dl class="field-list simple">
@@ -789,7 +894,7 @@ easier to work with the results output from a Detector</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.baseline">
-<span class="sig-name descname"><span class="pre">baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'median'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.baseline" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'median'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.baseline" title="Permalink to this definition">#</a></dt>
 <dd><p>Reference a Fex object to a baseline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -807,12 +912,12 @@ easier to work with the results output from a Detector</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.calc_pspi">
-<span class="sig-name descname"><span class="pre">calc_pspi</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.calc_pspi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_pspi</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.calc_pspi" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.clean">
-<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detrend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_finite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.clean" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detrend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_finite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.clean" title="Permalink to this definition">#</a></dt>
 <dd><p>Clean Time Series signal</p>
 <p>This function wraps nilearn functionality and can filter, denoise,
 detrend, etc.</p>
@@ -840,7 +945,7 @@ the following order: detrend, standardize, remove confounds, low and high-pass f
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.decompose">
-<span class="sig-name descname"><span class="pre">decompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pca'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.decompose" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">decompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pca'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.decompose" title="Permalink to this definition">#</a></dt>
 <dd><p>Decompose Fex instance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -861,7 +966,7 @@ the following order: detrend, standardize, remove confounds, low and high-pass f
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.design">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">design</span></span><a class="headerlink" href="#feat.data.Fex.design" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">design</span></span><a class="headerlink" href="#feat.data.Fex.design" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the design data</p>
 <p>Returns the study design information using columns in fex.design_columns.</p>
 <dl class="field-list simple">
@@ -876,7 +981,7 @@ the following order: detrend, standardize, remove confounds, low and high-pass f
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.distance">
-<span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.distance" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.distance" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate distance between rows within a Fex() instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -894,7 +999,7 @@ sciypy metric)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.downsample">
-<span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.downsample" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.downsample" title="Permalink to this definition">#</a></dt>
 <dd><dl class="simple">
 <dt>Downsample Fex columns. Relies on nltools.stats.downsample,</dt><dd><p>but ensures that returned object is a Fex object.</p>
 </dd>
@@ -911,7 +1016,7 @@ sciypy metric)</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.emotions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">emotions</span></span><a class="headerlink" href="#feat.data.Fex.emotions" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">emotions</span></span><a class="headerlink" href="#feat.data.Fex.emotions" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the emotion data</p>
 <p>Returns emotions data using the columns set in fex.emotion_columns.</p>
 <dl class="field-list simple">
@@ -926,7 +1031,7 @@ sciypy metric)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.extract_boft">
-<span class="sig-name descname"><span class="pre">extract_boft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_boft" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_boft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_boft" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract Bag of Temporal features</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -948,7 +1053,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.extract_max">
-<span class="sig-name descname"><span class="pre">extract_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_max" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_max" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract maximum of each feature</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -965,7 +1070,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.extract_mean">
-<span class="sig-name descname"><span class="pre">extract_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_mean" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_mean" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract mean of each feature</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -982,7 +1087,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.extract_min">
-<span class="sig-name descname"><span class="pre">extract_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_min" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_min" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract minimum of each feature</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -999,7 +1104,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.extract_multi_wavelet">
-<span class="sig-name descname"><span class="pre">extract_multi_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_multi_wavelet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_multi_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_multi_wavelet" title="Permalink to this definition">#</a></dt>
 <dd><p>Convolve with a bank of morlet wavelets.</p>
 <p>Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.</p>
 <dl class="field-list simple">
@@ -1024,7 +1129,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.extract_summary">
-<span class="sig-name descname"><span class="pre">extract_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_summary" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_summary" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract summary of multiple features</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1046,7 +1151,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.extract_wavelet">
-<span class="sig-name descname"><span class="pre">extract_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cyc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_wavelet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">extract_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cyc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_wavelet" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform feature extraction by convolving with a complex morlet wavelet</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1068,7 +1173,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.facebox">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.Fex.facebox" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.Fex.facebox" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facebox data</p>
 <p>Returns the facebox data using fex.facebox_columns.</p>
 <dl class="field-list simple">
@@ -1083,7 +1188,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.facepose">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.Fex.facepose" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.Fex.facepose" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facepose data using the columns set in fex.facepose_columns</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1097,14 +1202,14 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.info">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#feat.data.Fex.info" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#feat.data.Fex.info" title="Permalink to this definition">#</a></dt>
 <dd><p>Print all meta data of fex</p>
 <p>Loops through metadata set in self._metadata and prints out the information.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.input">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input</span></span><a class="headerlink" href="#feat.data.Fex.input" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input</span></span><a class="headerlink" href="#feat.data.Fex.input" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns input column as string</p>
 <p>Returns input data in the “input” column.</p>
 <dl class="field-list simple">
@@ -1119,7 +1224,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.isc">
-<span class="sig-name descname"><span class="pre">isc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'input'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.isc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">isc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'input'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.isc" title="Permalink to this definition">#</a></dt>
 <dd><p>[summary]</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1141,7 +1246,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.itersessions">
-<span class="sig-name descname"><span class="pre">itersessions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.itersessions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">itersessions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.itersessions" title="Permalink to this definition">#</a></dt>
 <dd><p>Iterate over Fex sessions as (session, series) pairs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1155,7 +1260,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.landmark">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark</span></span><a class="headerlink" href="#feat.data.Fex.landmark" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark</span></span><a class="headerlink" href="#feat.data.Fex.landmark" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the landmark data</p>
 <p>Returns landmark data using the columns set in fex.landmark_columns.</p>
 <dl class="field-list simple">
@@ -1170,7 +1275,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.landmark_x">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.Fex.landmark_x" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.Fex.landmark_x" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the x landmarks.</p>
 <p>Returns the x-coordinates for facial landmarks looking for “x” in fex.landmark_columns.</p>
 <dl class="field-list simple">
@@ -1185,7 +1290,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.landmark_y">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.Fex.landmark_y" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.Fex.landmark_y" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the y landmarks.</p>
 <p>Returns the y-coordinates for facial landmarks looking for “y” in fex.landmark_columns.</p>
 <dl class="field-list simple">
@@ -1200,7 +1305,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.plot_detections">
-<span class="sig-name descname"><span class="pre">plot_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'landmarks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faceboxes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gazes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_titles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_barplot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_barplot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.plot_detections" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plot_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'landmarks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faceboxes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gazes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_titles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_barplot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_barplot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.plot_detections" title="Permalink to this definition">#</a></dt>
 <dd><p>Plots detection results by Feat. Can control plotting of face, AU barplot and
 Emotion barplot. The faces kwarg controls whether facial landmarks are draw on
 top of input images or whether faces are visualized using Py-Feat’s AU
@@ -1237,7 +1342,7 @@ the underlying vidoe frame to save memory.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.predict">
-<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model=&lt;class</span> <span class="pre">'sklearn.linear_model._base.LinearRegression'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.predict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model=&lt;class</span> <span class="pre">'sklearn.linear_model._base.LinearRegression'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.predict" title="Permalink to this definition">#</a></dt>
 <dd><p>Predicts y from X using a sklearn model.</p>
 <p>Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.</p>
 <dl class="field-list simple">
@@ -1261,7 +1366,7 @@ the underlying vidoe frame to save memory.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.read_affectiva">
-<span class="sig-name descname"><span class="pre">read_affectiva</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_affectiva" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_affectiva</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_affectiva" title="Permalink to this definition">#</a></dt>
 <dd><p>Reads facial expression detection results from Affectiva</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1275,7 +1380,7 @@ the underlying vidoe frame to save memory.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.read_facet">
-<span class="sig-name descname"><span class="pre">read_facet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_facet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_facet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_facet" title="Permalink to this definition">#</a></dt>
 <dd><p>Reads facial expression detection results from FACET</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1289,7 +1394,7 @@ the underlying vidoe frame to save memory.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.read_feat">
-<span class="sig-name descname"><span class="pre">read_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_feat" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_feat" title="Permalink to this definition">#</a></dt>
 <dd><p>Reads facial expression detection results from Feat Detector</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1303,7 +1408,7 @@ the underlying vidoe frame to save memory.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.read_file">
-<span class="sig-name descname"><span class="pre">read_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_file" title="Permalink to this definition">#</a></dt>
 <dd><p>Loads file into FEX class</p>
 <p>This function checks the detector set in fex.detector and calls the appropriate read function that helps utilize functionalities of Feat.</p>
 <dl class="simple">
@@ -1325,7 +1430,7 @@ Feat</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.read_openface">
-<span class="sig-name descname"><span class="pre">read_openface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_openface" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_openface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_openface" title="Permalink to this definition">#</a></dt>
 <dd><p>Reads facial expression detection results from OpenFace</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1339,7 +1444,7 @@ Feat</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.rectification">
-<span class="sig-name descname"><span class="pre">rectification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.rectification" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rectification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.rectification" title="Permalink to this definition">#</a></dt>
 <dd><p>Removes time points when the face position moved
 more than N standard deviations from the mean.</p>
 <dl class="field-list simple">
@@ -1357,7 +1462,7 @@ more than N standard deviations from the mean.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.regress">
-<span class="sig-name descname"><span class="pre">regress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_intercept</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.regress" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">regress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_intercept</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.regress" title="Permalink to this definition">#</a></dt>
 <dd><p>Regress using nltools.stats.regress.</p>
 <p>fMRI-like regression to predict Fex activity (y) from set of regressors (X).</p>
 <dl class="field-list simple">
@@ -1376,7 +1481,7 @@ more than N standard deviations from the mean.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.Fex.time">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#feat.data.Fex.time" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#feat.data.Fex.time" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the time data</p>
 <p>Returns the time information using fex.time_columns.</p>
 <dl class="field-list simple">
@@ -1391,7 +1496,7 @@ more than N standard deviations from the mean.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.ttest_1samp">
-<span class="sig-name descname"><span class="pre">ttest_1samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popmean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_1samp" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ttest_1samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popmean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_1samp" title="Permalink to this definition">#</a></dt>
 <dd><p>Conducts 1 sample ttest.</p>
 <p>Uses scipy.stats.ttest_1samp to conduct 1 sample ttest</p>
 <dl class="field-list simple">
@@ -1412,7 +1517,7 @@ more than N standard deviations from the mean.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.ttest_ind">
-<span class="sig-name descname"><span class="pre">ttest_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sessions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_ind" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ttest_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sessions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_ind" title="Permalink to this definition">#</a></dt>
 <dd><p>Conducts 2 sample ttest.</p>
 <p>Uses scipy.stats.ttest_ind to conduct 2 sample ttest on column col between sessions.</p>
 <dl class="field-list simple">
@@ -1434,7 +1539,7 @@ more than N standard deviations from the mean.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.upsample">
-<span class="sig-name descname"><span class="pre">upsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hz'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.upsample" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">upsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hz'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.upsample" title="Permalink to this definition">#</a></dt>
 <dd><dl class="simple">
 <dt>Upsample Fex columns. Relies on nltools.stats.upsample,</dt><dd><p>but ensures that returned object is a Fex object.</p>
 </dd>
@@ -1453,7 +1558,7 @@ more than N standard deviations from the mean.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.data.FexSeries">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">FexSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">FexSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></p>
 <p>This is a sub-class of pandas series. While not having additional methods
 of it’s own required to retain normal slicing functionality for the
@@ -1461,7 +1566,7 @@ Fex class, i.e. how slicing is typically handled in pandas.
 All methods should be called on Fex below.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.aus">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aus</span></span><a class="headerlink" href="#feat.data.FexSeries.aus" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aus</span></span><a class="headerlink" href="#feat.data.FexSeries.aus" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the Action Units data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1475,7 +1580,7 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.design">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">design</span></span><a class="headerlink" href="#feat.data.FexSeries.design" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">design</span></span><a class="headerlink" href="#feat.data.FexSeries.design" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the design data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1489,7 +1594,7 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.emotions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">emotions</span></span><a class="headerlink" href="#feat.data.FexSeries.emotions" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">emotions</span></span><a class="headerlink" href="#feat.data.FexSeries.emotions" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the emotion data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1503,7 +1608,7 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.facebox">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.FexSeries.facebox" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.FexSeries.facebox" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facebox data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1517,7 +1622,7 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.facepose">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.FexSeries.facepose" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.FexSeries.facepose" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facepose data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1531,13 +1636,13 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.info">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#feat.data.FexSeries.info" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#feat.data.FexSeries.info" title="Permalink to this definition">#</a></dt>
 <dd><p>Print class meta data.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.input">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input</span></span><a class="headerlink" href="#feat.data.FexSeries.input" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input</span></span><a class="headerlink" href="#feat.data.FexSeries.input" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns input column as string</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1551,7 +1656,7 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.landmark">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the landmark data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1565,7 +1670,7 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.landmark_x">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_x" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_x" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the x landmarks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1579,7 +1684,7 @@ All methods should be called on Fex below.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.landmark_y">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_y" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_y" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the y landmarks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1593,13 +1698,13 @@ All methods should be called on Fex below.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.FexSeries.plot_detections">
-<span class="sig-name descname"><span class="pre">plot_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries.plot_detections" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plot_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries.plot_detections" title="Permalink to this definition">#</a></dt>
 <dd><p>Alias for Fex.plot_detections</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="feat.data.FexSeries.time">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#feat.data.FexSeries.time" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#feat.data.FexSeries.time" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the time data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1615,13 +1720,13 @@ All methods should be called on Fex below.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.data.Fextractor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">Fextractor</span></span><a class="headerlink" href="#feat.data.Fextractor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">Fextractor</span></span><a class="headerlink" href="#feat.data.Fextractor" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Fextractor is a class that extracts and merges features from a Fex instance
 in preparation for data analysis.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.boft">
-<span class="sig-name descname"><span class="pre">boft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.boft" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">boft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.boft" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract Bag of Temporal features</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1644,7 +1749,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.max">
-<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.max" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.max" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract maximum of each feature</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1664,7 +1769,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.mean">
-<span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.mean" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.mean" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract mean of each feature</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1684,7 +1789,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.merge">
-<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'long'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.merge" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'long'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.merge" title="Permalink to this definition">#</a></dt>
 <dd><p>Merge all extracted features to a single dataframe</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1701,7 +1806,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.min">
-<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.min" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.min" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract minimum of each feature</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1721,7 +1826,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.multi_wavelet">
-<span class="sig-name descname"><span class="pre">multi_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.multi_wavelet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">multi_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.multi_wavelet" title="Permalink to this definition">#</a></dt>
 <dd><p>Convolve with a bank of morlet wavelets.</p>
 <p>Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.</p>
 <dl class="field-list simple">
@@ -1747,7 +1852,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.summary">
-<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.summary" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.summary" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract summary of multiple features</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1770,7 +1875,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fextractor.wavelet">
-<span class="sig-name descname"><span class="pre">wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cyc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.wavelet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fex_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cyc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fextractor.wavelet" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform feature extraction by convolving with a complex morlet
 wavelet</p>
 <dl class="field-list simple">
@@ -1794,13 +1899,13 @@ wavelet</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-feat.plotting">
-<span id="feat-plotting-module"></span><h1>feat.plotting module<a class="headerlink" href="#module-feat.plotting" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="module-feat.plotting">
+<span id="feat-plotting-module"></span><h1>feat.plotting module<a class="headerlink" href="#module-feat.plotting" title="Permalink to this headline">#</a></h1>
 <p>Helper functions for plotting</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.animate_face">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">animate_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AU</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.animate_face" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">animate_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AU</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.animate_face" title="Permalink to this definition">#</a></dt>
 <dd><p>Create a matplotlib animation interpolating between a starting and ending face. Can
 either work like <cite>plot_face</cite> by taking an array of AU intensities for <cite>start</cite> and
 <cite>end</cite>, or by animating a single AU using the <cite>AU</cite> keyword argument and setting
@@ -1835,7 +1940,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.draw_lineface">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_lineface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_lineface" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_lineface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_lineface" title="Permalink to this definition">#</a></dt>
 <dd><p>Plot Line Face</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1854,7 +1959,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.draw_muscles">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_muscles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_muscles" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_muscles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_muscles" title="Permalink to this definition">#</a></dt>
 <dd><p>Draw Muscles</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1869,7 +1974,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.draw_vectorfield">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_vectorfield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.007</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_vectorfield" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_vectorfield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.007</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_vectorfield" title="Permalink to this definition">#</a></dt>
 <dd><p>Draw vectorfield from reference to target</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1885,7 +1990,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.get_heat">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">get_heat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">muscle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.get_heat" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">get_heat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">muscle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.get_heat" title="Permalink to this definition">#</a></dt>
 <dd><p>Function to create heatmap from au vector</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1903,7 +2008,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.imshow">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">imshow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'equal'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.imshow" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">imshow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'equal'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.imshow" title="Permalink to this definition">#</a></dt>
 <dd><p>Convenience wrapper function around matplotlib imshow that creates figure and axis
 boilerplate for single image plotting</p>
 <dl class="field-list simple">
@@ -1919,7 +2024,7 @@ boilerplate for single image plotting</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.interpolate_aus">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">interpolate_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_padding_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.interpolate_aus" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">interpolate_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_padding_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.interpolate_aus" title="Permalink to this definition">#</a></dt>
 <dd><p>Helper function to interpolate between starting and ending AU values using
 non-linear easing functions</p>
 <dl class="field-list simple">
@@ -1946,7 +2051,7 @@ non-linear easing functions</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.plot_face">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorfield</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscle_scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.plot_face" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorfield</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscle_scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.plot_face" title="Permalink to this definition">#</a></dt>
 <dd><p>Core face plotting function</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1976,7 +2081,7 @@ non-linear easing functions</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.predict">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.predict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.predict" title="Permalink to this definition">#</a></dt>
 <dd><p>Helper function to predict landmarks from au given a sklearn model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1996,14 +2101,14 @@ non-linear easing functions</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-feat.utils">
-<span id="feat-utils-module"></span><h1>feat.utils module<a class="headerlink" href="#module-feat.utils" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="module-feat.utils">
+<span id="feat-utils-module"></span><h1>feat.utils module<a class="headerlink" href="#module-feat.utils" title="Permalink to this headline">#</a></h1>
 <p>Feat utility and helper functions. Some of these functions can be used directly, while
 other underly the functionality of various Detector or Fex methods.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.download_url">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">download_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.download_url" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">download_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.download_url" title="Permalink to this definition">#</a></dt>
 <dd><p>By default just call download_url from torch vision, but we pass a verbose =
 False keyword argument, then call download_url with a special context manager than
 supresses the print messages</p>
@@ -2011,19 +2116,19 @@ supresses the print messages</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.get_resource_path">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">get_resource_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.get_resource_path" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">get_resource_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.get_resource_path" title="Permalink to this definition">#</a></dt>
 <dd><p>Get path to feat resource directory.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.get_test_data_path">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">get_test_data_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.get_test_data_path" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">get_test_data_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.get_test_data_path" title="Permalink to this definition">#</a></dt>
 <dd><p>Get path to feat test data directory.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.load_h5">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">load_h5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pyfeat_aus_to_landmarks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefer_joblib_if_version_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_h5" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">load_h5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pyfeat_aus_to_landmarks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefer_joblib_if_version_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_h5" title="Permalink to this definition">#</a></dt>
 <dd><p>Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
 major and minor versions match those the model was trained with (3.8.x and 1.0.x
 respectively), otherwise will reconstruct the model object using h5 data.</p>
@@ -2047,7 +2152,7 @@ respectively), otherwise will reconstruct the model object using h5 data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.read_affectiva">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_affectiva</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">affectivafile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orig_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_affectiva" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_affectiva</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">affectivafile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orig_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_affectiva" title="Permalink to this definition">#</a></dt>
 <dd><p>This function reads in affectiva file processed through the <a class="reference external" href="https://github.com/cosanlab/affectiva-api-app">https://github.com/cosanlab/affectiva-api-app</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2064,7 +2169,7 @@ respectively), otherwise will reconstruct the model object using h5 data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.read_facet">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_facet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facetfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_facet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_facet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facetfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_facet" title="Permalink to this definition">#</a></dt>
 <dd><p>This function reads in an iMotions-FACET exported facial expression file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2083,7 +2188,7 @@ respectively), otherwise will reconstruct the model object using h5 data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.read_openface">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_openface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">openfacefile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_openface" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_openface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">openfacefile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_openface" title="Permalink to this definition">#</a></dt>
 <dd><p>This function reads in an OpenFace exported facial expression file.
 :param features: If a list of column names are passed, those are returned. Otherwise, default returns the following features:
 :param [‘frame’:
@@ -2157,7 +2262,7 @@ respectively), otherwise will reconstruct the model object using h5 data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.read_pictures">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_pictures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgname_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_pictures" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">read_pictures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgname_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.read_pictures" title="Permalink to this definition">#</a></dt>
 <dd><p>Reads in a list of pictures and concatenate these pictures into batches of images.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2174,7 +2279,7 @@ respectively), otherwise will reconstruct the model object using h5 data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.registration">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">registration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_lms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neutral</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([[37.51499407,</span> <span class="pre">118.99554304],</span> <span class="pre">[38.34746726,</span> <span class="pre">135.93119299],</span> <span class="pre">[40.77550103,</span> <span class="pre">152.83280453],</span> <span class="pre">[44.10928582,</span> <span class="pre">169.12794022],</span> <span class="pre">[49.98283172,</span> <span class="pre">184.53328584],</span> <span class="pre">[59.18894827,</span> <span class="pre">198.0161361],</span> <span class="pre">[70.41509055,</span> <span class="pre">209.2829929],</span> <span class="pre">[83.65962788,</span> <span class="pre">217.82577978],</span> <span class="pre">[98.67478614,</span> <span class="pre">220.00636722],</span> <span class="pre">[113.36502269,</span> <span class="pre">217.35622274],</span> <span class="pre">[126.09720342,</span> <span class="pre">208.6155414],</span> <span class="pre">[137.37278217,</span> <span class="pre">197.26636201],</span> <span class="pre">[146.15109522,</span> <span class="pre">183.95054535],</span> <span class="pre">[151.72032547,</span> <span class="pre">168.70328048],</span> <span class="pre">[154.90171534,</span> <span class="pre">152.54959547],</span> <span class="pre">[157.01705756,</span> <span class="pre">136.07919401],</span> <span class="pre">[157.81240022,</span> <span class="pre">119.28714732],</span> <span class="pre">[45.87342276,</span> <span class="pre">109.05187535],</span> <span class="pre">[53.83702202,</span> <span class="pre">101.43275043],</span> <span class="pre">[65.6123153,</span> <span class="pre">99.44649503],</span> <span class="pre">[77.49003982,</span> <span class="pre">101.34627038],</span> <span class="pre">[88.31833069,</span> <span class="pre">105.66229287],</span> <span class="pre">[108.80512998,</span> <span class="pre">105.18583249],</span> <span class="pre">[120.18051884,</span> <span class="pre">100.8485088],</span> <span class="pre">[131.67122653,</span> <span class="pre">99.22426247],</span> <span class="pre">[142.80408737,</span> <span class="pre">101.39810664],</span> <span class="pre">[150.09271076,</span> <span class="pre">108.74640334],</span> <span class="pre">[98.93955017,</span> <span class="pre">117.16643104],</span> <span class="pre">[99.0113979,</span> <span class="pre">128.44882091],</span> <span class="pre">[99.09059392,</span> <span class="pre">139.7133518],</span> <span class="pre">[99.22411613,</span> <span class="pre">151.32196735],</span> <span class="pre">[85.97238779,</span> <span class="pre">158.19140086],</span> <span class="pre">[92.20644686,</span> <span class="pre">160.61659752],</span> <span class="pre">[98.67862474,</span> <span class="pre">162.56437315],</span> <span class="pre">[105.26853264,</span> <span class="pre">160.62509056],</span> <span class="pre">[111.14227857,</span> <span class="pre">158.32687793],</span> <span class="pre">[59.22833204,</span> <span class="pre">118.63189571],</span> <span class="pre">[66.08746862,</span> <span class="pre">114.39263502],</span> <span class="pre">[74.66886627,</span> <span class="pre">114.59919006],</span> <span class="pre">[81.80683311,</span> <span class="pre">120.00819189],</span> <span class="pre">[74.3442616,</span> <span class="pre">121.70551759],</span> <span class="pre">[65.72377694,</span> <span class="pre">121.82223252],</span> <span class="pre">[114.75228899,</span> <span class="pre">119.90654628],</span> <span class="pre">[122.2983238,</span> <span class="pre">114.26349216],</span> <span class="pre">[130.61954433,</span> <span class="pre">114.38399043],</span> <span class="pre">[137.03708639,</span> <span class="pre">118.48489575],</span> <span class="pre">[131.21518765,</span> <span class="pre">121.51217889],</span> <span class="pre">[122.97461038,</span> <span class="pre">121.56526096],</span> <span class="pre">[75.39827955,</span> <span class="pre">179.40706409],</span> <span class="pre">[84.55991401,</span> <span class="pre">176.2145797],</span> <span class="pre">[92.90235587,</span> <span class="pre">174.4243212],</span> <span class="pre">[98.56534032,</span> <span class="pre">176.06536597],</span> <span class="pre">[104.97777373,</span> <span class="pre">174.45766844],</span> <span class="pre">[113.11257495,</span> <span class="pre">176.39970964],</span> <span class="pre">[121.19973609,</span> <span class="pre">179.19790185],</span> <span class="pre">[113.16310624,</span> <span class="pre">185.69051009],</span> <span class="pre">[105.26365305,</span> <span class="pre">188.31443911],</span> <span class="pre">[98.41771871,</span> <span class="pre">188.96563941],</span> <span class="pre">[92.22402827,</span> <span class="pre">188.38538897],</span> <span class="pre">[84.05109731,</span> <span class="pre">185.74954658],</span> <span class="pre">[79.18422925,</span> <span class="pre">179.80657222],</span> <span class="pre">[92.71723171,</span> <span class="pre">179.52017819],</span> <span class="pre">[98.52973445,</span> <span class="pre">180.16303655],</span> <span class="pre">[105.05932173,</span> <span class="pre">179.42368921],</span> <span class="pre">[117.43706438,</span> <span class="pre">179.71092599],</span> <span class="pre">[104.90869095,</span> <span class="pre">180.32984592],</span> <span class="pre">[98.35933953,</span> <span class="pre">181.1598177],</span> <span class="pre">[92.49485175,</span> <span class="pre">180.48994809]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fullface'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.registration" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">registration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_lms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neutral</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([[37.51499407,</span> <span class="pre">118.99554304],</span> <span class="pre">[38.34746726,</span> <span class="pre">135.93119299],</span> <span class="pre">[40.77550103,</span> <span class="pre">152.83280453],</span> <span class="pre">[44.10928582,</span> <span class="pre">169.12794022],</span> <span class="pre">[49.98283172,</span> <span class="pre">184.53328584],</span> <span class="pre">[59.18894827,</span> <span class="pre">198.0161361],</span> <span class="pre">[70.41509055,</span> <span class="pre">209.2829929],</span> <span class="pre">[83.65962788,</span> <span class="pre">217.82577978],</span> <span class="pre">[98.67478614,</span> <span class="pre">220.00636722],</span> <span class="pre">[113.36502269,</span> <span class="pre">217.35622274],</span> <span class="pre">[126.09720342,</span> <span class="pre">208.6155414],</span> <span class="pre">[137.37278217,</span> <span class="pre">197.26636201],</span> <span class="pre">[146.15109522,</span> <span class="pre">183.95054535],</span> <span class="pre">[151.72032547,</span> <span class="pre">168.70328048],</span> <span class="pre">[154.90171534,</span> <span class="pre">152.54959547],</span> <span class="pre">[157.01705756,</span> <span class="pre">136.07919401],</span> <span class="pre">[157.81240022,</span> <span class="pre">119.28714732],</span> <span class="pre">[45.87342276,</span> <span class="pre">109.05187535],</span> <span class="pre">[53.83702202,</span> <span class="pre">101.43275043],</span> <span class="pre">[65.6123153,</span> <span class="pre">99.44649503],</span> <span class="pre">[77.49003982,</span> <span class="pre">101.34627038],</span> <span class="pre">[88.31833069,</span> <span class="pre">105.66229287],</span> <span class="pre">[108.80512998,</span> <span class="pre">105.18583249],</span> <span class="pre">[120.18051884,</span> <span class="pre">100.8485088],</span> <span class="pre">[131.67122653,</span> <span class="pre">99.22426247],</span> <span class="pre">[142.80408737,</span> <span class="pre">101.39810664],</span> <span class="pre">[150.09271076,</span> <span class="pre">108.74640334],</span> <span class="pre">[98.93955017,</span> <span class="pre">117.16643104],</span> <span class="pre">[99.0113979,</span> <span class="pre">128.44882091],</span> <span class="pre">[99.09059392,</span> <span class="pre">139.7133518],</span> <span class="pre">[99.22411613,</span> <span class="pre">151.32196735],</span> <span class="pre">[85.97238779,</span> <span class="pre">158.19140086],</span> <span class="pre">[92.20644686,</span> <span class="pre">160.61659752],</span> <span class="pre">[98.67862474,</span> <span class="pre">162.56437315],</span> <span class="pre">[105.26853264,</span> <span class="pre">160.62509056],</span> <span class="pre">[111.14227857,</span> <span class="pre">158.32687793],</span> <span class="pre">[59.22833204,</span> <span class="pre">118.63189571],</span> <span class="pre">[66.08746862,</span> <span class="pre">114.39263502],</span> <span class="pre">[74.66886627,</span> <span class="pre">114.59919006],</span> <span class="pre">[81.80683311,</span> <span class="pre">120.00819189],</span> <span class="pre">[74.3442616,</span> <span class="pre">121.70551759],</span> <span class="pre">[65.72377694,</span> <span class="pre">121.82223252],</span> <span class="pre">[114.75228899,</span> <span class="pre">119.90654628],</span> <span class="pre">[122.2983238,</span> <span class="pre">114.26349216],</span> <span class="pre">[130.61954433,</span> <span class="pre">114.38399043],</span> <span class="pre">[137.03708639,</span> <span class="pre">118.48489575],</span> <span class="pre">[131.21518765,</span> <span class="pre">121.51217889],</span> <span class="pre">[122.97461038,</span> <span class="pre">121.56526096],</span> <span class="pre">[75.39827955,</span> <span class="pre">179.40706409],</span> <span class="pre">[84.55991401,</span> <span class="pre">176.2145797],</span> <span class="pre">[92.90235587,</span> <span class="pre">174.4243212],</span> <span class="pre">[98.56534032,</span> <span class="pre">176.06536597],</span> <span class="pre">[104.97777373,</span> <span class="pre">174.45766844],</span> <span class="pre">[113.11257495,</span> <span class="pre">176.39970964],</span> <span class="pre">[121.19973609,</span> <span class="pre">179.19790185],</span> <span class="pre">[113.16310624,</span> <span class="pre">185.69051009],</span> <span class="pre">[105.26365305,</span> <span class="pre">188.31443911],</span> <span class="pre">[98.41771871,</span> <span class="pre">188.96563941],</span> <span class="pre">[92.22402827,</span> <span class="pre">188.38538897],</span> <span class="pre">[84.05109731,</span> <span class="pre">185.74954658],</span> <span class="pre">[79.18422925,</span> <span class="pre">179.80657222],</span> <span class="pre">[92.71723171,</span> <span class="pre">179.52017819],</span> <span class="pre">[98.52973445,</span> <span class="pre">180.16303655],</span> <span class="pre">[105.05932173,</span> <span class="pre">179.42368921],</span> <span class="pre">[117.43706438,</span> <span class="pre">179.71092599],</span> <span class="pre">[104.90869095,</span> <span class="pre">180.32984592],</span> <span class="pre">[98.35933953,</span> <span class="pre">181.1598177],</span> <span class="pre">[92.49485175,</span> <span class="pre">180.48994809]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fullface'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.registration" title="Permalink to this definition">#</a></dt>
 <dd><p>Register faces to a neutral face.</p>
 <p>Affine registration of face landmarks to neutral face.</p>
 <dl class="field-list simple">
@@ -2196,7 +2301,7 @@ respectively), otherwise will reconstruct the model object using h5 data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.softmax">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">softmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.softmax" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">softmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.softmax" title="Permalink to this definition">#</a></dt>
 <dd><p>Softmax function to change log likelihood evidence values to probabilities.
 Use with Evidence values from FACET.</p>
 <dl class="field-list simple">
@@ -2208,7 +2313,7 @@ Use with Evidence values from FACET.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.validate_input">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">validate_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.validate_input" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">validate_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputFname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.validate_input" title="Permalink to this definition">#</a></dt>
 <dd><p>Given a string filename or list containing string files names, ensures that the
 file(s) exist. Always returns a non-nested list, potentionally containing a single element.</p>
 <dl class="field-list simple">
@@ -2227,24 +2332,24 @@ file(s) exist. Always returns a non-nested list, potentionally containing a sing
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-feat.pretrained">
-<span id="feat-pretrained-module"></span><h1>feat.pretrained module<a class="headerlink" href="#module-feat.pretrained" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="module-feat.pretrained">
+<span id="feat-pretrained-module"></span><h1>feat.pretrained module<a class="headerlink" href="#module-feat.pretrained" title="Permalink to this headline">#</a></h1>
 <p>Helper functions specifically for working with included pre-trained models</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.pretrained.fetch_model">
-<span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">fetch_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.fetch_model" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">fetch_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.fetch_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Fetch a pre-trained model class constructor. Used by detector init</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.pretrained.get_pretrained_models">
-<span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">get_pretrained_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.get_pretrained_models" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">get_pretrained_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.get_pretrained_models" title="Permalink to this definition">#</a></dt>
 <dd><p>Helper function that validates the request model names and downloads them if
 necessary using the URLs in the included JSON file. User by detector init</p>
 </dd></dl>
 
-</div>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -2268,9 +2373,11 @@ necessary using the URLs in the included JSON file. User by detector init</p>
 
               </div>
               
-            
-                <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
     <a class='left-prev' id="prev-link" href="../extra_tutorials/extract_labels_and_landmarks.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
@@ -2286,24 +2393,28 @@ necessary using the URLs in the included JSON file. User by detector init</p>
     <i class="fas fa-angle-right"></i>
     </a>
 </div>
-            
+            </footer>
         </div>
     </div>
-    <footer class="footer">
-  <p>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
     
-      By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie<br/>
-    
-        &copy; Copyright 2022.<br/>
-  </p>
-</footer>
-</main>
+</div>
 
 
       </div>
     </div>
   
-  <script src="../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
 
   </body>
 </html>
