@@ -6,12 +6,6 @@
                 "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib"
             ]
         },
-        "rf": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
-                "https://github.com/cosanlab/feat/releases/download/v0.1/RF_568.joblib"
-            ]
-        },
         "logistic": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
@@ -43,11 +37,6 @@
         "resmasknet": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth"
-            ]
-        },
-        "rf": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/emoRF36.joblib"
             ]
         },
         "svm": {
