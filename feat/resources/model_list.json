@@ -32,11 +32,6 @@
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip"
             ]
-        },
-        "drml": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/DRMLNetParams.pth"
-            ]
         }
     },
     "emotion_detectors": {
