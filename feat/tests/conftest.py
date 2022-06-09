@@ -45,7 +45,7 @@ def landmark_model(request):
 
 @fixture(
     scope="module",
-    params=["rf", "svm", "logistic", "jaanet", "drml"],
+    params=["rf", "svm", "logistic", "jaanet"],
 )
 def au_model(request):
     """Supported au detectors"""
