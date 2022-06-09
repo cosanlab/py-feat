@@ -47,7 +47,7 @@ class Detector(object):
         landmark_model="mobilenet",
         au_model="svm",
         emotion_model="resmasknet",
-        facepose_model="pnp",
+        facepose_model="img2pose",
         n_jobs=1,
         verbose=False,
     ):
@@ -158,13 +158,11 @@ class Detector(object):
             empty_facebox = pd.DataFrame(predictions, columns=FEAT_FACEBOX_COLUMNS)
             self._empty_facebox = empty_facebox
             if self.face_detector is not None:
-                # img2pose is used both as face detector and pose estimator
                 if "img2pose" in face:
                     self.face_detector = self.face_detector(
                         cpu_mode=self.map_location == "cpu",
                         constrained="img2pose-c" == face,
                     )
-                    self.facepose_detector = self.face_detector
                 else:
                     self.face_detector = self.face_detector()
 
@@ -241,10 +239,14 @@ class Detector(object):
         # FACEPOSE MODEL
         if self.info["facepose_model"] != facepose:
             self.logger.info("Loading facepose model: ", facepose)
-            # Only assign it if it's not img2pose, otherwise it's already set by face model
-            _m = fetch_model("facepose_model", facepose)
-            if _m is not None:
-                self.facepose_detector = _m()
+            self.facepose_detector = fetch_model("facepose_model", facepose)
+            if "img2pose" in facepose:
+                self.facepose_detector = self.facepose_detector(
+                    cpu_mode=self.map_location == "cpu",
+                    constrained="img2pose-c" == face,
+                )
+            else:
+                self.facepose_detector = self.facepose_detector()
             self.info["facepose_model"] = facepose
 
             self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS

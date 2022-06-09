@@ -51,8 +51,8 @@ PRETRAINED_MODELS = {
     ],
     "facepose_model": [
         {"pnp": PerspectiveNPoint},
-        {"img2pose": None},
-        {"img2pose-c": None},
+        {"img2pose": Img2Pose},
+        {"img2pose-c": Img2Pose},
     ],
 }
 # Compatibility support for OpenFace, Affectiva, and FACET data files which have
@@ -140,6 +140,7 @@ AU_LANDMARK_MAP = {
         "Roll",
         "Yaw",
     ],
+    # Pre-trained detectors include AU11 instead of AU18
     "Feat": [
         "AU01",
         "AU02",
@@ -259,11 +260,6 @@ def get_pretrained_models(
             raise ValueError(
                 f"Requested facepose_model was {facepose_model}. Must be one of {PRETRAINED_MODELS['facepose_model']}"
             )
-        if "img2pose" in facepose_model and facepose_model != face_model:
-            raise ValueError(
-                f"{facepose_model} is both a face detector and a pose estimator and cannot be used with a different face detector. Please set face_model to {facepose_model} as well"
-            )
-
     return (
         face_model,
         landmark_model,
