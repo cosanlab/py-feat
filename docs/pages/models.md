@@ -15,7 +15,6 @@ Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 ```
 
 ## Action Unit detection
-- `rf`: Random Forest model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
 - `svm`: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
 - `logistic`: Logistic Classifier model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
 - `JAANET`: Joint facial action unit detection and face alignment via adaptive attention trained with BP4D and BP4D+ ([Shao et al., 2020](https://arxiv.org/pdf/2003.08834v1.pdf))
@@ -25,7 +24,6 @@ If you plan to use a Histogram-based Action Unit model (e.g. `rf`, `svm`, `logis
 ```
 
 ##  Emotion detection
-- `rf`: Random Forest model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
 - `svm`: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
 - `fer`: Deep convolutional network
 - `ResMaskNet`: Facial expression recognition using residual masking network by ([Pham et al., 2020](https://ieeexplore.ieee.org/document/9411919))
