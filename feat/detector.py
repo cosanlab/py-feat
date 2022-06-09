@@ -110,7 +110,7 @@ class Detector(object):
         face, landmark, au, emotion, facepose = get_pretrained_models(
             face_model, landmark_model, au_model, emotion_model, facepose_model, verbose
         )
-        if (au is None) or (au in ["jaanet", "drml"]):
+        if (au is None) or (au in ["jaanet"]):
             auoccur_columns = jaanet_AU_presence
         else:
             auoccur_columns = RF_AU_presence
@@ -281,7 +281,7 @@ class Detector(object):
             facepose_model,
             self.verbose,
         )
-        if (au is None) or (au in ["jaanet", "drml"]):
+        if (au is None) or (au in ["jaanet"]):
             auoccur_columns = jaanet_AU_presence
         else:
             auoccur_columns = RF_AU_presence

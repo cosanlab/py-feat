@@ -308,21 +308,6 @@ def test_rf(default_detector, single_face_img_data):
     assert aus.shape[-1] == 20
 
 
-def test_drml(default_detector, single_face_img_data):
-    default_detector.change_model(
-        face_model="RetinaFace",
-        emotion_model=None,
-        landmark_model="MobileFaceNet",
-        au_model="drml",
-    )
-
-    bboxes = default_detector.detect_faces(single_face_img_data)[0]
-    lands = default_detector.detect_landmarks(single_face_img_data, [bboxes])[0]
-    aus = default_detector.detect_aus(single_face_img_data, lands)
-    assert np.sum(np.isnan(aus)) == 0
-    assert aus.shape[-1] == 12
-
-
 def test_resmasknet(default_detector, single_face_img):
     default_detector.change_model(emotion_model="resmasknet")
     out = default_detector.detect_image(single_face_img)

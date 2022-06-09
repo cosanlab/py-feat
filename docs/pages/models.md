@@ -19,7 +19,6 @@ Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 - `svm`: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
 - `logistic`: Logistic Classifier model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
 - `JAANET`: Joint facial action unit detection and face alignment via adaptive attention trained with BP4D and BP4D+ ([Shao et al., 2020](https://arxiv.org/pdf/2003.08834v1.pdf))
-- `DRML`: Deep region and multi-label learning for facial action unit detection by ([Zhao et al., 2016](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Zhao_Deep_Region_and_CVPR_2016_paper.pdf))
 
 ```{caution}
 If you plan to use a Histogram-based Action Unit model (e.g. `rf`, `svm`, `logistic`) you should *also* use a Histogram-based Emotion detection model (e.g. `rf`, `svm`). It's not advised to mix Histogram-based models for Action Unit detection with deep-learning models for emotion detection and visa-versa.

@@ -11,7 +11,6 @@ from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 from feat.au_detectors.JAANet.JAA_test import JAANet
-from feat.au_detectors.DRML.DRML_test import DRMLNet
 from feat.au_detectors.StatLearning.SL_test import (
     RandomForestClassifier,
     SVMClassifier,
@@ -47,7 +46,6 @@ PRETRAINED_MODELS = {
         {"svm": SVMClassifier},
         {"logistic": LogisticClassifier},
         {"jaanet": JAANet},
-        {"drml": DRMLNet},
     ],
     "emotion_model": [
         {"resmasknet": ResMaskNet},
