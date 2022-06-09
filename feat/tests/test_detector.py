@@ -286,28 +286,6 @@ def test_svm(default_detector, single_face_img_data):
     assert aus.shape[-1] == 20
 
 
-def test_rf(default_detector, single_face_img_data):
-    default_detector.change_model(
-        face_model="RetinaFace",
-        emotion_model=None,
-        landmark_model="MobileFaceNet",
-        au_model="RF",
-    )
-
-    detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
-    # TODO: Add explanation of why we need to pass the output of ._batch_hog() to
-    # .detect_aus() for this model but not others
-    hogs, new_lands = default_detector._batch_hog(
-        frames=single_face_img_data, detected_faces=detected_faces, landmarks=landmarks
-    )
-
-    aus = default_detector.detect_aus(frame=hogs, landmarks=new_lands)
-
-    assert np.sum(np.isnan(aus)) == 0
-    assert aus.shape[-1] == 20
-
-
 def test_resmasknet(default_detector, single_face_img):
     default_detector.change_model(emotion_model="resmasknet")
     out = default_detector.detect_image(single_face_img)
@@ -318,13 +296,6 @@ def test_emotionsvm(default_detector, single_face_img):
     default_detector.change_model(emotion_model="svm")
     out = default_detector.detect_image(single_face_img)
     assert out.emotions["happiness"].values > 0.5
-
-
-def test_emotionrf(default_detector, single_face_img):
-    # Emotion RF models is not good
-    default_detector.change_model(emotion_model="rf")
-    out = default_detector.detect_image(single_face_img)
-    assert out.emotions["happiness"].values > 0.0
 
 
 def test_pnp(default_detector, single_face_img_data):

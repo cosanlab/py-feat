@@ -12,14 +12,12 @@ from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 from feat.au_detectors.JAANet.JAA_test import JAANet
 from feat.au_detectors.StatLearning.SL_test import (
-    RandomForestClassifier,
     SVMClassifier,
     LogisticClassifier,
 )
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
-    EmoRandomForestClassifier,
     EmoSVMClassifier,
 )
 from feat.utils import get_resource_path, download_url
@@ -42,14 +40,12 @@ PRETRAINED_MODELS = {
         {"pfld": PFLDInference},
     ],
     "au_model": [
-        {"rf": RandomForestClassifier},
         {"svm": SVMClassifier},
         {"logistic": LogisticClassifier},
         {"jaanet": JAANet},
     ],
     "emotion_model": [
         {"resmasknet": ResMaskNet},
-        {"rf": EmoRandomForestClassifier},
         {"svm": EmoSVMClassifier},
         {"fer": ferNetModule},
     ],

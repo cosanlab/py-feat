@@ -14,6 +14,7 @@
 #### Breaking Changes
 - Columns of interest on `Fex` data classes were previously accessed like class *methods*, i.e. `fex.aus()`. These have now been changed to class *attributes*, i.e. `fex.aus`
 - Remove support for `DRML` AU detector
+- Remove support for `RF` AU and emotion detectors
 
 ### Fixes
 - [#80](https://github.com/cosanlab/py-feat/issues/80)
