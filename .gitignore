@@ -97,3 +97,6 @@ _Notebooks/
 # Ignore data files for AU viz model building
 data/*
 !data/.gitkeep
+
+# Ignore development notebooks and code
+dev/
