@@ -40,14 +40,15 @@ def test_detector_combos(
 
 
 def test_empty_init():
-    detector = Detector(
-        face_model=None,
-        emotion_model=None,
-        au_model=None,
-        facepose_model=None,
-        landmark_model=None,
-    )
-    assert isinstance(detector, Detector)
+
+    with pytest.raises(ValueError):
+        _ = Detector(
+            face_model=None,
+            emotion_model=None,
+            au_model=None,
+            facepose_model=None,
+            landmark_model=None,
+        )
 
 
 def test_init_with_wrongmodelname():
@@ -229,7 +230,6 @@ def test_pfld(default_detector, single_face_img):
 def test_jaanet(default_detector, single_face_img_data):
     default_detector.change_model(
         face_model="RetinaFace",
-        emotion_model=None,
         landmark_model="MobileFaceNet",
         au_model="jaanet",
     )
@@ -245,7 +245,6 @@ def test_jaanet(default_detector, single_face_img_data):
 def test_logistic(default_detector, single_face_img_data):
     default_detector.change_model(
         face_model="RetinaFace",
-        emotion_model=None,
         landmark_model="MobileFaceNet",
         au_model="logistic",
     )
@@ -267,7 +266,6 @@ def test_logistic(default_detector, single_face_img_data):
 def test_svm(default_detector, single_face_img_data):
     default_detector.change_model(
         face_model="RetinaFace",
-        emotion_model=None,
         landmark_model="MobileFaceNet",
         au_model="svm",
     )

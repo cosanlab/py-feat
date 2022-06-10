@@ -16,8 +16,6 @@ from feat.data import Fex
 from feat.utils import (
     get_resource_path,
     openface_2d_landmark_columns,
-    jaanet_AU_presence,
-    RF_AU_presence,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FACET_FACEPOSE_COLUMNS,
@@ -29,7 +27,7 @@ from feat.utils import (
     validate_input,
     read_pictures,
 )
-from feat.pretrained import get_pretrained_models, fetch_model
+from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 import torch
 import logging
 import warnings
@@ -110,10 +108,6 @@ class Detector(object):
         face, landmark, au, emotion, facepose = get_pretrained_models(
             face_model, landmark_model, au_model, emotion_model, facepose_model, verbose
         )
-        if (au is None) or (au in ["jaanet"]):
-            auoccur_columns = jaanet_AU_presence
-        else:
-            auoccur_columns = RF_AU_presence
 
         self._init_detectors(
             face,
@@ -121,7 +115,6 @@ class Detector(object):
             au,
             emotion,
             facepose,
-            auoccur_columns,
             openface_2d_landmark_columns,
         )
 
@@ -138,7 +131,6 @@ class Detector(object):
         au,
         emotion,
         facepose,
-        auoccur_columns,
         openface_2d_landmark_columns,
     ):
         """Helper function called by __init__ and change_model to (re)initialize one of
@@ -217,11 +209,20 @@ class Detector(object):
             self.logger.info(f"Loading AU model: {au}")
             self.au_model = fetch_model("au_model", au)
             self.info["au_model"] = au
+            if self.info["au_model"] in ["svm", "logistic"]:
+                self.info["au_presence_columns"] = AU_LANDMARK_MAP["Feat"]
+            else:
+                self.info["au_presence_columns"] = AU_LANDMARK_MAP[
+                    self.info["au_model"]
+                ]
             if self.au_model is not None:
                 self.au_model = self.au_model()
-                self.info["au_presence_columns"] = auoccur_columns
-                predictions = np.full_like(np.atleast_2d(auoccur_columns), np.nan)
-                empty_au_occurs = pd.DataFrame(predictions, columns=auoccur_columns)
+                predictions = np.full_like(
+                    np.atleast_2d(self.info["au_presence_columns"]), np.nan
+                )
+                empty_au_occurs = pd.DataFrame(
+                    predictions, columns=self.info["au_presence_columns"]
+                )
                 self._empty_auoccurence = empty_au_occurs
 
         # EMOTION MODEL
@@ -258,7 +259,7 @@ class Detector(object):
             FEAT_TIME_COLUMNS
             + FEAT_FACEBOX_COLUMNS
             + openface_2d_landmark_columns
-            + auoccur_columns
+            + self.info["au_presence_columns"]
             + FACET_FACEPOSE_COLUMNS
             + FEAT_EMOTION_COLUMNS
             + ["input"]
@@ -283,10 +284,20 @@ class Detector(object):
             facepose_model,
             self.verbose,
         )
-        if (au is None) or (au in ["jaanet"]):
-            auoccur_columns = jaanet_AU_presence
-        else:
-            auoccur_columns = RF_AU_presence
+        for requested, current_name in zip(
+            [face, landmark, au, emotion, facepose],
+            [
+                "face_model",
+                "landmark_model",
+                "au_model",
+                "emotion_model",
+                "facepose_model",
+            ],
+        ):
+            if requested != self.info[current_name]:
+                print(
+                    f"Changing {current_name} from {self.info[current_name]} -> {requested}"
+                )
 
         self._init_detectors(
             face,
@@ -294,7 +305,6 @@ class Detector(object):
             au,
             emotion,
             facepose,
-            auoccur_columns,
             openface_2d_landmark_columns,
         )
 
@@ -797,8 +807,7 @@ class Detector(object):
             )
             index_len = [len(ii) for ii in landmarks]
 
-            if self["au_model"].lower() in ["logistic", "svm", "rf"]:
-                # landmarks_2 = round_vals(landmarks,3)
+            if self["au_model"].lower() in ["logistic", "svm"]:
                 landmarks_2 = landmarks
                 hog_arr, new_lands = self._batch_hog(
                     frames=frames, detected_faces=detected_faces, landmarks=landmarks_2
@@ -807,7 +816,7 @@ class Detector(object):
             else:
                 au_occur = self.detect_aus(frame=frames, landmarks=landmarks)
 
-            if self["emotion_model"].lower() in ["svm", "rf"]:
+            if self["emotion_model"].lower() == "svm":
                 hog_arr, new_lands = self._batch_hog(
                     frames=frames, detected_faces=detected_faces, landmarks=landmarks
                 )
@@ -1102,6 +1111,11 @@ class Detector(object):
                 facepose_columns=FACET_FACEPOSE_COLUMNS,
                 time_columns=FEAT_TIME_COLUMNS,
                 detector="Feat",
+                face_model=self.info["face_model"],
+                landmark_model=self.info["landmark_model"],
+                au_model=self.info["au_model"],
+                emotion_model=self.info["emotion_model"],
+                facepose_model=self.info["facepose_model"],
             )
         # Not returning any detection to save memory
         return True
@@ -1245,6 +1259,11 @@ class Detector(object):
                 facepose_columns=FACET_FACEPOSE_COLUMNS,
                 time_columns=FACET_TIME_COLUMNS,
                 detector="Feat",
+                face_model=self.info["face_model"],
+                landmark_model=self.info["landmark_model"],
+                au_model=self.info["au_model"],
+                emotion_model=self.info["emotion_model"],
+                facepose_model=self.info["facepose_model"],
             )
         # Not returning any detection to save memory
         return True

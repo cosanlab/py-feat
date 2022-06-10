@@ -5,7 +5,8 @@ Helper functions for plotting
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 import matplotlib.pyplot as plt
-from feat.utils import load_h5, RF_AU_presence
+from feat.utils import load_h5
+from feat.pretrained import AU_LANDMARK_MAP
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -909,7 +910,7 @@ def plot_face(
     if au is None:
         au = np.zeros(model.n_components)
         warnings.warn(
-            "Don't forget to pass an 'au' vector of len(20), "
+            f"Don't forget to pass an 'au' vector of length {model.n_components}, "
             "using neutral as default"
         )
 
@@ -1139,7 +1140,7 @@ def animate_face(
     Create a matplotlib animation interpolating between a starting and ending face. Can
     either work like `plot_face` by taking an array of AU intensities for `start` and
     `end`, or by animating a single AU using the `AU` keyword argument and setting
-    `start` and `end` to a scalar value
+    `start` and `end` to a scalar value.
 
     Args:
         AU (str/int, optional): action unit id (e.g. 12 or 'AU12'). Defaults to None.
@@ -1181,7 +1182,7 @@ def animate_face(
 
         if isinstance(AU, int):
             AU = f"AU{str(AU).zfill(2)}"
-        au_map = dict(zip(RF_AU_presence, list(range(20))))
+        au_map = dict(zip(AU_LANDMARK_MAP["Feat"], list(range(20))))
         au_idx = au_map[AU.upper()]
         _start, _end = np.zeros(20), np.zeros(20)
         _start[au_idx] = start

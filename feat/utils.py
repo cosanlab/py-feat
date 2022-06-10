@@ -97,13 +97,6 @@ openface_3d_landmark_columns = (
     + [f"Z_{i}" for i in range(landmark_length)]
 )
 
-jaanet_AU_list = [1, 2, 4, 6, 7, 10, 12, 14, 15, 17, 23, 24]
-RF_AU_list = [1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43]
-jaanet_AU_presence = [f"AU" + str(i).zfill(2) for i in jaanet_AU_list]
-jaanet_AU_presence.sort()
-RF_AU_presence = [f"AU" + str(i).zfill(2) for i in RF_AU_list]
-RF_AU_presence.sort()
-
 openface_AU_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 45]
 openface_AU_intensity = [f"AU" + str(i).zfill(2) + "_r" for i in openface_AU_list]
 openface_AU_presence = [f"AU" + str(i).zfill(2) + "_c" for i in openface_AU_list + [28]]
@@ -251,6 +244,9 @@ def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=
     if can_load_joblib:
         return load(os.path.join(get_resource_path(), file_name))
     else:
+        h5_path = os.path.join(get_resource_path(), file_name)
+        if not os.path.exists(h5_path):
+            raise ValueError(f"{file_name} does not exist")
         try:
             hf = h5py.File(os.path.join(get_resource_path(), file_name), "r")
             d1 = hf.get("coef")
