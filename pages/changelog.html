@@ -173,23 +173,23 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
-   Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
+   6. Training an AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
-   Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
-   Training AU visualization model
+  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
+   8. Loading data from other detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
-   Extracting labels and landmarks
+  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
+   9. Training HOG-based AU detectors
   </a>
  </li>
 </ul>
@@ -410,16 +410,50 @@ title="Print to PDF"
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#id1">
+   0.4.0
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#major-version-breaking-release">
+     Major version breaking release!
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#new">
+     New
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#breaking-changes">
+       Breaking Changes
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#development-changes">
+     Development changes
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#fixes">
+     Fixes
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
    0.3.7
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id2">
+  <a class="reference internal nav-link" href="#id3">
    0.3.6
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id3">
+  <a class="reference internal nav-link" href="#id4">
    0.2.0
   </a>
  </li>
@@ -444,16 +478,50 @@ title="Print to PDF"
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#id1">
+   0.4.0
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#major-version-breaking-release">
+     Major version breaking release!
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#new">
+     New
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#breaking-changes">
+       Breaking Changes
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#development-changes">
+     Development changes
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#fixes">
+     Fixes
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
    0.3.7
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id2">
+  <a class="reference internal nav-link" href="#id3">
    0.3.6
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id3">
+  <a class="reference internal nav-link" href="#id4">
    0.2.0
   </a>
  </li>
@@ -470,19 +538,86 @@ title="Print to PDF"
   <section class="tex2jax_ignore mathjax_ignore" id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline">#</a></h1>
 <section id="id1">
-<h2>0.3.7<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
+<h2>0.4.0<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
+<section id="major-version-breaking-release">
+<h3>Major version breaking release!<a class="headerlink" href="#major-version-breaking-release" title="Permalink to this headline">#</a></h3>
+<ul class="simple">
+<li><p>This release includes numerous bug fixes, api updates, and code base changes make it largely incompatible with previous releases</p></li>
+<li><p>To fork development from an older version of <code class="docutils literal notranslate"><span class="pre">py-feat</span></code> you can use <a class="reference external" href="https://github.com/cosanlab/py-feat-archive">this archival repo</a> instead</p></li>
+</ul>
+</section>
+<section id="new">
+<h3>New<a class="headerlink" href="#new" title="Permalink to this headline">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> and <code class="docutils literal notranslate"><span class="pre">plot_face</span></code> functions in <code class="docutils literal notranslate"><span class="pre">feat.plotting</span></code> module</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Fex</span></code> data-classes returned from <code class="docutils literal notranslate"><span class="pre">Detector.detect_image()</span></code> or <code class="docutils literal notranslate"><span class="pre">Detector.detect_video()</span></code> now store the names of the different detectors used as attributes: <code class="docutils literal notranslate"><span class="pre">.face_model</span></code>, <code class="docutils literal notranslate"><span class="pre">.au_model</span></code>, etc</p></li>
+<li><p>The AU visualization model used by <code class="docutils literal notranslate"><span class="pre">plot_face</span></code> and <code class="docutils literal notranslate"><span class="pre">Detector.plot_detections(faces='aus')</span></code> has been updated to include AU11 and remove AU18 making it consistent with Py-feat’s custom AU detectors (<code class="docutils literal notranslate"><span class="pre">svm</span></code> and <code class="docutils literal notranslate"><span class="pre">logistic</span></code>)</p></li>
+<li><p>A new AU visualization model supporting the <code class="docutils literal notranslate"><span class="pre">jaanet</span></code> AU detector, which only has 12 AUs, has now been added and will automatically be used if <code class="docutils literal notranslate"><span class="pre">Detector(au_model='jaanet')</span></code>.</p>
+<ul>
+<li><p>This visualization model can also be used by the <code class="docutils literal notranslate"><span class="pre">plot_face</span></code> function by by passing it to the <code class="docutils literal notranslate"><span class="pre">model</span></code> argument: <code class="docutils literal notranslate"><span class="pre">plot_face(model='jaanet_aus_to_landmarks')</span></code></p></li>
+</ul>
+</li>
+</ul>
+<section id="breaking-changes">
+<h4>Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permalink to this headline">#</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Detector</span></code> no longer support unintialized models, e.g. <code class="docutils literal notranslate"><span class="pre">any_model</span> <span class="pre">=</span> <span class="pre">None</span></code></p>
+<ul>
+<li><p>This is is also true for <code class="docutils literal notranslate"><span class="pre">Detector.change_model</span></code></p></li>
+</ul>
+</li>
+<li><p>Columns of interest on <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data classes were previously accessed like class <em>methods</em>, i.e. <code class="docutils literal notranslate"><span class="pre">fex.aus()</span></code>. These have now been changed to class <em>attributes</em>, i.e. <code class="docutils literal notranslate"><span class="pre">fex.aus</span></code></p></li>
+<li><p>Remove support for <code class="docutils literal notranslate"><span class="pre">DRML</span></code> AU detector</p></li>
+<li><p>Remove support for <code class="docutils literal notranslate"><span class="pre">RF</span></code> AU and emotion detectors</p></li>
+<li><p>New default detectors:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code> for AUs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resmasknet</span></code> for emotions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">img2pose</span></code> for head-pose</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="development-changes">
+<h3>Development changes<a class="headerlink" href="#development-changes" title="Permalink to this headline">#</a></h3>
+<ul class="simple">
+<li><p>Revamped pre-trained detector handling in new <code class="docutils literal notranslate"><span class="pre">feat.pretrained</span></code> module</p></li>
+<li><p>More tests including testing all detector combinations</p></li>
+</ul>
+</section>
+<section id="fixes">
+<h3>Fixes<a class="headerlink" href="#fixes" title="Permalink to this headline">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/80">#80</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/81">#81</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/94">#94</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/98">#98</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/101">#101</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/106">#106</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/110">#110</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/113">#113</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/114">#114</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/118">#118</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/119">#119</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/125">#125</a></p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>0.3.7<a class="headerlink" href="#id2" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p>Fix import error due to missing init</p></li>
 </ul>
 </section>
-<section id="id2">
-<h2>0.3.6<a class="headerlink" href="#id2" title="Permalink to this headline">#</a></h2>
+<section id="id3">
+<h2>0.3.6<a class="headerlink" href="#id3" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p>Trigger Zenodo release</p></li>
 </ul>
 </section>
-<section id="id3">
-<h2>0.2.0<a class="headerlink" href="#id3" title="Permalink to this headline">#</a></h2>
+<section id="id4">
+<h2>0.2.0<a class="headerlink" href="#id4" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p>Testing pypi upload</p></li>
 </ul>

@@ -46,7 +46,7 @@ feat/
     - `__init__.py` (this can be empty)
     - `mynewmodel_model.py` (this should end in `_model`)
     - `mynewmodel_test.py` (this should end in `_test`)
-4. Your model should be a class that has the appropriate method that a `Detector` can call. For example, Emotion detectors should have the method `mynewmodel.detect_emotions()` that can be called: 
+3. Your model should be a class that has the appropriate method that a `Detector` can call. For example, Emotion detectors should have the method `mynewmodel.detect_emotions()` that can be called: 
     ```
     class myNewModel(): 
         ## code to init and load model
@@ -56,10 +56,10 @@ feat/
         
             return [array with probabilities for 7 emotions]
     ```
-5. Add your model to list of models in `feat/pretrained.py` 
-6. Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to `feat/resources/model_list.json`. 
-7. Follow the [general contribution guidelines](./contribute.md) to add tests and format your code
-8. When your tests pass create a pull-request against the `master`/`main` branch on github!
+4. In `feat/pretrained.py`, add your model to the `PRETRAINED_MODELS` dictionary. If you're adding a new AU detector and it only supports specific AUs make sure to also add it to the `AU_LANDMARK_MAP`. You may also want to train a new `PLS` visualization model and save it as `.h5` file. See [this tutorial](../extra_tutorials/trainAUvisModel.ipynb) for details.
+5. Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to `feat/resources/model_list.json`. 
+6. Follow the [general contribution guidelines](./contribute.md) to add tests and format your code
+7. When your tests pass create a pull-request against the `master`/`main` branch on github!
 
 ```{note}
 If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don't require you to restart the kernel:   

@@ -52,7 +52,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Loading data from other detectors" href="../extra_tutorials/loadingOtherFiles.html" />
+    <link rel="next" title="6. Training an AU visualization model" href="../extra_tutorials/06_trainAUvisModel.html" />
     <link rel="prev" title="4. Visualizing Facial Expressions" href="04_plotting.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -174,23 +174,23 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
-   Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
+   6. Training an AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
-   Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
-   Training AU visualization model
+  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
+   8. Loading data from other detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
-   Extracting labels and landmarks
+  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
+   9. Training HOG-based AU detectors
   </a>
  </li>
 </ul>
@@ -816,7 +816,7 @@ Already processed: 020.mp4
       <td>0.001139</td>
       <td>0.029125</td>
       <td>0.005842</td>
-      <td>001.mp4</td>
+      <td>001.csv</td>
     </tr>
     <tr>
       <th>1</th>
@@ -840,7 +840,7 @@ Already processed: 020.mp4
       <td>0.001139</td>
       <td>0.029125</td>
       <td>0.005842</td>
-      <td>001.mp4</td>
+      <td>001.csv</td>
     </tr>
     <tr>
       <th>2</th>
@@ -864,7 +864,7 @@ Already processed: 020.mp4
       <td>0.000759</td>
       <td>0.141473</td>
       <td>0.004320</td>
-      <td>001.mp4</td>
+      <td>001.csv</td>
     </tr>
     <tr>
       <th>3</th>
@@ -888,7 +888,7 @@ Already processed: 020.mp4
       <td>0.000670</td>
       <td>0.127383</td>
       <td>0.002988</td>
-      <td>001.mp4</td>
+      <td>001.csv</td>
     </tr>
     <tr>
       <th>4</th>
@@ -912,7 +912,7 @@ Already processed: 020.mp4
       <td>0.001320</td>
       <td>0.029267</td>
       <td>0.003572</td>
-      <td>001.mp4</td>
+      <td>001.csv</td>
     </tr>
   </tbody>
 </table>
@@ -1019,7 +1019,7 @@ Already processed: 020.mp4
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set sessions to the input filenames</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
 
 <span class="c1"># Now extracting the mean is grouped by video </span>
 <span class="n">average_au_intensity_per_video</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
@@ -1028,7 +1028,9 @@ Already processed: 020.mp4
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/Documents/pypackages/py-feat/feat/data.py:1098: FutureWarning: Dropping of nuisance columns in DataFrame reductions (with &#39;numeric_only=None&#39;) is deprecated; in a future version this will raise TypeError.  Select only valid columns before calling the reduction.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/g3/k36shgps5c75hyl9xhjk3cb80000gn/T/ipykernel_21918/1935388116.py:2: FutureWarning: The default value of regex will change from True to False in a future version.
+  fex.sessions = fex[&#39;input&#39;].str.replace(&#39;.csv&#39;, &#39;.mp4&#39;)
+/Users/Esh/Documents/pypackages/py-feat/feat/data.py:1044: FutureWarning: Dropping of nuisance columns in DataFrame reductions (with &#39;numeric_only=None&#39;) is deprecated; in a future version this will raise TypeError.  Select only valid columns before calling the reduction.
   feats.append(pd.Series(v.mean(), name=k))
 </pre></div>
 </div>
@@ -1202,9 +1204,92 @@ Already processed: 020.mp4
 <p>However, you can set <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> to any grouping you desire. For the current analysis, setting <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> equal to the condition each frame belonged to, allows us to easily calculate mean AU intensity per condition using <code class="docutils literal notranslate"><span class="pre">.extract_mean()</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>clipN</th>
+      <th>class</th>
+      <th>phraseN</th>
+      <th>phrase_txt</th>
+      <th>input</th>
+      <th>condition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>gn</td>
+      <td>1</td>
+      <td>your loan has been approved</td>
+      <td>001.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>gn</td>
+      <td>2</td>
+      <td>you've got the job</td>
+      <td>002.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>gn</td>
+      <td>3</td>
+      <td>the vendor has accepted your offer</td>
+      <td>003.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>gn</td>
+      <td>4</td>
+      <td>your tests have come back clear</td>
+      <td>004.mp4</td>
+      <td>goodNews</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>gn</td>
+      <td>5</td>
+      <td>your application has been accepted</td>
+      <td>005.mp4</td>
+      <td>goodNews</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assign each processed frame to the condition it came from</span>
 <span class="n">conditions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">],</span> <span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;condition&#39;</span><span class="p">]))</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
 
 <span class="c1"># Now extracting the mean is grouped by session (experimental condition)</span>
 <span class="n">average_au_intensity_per_condition</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
@@ -1213,7 +1298,7 @@ Already processed: 020.mp4
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/Documents/pypackages/py-feat/feat/data.py:1098: FutureWarning: Dropping of nuisance columns in DataFrame reductions (with &#39;numeric_only=None&#39;) is deprecated; in a future version this will raise TypeError.  Select only valid columns before calling the reduction.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/Documents/pypackages/py-feat/feat/data.py:1044: FutureWarning: Dropping of nuisance columns in DataFrame reductions (with &#39;numeric_only=None&#39;) is deprecated; in a future version this will raise TypeError.  Select only valid columns before calling the reduction.
   feats.append(pd.Series(v.mean(), name=k))
 </pre></div>
 </div>
@@ -1327,7 +1412,7 @@ Already processed: 020.mp4
 <span class="c1"># Then we can perform a test for one condition only</span>
 <span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">average_au_intensity_per_video</span><span class="p">[</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span> <span class="o">==</span> <span class="s1">&#39;goodNews&#39;</span><span class="p">]</span>
-    <span class="o">.</span><span class="n">aus</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">aus</span>
     <span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="p">)</span>
 
@@ -1516,7 +1601,7 @@ Already processed: 020.mp4
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:ylabel=&#39;mean_AU12&#39;&gt;
 </pre></div>
 </div>
-<img alt="../_images/05_fex_analysis_18_2.png" src="../_images/05_fex_analysis_18_2.png" />
+<img alt="../_images/05_fex_analysis_19_2.png" src="../_images/05_fex_analysis_19_2.png" />
 </div>
 </div>
 </section>
@@ -1527,15 +1612,14 @@ Already processed: 020.mp4
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This time replace the labels for each condition with a numerical contrast code</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">input</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;goodNews&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">})</span>
-
 <span class="c1"># We&#39;ll use these contrasts are predictors in our regression</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;goodNews&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">}))</span>
+
 <span class="c1"># Add an intercept to the regression</span>
 <span class="n">X</span><span class="p">[</span><span class="s2">&quot;intercept&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="c1"># The dependent variable is AU intensity</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">aus</span>
 <span class="c1"># Now we get a t-test at every AU</span>
 <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">regress</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
 
@@ -1687,11 +1771,11 @@ Already processed: 020.mp4
 <span class="c1"># Features = emotion predictions for each frame</span>
 <span class="c1"># Labels = experimental condition the frame belonged to</span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-    <span class="n">X</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">(),</span> <span class="n">y</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;liblinear&quot;</span>
+    <span class="n">X</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;liblinear&quot;</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;score: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">(),</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;score: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">,</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;coefficients for predicting class: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">classes_</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">()</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1759,7 +1843,7 @@ coefficients for predicting class: goodNews
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/05_fex_analysis_24_0.png" src="../_images/05_fex_analysis_24_0.png" />
+<img alt="../_images/05_fex_analysis_25_0.png" src="../_images/05_fex_analysis_25_0.png" />
 </div>
 </div>
 </section>
@@ -1799,10 +1883,10 @@ coefficients for predicting class: goodNews
             <p class="prev-next-title">4. Visualizing Facial Expressions</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../extra_tutorials/loadingOtherFiles.html" title="next page">
+    <a class='right-next' id="next-link" href="../extra_tutorials/06_trainAUvisModel.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Loading data from other detectors</p>
+        <p class="prev-next-title">6. Training an AU visualization model</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

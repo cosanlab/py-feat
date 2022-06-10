@@ -174,23 +174,23 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
-   Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
+   6. Training an AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
-   Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
-   Training AU visualization model
+  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
+   8. Loading data from other detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
-   Extracting labels and landmarks
+  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
+   9. Training HOG-based AU detectors
   </a>
  </li>
 </ul>
@@ -557,21 +557,24 @@ title="Print to PDF"
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet0.25_Final.pth
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/DRMLNetParams.pth
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_568.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilenet, au_model=drml, emotion_model=resmasknet, facepose_model=pnp)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
 </pre></div>
 </div>
 </div>
 </div>
-<p>After initializing a detector you can easily swap one or more underlying models using the <code class="docutils literal notranslate"><span class="pre">.change_model</span></code> method. You can also disable any models by setting them to <code class="docutils literal notranslate"><span class="pre">None</span></code>:</p>
+<p>After initializing a detector you can easily swap one or more underlying models using the <code class="docutils literal notranslate"><span class="pre">.change_model</span></code> method.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span><span class="o">.</span><span class="n">change_model</span><span class="p">(</span>
-    <span class="n">face_model</span><span class="o">=</span><span class="s2">&quot;MTCNN&quot;</span><span class="p">,</span> <span class="n">emotion_model</span><span class="o">=</span><span class="s2">&quot;svm&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s2">&quot;svm&quot;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span><span class="o">.</span><span class="n">change_model</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s2">&quot;MTCNN&quot;</span><span class="p">)</span>
 <span class="n">detector</span>
 </pre></div>
 </div>
@@ -580,18 +583,18 @@ Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/onet.pt
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/pnet.pt
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/rnet.pt
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_568.joblib
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/emoSVM38.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/emo_hog_pca.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/emo_hog_scalar.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
+Changing face_model from retinaface -&gt; mtcnn
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=mtcnn, landmark_model=None, au_model=svm, emotion_model=svm, facepose_model=pnp)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=mtcnn, landmark_model=mobilenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
 </pre></div>
 </div>
 </div>

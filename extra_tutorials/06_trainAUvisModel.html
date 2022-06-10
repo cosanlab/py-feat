@@ -1,0 +1,1204 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>6. Training an AU visualization model &#8212; Py-Feat</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=62ba249389abaaa9ffc34bf36a076bdc1d65ee18" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=f31d14ad54b65d19161ba51d4ffff3a77ae00456"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7. Extracting labels and landmarks" href="07_extract_labels_and_landmarks.html" />
+    <link rel="prev" title="5. Running a full analysis" href="../basic_tutorials/05_fex_analysis.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../pages/intro.html">
+                    Py-Feat: Python Facial Expression Analysis Toolbox
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Getting Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/installation.html">
+   How to install Py-Feat
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/models.html">
+   Included pre-trained detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/au_reference.html">
+   Action Unit Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Basic Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/01_basics.html">
+   1. Py-Feat basics
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">
+   2. Detecting facial expressions from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/03_detector_vids.html">
+   3. Detecting facial expressions from videos
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/04_plotting.html">
+   4. Visualizing Facial Expressions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">
+   5. Running a full analysis
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Advanced Tutorials
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   6. Training an AU visualization model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="08_loadingOtherFiles.html">
+   8. Loading data from other detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="09_train_hogs.html">
+   9. Training HOG-based AU detectors
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/api.html">
+   API Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Contributing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/contribute.html">
+   General contributions guidelines
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/modelContribution.html">
+   Contributing new detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/changelog.html">
+   Change Log
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/cosanlab/py-feat">
+   GitHub Repository
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<div class="menu-dropdown menu-dropdown-launch-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Launch interactive content">
+      <i class="fas fa-rocket"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/extra_tutorials/06_trainAUvisModel.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on Binder"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../_static/images/logo_binder.svg">
+  </span>
+<span class="headerbtn__text-container">Binder</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://jhub.dartmouth.edu/hub/user-redirect/git-pull?repo=https://github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/extra_tutorials/06_trainAUvisModel.ipynb&branch=master"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on JupyterHub"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../_static/images/logo_jupyterhub.svg">
+  </span>
+<span class="headerbtn__text-container">JupyterHub</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/extra_tutorials/06_trainAUvisModel.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on Colab"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../_static/images/logo_colab.png">
+  </span>
+<span class="headerbtn__text-container">Colab</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/cosanlab/py-feat"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fextra_tutorials/06_trainAUvisModel.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/extra_tutorials/06_trainAUvisModel.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.ipynb</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#imports-and-paths">
+   Imports and Paths
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#load-clean-and-aggregate-extracted-labels-and-landmarks">
+   Load, clean, and aggregate extracted labels and landmarks
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#balance-au-occurences-by-sub-sampling">
+   Balance AU-occurences by sub-sampling
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#fit-plsregression-model">
+   Fit PLSRegression model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#saving-and-loading-trained-model">
+   Saving and loading trained model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#visualizing-detections-using-model">
+   Visualizing detections using model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#jaanet-visualization-model">
+   JAANET Visualization Model
+  </a>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>6. Training an AU visualization model</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#imports-and-paths">
+   Imports and Paths
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#load-clean-and-aggregate-extracted-labels-and-landmarks">
+   Load, clean, and aggregate extracted labels and landmarks
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#balance-au-occurences-by-sub-sampling">
+   Balance AU-occurences by sub-sampling
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#fit-plsregression-model">
+   Fit PLSRegression model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#saving-and-loading-trained-model">
+   Saving and loading trained model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#visualizing-detections-using-model">
+   Visualizing detections using model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#jaanet-visualization-model">
+   JAANET Visualization Model
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <section class="tex2jax_ignore mathjax_ignore" id="training-an-au-visualization-model">
+<h1>6. Training an AU visualization model<a class="headerlink" href="#training-an-au-visualization-model" title="Permalink to this headline">#</a></h1>
+<p><em>written by Eshin Jolly</em></p>
+<p>This tutorial illustrates how we trained an AU visualization model in py-feat that can take a vector of AUs and output corresponding facial landmarks. This makes it possible to visualize facial expressions from AU detections by applying a learned transformation to a neutral template face.</p>
+<p>To train the model we aggregate AU label and landmark data from the EmotioNet, DISFA Plus, and BP4d datasets. Detailed code on how to do that can be found in the <a class="reference internal" href="07_extract_labels_and_landmarks.html"><span class="doc std std-doc">extracting labels and landmarks notebook</span></a>. You’ll need to run the extraction once for each dataset before you can train the AU visualization model with the code presented here.</p>
+<p>This tutorial assumes that the extracted csv files are in the <code class="docutils literal notranslate"><span class="pre">data/extracted_labels_landmarks</span></code> folder at the root of this repository. And that files are names as (lowercase) <code class="docutils literal notranslate"><span class="pre">[dataset]_labels.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">[dataset]_landmarks.csv</span></code></p>
+<p>If you’re adding new AU Detectors, it me useful to also include a visualization model for your specific detector, especially if the number or AU outputs differ from our included visualization model (20 AUs): 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43.</p>
+<p>In <a class="reference external" href="#jaanet-visualization-model">this section</a> of the notebook you can see how we train a separate visualization model for the JAANET AU detector</p>
+<section id="imports-and-paths">
+<h2>Imports and Paths<a class="headerlink" href="#imports-and-paths" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">get_resource_path</span><span class="p">,</span> <span class="n">load_viz_model</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_decomposition</span> <span class="kn">import</span> <span class="n">PLSRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">skversion</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">feat.pretrained</span> <span class="kn">import</span> <span class="n">AU_LANDMARK_MAP</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set data directory to data folder relative to location of this notebook</span>
+<span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+<span class="n">base_dir</span> <span class="o">=</span> <span class="n">here</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">base_dir</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;extracted_labels_landmarks&quot;</span>
+
+<span class="c1"># Get the 20 AUs we use for training the model</span>
+<span class="n">au_cols</span> <span class="o">=</span> <span class="n">AU_LANDMARK_MAP</span><span class="p">[</span><span class="s2">&quot;Feat&quot;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">au_cols</span><span class="p">)</span><span class="si">}</span><span class="s2"> AUs&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 20 AUs
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="load-clean-and-aggregate-extracted-labels-and-landmarks">
+<h2>Load, clean, and aggregate extracted labels and landmarks<a class="headerlink" href="#load-clean-and-aggregate-extracted-labels-and-landmarks" title="Permalink to this headline">#</a></h2>
+<p>First we load up the 3 datasets containing AU labels and facial landmarks and concatenate them into 2 dataframes. All AU values are also rescaled to 0-1 indicating the <em>presence</em> of an AU for that sample.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">load_landmark_au_data</span><span class="p">(</span>
+    <span class="n">au_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">concat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">]]:</span>
+
+    <span class="sd">&quot;&quot;&quot;Load and concatenate the emotionet, difsaplus, and bp4d datasets&quot;&quot;&quot;</span>
+
+    <span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;emotionet&quot;</span><span class="p">,</span> <span class="s2">&quot;disfaplus&quot;</span><span class="p">,</span> <span class="s2">&quot;bp4d&quot;</span><span class="p">]:</span>
+
+        <span class="n">labels_file</span><span class="p">,</span> <span class="n">landmarks_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_labels.csv&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_landmarks.csv&quot;</span>
+
+        <span class="n">labels_df</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="n">labels_file</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">999</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">9</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;URL&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;disfaplus&quot;</span> <span class="k">else</span> <span class="n">df</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">labels_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels_df</span><span class="p">)</span>
+        <span class="n">landmarks_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">landmarks_file</span><span class="p">))</span>
+        <span class="n">landmarks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">landmarks_df</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">concat</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">landmarks</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">landmarks</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">labels</span><span class="p">))</span>
+        <span class="n">landmarks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">landmarks</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">concat</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aggregated landmarks: </span><span class="si">{</span><span class="n">landmarks</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aggregated labels: </span><span class="si">{</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="n">load_landmark_au_data</span><span class="p">(</span><span class="n">au_cols</span><span class="o">=</span><span class="n">au_cols</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>emotionet: 24587
+disfaplus: 57668
+bp4d: 143951
+Aggregated landmarks: (226206, 136)
+Aggregated labels: (226206, 20)
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can examine the correlation between AU occurences across all the datasets to get a sense of what AU’s tend to co-occur:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Aggregated AU Correlations&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/06_trainAUvisModel_8_0.png" src="../_images/06_trainAUvisModel_8_0.png" />
+</div>
+</div>
+<p>However, due to differences in the AUs included in each dataset, these correlations vary:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">labels_list</span><span class="p">,</span> <span class="n">landmarks_list</span> <span class="o">=</span> <span class="n">load_landmark_au_data</span><span class="p">(</span><span class="n">au_cols</span><span class="o">=</span><span class="n">au_cols</span><span class="p">,</span> <span class="n">concat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels_list</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;emotionet&#39;</span><span class="p">,</span> <span class="s1">&#39;disfaplus&#39;</span><span class="p">,</span> <span class="s1">&#39;bp4d&#39;</span><span class="p">]):</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> AU correlations&quot;</span><span class="p">)</span>
+    
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/06_trainAUvisModel_10_0.png" src="../_images/06_trainAUvisModel_10_0.png" />
+<img alt="../_images/06_trainAUvisModel_10_1.png" src="../_images/06_trainAUvisModel_10_1.png" />
+<img alt="../_images/06_trainAUvisModel_10_2.png" src="../_images/06_trainAUvisModel_10_2.png" />
+</div>
+</div>
+</section>
+<section id="balance-au-occurences-by-sub-sampling">
+<h2>Balance AU-occurences by sub-sampling<a class="headerlink" href="#balance-au-occurences-by-sub-sampling" title="Permalink to this headline">#</a></h2>
+<p>Because datasets differ in which AUs they contain and because AUs differ greatly in their occurence across samples, we sub-sample the aggregated data to generate a new dataset that contains at least 650 occurences of each AU. This number was chosen because it is the largest number of positive samples (samples where the AU was present) for the AU with the fewest positive samples (AU43). This helps balance the features out a bit:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pseudo_balance_au_occurences</span><span class="p">(</span>
+    <span class="n">labels</span><span class="p">,</span> <span class="n">au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sub-sample the labels dataframe so for each AU at least min_pos_sample rows</span>
+<span class="sd">    contain an instance of that AU. This will generate a new dataset of shape</span>
+<span class="sd">    min_pos_sample * len(au_cols) x len(au_cols)&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">min_pos_sample</span> <span class="o">&gt;</span> <span class="n">labels</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;min_pos_sample must be </span><span class="si">{</span><span class="n">labels</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2"> or lower&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pseudo balancing samples&quot;</span><span class="p">)</span>
+    <span class="n">balY</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">balX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">AU</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">AU</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">min_pos_sample</span><span class="p">:</span>
+            <span class="n">replace</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">replace</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">newSample</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">AU</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+            <span class="n">min_pos_sample</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">replace</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+        <span class="p">)</span>
+        <span class="n">balX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">balX</span><span class="p">,</span> <span class="n">newSample</span><span class="p">])</span>
+        <span class="n">balY</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">balY</span><span class="p">,</span> <span class="n">landmarks</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">newSample</span><span class="o">.</span><span class="n">index</span><span class="p">]])</span>
+
+    <span class="c1"># Make sure we have more occurrences of each AU than in the original dataset</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">balX</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">labels</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">balX</span><span class="p">,</span> <span class="n">balY</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This gives us a new dataset of shape:<br />
+(650 * 20) x 20</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Random-state for reproducibility</span>
+<span class="n">balX</span><span class="p">,</span> <span class="n">balY</span> <span class="o">=</span> <span class="n">pseudo_balance_au_occurences</span><span class="p">(</span>
+    <span class="n">labels</span><span class="p">,</span> <span class="n">au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resampled dataset shape: </span><span class="si">{</span><span class="n">balX</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Pseudo balancing samples
+Resampled dataset shape: (13000, 20)
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can see that our resampled dataset contains signficantly higher proportions of each AU, which will make it a bit easier to train the model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">balX</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pseudo-balanced&quot;</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Proportion of Samples with AU present&#39;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/06_trainAUvisModel_16_0.png" src="../_images/06_trainAUvisModel_16_0.png" />
+</div>
+</div>
+</section>
+<section id="fit-plsregression-model">
+<h2>Fit PLSRegression model<a class="headerlink" href="#fit-plsregression-model" title="Permalink to this headline">#</a></h2>
+<p>Finally we can train a partial-least-squares regression model to map between AUs and facial landmarks. We first align facial landmarks to a template <em>neutral expression</em> face. This will allow us to use the regression weights to “warp” this face to display various expressions. To validate our model, we test predictive performance out-of-sample using 3-fold cross-validation. We also return the overall-fit across the full (resampled) data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">preprocess_features</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">align_landmarks_to_neutral</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale_across_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">poly_degree</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Take dataframes of labels and landmarks and prepare them for PLSRegression estimator&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">registration</span><span class="p">,</span> <span class="n">neutral</span>
+    <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">scale</span>
+
+    <span class="n">_X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="c1"># We can optionally add more features prior to model fitting by creating new columns</span>
+    <span class="c1"># that capture the interactions between 2, 3, or more AUs via polynomial terms</span>
+    <span class="c1"># This might help model performance, at the cost of over-fitting so feel free to</span>
+    <span class="c1"># play around with this. </span>
+    <span class="c1"># We don&#39;t include any polynomial terms by default</span>
+    <span class="k">if</span> <span class="n">poly_degree</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
+
+        <span class="n">poly</span> <span class="o">=</span> <span class="n">PolynomialFeatures</span><span class="p">(</span>
+            <span class="n">degree</span><span class="o">=</span><span class="n">poly_degree</span><span class="p">,</span> <span class="n">interaction_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_bias</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">_X</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">_X</span><span class="p">)</span>
+
+    <span class="c1"># It can also be helpful to scale AUs within each sample such that they reflect</span>
+    <span class="c1"># z-scores relative to the mean/std AU occurences within that sample, rather than</span>
+    <span class="c1"># values between 0-1. This can be helpful if you use a polynomial degree &gt; 1</span>
+    <span class="c1"># But we don&#39;t do this by default</span>
+    <span class="k">if</span> <span class="n">scale_across_features</span><span class="p">:</span>
+        <span class="n">_X</span> <span class="o">=</span> <span class="n">scale</span><span class="p">(</span><span class="n">_X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">_Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">align_landmarks_to_neutral</span><span class="p">:</span>
+        <span class="n">_Y</span> <span class="o">=</span> <span class="n">registration</span><span class="p">(</span><span class="n">_Y</span><span class="p">,</span> <span class="n">neutral</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data shape: </span><span class="si">{</span><span class="n">_X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_X</span><span class="p">,</span> <span class="n">_Y</span>
+
+
+<span class="k">def</span> <span class="nf">fit_pls</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span>
+    <span class="n">Y</span><span class="p">,</span>
+    <span class="n">n_splits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">refit_full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">n_components</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fit and validate a PLSRegression model&quot;&quot;&quot;</span>
+
+    <span class="n">outstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Components: </span><span class="si">{</span><span class="n">n_components</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="n">n_splits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_splits</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">train_index</span><span class="p">,</span> <span class="n">test_index</span> <span class="ow">in</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+            <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+            <span class="n">clf</span> <span class="o">=</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span>
+
+        <span class="n">outstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Test R^2 (</span><span class="si">{</span><span class="n">n_splits</span><span class="si">}</span><span class="s2">-fold): </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">clf</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">refit_full</span><span class="p">:</span>
+        <span class="n">clf</span> <span class="o">=</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">outstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Full R^2: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">clf</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can start by examiningd how changing the amount of dimensionality-reduction (number of PLS components) affect the model performance using just original 20d AUs:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">preprocess_features</span><span class="p">(</span><span class="n">balX</span><span class="p">,</span><span class="n">balY</span><span class="p">)</span>
+
+<span class="n">clf</span> <span class="o">=</span> <span class="n">fit_pls</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">au_cols</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data shape: (13000, 20)
+
+Components: 20
+Test R^2 (3-fold): 0.12	Full R^2: 0.155
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="saving-and-loading-trained-model">
+<h2>Saving and loading trained model<a class="headerlink" href="#saving-and-loading-trained-model" title="Permalink to this headline">#</a></h2>
+<p>We save and package the trained visualization model in two ways:</p>
+<ol class="simple">
+<li><p>Using <code class="docutils literal notranslate"><span class="pre">joblib.dump</span></code> as recommended by the <a class="reference external" href="https://scikit-learn.org/stable/modules/model_persistence.html">sklearn docs</a>. This is the default model that gets loaded if your installed Python and sklearn <code class="docutils literal notranslate"><span class="pre">major.minor</span></code> versions match those the model was originally trained with</p></li>
+<li><p>As an HDF5 file with the necessary attributes to initialize a new <code class="docutils literal notranslate"><span class="pre">PLSRegression</span></code> object on any system. This is the fallback that gets loaded if your installed Python and sklearn <code class="docutils literal notranslate"><span class="pre">major.minor</span></code> versions don’t match what the model was originally trained with</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">save_viz_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">clf</span><span class="p">):</span>
+
+    <span class="c1"># Add some extra attributes to the model instance and dump it</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">X_train</span> <span class="o">=</span> <span class="n">X</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">Y_train</span> <span class="o">=</span> <span class="n">Y</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">skversion</span> <span class="o">=</span> <span class="n">skversion</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">pyversion</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">model_name_</span> <span class="o">=</span> <span class="n">model_name</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">dump</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_resource_path</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.joblib&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Do the same as an hdf5 file</span>
+    <span class="n">hf</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_resource_path</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_weights&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_weights_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_mean&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_x_mean</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_mean&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_y_mean</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_std&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_x_std</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_std&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_y_std</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_weights&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_weights_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_loadings&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_loadings_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_loadings&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_loadings_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_scores&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_scores_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_scores&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_scores_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_rotations&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_rotations_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_rotations&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_rotations_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;intercept&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">intercept_</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_train&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">X_train</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_train&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">Y_train</span><span class="p">)</span>
+    <span class="n">hf</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;skversion&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">skversion</span>
+    <span class="n">hf</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;pyversion&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">pyversion</span>
+    <span class="n">hf</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;model_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">model_name_</span>
+    <span class="n">hf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model saved!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">save_viz_model</span><span class="p">(</span><span class="s2">&quot;pyfeat_aus_to_landmarks&quot;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model saved!
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:507: FutureWarning: The attribute `coef_` will be transposed in version 1.3 to be consistent with other linear models in scikit-learn. Currently, `coef_` has a shape of (n_features, n_targets) and in the future it will have a shape of (n_targets, n_features).
+  warnings.warn(
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we can use the <code class="docutils literal notranslate"><span class="pre">load_viz_model</span></code> from <code class="docutils literal notranslate"><span class="pre">feat.utils</span></code> to try loading our model. This function will try to load a <code class="docutils literal notranslate"><span class="pre">.joblib</span></code> file if your major.minor version of sci-kit learn match those that the model was originally trained with. Otherwise it will fallback to loading a <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file and reconstructing the estimator attributes.</p>
+<p>If you don’t pass in a model name, the model we just trained is what gets loaded by default:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loaded_model</span> <span class="o">=</span> <span class="n">load_viz_model</span><span class="p">(</span><span class="s1">&#39;pyfeat_aus_to_landmarks&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">loaded_model</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading joblib
+</pre></div>
+</div>
+<div class="output text_html"><style>#sk-container-id-5 {color: black;background-color: white;}#sk-container-id-5 pre{padding: 0;}#sk-container-id-5 div.sk-toggleable {background-color: white;}#sk-container-id-5 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-5 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-5 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-5 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-5 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-5 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-5 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-5 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-5 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-5 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-5 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-5 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-5 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-5 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-5 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-5 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-5 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-5 div.sk-item {position: relative;z-index: 1;}#sk-container-id-5 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-5 div.sk-item::before, #sk-container-id-5 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-5 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-5 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-5 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-5 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-5 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-5 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-5 div.sk-label-container {text-align: center;}#sk-container-id-5 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-5 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-5" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>PLSRegression(max_iter=2000, n_components=20)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" checked><label for="sk-estimator-id-5" class="sk-toggleable__label sk-toggleable__label-arrow">PLSRegression</label><div class="sk-toggleable__content"><pre>PLSRegression(max_iter=2000, n_components=20)</pre></div></div></div></div></div></div></div>
+</div>
+<p>We can make sure the loaded trained models are the same by comparing their learned coefficients and their performance on the aggregated data:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loaded_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span> <span class="o">==</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">loaded_model</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:507: FutureWarning: The attribute `coef_` will be transposed in version 1.3 to be consistent with other linear models in scikit-learn. Currently, `coef_` has a shape of (n_features, n_targets) and in the future it will have a shape of (n_targets, n_features).
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="visualizing-detections-using-model">
+<h2>Visualizing detections using model<a class="headerlink" href="#visualizing-detections-using-model" title="Permalink to this headline">#</a></h2>
+<p>Now you can visualize AU detections by passing setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> to the <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> method of a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> dataclass:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
+
+<span class="n">single_face_img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span> <span class="s2">&quot;single_face.jpg&quot;</span><span class="p">)</span>
+
+<span class="c1"># Both the svm and logistic au models will use our visualization model</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">)</span>
+
+<span class="n">single_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">)</span>
+<span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span> <span class="s1">&#39;aus&#39;</span><span class="p">,</span> <span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/torch/functional.py:568: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /Users/distiller/project/pytorch/aten/src/ATen/native/TensorShape.cpp:2228.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+</pre></div>
+</div>
+<img alt="../_images/06_trainAUvisModel_30_1.png" src="../_images/06_trainAUvisModel_30_1.png" />
+</div>
+</div>
+</section>
+<section id="jaanet-visualization-model">
+<h2>JAANET Visualization Model<a class="headerlink" href="#jaanet-visualization-model" title="Permalink to this headline">#</a></h2>
+<p>Here we perform the same model training as before but this time using only the 12 AUs detected by JAANET: 1, 2, 4, 6, 7, 10, 12, 14, 15, 17, 23, 24.</p>
+<p>You can use a similar approach if you plan to add a custom AU detector that has a different set of AUs. You should use the naming convention: <code class="docutils literal notranslate"><span class="pre">[detector]_aus_to_landmarks</span></code> when saving models to disk</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get list of JAANET AUs</span>
+<span class="n">jaanet_au_cols</span> <span class="o">=</span> <span class="n">AU_LANDMARK_MAP</span><span class="p">[</span><span class="s2">&quot;jaanet&quot;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">jaanet_au_cols</span><span class="p">)</span><span class="si">}</span><span class="s2"> AUs&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load and aggregate only these 12 AUs from the different datasets</span>
+<span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="n">load_landmark_au_data</span><span class="p">(</span><span class="n">au_cols</span><span class="o">=</span><span class="n">jaanet_au_cols</span><span class="p">)</span>
+
+<span class="c1"># Pseudo-balance AU occurrences</span>
+<span class="n">balX</span><span class="p">,</span> <span class="n">balY</span> <span class="o">=</span> <span class="n">pseudo_balance_au_occurences</span><span class="p">(</span>
+    <span class="n">labels</span><span class="p">,</span> <span class="n">jaanet_au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resampled dataset shape: </span><span class="si">{</span><span class="n">balX</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Plot the rebalancing</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">balX</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pseudo-balanced&quot;</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Proportion of Samples with AU present&#39;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 12 AUs
+emotionet: 24587
+disfaplus: 57668
+bp4d: 143951
+Aggregated landmarks: (226206, 136)
+Aggregated labels: (226206, 12)
+Pseudo balancing samples
+Resampled dataset shape: (7800, 12)
+</pre></div>
+</div>
+<img alt="../_images/06_trainAUvisModel_33_1.png" src="../_images/06_trainAUvisModel_33_1.png" />
+</div>
+</div>
+<p>Then we fit, save, and verify the saved the model like before:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Align landmarks to the neutral face</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">preprocess_features</span><span class="p">(</span><span class="n">balX</span><span class="p">,</span><span class="n">balY</span><span class="p">)</span>
+
+<span class="c1"># Fit the model</span>
+<span class="n">jaanet_clf</span> <span class="o">=</span> <span class="n">fit_pls</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">jaanet_au_cols</span><span class="p">))</span>
+
+<span class="c1"># Save it</span>
+<span class="n">save_viz_model</span><span class="p">(</span><span class="s2">&quot;jaanet_aus_to_landmarks&quot;</span><span class="p">,</span> <span class="n">jaanet_clf</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data shape: (7800, 12)
+
+Components: 12
+Test R^2 (3-fold): 0.088	Full R^2: 0.118
+
+Model saved!
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:507: FutureWarning: The attribute `coef_` will be transposed in version 1.3 to be consistent with other linear models in scikit-learn. Currently, `coef_` has a shape of (n_features, n_targets) and in the future it will have a shape of (n_targets, n_features).
+  warnings.warn(
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Verify the saved model</span>
+<span class="n">jaanet_loaded_model</span> <span class="o">=</span> <span class="n">load_viz_model</span><span class="p">(</span><span class="s1">&#39;jaanet_aus_to_landmarks&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">jaanet_loaded_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span> <span class="o">==</span> <span class="n">jaanet_clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">jaanet_loaded_model</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">jaanet_clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading joblib
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:507: FutureWarning: The attribute `coef_` will be transposed in version 1.3 to be consistent with other linear models in scikit-learn. Currently, `coef_` has a shape of (n_features, n_targets) and in the future it will have a shape of (n_targets, n_features).
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<p>Finally we can visualize the AU detection:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Swap the AU detector to jaanet</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">change_model</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;jaanet&#39;</span><span class="p">)</span>
+<span class="n">single_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">)</span>
+
+<span class="c1"># This will automatically switch the visualization model behind the scenes</span>
+<span class="c1"># Notice the projected face is a bit different than our other model because there are</span>
+<span class="c1"># fewer AUs in JAANET</span>
+<span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span> <span class="s1">&#39;aus&#39;</span><span class="p">,</span> <span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Changing au_model from svm -&gt; jaanet
+</pre></div>
+</div>
+<img alt="../_images/06_trainAUvisModel_38_1.png" src="../_images/06_trainAUvisModel_38_1.png" />
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./extra_tutorials"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../basic_tutorials/05_fex_analysis.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">5. Running a full analysis</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="07_extract_labels_and_landmarks.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">7. Extracting labels and landmarks</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>

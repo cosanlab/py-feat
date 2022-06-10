@@ -174,23 +174,23 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
-   Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
+   6. Training an AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
-   Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
-   Training AU visualization model
+  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
+   8. Loading data from other detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
-   Extracting labels and landmarks
+  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
+   9. Training HOG-based AU detectors
   </a>
  </li>
 </ul>
@@ -504,11 +504,9 @@ title="Print to PDF"
 <section id="action-unit-detection">
 <h2>Action Unit detection<a class="headerlink" href="#action-unit-detection" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">rf</span></code>: Random Forest model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">logistic</span></code>: Logistic Classifier model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">JAANET</span></code>: Joint facial action unit detection and face alignment via adaptive attention trained with BP4D and BP4D+ (<a class="reference external" href="https://arxiv.org/pdf/2003.08834v1.pdf">Shao et al., 2020</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">DRML</span></code>: Deep region and multi-label learning for facial action unit detection by (<a class="reference external" href="https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Zhao_Deep_Region_and_CVPR_2016_paper.pdf">Zhao et al., 2016</a>)</p></li>
 </ul>
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
@@ -518,10 +516,9 @@ title="Print to PDF"
 <section id="emotion-detection">
 <h2>Emotion detection<a class="headerlink" href="#emotion-detection" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">rf</span></code>: Random Forest model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fer</span></code>: Deep convolutional network</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ResMaskNet</span></code>: Facial expression recognition using residual masking network by (<a class="reference external" href="https://ailb-web.ing.unimore.it/icpr/author/3818">Pham et al., 2020</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ResMaskNet</span></code>: Facial expression recognition using residual masking network by (<a class="reference external" href="https://ieeexplore.ieee.org/document/9411919">Pham et al., 2020</a>)</p></li>
 </ul>
 </section>
 <section id="face-detection">

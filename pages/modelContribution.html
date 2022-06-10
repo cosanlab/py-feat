@@ -174,23 +174,23 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
-   Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
+   6. Training an AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
-   Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
-   Training AU visualization model
+  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
+   8. Loading data from other detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
-   Extracting labels and landmarks
+  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
+   9. Training HOG-based AU detectors
   </a>
  </li>
 </ul>
@@ -530,7 +530,7 @@ title="Print to PDF"
 </pre></div>
 </div>
 </li>
-<li><p>Add your model to list of models in <code class="docutils literal notranslate"><span class="pre">feat/pretrained.py</span></code></p></li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">feat/pretrained.py</span></code>, add your model to the <code class="docutils literal notranslate"><span class="pre">PRETRAINED_MODELS</span></code> dictionary. If you’re adding a new AU detector and it only supports specific AUs make sure to also add it to the <code class="docutils literal notranslate"><span class="pre">AU_LANDMARK_MAP</span></code>. You may also want to train a new <code class="docutils literal notranslate"><span class="pre">PLS</span></code> visualization model and save it as <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file. See <span class="xref myst">this tutorial</span> for details.</p></li>
 <li><p>Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to <code class="docutils literal notranslate"><span class="pre">feat/resources/model_list.json</span></code>.</p></li>
 <li><p>Follow the <a class="reference internal" href="contribute.html"><span class="doc std std-doc">general contribution guidelines</span></a> to add tests and format your code</p></li>
 <li><p>When your tests pass create a pull-request against the <code class="docutils literal notranslate"><span class="pre">master</span></code>/<code class="docutils literal notranslate"><span class="pre">main</span></code> branch on github!</p></li>

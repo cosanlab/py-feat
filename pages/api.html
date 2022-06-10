@@ -53,7 +53,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="General contributions guidelines" href="contribute.html" />
-    <link rel="prev" title="Extracting labels and landmarks" href="../extra_tutorials/extract_labels_and_landmarks.html" />
+    <link rel="prev" title="9. Training HOG-based AU detectors" href="../extra_tutorials/09_train_hogs.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -174,23 +174,23 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
-   Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
+   6. Training an AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
-   Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
-   Training AU visualization model
+  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
+   8. Loading data from other detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
-   Extracting labels and landmarks
+  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
+   9. Training HOG-based AU detectors
   </a>
  </li>
 </ul>
@@ -509,7 +509,7 @@ title="Print to PDF"
 perform detection</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.detector.Detector">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'retinaface'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mobilenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resmasknet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pnp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'retinaface'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mobilenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'svm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resmasknet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'img2pose'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.change_model">
@@ -1909,7 +1909,7 @@ wavelet</p>
 <dd><p>Create a matplotlib animation interpolating between a starting and ending face. Can
 either work like <cite>plot_face</cite> by taking an array of AU intensities for <cite>start</cite> and
 <cite>end</cite>, or by animating a single AU using the <cite>AU</cite> keyword argument and setting
-<cite>start</cite> and <cite>end</cite> to a scalar value</p>
+<cite>start</cite> and <cite>end</cite> to a scalar value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -2056,7 +2056,7 @@ non-linear easing functions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>landmark AU</em>) – sklearn PLSRegression instance; Default None which uses Py-Feat’s</p></li>
+<li><p><strong>model</strong> (<em>Default's to Py-Feat's 20 AU landmark AU</em>) – (str/PLSRegression instance) Name of AU visualization model to use.</p></li>
 <li><p><strong>model</strong> – </p></li>
 <li><p><strong>au</strong> – vector of action units (same length as model.n_components)</p></li>
 <li><p><strong>vectorfield</strong> – (dict) {‘target’:target_array,’reference’:reference_array}</p></li>
@@ -2127,8 +2127,8 @@ supresses the print messages</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="feat.utils.load_h5">
-<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">load_h5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pyfeat_aus_to_landmarks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefer_joblib_if_version_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_h5" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="feat.utils.load_viz_model">
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">load_viz_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefer_joblib_if_version_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.load_viz_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
 major and minor versions match those the model was trained with (3.8.x and 1.0.x
 respectively), otherwise will reconstruct the model object using h5 data.</p>
@@ -2378,11 +2378,11 @@ necessary using the URLs in the included JSON file. User by detector init</p>
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../extra_tutorials/extract_labels_and_landmarks.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../extra_tutorials/09_train_hogs.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Extracting labels and landmarks</p>
+            <p class="prev-next-title">9. Training HOG-based AU detectors</p>
         </div>
     </a>
     <a class='right-next' id="next-link" href="contribute.html" title="next page">

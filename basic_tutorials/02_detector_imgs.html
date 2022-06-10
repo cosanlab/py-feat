@@ -174,23 +174,23 @@ const thebe_selector_output = ".output, .cell_output"
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/loadingOtherFiles.html">
-   Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
+   6. Training an AU visualization model
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/train_hogs.html">
-   Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+   7. Extracting labels and landmarks
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/trainAUvisModel.html">
-   Training AU visualization model
+  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
+   8. Loading data from other detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/extract_labels_and_landmarks.html">
-   Extracting labels and landmarks
+  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
+   9. Training HOG-based AU detectors
   </a>
  </li>
 </ul>
@@ -624,13 +624,18 @@ title="Print to PDF"
 
 <span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span>
     <span class="n">face_model</span><span class="o">=</span><span class="s2">&quot;retinaface&quot;</span><span class="p">,</span>
-    <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilenet&quot;</span><span class="p">,</span>
-    <span class="n">au_model</span><span class="o">=</span><span class="s2">&quot;rf&quot;</span><span class="p">,</span>
-    <span class="n">emotion_model</span><span class="o">=</span><span class="s2">&quot;rf&quot;</span><span class="p">,</span>
-    <span class="n">facepose_model</span><span class="o">=</span><span class="s2">&quot;pnp&quot;</span>
+    <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span>
+    <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span>
+    <span class="n">emotion_model</span><span class="o">=</span><span class="s2">&quot;resmasknet&quot;</span><span class="p">,</span>
+    <span class="n">facepose_model</span><span class="o">=</span><span class="s2">&quot;img2pose&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">detector</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
 </pre></div>
 </div>
 </div>
@@ -668,6 +673,10 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/torch/functional.py:568: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /Users/distiller/project/pytorch/aten/src/ATen/native/TensorShape.cpp:2228.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+</pre></div>
+</div>
 <div class="output text_html"><div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -718,13 +727,13 @@ title="Print to PDF"
       <td>173.810486</td>
       <td>257.639343</td>
       <td>0.999681</td>
-      <td>192.864593</td>
-      <td>191.586715</td>
-      <td>192.874618</td>
-      <td>197.394792</td>
+      <td>191.624944</td>
+      <td>191.644596</td>
+      <td>193.813321</td>
+      <td>199.024401</td>
       <td>...</td>
-      <td>-1.903955</td>
-      <td>4.869262</td>
+      <td>-3.809027</td>
+      <td>6.605721</td>
       <td>0.000369</td>
       <td>0.000026</td>
       <td>0.000485</td>
@@ -819,32 +828,48 @@ title="Print to PDF"
       <th>AU01</th>
       <th>AU02</th>
       <th>AU04</th>
+      <th>AU05</th>
       <th>AU06</th>
       <th>AU07</th>
+      <th>AU09</th>
       <th>AU10</th>
+      <th>AU11</th>
       <th>AU12</th>
       <th>AU14</th>
       <th>AU15</th>
       <th>AU17</th>
+      <th>AU20</th>
       <th>AU23</th>
       <th>AU24</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>AU28</th>
+      <th>AU43</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.546606</td>
-      <td>0.96656</td>
-      <td>0.001263</td>
-      <td>0.942192</td>
-      <td>0.757494</td>
-      <td>0.074272</td>
-      <td>0.997331</td>
-      <td>0.113582</td>
-      <td>0.031618</td>
-      <td>0.000369</td>
-      <td>0.001004</td>
-      <td>0.000002</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
@@ -932,9 +957,9 @@ title="Print to PDF"
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.968232</td>
-      <td>-1.903955</td>
-      <td>4.869262</td>
+      <td>0.832747</td>
+      <td>-3.809027</td>
+      <td>6.605721</td>
     </tr>
   </tbody>
 </table>
@@ -1001,13 +1026,13 @@ title="Print to PDF"
       <td>173.810486</td>
       <td>257.639343</td>
       <td>0.999681</td>
-      <td>192.864593</td>
-      <td>191.586715</td>
-      <td>192.874618</td>
-      <td>197.394792</td>
+      <td>191.624944</td>
+      <td>191.644596</td>
+      <td>193.813321</td>
+      <td>199.024401</td>
       <td>...</td>
-      <td>-1.903955</td>
-      <td>4.869262</td>
+      <td>-3.809027</td>
+      <td>6.605721</td>
       <td>0.000369</td>
       <td>0.000026</td>
       <td>0.000485</td>
@@ -1019,7 +1044,7 @@ title="Print to PDF"
     </tr>
   </tbody>
 </table>
-<p>1 rows × 165 columns</p>
+<p>1 rows × 173 columns</p>
 </div></div></div>
 </div>
 </section>
@@ -1089,13 +1114,13 @@ title="Print to PDF"
       <td>173.81049</td>
       <td>257.63934</td>
       <td>0.999681</td>
-      <td>192.864593</td>
-      <td>191.586715</td>
-      <td>192.874618</td>
-      <td>197.394792</td>
+      <td>191.624944</td>
+      <td>191.644596</td>
+      <td>193.813321</td>
+      <td>199.024401</td>
       <td>...</td>
-      <td>-1.903955</td>
-      <td>4.869262</td>
+      <td>-3.809027</td>
+      <td>6.605721</td>
       <td>0.000369</td>
       <td>0.000026</td>
       <td>0.000485</td>
@@ -1107,7 +1132,7 @@ title="Print to PDF"
     </tr>
   </tbody>
 </table>
-<p>1 rows × 165 columns</p>
+<p>1 rows × 173 columns</p>
 </div></div></div>
 </div>
 </section>
@@ -1124,7 +1149,7 @@ title="Print to PDF"
 <img alt="../_images/02_detector_imgs_21_0.png" src="../_images/02_detector_imgs_21_0.png" />
 </div>
 </div>
-<p>By default <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will overlay facial lines on top of the input image. However, it’s also possible to visualize a face using Py-Feat’s standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> instead of the default <code class="docutils literal notranslate"><span class="pre">faces='landmarks'</span></code>. `For more details about this kind of visualization see <a class="reference internal" href="04_plotting.html"><span class="doc std std-doc">tutorial 4</span></a>:</p>
+<p>By default <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will overlay facial lines on top of the input image. However, it’s also possible to visualize a face using Py-Feat’s standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> instead of the default <code class="docutils literal notranslate"><span class="pre">faces='landmarks'</span></code>. For more details about this kind of visualization see the <a class="reference internal" href="04_plotting.html"><span class="doc std std-doc">visualizing facial expressions</span></a> and the <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html"><span class="doc std std-doc">creating an AU visualization model</span></a> tutorials:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span><span class="s1">&#39;aus&#39;</span><span class="p">,</span> <span class="n">muscles</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1203,13 +1228,13 @@ title="Print to PDF"
       <td>103.788025</td>
       <td>134.104675</td>
       <td>0.999768</td>
-      <td>686.784072</td>
-      <td>684.581417</td>
-      <td>683.259728</td>
-      <td>683.543441</td>
+      <td>685.243732</td>
+      <td>683.924138</td>
+      <td>683.493398</td>
+      <td>684.032188</td>
       <td>...</td>
-      <td>8.618552</td>
-      <td>10.884868</td>
+      <td>-2.973639</td>
+      <td>-4.679388</td>
       <td>0.050378</td>
       <td>0.002782</td>
       <td>0.160675</td>
@@ -1227,13 +1252,13 @@ title="Print to PDF"
       <td>96.237732</td>
       <td>124.128448</td>
       <td>0.999421</td>
-      <td>536.352308</td>
-      <td>533.773775</td>
-      <td>532.264482</td>
-      <td>532.354004</td>
+      <td>535.572383</td>
+      <td>533.746383</td>
+      <td>533.008999</td>
+      <td>533.146794</td>
       <td>...</td>
-      <td>8.18921</td>
-      <td>7.956858</td>
+      <td>4.255018</td>
+      <td>8.171312</td>
       <td>0.03112</td>
       <td>0.001458</td>
       <td>0.186241</td>
@@ -1251,13 +1276,13 @@ title="Print to PDF"
       <td>92.016876</td>
       <td>126.462952</td>
       <td>0.999196</td>
-      <td>314.601803</td>
-      <td>315.56932</td>
-      <td>317.556661</td>
-      <td>320.979813</td>
+      <td>313.083172</td>
+      <td>314.54322</td>
+      <td>317.242715</td>
+      <td>321.314606</td>
       <td>...</td>
-      <td>-2.193695</td>
-      <td>-9.569049</td>
+      <td>9.734623</td>
+      <td>6.029476</td>
       <td>0.033716</td>
       <td>0.114599</td>
       <td>0.055362</td>
@@ -1275,13 +1300,13 @@ title="Print to PDF"
       <td>85.109207</td>
       <td>109.057442</td>
       <td>0.996842</td>
-      <td>221.084805</td>
-      <td>218.956039</td>
-      <td>217.532472</td>
-      <td>217.588807</td>
+      <td>219.466511</td>
+      <td>217.443319</td>
+      <td>216.14972</td>
+      <td>216.210632</td>
       <td>...</td>
-      <td>12.539567</td>
-      <td>-11.006074</td>
+      <td>14.068047</td>
+      <td>-4.917797</td>
       <td>0.000943</td>
       <td>0.001107</td>
       <td>0.036498</td>
@@ -1299,13 +1324,13 @@ title="Print to PDF"
       <td>79.529785</td>
       <td>97.050537</td>
       <td>0.996773</td>
-      <td>439.01578</td>
-      <td>438.598761</td>
-      <td>439.10614</td>
-      <td>440.473299</td>
+      <td>437.59345</td>
+      <td>438.101893</td>
+      <td>439.270088</td>
+      <td>441.157225</td>
       <td>...</td>
-      <td>1.993561</td>
-      <td>-1.891783</td>
+      <td>1.971143</td>
+      <td>-4.030666</td>
       <td>0.20795</td>
       <td>0.002251</td>
       <td>0.002176</td>
@@ -1396,13 +1421,13 @@ title="Print to PDF"
       <td>173.810486</td>
       <td>257.639343</td>
       <td>0.999681</td>
-      <td>192.864593</td>
-      <td>191.586715</td>
-      <td>192.874618</td>
-      <td>197.394792</td>
+      <td>191.624944</td>
+      <td>191.644596</td>
+      <td>193.813321</td>
+      <td>199.024401</td>
       <td>...</td>
-      <td>-1.903955</td>
-      <td>4.869262</td>
+      <td>-3.809027</td>
+      <td>6.605721</td>
       <td>0.000369</td>
       <td>0.000026</td>
       <td>0.000485</td>
@@ -1420,13 +1445,13 @@ title="Print to PDF"
       <td>103.788025</td>
       <td>134.104675</td>
       <td>0.999768</td>
-      <td>686.784072</td>
-      <td>684.581417</td>
-      <td>683.259728</td>
-      <td>683.543441</td>
+      <td>685.243732</td>
+      <td>683.924138</td>
+      <td>683.493398</td>
+      <td>684.032188</td>
       <td>...</td>
-      <td>8.618552</td>
-      <td>10.884868</td>
+      <td>-2.973639</td>
+      <td>-4.679388</td>
       <td>0.050378</td>
       <td>0.002782</td>
       <td>0.160675</td>
@@ -1444,13 +1469,13 @@ title="Print to PDF"
       <td>96.237732</td>
       <td>124.128448</td>
       <td>0.999421</td>
-      <td>536.352308</td>
-      <td>533.773775</td>
-      <td>532.264482</td>
-      <td>532.354004</td>
+      <td>535.572383</td>
+      <td>533.746383</td>
+      <td>533.008999</td>
+      <td>533.146794</td>
       <td>...</td>
-      <td>8.18921</td>
-      <td>7.956858</td>
+      <td>4.255018</td>
+      <td>8.171312</td>
       <td>0.03112</td>
       <td>0.001458</td>
       <td>0.186241</td>
@@ -1468,13 +1493,13 @@ title="Print to PDF"
       <td>92.016876</td>
       <td>126.462952</td>
       <td>0.999196</td>
-      <td>314.601803</td>
-      <td>315.56932</td>
-      <td>317.556661</td>
-      <td>320.979813</td>
+      <td>313.083172</td>
+      <td>314.54322</td>
+      <td>317.242715</td>
+      <td>321.314606</td>
       <td>...</td>
-      <td>-2.193695</td>
-      <td>-9.569049</td>
+      <td>9.734623</td>
+      <td>6.029476</td>
       <td>0.033716</td>
       <td>0.114599</td>
       <td>0.055362</td>
@@ -1492,13 +1517,13 @@ title="Print to PDF"
       <td>85.109207</td>
       <td>109.057442</td>
       <td>0.996842</td>
-      <td>221.084805</td>
-      <td>218.956039</td>
-      <td>217.532472</td>
-      <td>217.588807</td>
+      <td>219.466511</td>
+      <td>217.443319</td>
+      <td>216.14972</td>
+      <td>216.210632</td>
       <td>...</td>
-      <td>12.539567</td>
-      <td>-11.006074</td>
+      <td>14.068047</td>
+      <td>-4.917797</td>
       <td>0.000943</td>
       <td>0.001107</td>
       <td>0.036498</td>
@@ -1516,13 +1541,13 @@ title="Print to PDF"
       <td>79.529785</td>
       <td>97.050537</td>
       <td>0.996773</td>
-      <td>439.01578</td>
-      <td>438.598761</td>
-      <td>439.10614</td>
-      <td>440.473299</td>
+      <td>437.59345</td>
+      <td>438.101893</td>
+      <td>439.270088</td>
+      <td>441.157225</td>
       <td>...</td>
-      <td>1.993561</td>
-      <td>-1.891783</td>
+      <td>1.971143</td>
+      <td>-4.030666</td>
       <td>0.20795</td>
       <td>0.002251</td>
       <td>0.002176</td>
