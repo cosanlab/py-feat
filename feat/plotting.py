@@ -4,8 +4,10 @@ Helper functions for plotting
 
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
+from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
-from feat.utils import load_h5, RF_AU_presence
+from feat.utils import load_viz_model
+from feat.pretrained import AU_LANDMARK_MAP
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -884,8 +886,8 @@ def plot_face(
     """Core face plotting function
 
     Args:
-        model: sklearn PLSRegression instance; Default None which uses Py-Feat's
-        landmark AU model
+        model: (str/PLSRegression instance) Name of AU visualization model to use.
+        Default's to Py-Feat's 20 AU landmark AU model
         au: vector of action units (same length as model.n_components)
         vectorfield: (dict) {'target':target_array,'reference':reference_array}
         muscles: (dict) {'muscle': color}
@@ -900,8 +902,8 @@ def plot_face(
         ax: plot handle
     """
 
-    if model is None:
-        model = load_h5()
+    if model is None or isinstance(model, str):
+        model = load_viz_model(model)
     else:
         if not isinstance(model, PLSRegression):
             raise ValueError("make sure that model is a PLSRegression instance")
@@ -909,7 +911,7 @@ def plot_face(
     if au is None:
         au = np.zeros(model.n_components)
         warnings.warn(
-            "Don't forget to pass an 'au' vector of len(20), "
+            f"Don't forget to pass an 'au' vector of length 20, "
             "using neutral as default"
         )
 
@@ -982,14 +984,14 @@ def predict(au, model=None, feature_range=None):
         landmarks: Array of landmarks (2,68)
     """
     if model is None:
-        model = load_h5()
+        model = load_viz_model()
     elif not isinstance(model, PLSRegression):
         raise ValueError("make sure that model is a PLSRegression instance")
 
     if len(au) != model.n_components:
         print(au)
         print(model.n_components)
-        raise ValueError("au vector must be len(", model.n_components, ").")
+        raise ValueError(f"au vector must be length {model.n_components}.")
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
@@ -998,7 +1000,6 @@ def predict(au, model=None, feature_range=None):
         au = minmax_scale(au, feature_range=feature_range, axis=1)
 
     landmarks = np.reshape(model.predict(au), (2, 68))
-    # landmarks[1, :] = -1 * landmarks[1, :]  # this might not generalize to other models
     return landmarks
 
 
@@ -1139,7 +1140,7 @@ def animate_face(
     Create a matplotlib animation interpolating between a starting and ending face. Can
     either work like `plot_face` by taking an array of AU intensities for `start` and
     `end`, or by animating a single AU using the `AU` keyword argument and setting
-    `start` and `end` to a scalar value
+    `start` and `end` to a scalar value.
 
     Args:
         AU (str/int, optional): action unit id (e.g. 12 or 'AU12'). Defaults to None.
@@ -1181,7 +1182,7 @@ def animate_face(
 
         if isinstance(AU, int):
             AU = f"AU{str(AU).zfill(2)}"
-        au_map = dict(zip(RF_AU_presence, list(range(20))))
+        au_map = dict(zip(AU_LANDMARK_MAP["Feat"], list(range(20))))
         au_idx = au_map[AU.upper()]
         _start, _end = np.zeros(20), np.zeros(20)
         _start[au_idx] = start

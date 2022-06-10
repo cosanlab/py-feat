@@ -11,16 +11,13 @@ from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 from feat.au_detectors.JAANet.JAA_test import JAANet
-from feat.au_detectors.DRML.DRML_test import DRMLNet
 from feat.au_detectors.StatLearning.SL_test import (
-    RandomForestClassifier,
     SVMClassifier,
     LogisticClassifier,
 )
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
-    EmoRandomForestClassifier,
     EmoSVMClassifier,
 )
 from feat.utils import get_resource_path, download_url
@@ -43,22 +40,19 @@ PRETRAINED_MODELS = {
         {"pfld": PFLDInference},
     ],
     "au_model": [
-        {"rf": RandomForestClassifier},
         {"svm": SVMClassifier},
         {"logistic": LogisticClassifier},
         {"jaanet": JAANet},
-        {"drml": DRMLNet},
     ],
     "emotion_model": [
         {"resmasknet": ResMaskNet},
-        {"rf": EmoRandomForestClassifier},
         {"svm": EmoSVMClassifier},
         {"fer": ferNetModule},
     ],
     "facepose_model": [
         {"pnp": PerspectiveNPoint},
-        {"img2pose": None},
-        {"img2pose-c": None},
+        {"img2pose": Img2Pose},
+        {"img2pose-c": Img2Pose},
     ],
 }
 # Compatibility support for OpenFace, Affectiva, and FACET data files which have
@@ -155,11 +149,11 @@ AU_LANDMARK_MAP = {
         "AU07",
         "AU09",
         "AU10",
+        "AU11",
         "AU12",
         "AU14",
         "AU15",
         "AU17",
-        "AU18",
         "AU20",
         "AU23",
         "AU24",
@@ -167,6 +161,20 @@ AU_LANDMARK_MAP = {
         "AU26",
         "AU28",
         "AU43",
+    ],
+    "jaanet": [
+        "AU01",
+        "AU02",
+        "AU04",
+        "AU06",
+        "AU07",
+        "AU10",
+        "AU12",
+        "AU14",
+        "AU15",
+        "AU17",
+        "AU23",
+        "AU24",
     ],
 }
 
@@ -189,31 +197,43 @@ def get_pretrained_models(
     )
 
     # Face model
-    if face_model is not None:
+    if face_model is None:
+        raise ValueError(
+            f"face_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['face_model']]}"
+        )
+    else:
         face_model = face_model.lower()
         if face_model not in get_names("face_model"):
             raise ValueError(
-                f"Requested face_model was {face_model}. Must be one of {PRETRAINED_MODELS['face_model']}"
+                f"Requested face_model was {face_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['face_model']]}"
             )
         for url in model_urls["face_detectors"][face_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
 
     # Landmark model
-    if landmark_model is not None:
+    if landmark_model is None:
+        raise ValueError(
+            f"landmark_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['landmark_model']]}"
+        )
+    else:
         landmark_model = landmark_model.lower()
         if landmark_model not in get_names("landmark_model"):
             raise ValueError(
-                f"Requested landmark_model was {landmark_model}. Must be one of {PRETRAINED_MODELS['landmark_model']}"
+                f"Requested landmark_model was {landmark_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['landmark_model']]}"
             )
         for url in model_urls["landmark_detectors"][landmark_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
 
     # AU model
-    if au_model is not None:
+    if au_model is None:
+        raise ValueError(
+            f"au_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['au_model']]}"
+        )
+    else:
         au_model = au_model.lower()
         if au_model not in get_names("au_model"):
             raise ValueError(
-                f"Requested au_model was {au_model}. Must be one of {PRETRAINED_MODELS['au_model']}"
+                f"Requested au_model was {au_model}. Must be one of {[list(e.keys())[0]for e in PRETRAINED_MODELS['au_model']]}"
             )
         for url in model_urls["au_detectors"][au_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
@@ -224,7 +244,7 @@ def get_pretrained_models(
                     os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
                 ) as zip_ref:
                     zip_ref.extractall(os.path.join(get_resource_path()))
-            if au_model in ["logistic", "svm", "rf"]:
+            if au_model in ["logistic", "svm"]:
                 download_url(
                     model_urls["au_detectors"]["hog-pca"]["urls"][0],
                     get_resource_path(),
@@ -237,11 +257,15 @@ def get_pretrained_models(
                 )
 
     # Emotion model
-    if emotion_model is not None:
+    if emotion_model is None:
+        raise ValueError(
+            f"emotion_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['emotion_model']]}"
+        )
+    else:
         emotion_model = emotion_model.lower()
         if emotion_model not in get_names("emotion_model"):
             raise ValueError(
-                f"Requested emotion_model was {emotion_model}. Must be one of {PRETRAINED_MODELS['emotion_model']}"
+                f"Requested emotion_model was {emotion_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['emotion_model']]}"
             )
         for url in model_urls["emotion_detectors"][emotion_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
@@ -258,18 +282,18 @@ def get_pretrained_models(
                 )
 
     # Facepose model
-    # Just validate as it's handled by the face_model loading
-    if facepose_model is not None:
+    if facepose_model is None:
+        raise ValueError(
+            f"facepose_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['facepose_model']]}"
+        )
+    else:
         facepose_model = facepose_model.lower()
         if facepose_model not in get_names("facepose_model"):
             raise ValueError(
-                f"Requested facepose_model was {facepose_model}. Must be one of {PRETRAINED_MODELS['facepose_model']}"
+                f"Requested facepose_model was {facepose_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['facepose_model']]}"
             )
-        if "img2pose" in facepose_model and facepose_model != face_model:
-            raise ValueError(
-                f"{facepose_model} is both a face detector and a pose estimator and cannot be used with a different face detector. Please set face_model to {facepose_model} as well"
-            )
-
+        for url in model_urls["facepose_detectors"][facepose_model]["urls"]:
+            download_url(url, get_resource_path(), verbose=verbose)
     return (
         face_model,
         landmark_model,
@@ -282,7 +306,7 @@ def get_pretrained_models(
 def fetch_model(model_type, model_name):
     """Fetch a pre-trained model class constructor. Used by detector init"""
     if model_name is None:
-        return None
+        raise ValueError(f"{model_type} must be a valid string model name, not None")
     model_type = PRETRAINED_MODELS[model_type]
     matches = list(filter(lambda e: model_name in e.keys(), model_type))[0]
     return list(matches.values())[0]
