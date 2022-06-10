@@ -6,7 +6,7 @@ from feat.utils import (
     read_openface,
     registration,
     softmax,
-    load_h5,
+    load_viz_model,
     get_test_data_path,
 )
 from feat import Fex
@@ -41,4 +41,4 @@ def test_utils():
     assert softmax(0) == 0.5
     # Test badfile.
     with pytest.raises(Exception):
-        load_h5("badfile.h5")
+        load_viz_model("badfile")
