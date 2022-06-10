@@ -30,7 +30,7 @@ __all__ = [
     "softmax",
     "registration",
     "neutral",
-    "load_h5",
+    "load_viz_model",
     "read_pictures",
     "validate_input",
     "download_url",
@@ -194,7 +194,11 @@ def get_test_data_path():
     return os.path.join(feat.__path__[0], "tests", "data")
 
 
-def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=True):
+def load_viz_model(
+    file_name=None,
+    prefer_joblib_if_version_match=True,
+    verbose=False,
+):
     """Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
     major and minor versions match those the model was trained with (3.8.x and 1.0.x
     respectively), otherwise will reconstruct the model object using h5 data.
@@ -209,67 +213,91 @@ def load_h5(file_name="pyfeat_aus_to_landmarks", prefer_joblib_if_version_match=
         model: PLS model
     """
 
-    # If they pass in a file with an extension prefer that loading method
-    # Otherwise try to load .joblib first assuming version checks pass otherwise
-    # fallback to .h5
+    file_name = "pyfeat_aus_to_landmarks" if file_name is None else file_name
 
-    if file_name.endswith(".h5") or file_name.endswith(".hdf5"):
-        load_h5 = True
-    elif file_name.endswith(".joblib"):
-        load_h5 = False
-    elif "." in file_name:
-        raise TypeError("Only .h5 or .joblib file extensions are supported")
-    else:
-        load_h5 = False
+    if "." in file_name:
+        raise TypeError("Please use a file name with no extension")
+
+    h5_path = os.path.join(get_resource_path(), f"{file_name}.h5")
+    joblib_path = os.path.join(get_resource_path(), f"{file_name}.joblib")
+
+    # Make sure saved viz model exists
+    if not os.path.exists(h5_path):
+        raise ValueError(f"{h5_path} does not exist")
+
+    if not os.path.exists(joblib_path):
+        raise ValueError(f"{joblib_path} does not exist")
 
     # Check sklearn and python version to see if we can load joblib
     my_skmajor, my_skminor, my_skpatch = skversion.split(".")
     my_pymajor, my_pyminor, my_pymicro, *_ = sys.version_info
 
-    pymajor, pyminor, skmajor, skminor = 3, 8, 1, 0
+    # Versions viz models were trained with
+    pymajor, pyminor, skmajor, skminor = 3, 8, 1, 1
     if (
         int(my_skmajor) == skmajor
         and int(my_skminor) == skminor
         and int(my_pymajor) == pymajor
         and int(my_pyminor) == pyminor
         and prefer_joblib_if_version_match
-        and not load_h5
     ):
         can_load_joblib = True
-        file_name = f"{file_name.split('.')[0]}.joblib"
     else:
         can_load_joblib = False
-        file_name = f"{file_name.split('.')[0]}.h5"
 
-    if can_load_joblib:
-        return load(os.path.join(get_resource_path(), file_name))
-    else:
-        h5_path = os.path.join(get_resource_path(), file_name)
-        if not os.path.exists(h5_path):
-            raise ValueError(f"{file_name} does not exist")
-        try:
-            hf = h5py.File(os.path.join(get_resource_path(), file_name), "r")
-            d1 = hf.get("coef")
-            d2 = hf.get("x_mean")
-            d3 = hf.get("y_mean")
-            d4 = hf.get("x_std")
-            x_train = hf.get("x_train")
-            y_train = hf.get("y_train")
-            model = PLSRegression(len(d1))
-            model.coef_ = np.array(d1)
-            if int(skversion.split(".")[0]) < 1:
-                model.x_mean_ = np.array(d2)
-                model.y_mean_ = np.array(d3)
-                model.x_std_ = np.array(d4)
-            else:
-                model._x_mean = np.array(d2)
-                model._y_mean = np.array(d3)
-                model._x_std = np.array(d4)
-            model.X_train = np.array(x_train)
-            model.Y_train = np.array(y_train)
+    try:
+        if can_load_joblib:
+            if verbose:
+                print("Loading joblib")
+            model = load(joblib_path)
+            # We need the h5 file for some meta-data even when loading using joblib
+            hf = h5py.File(h5_path, mode="r")
+            model.__dict__["model_name_"] = hf.attrs["model_name"]
+            model.__dict__["skversion"] = hf.attrs["skversion"]
+            model.__dict__["pyversion"] = hf.attrs["pyversion"]
             hf.close()
-        except Exception as e:
-            print("Unable to load data ", file_name, ":", e)
+        else:
+            if verbose:
+                print("Reconstructing from h5")
+            hf = h5py.File(h5_path, mode="r")
+            x_weights = np.array(hf.get("x_weights"))
+            model = PLSRegression(n_components=x_weights.shape[1])
+            # PLSRegression in < 1.3 stores coefs ax features x samples unlike other
+            # estimators
+            model.__dict__["coef_"] = np.array(hf.get("coef")).T
+            model.__dict__["_coef_"] = np.array(hf.get("coef")).T
+            model.__dict__["x_weights_"] = np.array(hf.get("x_weights"))
+            model.__dict__["y_weights_"] = np.array(hf.get("y_weights"))
+            model.__dict__["x_loadings"] = np.array(hf.get("x_loadings"))
+            model.__dict__["y_loadings"] = np.array(hf.get("y_loadings"))
+            model.__dict__["x_scores"] = np.array(hf.get("x_scores"))
+            model.__dict__["y_scores"] = np.array(hf.get("y_scores"))
+            model.__dict__["x_rotations"] = np.array(hf.get("x_rotations"))
+            model.__dict__["y_rotations"] = np.array(hf.get("y_rotations"))
+            model.__dict__["intercept"] = np.array(hf.get("intercept"))
+            model.__dict__["x_train"] = np.array(hf.get("X_train"))
+            model.__dict__["y_train"] = np.array(hf.get("Y_train"))
+            model.__dict__["X_train"] = np.array(hf.get("x_train"))
+            model.__dict__["Y_train"] = np.array(hf.get("y_train"))
+            model.__dict__["intercept_"] = np.array(hf.get("intercept"))
+            model.__dict__["model_name_"] = hf.attrs["model_name"]
+            model.__dict__["skversion"] = hf.attrs["skversion"]
+            model.__dict__["pyversion"] = hf.attrs["pyversion"]
+
+            # Older sklearn version named these attributes differently
+            if int(skversion.split(".")[0]) < 1:
+                model.__dict__["x_mean_"] = np.array(hf.get("x_mean"))
+                model.__dict__["y_mean_"] = np.array(hf.get("y_mean"))
+                model.__dict__["x_std_"] = np.array(hf.get("x_std"))
+                model.__dict__["y_std_"] = np.array(hf.get("y_std"))
+            else:
+                model.__dict__["_x_mean"] = np.array(hf.get("x_mean"))
+                model.__dict__["_y_mean"] = np.array(hf.get("y_mean"))
+                model.__dict__["_x_std"] = np.array(hf.get("x_std"))
+                model.__dict__["_y_std"] = np.array(hf.get("y_std"))
+            hf.close()
+    except Exception as e:
+        raise IOError(f"Unable to load data: {e}")
     return model
 
 
