@@ -991,7 +991,7 @@ def predict(au, model=None, feature_range=None):
     if len(au) != model.n_components:
         print(au)
         print(model.n_components)
-        raise ValueError("au vector must be len(", model.n_components, ").")
+        raise ValueError(f"au vector must be length {model.n_components}.")
 
     if len(au.shape) == 1:
         au = np.reshape(au, (1, -1))
