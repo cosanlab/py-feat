@@ -20,7 +20,7 @@ def assert_plot_shape(ax):
     assert ax.get_xlim() == (25.0, 172.0)
 
 
-def testpredict(au):
+def test_predict(au):
     landmarks = predict(au)
     assert landmarks.shape == (2, 68)
     with pytest.raises(ValueError):

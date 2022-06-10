@@ -3,5 +3,15 @@
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.autoTestDiscoverOnSaveEnabled": true,
-    "editor.insertSpaces": true
+    "editor.insertSpaces": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "docs/**/*.csv": true,
+        "docs/**/*.mp4": true
+    }
 }

@@ -25,7 +25,7 @@ from feat.utils import (
     read_openface,
     wavelet,
     calc_hist_auc,
-    load_h5,
+    load_viz_model,
 )
 from feat.plotting import plot_face, draw_lineface, draw_facepose
 from feat.pretrained import AU_LANDMARK_MAP
@@ -1388,7 +1388,7 @@ class Fex(DataFrame):
         """
 
         if self.detector == "FACET":
-            model = load_h5("facet.h5")
+            model = load_viz_model("facet")
             feats = AU_LANDMARK_MAP[self.detector]
             au = row[feats].to_numpy().squeeze()
             if muscles is not None:
@@ -1417,7 +1417,7 @@ class Fex(DataFrame):
             else:
                 au_lookup = self.au_model
                 try:
-                    model = load_h5(f"{self.au_model}.h5")
+                    model = load_viz_model(f"{self.au_model}_aus_to_landmarks")
                 except ValueError as e:
                     raise NotImplementedError(
                         f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'logistic') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
