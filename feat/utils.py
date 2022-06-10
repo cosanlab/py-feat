@@ -346,7 +346,7 @@ def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
             studydate = f.readline().replace("\t", "").replace("\n", "")
             versionstr = f.readline().replace("\t", "").replace("\n", "")
         versionnum = int(versionstr.split(" ")[-1].split(".")[0])
-    except:
+    except Exception:
         raise TypeError(
             "Cannot infer version of iMotions-FACET file. Check to make sure this is the raw iMotions-FACET file."
         )
@@ -358,7 +358,7 @@ def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
             d = d[features]
             if raw:
                 return feat.Fex(d, filename=facetfile)
-        except:
+        except Exception:
             raise KeyError([features, "not in facetfile"])
     elif isinstance(features, type(None)):
         if raw:
@@ -464,13 +464,13 @@ def read_openface(openfacefile, features=None):
     if isinstance(features, list):
         try:
             d = d[features]
-        except:
+        except Exception:
             raise KeyError([features, "not in openfacefile"])
     elif isinstance(features, type(None)):
         features = OPENFACE_ORIG_COLUMNS
         try:
             d = d[features]
-        except:
+        except Exception:
             pass
     fex = feat.Fex(
         d,
@@ -540,7 +540,7 @@ def read_affectiva(affectivafile, orig_cols=False):
         for col in d.columns:
             try:
                 new_cols.append(rep_dict[col])
-            except:
+            except Exception:
                 new_cols.append(col)
         d.columns = new_cols
     fex = feat.Fex(
