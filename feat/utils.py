@@ -262,10 +262,17 @@ def load_viz_model(
             hf = h5py.File(h5_path, mode="r")
             x_weights = np.array(hf.get("x_weights"))
             model = PLSRegression(n_components=x_weights.shape[1])
-            # PLSRegression in < 1.3 stores coefs ax features x samples unlike other
-            # estimators
-            model.__dict__["coef_"] = np.array(hf.get("coef")).T
-            model.__dict__["_coef_"] = np.array(hf.get("coef")).T
+            # PLSRegression in sklearn < 1.1 storex coefs as samples x features, but
+            # recent versions transpose this. Check if the user is on Python 3.7 (which
+            # only supports sklearn 1.0.x) or < sklearn 1.1.x
+            if (my_pymajor == 3 and my_pyminor == 7) or (
+                my_skmajor == 1 and my_skminor != 1
+            ):
+                model.__dict__["coef_"] = np.array(hf.get("coef"))
+                model.__dict__["_coef_"] = np.array(hf.get("coef"))
+            else:
+                model.__dict__["coef_"] = np.array(hf.get("coef")).T
+                model.__dict__["_coef_"] = np.array(hf.get("coef")).T
             model.__dict__["x_weights_"] = np.array(hf.get("x_weights"))
             model.__dict__["y_weights_"] = np.array(hf.get("y_weights"))
             model.__dict__["x_loadings"] = np.array(hf.get("x_loadings"))
