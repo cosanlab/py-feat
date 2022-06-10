@@ -16,27 +16,17 @@ def test_detector_combos(
     """Builds a grid a of tests using all supported detector combinations defined in
     conftest.py"""
 
-    # Test init
-    if "img2pose" in facepose_model and facepose_model != face_model:
-        with pytest.raises(ValueError):
-            _ = Detector(
-                face_model=face_model,
-                landmark_model=landmark_model,
-                au_model=au_model,
-                emotion_model=emotion_model,
-                facepose_model=facepose_model,
-            )
-    else:
-        detector = Detector(
-            face_model=face_model,
-            landmark_model=landmark_model,
-            au_model=au_model,
-            emotion_model=emotion_model,
-            facepose_model=facepose_model,
-        )
-        out = detector.detect_image(single_face_img)
-        assert type(out) == Fex
-        assert out.shape[0] == 1
+    # Test init and basic detection
+    detector = Detector(
+        face_model=face_model,
+        landmark_model=landmark_model,
+        au_model=au_model,
+        emotion_model=emotion_model,
+        facepose_model=facepose_model,
+    )
+    out = detector.detect_image(single_face_img)
+    assert type(out) == Fex
+    assert out.shape[0] == 1
 
 
 def test_empty_init():

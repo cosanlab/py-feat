@@ -17,12 +17,6 @@ docs/_build
 
 #Ignore resources folder except config files and viz model
 resources/
-!resources/pyfeat_aus_to_landmarks.h5
-!resources/pyfeat_aus_to_landmarks.joblib
-!resources/jaanet_aus_to_landmarks.h5
-!resources/jaanet_aus_to_landmarks.joblib
-!resources/ResMaskNet_fer2013_config.json
-!resources/reference_3d_68_points_trans.npy
 !resources/model_list.json
 
 # PytestCache
