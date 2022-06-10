@@ -292,6 +292,8 @@ def get_pretrained_models(
             raise ValueError(
                 f"Requested facepose_model was {facepose_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['facepose_model']]}"
             )
+        for url in model_urls["facepose_detectors"][facepose_model]["urls"]:
+            download_url(url, get_resource_path(), verbose=verbose)
     return (
         face_model,
         landmark_model,
