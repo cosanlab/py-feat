@@ -25,7 +25,7 @@ from feat.utils import (
     read_openface,
     wavelet,
     calc_hist_auc,
-    load_h5,
+    load_viz_model,
 )
 from feat.plotting import plot_face, draw_lineface, draw_facepose
 from feat.pretrained import AU_LANDMARK_MAP
@@ -62,6 +62,11 @@ class FexSeries(Series):
         self.filename = kwargs.pop("filename", None)
         self.sampling_freq = kwargs.pop("sampling_freq", None)
         self.detector = kwargs.pop("detector", None)
+        self.face_model = kwargs.pop("face_model", None)
+        self.landmark_model = kwargs.pop("landmark_model", None)
+        self.au_model = kwargs.pop("au_model", None)
+        self.emotion_model = kwargs.pop("emotion_model", None)
+        self.facepose_model = kwargs.pop("facepose_model", None)
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
         super().__init__(*args, **kwargs)
@@ -81,6 +86,11 @@ class FexSeries(Series):
         "features",
         "sessions",
         "detector",
+        "face_model",
+        "landmark_model",
+        "au_model",
+        "emotion_model",
+        "facepose_model",
         "verbose",
     ]
 
@@ -232,6 +242,11 @@ class Fex(DataFrame):
         "features",
         "sessions",
         "detector",
+        "face_model",
+        "landmark_model",
+        "au_model",
+        "emotion_model",
+        "facepose_model",
         "verbose",
     ]
 
@@ -264,6 +279,11 @@ class Fex(DataFrame):
         self.filename = kwargs.pop("filename", None)
         self.sampling_freq = kwargs.pop("sampling_freq", None)
         self.detector = kwargs.pop("detector", None)
+        self.face_model = kwargs.pop("face_model", None)
+        self.landmark_model = kwargs.pop("landmark_model", None)
+        self.au_model = kwargs.pop("au_model", None)
+        self.emotion_model = kwargs.pop("emotion_model", None)
+        self.facepose_model = kwargs.pop("facepose_model", None)
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
 
@@ -274,11 +294,6 @@ class Fex(DataFrame):
             if not len(self.sessions) == len(self):
                 raise ValueError("Make sure sessions is same length as data.")
             self.sessions = np.array(self.sessions)
-        # if (self.fex_columns is None) and (not self._metadata):
-        #     try:
-        #         self.fex_columns = self._metadata
-        #     except:
-        #         print('Failed to import _metadata to fex_columns')
 
         # Set _metadata attributes on series: Kludgy solution
         for k in self:
@@ -469,11 +484,11 @@ class Fex(DataFrame):
             Fex
         """
         # Check if filename exists in metadata.
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_feat(filename, *args, **kwargs)
         return result
 
@@ -487,11 +502,11 @@ class Fex(DataFrame):
             Fex
         """
         # Check if filename exists in metadata.
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_facet(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
@@ -508,11 +523,11 @@ class Fex(DataFrame):
         Returns:
             Fex
         """
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_openface(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
@@ -529,11 +544,11 @@ class Fex(DataFrame):
         Returns:
             Fex
         """
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_affectiva(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
@@ -1367,18 +1382,16 @@ class Fex(DataFrame):
 
         """
 
-        # Get AU labels based on detector type
-        feats = AU_LANDMARK_MAP[self.detector]
-        model = None
-
         if self.detector == "FACET":
-            model = load_h5("facet.h5")
+            model = load_viz_model("facet")
+            feats = AU_LANDMARK_MAP[self.detector]
             au = row[feats].to_numpy().squeeze()
             if muscles is not None:
                 muscles["facet"] = 1
             gaze = None
 
         elif self.detector == "OpenFace":
+            feats = AU_LANDMARK_MAP[self.detector]
             au = row[feats].to_numpy().squeeze().tolist()
             au = np.array(au + [0, 0, 0])
 
@@ -1387,13 +1400,26 @@ class Fex(DataFrame):
                 gaze = row[gaze_dat].to_numpy().squeeze().tolist()
 
         elif self.detector == "Affectiva":
+            feats = AU_LANDMARK_MAP[self.detector]
             au = row[feats].to_numpy().squeeze() / 20
             au = au.tolist()
             au = np.array(au + [0, 0, 0])
 
         elif self.detector == "Feat":
+            if self.au_model in ["svm", "logistic"]:
+                au_lookup = "Feat"
+                model = None
+            else:
+                au_lookup = self.au_model
+                try:
+                    model = load_viz_model(f"{self.au_model}_aus_to_landmarks")
+                except ValueError as e:
+                    raise NotImplementedError(
+                        f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'logistic') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
+                    )
+
+            feats = AU_LANDMARK_MAP[au_lookup]
             rrow = row.copy()
-            rrow["AU18"] = 0
             au = rrow[feats].to_numpy().squeeze()
 
         gaze = None if isinstance(gaze, bool) else gaze

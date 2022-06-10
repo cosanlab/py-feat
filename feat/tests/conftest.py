@@ -45,7 +45,7 @@ def landmark_model(request):
 
 @fixture(
     scope="module",
-    params=["rf", "svm", "logistic", "jaanet", "drml"],
+    params=["svm", "logistic", "jaanet"],
 )
 def au_model(request):
     """Supported au detectors"""
@@ -54,7 +54,7 @@ def au_model(request):
 
 @fixture(
     scope="module",
-    params=["resmasknet", "rf", "svm", "fer"],
+    params=["resmasknet", "svm", "fer"],
 )
 def emotion_model(request):
     """Supported emotion detectors"""

@@ -3,14 +3,15 @@ numpy>=1.9
 seaborn>=0.7.0
 matplotlib>=2.1
 nltools>=0.3.6
-scikit-learn>=0.18.1
+scikit-learn>=1.0
 pywavelets>=0.3.0
 h5py>=2.7.0
 Pillow>=6.0.0
 opencv-contrib-python>=4.4.0.46
 torch
 torchvision
-scikit-image>=0.18.0rc1
+scikit-image>=0.19
 joblib
 easing_functions
 celluloid
+tqdm

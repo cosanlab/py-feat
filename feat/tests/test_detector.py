@@ -16,38 +16,29 @@ def test_detector_combos(
     """Builds a grid a of tests using all supported detector combinations defined in
     conftest.py"""
 
-    # Test init
-    if "img2pose" in facepose_model and facepose_model != face_model:
-        with pytest.raises(ValueError):
-            _ = Detector(
-                face_model=face_model,
-                landmark_model=landmark_model,
-                au_model=au_model,
-                emotion_model=emotion_model,
-                facepose_model=facepose_model,
-            )
-    else:
-        detector = Detector(
-            face_model=face_model,
-            landmark_model=landmark_model,
-            au_model=au_model,
-            emotion_model=emotion_model,
-            facepose_model=facepose_model,
-        )
-        out = detector.detect_image(single_face_img)
-        assert type(out) == Fex
-        assert out.shape[0] == 1
+    # Test init and basic detection
+    detector = Detector(
+        face_model=face_model,
+        landmark_model=landmark_model,
+        au_model=au_model,
+        emotion_model=emotion_model,
+        facepose_model=facepose_model,
+    )
+    out = detector.detect_image(single_face_img)
+    assert type(out) == Fex
+    assert out.shape[0] == 1
 
 
 def test_empty_init():
-    detector = Detector(
-        face_model=None,
-        emotion_model=None,
-        au_model=None,
-        facepose_model=None,
-        landmark_model=None,
-    )
-    assert isinstance(detector, Detector)
+
+    with pytest.raises(ValueError):
+        _ = Detector(
+            face_model=None,
+            emotion_model=None,
+            au_model=None,
+            facepose_model=None,
+            landmark_model=None,
+        )
 
 
 def test_init_with_wrongmodelname():
@@ -229,7 +220,6 @@ def test_pfld(default_detector, single_face_img):
 def test_jaanet(default_detector, single_face_img_data):
     default_detector.change_model(
         face_model="RetinaFace",
-        emotion_model=None,
         landmark_model="MobileFaceNet",
         au_model="jaanet",
     )
@@ -245,7 +235,6 @@ def test_jaanet(default_detector, single_face_img_data):
 def test_logistic(default_detector, single_face_img_data):
     default_detector.change_model(
         face_model="RetinaFace",
-        emotion_model=None,
         landmark_model="MobileFaceNet",
         au_model="logistic",
     )
@@ -267,7 +256,6 @@ def test_logistic(default_detector, single_face_img_data):
 def test_svm(default_detector, single_face_img_data):
     default_detector.change_model(
         face_model="RetinaFace",
-        emotion_model=None,
         landmark_model="MobileFaceNet",
         au_model="svm",
     )
@@ -286,43 +274,6 @@ def test_svm(default_detector, single_face_img_data):
     assert aus.shape[-1] == 20
 
 
-def test_rf(default_detector, single_face_img_data):
-    default_detector.change_model(
-        face_model="RetinaFace",
-        emotion_model=None,
-        landmark_model="MobileFaceNet",
-        au_model="RF",
-    )
-
-    detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
-    # TODO: Add explanation of why we need to pass the output of ._batch_hog() to
-    # .detect_aus() for this model but not others
-    hogs, new_lands = default_detector._batch_hog(
-        frames=single_face_img_data, detected_faces=detected_faces, landmarks=landmarks
-    )
-
-    aus = default_detector.detect_aus(frame=hogs, landmarks=new_lands)
-
-    assert np.sum(np.isnan(aus)) == 0
-    assert aus.shape[-1] == 20
-
-
-def test_drml(default_detector, single_face_img_data):
-    default_detector.change_model(
-        face_model="RetinaFace",
-        emotion_model=None,
-        landmark_model="MobileFaceNet",
-        au_model="drml",
-    )
-
-    bboxes = default_detector.detect_faces(single_face_img_data)[0]
-    lands = default_detector.detect_landmarks(single_face_img_data, [bboxes])[0]
-    aus = default_detector.detect_aus(single_face_img_data, lands)
-    assert np.sum(np.isnan(aus)) == 0
-    assert aus.shape[-1] == 12
-
-
 def test_resmasknet(default_detector, single_face_img):
     default_detector.change_model(emotion_model="resmasknet")
     out = default_detector.detect_image(single_face_img)
@@ -333,13 +284,6 @@ def test_emotionsvm(default_detector, single_face_img):
     default_detector.change_model(emotion_model="svm")
     out = default_detector.detect_image(single_face_img)
     assert out.emotions["happiness"].values > 0.5
-
-
-def test_emotionrf(default_detector, single_face_img):
-    # Emotion RF models is not good
-    default_detector.change_model(emotion_model="rf")
-    out = default_detector.detect_image(single_face_img)
-    assert out.emotions["happiness"].values > 0.0
 
 
 def test_pnp(default_detector, single_face_img_data):
