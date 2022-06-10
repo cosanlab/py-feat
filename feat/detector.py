@@ -898,7 +898,7 @@ class Detector(object):
                 counter += skip_frame_rate
             return out, counter
 
-        except:
+        except Exception:
             traceback.print_exc()
             self.logger.error("exception occurred in the batch")
             if singleframe4error:

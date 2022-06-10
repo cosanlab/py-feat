@@ -30,9 +30,11 @@
 
 ### Fixes
 - [#80](https://github.com/cosanlab/py-feat/issues/80)
+- [#81](https://github.com/cosanlab/py-feat/issues/81)
 - [#94](https://github.com/cosanlab/py-feat/issues/94)
 - [#98](https://github.com/cosanlab/py-feat/issues/98)
 - [#101](https://github.com/cosanlab/py-feat/issues/101)
+- [#106](https://github.com/cosanlab/py-feat/issues/106)
 - [#110](https://github.com/cosanlab/py-feat/issues/110)
 - [#113](https://github.com/cosanlab/py-feat/issues/113)
 - [#114](https://github.com/cosanlab/py-feat/issues/114)

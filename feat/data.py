@@ -294,11 +294,6 @@ class Fex(DataFrame):
             if not len(self.sessions) == len(self):
                 raise ValueError("Make sure sessions is same length as data.")
             self.sessions = np.array(self.sessions)
-        # if (self.fex_columns is None) and (not self._metadata):
-        #     try:
-        #         self.fex_columns = self._metadata
-        #     except:
-        #         print('Failed to import _metadata to fex_columns')
 
         # Set _metadata attributes on series: Kludgy solution
         for k in self:
@@ -489,11 +484,11 @@ class Fex(DataFrame):
             Fex
         """
         # Check if filename exists in metadata.
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_feat(filename, *args, **kwargs)
         return result
 
@@ -507,11 +502,11 @@ class Fex(DataFrame):
             Fex
         """
         # Check if filename exists in metadata.
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_facet(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
@@ -528,11 +523,11 @@ class Fex(DataFrame):
         Returns:
             Fex
         """
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_openface(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
@@ -549,11 +544,11 @@ class Fex(DataFrame):
         Returns:
             Fex
         """
-        if not filename:
-            try:
+        if filename is None:
+            if self.filename:
                 filename = self.filename
-            except:
-                print("filename must be specified.")
+            else:
+                raise ValueError("filename must be specified.")
         result = read_affectiva(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
