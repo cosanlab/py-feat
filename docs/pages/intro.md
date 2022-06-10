@@ -19,7 +19,12 @@ Py-Feat was created for two primary audiences in mind:
 - **Human behavior researchers**: Extract facial expressions from face images or videos with a simple line of code and analyze your data with Feat. 
 - **Computer vision researchers**: Develop & share your latest model to a wide audience of users. 
 
-and anyone else interested in analyzing facial expressions!
+and anyone else interested in analyzing facial expressions! 
+
+Check out a recent presentation by one of the project leads [Eshin Jolly, PhD](https://eshinjolly.com/) for a broad-overview and introduction:
+
+<iframe src="/prez/index.html" style="width: 100%; height: 500px"></iframe>
+
 
 ## Installation
 You can easily install the latest stable version from PyPi:
