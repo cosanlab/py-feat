@@ -1,0 +1,37 @@
+name: Manual Docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  docs:
+    name: Build & deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Upgrade pip
+        run: |
+          # install pip=>20.1 to use "pip cache dir"
+          python3 -m pip install --upgrade pip
+
+      - name: Install deps
+        run: |
+          python3 -m pip install . -r requirements-dev.txt
+
+      - name: Build book
+        run: |
+          jupyter-book build docs
+          echo 'py-feat.org' > ./docs/_build/html/CNAME
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html
