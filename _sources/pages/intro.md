@@ -23,7 +23,7 @@ and anyone else interested in analyzing facial expressions!
 
 Check out a recent presentation by one of the project leads [Eshin Jolly, PhD](https://eshinjolly.com/) for a broad-overview and introduction:
 
-<iframe src="/prez.html" style="width: 100%; height: 500px"></iframe>
+<iframe src="https://ejolly-py-feat.surge.sh/" style="width: 100%; height: 500px"></iframe>
 
 
 ## Installation
