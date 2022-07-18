@@ -10,7 +10,10 @@ from feat.face_detectors.Retinaface.Retinaface_utils import (
     decode,
     decode_landm,
 )
-from feat.utils import get_resource_path
+from feat.utils import (get_resource_path,    
+                        reverse_color_order,
+                        expand_img_dimensions,
+                        convert_image_to_tensor)
 
 
 # some global configs

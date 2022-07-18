@@ -37,6 +37,9 @@ __all__ = [
     "read_pictures",
     "validate_input",
     "download_url",
+    "reverse_color_order",
+    "expand_img_dimensions",
+    "convert_image_to_tensor"
 ]
 
 """ DEFINE IMPORTANT VARIABLES """
@@ -1098,7 +1101,7 @@ def convert_image_to_tensor(img):
     '''Convert Image data (PIL, cv2, TV) to Tensor'''
     
     if isinstance(img, (np.ndarray)): #numpy array
-        img = torch.from_numpy(expand_img_dimensions(reverse_color_order(cv2_img)))
+        img = torch.from_numpy(expand_img_dimensions(reverse_color_order(img)))
     elif isinstance(img, PIL.Image.Image):
         transform = Compose([PILToTensor()])
         img = transform(img)
