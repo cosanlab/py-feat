@@ -19,6 +19,9 @@ import cv2
 import math
 import torch
 from torchvision.datasets.utils import download_url as tv_download_url
+from torchvision.transforms import PILToTensor, Compose
+from PIL import Image 
+
 
 __all__ = [
     "get_resource_path",
@@ -1070,3 +1073,38 @@ class FaceDetectionError(Exception):
     """Error when face detection failed in a batch"""
 
     pass
+
+def reverse_color_order(img):
+    '''Convert BGR OpenCV image to RGB format'''
+    
+    if not isinstance(img, (np.ndarray)):
+        raise ValueError(f'Image must be a numpy array, not a {type(img)}')
+    
+    if len(img.shape) != 3:
+        raise ValueError(f'Image must be a 3D numpy array (Height, Width, Color), currently {img.shape}')
+    return img[:,:,[2,1,0]]
+
+def expand_img_dimensions(img):
+    '''Expand image dimensions to 4 dimensions'''
+    
+    if img.ndim == 4:
+        return img
+    elif img.ndim == 3:
+        return np.expand_dims(img, 0)
+    else:
+        raise ValueError(f'Image with {img.ndim} not currently supported (must be 3 or 4)')
+
+def convert_image_to_tensor(img):
+    '''Convert Image data (PIL, cv2, TV) to Tensor'''
+    
+    if isinstance(img, (np.ndarray)): #numpy array
+        img = torch.from_numpy(expand_img_dimensions(reverse_color_order(cv2_img)))
+    elif isinstance(img, PIL.Image.Image):
+        transform = Compose([PILToTensor()])
+        img = transform(img)
+        img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
+    elif isinstance(img, torch.Tensor):
+        img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
+    else:
+        raise ValueError(f'{type(img)} is not currently supported please use CV2, PIL, or TorchVision to load image')
+    return img
