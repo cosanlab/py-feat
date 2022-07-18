@@ -26,6 +26,9 @@ from feat.utils import (
     FaceDetectionError,
     validate_input,
     read_pictures,
+    reverse_color_order,
+    expand_img_dimensions,
+    convert_image_to_tensor
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 import torch
