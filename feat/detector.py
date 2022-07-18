@@ -329,14 +329,14 @@ class Detector(object):
             >>> detector = Detector()
             >>> detector.detect_faces(frame)
         """
-        if not isinstance(frame, np.ndarray):
-            raise TypeError(
-                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
-            )
-        # check if frame is 4d
-        if frame.ndim == 3:
-            frame = np.expand_dims(frame, 0)
-        assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+        # if not isinstance(frame, np.ndarray):
+        #     raise TypeError(
+        #         f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+        #     )
+        # # check if frame is 4d
+        # if frame.ndim == 3:
+        #     frame = np.expand_dims(frame, 0)
+        # assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
         # height, width, _ = frame.shape
         if "img2pose" in self.info["face_model"]:
             faces, poses = self.face_detector(frame)
