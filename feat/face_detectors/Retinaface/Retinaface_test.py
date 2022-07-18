@@ -136,7 +136,7 @@ class Retinaface:
 
         # resize = 1
 
-    def __call__(self, img_):
+    def __call__(self, img):
         """
         forward function
         img_: (B,H,W,C), B is batch number, H is image height, W is width and C is channel.
