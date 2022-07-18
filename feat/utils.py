@@ -20,7 +20,7 @@ import math
 import torch
 from torchvision.datasets.utils import download_url as tv_download_url
 from torchvision.transforms import PILToTensor, Compose
-from PIL import Image 
+import PIL
 
 
 __all__ = [

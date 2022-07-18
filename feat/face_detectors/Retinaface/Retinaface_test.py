@@ -152,15 +152,13 @@ class Retinaface:
 
         _, im_height, im_width, _ = img.shape
         scale = torch.Tensor([img.shape[2], img.shape[1], img.shape[2], img.shape[1]])
-        img[:, ..., :] -= (104, 117, 123)
-        img = img.transpose(0, 3, 1, 2)
-        img = torch.from_numpy(img)  # .unsqueeze(0)
+        # img[:, ..., :] -= (104, 117, 123)
+        # img = img.transpose(0, 3, 1, 2)
+        # img = torch.from_numpy(img)  # .unsqueeze(0)
         img = img.to(self.device)
         scale = scale.to(self.device)
 
-        # tic = time.time()
         loc, conf, landms = self.net(img)  # forward pass
-        # print('net forward time: {:.4f}'.format(time.time() - tic))
 
         total_boxes = []
         for i in range(loc.shape[0]):
