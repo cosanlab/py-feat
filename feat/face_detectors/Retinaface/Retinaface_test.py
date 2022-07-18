@@ -104,7 +104,7 @@ def load_model(model, pretrained_path, load_to_cpu):
 
 
 class Retinaface:
-    def __init__(self, timer_flag=False):
+    def __init__(self, device='auto', timer_flag=False):
         torch.set_grad_enabled(False)
         """
         if network == "mobile0.25":
@@ -113,14 +113,21 @@ class Retinaface:
             cfg = cfg_re50
         """
         self.cfg = cfg_mnet
+        
         # net and model
         net = RetinaFace(cfg=self.cfg, phase="test")
         self.net = load_model(net, trained_model, cpu)
         self.net.eval()
-        # print('Finished loading model!')
-        # print(net)
-        # cudnn.benchmark = True
-        self.device = torch.device("cpu" if cpu else "cuda")
+
+        if device == 'auto':
+            if torch.cuda.is_available():
+                self.device = 'cuda'
+            elif torch.backends.mps.is_available():
+                self.device = 'mps'
+            else:
+                self.device = 'cpu'
+        else:
+            self.device = device
         net = net.to(self.device)
         self.timer_flag = timer_flag
 
@@ -134,9 +141,11 @@ class Retinaface:
         # img_ = np.expand_dims(img_,0)
         # img_ = np.concatenate([img_,img_],0)
 
-        img_raw = img_.copy()
+        # img_raw = img_.copy()
 
-        img = np.float32(img_raw)
+        # img = np.float32(img_raw)
+
+        img = convert_image_to_tensor(img)
 
         _, im_height, im_width, _ = img.shape
         scale = torch.Tensor([img.shape[2], img.shape[1], img.shape[2], img.shape[1]])
@@ -146,7 +155,7 @@ class Retinaface:
         img = img.to(self.device)
         scale = scale.to(self.device)
 
-        tic = time.time()
+        # tic = time.time()
         loc, conf, landms = self.net(img)  # forward pass
         # print('net forward time: {:.4f}'.format(time.time() - tic))
 
