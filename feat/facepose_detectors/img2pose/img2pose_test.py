@@ -4,7 +4,9 @@ import torch
 import numpy as np
 from torchvision import transforms
 from .img2pose_model import img2poseModel
-from feat.utils import get_resource_path
+from feat.utils import (get_resource_path,    
+                        convert_image_to_tensor, 
+                        set_torch_device)
 from feat.face_detectors.Retinaface.Retinaface_utils import py_cpu_nms
 from ..utils import convert_to_euler
 
@@ -25,7 +27,7 @@ THREED_FACE_MODEL = os.path.join(
 
 
 class Img2Pose:
-    def __init__(self, cpu_mode, constrained=True):
+    def __init__(self, device='auto', constrained=True):
         """Creates an img2pose model. Constrained model is optimized for face detection/ pose estimation for
         front-facing faces ( [-90, 90] degree range) only. Unconstrained model can detect faces and poses at any angle,
         but shows slightly dampened performance on face pose estimation.
@@ -50,17 +52,19 @@ class Img2Pose:
         )
         self.transform = transforms.Compose([transforms.ToTensor()])
 
+        self.device = set_torch_device(device)
+        
         # Load the constrained model
         model_file = "img2pose_v1_ft_300w_lp.pth" if constrained else "img2pose_v1.pth"
         self.load_model(
-            os.path.join(get_resource_path(), model_file), cpu_mode=cpu_mode
+            os.path.join(get_resource_path(), model_file), device=self.device
         )
         self.model.evaluate()
 
         # Set threshold score for bounding box detection
         self.detection_threshold = vis_thres
 
-    def load_model(self, model_path, optimizer=None, cpu_mode=False):
+    def load_model(self, model_path, optimizer=None, device='auto'):
         """Loads model weights for the img2pose model
         Args:
             model_path (str): file path to saved model weights
@@ -72,10 +76,13 @@ class Img2Pose:
             None
         """
 
-        if cpu_mode:
-            checkpoint = torch.load(model_path, map_location=torch.device("cpu"))
-        else:
-            checkpoint = torch.load(model_path)
+        # if cpu_mode:
+        #     checkpoint = torch.load(model_path, map_location=torch.device("cpu"))
+        # else:
+        #     checkpoint = torch.load(model_path)
+        
+        self.device = set_torch_device(device)
+        checkpoint = torch.load(model_path, map_location=self.device)
 
         self.model.fpn_model.load_state_dict(checkpoint["fpn_model"])
 
