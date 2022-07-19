@@ -25,10 +25,8 @@ from feat.utils import (
     align_face_68pts,
     FaceDetectionError,
     validate_input,
-    read_pictures,
-    reverse_color_order,
-    expand_img_dimensions,
-    convert_image_to_tensor
+    read_pictures, 
+    set_torch_device
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 import torch
@@ -49,6 +47,7 @@ class Detector(object):
         au_model="svm",
         emotion_model="resmasknet",
         facepose_model="img2pose",
+        device='auto',
         n_jobs=1,
         verbose=False,
     ):
@@ -102,10 +101,12 @@ class Detector(object):
             log_level = logging.WARNING
         self.logger.setLevel(log_level)
 
-        if torch.cuda.is_available():
-            self.map_location = lambda storage, loc: storage.cuda()
-        else:
-            self.map_location = "cpu"
+        self.device = set_torch_device(device)
+        self.map_location = set_torch_device(device)
+        # if torch.cuda.is_available():
+        #     self.map_location = lambda storage, loc: storage.cuda()
+        # else:
+        #     self.map_location = "cpu"
 
         # Verify model names and download if necessary
         face, landmark, au, emotion, facepose = get_pretrained_models(
@@ -155,11 +156,11 @@ class Detector(object):
             if self.face_detector is not None:
                 if "img2pose" in face:
                     self.face_detector = self.face_detector(
-                        cpu_mode=self.map_location == "cpu",
+                        device=self.device,
                         constrained="img2pose-c" == face,
                     )
                 else:
-                    self.face_detector = self.face_detector()
+                    self.face_detector = self.face_detector(device=self.device)
 
         # LANDMARK MODEL
         if self.info["landmark_model"] != landmark:
@@ -246,11 +247,12 @@ class Detector(object):
             self.facepose_detector = fetch_model("facepose_model", facepose)
             if "img2pose" in facepose:
                 self.facepose_detector = self.facepose_detector(
-                    cpu_mode=self.map_location == "cpu",
+                    device=self.device,
+                    # cpu_mode=self.map_location == "cpu",
                     constrained="img2pose-c" == face,
                 )
             else:
-                self.facepose_detector = self.facepose_detector()
+                self.facepose_detector = self.facepose_detector(device=self.device)
             self.info["facepose_model"] = facepose
 
             self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
@@ -752,9 +754,9 @@ class Detector(object):
 
         # height, width, _ = frame.shape
         if "img2pose" in self.info["facepose_model"]:
-            _, poses = self.facepose_detector(frame)
+            _, poses = self.facepose_detector(frame, device=self.device)
         else:
-            poses = self.facepose_detector(frame, landmarks)
+            poses = self.facepose_detector(frame, landmarks, device=self.device)
 
         return poses
 
@@ -1271,16 +1273,16 @@ class Detector(object):
         # Not returning any detection to save memory
         return True
 
-    def read_images(self, imgname_list):
-        """
-        Given a string filepath or list of filepath, load the image(s) as a numpy array
+    # def read_images(self, imgname_list):
+    #     """
+    #     Given a string filepath or list of filepath, load the image(s) as a numpy array
 
-        Args:
-            imgname_list (list/str): filename or list of filenames
+    #     Args:
+    #         imgname_list (list/str): filename or list of filenames
 
-        Returns:
-            np.ndarry: 3d or 4d numpy array
-        """
-        if not isinstance(imgname_list, list):
-            imgname_list = [imgname_list]
-        return read_pictures(imgname_list)
+    #     Returns:
+    #         np.ndarry: 3d or 4d numpy array
+    #     """
+    #     if not isinstance(imgname_list, list):
+    #         imgname_list = [imgname_list]
+    #     return read_pictures(imgname_list)
