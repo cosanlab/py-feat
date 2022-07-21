@@ -17,6 +17,9 @@ from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
+from torchvision.transforms import Compose, Resize, Pad
+from torchvision.io import read_image
+from torch.utils.data import Dataset
 
 from feat.utils import (
     read_feat,
