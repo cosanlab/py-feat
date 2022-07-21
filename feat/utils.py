@@ -40,7 +40,7 @@ __all__ = [
     "reverse_color_order",
     "expand_img_dimensions",
     "convert_image_to_tensor",
-    "set_torch_device"
+    "set_torch_device",
 ]
 
 """ DEFINE IMPORTANT VARIABLES """
@@ -1078,60 +1078,72 @@ class FaceDetectionError(Exception):
 
     pass
 
+
 def reverse_color_order(img):
-    '''Convert BGR OpenCV image to RGB format'''
-    
+    """Convert BGR OpenCV image to RGB format"""
+
     if not isinstance(img, (np.ndarray)):
-        raise ValueError(f'Image must be a numpy array, not a {type(img)}')
-    
+        raise ValueError(f"Image must be a numpy array, not a {type(img)}")
+
     if len(img.shape) != 3:
-        raise ValueError(f'Image must be a 3D numpy array (Height, Width, Color), currently {img.shape}')
-    return img[:,:,[2,1,0]]
+        raise ValueError(
+            f"Image must be a 3D numpy array (Height, Width, Color), currently {img.shape}"
+        )
+    return img[:, :, [2, 1, 0]]
+
 
 def expand_img_dimensions(img):
-    '''Expand image dimensions to 4 dimensions'''
-    
+    """Expand image dimensions to 4 dimensions"""
+
     if img.ndim == 4:
         return img
     elif img.ndim == 3:
         return np.expand_dims(img, 0)
     else:
-        raise ValueError(f'Image with {img.ndim} not currently supported (must be 3 or 4)')
+        raise ValueError(
+            f"Image with {img.ndim} not currently supported (must be 3 or 4)"
+        )
+
 
 def convert_image_to_tensor(img):
-    '''Convert Image data (PIL, cv2, TV) to Tensor'''
-    
-    if isinstance(img, (np.ndarray)): #numpy array
-        img = torch.from_numpy(expand_img_dimensions(reverse_color_order(img)).transpose(0, 3, 1, 2))
+    """Convert Image data (PIL, cv2, TV) to Tensor"""
+
+    if isinstance(img, (np.ndarray)):  # numpy array
+        img = torch.from_numpy(
+            expand_img_dimensions(reverse_color_order(img)).transpose(0, 3, 1, 2)
+        )
     elif isinstance(img, PIL.Image.Image):
         transform = Compose([PILToTensor()])
         img = transform(img)
         # img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
-        img = img.expand(1,-1,-1,-1)
+        img = img.expand(1, -1, -1, -1)
     elif isinstance(img, torch.Tensor):
-        img = img.expand(1,-1,-1,-1)
+        img = img.expand(1, -1, -1, -1)
         # img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
     else:
-        raise ValueError(f'{type(img)} is not currently supported please use CV2, PIL, or TorchVision to load image')
+        raise ValueError(
+            f"{type(img)} is not currently supported please use CV2, PIL, or TorchVision to load image"
+        )
     return img
 
-def set_torch_device(device='auto'):
-    '''Helper function to set device for pytorch model'''
-    
+
+def set_torch_device(device="auto"):
+    """Helper function to set device for pytorch model"""
+
     if not isinstance(device, torch.device):
-        if device not in ['cpu', 'cuda', 'mps', 'auto']:
+        if device not in ["cpu", "cuda", "mps", "auto"]:
             raise ValueError("Device must be ['cpu', 'cuda', 'mps', 'auto']")
-    
-        if device == 'auto':
+
+        if device == "auto":
             if torch.cuda.is_available():
-                device = 'cuda'
+                device = "cuda"
             elif torch.backends.mps.is_available():
-                device = 'mps'
+                device = "mps"
             else:
-                device = 'cpu'
+                device = "cpu"
         else:
             device = device
         return torch.device(device)
-    
+
     else:
         return device
