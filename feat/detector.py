@@ -4,6 +4,7 @@ Main Detector class. The Detector class wraps other pre-trained models
 perform detection
 """
 
+from cmath import exp
 import traceback  # REMOVE LATER
 import os
 import numpy as np
@@ -14,6 +15,7 @@ from skimage.feature import hog
 import cv2
 from feat.data import Fex
 from feat.utils import (
+    expand_img_dimensions,
     get_resource_path,
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
@@ -25,8 +27,8 @@ from feat.utils import (
     align_face_68pts,
     FaceDetectionError,
     validate_input,
-    read_pictures, 
-    set_torch_device
+    read_pictures,
+    set_torch_device,
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 import torch
@@ -47,7 +49,7 @@ class Detector(object):
         au_model="svm",
         emotion_model="resmasknet",
         facepose_model="img2pose",
-        device='auto',
+        device="auto",
         n_jobs=1,
         verbose=False,
     ):
@@ -57,6 +59,7 @@ class Detector(object):
 
         Args:
             n_jobs (int, default=1): Number of processes to use for extraction.
+            device (str): specify device to process data (default='auto'), can be ['auto', 'cpu', 'cuda', 'mps']
 
         Attributes:
             info (dict):
@@ -92,7 +95,7 @@ class Detector(object):
             au_model=None,
             n_jobs=n_jobs,
         )
-        # Setup verbosity and CUDA
+        # Setup verbosity
         self.logger = logging.getLogger("Detector")
         self.verbose = verbose
         if self.verbose:
@@ -101,12 +104,8 @@ class Detector(object):
             log_level = logging.WARNING
         self.logger.setLevel(log_level)
 
+        # Setup device
         self.device = set_torch_device(device)
-        self.map_location = set_torch_device(device)
-        # if torch.cuda.is_available():
-        #     self.map_location = lambda storage, loc: storage.cuda()
-        # else:
-        #     self.map_location = "cpu"
 
         # Verify model names and download if necessary
         face, landmark, au, emotion, facepose = get_pretrained_models(
@@ -156,8 +155,7 @@ class Detector(object):
             if self.face_detector is not None:
                 if "img2pose" in face:
                     self.face_detector = self.face_detector(
-                        device=self.device,
-                        constrained="img2pose-c" == face,
+                        constrained="img2pose-c" == face
                     )
                 else:
                     self.face_detector = self.face_detector(device=self.device)
@@ -177,14 +175,14 @@ class Detector(object):
                             get_resource_path(),
                             "mobilenet_224_model_best_gdconv_external.pth.tar",
                         ),
-                        map_location=self.map_location,
+                        map_location=self.device,
                     )
                     self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 elif landmark == "pfld":
                     self.landmark_detector = self.landmark_detector()
                     checkpoint = torch.load(
                         os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
-                        map_location=self.map_location,
+                        map_location=self.device,
                     )
                     self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 elif landmark == "mobilefacenet":
@@ -193,7 +191,7 @@ class Detector(object):
                         os.path.join(
                             get_resource_path(), "mobilefacenet_model_best.pth.tar"
                         ),
-                        map_location=self.map_location,
+                        map_location=self.device,
                     )
                     self.landmark_detector.load_state_dict(checkpoint["state_dict"])
 
@@ -207,6 +205,23 @@ class Detector(object):
                 predictions, columns=openface_2d_landmark_columns
             )
             self._empty_landmark = empty_landmarks
+
+        # FACEPOSE MODEL
+        if self.info["facepose_model"] != facepose:
+            self.logger.info("Loading facepose model: ", facepose)
+            self.facepose_detector = fetch_model("facepose_model", facepose)
+            if "img2pose" in facepose:
+                self.facepose_detector = self.facepose_detector(
+                    constrained="img2pose-c" == face
+                )
+            else:
+                self.facepose_detector = self.facepose_detector()
+            self.info["facepose_model"] = facepose
+
+            self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
+            predictions = np.full_like(np.atleast_2d(FACET_FACEPOSE_COLUMNS), np.nan)
+            empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
+            self._empty_facepose = empty_facepose
 
         # AU MODEL
         if self.info["au_model"] != au:
@@ -240,25 +255,6 @@ class Detector(object):
                 predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
                 empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
                 self._empty_emotion = empty_emotion
-
-        # FACEPOSE MODEL
-        if self.info["facepose_model"] != facepose:
-            self.logger.info("Loading facepose model: ", facepose)
-            self.facepose_detector = fetch_model("facepose_model", facepose)
-            if "img2pose" in facepose:
-                self.facepose_detector = self.facepose_detector(
-                    device=self.device,
-                    # cpu_mode=self.map_location == "cpu",
-                    constrained="img2pose-c" == face,
-                )
-            else:
-                self.facepose_detector = self.facepose_detector(device=self.device)
-            self.info["facepose_model"] = facepose
-
-            self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
-            predictions = np.full_like(np.atleast_2d(FACET_FACEPOSE_COLUMNS), np.nan)
-            empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
-            self._empty_facepose = empty_facepose
 
         self.info["output_columns"] = (
             FEAT_TIME_COLUMNS
@@ -728,9 +724,8 @@ class Detector(object):
             landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images
 
         Returns:
-            np.ndarray: (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
-            degrees) for each face within in each image
-
+            dict: {"faces": list of face bounding boxes, "poses": (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
+            degrees) for each face within in each image}
 
         Examples:
             >>> from feat import Detector
@@ -747,18 +742,17 @@ class Detector(object):
             >>> landmarks = retinaface_detector.detect_landmarks(detected_faces=faces)
             >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
         """
-        # check if frame is 4d
-        if frame.ndim == 3:
-            frame = np.expand_dims(frame, 0)
-        assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+
+        frame = expand_img_dimensions(frame)
 
         # height, width, _ = frame.shape
         if "img2pose" in self.info["facepose_model"]:
-            _, poses = self.facepose_detector(frame, device=self.device)
+            faces, poses = self.facepose_detector(frame)
         else:
-            poses = self.facepose_detector(frame, landmarks, device=self.device)
+            poses = self.facepose_detector(frame, landmarks)
+            faces = detected_faces
 
-        return poses
+        return {"faces": faces, "poses": poses}
 
     # TODO: probably need to add exceptions. The exception handling is not great yet
     def process_frame(

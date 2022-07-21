@@ -2,23 +2,33 @@ from __future__ import print_function
 import os
 import torch
 import numpy as np
+
 # import time
 # import feat
 from feat.face_detectors.Retinaface.Retinaface_model import PriorBox, RetinaFace
 from feat.face_detectors.Retinaface.Retinaface_utils import (
-                                                            py_cpu_nms,
-                                                            decode,
-                                                            decode_landm,
-                                                            )
-from feat.utils import (get_resource_path,    
-                        convert_image_to_tensor, 
-                        set_torch_device)
+    py_cpu_nms,
+    decode,
+    decode_landm,
+)
+from feat.utils import get_resource_path, convert_image_to_tensor, set_torch_device
+
 
 class Retinaface:
-    def __init__(self, device='auto', timer_flag=False, resize=1, vis_threshold=0.5, nms_threshold=0.3, keep_top_k=750, top_k=5000, confidence_threshold=0.05):
-        '''
+    def __init__(
+        self,
+        device="auto",
+        timer_flag=False,
+        resize=1,
+        vis_threshold=0.5,
+        nms_threshold=0.3,
+        keep_top_k=750,
+        top_k=5000,
+        confidence_threshold=0.05,
+    ):
+        """
         Function to perform inference with RetinaFace
-        
+
         Args:
             device: (str)
             timer_flag: (bool)
@@ -28,42 +38,64 @@ class Retinaface:
             keep_top_k: (float)
             top_k: (float)
             confidence_threshold: (float)
-            
-        '''
-    
+
+        """
+
         torch.set_grad_enabled(False)
-        self.cfg = {"name": "mobilenet0.25",
-                    "min_sizes": [[16, 32], [64, 128], [256, 512]],
-                    "steps": [8, 16, 32],
-                    "variance": [0.1, 0.2],
-                    "clip": False,
-                    "loc_weight": 2.0,
-                    "gpu_train": True,
-                    "batch_size": 32,
-                    "ngpu": 1,
-                    "epoch": 250,
-                    "decay1": 190,
-                    "decay2": 220,
-                    "image_size": 640,
-                    "pretrain": False,
-                    "return_layers": {"stage1": 1, "stage2": 2, "stage3": 3},
-                    "in_channel": 32,
-                    "out_channel": 64,
-                    }
+        self.cfg = {
+            "name": "mobilenet0.25",
+            "min_sizes": [[16, 32], [64, 128], [256, 512]],
+            "steps": [8, 16, 32],
+            "variance": [0.1, 0.2],
+            "clip": False,
+            "loc_weight": 2.0,
+            "gpu_train": True,
+            "batch_size": 32,
+            "ngpu": 1,
+            "epoch": 250,
+            "decay1": 190,
+            "decay2": 220,
+            "image_size": 640,
+            "pretrain": False,
+            "return_layers": {"stage1": 1, "stage2": 2, "stage3": 3},
+            "in_channel": 32,
+            "out_channel": 64,
+        }
 
         # net and model
         self.device = set_torch_device(device=device)
         net = RetinaFace(cfg=self.cfg, phase="test")
-        pretrained_dict = torch.load(os.path.join(get_resource_path(), f"mobilenet0.25_Final.pth"), map_location=self.device)
-        net.load_state_dict(pretrained_dict, strict=False)            
+        pretrained_dict = torch.load(
+            os.path.join(get_resource_path(), f"mobilenet0.25_Final.pth"),
+            map_location=self.device,
+        )
+        net.load_state_dict(pretrained_dict, strict=False)
         net = net.to(self.device)
         self.net = net.eval()
-        self.timer_flag, self.resize, self.vis_threshold, self.nms_threshold, self.keep_top_k, self.top_k, self.confidence_threshold = timer_flag, resize, vis_threshold, nms_threshold, keep_top_k, top_k, confidence_threshold
+
+        # Set cutoff parameters
+        (
+            self.timer_flag,
+            self.resize,
+            self.vis_threshold,
+            self.nms_threshold,
+            self.keep_top_k,
+            self.top_k,
+            self.confidence_threshold,
+        ) = (
+            timer_flag,
+            resize,
+            vis_threshold,
+            nms_threshold,
+            keep_top_k,
+            top_k,
+            confidence_threshold,
+        )
 
     def __call__(self, img):
         """
         forward function
-        
+
         Args:
             img: (B,C, H,W,C), B is batch number, C is channel, H is image height, and W is width
         """
@@ -71,11 +103,16 @@ class Retinaface:
         img = convert_image_to_tensor(img)
         img = img.type(torch.float32)
 
-        adjust = torch.from_numpy(np.array([123,117,104])).unsqueeze(0).unsqueeze(2).unsqueeze(3)
+        adjust = (
+            torch.from_numpy(np.array([123, 117, 104]))
+            .unsqueeze(0)
+            .unsqueeze(2)
+            .unsqueeze(3)
+        )
         img = torch.sub(img, adjust)
 
         _, _, im_height, im_width = img.shape
-        scale = torch.Tensor([img.shape[2], img.shape[1], img.shape[2], img.shape[1]])
+        scale = torch.Tensor([im_height, im_width, im_height, im_width])
         img = img.to(self.device)
         scale = scale.to(self.device)
 
@@ -134,7 +171,7 @@ class Retinaface:
         scores = scores[inds]
 
         # keep top-K before NMS
-        order = scores.argsort()[::-1][:self.top_k]
+        order = scores.argsort()[::-1][: self.top_k]
         boxes = boxes[order]
         landms = landms[order]
         scores = scores[order]
@@ -147,7 +184,7 @@ class Retinaface:
         landms = landms[keep]
 
         # keep top-K faster NMS
-        dets = dets[:self.keep_top_k, :]
+        dets = dets[: self.keep_top_k, :]
         # landms = landms[:args.keep_top_k, :]
 
         if self.timer_flag:
