@@ -3,6 +3,7 @@ from torch.nn import DataParallel, Module
 from torch.nn.parallel import DistributedDataParallel
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from .deps.models import FasterDoFRCNN
+from feat.utils import set_torch_device
 
 """
 Model adapted from https://github.com/vitoralbiero/img2pose
@@ -25,7 +26,7 @@ class img2poseModel:
         min_size,
         max_size,
         model_path=None,
-        device=None,
+        device="auto",
         pose_mean=None,
         pose_stddev=None,
         gpu=0,
@@ -42,10 +43,7 @@ class img2poseModel:
         self.model_path = model_path
         self.gpu = gpu
 
-        if device is None:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
+        self.device = set_torch_device(device)
 
         # create network backbone
         backbone = resnet_fpn_backbone(f"resnet{self.depth}", pretrained=True)
@@ -76,7 +74,7 @@ class img2poseModel:
         # if using cpu, remove the parallel modules from the saved model
         self.fpn_model_without_ddp = self.fpn_model
 
-        if str(self.device) == "cpu":
+        if self.device.type == "cpu":
             self.fpn_model = WrappedModel(self.fpn_model)
             self.fpn_model_without_ddp = self.fpn_model
         else:  # GPU

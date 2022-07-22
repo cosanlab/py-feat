@@ -3,10 +3,14 @@ import cv2
 import torch
 import numpy as np
 from torchvision import transforms
+from torchvision.transforms import Compose, Pad
+from feat.transforms import Rescale
 from .img2pose_model import img2poseModel
 from feat.utils import get_resource_path, convert_image_to_tensor, set_torch_device
 from feat.face_detectors.Retinaface.Retinaface_utils import py_cpu_nms
 from ..utils import convert_to_euler
+
+# from feat.data import Rescale
 
 
 class Img2Pose:
@@ -42,6 +46,8 @@ class Img2Pose:
 
         """
 
+        self.device = set_torch_device(device)
+
         pose_mean = np.load(POSE_MEAN, allow_pickle=True)
         pose_stddev = np.load(POSE_STDDEV, allow_pickle=True)
         threed_points = np.load(THREED_FACE_MODEL, allow_pickle=True)
@@ -53,16 +59,13 @@ class Img2Pose:
             pose_mean=pose_mean,
             pose_stddev=pose_stddev,
             threed_68_points=threed_points,
+            device=self.device,
         )
-        self.transform = transforms.Compose([transforms.ToTensor()])
-
-        self.device = set_torch_device(device)
+        # self.transform = transforms.Compose([transforms.ToTensor()])
 
         # Load the constrained model
         model_file = "img2pose_v1_ft_300w_lp.pth" if constrained else "img2pose_v1.pth"
-        self.load_model(
-            os.path.join(get_resource_path(), model_file), device=self.device
-        )
+        self.load_model(os.path.join(get_resource_path(), model_file))
         self.model.evaluate()
 
         # Set threshold score for bounding box detection
@@ -74,6 +77,7 @@ class Img2Pose:
             self.keep_top_k,
             self.MIN_SIZE,
             self.MAX_SIZE,
+            self.BORDER_SIZE,
         ) = (
             detection_threshold,
             nms_threshold,
@@ -82,9 +86,10 @@ class Img2Pose:
             keep_top_k,
             MIN_SIZE,
             MAX_SIZE,
+            BORDER_SIZE,
         )
 
-    def load_model(self, model_path, optimizer=None, device="auto"):
+    def load_model(self, model_path, optimizer=None):
         """Loads model weights for the img2pose model
         Args:
             model_path (str): file path to saved model weights
@@ -96,7 +101,6 @@ class Img2Pose:
             None
         """
 
-        self.device = set_torch_device(device)
         checkpoint = torch.load(model_path, map_location=self.device)
 
         self.model.fpn_model.load_state_dict(checkpoint["fpn_model"])
@@ -106,7 +110,7 @@ class Img2Pose:
         elif optimizer:
             print("Optimizer not found in model path - cannot be loaded")
 
-    def __call__(self, img_):
+    def __call__(self, img):
         """Runs scale_and_predict on each image in the passed image list
 
         Args:
@@ -141,40 +145,26 @@ class Img2Pose:
             dict: key 'pose' contains array - [yaw, pitch, roll], key 'boxes' contains 2D array of bboxes
         """
 
-        # Transform image to improve model performance
-        img = img.copy()
-        h, w = img.shape[:2]
-
-        # Resize the image so that both dimensions are in the range [MIN_SIZE, MAX_SIZE]
+        # Transform image to improve model performance. Resize the image so that both dimensions are in the range [MIN_SIZE, MAX_SIZE]
         scale = 1
         border_size = 0
-        if max(h, w) > self.MAX_SIZE or min(h, w) < self.MIN_SIZE:
-            if max(h, w) > self.MAX_SIZE:
-                scale = self.MAX_SIZE / max(h, w)
-            else:
-                scale = self.MIN_SIZE / min(h, w)
-
-            new_h, new_w = int(h * scale), int(w * scale)  # Preserve aspect ratio
-            img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+        if min(img.shape[-2:]) < self.MIN_SIZE or max(img.shape[-2:]) > self.MAX_SIZE:
+            transform = Compose([Rescale(self.MAX_SIZE, preserve_aspect_ratio=True)])
+            transformed_img = transform(img)
+            img = transformed_img["Image"]
+            scale = transformed_img["Scale"]
 
         # Predict
-        preds = self.predict(img, border_size, scale, euler=euler)
+        preds = self.predict(img, border_size=border_size, scale=scale, euler=euler)
 
         # If the prediction is unsuccessful, try adding a white border to the image. This can improve bounding box
         # performance on images where face takes up entire frame, and images located at edge of frame.
         if len(preds["boxes"]) == 0:
-            WHITE = [255, 255, 255]
-            border_size = BORDER_SIZE
-            img = cv2.copyMakeBorder(
-                src=img,
-                top=border_size,
-                bottom=border_size,
-                left=border_size,
-                right=border_size,
-                borderType=cv2.BORDER_CONSTANT,
-                value=WHITE,
-            )
-            preds = self.predict(img, border_size, scale, euler=euler)
+            WHITE = 255
+            border_size = self.BORDER_SIZE
+            transform = Compose([Pad(border_size, fill=WHITE)])
+            img = transform(img)
+            preds = self.predict(img, border_size=border_size, scale=scale, euler=euler)
 
         return preds
 
@@ -191,11 +181,12 @@ class Img2Pose:
             dict: A dictionary of bboxes and poses
 
         """
-        # img2pose expects RGB form
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # # img2pose expects RGB form
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Obtain prediction
-        pred = self.model.predict([self.transform(img)])[0]
+        pred = self.model.predict(img)[0]
+        # pred = self.model.predict([self.transform(img)])[0]
         boxes = pred["boxes"].cpu().numpy().astype("float")
         scores = pred["scores"].cpu().numpy().astype("float")
         dofs = pred["dofs"].cpu().numpy().astype("float")
