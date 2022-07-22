@@ -16,6 +16,7 @@ import cv2
 from feat.data import Fex
 from feat.utils import (
     expand_img_dimensions,
+    convert_image_to_tensor,
     get_resource_path,
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
@@ -158,7 +159,7 @@ class Detector(object):
                         constrained="img2pose-c" == face
                     )
                 else:
-                    self.face_detector = self.face_detector(device=self.device)
+                    self.face_detector = self.face_detector()
 
         # LANDMARK MODEL
         if self.info["landmark_model"] != landmark:
@@ -212,7 +213,7 @@ class Detector(object):
             self.facepose_detector = fetch_model("facepose_model", facepose)
             if "img2pose" in facepose:
                 self.facepose_detector = self.facepose_detector(
-                    constrained="img2pose-c" == face
+                    constrained="img2pose-c" == face, device=self.device
                 )
             else:
                 self.facepose_detector = self.facepose_detector()
@@ -743,9 +744,6 @@ class Detector(object):
             >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
         """
 
-        frame = expand_img_dimensions(frame)
-
-        # height, width, _ = frame.shape
         if "img2pose" in self.info["facepose_model"]:
             faces, poses = self.facepose_detector(frame)
         else:

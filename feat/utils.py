@@ -1118,7 +1118,8 @@ def convert_image_to_tensor(img):
         # img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
         img = img.expand(1, -1, -1, -1)
     elif isinstance(img, torch.Tensor):
-        img = img.expand(1, -1, -1, -1)
+        if len(img.shape) == 3:
+            img = img.expand(1, -1, -1, -1)
         # img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
     else:
         raise ValueError(
