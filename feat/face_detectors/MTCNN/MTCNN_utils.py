@@ -10,6 +10,7 @@ import numpy as np
 import os
 from torch.nn.functional import interpolate
 from torchvision.ops.boxes import batched_nms
+from feat.utils import convert_image_to_tensor
 
 
 def nms_numpy(boxes, scores, threshold, method):
@@ -144,27 +145,30 @@ def imresample(img, sz):
 
 
 def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
-    if isinstance(imgs, (np.ndarray, torch.Tensor)):
-        if isinstance(imgs, np.ndarray):
-            imgs = torch.as_tensor(imgs.copy(), device=device)
 
-        if isinstance(imgs, torch.Tensor):
-            imgs = torch.as_tensor(imgs, device=device)
+    imgs = convert_image_to_tensor(imgs)
 
-        if len(imgs.shape) == 3:
-            imgs = imgs.unsqueeze(0)
-    else:
-        if not isinstance(imgs, (list, tuple)):
-            imgs = [imgs]
-        if any(img.size != imgs[0].size for img in imgs):
-            raise Exception(
-                "MTCNN batch processing only compatible with equal-dimension images."
-            )
-        imgs = np.stack([np.uint8(img) for img in imgs])
-        imgs = torch.as_tensor(imgs.copy(), device=device)
+    # if isinstance(imgs, (np.ndarray, torch.Tensor)):
+    #     if isinstance(imgs, np.ndarray):
+    #         imgs = torch.as_tensor(imgs.copy(), device=device)
+
+    #     if isinstance(imgs, torch.Tensor):
+    #         imgs = torch.as_tensor(imgs, device=device)
+
+    #     if len(imgs.shape) == 3:
+    #         imgs = imgs.unsqueeze(0)
+    # else:
+    #     if not isinstance(imgs, (list, tuple)):
+    #         imgs = [imgs]
+    #     if any(img.size != imgs[0].size for img in imgs):
+    #         raise Exception(
+    #             "MTCNN batch processing only compatible with equal-dimension images."
+    #         )
+    #     imgs = np.stack([np.uint8(img) for img in imgs])
+    #     imgs = torch.as_tensor(imgs.copy(), device=device)
+    # imgs = imgs.permute(0, 3, 1, 2).type(model_dtype)
 
     model_dtype = next(pnet.parameters()).dtype
-    imgs = imgs.permute(0, 3, 1, 2).type(model_dtype)
 
     batch_size = len(imgs)
     h, w = imgs.shape[2:4]
@@ -186,7 +190,10 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
 
     scale_picks = []
 
-    all_i = 0
+    print(h, type(h), w, type(w))
+    print(scales)
+
+    # all_i = 0
     offset = 0
     for scale in scales:
         im_data = imresample(imgs, (int(h * scale + 1), int(w * scale + 1)))

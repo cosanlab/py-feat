@@ -9,6 +9,7 @@ import torch
 from PIL import Image
 from feat.face_detectors.MTCNN.MTCNN_model import PNet, RNet, ONet
 from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
+from feat.utils import set_torch_device, convert_image_to_tensor
 
 import torch.nn as nn
 
@@ -49,7 +50,7 @@ class MTCNN(nn.Module):
             path and the remaining faces are saved to <save_path>1, <save_path>2 etc.
             (default: {False})
         device {torch.device} -- The device on which to run neural net passes. Image tensors and
-            models are copied to this device before running forward passes. (default: {None})
+            models are copied to this device before running forward passes. (default: 'auto')
     """
 
     def __init__(
@@ -63,7 +64,7 @@ class MTCNN(nn.Module):
         select_largest=True,
         selection_method=None,
         keep_all=False,
-        device=None,
+        device="auto",
     ):
         super().__init__()
 
@@ -81,10 +82,8 @@ class MTCNN(nn.Module):
         self.rnet = RNet()
         self.onet = ONet()
 
-        self.device = torch.device("cpu")
-        if device is not None:
-            self.device = device
-            self.to(device)
+        self.device = set_torch_device(device)
+        self.to(self.device)
 
         if not self.selection_method:
             self.selection_method = "largest" if self.select_largest else "probability"
@@ -121,6 +120,7 @@ class MTCNN(nn.Module):
 
         # Detect faces
         batch_boxes, batch_probs, batch_points = self.detect(img, landmarks=True)
+
         # Select faces
         if not self.keep_all:
             batch_boxes, batch_probs, batch_points = self.select_boxes(
@@ -138,88 +138,6 @@ class MTCNN(nn.Module):
         else:
             return faces
 
-    # def detect(self, img, landmarks=False):
-    #     """Detect all faces in PIL image and return bounding boxes and optional facial landmarks.
-    #     This method is used by the forward method and is also useful for face detection tasks
-    #     that require lower-level handling of bounding boxes and facial landmarks (e.g., face
-    #     tracking). The functionality of the forward function can be emulated by using this method
-    #     followed by the extract_face() function.
-
-    #     Arguments:
-    #         img {PIL.Image, np.ndarray, or list} -- A PIL image, np.ndarray, torch.Tensor, or list.
-    #     Keyword Arguments:
-    #         landmarks {bool} -- Whether to return facial landmarks in addition to bounding boxes.
-    #             (default: {False})
-
-    #     Returns:
-    #         tuple(numpy.ndarray, list) -- For N detected faces, a tuple containing an
-    #             Nx4 array of bounding boxes and a length N list of detection probabilities.
-    #             Returned boxes will be sorted in descending order by detection probability if
-    #             self.select_largest=False, otherwise the largest face will be returned first.
-    #             If `img` is a list of images, the items returned have an extra dimension
-    #             (batch) as the first dimension. Optionally, a third item, the facial landmarks,
-    #             are returned if `landmarks=True`.
-    #     Example:
-    #     >>> from PIL import Image, ImageDraw
-    #     >>> from facenet_pytorch import MTCNN, extract_face
-    #     >>> mtcnn = MTCNN(keep_all=True)
-    #     >>> boxes, probs, points = mtcnn.detect(img, landmarks=True)
-    #     >>> # Draw boxes and save faces
-    #     >>> img_draw = img.copy()
-    #     >>> draw = ImageDraw.Draw(img_draw)
-    #     >>> for i, (box, point) in enumerate(zip(boxes, points)):
-    #     ...     draw.rectangle(box.tolist(), width=5)
-    #     ...     for p in point:
-    #     ...         draw.rectangle((p - 10).tolist() + (p + 10).tolist(), width=10)
-    #     ...     extract_face(img, box, save_path='detected_face_{}.png'.format(i))
-    #     >>> img_draw.save('annotated_faces.png')
-    #     """
-
-    #     with torch.no_grad():
-    #         batch_boxes, batch_points = detect_face(
-    #             img, self.min_face_size,
-    #             self.pnet, self.rnet, self.onet,
-    #             self.thresholds, self.factor,
-    #             self.device
-    #         )
-
-    #     #boxes, probs, points = [], [], []
-    #     boxes, points = [], []
-    #     for box, point in zip(batch_boxes, batch_points):
-    #         #box = np.array(box)
-    #         #point = np.array(point)
-    #         if len(box) == 0:
-    #             boxes.append(None)
-    #             #probs.append([None])
-    #             points.append(None)
-    #         elif self.select_largest:
-    #             box_order = np.argsort((box[:, 2] - box[:, 0]) * (box[:, 3] - box[:, 1]))[::-1]
-    #             box = box[box_order]
-    #             point = point[box_order]
-    #             boxes.append(box[:, :4])
-    #             probs.append(box[:, 4])
-    #             points.append(point)
-    #         else:
-    #             boxes.append(box.tolist())
-    #             #boxes.append(box[:, :4])
-    #             #probs.append(box[:, 4])
-    #             points.append(point)
-    #     #boxes = np.array(boxes)
-    #     #probs = np.array(probs)
-    #     #points = np.array(points)
-
-    #     if (
-    #         not isinstance(img, (list, tuple)) and
-    #         not (isinstance(img, np.ndarray) and len(img.shape) == 4) and
-    #         not (isinstance(img, torch.Tensor) and len(img.shape) == 4)
-    #     ):
-    #         boxes = boxes[0]
-    #         points = points[0]
-
-    #     if landmarks:
-    #         return boxes, points
-
-    #     return boxes
     def __call__(self, img, landmarks=False):
         """Detect all faces in PIL image and return bounding boxes and optional facial landmarks.
         This method is used by the forward method and is also useful for face detection tasks
@@ -304,14 +222,14 @@ class MTCNN(nn.Module):
         return boxes
 
 
-if __name__ == "__main__":
-    import cv2
+# if __name__ == "__main__":
+#     import cv2
 
-    img = cv2.imread(
-        "/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
-    )
-    img = np.expand_dims(img, 0)
-    # img = np.concatenate([img,img],axis=0)
-    mtcnn = MTCNN(keep_all=True, select_largest=False)
-    boxes = mtcnn.detect(img, landmarks=False)
-    print(boxes)
+#     img = cv2.imread(
+#         "/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
+#     )
+#     img = np.expand_dims(img, 0)
+#     # img = np.concatenate([img,img],axis=0)
+#     mtcnn = MTCNN(keep_all=True, select_largest=False)
+#     boxes = mtcnn.detect(img, landmarks=False)
+#     print(boxes)

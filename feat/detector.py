@@ -5,6 +5,7 @@ perform detection
 """
 
 from cmath import exp
+from operator import concat
 import traceback  # REMOVE LATER
 import os
 import numpy as np
@@ -33,6 +34,7 @@ from feat.utils import (
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 import torch
+from torchvision.transforms import Compose, Resize, Pad
 import logging
 import warnings
 
@@ -159,7 +161,7 @@ class Detector(object):
                         constrained="img2pose-c" == face
                     )
                 else:
-                    self.face_detector = self.face_detector()
+                    self.face_detector = self.face_detector(device=self.device)
 
         # LANDMARK MODEL
         if self.info["landmark_model"] != landmark:
@@ -365,14 +367,12 @@ class Detector(object):
             >>> detector.detect_landmarks(frame, detected_faces)
         """
 
-        if not isinstance(frame, np.ndarray):
-            raise TypeError(
-                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
-            )
-        # check if frame is 4d
-        if frame.ndim == 3:
-            frame = np.expand_dims(frame, 0)
-        assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
+        # if not isinstance(frame, np.ndarray):
+        #     raise TypeError(
+        #         f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+        #     )
+        # frame = expand_img_dimensions(frame)
+        frame = convert_image_to_tensor(frame)
 
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
@@ -383,8 +383,7 @@ class Detector(object):
             else:
                 out_size = 112
 
-        _, height, width, _ = frame.shape
-        landmark_list = []
+        height, width = frame.shape[-2:]
 
         concate_arr, len_frames_faces, bbox_list = self._face_preprocesing(
             frame=frame,
@@ -396,8 +395,11 @@ class Detector(object):
             width=width,
         )
         # Run through the deep leanring model
-        input = torch.from_numpy(concate_arr).float()
+        input = concate_arr.type(torch.float32)
+
+        # input = torch.from_numpy(concate_arr).float()
         input = torch.autograd.Variable(input)
+
         if self.info["landmark_model"]:
             if self.info["landmark_model"].lower() == "mobilefacenet":
                 landmark = self.landmark_detector(input)[0].cpu().data.numpy()
@@ -462,12 +464,13 @@ class Detector(object):
         self, frame, detected_faces, mean, std, out_size, height, width
     ):
         """
-        NEW
         Helper function used in batch detecting landmarks
         Let's assume that frame is of shape B x H x W x 3
+        Let's assume that frame is of shape B x C X H x W
         """
-        lenth_index = [len(ama) for ama in detected_faces]
-        lenth_cumu = np.cumsum(lenth_index)
+
+        length_index = [len(ama) for ama in detected_faces]
+        length_cumu = np.cumsum(length_index)
 
         flat_faces = [
             item for sublist in detected_faces for item in sublist
@@ -476,11 +479,8 @@ class Detector(object):
         concatenated_face = None
         bbox_list = []
         for k, face in enumerate(flat_faces):
-            frame_assignment = np.where(k <= lenth_cumu)[0][0]  # which frame is it?
-            x1 = face[0]
-            y1 = face[1]
-            x2 = face[2]
-            y2 = face[3]
+            frame_assignment = np.where(k <= length_cumu)[0][0]  # which frame is it?
+            x1, y1, x2, y2 = face[:-1]
             w = x2 - x1 + 1
             h = y2 - y1 + 1
             size = int(min([w, h]) * 1.2)
@@ -500,43 +500,43 @@ class Detector(object):
             edy = max(0, y2 - height)
             x2 = min(width, x2)
             y2 = min(height, y2)
-            new_bbox = list(map(int, [x1, x2, y1, y2]))
-            new_bbox = BBox(new_bbox)
+            new_bbox = BBox(list(map(int, [x1, x2, y1, y2])))
             cropped = frame[
                 frame_assignment,
+                :,
                 new_bbox.top : new_bbox.bottom,
                 new_bbox.left : new_bbox.right,
             ]
             bbox_list.append(new_bbox)
 
             if dx > 0 or dy > 0 or edx > 0 or edy > 0:
-                cropped = cv2.copyMakeBorder(
-                    cropped,
-                    int(dy),
-                    int(edy),
-                    int(dx),
-                    int(edx),
-                    cv2.BORDER_CONSTANT,
-                    0,
+                transform = Compose(
+                    [
+                        Pad(
+                            (int(dx), int(dy), int(edx), int(edy)),
+                            fill=0,
+                            padding_mode="constant",
+                        )
+                    ]
                 )
-            cropped_face = cv2.resize(cropped, (out_size, out_size))
+                cropped = transform(cropped)
 
-            if cropped_face.shape[0] <= 0 or cropped_face.shape[1] <= 0:
-                continue
-            test_face = cropped_face.copy()
-            test_face = test_face / 255.0
+            transform = Compose([Resize(out_size)])
+            test_face = transform(cropped) / 255.0
             if self.info["landmark_model"]:
                 if self.info["landmark_model"].lower() == "mobilenet":
-                    test_face = (test_face - mean) / std
-            test_face = test_face.transpose((2, 0, 1))
-            test_face = test_face.reshape((1,) + test_face.shape)
-
+                    mean_tensor = (
+                        torch.from_numpy(mean).unsqueeze(0).unsqueeze(2).unsqueeze(3)
+                    )
+                    std_tensor = (
+                        torch.from_numpy(std).unsqueeze(0).unsqueeze(2).unsqueeze(3)
+                    )
+                    test_face = torch.div(torch.sub(test_face, mean_tensor), std_tensor)
             if concatenated_face is None:
                 concatenated_face = test_face
             else:
-                concatenated_face = np.concatenate([concatenated_face, test_face], 0)
-
-        return (concatenated_face, lenth_index, bbox_list)
+                concatenated_face = torch.cat((concatenated_face, test_face), 0)
+        return (concatenated_face, length_index, bbox_list)
 
     def extract_face(self, frame, detected_faces, landmarks, size_output=112):
         """Extract a face in a frame with a convex hull of landmarks.
