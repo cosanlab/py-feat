@@ -64,6 +64,7 @@ class Retinaface:
 
         # net and model
         self.device = set_torch_device(device=device)
+
         net = RetinaFace(cfg=self.cfg, phase="test")
         pretrained_dict = torch.load(
             os.path.join(get_resource_path(), f"mobilenet0.25_Final.pth"),
@@ -99,7 +100,6 @@ class Retinaface:
         Args:
             img: (B,C, H,W,C), B is batch number, C is channel, H is image height, and W is width
         """
-
         img = convert_image_to_tensor(img)
         img = img.type(torch.float32)
 
