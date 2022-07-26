@@ -18,6 +18,7 @@ from feat.data import Fex
 from feat.utils import (
     expand_img_dimensions,
     convert_image_to_tensor,
+    convert_color_vector_to_tensor,
     get_resource_path,
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
@@ -376,14 +377,14 @@ class Detector(object):
 
         mean = np.asarray([0.485, 0.456, 0.406])
         std = np.asarray([0.229, 0.224, 0.225])
+
         self.landmark_detector.eval()
+
         if self.info["landmark_model"]:
             if self.info["landmark_model"].lower() == "mobilenet":
                 out_size = 224
             else:
                 out_size = 112
-
-        height, width = frame.shape[-2:]
 
         concate_arr, len_frames_faces, bbox_list = self._face_preprocesing(
             frame=frame,
@@ -391,13 +392,9 @@ class Detector(object):
             mean=mean,
             std=std,
             out_size=out_size,
-            height=height,
-            width=width,
         )
-        # Run through the deep leanring model
-        input = concate_arr.type(torch.float32)
 
-        # input = torch.from_numpy(concate_arr).float()
+        input = concate_arr.type(torch.float32)
         input = torch.autograd.Variable(input)
 
         if self.info["landmark_model"]:
@@ -406,10 +403,9 @@ class Detector(object):
             else:
                 landmark = self.landmark_detector(input).cpu().data.numpy()
 
-        landmark_results = []
-
         landmark = landmark.reshape(landmark.shape[0], -1, 2)
 
+        landmark_results = []
         for ik in range(landmark.shape[0]):
             landmark2 = bbox_list[ik].reprojectLandmark(landmark[ik, :, :])
             landmark_results.append(landmark2)
@@ -423,7 +419,6 @@ class Detector(object):
 
     def _batch_hog(self, frames, detected_faces, landmarks):
         """
-        NEW
         Helper function used in batch processing hog features
         frames is a batch of frames
         """
@@ -460,14 +455,14 @@ class Detector(object):
 
         return (hogs_arr, new_lands)
 
-    def _face_preprocesing(
-        self, frame, detected_faces, mean, std, out_size, height, width
-    ):
+    def _face_preprocesing(self, frame, detected_faces, mean, std, out_size):
         """
         Helper function used in batch detecting landmarks
         Let's assume that frame is of shape B x H x W x 3
         Let's assume that frame is of shape B x C X H x W
         """
+
+        height, width = frame.shape[-2:]
 
         length_index = [len(ama) for ama in detected_faces]
         length_cumu = np.cumsum(length_index)
@@ -525,12 +520,8 @@ class Detector(object):
             test_face = transform(cropped) / 255.0
             if self.info["landmark_model"]:
                 if self.info["landmark_model"].lower() == "mobilenet":
-                    mean_tensor = (
-                        torch.from_numpy(mean).unsqueeze(0).unsqueeze(2).unsqueeze(3)
-                    )
-                    std_tensor = (
-                        torch.from_numpy(std).unsqueeze(0).unsqueeze(2).unsqueeze(3)
-                    )
+                    mean_tensor = convert_color_vector_to_tensor(mean)
+                    std_tensor = convert_color_vector_to_tensor(std)
                     test_face = torch.div(torch.sub(test_face, mean_tensor), std_tensor)
             if concatenated_face is None:
                 concatenated_face = test_face

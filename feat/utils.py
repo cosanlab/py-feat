@@ -1128,6 +1128,11 @@ def convert_image_to_tensor(img):
     return img
 
 
+def convert_color_vector_to_tensor(vector):
+    """Convert a color vector into a tensor (1,3,1,1)"""
+    return torch.from_numpy(vector).unsqueeze(0).unsqueeze(2).unsqueeze(3)
+
+
 def set_torch_device(device="auto"):
     """Helper function to set device for pytorch model"""
 

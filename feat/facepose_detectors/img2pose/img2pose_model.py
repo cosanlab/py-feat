@@ -29,7 +29,6 @@ class img2poseModel:
         device="auto",
         pose_mean=None,
         pose_stddev=None,
-        gpu=0,
         threed_68_points=None,
         rpn_pre_nms_top_n_test=6000,
         rpn_post_nms_top_n_test=1000,
@@ -41,7 +40,6 @@ class img2poseModel:
         self.min_size = min_size
         self.max_size = max_size
         self.model_path = model_path
-        self.gpu = gpu
 
         self.device = set_torch_device(device)
 
@@ -72,15 +70,13 @@ class img2poseModel:
         )
 
         # if using cpu, remove the parallel modules from the saved model
-        self.fpn_model_without_ddp = self.fpn_model
-
+        # self.fpn_model_without_ddp = self.fpn_model
         if self.device.type == "cpu":
             self.fpn_model = WrappedModel(self.fpn_model)
-            self.fpn_model_without_ddp = self.fpn_model
         else:  # GPU
             self.fpn_model = DataParallel(self.fpn_model)
-            self.fpn_model = self.fpn_model.to(self.device)
-            self.fpn_model_without_ddp = self.fpn_model
+        self.fpn_model = self.fpn_model.to(self.device)
+        self.fpn_model_without_ddp = self.fpn_model
 
     def evaluate(self):
         self.fpn_model.eval()

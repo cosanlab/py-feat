@@ -11,7 +11,12 @@ from feat.face_detectors.Retinaface.Retinaface_utils import (
     decode,
     decode_landm,
 )
-from feat.utils import get_resource_path, convert_image_to_tensor, set_torch_device
+from feat.utils import (
+    get_resource_path,
+    convert_image_to_tensor,
+    convert_color_vector_to_tensor,
+    set_torch_device,
+)
 
 
 class Retinaface:
@@ -103,15 +108,9 @@ class Retinaface:
         img = convert_image_to_tensor(img)
         img = img.type(torch.float32)
 
-        adjust = (
-            torch.from_numpy(np.array([123, 117, 104]))
-            .unsqueeze(0)
-            .unsqueeze(2)
-            .unsqueeze(3)
-        )
-        img = torch.sub(img, adjust)
+        img = torch.sub(img, convert_color_vector_to_tensor(np.array([123, 117, 104])))
 
-        _, _, im_height, im_width = img.shape
+        im_height, im_width = img.shape[-2:]
         scale = torch.Tensor([im_height, im_width, im_height, im_width])
         img = img.to(self.device)
         scale = scale.to(self.device)

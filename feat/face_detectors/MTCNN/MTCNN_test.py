@@ -189,8 +189,6 @@ class MTCNN(nn.Module):
 
         boxes, points = [], []
         for box, point in zip(batch_boxes, batch_points):
-            # box = np.array(box)
-            # point = np.array(point)
             if len(box) == 0:
                 boxes.append(None)
                 points.append(None)
@@ -205,8 +203,6 @@ class MTCNN(nn.Module):
             else:
                 boxes.append(box.tolist())
                 points.append(point)
-        # boxes = np.array(boxes)
-        # points = np.array(points)
 
         if (
             not isinstance(img, (list, tuple))
@@ -220,16 +216,3 @@ class MTCNN(nn.Module):
             return boxes, points
 
         return boxes
-
-
-# if __name__ == "__main__":
-#     import cv2
-
-#     img = cv2.imread(
-#         "/home/tiankang/AU_Dataset/src/py-feat/feat/tests/data/tim-mossholder-hOF1bWoet_Q-unsplash.jpg"
-#     )
-#     img = np.expand_dims(img, 0)
-#     # img = np.concatenate([img,img],axis=0)
-#     mtcnn = MTCNN(keep_all=True, select_largest=False)
-#     boxes = mtcnn.detect(img, landmarks=False)
-#     print(boxes)
