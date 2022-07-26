@@ -10,8 +10,6 @@ from feat.utils import get_resource_path, convert_image_to_tensor, set_torch_dev
 from feat.face_detectors.Retinaface.Retinaface_utils import py_cpu_nms
 from ..utils import convert_to_euler
 
-# from feat.data import Rescale
-
 
 class Img2Pose:
     def __init__(
@@ -61,7 +59,6 @@ class Img2Pose:
             threed_68_points=threed_points,
             device=self.device,
         )
-        # self.transform = transforms.Compose([transforms.ToTensor()])
 
         # Load the constrained model
         model_file = "img2pose_v1_ft_300w_lp.pth" if constrained else "img2pose_v1.pth"
@@ -114,7 +111,7 @@ class Img2Pose:
         """Runs scale_and_predict on each image in the passed image list
 
         Args:
-            img_ (np.ndarray): (B,H,W,C), B is batch number, H is image height, W is width and C is channel.
+            img_ (np.ndarray): (B,C,H,W), B is batch number, H is image height, W is width and C is channel.
 
         Returns:
             tuple: (faces, poses) - 3D lists (B, F, bbox) or (B, F, face pose) where B is batch/ image number and
@@ -126,19 +123,13 @@ class Img2Pose:
         img = img.to(self.device)
 
         preds = self.scale_and_predict(img)
-        # faces = []
-        # poses = []
-        # for img in img_:
-        #     preds = self.scale_and_predict(img)
-        #     faces.append(preds["boxes"])
-        #     poses.append(preds["poses"])
 
         return preds["boxes"], preds["poses"]
 
     def scale_and_predict(self, img, euler=True):
         """Runs a prediction on the passed image. Returns detected faces and associates poses.
         Args:
-            img (np.ndarray): A cv2 image
+            img (tensor): A torch tensor image
             euler (bool): set to True to obtain euler angles, False to obtain rotation vector
 
         Returns:
@@ -186,6 +177,7 @@ class Img2Pose:
 
         # Obtain prediction
         pred = self.model.predict(img)[0]
+        print(pred)
         # pred = self.model.predict([self.transform(img)])[0]
         boxes = pred["boxes"].cpu().numpy().astype("float")
         scores = pred["scores"].cpu().numpy().astype("float")
