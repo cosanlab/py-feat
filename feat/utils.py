@@ -1105,7 +1105,7 @@ def expand_img_dimensions(img):
         )
 
 
-def convert_image_to_tensor(img):
+def convert_image_to_tensor(img, img_type=None):
     """Convert Image data (PIL, cv2, TV) to Tensor"""
 
     if isinstance(img, (np.ndarray)):  # numpy array
@@ -1125,6 +1125,25 @@ def convert_image_to_tensor(img):
         raise ValueError(
             f"{type(img)} is not currently supported please use CV2, PIL, or TorchVision to load image"
         )
+
+    if img_type is not None:
+        torch_types = [
+            "int",
+            "int8",
+            "int16",
+            "int32",
+            "int16",
+            "float",
+            "float16",
+            "float32",
+            "float64",
+        ]
+        if img_type not in torch_types:
+            raise ValueError(
+                f"img_type {img_type} is not supported, please try {torch_types}"
+            )
+        img = img.type(eval(f"torch.{img_type}"))
+
     return img
 
 

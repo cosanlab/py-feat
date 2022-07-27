@@ -1,6 +1,5 @@
 import torch
 from torch.nn import DataParallel, Module
-from torch.nn.parallel import DistributedDataParallel
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from .deps.models import FasterDoFRCNN
 from feat.utils import set_torch_device
@@ -25,7 +24,6 @@ class img2poseModel:
         depth,
         min_size,
         max_size,
-        model_path=None,
         device="auto",
         pose_mean=None,
         pose_stddev=None,
@@ -39,7 +37,6 @@ class img2poseModel:
         self.depth = depth
         self.min_size = min_size
         self.max_size = max_size
-        self.model_path = model_path
 
         self.device = set_torch_device(device)
 
@@ -69,14 +66,11 @@ class img2poseModel:
             expand_forehead=expand_forehead,
         )
 
-        # if using cpu, remove the parallel modules from the saved model
-        # self.fpn_model_without_ddp = self.fpn_model
         if self.device.type == "cpu":
             self.fpn_model = WrappedModel(self.fpn_model)
         else:  # GPU
             self.fpn_model = DataParallel(self.fpn_model)
         self.fpn_model = self.fpn_model.to(self.device)
-        self.fpn_model_without_ddp = self.fpn_model
 
     def evaluate(self):
         self.fpn_model.eval()
@@ -87,12 +81,11 @@ class img2poseModel:
 
     def run_model(self, imgs, targets=None):
         outputs = self.fpn_model(imgs, targets)
-
         return outputs
 
-    # def forward(self, imgs, targets):
-    #     losses = self.run_model(imgs, targets)
-    #     return losses
+    def forward(self, imgs, targets):
+        losses = self.run_model(imgs, targets)
+        return losses
 
     def predict(self, imgs):
         assert self.fpn_model.training is False

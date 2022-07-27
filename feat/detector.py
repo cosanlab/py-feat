@@ -5,6 +5,7 @@ perform detection
 """
 
 from cmath import exp
+from lib2to3.pytree import convert
 from operator import concat
 import traceback  # REMOVE LATER
 import os
@@ -159,7 +160,7 @@ class Detector(object):
             if self.face_detector is not None:
                 if "img2pose" in face:
                     self.face_detector = self.face_detector(
-                        constrained="img2pose-c" == face
+                        constrained="img2pose-c" == face, device=self.device
                     )
                 else:
                     self.face_detector = self.face_detector(device=self.device)
@@ -340,7 +341,10 @@ class Detector(object):
         #     frame = np.expand_dims(frame, 0)
         # assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
         # height, width, _ = frame.shape
+        frame = convert_image_to_tensor(frame, img_type="float32")
+
         if "img2pose" in self.info["face_model"]:
+            frame = frame / 255
             faces, poses = self.face_detector(frame)
         else:
             faces = self.face_detector(frame)
@@ -734,6 +738,8 @@ class Detector(object):
             >>> landmarks = retinaface_detector.detect_landmarks(detected_faces=faces)
             >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
         """
+        # Normalize Data
+        frame = convert_image_to_tensor(frame, img_type="float32") / 255
 
         if "img2pose" in self.info["facepose_model"]:
             faces, poses = self.facepose_detector(frame)
