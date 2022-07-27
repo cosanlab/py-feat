@@ -187,11 +187,7 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
     # First stage
     boxes = []
     image_inds = []
-
     scale_picks = []
-
-    print(h, type(h), w, type(w))
-    print(scales)
 
     # all_i = 0
     offset = 0

@@ -1,14 +1,16 @@
+from functools import total_ordering
 import os
-import cv2
+from tokenize import Token
 import torch
 import numpy as np
 from torchvision import transforms
-from torchvision.transforms import Compose, Pad
+from torchvision.transforms import Compose, Pad, ToTensor
 from feat.transforms import Rescale
 from .img2pose_model import img2poseModel
-from feat.utils import get_resource_path, convert_image_to_tensor, set_torch_device
+from feat.utils import get_resource_path, set_torch_device, get_test_data_path
 from feat.face_detectors.Retinaface.Retinaface_utils import py_cpu_nms
 from ..utils import convert_to_euler
+import cv2
 
 
 class Img2Pose:
@@ -118,10 +120,6 @@ class Img2Pose:
                                     F is face number
         """
 
-        img = convert_image_to_tensor(img)
-        img = img.type(torch.float32)
-        img = img.to(self.device)
-
         preds = self.scale_and_predict(img)
 
         return preds["boxes"], preds["poses"]
@@ -172,13 +170,9 @@ class Img2Pose:
             dict: A dictionary of bboxes and poses
 
         """
-        # # img2pose expects RGB form
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Obtain prediction
         pred = self.model.predict(img)[0]
-        print(pred)
-        # pred = self.model.predict([self.transform(img)])[0]
         boxes = pred["boxes"].cpu().numpy().astype("float")
         scores = pred["scores"].cpu().numpy().astype("float")
         dofs = pred["dofs"].cpu().numpy().astype("float")
