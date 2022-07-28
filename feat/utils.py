@@ -823,31 +823,115 @@ def convert68to49(points):
 
 
 class BBox(object):
-    # https://github.com/cunjian/pytorch_face_landmark/
-    # bbox is a list of [left, right, top, bottom]
-    def __init__(self, bbox):
-        self.left = bbox[0]
-        self.right = bbox[1]
-        self.top = bbox[2]
-        self.bottom = bbox[3]
-        self.x = bbox[0]
-        self.y = bbox[2]
-        self.w = bbox[1] - bbox[0]
-        self.h = bbox[3] - bbox[2]
+    def __init__(self, bbox, order=None):
+        """Class to work with Bounding Box
 
-    # scale to [0,1]
-    def projectLandmark(self, landmark):
+        Args:
+            bbox: (list): values
+            order (list): order of values (e.g., ['left', 'bottom', 'right', 'top'])
+        """
+        if order is None:
+            self.order = ["left", "bottom", "right", "top"]
+        else:
+            if not isinstance(order, list):
+                raise ValueError("order must be a list")
+            self.order = [x.lower() for x in order]
+
+        if len(bbox) != 4:
+            raise ValueError("bbox must contain 4 values")
+
+        self.left = bbox[self.order.index("left")]
+        self.right = bbox[self.order.index("right")]
+        self.top = bbox[self.order.index("top")]
+        self.bottom = bbox[self.order.index("bottom")]
+        self.center_x = (self.right + self.left) // 2
+        self.center_y = (self.top + self.bottom) // 2
+        self.width = self.right - self.left
+        self.height = self.top - self.bottom
+
+    def __repr__(self):
+        return f"'height': {self.height}, 'width': {self.width}"
+
+    def expand_by_factor(self, factor):
+        """Expand box by factor
+
+        Args:
+            factor (float, tuple): factor to expand. if float equal in all directions, if tuple (height, width)
+        """
+
+        if not isinstance(factor, (int, float, tuple)):
+            raise ValueError("factor must be float or tuple(height, width)")
+
+        if isinstance(factor, tuple):
+            if len(factor) != 2:
+                raise ValueError("factor must include (height,width)")
+            else:
+                self.height *= factor[0]
+                self.width *= factor[1]
+        else:
+            self.height *= factor
+            self.width *= factor
+        self.left = max(self.center_x - self.width, 0)
+        self.right = self.center_x + self.width
+        self.bottom = max(self.center_x - self.height, 0)
+        self.top = self.center_x + self.height
+
+    def extract_from_image(self, img):
+        """Crop Image using Bounding Box
+
+        Args:
+            img (np.array, torch.tensor): image (B, C, H, W) or (C, H, W) or (H,W)
+
+        Returns:
+            cropped (np.array, torch.tensor)"""
+
+        if not isinstance(img, (np.ndarray, torch.Tensor)):
+            raise ValueError("images must be (np.array, torch.tensor)")
+
+        if len(img.shape) == 2:
+            return img[
+                int(self.bottom) : int(self.top), int(self.left) : int(self.right)
+            ]
+        elif len(img.shape) == 3:
+            return img[
+                :, int(self.bottom) : int(self.top), int(self.left) : int(self.right)
+            ]
+        elif len(img.shape) == 4:
+            return img[
+                :, :, int(self.bottom) : int(self.top), int(self.left) : int(self.right)
+            ]
+        else:
+            raise ValueError("Not a valid image size")
+
+    def to_dict(self):
+        """bounding box coordinates as a dictionary"""
+        return {
+            "left": self.left,
+            "bottom": self.bottom,
+            "right": self.right,
+            "top": self.top,
+        }
+
+    def to_list(self):
+        """Output bounding box coordinates to list"""
+        return [self.to_dict()[x] for x in self.order]
+
+    def project_landmark(self, landmark):
+        """scale to [0,1] from https://github.com/cunjian/pytorch_face_landmark/"""
         landmark_ = np.asarray(np.zeros(landmark.shape))
         for i, point in enumerate(landmark):
-            landmark_[i] = ((point[0] - self.x) / self.w, (point[1] - self.y) / self.h)
+            landmark_[i] = (
+                (point[0] - self.left) / self.width,
+                (point[1] - self.top) / self.height,
+            )
         return landmark_
 
-    # landmark of (5L, 2L) from [0,1] to real range
-    def reprojectLandmark(self, landmark):
+    def reproject_landmark(self, landmark):
+        """landmark of (5L, 2L) from [0,1] to real range from https://github.com/cunjian/pytorch_face_landmark/"""
         landmark_ = np.asarray(np.zeros(landmark.shape))
         for i, point in enumerate(landmark):
-            x = point[0] * self.w + self.x
-            y = point[1] * self.h + self.y
+            x = point[0] * self.width + self.left
+            y = point[1] * self.height + self.bottom
             landmark_[i] = (x, y)
         return landmark_
 
