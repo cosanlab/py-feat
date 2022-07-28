@@ -255,7 +255,7 @@ class Detector(object):
             self.emotion_model = fetch_model("emotion_model", emotion)
             self.info["emotion_model"] = emotion
             if self.emotion_model is not None:
-                self.emotion_model = self.emotion_model()
+                self.emotion_model = self.emotion_model(device=self.device)
                 self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
                 predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
                 empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
@@ -662,7 +662,7 @@ class Detector(object):
             >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
             >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
         """
-        frame = convert_image_to_tensor(frame, img_type="float32")
+        # frame = convert_image_to_tensor(frame)
 
         if self.info["emotion_model"].lower() == "fer":
             # landmarks = np.transpose(landmarks)
