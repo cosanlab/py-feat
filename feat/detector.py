@@ -372,11 +372,6 @@ class Detector(object):
             >>> detector.detect_landmarks(frame, detected_faces)
         """
 
-        # if not isinstance(frame, np.ndarray):
-        #     raise TypeError(
-        #         f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
-        #     )
-        # frame = expand_img_dimensions(frame)
         frame = convert_image_to_tensor(frame)
 
         mean = np.asarray([0.485, 0.456, 0.406])
@@ -411,7 +406,7 @@ class Detector(object):
 
         landmark_results = []
         for ik in range(landmark.shape[0]):
-            landmark2 = bbox_list[ik].reprojectLandmark(landmark[ik, :, :])
+            landmark2 = bbox_list[ik].reproject_landmark(landmark[ik, :, :])
             landmark_results.append(landmark2)
 
         list_concat = []
@@ -462,7 +457,6 @@ class Detector(object):
     def _face_preprocesing(self, frame, detected_faces, mean, std, out_size):
         """
         Helper function used in batch detecting landmarks
-        Let's assume that frame is of shape B x H x W x 3
         Let's assume that frame is of shape B x C X H x W
         """
 
@@ -478,36 +472,19 @@ class Detector(object):
         concatenated_face = None
         bbox_list = []
         for k, face in enumerate(flat_faces):
-            frame_assignment = np.where(k <= length_cumu)[0][0]  # which frame is it?
-            x1, y1, x2, y2 = face[:-1]
-            w = x2 - x1 + 1
-            h = y2 - y1 + 1
-            size = int(min([w, h]) * 1.2)
-            cx = x1 + w // 2
-            cy = y1 + h // 2
-            x1 = cx - size // 2
-            x2 = x1 + size
-            y1 = cy - size // 2
-            y2 = y1 + size
-
-            dx = max(0, -x1)
-            dy = max(0, -y1)
-            x1 = max(0, x1)
-            y1 = max(0, y1)
-
-            edx = max(0, x2 - width)
-            edy = max(0, y2 - height)
-            x2 = min(width, x2)
-            y2 = min(height, y2)
-            new_bbox = BBox(list(map(int, [x1, x2, y1, y2])))
-            cropped = frame[
-                frame_assignment,
-                :,
-                new_bbox.top : new_bbox.bottom,
-                new_bbox.left : new_bbox.right,
-            ]
+            # frame_assignment = np.where(k <= length_cumu)[0][0]  # which frame is it?
+            bbox = BBox(face[:-1])
+            size = int(min([bbox.width, bbox.height]) * 1.2)
+            x1 = bbox.center_x - size // 2
+            x2 = min(x1 + size, width)
+            y1 = bbox.center_y - size // 2
+            y2 = min(y1 + size, height)
+            dx, dy, x1, y1 = (max(0, -x1), max(0, -y1), max(0, x1), max(0, y1))
+            edx = max(0, x1 + size - width)
+            edy = max(0, y1 + size - height)
+            new_bbox = BBox([x1, y1, x2, y2])
             bbox_list.append(new_bbox)
-
+            cropped = new_bbox.extract_from_image(frame)
             if dx > 0 or dy > 0 or edx > 0 or edy > 0:
                 transform = Compose(
                     [
@@ -685,6 +662,8 @@ class Detector(object):
             >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
             >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
         """
+        frame = convert_image_to_tensor(frame, img_type="float32")
+
         if self.info["emotion_model"].lower() == "fer":
             # landmarks = np.transpose(landmarks)
             # if landmarks.shape[-1] == 68:
