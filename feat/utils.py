@@ -875,6 +875,7 @@ class BBox(object):
         self.right = self.center_x + self.width
         self.bottom = max(self.center_x - self.height, 0)
         self.top = self.center_x + self.height
+        return self
 
     def extract_from_image(self, img):
         """Crop Image using Bounding Box
