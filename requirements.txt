@@ -16,3 +16,4 @@ easing_functions
 celluloid
 tqdm
 torchvision
+kornia

@@ -16,11 +16,11 @@ import pandas as pd
 from scipy.integrate import simps
 import feat
 import cv2
-import math
 import torch
 from torchvision.datasets.utils import download_url as tv_download_url
 from torchvision.transforms import PILToTensor, Compose
 import PIL
+from kornia.geometry.transform import warp_affine
 
 
 __all__ = [
@@ -1121,13 +1121,25 @@ def align_face_68pts(img, img_land, box_enlarge, img_size=112):
         ]
     )
     mat = mat3 * mat1
-    aligned_img = cv2.warpAffine(
+
+    affine_matrix = torch.tensor(mat[0:2, :]).type(torch.float32).unsqueeze(0)
+    aligned_img = warp_affine(
         img,
-        mat[0:2, :],
+        affine_matrix,
         (img_size, img_size),
-        cv2.INTER_LINEAR,
-        borderValue=(128, 128, 128),
+        mode="bilinear",
+        padding_mode="zeros",
+        align_corners=True,
+        fill_value=(128, 128, 128),
     )
+
+    # aligned_img = cv2.warpAffine(
+    #     img,
+    #     mat[0:2, :],
+    #     (img_size, img_size),
+    #     cv2.INTER_LINEAR,
+    #     borderValue=(128, 128, 128),
+    # )
     land_3d = np.ones((int(len(img_land) / 2), 3))
     land_3d[:, 0:2] = np.reshape(np.array(img_land), (int(len(img_land) / 2), 2))
     mat_land_3d = np.mat(land_3d)
@@ -1257,3 +1269,14 @@ def set_torch_device(device="auto"):
 
     else:
         return device
+
+
+def mask_image(img, mask):
+    """Apply numpy mask of (h,w) to pytorch image (b,c,h,w)"""
+    # if ~isinstance(img, torch.Tensor) & ~isinstance(mask, np.ndarray):
+    #     raise ValueError(
+    #         f"img must be pytorch tensor, not {type(img)} and mask must be np array not {type(mask)}"
+    #     )
+    return (
+        torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
+    )

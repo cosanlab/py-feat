@@ -3,15 +3,11 @@ All code & models from https://github.com/phamquiluan/ResidualMaskingNetwork
 """
 from lib2to3.pytree import convert
 import os
-import glob
 import json
 from typing_extensions import Self
-import cv2
 import numpy as np
 import torch
 from torchvision.transforms import (
-    transforms,
-    Pad,
     Resize,
     Grayscale,
     Compose,
@@ -751,7 +747,6 @@ class ResMaskNet:
             return proba_np
 
     def _batch_make(self, frame, detected_face, *args, **kwargs):
-        frame = convert_image_to_tensor(frame)
 
         len_index = [len(aa) for aa in detected_face]
         # length_cumu = np.cumsum(len_index)
