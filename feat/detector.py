@@ -33,10 +33,11 @@ from feat.utils import (
     validate_input,
     read_pictures,
     set_torch_device,
+    mask_image,
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 import torch
-from torchvision.transforms import Compose, Resize, Pad
+from torchvision.transforms import Compose, Resize, Pad, Grayscale
 import logging
 import warnings
 
@@ -332,15 +333,7 @@ class Detector(object):
             >>> detector = Detector()
             >>> detector.detect_faces(frame)
         """
-        # if not isinstance(frame, np.ndarray):
-        #     raise TypeError(
-        #         f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
-        #     )
-        # # check if frame is 4d
-        # if frame.ndim == 3:
-        #     frame = np.expand_dims(frame, 0)
-        # assert frame.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
-        # height, width, _ = frame.shape
+
         frame = convert_image_to_tensor(frame, img_type="float32")
 
         if "img2pose" in self.info["face_model"]:
@@ -416,44 +409,6 @@ class Detector(object):
 
         return list_concat
 
-    def _batch_hog(self, frames, detected_faces, landmarks):
-        """
-        Helper function used in batch processing hog features
-        frames is a batch of frames
-        """
-
-        len_index = [len(aa) for aa in landmarks]
-        lenth_cumu = np.cumsum(len_index)
-        lenth_cumu2 = np.insert(lenth_cumu, 0, 0)
-        new_lands_list = []
-        flat_faces = [item for sublist in detected_faces for item in sublist]
-        flat_land = [item for sublist in landmarks for item in sublist]
-        hogs_arr = None
-
-        for i in range(len(flat_land)):
-
-            frame_assignment = np.where(i < lenth_cumu)[0][0]
-
-            convex_hull, new_lands = self.extract_face(
-                frame=frames[frame_assignment],
-                detected_faces=[flat_faces[i][0:4]],
-                landmarks=flat_land[i],
-                size_output=112,
-            )
-            hogs = self.extract_hog(frame=convex_hull, visualize=False).reshape(1, -1)
-            if hogs_arr is None:
-                hogs_arr = hogs
-            else:
-                hogs_arr = np.concatenate([hogs_arr, hogs], 0)
-
-            new_lands_list.append(new_lands)
-
-        new_lands = []
-        for i in range(len(lenth_cumu)):
-            new_lands.append(new_lands_list[lenth_cumu2[i] : (lenth_cumu2[i + 1])])
-
-        return (hogs_arr, new_lands)
-
     def _face_preprocesing(self, frame, detected_faces, mean, std, out_size):
         """
         Helper function used in batch detecting landmarks
@@ -510,178 +465,6 @@ class Detector(object):
                 concatenated_face = torch.cat((concatenated_face, test_face), 0)
         return (concatenated_face, length_index, bbox_list)
 
-    def extract_face(self, frame, detected_faces, landmarks, size_output=112):
-        """Extract a face in a frame with a convex hull of landmarks.
-
-        This function extracts the faces of the frame with convex hulls and masks out the rest.
-
-        Args:
-            frame (array): The original image]
-            detected_faces (list): face bounding box
-            landmarks (list): the landmark information]
-            size_output (int, optional): [description]. Defaults to 112.
-
-        Returns:
-            resized_face_np: resized face as a numpy array
-            new_landmarks: landmarks of aligned face
-        """
-        detected_faces = np.array(detected_faces)
-        landmarks = np.array(landmarks)
-
-        detected_faces = detected_faces.astype(int)
-
-        aligned_img, new_landmarks = align_face_68pts(
-            frame, landmarks.flatten(), 2.5, img_size=size_output
-        )
-
-        hull = ConvexHull(new_landmarks)
-        mask = grid_points_in_poly(
-            shape=np.array(aligned_img).shape,
-            # for some reason verts need to be flipped
-            verts=list(
-                zip(
-                    new_landmarks[hull.vertices][:, 1],
-                    new_landmarks[hull.vertices][:, 0],
-                )
-            ),
-        )
-        mask[
-            0 : np.min([new_landmarks[0][1], new_landmarks[16][1]]),
-            new_landmarks[0][0] : new_landmarks[16][0],
-        ] = True
-        aligned_img[~mask] = 0
-        resized_face_np = aligned_img
-        resized_face_np = cv2.cvtColor(resized_face_np, cv2.COLOR_BGR2RGB)
-
-        return (
-            resized_face_np,
-            new_landmarks,
-        )  # , hull, mask, np.array(aligned_img).shape, list(zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0])), origin_mask
-
-    def extract_hog(
-        self,
-        frame,
-        orientation=8,
-        pixels_per_cell=(8, 8),
-        cells_per_block=(2, 2),
-        visualize=False,
-    ):
-        """Extract HOG features from a SINGLE frame.
-
-        Args:
-            frame (array]): Frame of image]
-            orientation (int, optional): Orientation for HOG. Defaults to 8.
-            pixels_per_cell (tuple, optional): Pixels per cell for HOG. Defaults to (8,8).
-            cells_per_block (tuple, optional): Cells per block for HOG. Defaults to (2,2).
-            visualize (bool, optional): Whether to provide the HOG image. Defaults to False.
-
-        Returns:
-            hog_output: array of HOG features, and the HOG image if visualize is True.
-        """
-
-        hog_output = hog(
-            frame,
-            orientations=orientation,
-            pixels_per_cell=pixels_per_cell,
-            cells_per_block=cells_per_block,
-            visualize=visualize,
-            channel_axis=-1,
-        )
-        if visualize:
-            return (hog_output[0], hog_output[1])
-        else:
-            return hog_output
-
-    def detect_aus(self, frame, landmarks):
-        """Detect Action Units from image or video frame
-
-        Args:
-            frame (np.ndarray): image loaded in array format (n, m, 3)
-            landmarks (array): 68 landmarks used to localize face.
-
-        Returns:
-            array: Action Unit predictions
-
-        Examples:
-            >>> from feat import Detector
-            >>> from feat.utils import read_pictures
-            >>> frame = read_pictures(['my_image.jpg'])
-            >>> detector = Detector()
-            >>> detector.detect_aus(frame)
-        """
-        # Assume that the Raw landmark is given in the format (n_land,2)
-
-        # landmarks = np.transpose(landmarks)
-        # if landmarks.shape[-1] == 68:
-        #    landmarks = convert68to49(landmarks)
-        if not isinstance(frame, np.ndarray):
-            raise TypeError(
-                f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
-            )
-        return self.au_model.detect_au(frame, landmarks)
-
-    def _concatenate_batch(self, indexed_length, au_results):
-        """
-        NEW
-        helper function to convert batch AUs to desired list of list
-        only useful for our emotion and au prediction results
-        Args:
-            indexed_length: (list) the list index for number of faces in each frame.
-                            if you have 2 faces in each frame and you batch process 4
-                            frames, it will be [2,2,2,2]
-            au_results: (np.array), immediate result from running our
-                        au/emotion models
-        Returns:
-            list_concat: (list of list). The list which contains the number of faces. for example
-            if you process 2 frames and each frame contains 4 faces, it will return:
-                [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
-        """
-        list_concat = []
-        new_lens = np.insert(np.cumsum(indexed_length), 0, 0)
-        for ij in range(len(indexed_length)):
-            list_concat.append(au_results[new_lens[ij] : new_lens[ij + 1], :])
-        return list_concat
-
-    def detect_emotions(self, frame, facebox, landmarks):
-        """Detect emotions from image or video frame
-
-        Args:
-            frame ([type]): [description]
-            facebox ([type]): [description]
-            landmarks ([type]): [description]
-
-        Returns:
-            array: Action Unit predictions
-
-        Examples:
-            >>> from feat import Detector
-            >>> from feat.utils import read_pictures
-            >>> img_data = read_pictures(['my_image.jpg'])
-            >>> detector = Detector()
-            >>> detected_faces = detector.detect_faces(frame)
-            >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
-            >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
-        """
-        # frame = convert_image_to_tensor(frame)
-
-        if self.info["emotion_model"].lower() == "fer":
-            # landmarks = np.transpose(landmarks)
-            # if landmarks.shape[-1] == 68:
-            #    landmarks = convert68to49(landmarks)
-            #    landmarks = landmarks.T
-            return self.emotion_model.detect_emo(frame, landmarks)
-
-        elif self.info["emotion_model"].lower() == "resmasknet":
-            return self.emotion_model.detect_emo(frame, facebox)
-
-        elif self.info["emotion_model"].lower() in ["svm", "rf"]:
-            return self.emotion_model.detect_emo(frame, landmarks)
-
-        else:
-            raise ValueError(
-                "Cannot recognize input emo model! Please try to re-type emotion model"
-            )
-
     def detect_facepose(self, frame, detected_faces=None, landmarks=None):
         """Detect facepose from image or video frame.
 
@@ -727,6 +510,202 @@ class Detector(object):
             faces = detected_faces
 
         return {"faces": faces, "poses": poses}
+
+    def detect_aus(self, frame, faces, landmarks):
+        """Detect Action Units from image or video frame
+
+        Args:
+            frame (np.ndarray): image loaded in array format (n, m, 3)
+            landmarks (array): 68 landmarks used to localize face.
+
+        Returns:
+            array: Action Unit predictions
+
+        Examples:
+            >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> frame = read_pictures(['my_image.jpg'])
+            >>> detector = Detector()
+            >>> detector.detect_aus(frame)
+        """
+        # Assume that the Raw landmark is given in the format (n_land,2)
+
+        # landmarks = np.transpose(landmarks)
+        # if landmarks.shape[-1] == 68:
+        #    landmarks = convert68to49(landmarks)
+        # if not isinstance(frame, np.ndarray):
+        #     raise TypeError(
+        #         f"Frame should be a numpy array, not {type(frame)}. If you are passing in an image path try calling .read_image to first load the image data as a numpy array. Then pass the result to this method"
+        #     )
+
+        frame = convert_image_to_tensor(frame, img_type="float32")
+        transform = Grayscale(3)
+        frame = transform(frame)
+
+        if self["au_model"].lower() in ["logistic", "svm"]:
+            hog_arr, new_lands = self._batch_hog(
+                frames=frame, detected_faces=faces, landmarks=landmarks
+            )
+            au_predictions = self.au_model.detect_au(frame=hog_arr, landmarks=new_lands)
+        else:
+            au_predictions = self.au_model.detect_au(frame=frame, landmarks=landmarks)
+
+        return au_predictions
+
+    def _batch_hog(self, frames, detected_faces, landmarks):
+        """
+        Helper function used in batch processing hog features
+        frames is a batch of frames
+        """
+
+        len_index = [len(aa) for aa in landmarks]
+        lenth_cumu = np.cumsum(len_index)
+        lenth_cumu2 = np.insert(lenth_cumu, 0, 0)
+        new_lands_list = []
+        flat_faces = [item for sublist in detected_faces for item in sublist]
+        flat_land = [item for sublist in landmarks for item in sublist]
+        hogs_arr = None
+
+        for i in range(len(flat_land)):
+
+            frame_assignment = np.where(i < lenth_cumu)[0][0]
+
+            convex_hull, new_lands = self.extract_face(
+                frame=frames[frame_assignment],
+                detected_faces=[flat_faces[i][0:4]],
+                landmarks=flat_land[i],
+                size_output=112,
+            )
+
+            hogs = hog(
+                convex_hull.squeeze().permute(1, 2, 0).type(torch.int).numpy(),
+                orientations=8,
+                pixels_per_cell=(8, 8),
+                cells_per_block=(2, 2),
+                visualize=False,
+                channel_axis=-1,
+            ).reshape(1, -1)
+
+            if hogs_arr is None:
+                hogs_arr = hogs
+            else:
+                hogs_arr = np.concatenate([hogs_arr, hogs], 0)
+
+            new_lands_list.append(new_lands)
+
+        new_lands = []
+        for i in range(len(lenth_cumu)):
+            new_lands.append(new_lands_list[lenth_cumu2[i] : (lenth_cumu2[i + 1])])
+
+        return (hogs_arr, new_lands)
+
+    def extract_face(self, frame, detected_faces, landmarks, size_output=112):
+        """Extract a face in a frame with a convex hull of landmarks.
+
+        This function extracts the faces of the frame with convex hulls and masks out the rest.
+
+        Args:
+            frame (array): The original image]
+            detected_faces (list): face bounding box
+            landmarks (list): the landmark information]
+            size_output (int, optional): [description]. Defaults to 112.
+
+        Returns:
+            resized_face_np: resized face as a numpy array
+            new_landmarks: landmarks of aligned face
+        """
+        detected_faces = np.array(detected_faces)
+        landmarks = np.array(landmarks)
+
+        detected_faces = detected_faces.astype(int)
+
+        aligned_img, new_landmarks = align_face_68pts(
+            frame.unsqueeze(0), landmarks.flatten(), 2.5, img_size=size_output
+        )
+
+        hull = ConvexHull(new_landmarks)
+        mask = grid_points_in_poly(
+            shape=aligned_img.shape[-2:],
+            # for some reason verts need to be flipped
+            verts=list(
+                zip(
+                    new_landmarks[hull.vertices][:, 1],
+                    new_landmarks[hull.vertices][:, 0],
+                )
+            ),
+        )
+        mask[
+            0 : np.min([new_landmarks[0][1], new_landmarks[16][1]]),
+            new_landmarks[0][0] : new_landmarks[16][0],
+        ] = True
+        masked_image = mask_image(aligned_img, mask)
+        # aligned_img[~mask] = 0
+        # resized_face_np = aligned_img
+        # resized_face_np = cv2.cvtColor(resized_face_np, cv2.COLOR_BGR2RGB)
+
+        return (masked_image, new_landmarks)
+
+    def _concatenate_batch(self, indexed_length, au_results):
+        """
+        NEW
+        helper function to convert batch AUs to desired list of list
+        only useful for our emotion and au prediction results
+        Args:
+            indexed_length: (list) the list index for number of faces in each frame.
+                            if you have 2 faces in each frame and you batch process 4
+                            frames, it will be [2,2,2,2]
+            au_results: (np.array), immediate result from running our
+                        au/emotion models
+        Returns:
+            list_concat: (list of list). The list which contains the number of faces. for example
+            if you process 2 frames and each frame contains 4 faces, it will return:
+                [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
+        """
+        list_concat = []
+        new_lens = np.insert(np.cumsum(indexed_length), 0, 0)
+        for ij in range(len(indexed_length)):
+            list_concat.append(au_results[new_lens[ij] : new_lens[ij + 1], :])
+        return list_concat
+
+    def detect_emotions(self, frame, facebox, landmarks):
+        """Detect emotions from image or video frame
+
+        Args:
+            frame ([type]): [description]
+            facebox ([type]): [description]
+            landmarks ([type]): [description]
+
+        Returns:
+            array: Action Unit predictions
+
+        Examples:
+            >>> from feat import Detector
+            >>> from feat.utils import read_pictures
+            >>> img_data = read_pictures(['my_image.jpg'])
+            >>> detector = Detector()
+            >>> detected_faces = detector.detect_faces(frame)
+            >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
+            >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
+        """
+        frame = convert_image_to_tensor(frame, img_type="float32")
+
+        if self.info["emotion_model"].lower() == "fer":
+            # landmarks = np.transpose(landmarks)
+            # if landmarks.shape[-1] == 68:
+            #    landmarks = convert68to49(landmarks)
+            #    landmarks = landmarks.T
+            return self.emotion_model.detect_emo(frame, landmarks)
+
+        elif self.info["emotion_model"].lower() == "resmasknet":
+            return self.emotion_model.detect_emo(frame, facebox)
+
+        elif self.info["emotion_model"].lower() in ["svm", "rf"]:
+            return self.emotion_model.detect_emo(frame, landmarks)
+
+        else:
+            raise ValueError(
+                "Cannot recognize input emo model! Please try to re-type emotion model"
+            )
 
     # TODO: probably need to add exceptions. The exception handling is not great yet
     def process_frame(
