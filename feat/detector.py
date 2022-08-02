@@ -33,7 +33,7 @@ from feat.utils import (
     extract_face,
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
-from feat.data import ImageDataset
+from feat.data import ImageDataset, _inverse_face_transform, _inverse_landmark_transform
 import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Resize, Pad, Grayscale
@@ -526,7 +526,7 @@ class Detector(object):
         else:
             au_predictions = self.au_model.detect_au(frame=frame, landmarks=landmarks)
 
-        return au_predictions
+        return self._convert_detector_output(landmarks, au_predictions)
 
     def _batch_hog(self, frames, landmarks):
         """
@@ -622,13 +622,19 @@ class Detector(object):
             # if landmarks.shape[-1] == 68:
             #    landmarks = convert68to49(landmarks)
             #    landmarks = landmarks.T
-            return self.emotion_model.detect_emo(frame, landmarks)
+            return self._convert_detector_output(
+                landmarks, self.emotion_model.detect_emo(frame, landmarks)
+            )
 
         elif self.info["emotion_model"].lower() == "resmasknet":
-            return self.emotion_model.detect_emo(frame, facebox)
+            return self._convert_detector_output(
+                facebox, self.emotion_model.detect_emo(frame, facebox)
+            )
 
         elif self.info["emotion_model"].lower() in ["svm", "rf"]:
-            return self.emotion_model.detect_emo(frame, landmarks)
+            return self._convert_detector_output(
+                landmarks, self.emotion_model.detect_emo(frame, landmarks)
+            )
 
         else:
             raise ValueError(
@@ -681,6 +687,8 @@ class Detector(object):
             poses = self.detect_facepose(batch_data["Image"])
             aus = self.detect_aus(batch_data["Image"], landmarks)
             emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+            faces = _inverse_face_transform(faces, batch_data)
+            landmarks = _inverse_landmark_transform(landmarks, batch_data)
             output = self._create_fex(
                 faces,
                 landmarks,
@@ -690,17 +698,33 @@ class Detector(object):
                 batch_data["FileNames"],
                 frame_counter,
             )
-            output = output.inverse_transform(
-                batch_data["Padding"]["Left"],
-                batch_data["Padding"]["Top"],
-                batch_data["Scale"],
-            )
             batch_output.append(output)
 
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
 
         return batch_output
+
+    def _convert_detector_output(detected_faces, detector_results):
+        """Helper function to convert AU/Emotion detector output into frame by face list of lists.
+
+        Args:
+            detected_faces (list): list of lists output from face/landmark detector
+            au_results (np.array):, results from au/emotion detectors
+
+        Returns:
+            list_concat: (list of list). The list which contains the number of faces. for example
+            if you process 2 frames and each frame contains 4 faces, it will return:
+                [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
+        """
+
+        length_index = [len(x) for x in detected_faces]
+
+        list_concat = []
+        new_lens = np.insert(np.cumsum(length_index), 0, 0)
+        for ij in range(len(length_index)):
+            list_concat.append(detector_results[new_lens[ij] : new_lens[ij + 1], :])
+        return list_concat
 
     def _create_fex(
         self, faces, landmarks, poses, aus, emotions, file_names, frame_counter
@@ -719,6 +743,7 @@ class Detector(object):
         Returns:
             Fex object
         """
+        files = [[f] * n for f, n in zip(file_names, [len(x) for x in faces])]
 
         # Convert to Pandas Format
         out = []
@@ -750,28 +775,41 @@ class Detector(object):
                     index=[j],
                 )
 
+                aus_df = pd.DataFrame(
+                    aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
+                    columns=self["au_presence_columns"],
+                    index=[j],
+                )
+
+                emotions_df = pd.DataFrame(
+                    emotions[i][j, :].reshape(1, len(FEAT_EMOTION_COLUMNS)),
+                    columns=FEAT_EMOTION_COLUMNS,
+                    index=[j],
+                )
+
+                input_df = pd.DataFrame(
+                    files[i][j],
+                    columns=["input"],
+                    index=[j],
+                )
+
                 tmp_df = pd.concat(
                     [
                         facebox_df,
                         landmarks_df,
                         facepose_df,
+                        aus_df,
+                        emotions_df,
+                        input_df,
                     ],
                     axis=1,
                 )
-                frame_counter += 1
-                tmp_df[FEAT_TIME_COLUMNS] = frame_counter
+
+                tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
                 out.append(tmp_df)
         out = pd.concat(out)
         out.reset_index(drop=True, inplace=True)
-        out = pd.concat(
-            [
-                out,
-                pd.DataFrame(aus, columns=self["au_presence_columns"]),
-                pd.DataFrame(emotions, columns=FEAT_EMOTION_COLUMNS),
-                pd.DataFrame(file_names, columns=["input"]),
-            ],
-            axis=1,
-        )
+
         return Fex(
             out,
             au_columns=self["au_presence_columns"],
@@ -787,6 +825,29 @@ class Detector(object):
             emotion_model=self.info["emotion_model"],
             facepose_model=self.info["facepose_model"],
         )
+
+    def _convert_detector_output(self, detected_faces, detector_results):
+        """
+        Helper function to convert AU/Emotion detector output into frame by face list of lists.
+        Either face or landmark detector list of list outputs can be used.
+
+        Args:
+            detected_faces (list): list of lists output from face/landmark detector
+            au_results (np.array):, results from au/emotion detectors
+
+        Returns:
+            list_concat: (list of list). The list which contains the number of faces. for example
+            if you process 2 frames and each frame contains 4 faces, it will return:
+                [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
+        """
+
+        length_index = [len(x) for x in detected_faces]
+
+        list_concat = []
+        new_lens = np.insert(np.cumsum(length_index), 0, 0)
+        for ij in range(len(length_index)):
+            list_concat.append(detector_results[new_lens[ij] : new_lens[ij + 1], :])
+        return list_concat
 
     # # TODO: probably need to add exceptions. The exception handling is not great yet
     # def process_frame(
