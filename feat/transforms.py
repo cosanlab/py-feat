@@ -40,7 +40,7 @@ class Rescale(object):
 
     def __call__(self, image):
 
-        height, width = img.shape[-2:]
+        height, width = image.shape[-2:]
 
         if isinstance(self.output_size, int):
             scale = self.output_size / max(height, width)

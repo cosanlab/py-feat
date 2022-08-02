@@ -109,7 +109,7 @@ class Img2Pose:
         elif optimizer:
             print("Optimizer not found in model path - cannot be loaded")
 
-    def __call__(self, img):
+    def __call__(self, img_):
         """Runs scale_and_predict on each image in the passed image list
 
         Args:
@@ -120,9 +120,17 @@ class Img2Pose:
                                     F is face number
         """
 
-        preds = self.scale_and_predict(img)
+        # Notes: vectorized version runs, but only returns results from a single image. Switching back to list version for now.
+        # preds = self.scale_and_predict(img_)
+        # return preds["boxes"], preds["poses"]
+        faces = []
+        poses = []
+        for img in img_:
+            preds = self.scale_and_predict(img)
+            faces.append(preds["boxes"])
+            poses.append(preds["poses"])
 
-        return preds["boxes"], preds["poses"]
+        return faces, poses
 
     def scale_and_predict(self, img, euler=True):
         """Runs a prediction on the passed image. Returns detected faces and associates poses.
@@ -172,7 +180,8 @@ class Img2Pose:
         """
 
         # Obtain prediction
-        pred = self.model.predict(img)[0]
+        pred = self.model.predict([img])[0]
+        # pred = self.model.predict(img)[0]
         boxes = pred["boxes"].cpu().numpy().astype("float")
         scores = pred["scores"].cpu().numpy().astype("float")
         dofs = pred["dofs"].cpu().numpy().astype("float")

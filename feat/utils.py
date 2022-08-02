@@ -14,6 +14,7 @@ from sklearn import __version__ as skversion
 import numpy as np
 import pandas as pd
 from scipy.integrate import simps
+from scipy.spatial import ConvexHull
 import feat
 import cv2
 import torch
@@ -21,7 +22,7 @@ from torchvision.datasets.utils import download_url as tv_download_url
 from torchvision.transforms import PILToTensor, Compose
 import PIL
 from kornia.geometry.transform import warp_affine
-
+from skimage.morphology.convex_hull import grid_points_in_poly
 
 __all__ = [
     "get_resource_path",
@@ -1042,6 +1043,55 @@ def resize_with_padding(img, expected_size):
     return ImageOps.expand(img, padding)
 
 
+def extract_face(frame, landmarks, size_output=112):
+    """Extract a face in a frame with a convex hull of landmarks.
+
+    This function extracts the faces of the frame with convex hulls and masks out the rest.
+
+    Args:
+        frame (array): The original image]
+        detected_faces (list): face bounding box
+        landmarks (list): the landmark information]
+        align (bool): align face to standard position
+        size_output (int, optional): [description]. Defaults to 112.
+
+    Returns:
+        resized_face_np: resized face as a numpy array
+        new_landmarks: landmarks of aligned face
+    """
+
+    if not isinstance(frame, torch.Tensor):
+        raise ValueError(f"image must be a tensor not {type(frame)}")
+
+    if len(frame.shape) != 4:
+        frame = frame.unsqueeze(0)
+
+    landmarks = np.array(landmarks).copy()
+
+    aligned_img, new_landmarks = align_face_68pts(
+        frame, landmarks.flatten(), 2.5, img_size=size_output
+    )
+
+    hull = ConvexHull(new_landmarks)
+    mask = grid_points_in_poly(
+        shape=aligned_img.shape[-2:],
+        # for some reason verts need to be flipped
+        verts=list(
+            zip(
+                new_landmarks[hull.vertices][:, 1],
+                new_landmarks[hull.vertices][:, 0],
+            )
+        ),
+    )
+    mask[
+        0 : np.min([new_landmarks[0][1], new_landmarks[16][1]]),
+        new_landmarks[0][0] : new_landmarks[16][0],
+    ] = True
+    masked_image = mask_image(aligned_img, mask)
+
+    return (masked_image, new_landmarks)
+
+
 def align_face_68pts(img, img_land, box_enlarge, img_size=112):
     """Performs affine transformation to align the images by eyes.
 
@@ -1129,7 +1179,7 @@ def align_face_68pts(img, img_land, box_enlarge, img_size=112):
         (img_size, img_size),
         mode="bilinear",
         padding_mode="zeros",
-        align_corners=True,
+        align_corners=False,
         fill_value=(128, 128, 128),
     )
 

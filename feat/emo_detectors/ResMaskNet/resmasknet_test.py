@@ -739,7 +739,6 @@ class ResMaskNet:
         """
 
         face = self._batch_make(frame=frame, detected_face=detected_face)
-
         with torch.no_grad():
             output = self.model(face)
             proba = torch.softmax(output, 1)
@@ -748,25 +747,25 @@ class ResMaskNet:
 
     def _batch_make(self, frame, detected_face, *args, **kwargs):
 
-        len_index = [len(aa) for aa in detected_face]
-        # length_cumu = np.cumsum(len_index)
+        transform = Compose([Grayscale(3), RandomHorizontalFlip(p=1)])
+        gray = transform(frame)
 
+        len_index = [len(aa) for aa in detected_face]
+        length_cumu = np.cumsum(len_index)
         flat_faces = [item for sublist in detected_face for item in sublist]
 
         concat_batch = None
-        for i in range(len(flat_faces)):
-            # frame_choice = np.where(i <= length_cumu)[0][0]
-
-            transform = Compose([Grayscale(3), RandomHorizontalFlip(p=1)])
-            gray = transform(frame)
-
+        for i, face in enumerate(flat_faces):
+            frame_choice = np.where(i < length_cumu)[0][0]
             #     frame0 = np.fliplr(frame[frame_choice]).astype(np.uint8) # not sure why we need to flip the face
-            bbox = BBox(flat_faces[i][:-1])
-            face = bbox.expand_by_factor(1.1).extract_from_image(gray)
-
+            bbox = BBox(face[:-1])
+            face = (
+                bbox.expand_by_factor(1.1)
+                .extract_from_image(gray[frame_choice])
+                .unsqueeze(0)
+            )
             transform = Resize(self.image_size)
             face = transform(face) / 255
-
             if concat_batch is None:
                 concat_batch = face
             else:
