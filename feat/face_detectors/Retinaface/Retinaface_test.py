@@ -105,8 +105,6 @@ class Retinaface:
         Args:
             img: (B,C, H,W,C), B is batch number, C is channel, H is image height, and W is width
         """
-        img = convert_image_to_tensor(img)
-        img = img.type(torch.float32)
 
         img = torch.sub(img, convert_color_vector_to_tensor(np.array([123, 117, 104])))
 
@@ -116,7 +114,6 @@ class Retinaface:
         scale = scale.to(self.device)
 
         loc, conf, landms = self.net(img)  # forward pass
-
         total_boxes = []
         for i in range(loc.shape[0]):
             tmp_box = self._calculate_boxinfo(
@@ -136,15 +133,15 @@ class Retinaface:
         """
         helper function to calculate deep learning results
         """
+
         priorbox = PriorBox(self.cfg, image_size=(im_height, im_width))
         priors = priorbox.forward()
         priors = priors.to(self.device)
-        prior_data = priors.data
-        boxes = decode(loc.data.squeeze(0), prior_data, self.cfg["variance"])
+        boxes = decode(loc.data.squeeze(0), priors.data, self.cfg["variance"])
         boxes = boxes * scale / self.resize
         boxes = boxes.cpu().numpy()
         scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
-        landms = decode_landm(landms.data.squeeze(0), prior_data, self.cfg["variance"])
+        landms = decode_landm(landms.data.squeeze(0), priors.data, self.cfg["variance"])
         scale1 = torch.Tensor(
             [
                 img.shape[3],
@@ -197,10 +194,6 @@ class Retinaface:
         det_bboxes = []
         for b in dets:
             if b[4] > self.vis_threshold:
-                xmin, ymin, xmax, ymax, score = b[0], b[1], b[2], b[3], b[4]
-                w = xmax - xmin + 1
-                h = ymax - ymin + 1
-                bbox = [xmin, ymin, xmax, ymax, score]
-                det_bboxes.append(bbox)
+                det_bboxes.append(b)
 
         return det_bboxes
