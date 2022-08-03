@@ -58,19 +58,19 @@ cfg = {
 }
 
 
-def viz_bbox(img, dets, wfp="out.jpg"):
-    # show
-    for b in dets:
-        if b[4] < vis_thres:
-            continue
-        text = "{:.4f}".format(b[4])
-        b = list(map(int, b))
-        cv2.rectangle(img, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 2)
-        cx = b[0]
-        cy = b[1] + 12
-        cv2.putText(img, text, (cx, cy), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
-    cv2.imwrite(wfp, img)
-    print(f"Viz bbox to {wfp}")
+# def viz_bbox(img, dets, wfp="out.jpg"):
+#     # show
+#     for b in dets:
+#         if b[4] < vis_thres:
+#             continue
+#         text = "{:.4f}".format(b[4])
+#         b = list(map(int, b))
+#         cv2.rectangle(img, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 2)
+#         cx = b[0]
+#         cy = b[1] + 12
+#         cv2.putText(img, text, (cx, cy), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
+#     cv2.imwrite(wfp, img)
+#     print(f"Viz bbox to {wfp}")
 
 
 class FaceBoxes:

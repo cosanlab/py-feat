@@ -19,7 +19,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from feat.utils import (
-    convert_image_to_tensor,
     get_resource_path,
     set_torch_device,
     BBox,

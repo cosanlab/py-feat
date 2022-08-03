@@ -7,15 +7,12 @@ perform detection
 from cmath import exp
 from lib2to3.pytree import convert
 from operator import concat
-import traceback  # REMOVE LATER
 import os
 import numpy as np
 import pandas as pd
 from skimage.feature import hog
-import cv2
 from feat.data import Fex
 from feat.utils import (
-    expand_img_dimensions,
     convert_image_to_tensor,
     convert_color_vector_to_tensor,
     get_resource_path,
@@ -26,9 +23,6 @@ from feat.utils import (
     FEAT_TIME_COLUMNS,
     FACET_TIME_COLUMNS,
     BBox,
-    FaceDetectionError,
-    validate_input,
-    read_pictures,
     set_torch_device,
     extract_face,
 )
