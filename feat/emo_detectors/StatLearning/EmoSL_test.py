@@ -2,7 +2,7 @@
 # Please see https://www.cl.cam.ac.uk/~mmam3/pub/FG2015.pdf for more details and reasons
 # Currently support: SVM (as in the paper), RandomForest (new implementation).
 import numpy as np
-from feat.utils import get_resource_path
+from feat.utils.io import get_resource_path
 import joblib
 import os
 import torch.nn as nn

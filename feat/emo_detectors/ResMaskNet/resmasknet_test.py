@@ -13,16 +13,13 @@ from torchvision.transforms import (
     Compose,
     RandomHorizontalFlip,
 )
-from torch.hub import load_state_dict_from_url
 import traceback
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from feat.utils import (
-    get_resource_path,
-    set_torch_device,
-    BBox,
-)
+from feat.utils import set_torch_device
+from feat.utils.io import get_resource_path
+from feat.utils.image_operations import BBox
 
 model_urls = {
     "resnet18": "https://download.pytorch.org/models/resnet18-5c106cde.pth",

@@ -4,18 +4,22 @@ from math import ceil
 import sys
 import os.path as osp
 import numpy as np
-
-cfg = {
-    "name": "FaceBoxes",
-    "min_sizes": [[32, 64, 128], [256], [512]],
-    "steps": [32, 64, 128],
-    "variance": [0.1, 0.2],
-    "clip": False,
-}
+from feat.utils import set_torch_device
+from feat.utils.image_operations import py_cpu_nms
 
 
 class PriorBox(object):
-    def __init__(self, image_size=None):
+    def __init__(
+        self,
+        image_size=None,
+        cfg={
+            "name": "FaceBoxes",
+            "min_sizes": [[32, 64, 128], [256], [512]],
+            "steps": [32, 64, 128],
+            "variance": [0.1, 0.2],
+            "clip": False,
+        },
+    ):
         super(PriorBox, self).__init__()
         # self.aspect_ratios = cfg['aspect_ratios']
         self.min_sizes = cfg["min_sizes"]
@@ -88,20 +92,14 @@ def remove_prefix(state_dict, prefix):
     return {f(key): value for key, value in state_dict.items()}
 
 
-def load_model(model, pretrained_path, load_to_cpu):
+def load_model(model, pretrained_path, device="auto"):
+    device = set_torch_device(device)
+
     if not osp.isfile(pretrained_path):
         print(f"The pre-trained FaceBoxes model {pretrained_path} does not exist")
         sys.exit("-1")
     # print('Loading pretrained model from {}'.format(pretrained_path))
-    if load_to_cpu:
-        pretrained_dict = torch.load(
-            pretrained_path, map_location=lambda storage, loc: storage
-        )
-    else:
-        device = torch.cuda.current_device()
-        pretrained_dict = torch.load(
-            pretrained_path, map_location=lambda storage, loc: storage.cuda(device)
-        )
+    pretrained_dict = torch.load(pretrained_path, map_location=device)
     if "state_dict" in pretrained_dict.keys():
         pretrained_dict = remove_prefix(pretrained_dict["state_dict"], "module.")
     else:
@@ -135,81 +133,6 @@ def decode(loc, priors, variances):
     boxes[:, :2] -= boxes[:, 2:] / 2
     boxes[:, 2:] += boxes[:, :2]
     return boxes
-
-
-# coding: utf-8
-
-# --------------------------------------------------------
-# Fast R-CNN
-# Copyright (c) 2015 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ross Girshick
-# --------------------------------------------------------
-import time
-
-
-class Timer(object):
-    """A simple timer."""
-
-    def __init__(self):
-        self.total_time = 0.0
-        self.calls = 0
-        self.start_time = 0.0
-        self.diff = 0.0
-        self.average_time = 0.0
-
-    def tic(self):
-        # using time.time instead of time.clock because time time.clock
-        # does not normalize for multithreading
-        self.start_time = time.time()
-
-    def toc(self, average=True):
-        self.diff = time.time() - self.start_time
-        self.total_time += self.diff
-        self.calls += 1
-        self.average_time = self.total_time / self.calls
-        if average:
-            return self.average_time
-        else:
-            return self.diff
-
-    def clear(self):
-        self.total_time = 0.0
-        self.calls = 0
-        self.start_time = 0.0
-        self.diff = 0.0
-        self.average_time = 0.0
-
-
-def py_cpu_nms(dets, thresh):
-    """Pure Python NMS baseline."""
-    x1 = dets[:, 0]
-    y1 = dets[:, 1]
-    x2 = dets[:, 2]
-    y2 = dets[:, 3]
-    scores = dets[:, 4]
-
-    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
-    order = scores.argsort()[::-1]
-
-    keep = []
-    while order.size > 0:
-        i = order[0]
-        keep.append(i)
-        xx1 = np.maximum(x1[i], x1[order[1:]])
-        yy1 = np.maximum(y1[i], y1[order[1:]])
-        xx2 = np.minimum(x2[i], x2[order[1:]])
-        yy2 = np.minimum(y2[i], y2[order[1:]])
-
-        w = np.maximum(0.0, xx2 - xx1 + 1)
-        h = np.maximum(0.0, yy2 - yy1 + 1)
-        inter = w * h
-        ovr = inter / (areas[i] + areas[order[1:]] - inter)
-
-        inds = np.where(ovr <= thresh)[0]
-        order = order[inds + 1]
-
-    return keep
 
 
 def nms(dets, thresh):

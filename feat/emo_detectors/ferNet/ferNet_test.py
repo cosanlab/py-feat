@@ -2,9 +2,13 @@ from feat.emo_detectors.ferNet.ferNet_model import fer_net
 import torch
 import torch.nn as nn
 import numpy as np
-from PIL import Image, 
+from PIL import Image
 from feat.utils.io import get_resource_path
-from feat.utils.image_operations  import face_rect_to_coords, convert68to49, align_face_49pts
+from feat.utils.image_operations import (
+    face_rect_to_coords,
+    convert68to49,
+    align_face_49pts,
+)
 import os
 from torchvision import transforms
 import math

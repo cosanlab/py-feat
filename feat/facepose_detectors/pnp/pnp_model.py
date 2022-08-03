@@ -1,8 +1,8 @@
 import os
 import cv2
 import numpy as np
-from feat.utils import get_resource_path
-from feat.facepose_detectors.utils import convert_to_euler
+from feat.utils.io import get_resource_path
+from feat.utils.image_operations import convert_to_euler
 
 THREED_FACE_MODEL = os.path.join(
     get_resource_path(), "reference_3d_68_points_trans.npy"

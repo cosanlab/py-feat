@@ -9,7 +9,8 @@ import feat.au_detectors.JAANet.JAANet_model as network
 import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
-from feat.utils import get_resource_path, convert68to49
+from feat.utils.io import get_resource_path
+from feat.utils.image_operations import convert68to49
 import os
 
 

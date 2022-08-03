@@ -2,12 +2,13 @@
 py-feat utility and helper functions for performing operations on images. 
 """
 
+import os
 from .io import get_resource_path
 import math
-
 import numpy as np
 import pandas as pd
 from scipy.spatial import ConvexHull
+from scipy.spatial.transform import Rotation
 import torch
 from torchvision.transforms import PILToTensor, Compose
 import PIL
@@ -30,6 +31,8 @@ __all__ = [
     "convert_image_to_tensor",
     "convert_color_vector_to_tensor",
     "mask_image",
+    "convert_to_euler",
+    "py_cpu_nms",
 ]
 
 # Neutral face coordinates
@@ -593,3 +596,60 @@ def mask_image(img, mask):
     return (
         torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
     )
+
+
+def convert_to_euler(rotvec, is_rotvec=True):
+    """
+    Converts the rotation vector or matrix (the standard output for head pose models) into euler angles in the form
+    of a ([pitch, roll, yaw]) vector. Adapted from https://github.com/vitoralbiero/img2pose.
+
+    Args:
+        rotvec: The rotation vector produced by the headpose model
+        is_rotvec:
+
+    Returns:
+        np.ndarray: euler angles ([pitch, roll, yaw])
+    """
+    if is_rotvec:
+        rotvec = Rotation.from_rotvec(rotvec).as_matrix()
+    rot_mat_2 = np.transpose(rotvec)
+    angle = Rotation.from_matrix(rot_mat_2).as_euler("xyz", degrees=True)
+    return np.array([angle[0], -angle[2], -angle[1]])  # pitch, roll, yaw
+
+
+# --------------------------------------------------------
+# Fast R-CNN
+# Copyright (c) 2015 Microsoft
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Ross Girshick
+# --------------------------------------------------------
+def py_cpu_nms(dets, thresh):
+    """Pure Python NMS baseline."""
+
+    x1 = dets[:, 0]
+    y1 = dets[:, 1]
+    x2 = dets[:, 2]
+    y2 = dets[:, 3]
+    scores = dets[:, 4]
+
+    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+    order = scores.argsort()[::-1]
+
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+
+        w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+        ovr = inter / (areas[i] + areas[order[1:]] - inter)
+
+        inds = np.where(ovr <= thresh)[0]
+        order = order[inds + 1]
+
+    return keep

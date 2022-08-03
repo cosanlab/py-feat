@@ -10,7 +10,7 @@ import numpy as np
 import os
 from torch.nn.functional import interpolate
 from torchvision.ops.boxes import batched_nms
-from feat.utils import convert_image_to_tensor
+from feat.utils.image_operations import convert_image_to_tensor
 
 
 def nms_numpy(boxes, scores, threshold, method):
