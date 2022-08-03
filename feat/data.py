@@ -18,7 +18,7 @@ from nltools.utils import set_decomposition_algorithm
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
 from torchvision.transforms import Compose
-from torchvision.io import read_image
+from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
 import torch
 from feat.transforms import Rescale
@@ -1803,7 +1803,6 @@ class ImageDataset(Dataset):
         if isinstance(images, str):
             images = [images]
         self.images = images
-        self.labels = list(np.ones(len(images)))
         self.output_size = output_size
         self.preserve_aspect_ratio = preserve_aspect_ratio
         self.padding = padding
@@ -1812,7 +1811,6 @@ class ImageDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-        label = self.labels[idx]
 
         img = read_image(self.images[idx])
 
@@ -1829,7 +1827,6 @@ class ImageDataset(Dataset):
             transformed_img = transform(img)
             return {
                 "Image": transformed_img["Image"],
-                # "Class": label,
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
                 "FileNames": self.images[idx],
@@ -1838,7 +1835,6 @@ class ImageDataset(Dataset):
         else:
             return {
                 "Image": img,
-                # "Class": label,
                 "Scale": 1.0,
                 "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
             }
@@ -1909,3 +1905,28 @@ def _inverse_landmark_transform(landmarks, batch_data):
             )
         out_frame.append(out_landmark)
     return out_frame
+
+
+class VideoDataset(Dataset):
+    """Torch Video Dataset
+
+    Args:
+        skip_frames (int): number of frames to skip
+    """
+
+    def __init__(self, video_file, skip_frames=0):
+
+        self.video, self.audio, self.info = read_video(video_file, output_format="TCHW")
+        self.file_name = video_file
+        self.video_frames = np.arange(0, self.video.shape[0], skip_frames)
+        self.video = self.video[self.video_frames, :, :]
+
+    def __len__(self):
+        return self.video.shape[0]
+
+    def __getitem__(self, idx):
+        return {
+            "Image": self.video[idx],
+            "Frame": self.video_frames[idx],
+            "FileName": self.file_name,
+        }

@@ -33,7 +33,12 @@ from feat.utils import (
     extract_face,
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
-from feat.data import ImageDataset, _inverse_face_transform, _inverse_landmark_transform
+from feat.data import (
+    ImageDataset,
+    VideoDataset,
+    _inverse_face_transform,
+    _inverse_landmark_transform,
+)
 import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Resize, Pad, Grayscale
@@ -451,7 +456,7 @@ class Detector(object):
 
         return list_concat
 
-    def detect_facepose(self, frame, detected_faces=None, landmarks=None):
+    def detect_facepose(self, frame, landmarks=None):
         """Detect facepose from image or video frame.
 
         When used with img2pose, returns *all* detected poses, and facebox and landmarks
@@ -464,7 +469,6 @@ class Detector(object):
 
         Args:
             frame (np.ndarray): list of cv2 images
-            detected_faces (list): (num_images, num_faces, 4) faceboxes representing faces in the list of images
             landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images
 
         Returns:
@@ -573,28 +577,6 @@ class Detector(object):
 
         return (hogs_arr, new_lands)
 
-    def _concatenate_batch(self, indexed_length, au_results):
-        """
-        NEW
-        helper function to convert batch AUs to desired list of list
-        only useful for our emotion and au prediction results
-        Args:
-            indexed_length: (list) the list index for number of faces in each frame.
-                            if you have 2 faces in each frame and you batch process 4
-                            frames, it will be [2,2,2,2]
-            au_results: (np.array), immediate result from running our
-                        au/emotion models
-        Returns:
-            list_concat: (list of list). The list which contains the number of faces. for example
-            if you process 2 frames and each frame contains 4 faces, it will return:
-                [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
-        """
-        list_concat = []
-        new_lens = np.insert(np.cumsum(indexed_length), 0, 0)
-        for ij in range(len(indexed_length)):
-            list_concat.append(au_results[new_lens[ij] : new_lens[ij + 1], :])
-        return list_concat
-
     def detect_emotions(self, frame, facebox, landmarks):
         """Detect emotions from image or video frame
 
@@ -663,7 +645,7 @@ class Detector(object):
             frame_counter (int): starting value to count frames
 
         Returns:
-            Fex: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
+            Fex: Prediction results dataframe
         """
 
         data_loader = DataLoader(
@@ -703,6 +685,54 @@ class Detector(object):
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
 
+        return batch_output
+
+    def detect_video(
+        self,
+        video_path,
+        skip_frames=0,
+        batch_size=1,
+        num_workers=0,
+        pin_memory=False,
+    ):
+        """Detects FEX from a video file.
+
+        Args:
+            video_file (str): Path to a video file.
+            skip_frames (int): number of frames to skip (speeds up inference, but less temporal information)
+            batch_size (int): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
+            num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
+            pin_memory (bool): If ``True``, the data loader will copy Tensors
+                                into CUDA pinned memory before returning them.  If your data elements
+                                are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type
+
+        Returns:
+            Fex: Prediction results dataframe
+        """
+
+        data_loader = DataLoader(
+            VideoDataset(video_path, skip_frames=skip_frames),
+            num_workers=num_workers,
+            batch_size=batch_size,
+            pin_memory=pin_memory,
+            shuffle=False,
+        )
+
+        batch_output = []
+        for batch_id, batch_data in enumerate(data_loader):
+            faces = self.detect_faces(batch_data["Image"])
+            landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
+            poses = self.detect_facepose(batch_data["Image"])
+            aus = self.detect_aus(batch_data["Image"], landmarks)
+            emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+            frames = list(batch_data["Frame"].numpy())
+            output = self._create_fex(
+                faces, landmarks, poses, aus, emotions, batch_data["FileName"], frames
+            )
+            batch_output.append(output)
+
+        batch_output = pd.concat(batch_output)
+        batch_output.reset_index(drop=True, inplace=True)
         return batch_output
 
     def _convert_detector_output(detected_faces, detector_results):
@@ -805,7 +835,10 @@ class Detector(object):
                     axis=1,
                 )
 
-                tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
+                if isinstance(frame_counter, (list)):
+                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter[i]
+                else:
+                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
                 out.append(tmp_df)
         out = pd.concat(out)
         out.reset_index(drop=True, inplace=True)
@@ -848,368 +881,3 @@ class Detector(object):
         for ij in range(len(length_index)):
             list_concat.append(detector_results[new_lens[ij] : new_lens[ij + 1], :])
         return list_concat
-
-    # # TODO: probably need to add exceptions. The exception handling is not great yet
-    # def process_frame(
-    #     self,
-    #     frames,
-    #     input_names,
-    #     counter=0,
-    #     singleframe4error=False,
-    #     skip_frame_rate=1,
-    #     is_video_frame=False,
-    # ):
-    #     """Function to run face detection, landmark detection, and emotion detection on
-    #     a frame.
-
-    #     Args:
-    #         frames (np.array): batch of frames, of shape BxHxWxC (read from cv2)
-    #         input_names (list): file names for each frame in the batch
-    #         counter (int, str, default=0): Index used for the prediction results
-    #         dataframe. Tracks the batches
-    #         singleframe4error (bool, default = False): When exception occurs inside a
-    #         batch, instead of nullify the whole batch, process each img in batch
-    #         individually
-    #         is_video_frame (bool): Whether processing is happening over batches of
-    #         otherwise independent IMAGES so len(frames) == len(input_names) or over
-    #         VIDEOFRAMES so len(input_names) == 1 and len(frames) > len(input_names);
-    #         Default False
-
-    #     Returns:
-    #         feat.data.Fex (dataframe): Prediction results dataframe.
-    #         int: counter - the updated number of counter. Used to track the batch size and image number
-
-    #     """
-    #     # check if frame is 4d
-    #     if not isinstance(frames, np.ndarray):
-    #         raise TypeError("frames needs to be a 3 or 4d numpy array of image data")
-    #     if frames.ndim == 3:
-    #         frames = np.expand_dims(frames, 0)
-    #     assert frames.ndim == 4, "Frame needs to be 4 dimensions (list of images)"
-    #     if not is_video_frame:
-    #         assert frames.shape[0] == len(
-    #             input_names
-    #         ), "Number of input_names needs to match the number of frames to process"
-    #     out = None
-    #     try:
-    #         detected_faces = self.detect_faces(frame=frames)
-    #         landmarks = self.detect_landmarks(
-    #             frame=frames, detected_faces=detected_faces
-    #         )
-    #         poses = self.detect_facepose(
-    #             frame=frames, detected_faces=detected_faces, landmarks=landmarks
-    #         )
-    #         index_len = [len(ii) for ii in landmarks]
-
-    #         if self["au_model"].lower() in ["logistic", "svm"]:
-    #             landmarks_2 = landmarks
-    #             hog_arr, new_lands = self._batch_hog(
-    #                 frames=frames, detected_faces=detected_faces, landmarks=landmarks_2
-    #             )
-    #             au_occur = self.detect_aus(frame=hog_arr, landmarks=new_lands)
-    #         else:
-    #             au_occur = self.detect_aus(frame=frames, landmarks=landmarks)
-
-    #         if self["emotion_model"].lower() == "svm":
-    #             hog_arr, new_lands = self._batch_hog(
-    #                 frames=frames, detected_faces=detected_faces, landmarks=landmarks
-    #             )
-    #             emo_pred = self.detect_emotions(
-    #                 frame=hog_arr, facebox=None, landmarks=new_lands
-    #             )
-    #         else:
-    #             emo_pred = self.detect_emotions(
-    #                 frame=frames, facebox=detected_faces, landmarks=landmarks
-    #             )
-
-    #         my_aus = self._concatenate_batch(
-    #             indexed_length=index_len, au_results=au_occur
-    #         )
-    #         my_emo = self._concatenate_batch(
-    #             indexed_length=index_len, au_results=emo_pred
-    #         )
-
-    #         for i, sessions in enumerate(detected_faces):
-    #             for j, faces in enumerate(sessions):
-    #                 facebox_df = pd.DataFrame(
-    #                     [
-    #                         [
-    #                             faces[0],
-    #                             faces[1],
-    #                             faces[2] - faces[0],
-    #                             faces[3] - faces[1],
-    #                             faces[4],
-    #                         ]
-    #                     ],
-    #                     columns=self["face_detection_columns"],
-    #                     index=[counter + j],
-    #                 )
-
-    #                 facepose_df = pd.DataFrame(
-    #                     [poses[i][j].flatten(order="F")],
-    #                     columns=self["facepose_model_columns"],
-    #                     index=[counter + j],
-    #                 )
-
-    #                 landmarks_df = pd.DataFrame(
-    #                     [landmarks[i][j].flatten(order="F")],
-    #                     columns=self["face_landmark_columns"],
-    #                     index=[counter + j],
-    #                 )
-
-    #                 au_occur_df = pd.DataFrame(
-    #                     my_aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
-    #                     columns=self["au_presence_columns"],
-    #                     index=[counter + j],
-    #                 )
-
-    #                 emo_pred_df = pd.DataFrame(
-    #                     my_emo[i][j, :].reshape(1, len(FEAT_EMOTION_COLUMNS)),
-    #                     columns=FEAT_EMOTION_COLUMNS,
-    #                     index=[counter + j],
-    #                 )
-
-    #                 tmp_df = pd.concat(
-    #                     [
-    #                         facebox_df,
-    #                         landmarks_df,
-    #                         au_occur_df,
-    #                         facepose_df,
-    #                         emo_pred_df,
-    #                     ],
-    #                     axis=1,
-    #                 )
-    #                 tmp_df[FEAT_TIME_COLUMNS] = counter
-    #                 tmp_df["input"] = (
-    #                     input_names[0] if is_video_frame else input_names[i]
-    #                 )
-    #                 if out is None:
-    #                     out = tmp_df
-    #                 else:
-    #                     out = pd.concat([out, tmp_df], axis=0)
-    #                 # out[FEAT_TIME_COLUMNS] = counter
-
-    #             counter += skip_frame_rate
-    #         return out, counter
-
-    #     except Exception:
-    #         traceback.print_exc()
-    #         self.logger.error("exception occurred in the batch")
-    #         if singleframe4error:
-    #             self.logger.warning(
-    #                 "Trying to process one image at a time in the batch"
-    #             )
-    #             raise FaceDetectionError
-
-    #         else:
-    #             self.logger.warning(
-    #                 "Since singleframe4error=FALSE, giving up this entire batch result"
-    #             )
-    #             newdf = None
-    #             for cter in range(frames.shape[0]):
-    #                 emotion_df = self._empty_emotion.reindex(index=[counter + cter])
-    #                 facebox_df = self._empty_facebox.reindex(index=[counter + cter])
-    #                 facepose_df = self._empty_facepose.reindex(index=[counter + cter])
-    #                 landmarks_df = self._empty_landmark.reindex(index=[counter + cter])
-    #                 au_occur_df = self._empty_auoccurence.reindex(
-    #                     index=[counter + cter]
-    #                 )
-
-    #                 out = pd.concat(
-    #                     [
-    #                         facebox_df,
-    #                         landmarks_df,
-    #                         au_occur_df,
-    #                         facepose_df,
-    #                         emotion_df,
-    #                     ],
-    #                     axis=1,
-    #                 )
-    #                 out["input"] = input_names[0] if is_video_frame else input_names[i]
-    #                 out[FEAT_TIME_COLUMNS] = counter + cter
-    #                 if newdf is None:
-    #                     newdf = out
-    #                 else:
-    #                     newdf = pd.concat([newdf, out], axis=0)
-
-    #             return (newdf, counter + frames.shape[0])
-
-    def detect_video(
-        self,
-        inputFname,
-        batch_size=5,
-        outputFname=None,
-        return_detection=True,
-        skip_frames=1,
-        singleframe4error=False,
-    ):
-        """Detects FEX from a video file.
-
-        Args:
-            inputFname (str): Path to video file
-            batch_size (int, optional): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
-            outputFname (str, optional): Path to output file. Defaults to None.
-            return_detection (bool, optional): whether to return a Fex object of all
-            concatenated detections. To save memory you can process results directly to
-            a file by setting this to False and providing an outputFname; Default True
-            skip_frames (int, optional): Number of every other frames to skip for speed or if not all frames need to be processed. Defaults to 1.
-            singleframe4error (bool, default = False): When set True, when exception
-            occurs inside a batch, instead of nullify the whole batch, process each img
-            in batch individually
-
-        Returns:
-            dataframe: Prediction results dataframe if outputFname is None. Returns True if outputFname is specified.
-        """
-        self.info["inputFname"] = validate_input(inputFname)
-        if not (outputFname or return_detection):
-            raise ValueError(
-                "If return_detection is False then you must provide an outputFname"
-            )
-
-        self.info["outputFname"] = outputFname
-        init_df = pd.DataFrame(columns=self["output_columns"])
-        if outputFname is not None:
-            init_df.to_csv(outputFname, index=False, header=True)
-
-        cap = cv2.VideoCapture(self.info["inputFname"][0])
-        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        frames_to_process = int(np.ceil(length / skip_frames))
-
-        counter = 0
-        frame_got = True
-        self.logger.info("Processing video.")
-        #  single core
-        concat_frame = None
-
-        with tqdm(
-            total=frames_to_process,
-            desc="Progress",
-            leave=True,
-            disable=not self.verbose,
-        ) as pbar:
-            while True:
-                frame_got, frame = cap.read()
-                if frame_got:
-                    pbar.update(1)
-                    if counter % skip_frames == 0:
-                        # if the
-                        if concat_frame is None:
-                            concat_frame = np.expand_dims(frame, 0)
-                            tmp_counter = counter
-                        else:
-                            concat_frame = np.concatenate(
-                                [concat_frame, np.expand_dims(frame, 0)], 0
-                            )
-                    if (
-                        (concat_frame is not None)
-                        and (counter != 0)
-                        and (concat_frame.shape[0] % batch_size == 0)
-                    ):  # I think it's probably this error
-                        if singleframe4error:
-                            try:
-                                df, _ = self.process_frame(
-                                    concat_frame,
-                                    self.info["inputFname"],
-                                    counter=tmp_counter,
-                                    singleframe4error=singleframe4error,
-                                    skip_frame_rate=skip_frames,
-                                    is_video_frame=True,
-                                )
-                            except FaceDetectionError:
-                                df = None
-                                for id_fr in range(concat_frame.shape[0]):
-                                    tmp_df, _ = self.process_frame(
-                                        concat_frame[id_fr : (id_fr + 1)],
-                                        self.info["inputFname"][id_fr : (id_fr + 1)],
-                                        counter=tmp_counter,
-                                        singleframe4error=False,
-                                        skip_frame_rate=skip_frames,
-                                        is_video_frame=True,
-                                    )
-                                    tmp_counter += 1
-                                    if df is None:
-                                        df = tmp_df
-                                    else:
-                                        df = pd.concat((df, tmp_df), 0)
-                        else:
-                            df, _ = self.process_frame(
-                                concat_frame,
-                                self.info["inputFname"],
-                                counter=tmp_counter,
-                                skip_frame_rate=skip_frames,
-                                is_video_frame=True,
-                            )
-
-                        if outputFname:
-                            df[init_df.columns].to_csv(
-                                outputFname, index=False, header=False, mode="a"
-                            )
-                        if return_detection:
-                            init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
-                        concat_frame = None
-                        tmp_counter = None
-                    counter = counter + 1
-                else:
-                    # process remaining frames
-                    if concat_frame is not None:
-                        if singleframe4error:
-                            try:
-                                df, _ = self.process_frame(
-                                    concat_frame,
-                                    self.info["inputFname"],
-                                    counter=tmp_counter,
-                                    skip_frame_rate=skip_frames,
-                                    is_video_frame=True,
-                                )
-                            except FaceDetectionError:
-                                df = None
-                                for id_fr in range(concat_frame.shape[0]):
-                                    tmp_df, _ = self.process_frame(
-                                        concat_frame[id_fr : (id_fr + 1)],
-                                        self.info["inputFname"][id_fr : (id_fr + 1)],
-                                        counter=tmp_counter,
-                                        singleframe4error=False,
-                                        skip_frame_rate=skip_frames,
-                                        is_video_frame=True,
-                                    )
-                                    tmp_counter += 1
-                                    if df is None:
-                                        df = tmp_df
-                                    else:
-                                        df = pd.concat((df, tmp_df), 0)
-                        else:
-                            df, _ = self.process_frame(
-                                concat_frame,
-                                self.info["inputFname"],
-                                counter=tmp_counter,
-                                skip_frame_rate=skip_frames,
-                                is_video_frame=True,
-                            )
-                        df["input"] = inputFname
-                        if outputFname is not None:
-                            df[init_df.columns].to_csv(
-                                outputFname, index=False, header=False, mode="a"
-                            )
-                        if return_detection:
-                            init_df = pd.concat([init_df, df[init_df.columns]], axis=0)
-                    break
-        cap.release()
-        if return_detection:
-            return Fex(
-                init_df,
-                filename=self.info["inputFname"],
-                au_columns=self["au_presence_columns"],
-                emotion_columns=FEAT_EMOTION_COLUMNS,
-                facebox_columns=FEAT_FACEBOX_COLUMNS,
-                landmark_columns=openface_2d_landmark_columns,
-                facepose_columns=FACET_FACEPOSE_COLUMNS,
-                time_columns=FEAT_TIME_COLUMNS,
-                detector="Feat",
-                face_model=self.info["face_model"],
-                landmark_model=self.info["landmark_model"],
-                au_model=self.info["au_model"],
-                emotion_model=self.info["emotion_model"],
-                facepose_model=self.info["facepose_model"],
-            )
-        # Not returning any detection to save memory
-        return True
