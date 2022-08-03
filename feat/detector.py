@@ -38,7 +38,6 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Resize, Pad, Grayscale
 import logging
 import warnings
-
 from tqdm import tqdm
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
@@ -656,7 +655,7 @@ class Detector(object):
         )
 
         batch_output = []
-        for batch_id, batch_data in enumerate(data_loader):
+        for batch_id, batch_data in enumerate(tqdm(data_loader)):
             frame_counter += frame_counter + batch_id * batch_size
             faces = self.detect_faces(batch_data["Image"])
             landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
@@ -713,7 +712,7 @@ class Detector(object):
         )
 
         batch_output = []
-        for batch_id, batch_data in enumerate(data_loader):
+        for batch_data in tqdm(data_loader):
             faces = self.detect_faces(batch_data["Image"])
             landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
             poses = self.detect_facepose(batch_data["Image"])
