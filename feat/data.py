@@ -1,6 +1,5 @@
 """
-Main Fex data class. The Fex class is a pandas DataFrame subclass that makes it
-easier to work with the results output from a Detector
+Py-FEAT Data classes. 
 """
 
 import warnings
@@ -21,27 +20,28 @@ from sklearn.linear_model import LinearRegression
 from torchvision.transforms import Compose
 from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
-import torch
 from feat.transforms import Rescale
-from feat.utils import (
-    read_feat,
-    read_affectiva,
-    read_facet,
-    read_openface,
-    wavelet,
-    calc_hist_auc,
-    load_viz_model,
-)
-from feat.plotting import plot_face, draw_lineface, draw_facepose
+from feat.utils.io import read_feat, read_affectiva, read_facet, read_openface
+from feat.utils.stats import wavelet, calc_hist_auc
+from feat.plotting import plot_face, draw_lineface, draw_facepose, load_viz_model
 from feat.pretrained import AU_LANDMARK_MAP
 from nilearn.signal import clean
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
-from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import seaborn as sns
 from textwrap import wrap
+
+__all__ = [
+    "FexSeries",
+    "Fex",
+    "Fextractor",
+    "ImageDataset",
+    "VideoDataset",
+    "_inverse_face_transform",
+    "_inverse_landmark_transform",
+]
 
 
 class FexSeries(Series):
