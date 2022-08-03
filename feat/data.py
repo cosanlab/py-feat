@@ -7,6 +7,7 @@ import warnings
 
 # Suppress nilearn warnings that come from importing nltools
 warnings.filterwarnings("ignore", category=FutureWarning, module="nilearn")
+import os
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
@@ -1439,6 +1440,7 @@ class Fex(DataFrame):
         add_titles=True,
         au_barplot=True,
         emotion_barplot=True,
+        plot_original_image=True,
     ):
         """
         Plots detection results by Feat. Can control plotting of face, AU barplot and
@@ -1508,18 +1510,35 @@ class Fex(DataFrame):
 
                 # DRAW LANDMARKS ON IMAGE OR AU FACE
                 if face_ax is not None:
-
-                    if faces == "landmarks":
+                    if plot_original_image:
                         # Try to load image file as background
                         # Will fail if input is a video
-                        try:
-                            face_ax.imshow(Image.open(row["input"]))
-                            color = "w"
-                        except Exception as e:
-                            if self.verbose:
-                                print(f"{e}")
-                            color = "k"
+                        # try:
+                        #     face_ax.imshow(Image.open(row["input"]))
+                        #     color = "w"
+                        # except Exception as e:
+                        #     if self.verbose:
+                        #         print(f"{e}")
+                        #     color = "k"
+                        file_extension = os.path.basename(row["input"]).split(".")[-1]
+                        if file_extension.lower() in [
+                            "jpg",
+                            "jpeg",
+                            "png",
+                            "bmp",
+                            "tiff",
+                            "pdf",
+                        ]:
+                            img = read_image(row["input"])
+                        else:
+                            video, audio, info = read_video(
+                                row["input"], output_format="TCHW"
+                            )
+                            img = video[row["frame"], :, :]
+                        color = "w"
+                        face_ax.imshow(img.permute([1, 2, 0]))
 
+                    if faces == "landmarks":
                         landmark = row[self.landmark_columns].values
                         currx = landmark[:68]
                         curry = landmark[68:]
@@ -1552,7 +1571,7 @@ class Fex(DataFrame):
                         # filename title
                         if add_titles:
                             _ = face_ax.set_title(
-                                "\n".join(wrap(row["input"])),
+                                "\n".join(wrap(os.path.basename(row["input"]))),
                                 loc="left",
                                 wrap=True,
                                 fontsize=14,
@@ -1561,11 +1580,11 @@ class Fex(DataFrame):
                         face_ax.axes.get_xaxis().set_visible(False)
                         face_ax.axes.get_yaxis().set_visible(False)
 
-                        # Flip images for video frames
-                        if row["input"].endswith(".mov") or row["input"].endswith(
-                            ".mp4"
-                        ):
-                            _ = face_ax.invert_yaxis()
+                        # # Flip images for video frames
+                        # if row["input"].endswith(".mov") or row["input"].endswith(
+                        #     ".mp4"
+                        # ):
+                        #     _ = face_ax.invert_yaxis()
 
                     if faces == "aus":
                         # Generate face from AU landmark model
