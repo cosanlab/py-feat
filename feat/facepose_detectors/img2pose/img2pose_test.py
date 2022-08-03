@@ -10,7 +10,6 @@ from .img2pose_model import img2poseModel
 from feat.utils import get_resource_path, set_torch_device, get_test_data_path
 from feat.face_detectors.Retinaface.Retinaface_utils import py_cpu_nms
 from ..utils import convert_to_euler
-import cv2
 
 
 class Img2Pose:

@@ -979,68 +979,41 @@ def drawLandmark_multiple(img, bbox, landmark):
     return img
 
 
-def padding(img, expected_size):
-    """
-    DOCUMENTATION GOES HERE
-    """
-    desired_size = expected_size
-    delta_width = desired_size - img.size[0]
-    delta_height = desired_size - img.size[1]
-    pad_width = delta_width // 2
-    pad_height = delta_height // 2
-    padding = (
-        pad_width,
-        pad_height,
-        delta_width - pad_width,
-        delta_height - pad_height,
-    )
-    return ImageOps.expand(img, padding)
+# def padding(img, expected_size):
+#     """
+#     DOCUMENTATION GOES HERE
+#     """
+#     desired_size = expected_size
+#     delta_width = desired_size - img.size[0]
+#     delta_height = desired_size - img.size[1]
+#     pad_width = delta_width // 2
+#     pad_height = delta_height // 2
+#     padding = (
+#         pad_width,
+#         pad_height,
+#         delta_width - pad_width,
+#         delta_height - pad_height,
+#     )
+#     return ImageOps.expand(img, padding)
 
 
-def read_pictures(imgname_list):
-    """
-    Reads in a list of pictures and concatenate these pictures into batches of images.
-
-    Args:
-        imgname_list (list of string): a list of filenames for the facial pictures
-
-    Returns:
-        img_batch_arr (np.array): np array of shape BxHxWxC
-    """
-
-    imgname_list = validate_input(imgname_list)
-    img_batch_arr = None
-    for img_name in imgname_list:
-        frame = cv2.imread(img_name)
-        frame = np.expand_dims(frame, 0)
-        if img_batch_arr is None:
-            img_batch_arr = frame
-        else:
-            assert (
-                img_batch_arr.shape[1::] == frame.shape[1::]
-            ), "please make sure that the input images are of the same shape! otherwise you need to process each image individually"
-            img_batch_arr = np.concatenate([img_batch_arr, frame], 0)
-
-    return img_batch_arr
-
-
-def resize_with_padding(img, expected_size):
-    """
-    DOCUMENTATION GOES HERE
-    """
-    img.thumbnail((expected_size[0], expected_size[1]))
-    # print(img.size)
-    delta_width = expected_size[0] - img.size[0]
-    delta_height = expected_size[1] - img.size[1]
-    pad_width = delta_width // 2
-    pad_height = delta_height // 2
-    padding = (
-        pad_width,
-        pad_height,
-        delta_width - pad_width,
-        delta_height - pad_height,
-    )
-    return ImageOps.expand(img, padding)
+# def resize_with_padding(img, expected_size):
+#     """
+#     DOCUMENTATION GOES HERE
+#     """
+#     img.thumbnail((expected_size[0], expected_size[1]))
+#     # print(img.size)
+#     delta_width = expected_size[0] - img.size[0]
+#     delta_height = expected_size[1] - img.size[1]
+#     pad_width = delta_width // 2
+#     pad_height = delta_height // 2
+#     padding = (
+#         pad_width,
+#         pad_height,
+#         delta_width - pad_width,
+#         delta_height - pad_height,
+#     )
+#     return ImageOps.expand(img, padding)
 
 
 def extract_face(frame, landmarks, size_output=112):
@@ -1183,13 +1156,6 @@ def align_face_68pts(img, img_land, box_enlarge, img_size=112):
         fill_value=(128, 128, 128),
     )
 
-    # aligned_img = cv2.warpAffine(
-    #     img,
-    #     mat[0:2, :],
-    #     (img_size, img_size),
-    #     cv2.INTER_LINEAR,
-    #     borderValue=(128, 128, 128),
-    # )
     land_3d = np.ones((int(len(img_land) / 2), 3))
     land_3d[:, 0:2] = np.reshape(np.array(img_land), (int(len(img_land) / 2), 2))
     mat_land_3d = np.mat(land_3d)
@@ -1262,12 +1228,10 @@ def convert_image_to_tensor(img, img_type=None):
     elif isinstance(img, PIL.Image.Image):
         transform = Compose([PILToTensor()])
         img = transform(img)
-        # img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
         img = img.expand(1, -1, -1, -1)
     elif isinstance(img, torch.Tensor):
         if len(img.shape) == 3:
             img = img.expand(1, -1, -1, -1)
-        # img = torch.swapaxes(torch.swapaxes(img, 0,1), 2,1).expand(1,-1,-1,-1)
     else:
         raise ValueError(
             f"{type(img)} is not currently supported please use CV2, PIL, or TorchVision to load image"
