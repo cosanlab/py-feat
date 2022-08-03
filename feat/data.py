@@ -1484,11 +1484,10 @@ class Fex(DataFrame):
         # 8. Video - single and multi-face mix across frames
 
         sns.set_context("paper", font_scale=2.0)
-        all_figs = []
-        num_subplots = bool(faces) + au_barplot + emotion_barplot
-        if faces is not False and faces not in ["aus", "landmarks"]:
-            raise ValueError("faces should be one of 'False', 'landmarks', or 'aus'")
 
+        num_subplots = bool(faces) + au_barplot + emotion_barplot
+
+        all_figs = []
         for _, frame in enumerate(self.frame.unique()):
             # Determine figure width based on how many subplots we have
             f = plt.figure(figsize=(5 * num_subplots, 7))
@@ -1510,16 +1509,10 @@ class Fex(DataFrame):
 
                 # DRAW LANDMARKS ON IMAGE OR AU FACE
                 if face_ax is not None:
+
+                    facebox = row[self.facebox_columns].values
+
                     if plot_original_image:
-                        # Try to load image file as background
-                        # Will fail if input is a video
-                        # try:
-                        #     face_ax.imshow(Image.open(row["input"]))
-                        #     color = "w"
-                        # except Exception as e:
-                        #     if self.verbose:
-                        #         print(f"{e}")
-                        #     color = "k"
                         file_extension = os.path.basename(row["input"]).split(".")[-1]
                         if file_extension.lower() in [
                             "jpg",
@@ -1538,55 +1531,34 @@ class Fex(DataFrame):
                         color = "w"
                         face_ax.imshow(img.permute([1, 2, 0]))
 
+                    if faceboxes:
+                        rect = Rectangle(
+                            (facebox[0], facebox[1]),
+                            facebox[2],
+                            facebox[3],
+                            linewidth=2,
+                            edgecolor="cyan",
+                            fill=False,
+                        )
+                        face_ax.add_patch(rect)
+
+                    if poses:
+                        face_ax = draw_facepose(
+                            pose=row[self.facepose_columns].values,
+                            facebox=facebox,
+                            ax=face_ax,
+                        )
+
                     if faces == "landmarks":
                         landmark = row[self.landmark_columns].values
                         currx = landmark[:68]
                         curry = landmark[68:]
-                        facebox = row[self.facebox_columns].values
 
                         # facelines
                         face_ax = draw_lineface(
                             currx, curry, ax=face_ax, color=color, linewidth=3
                         )
-                        # facebox
-                        if faceboxes:
-                            rect = Rectangle(
-                                (facebox[0], facebox[1]),
-                                facebox[2],
-                                facebox[3],
-                                linewidth=2,
-                                edgecolor="cyan",
-                                fill=False,
-                            )
-                            face_ax.add_patch(rect)
-
-                        # facepose
-                        if poses:
-                            face_ax = draw_facepose(
-                                pose=row[self.facepose_columns].values,
-                                facebox=facebox,
-                                ax=face_ax,
-                            )
-
-                        # filename title
-                        if add_titles:
-                            _ = face_ax.set_title(
-                                "\n".join(wrap(os.path.basename(row["input"]))),
-                                loc="left",
-                                wrap=True,
-                                fontsize=14,
-                            )
-
-                        face_ax.axes.get_xaxis().set_visible(False)
-                        face_ax.axes.get_yaxis().set_visible(False)
-
-                        # # Flip images for video frames
-                        # if row["input"].endswith(".mov") or row["input"].endswith(
-                        #     ".mp4"
-                        # ):
-                        #     _ = face_ax.invert_yaxis()
-
-                    if faces == "aus":
+                    elif faces == "aus":
                         # Generate face from AU landmark model
                         if any(self.groupby("frame").size() > 1):
                             raise NotImplementedError(
@@ -1608,6 +1580,21 @@ class Fex(DataFrame):
                             muscles=muscles,
                             title=title,
                         )
+                    else:
+                        raise ValueError(
+                            f"faces={type(faces)} is not currently supported try ['False','landmarks','aus']."
+                        )
+
+                    if add_titles:
+                        _ = face_ax.set_title(
+                            "\n".join(wrap(os.path.basename(row["input"]))),
+                            loc="center",
+                            wrap=True,
+                            fontsize=14,
+                        )
+
+                    face_ax.axes.get_xaxis().set_visible(False)
+                    face_ax.axes.get_yaxis().set_visible(False)
 
             # DRAW AU BARPLOT
             if au_ax is not None:
