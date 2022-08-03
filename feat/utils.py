@@ -16,7 +16,8 @@ import pandas as pd
 from scipy.integrate import simps
 from scipy.spatial import ConvexHull
 import feat
-import cv2
+
+# import cv2
 import torch
 from torchvision.datasets.utils import download_url as tv_download_url
 from torchvision.transforms import PILToTensor, Compose
@@ -180,16 +181,16 @@ OPENFACE_ORIG_COLUMNS = (
 )
 
 
-def face_rect_to_coords(rectangle):
-    """
-    Takes in a (x, y, w, h) array and transforms it into (x, y, x2, y2)
-    """
-    return [
-        rectangle[0],
-        rectangle[1],
-        rectangle[0] + rectangle[2],
-        rectangle[1] + rectangle[3],
-    ]
+# def face_rect_to_coords(rectangle):
+#     """
+#     Takes in a (x, y, w, h) array and transforms it into (x, y, x2, y2)
+#     """
+#     return [
+#         rectangle[0],
+#         rectangle[1],
+#         rectangle[0] + rectangle[2],
+#         rectangle[1] + rectangle[3],
+#     ]
 
 
 def get_resource_path():
@@ -938,82 +939,45 @@ class BBox(object):
         return landmark_
 
 
-def drawLandmark(img, bbox, landmark):
-    """Draws face bounding box and landmarks.
+# def drawLandmark(img, bbox, landmark):
+#     """Draws face bounding box and landmarks.
 
-    From https://github.com/cunjian/pytorch_face_landmark/
+#     From https://github.com/cunjian/pytorch_face_landmark/
 
-    Args:
-        img ([type]): gray or RGB
-        bbox ([type]): type of BBox
-        landmark ([type]): reproject landmark of (5L, 2L)
+#     Args:
+#         img ([type]): gray or RGB
+#         bbox ([type]): type of BBox
+#         landmark ([type]): reproject landmark of (5L, 2L)
 
-    Returns:
-        img marked with landmark and bbox
-    """
-    img_ = img.copy()
-    cv2.rectangle(
-        img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2
-    )
-    for x, y in landmark:
-        cv2.circle(img_, (int(x), int(y)), 3, (0, 255, 0), -1)
-    return img_
-
-
-def drawLandmark_multiple(img, bbox, landmark):
-    """Draw multiple landmarks.
-
-    From https://github.com/cunjian/pytorch_face_landmark/
-
-    Args:
-        img ([type]): gray or RGB
-        bbox ([type]): type of BBox
-        landmark ([type]): reproject landmark of (5L, 2L)
-
-    Returns:
-        img marked with landmark and bbox
-    """
-    cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2)
-    for x, y in landmark:
-        cv2.circle(img, (int(x), int(y)), 2, (0, 255, 0), -1)
-    return img
-
-
-# def padding(img, expected_size):
+#     Returns:
+#         img marked with landmark and bbox
 #     """
-#     DOCUMENTATION GOES HERE
-#     """
-#     desired_size = expected_size
-#     delta_width = desired_size - img.size[0]
-#     delta_height = desired_size - img.size[1]
-#     pad_width = delta_width // 2
-#     pad_height = delta_height // 2
-#     padding = (
-#         pad_width,
-#         pad_height,
-#         delta_width - pad_width,
-#         delta_height - pad_height,
+#     img_ = img.copy()
+#     cv2.rectangle(
+#         img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2
 #     )
-#     return ImageOps.expand(img, padding)
+#     for x, y in landmark:
+#         cv2.circle(img_, (int(x), int(y)), 3, (0, 255, 0), -1)
+#     return img_
 
 
-# def resize_with_padding(img, expected_size):
+# def drawLandmark_multiple(img, bbox, landmark):
+#     """Draw multiple landmarks.
+
+#     From https://github.com/cunjian/pytorch_face_landmark/
+
+#     Args:
+#         img ([type]): gray or RGB
+#         bbox ([type]): type of BBox
+#         landmark ([type]): reproject landmark of (5L, 2L)
+
+#     Returns:
+#         img marked with landmark and bbox
 #     """
-#     DOCUMENTATION GOES HERE
-#     """
-#     img.thumbnail((expected_size[0], expected_size[1]))
-#     # print(img.size)
-#     delta_width = expected_size[0] - img.size[0]
-#     delta_height = expected_size[1] - img.size[1]
-#     pad_width = delta_width // 2
-#     pad_height = delta_height // 2
-#     padding = (
-#         pad_width,
-#         pad_height,
-#         delta_width - pad_width,
-#         delta_height - pad_height,
-#     )
-#     return ImageOps.expand(img, padding)
+#     cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2)
+#     for x, y in landmark:
+#         cv2.circle(img, (int(x), int(y)), 2, (0, 255, 0), -1)
+#     return img
 
 
 def extract_face(frame, landmarks, size_output=112):
@@ -1184,12 +1148,6 @@ def download_url(*args, **kwargs):
 
     with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
         return tv_download_url(*args, **kwargs)
-
-
-class FaceDetectionError(Exception):
-    """Error when face detection failed in a batch"""
-
-    pass
 
 
 def reverse_color_order(img):
