@@ -3,13 +3,12 @@ import os
 from tokenize import Token
 import torch
 import numpy as np
-from torchvision import transforms
-from torchvision.transforms import Compose, Pad, ToTensor
+from torchvision.transforms import Compose, Pad
 from feat.transforms import Rescale
 from .img2pose_model import img2poseModel
-from feat.utils import get_resource_path, set_torch_device, get_test_data_path
-from feat.face_detectors.Retinaface.Retinaface_utils import py_cpu_nms
-from ..utils import convert_to_euler
+from feat.utils import set_torch_device
+from feat.utils.io import get_resource_path, get_test_data_path
+from feat.utils.image_operations import convert_to_euler, py_cpu_nms
 
 
 class Img2Pose:

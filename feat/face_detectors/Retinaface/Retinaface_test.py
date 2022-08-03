@@ -7,22 +7,18 @@ import numpy as np
 # import feat
 from feat.face_detectors.Retinaface.Retinaface_model import PriorBox, RetinaFace
 from feat.face_detectors.Retinaface.Retinaface_utils import (
-    py_cpu_nms,
     decode,
     decode_landm,
 )
-from feat.utils import (
-    get_resource_path,
-    convert_color_vector_to_tensor,
-    set_torch_device,
-)
+from feat.utils import set_torch_device
+from feat.utils.io import get_resource_path
+from feat.utils.image_operations import convert_color_vector_to_tensor, py_cpu_nms
 
 
 class Retinaface:
     def __init__(
         self,
         device="auto",
-        timer_flag=False,
         resize=1,
         vis_threshold=0.5,
         nms_threshold=0.3,
@@ -80,7 +76,6 @@ class Retinaface:
 
         # Set cutoff parameters
         (
-            self.timer_flag,
             self.resize,
             self.vis_threshold,
             self.nms_threshold,
@@ -88,7 +83,6 @@ class Retinaface:
             self.top_k,
             self.confidence_threshold,
         ) = (
-            timer_flag,
             resize,
             vis_threshold,
             nms_threshold,
@@ -180,14 +174,6 @@ class Retinaface:
 
         # keep top-K faster NMS
         dets = dets[: self.keep_top_k, :]
-        # landms = landms[:args.keep_top_k, :]
-
-        if self.timer_flag:
-            print(
-                "Detection: {:d}/{:d} forward_pass_time: {:.4f}s misc: {:.4f}s".format(
-                    1, 1, _t["forward_pass"].average_time, _t["misc"].average_time
-                )
-            )
 
         # filter using vis_threshold
         det_bboxes = []
