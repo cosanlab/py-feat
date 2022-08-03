@@ -1,6 +1,6 @@
 from feat.detector import Detector
 from feat.data import Fex
-from feat.utils import get_test_data_path
+from feat.utils.io import get_test_data_path
 import pandas as pd
 import os
 import numpy as np

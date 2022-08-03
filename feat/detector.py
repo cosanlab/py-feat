@@ -11,23 +11,25 @@ import os
 import numpy as np
 import pandas as pd
 from skimage.feature import hog
-from feat.data import Fex
 from feat.utils import (
-    convert_image_to_tensor,
-    convert_color_vector_to_tensor,
-    get_resource_path,
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FACET_FACEPOSE_COLUMNS,
     FEAT_TIME_COLUMNS,
     FACET_TIME_COLUMNS,
-    BBox,
     set_torch_device,
+)
+from feat.utils.io import get_resource_path
+from feat.utils.image_operations import (
+    BBox,
     extract_face,
+    convert_image_to_tensor,
+    convert_color_vector_to_tensor,
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 from feat.data import (
+    Fex,
     ImageDataset,
     VideoDataset,
     _inverse_face_transform,

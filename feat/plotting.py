@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
-from feat.utils import load_viz_model
 from feat.pretrained import AU_LANDMARK_MAP
 from math import sin, cos
 import warnings
@@ -1244,3 +1243,158 @@ def animate_face(
     if save is not None:
         animation.save(save, fps=fps)
     return animation
+
+
+def load_viz_model(
+    file_name=None,
+    prefer_joblib_if_version_match=True,
+    verbose=False,
+):
+    """Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
+    major and minor versions match those the model was trained with (3.8.x and 1.0.x
+    respectively), otherwise will reconstruct the model object using h5 data.
+
+    Args:
+        file_name (str, optional): Specify model to load.. Defaults to 'blue.h5'.
+        prefer_joblib_if_version_match (bool, optional): If the sklearn and python major.minor versions
+        match then return the pickled PLSRegression object. Otherwise build it from
+        scratch using .h5 data. Default True
+
+    Returns:
+        model: PLS model
+    """
+
+    file_name = "pyfeat_aus_to_landmarks" if file_name is None else file_name
+
+    if "." in file_name:
+        raise TypeError("Please use a file name with no extension")
+
+    h5_path = os.path.join(get_resource_path(), f"{file_name}.h5")
+    joblib_path = os.path.join(get_resource_path(), f"{file_name}.joblib")
+
+    # Make sure saved viz model exists
+    if not os.path.exists(h5_path):
+        raise ValueError(f"{h5_path} does not exist")
+
+    if not os.path.exists(joblib_path):
+        raise ValueError(f"{joblib_path} does not exist")
+
+    # Check sklearn and python version to see if we can load joblib
+    my_skmajor, my_skminor, my_skpatch = skversion.split(".")
+    my_pymajor, my_pyminor, my_pymicro, *_ = sys.version_info
+
+    # Versions viz models were trained with
+    pymajor, pyminor, skmajor, skminor = 3, 8, 1, 1
+    if (
+        int(my_skmajor) == skmajor
+        and int(my_skminor) == skminor
+        and int(my_pymajor) == pymajor
+        and int(my_pyminor) == pyminor
+        and prefer_joblib_if_version_match
+    ):
+        can_load_joblib = True
+    else:
+        can_load_joblib = False
+
+    try:
+        if can_load_joblib:
+            if verbose:
+                print("Loading joblib")
+            model = load(joblib_path)
+            # We need the h5 file for some meta-data even when loading using joblib
+            hf = h5py.File(h5_path, mode="r")
+            model.__dict__["model_name_"] = hf.attrs["model_name"]
+            model.__dict__["skversion"] = hf.attrs["skversion"]
+            model.__dict__["pyversion"] = hf.attrs["pyversion"]
+            hf.close()
+        else:
+            if verbose:
+                print("Reconstructing from h5")
+            hf = h5py.File(h5_path, mode="r")
+            x_weights = np.array(hf.get("x_weights"))
+            model = PLSRegression(n_components=x_weights.shape[1])
+            # PLSRegression in sklearn < 1.1 storex coefs as samples x features, but
+            # recent versions transpose this. Check if the user is on Python 3.7 (which
+            # only supports sklearn 1.0.x) or < sklearn 1.1.x
+            if (my_pymajor == 3 and my_pyminor == 7) or (
+                my_skmajor == 1 and my_skminor != 1
+            ):
+                model.__dict__["coef_"] = np.array(hf.get("coef"))
+                model.__dict__["_coef_"] = np.array(hf.get("coef"))
+            else:
+                model.__dict__["coef_"] = np.array(hf.get("coef")).T
+                model.__dict__["_coef_"] = np.array(hf.get("coef")).T
+            model.__dict__["x_weights_"] = np.array(hf.get("x_weights"))
+            model.__dict__["y_weights_"] = np.array(hf.get("y_weights"))
+            model.__dict__["x_loadings"] = np.array(hf.get("x_loadings"))
+            model.__dict__["y_loadings"] = np.array(hf.get("y_loadings"))
+            model.__dict__["x_scores"] = np.array(hf.get("x_scores"))
+            model.__dict__["y_scores"] = np.array(hf.get("y_scores"))
+            model.__dict__["x_rotations"] = np.array(hf.get("x_rotations"))
+            model.__dict__["y_rotations"] = np.array(hf.get("y_rotations"))
+            model.__dict__["intercept"] = np.array(hf.get("intercept"))
+            model.__dict__["x_train"] = np.array(hf.get("X_train"))
+            model.__dict__["y_train"] = np.array(hf.get("Y_train"))
+            model.__dict__["X_train"] = np.array(hf.get("x_train"))
+            model.__dict__["Y_train"] = np.array(hf.get("y_train"))
+            model.__dict__["intercept_"] = np.array(hf.get("intercept"))
+            model.__dict__["model_name_"] = hf.attrs["model_name"]
+            model.__dict__["skversion"] = hf.attrs["skversion"]
+            model.__dict__["pyversion"] = hf.attrs["pyversion"]
+
+            # Older sklearn version named these attributes differently
+            if int(skversion.split(".")[0]) < 1:
+                model.__dict__["x_mean_"] = np.array(hf.get("x_mean"))
+                model.__dict__["y_mean_"] = np.array(hf.get("y_mean"))
+                model.__dict__["x_std_"] = np.array(hf.get("x_std"))
+                model.__dict__["y_std_"] = np.array(hf.get("y_std"))
+            else:
+                model.__dict__["_x_mean"] = np.array(hf.get("x_mean"))
+                model.__dict__["_y_mean"] = np.array(hf.get("y_mean"))
+                model.__dict__["_x_std"] = np.array(hf.get("x_std"))
+                model.__dict__["_y_std"] = np.array(hf.get("y_std"))
+            hf.close()
+    except Exception as e:
+        raise IOError(f"Unable to load data: {e}")
+    return model
+
+
+# def drawLandmark(img, bbox, landmark):
+#     """Draws face bounding box and landmarks.
+
+#     From https://github.com/cunjian/pytorch_face_landmark/
+
+#     Args:
+#         img ([type]): gray or RGB
+#         bbox ([type]): type of BBox
+#         landmark ([type]): reproject landmark of (5L, 2L)
+
+#     Returns:
+#         img marked with landmark and bbox
+#     """
+#     img_ = img.copy()
+#     cv2.rectangle(
+#         img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2
+#     )
+#     for x, y in landmark:
+#         cv2.circle(img_, (int(x), int(y)), 3, (0, 255, 0), -1)
+#     return img_
+
+
+# def drawLandmark_multiple(img, bbox, landmark):
+#     """Draw multiple landmarks.
+
+#     From https://github.com/cunjian/pytorch_face_landmark/
+
+#     Args:
+#         img ([type]): gray or RGB
+#         bbox ([type]): type of BBox
+#         landmark ([type]): reproject landmark of (5L, 2L)
+
+#     Returns:
+#         img marked with landmark and bbox
+#     """
+#     cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2)
+#     for x, y in landmark:
+#         cv2.circle(img, (int(x), int(y)), 2, (0, 255, 0), -1)
+#     return img

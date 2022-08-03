@@ -9,7 +9,7 @@ import torch
 from PIL import Image
 from feat.face_detectors.MTCNN.MTCNN_model import PNet, RNet, ONet
 from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
-from feat.utils import set_torch_device, convert_image_to_tensor
+from feat.utils import set_torch_device
 
 import torch.nn as nn
 

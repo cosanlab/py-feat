@@ -20,7 +20,7 @@ from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
     EmoSVMClassifier,
 )
-from feat.utils import get_resource_path, download_url
+from feat.utils.io import get_resource_path, download_url
 import os
 import json
 
@@ -55,6 +55,7 @@ PRETRAINED_MODELS = {
         {"img2pose-c": Img2Pose},
     ],
 }
+
 # Compatibility support for OpenFace, Affectiva, and FACET data files which have
 # different AU names than the detectors trained by Py-Feat
 AU_LANDMARK_MAP = {

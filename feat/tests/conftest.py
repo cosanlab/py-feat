@@ -10,8 +10,8 @@ def test_detect_single_face(default_detector, single_face_img):
 from pytest import fixture
 import os
 from feat.detector import Detector
-from feat.utils import read_pictures
 import numpy as np
+from torchvision.io import read_image, read_video
 
 # AU constants for plotting
 @fixture(scope="module")
@@ -90,7 +90,7 @@ def single_face_img(data_path):
 @fixture(scope="module")
 def single_face_img_data(single_face_img):
     """The actual numpy array of img data"""
-    return read_pictures([single_face_img])
+    return read_image([single_face_img])
 
 
 @fixture(scope="module")

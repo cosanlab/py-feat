@@ -13,7 +13,6 @@ from feat.face_detectors.Retinaface.Retinaface_utils import (
 )
 from feat.utils import (
     get_resource_path,
-    convert_image_to_tensor,
     convert_color_vector_to_tensor,
     set_torch_device,
 )
