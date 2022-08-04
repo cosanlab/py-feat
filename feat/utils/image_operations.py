@@ -33,6 +33,7 @@ __all__ = [
     "mask_image",
     "convert_to_euler",
     "py_cpu_nms",
+    "decode",
 ]
 
 # Neutral face coordinates
@@ -98,7 +99,7 @@ def registration(face_lms, neutral=neutral, method="fullface"):
     return np.array(registered_lms)
 
 
-def extract_face(frame, landmarks, size_output=112):
+def extract_face_from_landmarks(frame, landmarks, face_size=112):
     """Extract a face in a frame with a convex hull of landmarks.
 
     This function extracts the faces of the frame with convex hulls and masks out the rest.
@@ -124,7 +125,7 @@ def extract_face(frame, landmarks, size_output=112):
     landmarks = np.array(landmarks).copy()
 
     aligned_img, new_landmarks = align_face_68pts(
-        frame, landmarks.flatten(), 2.5, img_size=size_output
+        frame, landmarks.flatten(), 2.5, img_size=face_size
     )
 
     hull = ConvexHull(new_landmarks)
@@ -394,12 +395,25 @@ def align_face_49pts(img, img_land, box_enlarge=2.9, img_size=200):
 
 
 class BBox(object):
-    def __init__(self, bbox, order=None):
+    def __init__(
+        self,
+        bbox,
+        order=None,
+        left_boundary=0,
+        top_boundary=0,
+        right_boundary=None,
+        bottom_boundary=None,
+    ):
         """Class to work with Bounding Box
 
         Args:
             bbox: (list): values
             order (list): order of values (e.g., ['left', 'bottom', 'right', 'top'])
+            left optional (float): boundary of left (default 0)
+            right toptional (float): boundary of right border (e.g., width of image)
+            top optional (float): boundary of top border (default 0)
+            bottom optional(float): boundary of right border (e.g., height of image)
+
         """
         if order is None:
             self.order = ["left", "bottom", "right", "top"]
@@ -420,33 +434,94 @@ class BBox(object):
         self.width = self.right - self.left
         self.height = self.top - self.bottom
 
+        # self.set_boundary(
+        #     left=left_boundary,
+        #     right=right_boundary,
+        #     top=top_boundary,
+        #     bottom=bottom_boundary,
+        #     apply=True,
+        # )
+
     def __repr__(self):
         return f"'height': {self.height}, 'width': {self.width}"
 
-    def expand_by_factor(self, factor):
+    def expand_by_factor(self, factor, symmetric=True):
         """Expand box by factor
 
         Args:
-            factor (float, tuple): factor to expand. if float equal in all directions, if tuple (height, width)
+            factor (float): factor to expand.
+            symmetric (bool): if symmetric then expand equally based on largest side
         """
 
-        if not isinstance(factor, (int, float, tuple)):
-            raise ValueError("factor must be float or tuple(height, width)")
+        if symmetric:
+            new_size = max([self.width, self.height]) * factor
+            self.width = new_size
+            self.height = new_size
 
-        if isinstance(factor, tuple):
-            if len(factor) != 2:
-                raise ValueError("factor must include (height,width)")
-            else:
-                self.height *= factor[0]
-                self.width *= factor[1]
         else:
-            self.height *= factor
             self.width *= factor
-        self.left = max(self.center_x - self.width, 0)
-        self.right = self.center_x + self.width
-        self.bottom = max(self.center_x - self.height, 0)
-        self.top = self.center_x + self.height
+            self.height *= factor
+
+        self.left = self.center_x - (self.width // 2)
+        self.right = self.center_x + (self.width // 2)
+        self.bottom = self.center_y - (self.height // 2)
+        self.top = self.center_y + (self.height // 2)
+
+        # self._apply_boundary()
+
         return self
+
+    def set_boundary(self, left=0, right=None, top=0, bottom=None, apply_boundary=True):
+        """Set maximum boundary of bounding box such as the edge of the original image
+
+        Use _apply_boundary() method to update the bounding box
+
+        Args:
+            left (float): boundary of left (default 0)
+            right (float): boundary of right border (e.g., width of image)
+            top (float): boundary of top border (default 0)
+            bottom (float): boundary of right border (e.g., height of image)
+            apply (bool): apply boundary to BBox
+
+        """
+
+        left = max(left, 0)
+        top = max(top, 0)
+
+        (
+            self.left_boundary,
+            self.top_boundary,
+            self.right_boundary,
+            self.bottom_boundary,
+        ) = (left, top, right, bottom)
+
+        if apply_boundary:
+            self._apply_boundary()
+        return self
+
+    def _apply_boundary(self):
+        """Helper function to apply stored boundaries to BBox
+
+        Currently does not update stored width and height
+        """
+
+        if self.left_boundary is not None:
+            if self.left_boundary > self.left:
+                self.left = self.left_boundary
+
+        if self.right_boundary is not None:
+            if self.right_boundary < self.right:
+                self.right = self.right_boundary
+
+        if self.top_boundary is not None:
+            if self.top_boundary > self.top:
+                self.top = self.top_boundary
+
+        if self.bottom_boundary is not None:
+            if self.bottom_boundary < self.bottom:
+                self.bottom = self.bottom_boundary
+
+        return
 
     def extract_from_image(self, img):
         """Crop Image using Bounding Box
@@ -488,8 +563,17 @@ class BBox(object):
         """Output bounding box coordinates to list"""
         return [self.to_dict()[x] for x in self.order]
 
-    def project_landmark(self, landmark):
-        """scale to [0,1] from https://github.com/cunjian/pytorch_face_landmark/"""
+    def transform_landmark(self, landmark):
+        """Scale Landmarks to be within a 1 unit box (e.g., [0,1])
+
+        based on https://github.com/cunjian/pytorch_face_landmark/
+
+        Args:
+
+        Returns:
+            scaled landmarks
+        """
+
         landmark_ = np.asarray(np.zeros(landmark.shape))
         for i, point in enumerate(landmark):
             landmark_[i] = (
@@ -498,8 +582,18 @@ class BBox(object):
             )
         return landmark_
 
-    def reproject_landmark(self, landmark):
-        """landmark of (5L, 2L) from [0,1] to real range from https://github.com/cunjian/pytorch_face_landmark/"""
+    def inverse_transform_landmark(self, landmark):
+        """Re-scale landmarks from unit scaling back into BBox
+
+        based on  https://github.com/cunjian/pytorch_face_landmark/
+
+        Args:
+            landmarks: (np.array): landmarks
+
+        Returns:
+            re-scaled landmarks
+        """
+
         landmark_ = np.asarray(np.zeros(landmark.shape))
         for i, point in enumerate(landmark):
             x = point[0] * self.width + self.left
@@ -653,3 +747,32 @@ def py_cpu_nms(dets, thresh):
         order = order[inds + 1]
 
     return keep
+
+
+def decode(loc, priors, variances):
+    """Decode locations from predictions using priors to undo
+    the encoding we did for offset regression at train time.
+
+    Adapted from https://github.com/Hakuyume/chainer-ssd
+
+    Args:
+        loc (tensor): location predictions for loc layers,
+            Shape: [num_priors,4]
+        priors (tensor): Prior boxes in center-offset form.
+            Shape: [num_priors,4].
+        variances: (list[float]) Variances of priorboxes
+
+    Return:
+        decoded bounding box predictions
+    """
+
+    boxes = torch.cat(
+        (
+            priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
+            priors[:, 2:] * torch.exp(loc[:, 2:] * variances[1]),
+        ),
+        1,
+    )
+    boxes[:, :2] -= boxes[:, 2:] / 2
+    boxes[:, 2:] += boxes[:, :2]
+    return boxes

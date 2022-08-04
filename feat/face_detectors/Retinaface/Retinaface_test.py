@@ -6,13 +6,14 @@ import numpy as np
 # import time
 # import feat
 from feat.face_detectors.Retinaface.Retinaface_model import PriorBox, RetinaFace
-from feat.face_detectors.Retinaface.Retinaface_utils import (
-    decode,
-    decode_landm,
-)
+from feat.face_detectors.Retinaface.Retinaface_utils import decode_landm
 from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path
-from feat.utils.image_operations import convert_color_vector_to_tensor, py_cpu_nms
+from feat.utils.image_operations import (
+    convert_color_vector_to_tensor,
+    py_cpu_nms,
+    decode,
+)
 
 
 class Retinaface:
@@ -96,7 +97,7 @@ class Retinaface:
         forward function
 
         Args:
-            img: (B,C, H,W,C), B is batch number, C is channel, H is image height, and W is width
+            img: (B,C,H,W), B is batch number, C is channel, H is image height, and W is width
         """
 
         img = torch.sub(img, convert_color_vector_to_tensor(np.array([123, 117, 104])))
@@ -168,17 +169,26 @@ class Retinaface:
         # do NMS
         dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
         keep = py_cpu_nms(dets, self.nms_threshold)
-        # keep = nms(dets, args.nms_threshold,force_cpu=args.cpu)
         dets = dets[keep, :]
         landms = landms[keep]
 
         # keep top-K faster NMS
         dets = dets[: self.keep_top_k, :]
 
-        # filter using vis_threshold
+        # filter using vis_thres - rescale box size to be proportional to image size
+        scale_x, scale_y = (im_width / im_height, im_height / im_width)
         det_bboxes = []
         for b in dets:
             if b[4] > self.vis_threshold:
-                det_bboxes.append(b)
+                xmin, ymin, xmax, ymax, score = b
+                det_bboxes.append(
+                    [
+                        xmin * scale_x,
+                        ymin * scale_y,
+                        xmax * scale_x,
+                        ymax * scale_y,
+                        score,
+                    ]
+                )
 
         return det_bboxes

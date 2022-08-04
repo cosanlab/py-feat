@@ -23,7 +23,7 @@ from feat.utils import (
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
     BBox,
-    extract_face,
+    extract_face_from_landmarks,
     convert_image_to_tensor,
     convert_color_vector_to_tensor,
 )
@@ -422,6 +422,7 @@ class Detector(object):
                     mean_tensor = convert_color_vector_to_tensor(mean)
                     std_tensor = convert_color_vector_to_tensor(std)
                     test_face = torch.div(torch.sub(test_face, mean_tensor), std_tensor)
+
             if concatenated_face is None:
                 concatenated_face = test_face
             else:
@@ -430,7 +431,6 @@ class Detector(object):
         # Run Landmark Model
         input = concatenated_face.type(torch.float32)
         input = torch.autograd.Variable(input)
-
         if self.info["landmark_model"]:
             if self.info["landmark_model"].lower() == "mobilefacenet":
                 landmark = self.landmark_detector(input)[0].cpu().data.numpy()
@@ -441,7 +441,7 @@ class Detector(object):
 
         landmark_results = []
         for ik in range(landmark.shape[0]):
-            landmark2 = bbox_list[ik].reproject_landmark(landmark[ik, :, :])
+            landmark2 = bbox_list[ik].inverse_transform_landmark(landmark[ik, :, :])
             landmark_results.append(landmark2)
 
         list_concat = []
@@ -544,10 +544,10 @@ class Detector(object):
 
             frame_assignment = np.where(i < lenth_cumu)[0][0]
 
-            convex_hull, new_lands = extract_face(
+            convex_hull, new_lands = extract_face_from_landmarks(
                 frame=frames[frame_assignment],
                 landmarks=flat_land[i],
-                size_output=112,
+                face_size=112,
             )
 
             hogs = hog(
