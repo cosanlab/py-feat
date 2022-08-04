@@ -6,7 +6,7 @@ from feat.utils.io import (get_test_data_path,
     read_openface,
 from feat.utils.image_operations import registration
 from feat.plotting import load_viz_model
-from feat.stats import softmax
+from feat.utils.stats import softmax
 from feat import Fex
 
 

@@ -305,7 +305,6 @@ class PriorBox(object):
             [ceil(self.image_size[0] / step), ceil(self.image_size[1] / step)]
             for step in self.steps
         ]
-        self.name = "s"
 
     def forward(self):
         anchors = []
