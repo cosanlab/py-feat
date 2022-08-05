@@ -448,7 +448,7 @@ class BBox(object):
 
         Args:
             bbox: (list): values
-            order (list): order of values (e.g., ['left', 'bottom', 'right', 'top'])
+            order (list): order of values (e.g., ['left', 'top', 'right', 'bottom'])
             left optional (float): boundary of left (default 0)
             right toptional (float): boundary of right border (e.g., width of image)
             top optional (float): boundary of top border (default 0)
@@ -456,7 +456,7 @@ class BBox(object):
 
         """
         if order is None:
-            self.order = ["left", "bottom", "right", "top"]
+            self.order = ["left", "top", "right", "bottom"]
         else:
             if not isinstance(order, list):
                 raise ValueError("order must be a list")
@@ -542,7 +542,7 @@ class BBox(object):
     def _apply_boundary(self):
         """Helper function to apply stored boundaries to BBox
 
-        Currently does not update stored width and height
+        Currently does not update stored width/height or center values
         """
 
         if self.left_boundary is not None:
