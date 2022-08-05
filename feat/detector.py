@@ -480,14 +480,14 @@ class Detector(object):
         """
 
         frame = convert_image_to_tensor(frame, img_type="float32")
-        transform = Grayscale(3)
-        frame = transform(frame)
 
         if self["au_model"].lower() in ["logistic", "svm"]:
+            transform = Grayscale(3)
+            frame = transform(frame)
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
             au_predictions = self.au_model.detect_au(frame=hog_arr, landmarks=new_lands)
         else:
-            au_predictions = self.au_model.detect_au(frame=frame, landmarks=landmarks)
+            au_predictions = self.au_model.detect_au(frame, landmarks=landmarks)
 
         return self._convert_detector_output(landmarks, au_predictions)
 
