@@ -39,7 +39,7 @@ from feat.data import (
 )
 import torch
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, Resize, Pad, Grayscale
+from torchvision.transforms import Compose, Normalize, Grayscale
 import logging
 import warnings
 from tqdm import tqdm
@@ -378,20 +378,12 @@ class Detector(object):
         extracted_faces, new_bbox = extract_face_from_bbox(
             frame, detected_faces, face_size=out_size
         )
-        extracted_faces = extracted_faces.type(torch.float32) / 255.0
+        extracted_faces = extracted_faces / 255.0
 
         if self.info["landmark_model"].lower() == "mobilenet":
-            mean_tensor = convert_color_vector_to_tensor(
-                np.asarray([0.485, 0.456, 0.406])
-            )
-            std_tensor = convert_color_vector_to_tensor(
-                np.asarray([0.229, 0.224, 0.225])
-            )
-            extracted_faces = torch.div(
-                torch.sub(extracted_faces, mean_tensor), std_tensor
-            )
-
-        extracted_faces = extracted_faces.type(torch.float32)
+            extracted_faces = Compose(
+                [Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
+            )(extracted_faces)
 
         # Run Landmark Model
         if self.info["landmark_model"].lower() == "mobilefacenet":
