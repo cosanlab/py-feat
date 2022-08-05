@@ -286,10 +286,10 @@ class fer_net(nn.Module):
         return outs
 
 
-if __name__ == "__main__":
-    A01 = fer_net(in_chs=3, num_classes=7, img_size=200)
-    # print(A01)
-    rand_data = torch.rand(12, 3, 200, 200)
-    ou1 = A01(rand_data)
-    # print(ou1.shape)
-    # print(summary(A01, input_size = (12, 1, 48, 48)))
+# if __name__ == "__main__":
+#     A01 = fer_net(in_chs=3, num_classes=7, img_size=200)
+#     # print(A01)
+#     rand_data = torch.rand(12, 3, 200, 200)
+#     ou1 = A01(rand_data)
+#     # print(ou1.shape)
+#     # print(summary(A01, input_size = (12, 1, 48, 48)))

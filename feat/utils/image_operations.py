@@ -14,13 +14,15 @@ from torchvision.transforms import PILToTensor, Compose
 import PIL
 from kornia.geometry.transform import warp_affine
 from skimage.morphology.convex_hull import grid_points_in_poly
+from feat.transforms import Rescale
 
 __all__ = [
     "neutral",
     "face_rect_to_coords",
     "registration",
     "convert68to49",
-    "extract_face",
+    "extract_face_from_landmark",
+    "extract_face_from_bbox",
     "convert68to49",
     "align_face_68pts",
     "align_face_49pts",
@@ -148,35 +150,81 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
     return (masked_image, new_landmarks)
 
 
-def convert68to49(points):
-    """Convert landmark form 68 to 49
-
-    Function slightly modified from https://github.com/D-X-Y/landmark-detection/blob/7bc7a5dbdbda314653124a4596f3feaf071e8589/SAN/lib/datasets/dataset_utils.py#L169 to fit pytorch tensors. Converts 68 point landmarks to 49 point landmarks
+def extract_face_from_bbox(frame, detected_faces, face_size=112, expand_bbox=1.2):
+    """Extract face from image and resize
 
     Args:
-        points: landmark points of shape (2,68) or (3,68)
+        frame (torch.tensor): img with faces
+        detected_faces (list): list of lists of face bounding boxes from detect_face()
+        face_size (int): output size to resize face after cropping
+        expand_bbox (float): amount to expand bbox before cropping
+
+    Returns:
+        cropped_face (torch.Tensor): Tensor of extracted faces of shape=face_size
+        new_bbox (list): list of new bounding boxes that correspond to cropped face
+    """
+
+    length_index = [len(ama) for ama in detected_faces]
+    length_cumu = np.cumsum(length_index)
+
+    flat_faces = [
+        item for sublist in detected_faces for item in sublist
+    ]  # Flatten the faces
+
+    im_height, im_width = frame.shape[-2:]
+
+    bbox_list = []
+    cropped_faces = []
+    for k, face in enumerate(flat_faces):
+        frame_assignment = np.where(k <= length_cumu)[0][0]  # which frame is it?
+        bbox = BBox(
+            face[:-1], bottom_boundary=im_height, right_boundary=im_width
+        ).expand_by_factor(expand_bbox)
+        cropped = bbox.extract_from_image(frame[frame_assignment])
+        transform = Compose(
+            [Rescale(output_size=face_size, preserve_aspect_ratio=True, padding=True)]
+        )
+        cropped_faces.append(transform(cropped))
+        bbox_list.append(bbox)
+
+    faces = torch.cat(
+        tuple([convert_image_to_tensor(x["Image"]) for x in cropped_faces]), 0
+    )
+    return (faces, bbox_list)
+
+
+def convert68to49(landmarks):
+    """Convert landmark from 68 to 49 points
+
+    Function modified from https://github.com/D-X-Y/landmark-detection/blob/7bc7a5dbdbda314653124a4596f3feaf071e8589/SAN/lib/datasets/dataset_utils.py#L169 to fit pytorch tensors. Converts 68 point landmarks to 49 point landmarks
+
+    Args:
+        landmarks: landmark points of shape (2,68)
 
     Return:
-        cpoints: converted 49 landmark points of shape (2,49)
+        converted landmarks: converted 49 landmark points of shape (2,49)
     """
-    assert (
-        len(points.shape) == 2
-        and (points.shape[0] == 3 or points.shape[0] == 2)
-        and points.shape[1] == 68
-    ), "The shape of points is not right : {}".format(points.shape)
 
-    if isinstance(points, torch.Tensor):
-        points = points.clone()
+    if landmarks.shape != (68, 2):
+        if landmarks.shape[::-1] == (68, 2):
+            landmarks = landmarks.shape[::-1]
+        else:
+            raise ValueError("landmarks should be a numpy array of (68,2)")
+
+    if isinstance(landmarks, torch.Tensor):
+        landmarks = landmarks.clone()
         out = torch.ones((68,), dtype=torch.bool)
-    elif type(points) is np.ndarray:
-        points = points.copy()
+    elif isinstance(landmarks, (np.ndarray, tuple)):
+        landmarks = landmarks.copy()
         out = np.ones((68,)).astype("bool")
+    else:
+        raise ValueError(
+            f"landmarks should be a numpy array or torch.Tensor not {type(landmarks)}"
+        )
 
     out[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60, 64]] = False
-    cpoints = points[:, out]
 
-    assert len(cpoints.shape) == 2 and cpoints.shape[1] == 49
-    return cpoints
+    return landmarks[out]
 
 
 def align_face_68pts(img, img_land, box_enlarge, img_size=112):
@@ -280,20 +328,20 @@ def align_face_68pts(img, img_land, box_enlarge, img_size=112):
 
 
 def align_face_49pts(img, img_land, box_enlarge=2.9, img_size=200):
-    """
-    code from:
-    https://github.com/ZhiwenShao/PyTorch-JAANet/blob/master/dataset/face_transform.py
-    Did some small modifications to fit into our program.
-    The function performs preproecessing transformations on pictures.
+    """Align face using 49 landmarks
+
+    based on https://github.com/ZhiwenShao/PyTorch-JAANet/blob/master/dataset/face_transform.py
+
     Args:
-        img: iamges loaded by cv2. Shape: (3,H,W)
-        img_land: landmark file for the img. Shape()
-        box_enlarge: englarge factor for the face transform, centered at face
-        img_size: size of the desired output image
+        img (torch.Tensor): image represented as tensor (B,C,H,W)
+        img_land: facial landmarks (49 points)
+        box_enlarge (float): enlarge factor for the face transform, centered at face
+        img_size (int): size of the desired output image
+
     Return:
-        aligned_img: aligned images by cv2
-        new_land: transformed landmarks
-        biocular: biocular distancxe
+        aligned_img: aligned images
+        aligned_landmarks: transformed landmarks
+        binocular: binocular distance
     """
     leftEye0 = (
         img_land[2 * 19]
@@ -366,14 +414,6 @@ def align_face_49pts(img, img_land, box_enlarge=2.9, img_size=200):
     )
     mat = mat3 * mat1
 
-    # aligned_img = cv2.warpAffine(
-    #     img,
-    #     mat[0:2, :],
-    #     (img_size, img_size),
-    #     cv2.INTER_LINEAR,
-    #     borderValue=(128, 128, 128),
-    # )
-
     affine_matrix = torch.tensor(mat[0:2, :]).type(torch.float32).unsqueeze(0)
     aligned_img = warp_affine(
         img,
@@ -434,13 +474,13 @@ class BBox(object):
         self.width = self.right - self.left
         self.height = self.top - self.bottom
 
-        # self.set_boundary(
-        #     left=left_boundary,
-        #     right=right_boundary,
-        #     top=top_boundary,
-        #     bottom=bottom_boundary,
-        #     apply=True,
-        # )
+        self = self.set_boundary(
+            left=left_boundary,
+            right=right_boundary,
+            top=top_boundary,
+            bottom=bottom_boundary,
+            apply_boundary=True,
+        )
 
     def __repr__(self):
         return f"'height': {self.height}, 'width': {self.width}"
@@ -467,7 +507,7 @@ class BBox(object):
         self.bottom = self.center_y - (self.height // 2)
         self.top = self.center_y + (self.height // 2)
 
-        # self._apply_boundary()
+        self._apply_boundary()
 
         return self
 
@@ -711,14 +751,17 @@ def convert_to_euler(rotvec, is_rotvec=True):
     return np.array([angle[0], -angle[2], -angle[1]])  # pitch, roll, yaw
 
 
-# --------------------------------------------------------
-# Fast R-CNN
-# Copyright (c) 2015 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ross Girshick
-# --------------------------------------------------------
 def py_cpu_nms(dets, thresh):
-    """Pure Python NMS baseline."""
+    """Pure Python NMS baseline
+
+    # --------------------------------------------------------
+    # Fast R-CNN
+    # Copyright (c) 2015 Microsoft
+    # Licensed under The MIT License [see LICENSE for details]
+    # Written by Ross Girshick
+    # --------------------------------------------------------
+
+    """
 
     x1 = dets[:, 0]
     y1 = dets[:, 1]
