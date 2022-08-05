@@ -24,8 +24,10 @@ from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
     BBox,
     extract_face_from_landmarks,
+    extract_face_from_bbox,
     convert_image_to_tensor,
     convert_color_vector_to_tensor,
+    convert68to49,
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 from feat.data import (
@@ -199,6 +201,7 @@ class Detector(object):
                         map_location=self.device,
                     )
                     self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+            self.landmark_detector.eval()
 
             self.info["landmark_model"] = landmark
             self.info["mapper"] = openface_2d_landmark_columns
@@ -366,86 +369,47 @@ class Detector(object):
 
         frame = convert_image_to_tensor(frame)
 
-        mean = np.asarray([0.485, 0.456, 0.406])
-        std = np.asarray([0.229, 0.224, 0.225])
-
-        self.landmark_detector.eval()
-
         if self.info["landmark_model"]:
             if self.info["landmark_model"].lower() == "mobilenet":
                 out_size = 224
             else:
                 out_size = 112
 
-        # Face Preprocessing - can we move this out of a loop?  what happens when there are multiple faces?
-        height, width = frame.shape[-2:]
+        extracted_faces, new_bbox = extract_face_from_bbox(
+            frame, detected_faces, face_size=out_size
+        )
+        extracted_faces = extracted_faces.type(torch.float32) / 255.0
 
-        length_index = [len(ama) for ama in detected_faces]
-        length_cumu = np.cumsum(length_index)
+        if self.info["landmark_model"].lower() == "mobilenet":
+            mean_tensor = convert_color_vector_to_tensor(
+                np.asarray([0.485, 0.456, 0.406])
+            )
+            std_tensor = convert_color_vector_to_tensor(
+                np.asarray([0.229, 0.224, 0.225])
+            )
+            extracted_faces = torch.div(
+                torch.sub(extracted_faces, mean_tensor), std_tensor
+            )
 
-        flat_faces = [
-            item for sublist in detected_faces for item in sublist
-        ]  # Flatten the faces
-
-        concatenated_face = None
-        bbox_list = []
-        for k, face in enumerate(flat_faces):
-            frame_assignment = np.where(k <= length_cumu)[0][0]  # which frame is it?
-            bbox = BBox(face[:-1])
-            size = int(min([bbox.width, bbox.height]) * 1.2)
-            x1 = bbox.center_x - size // 2
-            x2 = min(x1 + size, width)
-            y1 = bbox.center_y - size // 2
-            y2 = min(y1 + size, height)
-            dx, dy, x1, y1 = (max(0, -x1), max(0, -y1), max(0, x1), max(0, y1))
-            edx = max(0, x1 + size - width)
-            edy = max(0, y1 + size - height)
-            new_bbox = BBox([x1, y1, x2, y2])
-            bbox_list.append(new_bbox)
-            cropped = new_bbox.extract_from_image(frame[frame_assignment])
-            if dx > 0 or dy > 0 or edx > 0 or edy > 0:
-                transform = Compose(
-                    [
-                        Pad(
-                            (int(dx), int(dy), int(edx), int(edy)),
-                            fill=0,
-                            padding_mode="constant",
-                        )
-                    ]
-                )
-                cropped = transform(cropped)
-
-            transform = Compose([Resize(out_size)])
-            test_face = transform(cropped) / 255.0
-            if self.info["landmark_model"]:
-                if self.info["landmark_model"].lower() == "mobilenet":
-                    mean_tensor = convert_color_vector_to_tensor(mean)
-                    std_tensor = convert_color_vector_to_tensor(std)
-                    test_face = torch.div(torch.sub(test_face, mean_tensor), std_tensor)
-
-            if concatenated_face is None:
-                concatenated_face = test_face
-            else:
-                concatenated_face = torch.cat((concatenated_face, test_face), 0)
+        extracted_faces = extracted_faces.type(torch.float32)
 
         # Run Landmark Model
-        input = concatenated_face.type(torch.float32)
-        input = torch.autograd.Variable(input)
-        if self.info["landmark_model"]:
-            if self.info["landmark_model"].lower() == "mobilefacenet":
-                landmark = self.landmark_detector(input)[0].cpu().data.numpy()
-            else:
-                landmark = self.landmark_detector(input).cpu().data.numpy()
+        if self.info["landmark_model"].lower() == "mobilefacenet":
+            landmark = self.landmark_detector(extracted_faces)[0].cpu().data.numpy()
+        else:
+            landmark = self.landmark_detector(extracted_faces).cpu().data.numpy()
 
         landmark = landmark.reshape(landmark.shape[0], -1, 2)
 
         landmark_results = []
         for ik in range(landmark.shape[0]):
-            landmark2 = bbox_list[ik].inverse_transform_landmark(landmark[ik, :, :])
-            landmark_results.append(landmark2)
+            landmark_results.append(
+                new_bbox[ik].inverse_transform_landmark(landmark[ik, :, :])
+            )
 
-        list_concat = []
+        length_index = [len(x) for x in detected_faces]
         new_lens = np.insert(np.cumsum(length_index), 0, 0)
+        list_concat = []
         for ij in range(len(length_index)):
             list_concat.append(landmark_results[new_lens[ij] : new_lens[ij + 1]])
 
@@ -592,13 +556,13 @@ class Detector(object):
             >>> detected_landmarks = detector.detect_landmarks(frame, detected_faces)
             >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
         """
+
         frame = convert_image_to_tensor(frame, img_type="float32")
 
         if self.info["emotion_model"].lower() == "fer":
-            # landmarks = np.transpose(landmarks)
-            # if landmarks.shape[-1] == 68:
-            #    landmarks = convert68to49(landmarks)
-            #    landmarks = landmarks.T
+            transform = Grayscale(3)
+            frame = transform(frame)
+
             return self._convert_detector_output(
                 landmarks, self.emotion_model.detect_emo(frame, landmarks)
             )

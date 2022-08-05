@@ -1,8 +1,10 @@
+from lib2to3.pytree import convert
 import os
 import cv2
 import numpy as np
 from feat.utils.io import get_resource_path
-from feat.utils.image_operations import convert_to_euler
+from feat.utils.image_operations import convert_to_euler, convert_image_to_tensor
+
 
 THREED_FACE_MODEL = os.path.join(
     get_resource_path(), "reference_3d_68_points_trans.npy"
@@ -34,6 +36,9 @@ class PerspectiveNPointModel:
         Returns:
             np.ndarray: Euler angles ([pitch, roll, yaw])
         """
+
+        img = convert_image_to_tensor(img, img_type="float32")
+
         # Obtain camera intrinsics to solve PnP algorithm. These intrinsics represent defaults - users may modify this
         # code to pass their own camera matrix and distortion coefficients if they happen to have calibrated their
         # camera: https://learnopencv.com/camera-calibration-using-opencv/
