@@ -24,8 +24,7 @@ __all__ = [
     "extract_face_from_landmark",
     "extract_face_from_bbox",
     "convert68to49",
-    "align_face_68pts",
-    "align_face_49pts",
+    "align_face",
     "BBox",
     "round_vals",
     "reverse_color_order",
@@ -114,8 +113,12 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
 
     landmarks = np.array(landmarks).copy()
 
-    aligned_img, new_landmarks = align_face_68pts(
-        frame, landmarks.flatten(), 2.5, img_size=face_size
+    aligned_img, new_landmarks = align_face(
+        frame,
+        landmarks.flatten(),
+        landmark_type=68,
+        box_enlarge=2.5,
+        img_size=face_size,
     )
 
     hull = ConvexHull(new_landmarks)
@@ -215,89 +218,145 @@ def convert68to49(landmarks):
     return landmarks[out]
 
 
-def align_face_68pts(img, img_land, box_enlarge, img_size=112):
+def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     """Performs affine transformation to align the images by eyes.
 
-    Performs affine alignment including eyes.
-
-    This can probably be merged with align_face_49pts
+    Performs affine alignment based on eyes.
 
     Args:
         img: gray or RGB
-        img_land: 68 system flattened landmarks, shape:(136)
+        landmark_type (int): Landmark system (68, 49)
+        landmarks: 68 system flattened landmarks, shape:(136)
         box_enlarge: relative size of face on the image. Smaller value indicate larger proportion
         img_size = output image size
-    Return:
-        aligned_img: the aligned image
-        new_land: the new landmarks
+
+    Returns:
+        aligned_img: aligned image
+        new_landmarks: aligned landmarks
     """
-    leftEye0 = (
-        img_land[2 * 36]
-        + img_land[2 * 37]
-        + img_land[2 * 38]
-        + img_land[2 * 39]
-        + img_land[2 * 40]
-        + img_land[2 * 41]
-    ) / 6.0
-    leftEye1 = (
-        img_land[2 * 36 + 1]
-        + img_land[2 * 37 + 1]
-        + img_land[2 * 38 + 1]
-        + img_land[2 * 39 + 1]
-        + img_land[2 * 40 + 1]
-        + img_land[2 * 41 + 1]
-    ) / 6.0
-    rightEye0 = (
-        img_land[2 * 42]
-        + img_land[2 * 43]
-        + img_land[2 * 44]
-        + img_land[2 * 45]
-        + img_land[2 * 46]
-        + img_land[2 * 47]
-    ) / 6.0
-    rightEye1 = (
-        img_land[2 * 42 + 1]
-        + img_land[2 * 43 + 1]
-        + img_land[2 * 44 + 1]
-        + img_land[2 * 45 + 1]
-        + img_land[2 * 46 + 1]
-        + img_land[2 * 47 + 1]
-    ) / 6.0
-    deltaX = rightEye0 - leftEye0
-    deltaY = rightEye1 - leftEye1
-    l = math.sqrt(deltaX * deltaX + deltaY * deltaY)
-    sinVal = deltaY / l
-    cosVal = deltaX / l
-    mat1 = np.mat([[cosVal, sinVal, 0], [-sinVal, cosVal, 0], [0, 0, 1]])
-    mat2 = np.mat(
-        [
-            [leftEye0, leftEye1, 1],
-            [rightEye0, rightEye1, 1],
-            [img_land[2 * 30], img_land[2 * 30 + 1], 1],
-            [img_land[2 * 48], img_land[2 * 48 + 1], 1],
-            [img_land[2 * 54], img_land[2 * 54 + 1], 1],
-        ]
-    )
+
+    if landmark_type == 68:
+        left_eye0 = (
+            landmarks[2 * 36]
+            + landmarks[2 * 37]
+            + landmarks[2 * 38]
+            + landmarks[2 * 39]
+            + landmarks[2 * 40]
+            + landmarks[2 * 41]
+        ) / 6.0
+        left_eye1 = (
+            landmarks[2 * 36 + 1]
+            + landmarks[2 * 37 + 1]
+            + landmarks[2 * 38 + 1]
+            + landmarks[2 * 39 + 1]
+            + landmarks[2 * 40 + 1]
+            + landmarks[2 * 41 + 1]
+        ) / 6.0
+        right_eye0 = (
+            landmarks[2 * 42]
+            + landmarks[2 * 43]
+            + landmarks[2 * 44]
+            + landmarks[2 * 45]
+            + landmarks[2 * 46]
+            + landmarks[2 * 47]
+        ) / 6.0
+        right_eye1 = (
+            landmarks[2 * 42 + 1]
+            + landmarks[2 * 43 + 1]
+            + landmarks[2 * 44 + 1]
+            + landmarks[2 * 45 + 1]
+            + landmarks[2 * 46 + 1]
+            + landmarks[2 * 47 + 1]
+        ) / 6.0
+
+        mat2 = np.mat(
+            [
+                [left_eye0, left_eye1, 1],
+                [right_eye0, right_eye1, 1],
+                [landmarks[2 * 30], landmarks[2 * 30 + 1], 1],
+                [landmarks[2 * 48], landmarks[2 * 48 + 1], 1],
+                [landmarks[2 * 54], landmarks[2 * 54 + 1], 1],
+            ]
+        )
+    elif landmark_type == 49:
+        left_eye0 = (
+            landmarks[2 * 19]
+            + landmarks[2 * 20]
+            + landmarks[2 * 21]
+            + landmarks[2 * 22]
+            + landmarks[2 * 23]
+            + landmarks[2 * 24]
+        ) / 6.0
+        left_eye1 = (
+            landmarks[2 * 19 + 1]
+            + landmarks[2 * 20 + 1]
+            + landmarks[2 * 21 + 1]
+            + landmarks[2 * 22 + 1]
+            + landmarks[2 * 23 + 1]
+            + landmarks[2 * 24 + 1]
+        ) / 6.0
+        right_eye0 = (
+            landmarks[2 * 25]
+            + landmarks[2 * 26]
+            + landmarks[2 * 27]
+            + landmarks[2 * 28]
+            + landmarks[2 * 29]
+            + landmarks[2 * 30]
+        ) / 6.0
+        right_eye1 = (
+            landmarks[2 * 25 + 1]
+            + landmarks[2 * 26 + 1]
+            + landmarks[2 * 27 + 1]
+            + landmarks[2 * 28 + 1]
+            + landmarks[2 * 29 + 1]
+            + landmarks[2 * 30 + 1]
+        ) / 6.0
+
+        mat2 = np.mat(
+            [
+                [left_eye0, left_eye1, 1],
+                [right_eye0, right_eye1, 1],
+                [landmarks[2 * 13], landmarks[2 * 13 + 1], 1],
+                [landmarks[2 * 31], landmarks[2 * 31 + 1], 1],
+                [landmarks[2 * 37], landmarks[2 * 37 + 1], 1],
+            ]
+        )
+    else:
+        raise ValueError("landmark_type must be (68,49).")
+
+    delta_x = right_eye0 - left_eye0
+    delta_y = right_eye1 - left_eye1
+
+    l = math.sqrt(delta_x**2 + delta_y**2)
+    sin_val = delta_y / l
+    cos_val = delta_x / l
+    mat1 = np.mat([[cos_val, sin_val, 0], [-sin_val, cos_val, 0], [0, 0, 1]])
+
     mat2 = (mat1 * mat2.T).T
-    cx = float((max(mat2[:, 0]) + min(mat2[:, 0]))) * 0.5
-    cy = float((max(mat2[:, 1]) + min(mat2[:, 1]))) * 0.5
+
+    center_x = float((max(mat2[:, 0]) + min(mat2[:, 0]))) / 2
+    center_y = float((max(mat2[:, 1]) + min(mat2[:, 1]))) / 2
+
     if float(max(mat2[:, 0]) - min(mat2[:, 0])) > float(
         max(mat2[:, 1]) - min(mat2[:, 1])
     ):
-        halfSize = 0.5 * box_enlarge * float((max(mat2[:, 0]) - min(mat2[:, 0])))
+        half_size = 0.5 * box_enlarge * float((max(mat2[:, 0]) - min(mat2[:, 0])))
     else:
-        halfSize = 0.5 * box_enlarge * float((max(mat2[:, 1]) - min(mat2[:, 1])))
-    scale = (img_size - 1) / 2.0 / halfSize
+        half_size = 0.5 * box_enlarge * float((max(mat2[:, 1]) - min(mat2[:, 1])))
+
+    scale = (img_size - 1) / 2.0 / half_size
+
     mat3 = np.mat(
         [
-            [scale, 0, scale * (halfSize - cx)],
-            [0, scale, scale * (halfSize - cy)],
+            [scale, 0, scale * (half_size - center_x)],
+            [0, scale, scale * (half_size - center_y)],
             [0, 0, 1],
         ]
     )
-    mat = mat3 * mat1
 
+    mat = mat3 * mat1
     affine_matrix = torch.tensor(mat[0:2, :]).type(torch.float32).unsqueeze(0)
+
     aligned_img = warp_affine(
         img,
         affine_matrix,
@@ -308,120 +367,15 @@ def align_face_68pts(img, img_land, box_enlarge, img_size=112):
         fill_value=(128, 128, 128),
     )
 
-    land_3d = np.ones((int(len(img_land) / 2), 3))
-    land_3d[:, 0:2] = np.reshape(np.array(img_land), (int(len(img_land) / 2), 2))
+    land_3d = np.ones((int(len(landmarks) / 2), 3))
+    land_3d[:, 0:2] = np.reshape(np.array(landmarks), (int(len(landmarks) / 2), 2))
     mat_land_3d = np.mat(land_3d)
-    new_land = np.array((mat * mat_land_3d.T).T)
-    new_land = np.array(list(zip(new_land[:, 0], new_land[:, 1]))).astype(int)
+    new_landmarks = np.array((mat * mat_land_3d.T).T)
+    new_landmarks = np.array(
+        list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))
+    ).astype(int)
 
-    return aligned_img, new_land
-
-
-def align_face_49pts(img, img_land, box_enlarge=2.9, img_size=200):
-    """Align face using 49 landmarks
-
-    based on https://github.com/ZhiwenShao/PyTorch-JAANet/blob/master/dataset/face_transform.py
-
-    Args:
-        img (torch.Tensor): image represented as tensor (B,C,H,W)
-        img_land: facial landmarks (49 points)
-        box_enlarge (float): enlarge factor for the face transform, centered at face
-        img_size (int): size of the desired output image
-
-    Return:
-        aligned_img: aligned images
-        aligned_landmarks: transformed landmarks
-        binocular: binocular distance
-    """
-    leftEye0 = (
-        img_land[2 * 19]
-        + img_land[2 * 20]
-        + img_land[2 * 21]
-        + img_land[2 * 22]
-        + img_land[2 * 23]
-        + img_land[2 * 24]
-    ) / 6.0
-    leftEye1 = (
-        img_land[2 * 19 + 1]
-        + img_land[2 * 20 + 1]
-        + img_land[2 * 21 + 1]
-        + img_land[2 * 22 + 1]
-        + img_land[2 * 23 + 1]
-        + img_land[2 * 24 + 1]
-    ) / 6.0
-    rightEye0 = (
-        img_land[2 * 25]
-        + img_land[2 * 26]
-        + img_land[2 * 27]
-        + img_land[2 * 28]
-        + img_land[2 * 29]
-        + img_land[2 * 30]
-    ) / 6.0
-    rightEye1 = (
-        img_land[2 * 25 + 1]
-        + img_land[2 * 26 + 1]
-        + img_land[2 * 27 + 1]
-        + img_land[2 * 28 + 1]
-        + img_land[2 * 29 + 1]
-        + img_land[2 * 30 + 1]
-    ) / 6.0
-    deltaX = rightEye0 - leftEye0
-    deltaY = rightEye1 - leftEye1
-    l = math.sqrt(deltaX * deltaX + deltaY * deltaY)
-    sinVal = deltaY / l
-    cosVal = deltaX / l
-    mat1 = np.mat([[cosVal, sinVal, 0], [-sinVal, cosVal, 0], [0, 0, 1]])
-
-    mat2 = np.mat(
-        [
-            [leftEye0, leftEye1, 1],
-            [rightEye0, rightEye1, 1],
-            [img_land[2 * 13], img_land[2 * 13 + 1], 1],
-            [img_land[2 * 31], img_land[2 * 31 + 1], 1],
-            [img_land[2 * 37], img_land[2 * 37 + 1], 1],
-        ]
-    )
-
-    mat2 = (mat1 * mat2.T).T
-
-    cx = float((max(mat2[:, 0]) + min(mat2[:, 0]))) * 0.5
-    cy = float((max(mat2[:, 1]) + min(mat2[:, 1]))) * 0.5
-
-    if float(max(mat2[:, 0]) - min(mat2[:, 0])) > float(
-        max(mat2[:, 1]) - min(mat2[:, 1])
-    ):
-        halfSize = 0.5 * box_enlarge * float((max(mat2[:, 0]) - min(mat2[:, 0])))
-    else:
-        halfSize = 0.5 * box_enlarge * float((max(mat2[:, 1]) - min(mat2[:, 1])))
-
-    scale = (img_size - 1) / 2.0 / halfSize
-    mat3 = np.mat(
-        [
-            [scale, 0, scale * (halfSize - cx)],
-            [0, scale, scale * (halfSize - cy)],
-            [0, 0, 1],
-        ]
-    )
-    mat = mat3 * mat1
-
-    affine_matrix = torch.tensor(mat[0:2, :]).type(torch.float32).unsqueeze(0)
-    aligned_img = warp_affine(
-        img,
-        affine_matrix,
-        (img_size, img_size),
-        mode="bilinear",
-        padding_mode="zeros",
-        align_corners=False,
-        fill_value=(128, 128, 128),
-    )
-
-    land_3d = np.ones((int(len(img_land) / 2), 3))
-    land_3d[:, 0:2] = np.reshape(np.array(img_land), (int(len(img_land) / 2), 2))
-    mat_land_3d = np.mat(land_3d)
-    new_land = np.array((mat * mat_land_3d.T).T)
-    new_land = np.reshape(new_land[:, 0:2], len(img_land))
-
-    return aligned_img, new_land
+    return (aligned_img, new_landmarks)
 
 
 class BBox(object):
@@ -803,7 +757,7 @@ def decode(loc, priors, variances):
     return boxes
 
 
-class HOGLayer(nn.Module):
+class HOGLayer(torch.nn.Module):
     def __init__(
         self,
         nbins=10,

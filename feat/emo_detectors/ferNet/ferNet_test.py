@@ -8,7 +8,7 @@ from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
     convert68to49,
-    align_face_49pts,
+    align_face,
 )
 import os
 from torchvision.transforms import Compose, Resize
@@ -63,8 +63,12 @@ class ferNetModule(nn.Module):
             frame_assignment = np.where(i <= length_cumu)[0][0]  # which frame is it?
 
             landmark_49 = convert68to49(flat_landmarks[i]).flatten()
-            new_img, new_landmarks = align_face_49pts(
-                img[frame_assignment].unsqueeze(0), landmark_49, img_size=self.img_size
+            new_img, new_landmarks = align_face(
+                img[frame_assignment].unsqueeze(0),
+                landmark_49,
+                landmark_type=49,
+                box_enlarge=2.9,
+                img_size=self.img_size,
             )
 
             new_landmark_list.append(new_landmarks)

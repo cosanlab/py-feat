@@ -1,13 +1,12 @@
-from feat.utils import set_torch_device
 import numpy as np
 import torch
 import pandas as pd
 import feat.au_detectors.JAANet.JAANet_model as network
 import torch.nn as nn
-from torchvision.transforms import Compose, Normalize
+from torchvision.transforms import Compose, Normalize, CenterCrop
 from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path
-from feat.utils.image_operations import convert68to49, align_face_49pts
+from feat.utils.image_operations import convert68to49, align_face
 import os
 
 
@@ -48,12 +47,12 @@ class JAANet(nn.Module):
             fill_coeff=self.params["config_fill_coeff"],
         )
         self.local_attention_refine = network.network_dict["LocalAttentionRefine"](
-            au_num=self.params["config_au_num"], unit_dim=self.params["config_au_num"]
+            au_num=self.params["config_au_num"], unit_dim=self.params["config_unit_dim"]
         )
         self.local_au_net = network.network_dict["LocalAUNetv2"](
             au_num=self.params["config_au_num"],
             input_dim=self.params["config_unit_dim"] * 8,
-            unit_dim=self.params["config_au_num"],
+            unit_dim=self.params["config_unit_dim"],
         )
         self.global_au_feat = network.network_dict["HLFeatExtractor"](
             input_dim=self.params["config_unit_dim"] * 8,
@@ -122,13 +121,10 @@ class JAANet(nn.Module):
 
         transforms = Compose(
             [
-                transforms.CenterCrop(self.params["config_crop_size"]),
-                # transforms.ToTensor(),
+                CenterCrop(self.params["config_crop_size"]),
                 Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
             ]
         )
-
-        img = transforms(img / 255.0)
 
         length_index = [len(x) for x in landmarks]
         length_cumu = np.cumsum(length_index)
@@ -140,9 +136,14 @@ class JAANet(nn.Module):
             frame_assignment = np.where(i <= length_cumu)[0][0]  # which frame is it?
 
             landmark_49 = convert68to49(flat_landmarks[i]).flatten()
-            new_img, new_landmarks = align_face_49pts(
-                img[frame_assignment].unsqueeze(0), landmark_49
+            new_img, new_landmarks = align_face(
+                img[frame_assignment].unsqueeze(0),
+                landmark_49,
+                landmark_type=49,
+                box_enlarge=2.9,
+                img_size=200,
             )
+            new_img = transforms(new_img / 255.0)
 
             new_landmark_list.append(new_landmarks)
 
@@ -151,9 +152,15 @@ class JAANet(nn.Module):
             else:
                 aligned_imgs = torch.cat((aligned_imgs, new_img), 0)
 
-        print(aligned_imgs.shape, aligned_imgs.type())
+        # print(aligned_imgs.shape, aligned_imgs.type())
+        # import matplotlib.pyplot as plt
 
+        # plt.imshow(aligned_imgs.squeeze().permute(1, 2, 0).type(torch.int).numpy())
+        # plt.imshow(aligned_imgs.squeeze().permute(1, 2, 0).numpy())
+        # print(aligned_imgs)
         region_feat = self.region_learning(aligned_imgs)
+        print(region_feat.shape, region_feat.type())
+        print(region_feat)
         align_feat, align_output, aus_map = self.align_net(region_feat)
 
         output_aus_map = self.local_attention_refine(aus_map.detach())
