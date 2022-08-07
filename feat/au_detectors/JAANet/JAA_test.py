@@ -152,15 +152,7 @@ class JAANet(nn.Module):
             else:
                 aligned_imgs = torch.cat((aligned_imgs, new_img), 0)
 
-        # print(aligned_imgs.shape, aligned_imgs.type())
-        # import matplotlib.pyplot as plt
-
-        # plt.imshow(aligned_imgs.squeeze().permute(1, 2, 0).type(torch.int).numpy())
-        # plt.imshow(aligned_imgs.squeeze().permute(1, 2, 0).numpy())
-        # print(aligned_imgs)
         region_feat = self.region_learning(aligned_imgs)
-        print(region_feat.shape, region_feat.type())
-        print(region_feat)
         align_feat, align_output, aus_map = self.align_net(region_feat)
 
         output_aus_map = self.local_attention_refine(aus_map.detach())
