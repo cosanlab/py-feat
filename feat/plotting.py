@@ -2,11 +2,16 @@
 Helper functions for plotting
 """
 
+import os
+import sys
+import h5py
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
+from sklearn import __version__ as skversion
 from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
+from feat.utils.io import get_resource_path
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -1357,44 +1362,3 @@ def load_viz_model(
     except Exception as e:
         raise IOError(f"Unable to load data: {e}")
     return model
-
-
-# def drawLandmark(img, bbox, landmark):
-#     """Draws face bounding box and landmarks.
-
-#     From https://github.com/cunjian/pytorch_face_landmark/
-
-#     Args:
-#         img ([type]): gray or RGB
-#         bbox ([type]): type of BBox
-#         landmark ([type]): reproject landmark of (5L, 2L)
-
-#     Returns:
-#         img marked with landmark and bbox
-#     """
-#     img_ = img.copy()
-#     cv2.rectangle(
-#         img_, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2
-#     )
-#     for x, y in landmark:
-#         cv2.circle(img_, (int(x), int(y)), 3, (0, 255, 0), -1)
-#     return img_
-
-
-# def drawLandmark_multiple(img, bbox, landmark):
-#     """Draw multiple landmarks.
-
-#     From https://github.com/cunjian/pytorch_face_landmark/
-
-#     Args:
-#         img ([type]): gray or RGB
-#         bbox ([type]): type of BBox
-#         landmark ([type]): reproject landmark of (5L, 2L)
-
-#     Returns:
-#         img marked with landmark and bbox
-#     """
-#     cv2.rectangle(img, (bbox.left, bbox.top), (bbox.right, bbox.bottom), (0, 0, 255), 2)
-#     for x, y in landmark:
-#         cv2.circle(img, (int(x), int(y)), 2, (0, 255, 0), -1)
-#     return img
