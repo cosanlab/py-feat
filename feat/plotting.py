@@ -20,6 +20,7 @@ from sklearn.preprocessing import minmax_scale, MinMaxScaler
 from pathlib import Path
 from PIL import Image
 from textwrap import wrap
+from joblib import load
 
 __all__ = [
     "draw_lineface",
