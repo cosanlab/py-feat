@@ -10,11 +10,13 @@ import pandas as pd
 from scipy.spatial import ConvexHull
 from scipy.spatial.transform import Rotation
 import torch
+from torch import nn, F
 from torchvision.transforms import PILToTensor, Compose
 import PIL
 from kornia.geometry.transform import warp_affine
 from skimage.morphology.convex_hull import grid_points_in_poly
 from feat.transforms import Rescale
+from feat.utils import set_torch_device
 
 __all__ = [
     "neutral",
@@ -890,61 +892,35 @@ class HOGLayer(torch.nn.Module):
             # different normalizations. This may seem redundant but it improves the
             # performance. We refer to the normalized block descriptors as Histogram
             # of Oriented Gradient (HOG) descriptors.
-            #
-            # Note: we can probably find a way to vectorize this loop at some point
             if self.block_normalization is not None:
-                n_batch, n_channel, s_row, s_col = img.shape
-                c_row, c_col = [self.pixels_per_cell] * 2
-                b_row, b_col = [self.cells_per_block] * 2
-                n_cells_row = int(s_row // c_row)  # number of cells along row-axis
-                n_cells_col = int(s_col // c_col)  # number of cells along col-axis
-                n_blocks_row = (
-                    n_cells_row - b_row
-                ) + 1  # number of blocks along row-axis
-                n_blocks_col = (
-                    n_cells_col - b_col
-                ) + 1  # number of blocks along col-axis
-
-                hog_out = torch.zeros(
-                    (
-                        n_batch,
-                        nbins,
-                        cells_per_block,
-                        cells_per_block,
-                        n_blocks_row,
-                        n_blocks_col,
-                    ),
-                    dtype=torch.float,
-                    device=self.device,
-                )
-                for r in range(n_blocks_row):
-                    for c in range(n_blocks_col):
-                        hog_out[:, :, :, :, r, c] = self._normalize_block(
-                            out[:, :, r : r + b_row, c : c + b_col],
-                            self.block_normalization,
-                        )
-                out = hog_out
+                eps = torch.tensor(1e-5)
+                kernel_height, kernel_width = [self.cells_per_block] * 2
+                out = out.unfold(2, kernel_height, 1).unfold(3, kernel_width, 1)
+                if self.block_normalization == "l1":
+                    out = out.divide(
+                        (out.abs().sum(axis=5).sum(axis=4) + eps)
+                        .unsqueeze(-1)
+                        .unsqueeze(-1)
+                    )
+                elif self.block_normalization == "l1-sqrt":
+                    out = out.divide(
+                        (out.abs().sum(axis=5).sum(axis=4) + eps)
+                        .unsqueeze(-1)
+                        .unsqueeze(-1)
+                    ).sqrt()
+                elif self.block_normalization == "l2":
+                    out = out.divide(
+                        ((out.sum(axis=5).sum(axis=4) ** 2 + eps**2))
+                        .sqrt()
+                        .unsqueeze(-1)
+                        .unsqueeze(-1)
+                    )
+                else:
+                    raise ValueError(
+                        'Selected block normalization method is invalid. Use ["l1","l1-sqrt","l2"]'
+                    )
 
             if self.feature_vector:
                 return out.flatten(start_dim=1)
             else:
                 return out
-
-    def _normalize_block(self, block, method, eps=1e-5):
-        """helper function to perform normalization"""
-
-        if method == "l1":
-            out = torch.divide(block, block.abs().sum() + eps)
-        elif method == "l1-sqrt":
-            out = torch.divide(block, block.abs().sum() + eps).sqrt()
-        elif method == "l2":
-            out = torch.divide(block, (torch.square(block).sum() + eps**2).sqrt())
-        elif method == "l2-hys":
-            out = torch.divide(block, (torch.square(block).sum() + eps**2).sqrt())
-            out = torch.minimum(out, torch.ones(out.shape) * 0.2)
-            out = torch.divide(out, (torch.square(out).sum() + eps**2).sqrt())
-        else:
-            raise ValueError(
-                'Selected block normalization method is invalid. Use ["l1","l1-sqrt","l2","l2-hys"]'
-            )
-        return out
