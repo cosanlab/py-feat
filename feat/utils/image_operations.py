@@ -770,7 +770,7 @@ class HOGLayer(torch.nn.Module):
         padding=1,
         dilation=1,
         transform_sqrt=False,
-        block_normalization=None,
+        block_normalization="L2",
         feature_vector=True,
         device="auto",
     ):
