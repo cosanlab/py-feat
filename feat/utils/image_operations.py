@@ -17,6 +17,8 @@ from kornia.geometry.transform import warp_affine
 from skimage.morphology.convex_hull import grid_points_in_poly
 from feat.transforms import Rescale
 from feat.utils import set_torch_device
+from copy import deepcopy
+from skimage.feature import draw
 
 __all__ = [
     "neutral",
@@ -762,7 +764,7 @@ def decode(loc, priors, variances):
 class HOGLayer(torch.nn.Module):
     def __init__(
         self,
-        nbins=10,
+        orientations=10,
         pixels_per_cell=8,
         cells_per_block=2,
         max_angle=math.pi,
@@ -800,7 +802,7 @@ class HOGLayer(torch.nn.Module):
         """
 
         super(HOGLayer, self).__init__()
-        self.nbins = nbins
+        self.orientations = orientations
         self.stride = stride
         self.padding = padding
         self.dilation = dilation
@@ -810,6 +812,8 @@ class HOGLayer(torch.nn.Module):
         self.transform_sqrt = transform_sqrt
         self.device = set_torch_device(device)
         self.feature_vector = feature_vector
+        self.isfit = False
+
         if block_normalization is not None:
             self.block_normalization = block_normalization.lower()
         else:
@@ -869,16 +873,18 @@ class HOGLayer(torch.nn.Module):
             mag = gxy.norm(dim=1)
             norm = mag[:, None, :, :]
             phase = torch.atan2(gxy[:, 0, :, :], gxy[:, 1, :, :])
-            phase_int = phase / self.max_angle * self.nbins
+            phase_int = phase / self.max_angle * self.orientations
             phase_int = phase_int[:, None, :, :]
-
             n, c, h, w = gxy.shape
             out = torch.zeros(
-                (n, self.nbins, h, w), dtype=torch.float, device=self.device
+                (n, self.orientations, h, w), dtype=torch.float, device=self.device
             )
-            out.scatter_(1, phase_int.floor().long() % self.nbins, norm)
-            out.scatter_add_(1, phase_int.ceil().long() % self.nbins, 1 - norm)
+            out.scatter_(1, phase_int.floor().long() % self.orientations, norm)
+            out.scatter_add_(1, phase_int.ceil().long() % self.orientations, 1 - norm)
             out = self.cell_pooler(out)
+            self.orientation_histogram = deepcopy(out)  # save for visualization
+            self.isfit = True
+            self.img_shape = img.shape
 
             # 4. Compute Normalization. The fourth stage computes normalization,
             # which takes local groups of cells and contrast normalizes their overall
@@ -894,8 +900,9 @@ class HOGLayer(torch.nn.Module):
             # of Oriented Gradient (HOG) descriptors.
             if self.block_normalization is not None:
                 eps = torch.tensor(1e-5)
-                kernel_height, kernel_width = [self.cells_per_block] * 2
-                out = out.unfold(2, kernel_height, 1).unfold(3, kernel_width, 1)
+                out = out.unfold(2, self.cells_per_block, 1).unfold(
+                    3, self.cells_per_block, 1
+                )
                 if self.block_normalization == "l1":
                     out = out.divide(
                         (out.abs().sum(axis=5).sum(axis=4) + eps)
@@ -924,3 +931,42 @@ class HOGLayer(torch.nn.Module):
                 return out.flatten(start_dim=1)
             else:
                 return out
+
+    def plot(self):
+        """Visualize the hog feature representation. Creates numpy matrix for each image.
+
+        Based on skimage.feature._hog
+        """
+        if not self.isfit:
+            raise ValueError(
+                "HOG Feature Extractor has not been run yet. Nothing to plot."
+            )
+
+        n_batch, _, s_row, s_col = self.img_shape
+        c_row, c_col = [self.pixels_per_cell] * 2
+        n_cells_row = int(s_row // c_row)
+        n_cells_col = int(s_col // c_col)
+
+        radius = min(c_row, c_col) // 2 - 1
+        orientations_arr = np.arange(self.orientations)
+        orientation_bin_midpoints = np.pi * (orientations_arr + 0.5) / self.orientations
+
+        # sin/cos appear to be flipped compared to skimage.feature.hog
+        dr_arr = radius * np.cos(orientation_bin_midpoints)
+        dc_arr = radius * np.sin(orientation_bin_midpoints)
+        hog_image = np.zeros((n_batch, s_row, s_col), dtype=float)
+        for i in range(n_batch):
+            for r in range(n_cells_row):
+                for c in range(n_cells_col):
+                    for o, dr, dc in zip(orientations_arr, dr_arr, dc_arr):
+                        center = tuple([r * c_row + c_row // 2, c * c_col + c_col // 2])
+                        rr, cc = draw.line(
+                            int(center[0] - dc),
+                            int(center[1] + dr),
+                            int(center[0] + dc),
+                            int(center[1] - dr),
+                        )
+                        hog_image[i, rr, cc] += self.orientation_histogram[
+                            i, o, r, c
+                        ].numpy()
+        return hog_image
