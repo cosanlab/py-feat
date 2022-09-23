@@ -1,9 +1,11 @@
 import pytest
 import numpy as np
 from os.path import join
-from feat.utils.io import (get_test_data_path,
+from feat.utils.io import (
+    get_test_data_path,
     read_feat,
     read_openface,
+)
 from feat.utils.image_operations import registration
 from feat.plotting import load_viz_model
 from feat.utils.stats import softmax
