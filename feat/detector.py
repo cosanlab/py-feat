@@ -4,9 +4,6 @@ Main Detector class. The Detector class wraps other pre-trained models
 perform detection
 """
 
-from cmath import exp
-from lib2to3.pytree import convert
-from operator import concat
 import os
 import numpy as np
 import pandas as pd
@@ -22,12 +19,9 @@ from feat.utils import (
 )
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
-    BBox,
     extract_face_from_landmarks,
     extract_face_from_bbox,
     convert_image_to_tensor,
-    convert_color_vector_to_tensor,
-    convert68to49,
 )
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 from feat.data import (
