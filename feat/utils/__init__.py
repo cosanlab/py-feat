@@ -150,7 +150,7 @@ def set_torch_device(device="auto"):
         if device == "auto":
             if torch.cuda.is_available():
                 device = "cuda"
-            elif torch.backends.mps.is_available():
+            elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
                 device = "mps"
             else:
                 device = "cpu"
