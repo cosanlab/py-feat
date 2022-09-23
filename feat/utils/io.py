@@ -6,6 +6,23 @@ import os
 import contextlib
 import pandas as pd
 import feat
+from feat.utils import (
+    FEAT_EMOTION_COLUMNS,
+    FEAT_FACEBOX_COLUMNS,
+    FEAT_TIME_COLUMNS,
+    FACET_EMOTION_COLUMNS,
+    FACET_FACEBOX_COLUMNS,
+    FACET_FACEPOSE_COLUMNS,
+    FACET_TIME_COLUMNS,
+    FACET_DESIGN_COLUMNS,
+    OPENFACE_ORIG_COLUMNS,
+    openface_AU_columns,
+    openface_2d_landmark_columns,
+    openface_facepose_columns,
+    openface_gaze_columns,
+    openface_time_columns,
+)
+
 
 from torchvision.datasets.utils import download_url as tv_download_url
 
