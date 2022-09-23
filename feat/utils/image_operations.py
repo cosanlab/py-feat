@@ -10,7 +10,8 @@ import pandas as pd
 from scipy.spatial import ConvexHull
 from scipy.spatial.transform import Rotation
 import torch
-from torch import nn, F
+from torch import nn
+import torch.nn.functional as F
 from torchvision.transforms import PILToTensor, Compose
 import PIL
 from kornia.geometry.transform import warp_affine
@@ -18,7 +19,7 @@ from skimage.morphology.convex_hull import grid_points_in_poly
 from feat.transforms import Rescale
 from feat.utils import set_torch_device
 from copy import deepcopy
-from skimage.feature import draw
+from skimage import draw
 
 __all__ = [
     "neutral",
