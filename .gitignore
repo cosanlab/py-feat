@@ -18,6 +18,7 @@ docs/_build
 #Ignore resources folder except config files and viz model
 resources/
 !resources/model_list.json
+!resources/neutral_face_coordinates.csv
 
 # PytestCache
 .pytest_cache/
