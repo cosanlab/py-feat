@@ -97,3 +97,6 @@ data/*
 
 # Ignore development notebooks and code
 dev/
+
+# CPU/GPU profiling script
+gpu_profiling.py
