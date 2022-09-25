@@ -110,37 +110,26 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (30, 173)
 
 
-def test_faceboxes(default_detector, single_face_img):
-    """Since .detect_faces expects image data to be loaded already, this also serves as
-    a test for .read_images"""
+def test_faceboxes(default_detector, single_face_img_data):
+
     default_detector.change_model(face_model="FaceBoxes")
-    img_data = default_detector.read_images(single_face_img)
-    # Returns number of images length list
-    out = default_detector.detect_faces(img_data)[0]
-    # Returns bounding boxes for each face in image as list
-    assert all(e is not None for e in out[0])
-    assert len(out[0]) == 5
-    bbox_x = out[0][0]
-    assert 180 < bbox_x < 200
+    out = default_detector.detect_faces(single_face_img_data)
+    assert 180 < out[0][0][0] < 200
 
 
 def test_retinaface(default_detector, single_face_img_data):
+
     default_detector.change_model(face_model="RetinaFace")
-    # This time just use preloaded image data for convenience
-    out = default_detector.detect_faces(single_face_img_data)[0]
-    assert all(e is not None for e in out[0])
-    assert len(out[0]) == 5
-    bbox_x = out[0][0]
-    assert 180 < bbox_x < 200
+    out = default_detector.detect_faces(single_face_img_data)
+    assert 180 < out[0][0][0] < 200
 
 
+# FIXME: @tiankang MTCNN's face rect is not the same as faceboxes and retinaface
+# the bounding box x coord of the bounding box is > 200
 def test_mtcnn(default_detector, single_face_img_data):
     default_detector.change_model(face_model="MTCNN")
-    out = default_detector.detect_faces(single_face_img_data)[0]
-    assert all(e is not None for e in out[0])
-    assert len(out[0]) == 5
-    bbox_x = out[0][0]
-    assert 180 < bbox_x < 200
+    out = default_detector.detect_faces(single_face_img_data)
+    assert 180 < out[0][0][0] < 200
 
 
 def test_mobilefacenet(default_detector, single_face_img):

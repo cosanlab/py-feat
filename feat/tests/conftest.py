@@ -90,7 +90,7 @@ def single_face_img(data_path):
 @fixture(scope="module")
 def single_face_img_data(single_face_img):
     """The actual numpy array of img data"""
-    return read_image([single_face_img])
+    return read_image(single_face_img)
 
 
 @fixture(scope="module")
