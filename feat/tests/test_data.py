@@ -508,14 +508,15 @@ def test_rescale_single_image(single_face_img):
         )
 
 
-def test_imagedataset(single_face_image):
+def test_imagedataset(single_face_img):
     n_img = 10
-    image_file_list = [single_face_img_path] * n_img
+    image_file_list = [single_face_img] * n_img
 
     img_data = ImageDataset(
         image_file_list, output_size=None, preserve_aspect_ratio=False, padding=False
     )
     assert len(img_data) == n_img
+    img = img_data[0]["Image"]
 
     # Test Int
     for scale in [0.5, 1.0, 2]:
