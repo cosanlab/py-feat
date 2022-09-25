@@ -1922,7 +1922,7 @@ class VideoDataset(Dataset):
 
     def __init__(self, video_file, skip_frames=0):
 
-        self.video, self.audio, self.info = read_video(video_file, output_format="TCHW")
+        self.video, self.audio, self.info = read_video(video_file)
         self.file_name = video_file
         self.video_frames = np.arange(0, self.video.shape[0], skip_frames)
         self.video = self.video[self.video_frames, :, :]
