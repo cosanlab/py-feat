@@ -17,3 +17,4 @@ celluloid
 tqdm
 torchvision
 kornia
+av>=9.2.0
