@@ -47,7 +47,7 @@ def test_init_with_wrongmodelname():
 
 
 def test_nofile(default_detector):
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises((FileNotFoundError, RuntimeError)):
         inputFname = os.path.join(get_test_data_path(), "nosuchfile.jpg")
         _ = default_detector.detect_image(inputFname)
 
@@ -64,30 +64,11 @@ def test_detect_single_face(default_detector, single_face_img):
 def test_detect_read_write(default_detector, single_face_img, data_path):
     """Test detection and writing of results to csv"""
 
-    outputFname = os.path.join(data_path, "test_detect.csv")
-    fex = default_detector.detect_image(single_face_img, outputFname=outputFname)
+    fex = default_detector.detect_image(single_face_img)
+    assert fex is not None
     assert isinstance(fex, Fex)
-    assert os.path.exists(outputFname)
-    loaded = pd.read_csv(outputFname)
-    assert loaded.shape == (1, 173)
-    assert loaded.happiness.values[0] > 0
-    os.remove(outputFname)
-
-    out = default_detector.detect_image(
-        single_face_img, outputFname=outputFname, return_detection=False
-    )
-    assert out is True
-    assert os.path.exists(outputFname)
-    loaded = pd.read_csv(outputFname)
-    assert loaded.shape == (1, 173)
-    assert loaded.happiness.values[0] > 0
-    os.remove(outputFname)
-
-    # Can't not save and not return detection
-    with pytest.raises(ValueError):
-        out = default_detector.detect_image(
-            single_face_img, outputFname=None, return_detection=False
-        )
+    assert fex.shape == (1, 173)
+    assert fex.happiness.values[0] > 0
 
 
 def test_detect_multi_face(default_detector, multi_face_img):
@@ -113,25 +94,20 @@ def test_detect_multi_face_multiple_images(default_detector, multi_face_img):
 def test_detect_images_with_batching(default_detector, single_face_img):
     """Test if batching works by passing in more images than the default batch size"""
 
-    # Num images > default batch size of 5 so more than one batch to process
-    out = default_detector.detect_image([single_face_img] * 6)
+    out = default_detector.detect_image([single_face_img] * 6, batch_size=5)
     assert out.shape == (6, 173)
 
 
 def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_face_img):
-    """We don't currently support images of different dimensions in a single batch, but
-    do if we don't batch them"""
+    """Test detection on multiple images of different sizes with and without batching"""
 
-    # Fail with default batch size of 5
-    with pytest.raises(ValueError):
-        _ = default_detector.detect_image([multi_face_img, single_face_img])
-
-    # But not if we explicitly don't batch as each image is processed separately and
-    # then results are concatenated
-    out = default_detector.detect_image(
-        inputFname=[single_face_img, multi_face_img], batch_size=1
-    )
+    out = default_detector.detect_image([multi_face_img, single_face_img])
     assert out.shape == (6, 173)
+
+    out = default_detector.detect_image(
+        [multi_face_img, single_face_img] * 5, batch_size=5
+    )
+    assert out.shape == (30, 173)
 
 
 def test_faceboxes(default_detector, single_face_img):
