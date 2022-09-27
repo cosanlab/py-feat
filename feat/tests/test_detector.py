@@ -269,36 +269,6 @@ def test_pnp(default_detector, single_face_img_data):
 
 
 def test_detect_video(default_detector, single_face_mov):
-    out = default_detector.detect_video(inputFname=single_face_mov, skip_frames=24)
+    out = default_detector.detect_video(single_face_mov, skip_frames=24)
     assert len(out) == 3
-
-
-def test_detect_video_and_save(default_detector, single_face_mov):
-    outputFname = os.path.join(get_test_data_path(), "test_detect.csv")
-    out = default_detector.detect_video(
-        inputFname=single_face_mov, outputFname=outputFname, skip_frames=10
-    )
-    assert isinstance(out, Fex)
-    assert os.path.exists(outputFname)
-    out = pd.read_csv(outputFname)
     assert out.happiness.values.max() > 0
-    os.remove(outputFname)
-
-    out = default_detector.detect_video(
-        inputFname=single_face_mov,
-        outputFname=outputFname,
-        skip_frames=10,
-        return_detection=False,
-    )
-    assert out is True
-    assert os.path.exists(outputFname)
-    os.remove(outputFname)
-
-    # Can't not save and not return detection
-    with pytest.raises(ValueError):
-        out = default_detector.detect_video(
-            inputFname=single_face_mov,
-            outputFname=None,
-            skip_frames=10,
-            return_detection=False,
-        )

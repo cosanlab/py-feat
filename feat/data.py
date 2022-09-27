@@ -20,6 +20,7 @@ from sklearn.linear_model import LinearRegression
 from torchvision.transforms import Compose
 from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
+from torch import swapaxes
 from feat.transforms import Rescale
 from feat.utils.io import read_feat, read_affectiva, read_facet, read_openface
 from feat.utils.stats import wavelet, calc_hist_auc
@@ -1790,17 +1791,16 @@ class ImageDataset(Dataset):
     """Torch Image Dataset
 
     Args:
-        output_size (tuple or int): Desired output size. If tuple, output is
-                                    matched to output_size. If int, will set largest edge
-                                    to output_size if target size is bigger,
-                                    or smallest edge if target size is smaller
-                                    to keep aspect ratio the same.
-        preserve_aspect_ratio (bool): Output size is matched to preserve aspect ratio.
-                                    Note that longest edge of output size is preserved,
-                                    but actual output may differ from intended output_size.
-        padding (bool): Transform image to exact output_size. If tuple,
-                        will preserve aspect ratio by adding padding.
-                        If int, will set both sides to the same size.
+        output_size (tuple or int): Desired output size. If tuple, output is matched to
+        output_size. If int, will set largest edge to output_size if target size is
+        bigger, or smallest edge if target size is smaller to keep aspect ratio the
+        same.
+        preserve_aspect_ratio (bool): Output size is matched to preserve aspect ratio. Note that longest edge of output size is preserved, but actual output may differ from intended output_size.
+        padding (bool): Transform image to exact output_size. If tuple, will preserve
+        aspect ratio by adding padding. If int, will set both sides to the same size.
+
+    Returns:
+        Dataset: dataset of [batch, channels, height, width] that can be passed to DataLoader
     """
 
     def __init__(
@@ -1818,6 +1818,7 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, idx):
 
+        # Dimensions are [channels, height, width]
         img = read_image(self.images[idx])
 
         if self.output_size is not None:
@@ -1918,12 +1919,20 @@ class VideoDataset(Dataset):
 
     Args:
         skip_frames (int): number of frames to skip
+
+    Returns:
+        Dataset: dataset of [batch, channels, height, width] that can be passed to DataLoader
     """
 
-    def __init__(self, video_file, skip_frames=0):
+    def __init__(self, video_file, skip_frames=0, output_size=None):
 
+        # Video dimensions are: [time, height, width, channels]
         self.video, self.audio, self.info = read_video(video_file)
+        # Swap them to match output of read_image: [time, channels, height, width]
+        # Otherwise detectors face on tensor dimension mismatch
+        self.video = swapaxes(swapaxes(self.video, 1, 3), -1, -2)
         self.file_name = video_file
+        self.output_size = output_size
         self.video_frames = np.arange(0, self.video.shape[0], skip_frames)
         self.video = self.video[self.video_frames, :, :]
 
@@ -1931,8 +1940,22 @@ class VideoDataset(Dataset):
         return self.video.shape[0]
 
     def __getitem__(self, idx):
-        return {
-            "Image": self.video[idx],
-            "Frame": self.video_frames[idx],
-            "FileName": self.file_name,
-        }
+
+        # Rescale if needed like in ImageDataset
+        if self.output_size is not None:
+            transform = Compose(
+                [Rescale(self.output_size, preserve_aspect_ratio=True, padding=False)]
+            )
+            transformed_img = transform(self.video[idx])
+
+            return {
+                "Image": transformed_img["Image"],
+                "Frame": self.video_frames[idx],
+                "FileName": self.file_name,
+            }
+        else:
+            return {
+                "Image": self.video[idx],
+                "Frame": self.video_frames[idx],
+                "FileName": self.file_name,
+            }

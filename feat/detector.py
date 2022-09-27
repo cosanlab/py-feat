@@ -636,6 +636,7 @@ class Detector(object):
         self,
         video_path,
         skip_frames=0,
+        output_size=700,
         batch_size=1,
         num_workers=0,
         pin_memory=False,
@@ -643,8 +644,9 @@ class Detector(object):
         """Detects FEX from a video file.
 
         Args:
-            video_file (str): Path to a video file.
+            video_path (str): Path to a video file.
             skip_frames (int): number of frames to skip (speeds up inference, but less temporal information)
+            output_size (int): image size to rescale all imagee preserving aspect ratio
             batch_size (int): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
             pin_memory (bool): If ``True``, the data loader will copy Tensors
@@ -656,7 +658,7 @@ class Detector(object):
         """
 
         data_loader = DataLoader(
-            VideoDataset(video_path, skip_frames=skip_frames),
+            VideoDataset(video_path, skip_frames=skip_frames, output_size=output_size),
             num_workers=num_workers,
             batch_size=batch_size,
             pin_memory=pin_memory,
