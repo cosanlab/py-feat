@@ -131,7 +131,10 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
         shape=aligned_img.shape[-2:],
         # for some reason verts need to be flipped
         verts=list(
-            zip(new_landmarks[hull.vertices][:, 1], new_landmarks[hull.vertices][:, 0],)
+            zip(
+                new_landmarks[hull.vertices][:, 1],
+                new_landmarks[hull.vertices][:, 0],
+            )
         ),
     )
     mask[
@@ -329,7 +332,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     delta_x = right_eye0 - left_eye0
     delta_y = right_eye1 - left_eye1
 
-    l = math.sqrt(delta_x ** 2 + delta_y ** 2)
+    l = math.sqrt(delta_x**2 + delta_y**2)
     sin_val = delta_y / l
     cos_val = delta_x / l
     mat1 = np.mat([[cos_val, sin_val, 0], [-sin_val, cos_val, 0], [0, 0, 1]])
@@ -915,7 +918,7 @@ class HOGLayer(torch.nn.Module):
                     ).sqrt()
                 elif self.block_normalization == "l2":
                     out = out.divide(
-                        ((out.sum(axis=5).sum(axis=4) ** 2 + eps ** 2))
+                        ((out.sum(axis=5).sum(axis=4) ** 2 + eps**2))
                         .sqrt()
                         .unsqueeze(-1)
                         .unsqueeze(-1)
