@@ -33,7 +33,7 @@ class ferNetModule(nn.Module):
         )
         self.net.eval()
 
-    def detect_emo(self, img, landmarks):
+    def detect_emo(self, img, landmarks, **kwargs):
         """
         This documentation needs to be updated. Not accurate. Image size does not seem to matter.
         Also takes landmarks and not face boxes

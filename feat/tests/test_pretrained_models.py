@@ -155,7 +155,8 @@ def test_resmasknet(default_detector, single_face_img):
     assert out.emotions["happiness"].values > 0.5
 
 
-# FIXME: fails on init because doesn't support device kwarg
+# FIXME: fails because StandardScaler expects 2d input but gets 4d (includes batch and
+# channel)
 def test_emotionsvm(default_detector, single_face_img):
     default_detector.change_model(emotion_model="svm")
     out = default_detector.detect_image(single_face_img)

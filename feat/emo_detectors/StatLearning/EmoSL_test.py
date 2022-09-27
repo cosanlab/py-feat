@@ -16,7 +16,7 @@ def load_classifier(cf_path):
 
 
 class EmoSVMClassifier:
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         self.pca_model = load_classifier(
             os.path.join(get_resource_path(), "emo_hog_pca.joblib")
         )
@@ -27,7 +27,7 @@ class EmoSVMClassifier:
             os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
         )
 
-    def detect_emo(self, frame, landmarks):
+    def detect_emo(self, frame, landmarks, **kwargs):
         """
         Note that here frame is represented by hogs
         """
