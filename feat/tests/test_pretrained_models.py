@@ -117,8 +117,6 @@ def test_jaanet(default_detector, single_face_img_data):
     assert aus[0].shape[-1] == 12
 
 
-# FIXME: expects input of [batch, channel, height, width] but receives [batch,
-# height, width]
 def test_logistic(default_detector, single_face_img_data):
 
     default_detector.change_model(
@@ -129,18 +127,12 @@ def test_logistic(default_detector, single_face_img_data):
 
     detected_faces = default_detector.detect_faces(single_face_img_data)
     landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
-    hogs, new_lands = default_detector._batch_hog(
-        frames=single_face_img_data, landmarks=landmarks
-    )
-    aus = default_detector.detect_aus(frame=hogs, landmarks=new_lands)
+    aus = default_detector.detect_aus(single_face_img_data, landmarks=landmarks)
 
-    breakpoint()
     assert np.sum(np.isnan(aus)) == 0
     assert aus[0].shape[-1] == 20
 
 
-# FIXME: ._batch_hog() expects input of [batch, channel, height, width] but receives
-# [batch, height, width]
 def test_svm(default_detector, single_face_img_data):
 
     default_detector.change_model(
@@ -151,11 +143,7 @@ def test_svm(default_detector, single_face_img_data):
 
     detected_faces = default_detector.detect_faces(single_face_img_data)
     landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
-    hogs, new_lands = default_detector._batch_hog(
-        frames=single_face_img_data, landmarks=landmarks
-    )
-
-    aus = default_detector.detect_aus(frame=hogs, landmarks=new_lands)
+    aus = default_detector.detect_aus(single_face_img_data, landmarks=landmarks)
 
     assert np.sum(np.isnan(aus)) == 0
     assert aus[0].shape[-1] == 20

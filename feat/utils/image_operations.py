@@ -362,6 +362,10 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     mat = mat3 * mat1
     affine_matrix = torch.tensor(mat[0:2, :]).type(torch.float32).unsqueeze(0)
 
+    # warp_affine expects [batch, channel, height, width]
+    if img.ndim == 3:
+        img = img[None, :]
+
     aligned_img = warp_affine(
         img,
         affine_matrix,
