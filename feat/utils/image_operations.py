@@ -457,8 +457,8 @@ class BBox(object):
 
         self.left = self.center_x - (self.width // 2)
         self.right = self.center_x + (self.width // 2)
-        self.bottom = self.center_y - (self.height // 2)
-        self.top = self.center_y + (self.height // 2)
+        self.top = self.center_y - (self.height // 2)
+        self.bottom = self.center_y + (self.height // 2)
 
         self._apply_boundary()
 
@@ -530,15 +530,15 @@ class BBox(object):
 
         if len(img.shape) == 2:
             return img[
-                int(self.bottom) : int(self.top), int(self.left) : int(self.right)
+                int(self.top) : int(self.bottom), int(self.left) : int(self.right)
             ]
         elif len(img.shape) == 3:
             return img[
-                :, int(self.bottom) : int(self.top), int(self.left) : int(self.right)
+                :, int(self.top) : int(self.bottom), int(self.left) : int(self.right)
             ]
         elif len(img.shape) == 4:
             return img[
-                :, :, int(self.bottom) : int(self.top), int(self.left) : int(self.right)
+                :, :, int(self.top) : int(self.bottom), int(self.left) : int(self.right)
             ]
         else:
             raise ValueError("Not a valid image size")
@@ -547,9 +547,9 @@ class BBox(object):
         """bounding box coordinates as a dictionary"""
         return {
             "left": self.left,
-            "bottom": self.bottom,
-            "right": self.right,
             "top": self.top,
+            "right": self.right,
+            "bottom": self.bottom
         }
 
     def to_list(self):
@@ -590,7 +590,7 @@ class BBox(object):
         landmark_ = np.asarray(np.zeros(landmark.shape))
         for i, point in enumerate(landmark):
             x = point[0] * self.width + self.left
-            y = point[1] * self.height + self.bottom
+            y = point[1] * self.height + self.top
             landmark_[i] = (x, y)
         return landmark_
 
