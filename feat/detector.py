@@ -571,7 +571,7 @@ class Detector(object):
     def detect_image(
         self,
         input_file_list,
-        output_size=700,
+        output_size=256,
         batch_size=1,
         num_workers=0,
         pin_memory=False,
