@@ -33,6 +33,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import seaborn as sns
 from textwrap import wrap
+import torch
 
 __all__ = [
     "FexSeries",
@@ -1886,6 +1887,84 @@ def _inverse_face_transform(faces, batch_data):
             )
         out_frame.append(out_face)
     return out_frame
+
+
+class imageLoader_DISFAPlus(ImageDataset):
+    """
+    Loading images from DISFA dataset. Assuming that the user has just unzipped the downloaded DISFAPlus data
+    """
+    def __init__(
+        self, data_dir='/Storage/Data/DISFAPlusDataset/', output_size=None, preserve_aspect_ratio=True, padding=False
+    ):
+        super().__init__(images=None, output_size=output_size, preserve_aspect_ratio=preserve_aspect_ratio, padding=padding)
+        
+        # Load all dir info for DISFA+
+        self.avail_AUs = ['AU1','AU2','AU4','AU5','AU6','AU9','AU12','AU15','AU17','AU20','AU25','AU26']
+
+        self.data_dir = data_dir
+        self.main_file = self._load_data()
+
+        self.output_size = output_size
+        self.preserve_aspect_ratio = preserve_aspect_ratio
+        self.padding = padding
+
+    def _load_data(self):
+        print('data loading in progress')
+        all_subjects = os.listdir(os.path.join(self.data_dir,"Labels"))
+        sessions = [os.listdir(os.path.join(self.data_dir, "Labels", subj)) for subj in all_subjects]
+        # all image directory
+        dfs = []    
+        for i, subj in enumerate(all_subjects):
+            for sess in sessions[i]:
+                AU_f = []
+                for au_added in self.avail_AUs:
+                    AU_file = pd.read_csv(os.path.join(self.data_dir, 'Labels', subj, sess) + '/' + au_added + ".txt", skiprows=2, header=None, names=['intensity'], index_col=0, sep=r'\s{2,}')
+                    AU_file.rename({'intensity':f'{au_added}'}, axis=1, inplace=True)
+                    AU_f.append(AU_file)
+                AU_pd = pd.concat(AU_f, axis=1)
+                AU_pd = AU_pd.reset_index(level=0)
+                AU_pd['session'] = sess
+                AU_pd['subject'] = subj
+                dfs.append(AU_pd)
+        df = pd.concat(dfs, ignore_index=True)
+        df['image_path'] = [os.path.join(self.data_dir, 'Images', df['subject'][i], df['session'][i])+ '/' + df['index'][i] for i in range(df.shape[0])]
+        return df
+
+    def __len__(self):
+        return self.main_file.shape[0]
+
+    def __getitem__(self, idx):
+
+        # Dimensions are [channels, height, width]
+        img = read_image(self.main_file['image_path'][idx])
+        label = self.main_file.loc[idx, self.avail_AUs].to_numpy().astype(np.int16)
+
+        if self.output_size is not None:
+            transform = Compose(
+                [
+                    Rescale(
+                        self.output_size,
+                        preserve_aspect_ratio=self.preserve_aspect_ratio,
+                        padding=self.padding,
+                    )
+                ]
+            )
+            transformed_img = transform(img)
+            return {
+                "Image": transformed_img["Image"],
+                "label": torch.from_numpy(label),
+                "Scale": transformed_img["Scale"],
+                "Padding": transformed_img["Padding"],
+                "FileNames": self.main_file['image_path'][idx],
+            }
+
+        else:
+            return {
+                "Image": img,
+                "label": torch.from_numpy(label),
+                "Scale": 1.0,
+                "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
+            }
 
 
 def _inverse_landmark_transform(landmarks, batch_data):
