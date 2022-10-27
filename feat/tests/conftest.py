@@ -101,3 +101,10 @@ def single_face_mov(data_path):
 @fixture(scope="module")
 def multi_face_img(data_path):
     return os.path.join(data_path, "multi_face.jpg")
+
+
+@fixture(scope="module")
+def multiple_images_for_batch_testing(data_path):
+    from glob import glob
+
+    return list(glob(os.path.join(data_path, "*-ph.jpg")))

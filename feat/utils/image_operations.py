@@ -172,7 +172,7 @@ def extract_face_from_bbox(frame, detected_faces, face_size=112, expand_bbox=1.2
     bbox_list = []
     cropped_faces = []
     for k, face in enumerate(flat_faces):
-        frame_assignment = np.where(k <= length_cumu)[0][0]  # which frame is it?
+        frame_assignment = np.where(k < length_cumu)[0][0]  # which frame is it?
         bbox = BBox(
             face[:-1], bottom_boundary=im_height, right_boundary=im_width
         ).expand_by_factor(expand_bbox)
