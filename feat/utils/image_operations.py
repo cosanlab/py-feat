@@ -146,7 +146,7 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
 
     return (masked_image, new_landmarks)
 
-    
+
 def extract_face_from_bbox(frame, detected_faces, face_size=112, expand_bbox=1.2):
     """Extract face from image and resize
 
@@ -550,7 +550,7 @@ class BBox(object):
             "left": self.left,
             "top": self.top,
             "right": self.right,
-            "bottom": self.bottom
+            "bottom": self.bottom,
         }
 
     def to_list(self):

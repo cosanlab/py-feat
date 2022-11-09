@@ -68,7 +68,7 @@ class EmoXGBClassifier:
         self.scaler = load_classifier(
             os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
         )
-    
+
     def detect_emo(self, frame, landmarks, **kwargs):
         """
         Note that here frame is represented by hogs
@@ -79,9 +79,7 @@ class EmoXGBClassifier:
         # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         landmarks = landmarks.reshape(-1, landmarks.shape[1] * landmarks.shape[2])
 
-        pca_transformed_frame = self.pca_model.transform(
-            self.scaler.transform(frame)
-        )
+        pca_transformed_frame = self.pca_model.transform(self.scaler.transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
 
         pred_emos = self.classifier.predict_proba(feature_cbd)

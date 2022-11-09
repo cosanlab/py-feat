@@ -37,7 +37,7 @@ from torchvision.transforms import Compose, Normalize, Grayscale
 import logging
 import warnings
 from tqdm import tqdm
-import torchvision.transforms as transforms 
+import torchvision.transforms as transforms
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -231,7 +231,7 @@ class Detector(object):
             self.logger.info(f"Loading AU model: {au}")
             self.au_model = fetch_model("au_model", au)
             self.info["au_model"] = au
-            if self.info["au_model"] in ["svm", "logistic", 'rf', 'xgb']:
+            if self.info["au_model"] in ["svm", "logistic", "rf", "xgb"]:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP["Feat"]
             else:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP[
@@ -391,7 +391,7 @@ class Detector(object):
 
         landmark_results = []
         for ik in range(landmark.shape[0]):
-            
+
             landmark_results.append(
                 new_bbox[ik].inverse_transform_landmark(landmark[ik, :, :])
             )
@@ -471,7 +471,7 @@ class Detector(object):
         frame = convert_image_to_tensor(frame, img_type="float32")
         # frame = transforms.ToTensor()(frame)
 
-        if self["au_model"].lower() in ["logistic", "svm", 'rf', 'xgb']:
+        if self["au_model"].lower() in ["logistic", "svm", "rf", "xgb"]:
             # transform = Grayscale(3)
             # frame = transform(frame)
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
@@ -503,14 +503,14 @@ class Detector(object):
                 landmarks=flat_land[i],
                 face_size=112,
             )
-                    
+
             hogs = hog(
                 transforms.ToPILImage()(convex_hull[0]),
                 orientations=8,
                 pixels_per_cell=(8, 8),
                 cells_per_block=(2, 2),
                 visualize=False,
-                multichannel=True
+                multichannel=True,
             ).reshape(1, -1)
 
             if hogs_arr is None:
@@ -565,7 +565,8 @@ class Detector(object):
         elif self.info["emotion_model"].lower() in ["svm", "xgb"]:
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
             return self._convert_detector_output(
-                landmarks, self.emotion_model.detect_emo(frame=hog_arr, landmarks=new_lands)
+                landmarks,
+                self.emotion_model.detect_emo(frame=hog_arr, landmarks=new_lands),
             )
 
         else:
