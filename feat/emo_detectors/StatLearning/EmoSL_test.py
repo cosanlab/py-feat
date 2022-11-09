@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 import pickle
+import xgboost as xgb
 
 
 def load_classifier(cf_path):
@@ -62,9 +63,9 @@ class EmoXGBClassifier:
         self.pca_model = load_classifier(
             os.path.join(get_resource_path(), "emo_hog_pca.joblib")
         )
-        self.classifier = load_classifier_pkl(
-            os.path.join(get_resource_path(), "emoXGB33.pkl")
-        )
+        self.classifier = xgb.XGBClassifier()
+        self.classifier.load_model(os.path.join(get_resource_path(), "emoXGB33.ubj"))
+
         self.scaler = load_classifier(
             os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
         )
