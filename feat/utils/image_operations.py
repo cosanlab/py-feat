@@ -3,6 +3,7 @@ py-feat utility and helper functions for performing operations on images.
 """
 
 import os
+from re import X
 from .io import get_resource_path
 import math
 import numpy as np
@@ -145,7 +146,7 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
 
     return (masked_image, new_landmarks)
 
-
+    
 def extract_face_from_bbox(frame, detected_faces, face_size=112, expand_bbox=1.2):
     """Extract face from image and resize
 
@@ -425,7 +426,7 @@ class BBox(object):
         self.center_x = (self.right + self.left) // 2
         self.center_y = (self.top + self.bottom) // 2
         self.width = self.right - self.left
-        self.height = self.top - self.bottom
+        self.height = self.bottom - self.top
 
         self = self.set_boundary(
             left=left_boundary,

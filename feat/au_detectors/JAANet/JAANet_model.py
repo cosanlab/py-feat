@@ -405,167 +405,108 @@ class AlignNet(nn.Module):
                 arr2d[0, 29],
                 arr2d[1, 29] + ruler,
             )
-            # for bp4d
-            if self.au_num == 12:
-                # au7
-                generate_map(
-                    aus_map[i, 4],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 21],
-                    arr2d[1, 21],
-                    arr2d[0, 26],
-                    arr2d[1, 26],
-                )
+            # au7
+            generate_map(
+                aus_map[i, 4],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 21],
+                arr2d[1, 21],
+                arr2d[0, 26],
+                arr2d[1, 26],
+            )
+            generate_map(
+                aus_map[i, 5],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 15],
+                arr2d[1, 15] - ruler / 2,
+                arr2d[0, 17],
+                arr2d[1, 17] - ruler / 2,
+            )
+            # au10
+            generate_map(
+                aus_map[i, 6],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 43],
+                arr2d[1, 43],
+                arr2d[0, 45],
+                arr2d[1, 45],
+            )
 
-                # au10
-                generate_map(
-                    aus_map[i, 5],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 43],
-                    arr2d[1, 43],
-                    arr2d[0, 45],
-                    arr2d[1, 45],
-                )
+            # au12 au14 au15
+            generate_map(
+                aus_map[i, 7],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 31],
+                arr2d[1, 31],
+                arr2d[0, 37],
+                arr2d[1, 37],
+            )
+            aus_map[i, 8] = aus_map[i, 7]
+            aus_map[i, 9] = aus_map[i, 7]
 
-                # au12 au14 au15
-                generate_map(
-                    aus_map[i, 6],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 31],
-                    arr2d[1, 31],
-                    arr2d[0, 37],
-                    arr2d[1, 37],
-                )
-                aus_map[i, 7] = aus_map[i, 6]
-                aus_map[i, 8] = aus_map[i, 6]
+            # au17
+            generate_map(
+                aus_map[i, 10],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 39],
+                arr2d[1, 39] + ruler / 2,
+                arr2d[0, 41],
+                arr2d[1, 41] + ruler / 2,
+            )
 
-                # au17
-                generate_map(
-                    aus_map[i, 9],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 39],
-                    arr2d[1, 39] + ruler / 2,
-                    arr2d[0, 41],
-                    arr2d[1, 41] + ruler / 2,
-                )
+            # au23 au24
+            generate_map(
+                aus_map[i, 11],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 34],
+                arr2d[1, 34],
+                arr2d[0, 40],
+                arr2d[1, 40],
+            )
+            aus_map[i, 12] = aus_map[i, 11]
 
-                # au23 au24
-                generate_map(
-                    aus_map[i, 10],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 34],
-                    arr2d[1, 34],
-                    arr2d[0, 40],
-                    arr2d[1, 40],
-                )
-                aus_map[i, 11] = aus_map[i, 10]
-            # for disfa
-            elif self.au_num == 8:
-                # au9
-                generate_map(
-                    aus_map[i, 4],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 15],
-                    arr2d[1, 15] - ruler / 2,
-                    arr2d[0, 17],
-                    arr2d[1, 17] - ruler / 2,
-                )
-                # au12
-                generate_map(
-                    aus_map[i, 5],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 31],
-                    arr2d[1, 31],
-                    arr2d[0, 37],
-                    arr2d[1, 37],
-                )
-                # au25
-                generate_map(
-                    aus_map[i, 6],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 34],
-                    arr2d[1, 34],
-                    arr2d[0, 40],
-                    arr2d[1, 40],
-                )
-                # au26
-                generate_map(
-                    aus_map[i, 7],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 39],
-                    arr2d[1, 39] + ruler / 2,
-                    arr2d[0, 41],
-                    arr2d[1, 41] + ruler / 2,
-                )
-            # for gft
-            elif self.au_num == 10:
-                # au10
-                generate_map(
-                    aus_map[i, 4],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 43],
-                    arr2d[1, 43],
-                    arr2d[0, 45],
-                    arr2d[1, 45],
-                )
-                # au12 au14 au15
-                generate_map(
-                    aus_map[i, 5],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 31],
-                    arr2d[1, 31],
-                    arr2d[0, 37],
-                    arr2d[1, 37],
-                )
-                aus_map[i, 6] = aus_map[i, 5]
-                aus_map[i, 7] = aus_map[i, 5]
-                # au23 au24
-                generate_map(
-                    aus_map[i, 8],
-                    self.crop_size,
-                    self.map_size + 8,
-                    self.spatial_ratio,
-                    self.fill_coeff,
-                    arr2d[0, 34],
-                    arr2d[1, 34],
-                    arr2d[0, 40],
-                    arr2d[1, 40],
-                )
-                aus_map[i, 9] = aus_map[i, 8]
-
+            # au25
+            generate_map(
+                aus_map[i, 13],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 34],
+                arr2d[1, 34],
+                arr2d[0, 40],
+                arr2d[1, 40],
+            )
+            # au26
+            generate_map(
+                aus_map[i, 14],
+                self.crop_size,
+                self.map_size + 8,
+                self.spatial_ratio,
+                self.fill_coeff,
+                arr2d[0, 39],
+                arr2d[1, 39] + ruler / 2,
+                arr2d[0, 41],
+                arr2d[1, 41] + ruler / 2,
+            )
         return align_feat_out, align_output, aus_map
 
 
