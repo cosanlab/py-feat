@@ -10,14 +10,12 @@ from feat.landmark_detectors.pfld_compressed_test import PFLDInference
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
-from feat.au_detectors.StatLearning.SL_test import (
-    SVMClassifier,
-    XGBClassifier
-)
+from feat.au_detectors.StatLearning.SL_test import SVMClassifier, XGBClassifier
 from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
-    EmoSVMClassifier, EmoXGBClassifier
+    EmoSVMClassifier,
+    EmoXGBClassifier,
 )
 from feat.utils.io import get_resource_path, download_url
 import os
@@ -38,10 +36,7 @@ PRETRAINED_MODELS = {
         {"mobilefacenet": MobileFaceNet},
         {"pfld": PFLDInference},
     ],
-    "au_model": [
-        {"svm": SVMClassifier},
-        {'xgb': XGBClassifier}
-    ],
+    "au_model": [{"svm": SVMClassifier}, {"xgb": XGBClassifier}],
     "emotion_model": [
         {"resmasknet": ResMaskNet},
         {"svm": EmoSVMClassifier},

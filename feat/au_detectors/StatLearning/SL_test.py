@@ -5,7 +5,7 @@
 import numpy as np
 from feat.utils.io import get_resource_path
 import joblib
-import pickle   
+import pickle
 import os
 
 
@@ -33,7 +33,7 @@ class SVMClassifier:
         self.classifier = load_classifier(
             os.path.join(get_resource_path(), "svm_60_Nov22022.pkl")
         )
-        
+
     def detect_au(self, frame, landmarks):
         """
         Note that here frame is represented by hogs
@@ -61,14 +61,14 @@ class SVMClassifier:
 
         pred_aus = []
         for keys in aus_list:
-            if keys in ['AU1', 'AU2', 'AU4', 'AU5', 'AU6', 'AU9', 'AU43']:
+            if keys in ["AU1", "AU2", "AU4", "AU5", "AU6", "AU9", "AU43"]:
                 au_pred = self.classifier[keys].predict(pca_transformed_upper)
-            elif keys in ['AU10', 'AU11', 'AU12', 'AU15', 'AU23', 'AU25', 'AU28']:
+            elif keys in ["AU10", "AU11", "AU12", "AU15", "AU23", "AU25", "AU28"]:
                 au_pred = self.classifier[keys].predict(pca_transformed_lower)
-            elif keys in ['AU7', 'AU14', 'AU17', 'AU20', 'AU24', 'AU26']:
+            elif keys in ["AU7", "AU14", "AU17", "AU20", "AU24", "AU26"]:
                 au_pred = self.classifier[keys].predict(pca_transformed_full)
             else:
-                raise ValueError('unknown AU detected')
+                raise ValueError("unknown AU detected")
 
             pred_aus.append(au_pred)
         pred_aus = np.array(pred_aus).T
@@ -94,9 +94,7 @@ class XGBClassifier:
         # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         landmarks = landmarks.reshape(-1, landmarks.shape[1] * landmarks.shape[2])
 
-        pca_transformed_frame = self.pca_model.transform(
-            self.scaler.transform(frame)
-        )
+        pca_transformed_frame = self.pca_model.transform(self.scaler.transform(frame))
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
         aus_list = sorted(self.classifier.keys(), key=lambda x: int(x[2::]))
 
