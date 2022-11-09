@@ -76,7 +76,7 @@ def data_path():
     return os.path.join(os.path.dirname(__file__), "data")
 
 
-@fixture(scope="module")
+@fixture()
 def default_detector():
     """This detector instance is shared across all test in the same file"""
     return Detector()
