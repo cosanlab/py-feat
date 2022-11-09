@@ -101,6 +101,7 @@ def test_pfld(default_detector, single_face_img, single_face_img_data):
     )
 
 
+@pytest.mark.skip("Deprecated?")
 def test_jaanet(default_detector, single_face_img_data):
 
     default_detector.change_model(
@@ -133,6 +134,22 @@ def test_svm(default_detector, single_face_img_data):
     assert aus[0].shape[-1] == 20
 
 
+def test_xgb(default_detector, single_face_img_data):
+
+    default_detector.change_model(
+        face_model="RetinaFace",
+        landmark_model="MobileFaceNet",
+        au_model="xgb",
+    )
+
+    detected_faces = default_detector.detect_faces(single_face_img_data)
+    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
+    aus = default_detector.detect_aus(single_face_img_data, landmarks=landmarks)
+
+    assert np.sum(np.isnan(aus)) == 0
+    assert aus[0].shape[-1] == 20
+
+
 def test_resmasknet(default_detector, single_face_img):
     default_detector.change_model(emotion_model="resmasknet")
     out = default_detector.detect_image(single_face_img)
@@ -143,6 +160,18 @@ def test_resmasknet(default_detector, single_face_img):
 # channel)
 def test_emotionsvm(default_detector, single_face_img):
     default_detector.change_model(emotion_model="svm")
+    out = default_detector.detect_image(single_face_img)
+    assert out.emotions["happiness"].values > 0.5
+
+
+def test_emotionxgb(default_detector, single_face_img):
+    default_detector.change_model(emotion_model="xgb")
+    out = default_detector.detect_image(single_face_img)
+    assert out.emotions["happiness"].values > 0.5
+
+
+def test_emotionfer(default_detector, single_face_img):
+    default_detector.change_model(emotion_model="fer")
     out = default_detector.detect_image(single_face_img)
     assert out.emotions["happiness"].values > 0.5
 
