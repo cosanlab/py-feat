@@ -27,168 +27,207 @@ def test_detector_combos(
     assert out.shape[0] == 1
 
 
-def test_faceboxes(default_detector, single_face_img_data):
+@pytest.mark.usefixtures("default_detector", "single_face_img_data")
+class Test_Face_Models:
+    """Test all pretrained face models"""
 
-    default_detector.change_model(face_model="FaceBoxes")
-    out = default_detector.detect_faces(single_face_img_data)
-    assert 180 < out[0][0][0] < 200
+    def test_retinaface(self, default_detector, single_face_img_data):
 
+        default_detector.change_model(face_model="RetinaFace")
+        out = default_detector.detect_faces(single_face_img_data)
+        assert 180 < out[0][0][0] < 200
 
-def test_retinaface(default_detector, single_face_img_data):
+    def test_faceboxes(self, default_detector, single_face_img_data):
 
-    default_detector.change_model(face_model="RetinaFace")
-    out = default_detector.detect_faces(single_face_img_data)
-    assert 180 < out[0][0][0] < 200
+        default_detector.change_model(face_model="FaceBoxes")
+        out = default_detector.detect_faces(single_face_img_data)
+        assert 180 < out[0][0][0] < 200
 
+    # FIXME: @tiankang MTCNN's face rect is not the same as faceboxes and retinaface
+    # the bounding box x coord of the bounding box is > 200
+    def test_mtcnn(self, default_detector, single_face_img_data):
 
-# FIXME: @tiankang MTCNN's face rect is not the same as faceboxes and retinaface
-# the bounding box x coord of the bounding box is > 200
-def test_mtcnn(default_detector, single_face_img_data):
+        default_detector.change_model(face_model="MTCNN")
+        out = default_detector.detect_faces(single_face_img_data)
+        assert 180 < out[0][0][0] < 200
 
-    default_detector.change_model(face_model="MTCNN")
-    out = default_detector.detect_faces(single_face_img_data)
-    assert 180 < out[0][0][0] < 200
+    @pytest.mark.skip("TODO")
+    def test_img2pose_face(self, default_detector, single_face_img_data):
+        pass
 
-
-def test_mobilefacenet(default_detector, single_face_img, single_face_img_data):
-
-    _, h, w = read_image(single_face_img).shape
-
-    default_detector.change_model(
-        face_model="RetinaFace", landmark_model="MobileFaceNet"
-    )
-    bboxes = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)[0]
-    assert landmarks[0].shape == (68, 2)
-    assert (
-        np.any(landmarks[0][:, 0] > 0)
-        and np.any(landmarks[0][:, 0] < w)
-        and np.any(landmarks[0][:, 1] > 0)
-        and np.any(landmarks[0][:, 1] < h)
-    )
+    @pytest.mark.skip("TODO")
+    def test_img2pose_c_face(self, default_detector, single_face_img_data):
+        pass
 
 
-def test_mobilenet(default_detector, single_face_img, single_face_img_data):
+@pytest.mark.usefixtures("default_detector", "single_face_img", "single_face_img_data")
+class Test_Landmark_Models:
+    """Test all pretrained face models"""
 
-    _, h, w = read_image(single_face_img).shape
+    def test_mobilenet(self, default_detector, single_face_img, single_face_img_data):
 
-    default_detector.change_model(face_model="RetinaFace", landmark_model="MobileNet")
+        _, h, w = read_image(single_face_img).shape
 
-    bboxes = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)[0]
-    assert landmarks[0].shape == (68, 2)
-    assert (
-        np.any(landmarks[0][:, 0] > 0)
-        and np.any(landmarks[0][:, 0] < w)
-        and np.any(landmarks[0][:, 1] > 0)
-        and np.any(landmarks[0][:, 1] < h)
-    )
+        default_detector.change_model(
+            face_model="RetinaFace", landmark_model="MobileNet"
+        )
 
+        bboxes = default_detector.detect_faces(single_face_img_data)
+        landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)[0]
+        assert landmarks[0].shape == (68, 2)
+        assert (
+            np.any(landmarks[0][:, 0] > 0)
+            and np.any(landmarks[0][:, 0] < w)
+            and np.any(landmarks[0][:, 1] > 0)
+            and np.any(landmarks[0][:, 1] < h)
+        )
 
-def test_pfld(default_detector, single_face_img, single_face_img_data):
+    def test_mobilefacenet(
+        self, default_detector, single_face_img, single_face_img_data
+    ):
 
-    _, h, w = read_image(single_face_img).shape
-    default_detector.change_model(face_model="RetinaFace", landmark_model="PFLD")
+        _, h, w = read_image(single_face_img).shape
 
-    bboxes = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)[0]
-    assert landmarks[0].shape == (68, 2)
-    assert (
-        np.any(landmarks[0][:, 0] > 0)
-        and np.any(landmarks[0][:, 0] < w)
-        and np.any(landmarks[0][:, 1] > 0)
-        and np.any(landmarks[0][:, 1] < h)
-    )
+        default_detector.change_model(
+            face_model="RetinaFace", landmark_model="MobileFaceNet"
+        )
+        bboxes = default_detector.detect_faces(single_face_img_data)
+        landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)[0]
+        assert landmarks[0].shape == (68, 2)
+        assert (
+            np.any(landmarks[0][:, 0] > 0)
+            and np.any(landmarks[0][:, 0] < w)
+            and np.any(landmarks[0][:, 1] > 0)
+            and np.any(landmarks[0][:, 1] < h)
+        )
 
+    def test_pfld(self, default_detector, single_face_img, single_face_img_data):
 
-@pytest.mark.skip("Deprecated?")
-def test_jaanet(default_detector, single_face_img_data):
+        _, h, w = read_image(single_face_img).shape
+        default_detector.change_model(face_model="RetinaFace", landmark_model="PFLD")
 
-    default_detector.change_model(
-        face_model="RetinaFace",
-        landmark_model="MobileFaceNet",
-        au_model="jaanet",
-    )
-
-    bboxes = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)
-    aus = default_detector.detect_aus(single_face_img_data, landmarks)
-
-    assert np.sum(np.isnan(aus)) == 0
-    assert aus[0].shape[-1] == 12
-
-
-def test_svm(default_detector, single_face_img_data):
-
-    default_detector.change_model(
-        face_model="RetinaFace",
-        landmark_model="MobileFaceNet",
-        au_model="svm",
-    )
-
-    detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
-    aus = default_detector.detect_aus(single_face_img_data, landmarks=landmarks)
-
-    assert np.sum(np.isnan(aus)) == 0
-    assert aus[0].shape[-1] == 20
+        bboxes = default_detector.detect_faces(single_face_img_data)
+        landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)[0]
+        assert landmarks[0].shape == (68, 2)
+        assert (
+            np.any(landmarks[0][:, 0] > 0)
+            and np.any(landmarks[0][:, 0] < w)
+            and np.any(landmarks[0][:, 1] > 0)
+            and np.any(landmarks[0][:, 1] < h)
+        )
 
 
-def test_xgb(default_detector, single_face_img_data):
+@pytest.mark.usefixtures("default_detector", "single_face_img_data")
+class Test_AU_Models:
+    """Test all pretrained AU models"""
 
-    default_detector.change_model(
-        face_model="RetinaFace",
-        landmark_model="MobileFaceNet",
-        au_model="xgb",
-    )
+    @pytest.mark.skip("Deprecated?")
+    def test_jaanet(self, default_detector, single_face_img_data):
 
-    detected_faces = default_detector.detect_faces(single_face_img_data)
-    landmarks = default_detector.detect_landmarks(single_face_img_data, detected_faces)
-    aus = default_detector.detect_aus(single_face_img_data, landmarks=landmarks)
+        default_detector.change_model(
+            face_model="RetinaFace",
+            landmark_model="MobileFaceNet",
+            au_model="jaanet",
+        )
 
-    assert np.sum(np.isnan(aus)) == 0
-    assert aus[0].shape[-1] == 20
+        bboxes = default_detector.detect_faces(single_face_img_data)
+        landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)
+        aus = default_detector.detect_aus(single_face_img_data, landmarks)
+
+        assert np.sum(np.isnan(aus)) == 0
+        assert aus[0].shape[-1] == 12
+
+    def test_svm_au(self, default_detector, single_face_img_data):
+
+        default_detector.change_model(
+            face_model="RetinaFace",
+            landmark_model="MobileFaceNet",
+            au_model="svm",
+        )
+
+        detected_faces = default_detector.detect_faces(single_face_img_data)
+        landmarks = default_detector.detect_landmarks(
+            single_face_img_data, detected_faces
+        )
+        aus = default_detector.detect_aus(single_face_img_data, landmarks=landmarks)
+
+        assert np.sum(np.isnan(aus)) == 0
+        assert aus[0].shape[-1] == 20
+
+    def test_xgb_au(self, default_detector, single_face_img_data):
+
+        default_detector.change_model(
+            face_model="RetinaFace",
+            landmark_model="MobileFaceNet",
+            au_model="xgb",
+        )
+
+        detected_faces = default_detector.detect_faces(single_face_img_data)
+        landmarks = default_detector.detect_landmarks(
+            single_face_img_data, detected_faces
+        )
+        aus = default_detector.detect_aus(single_face_img_data, landmarks=landmarks)
+
+        assert np.sum(np.isnan(aus)) == 0
+        assert aus[0].shape[-1] == 20
 
 
-def test_resmasknet(default_detector, single_face_img):
-    default_detector.change_model(emotion_model="resmasknet")
-    out = default_detector.detect_image(single_face_img)
-    assert out.emotions["happiness"].values > 0.5
+@pytest.mark.usefixtures("default_detector", "single_face_img")
+class Test_Emotion_Models:
+    """Test all pretrained emotion models"""
+
+    def test_resmasknet(self, default_detector, single_face_img):
+        default_detector.change_model(emotion_model="resmasknet")
+        out = default_detector.detect_image(single_face_img)
+        assert out.emotions["happiness"].values > 0.5
+
+    def test_svm_emotion(self, default_detector, single_face_img):
+        default_detector.change_model(emotion_model="svm")
+        out = default_detector.detect_image(single_face_img)
+        assert out.emotions["happiness"].values > 0.5
+
+    # FIXME: @tiankang fails cause detected happiness is 0.1150
+    def test_xgb_emotion(self, default_detector, single_face_img):
+        default_detector.change_model(emotion_model="xgb")
+        out = default_detector.detect_image(single_face_img)
+        assert out.emotions["happiness"].values > 0.5
+
+    # FIXME: @tiankang fails cause detected happiness is 0.
+    def test_fer_emotion(self, default_detector, single_face_img):
+        default_detector.change_model(emotion_model="fer")
+        out = default_detector.detect_image(single_face_img)
+        assert out.emotions["happiness"].values > 0.5
 
 
-# FIXME: fails because StandardScaler expects 2d input but gets 4d (includes batch and
-# channel)
-def test_emotionsvm(default_detector, single_face_img):
-    default_detector.change_model(emotion_model="svm")
-    out = default_detector.detect_image(single_face_img)
-    assert out.emotions["happiness"].values > 0.5
+@pytest.mark.usefixtures("default_detector", "single_face_img_data")
+class Test_Facepose_Models:
+    """Test all pretrained facepose models"""
 
+    # FIXME: error in call to .predict where list of landmarks is being caste to float32
+    def test_pnp(self, default_detector, single_face_img_data):
+        # Test that facepose can be estimated properly using landmarks + pnp algorithm
+        default_detector.change_model(
+            face_model="RetinaFace",
+            landmark_model="MobileFaceNet",
+            facepose_model="PnP",
+        )
+        bboxes = default_detector.detect_faces(frame=single_face_img_data)
+        lms = default_detector.detect_landmarks(
+            frame=single_face_img_data, detected_faces=bboxes
+        )
+        poses = default_detector.detect_facepose(
+            frame=single_face_img_data, landmarks=lms
+        )
+        pose_to_test = poses[0][0]  # first image and first face
+        pitch, roll, yaw = pose_to_test.reshape(-1)
+        assert -10 < pitch < 10
+        assert -5 < roll < 5
+        assert -10 < yaw < 10
 
-def test_emotionxgb(default_detector, single_face_img):
-    default_detector.change_model(emotion_model="xgb")
-    out = default_detector.detect_image(single_face_img)
-    assert out.emotions["happiness"].values > 0.5
+    @pytest.mark.skip("TODO")
+    def test_img2pose_facepose(self, default_detector, single_face_img_data):
+        pass
 
-
-def test_emotionfer(default_detector, single_face_img):
-    default_detector.change_model(emotion_model="fer")
-    out = default_detector.detect_image(single_face_img)
-    assert out.emotions["happiness"].values > 0.5
-
-
-# FIXME: error in call to .predict where list of landmarks is being caste to float32
-def test_pnp(default_detector, single_face_img_data):
-    # Test that facepose can be estimated properly using landmarks + pnp algorithm
-    default_detector.change_model(
-        face_model="RetinaFace", landmark_model="MobileFaceNet", facepose_model="PnP"
-    )
-    bboxes = default_detector.detect_faces(frame=single_face_img_data)
-    lms = default_detector.detect_landmarks(
-        frame=single_face_img_data, detected_faces=bboxes
-    )
-    poses = default_detector.detect_facepose(frame=single_face_img_data, landmarks=lms)
-    pose_to_test = poses[0][0]  # first image and first face
-    pitch, roll, yaw = pose_to_test.reshape(-1)
-    assert -10 < pitch < 10
-    assert -5 < roll < 5
-    assert -10 < yaw < 10
+    @pytest.mark.skip("TODO")
+    def test_img2pose_c_facepose(self, default_detector, single_face_img_data):
+        pass
