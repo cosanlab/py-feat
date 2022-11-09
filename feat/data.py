@@ -18,6 +18,7 @@ from nltools.utils import set_decomposition_algorithm
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
 from torchvision.transforms import Compose
+from torchvision import transforms
 from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
 from torch import swapaxes
@@ -34,6 +35,7 @@ from matplotlib.patches import Rectangle
 import seaborn as sns
 from textwrap import wrap
 import torch
+from PIL import Image
 
 __all__ = [
     "FexSeries",
@@ -1820,7 +1822,11 @@ class ImageDataset(Dataset):
     def __getitem__(self, idx):
 
         # Dimensions are [channels, height, width]
-        img = read_image(self.images[idx])
+        try:
+            img = read_image(self.images[idx])
+        except:
+            img = Image.open(self.images[idx])
+            img = transforms.PILToTensor()(img)
 
         if self.output_size is not None:
             transform = Compose(
@@ -2031,11 +2037,16 @@ class VideoDataset(Dataset):
             return {
                 "Image": transformed_img["Image"],
                 "Frame": self.video_frames[idx],
+                "Scale": transformed_img["Scale"],
+                "Padding": transformed_img["Padding"],
                 "FileName": self.file_name,
+                
             }
         else:
             return {
                 "Image": self.video[idx],
                 "Frame": self.video_frames[idx],
                 "FileName": self.file_name,
+                "Scale": 1.0,
+                "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0}
             }

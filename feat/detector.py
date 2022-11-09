@@ -37,6 +37,7 @@ from torchvision.transforms import Compose, Normalize, Grayscale
 import logging
 import warnings
 from tqdm import tqdm
+import torchvision.transforms as transforms 
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -230,7 +231,7 @@ class Detector(object):
             self.logger.info(f"Loading AU model: {au}")
             self.au_model = fetch_model("au_model", au)
             self.info["au_model"] = au
-            if self.info["au_model"] in ["svm", "logistic"]:
+            if self.info["au_model"] in ["svm", "logistic", 'rf', 'xgb']:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP["Feat"]
             else:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP[
@@ -372,6 +373,7 @@ class Detector(object):
         extracted_faces, new_bbox = extract_face_from_bbox(
             frame, detected_faces, face_size=out_size
         )
+
         extracted_faces = extracted_faces / 255.0
 
         if self.info["landmark_model"].lower() == "mobilenet":
@@ -389,6 +391,7 @@ class Detector(object):
 
         landmark_results = []
         for ik in range(landmark.shape[0]):
+            
             landmark_results.append(
                 new_bbox[ik].inverse_transform_landmark(landmark[ik, :, :])
             )
@@ -466,10 +469,11 @@ class Detector(object):
         """
 
         frame = convert_image_to_tensor(frame, img_type="float32")
+        # frame = transforms.ToTensor()(frame)
 
-        if self["au_model"].lower() in ["logistic", "svm"]:
-            transform = Grayscale(3)
-            frame = transform(frame)
+        if self["au_model"].lower() in ["logistic", "svm", 'rf', 'xgb']:
+            # transform = Grayscale(3)
+            # frame = transform(frame)
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
             au_predictions = self.au_model.detect_au(frame=hog_arr, landmarks=new_lands)
         else:
@@ -499,14 +503,14 @@ class Detector(object):
                 landmarks=flat_land[i],
                 face_size=112,
             )
-
+                    
             hogs = hog(
-                convex_hull.squeeze().permute(1, 2, 0).type(torch.int).numpy(),
+                transforms.ToPILImage()(convex_hull[0]),
                 orientations=8,
                 pixels_per_cell=(8, 8),
                 cells_per_block=(2, 2),
                 visualize=False,
-                channel_axis=-1,
+                multichannel=True
             ).reshape(1, -1)
 
             if hogs_arr is None:
@@ -558,9 +562,10 @@ class Detector(object):
                 facebox, self.emotion_model.detect_emo(frame, facebox)
             )
 
-        elif self.info["emotion_model"].lower() in ["svm", "rf"]:
+        elif self.info["emotion_model"].lower() in ["svm", "xgb"]:
+            hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
             return self._convert_detector_output(
-                landmarks, self.emotion_model.detect_emo(frame, landmarks)
+                landmarks, self.emotion_model.detect_emo(frame=hog_arr, landmarks=new_lands)
             )
 
         else:
@@ -611,6 +616,7 @@ class Detector(object):
             frame_counter += frame_counter + batch_id * batch_size
             faces = self.detect_faces(batch_data["Image"])
             landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
+
             poses = self.detect_facepose(batch_data["Image"])
             aus = self.detect_aus(batch_data["Image"], landmarks)
             emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
@@ -673,6 +679,7 @@ class Detector(object):
             aus = self.detect_aus(batch_data["Image"], landmarks)
             emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
             frames = list(batch_data["Frame"].numpy())
+            landmarks = _inverse_landmark_transform(landmarks, batch_data)
             output = self._create_fex(
                 faces, landmarks, poses, aus, emotions, batch_data["FileName"], frames
             )

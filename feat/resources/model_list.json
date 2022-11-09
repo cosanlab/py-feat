@@ -2,35 +2,23 @@
     "au_detectors": {
         "svm": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
-                "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/svm_60_Nov22022.pkl",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.joblib",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.h5"
             ]
         },
-        "logistic": {
+        "xgb": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
-                "https://github.com/cosanlab/feat/releases/download/v0.1/Logistic_520.joblib",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/xgb_60_oct312022.pkl",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.joblib",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.h5"
             ]
         },
         "hog-pca": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib"
-            ]
-        },
-        "au_scalar": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_scalar_aus.joblib"
-            ]
-        },
-        "jaanet": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/jaanet_aus_to_landmarks.joblib",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/jaanet_aus_to_landmarks.h5"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/upper_face_pcaSet.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/lower_face_pcaSet.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/full_face_pcaSet.pkl"
             ]
         }
     },
@@ -49,6 +37,11 @@
         "svm": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/emoSVM38.joblib"
+            ]
+        },
+        "xgb": {
+            "urls": [
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/emoXGB33.pkl"
             ]
         },
         "emo_scalar": {
