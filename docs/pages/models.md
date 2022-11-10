@@ -37,4 +37,3 @@ Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 ## Face/Head pose estimation
 - **`img2pose`: Face Alignment and Detection via 6DoF, Face Pose Estimation** ([Albiero et al., 2020](https://arxiv.org/pdf/2012.07791v2.pdf)). Performs simultaneous (one-shot) face detection and head pose estimation
 - `img2pose-c`: A 'constrained' version of the above model, fine-tuned on images of frontal faces with pitch, roll, yaw measures in the range of (-90, 90) degrees. Shows lesser performance on hard face detection tasks, but state-of-the-art performance on head pose estimation for frontal faces.
-- `perspective-n-point`: [Efficient PnP (EPnP)](https://link.springer.com/article/10.1007/s11263-008-0152-6) method implemented via `cv2` to solve the [Perspective n Point](https://en.wikipedia.org/wiki/Perspective-n-Point) (PnP) problem to obtain 3D head pose from 2D facial landmarks

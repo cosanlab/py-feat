@@ -63,7 +63,7 @@ def emotion_model(request):
 
 @fixture(
     scope="module",
-    params=["pnp", "img2pose", "img2pose-c"],
+    params=["img2pose", "img2pose-c"],
 )
 def facepose_model(request):
     """Supported pose detectors"""
