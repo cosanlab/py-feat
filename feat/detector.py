@@ -492,7 +492,7 @@ class Detector(object):
                 pixels_per_cell=(8, 8),
                 cells_per_block=(2, 2),
                 visualize=False,
-                multichannel=True,
+                channel_axis=-1,
             ).reshape(1, -1)
 
             if hogs_arr is None:
