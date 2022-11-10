@@ -148,6 +148,16 @@ def set_torch_device(device="auto"):
             raise ValueError("Device must be ['cpu', 'cuda', 'mps', 'auto']")
 
         if device == "auto":
+            # FIXME: This currently doesn't work on mac's where mps is available because
+            # it results in a mix of cpu and mps operations which cause failures. E.g.
+            # when we call torch.cat() inside of image_operations.decode from
+            # FaceBoxes_tests.py(128)
+
+            # In this case priors are on `cpu`, loc is on `mps`, variances is a list (so
+            # cpu I assume). loc also contains all nans
+
+            # This causes retinaface to fail to detect a face properly and tests to fail
+
             if torch.cuda.is_available():
                 device = "cuda"
             elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
@@ -156,7 +166,7 @@ def set_torch_device(device="auto"):
                 device = "cpu"
         else:
             device = device
-        return torch.device(device)
+        return torch.device("cpu")
 
     else:
         return device
