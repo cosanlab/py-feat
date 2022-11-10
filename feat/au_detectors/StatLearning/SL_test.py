@@ -1,6 +1,5 @@
 # Implements different statistical learning algorithms to classify AUs
 # Please see https://www.cl.cam.ac.uk/~mmam3/pub/FG2015.pdf for more details and reasons
-# Currently support: SVM (as in the paper), RandomForest (new implementation), Logistic Regression
 
 import numpy as np
 from feat.utils.io import get_resource_path
@@ -81,8 +80,28 @@ class XGBClassifier:
         self.scaler, self.pca_model = load_classifier_pkl(
             os.path.join(get_resource_path(), "full_face_pcaSet.pkl")
         )
-        self.au_keys = ["AU1","AU2","AU4","AU5","AU6","AU7","AU9","AU10","AU11","AU12",\
-                        "AU14","AU15","AU17","AU20","AU23","AU24","AU25","AU26","AU28","AU43"]
+        self.au_keys = [
+            "AU1",
+            "AU2",
+            "AU4",
+            "AU5",
+            "AU6",
+            "AU7",
+            "AU9",
+            "AU10",
+            "AU11",
+            "AU12",
+            "AU14",
+            "AU15",
+            "AU17",
+            "AU20",
+            "AU23",
+            "AU24",
+            "AU25",
+            "AU26",
+            "AU28",
+            "AU43",
+        ]
 
     def detect_au(self, frame, landmarks):
         """
@@ -99,9 +118,11 @@ class XGBClassifier:
 
         pred_aus = []
         for keys in self.au_keys:
-            
+
             model_xgb = xgb.XGBClassifier()
-            model_xgb.load_model(os.path.join(get_resource_path(), f"Oct30FinalXGB_{keys}.ubj"))
+            model_xgb.load_model(
+                os.path.join(get_resource_path(), f"Oct30FinalXGB_{keys}.ubj")
+            )
 
             au_pred = model_xgb.predict_proba(feature_cbd)[:, 1]
             # au_pred = au_pred[:, 1]

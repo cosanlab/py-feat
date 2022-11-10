@@ -231,7 +231,7 @@ class Detector(object):
             self.logger.info(f"Loading AU model: {au}")
             self.au_model = fetch_model("au_model", au)
             self.info["au_model"] = au
-            if self.info["au_model"] in ["svm", "logistic", "rf", "xgb"]:
+            if self.info["au_model"] in ["svm", "xgb"]:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP["Feat"]
             else:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP[
@@ -271,7 +271,7 @@ class Detector(object):
 
     def change_model(self, **kwargs):
         """Swap one or more pre-trained detector models for another one. Just pass in
-        the the new models to use as kwargs, e.g. emotion_model='rf'"""
+        the the new models to use as kwargs, e.g. emotion_model='svm'"""
 
         face_model = kwargs.get("face_model", self.info["face_model"])
         landmark_model = kwargs.get("landmark_model", self.info["landmark_model"])
@@ -467,7 +467,7 @@ class Detector(object):
         frame = convert_image_to_tensor(frame, img_type="float32")
         # frame = transforms.ToTensor()(frame)
 
-        if self["au_model"].lower() in ["logistic", "svm", "rf", "xgb"]:
+        if self["au_model"].lower() in ["svm", "xgb"]:
             # transform = Grayscale(3)
             # frame = transform(frame)
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
