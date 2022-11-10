@@ -412,27 +412,15 @@ class Detector(object):
         corresponding to the detected poses returned by this method.
 
         Args:
-            frame (np.ndarray): list of cv2 images
-            landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images
+            frame (np.ndarray): list of images
+            landmarks (np.ndarray | None, optional): (num_images, num_faces, 68, 2)
+            landmarks for the faces contained in list of images; Default None and
+            ignored for img2pose and img2pose-c detectors
 
         Returns:
-            dict: {"faces": list of face bounding boxes, "poses": (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
+            list: poses (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
             degrees) for each face within in each image}
 
-        Examples:
-            >>> from feat import Detector
-            >>> from feat.utils import read_pictures
-            >>> frame = read_pictures(['my_image.jpg'])
-
-            >>> # Imgpose detector
-            >>> imgpose_detector = Detector(face_model='imgpose', facepose_model='img2pose')
-            >>> imgpose_detector.detect_facepose(frame) # one shot computation
-
-            >>> # Retina face detector
-            >>> retinaface_detector = Detector(face_model='retinaface', landmark_model='mobilefacenet')
-            >>> faces = retinaface_detector.detect_faces(frame)
-            >>> landmarks = retinaface_detector.detect_landmarks(detected_faces=faces)
-            >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
         """
         # Normalize Data
         frame = convert_image_to_tensor(frame, img_type="float32") / 255
@@ -441,9 +429,7 @@ class Detector(object):
             faces, poses = self.facepose_detector(frame)
         else:
             poses = self.facepose_detector(frame, landmarks)
-            # faces = detected_faces
 
-        # return {"faces": faces, "poses": poses}
         return poses
 
     def detect_aus(self, frame, landmarks):
