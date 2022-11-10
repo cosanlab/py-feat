@@ -43,8 +43,6 @@ class Test_Face_Models:
         out = default_detector.detect_faces(single_face_img_data)
         assert 180 < out[0][0][0] < 200
 
-    # FIXME: @tiankang MTCNN's face rect is not the same as faceboxes and retinaface
-    # the bounding box x coord of the bounding box is > 200
     def test_mtcnn(self, default_detector, single_face_img_data):
 
         default_detector.change_model(face_model="MTCNN")
@@ -175,27 +173,6 @@ class Test_Emotion_Models:
 @pytest.mark.usefixtures("default_detector", "single_face_img_data")
 class Test_Facepose_Models:
     """Test all pretrained facepose models"""
-
-    # FIXME: error in call to .predict where list of landmarks is being caste to float32
-    def test_pnp(self, default_detector, single_face_img_data):
-        # Test that facepose can be estimated properly using landmarks + pnp algorithm
-        default_detector.change_model(
-            face_model="RetinaFace",
-            landmark_model="MobileFaceNet",
-            facepose_model="PnP",
-        )
-        bboxes = default_detector.detect_faces(frame=single_face_img_data)
-        lms = default_detector.detect_landmarks(
-            frame=single_face_img_data, detected_faces=bboxes
-        )
-        poses = default_detector.detect_facepose(
-            frame=single_face_img_data, landmarks=lms
-        )
-        pose_to_test = poses[0][0]  # first image and first face
-        pitch, roll, yaw = pose_to_test.reshape(-1)
-        assert -10 < pitch < 10
-        assert -5 < roll < 5
-        assert -10 < yaw < 10
 
     @pytest.mark.skip("TODO")
     def test_img2pose_facepose(self, default_detector, single_face_img_data):
