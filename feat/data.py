@@ -669,13 +669,14 @@ class Fex(DataFrame):
             my = self[y]
         else:
             my = y
-        b, t, p, df, res = regress(mX, my, *args, **kwargs)
+        b, se, t, p, df, res = regress(mX, my, *args, **kwargs)
         b_df = pd.DataFrame(b, index=mX.columns, columns=my.columns)
+        se_df = pd.DataFrame(se, index=mX.columns, columns=my.columns)
         t_df = pd.DataFrame(t, index=mX.columns, columns=my.columns)
         p_df = pd.DataFrame(p, index=mX.columns, columns=my.columns)
         df_df = pd.DataFrame([df], index=[0], columns=my.columns)
         res_df = pd.DataFrame(res, columns=my.columns)
-        return b_df, t_df, p_df, df_df, res_df
+        return b_df, se_df, t_df, p_df, df_df, res_df
 
     def ttest_1samp(self, popmean=0, threshold_dict=None):
         """Conducts 1 sample ttest.
