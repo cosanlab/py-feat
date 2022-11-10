@@ -6,7 +6,7 @@ from torchvision.io import read_image
 
 
 @pytest.mark.skip(
-    reason="This tests all 900 model detector combinations which takes ~20-30min. Run locally using test-detector-combos branch which will output results to file."
+    reason="This tests ALL model detector combinations which takes ~20-30min. Run locally by commenting this line and using pytest -k 'test_detector_combos'."
 )
 def test_detector_combos(
     face_model, landmark_model, au_model, emotion_model, facepose_model, single_face_img
