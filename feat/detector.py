@@ -68,9 +68,9 @@ class Detector(object):
                 n_jobs (int): Number of jobs to be used in parallel.
                 face_model (str, default=retinaface): Name of face detection model
                 landmark_model (str, default=mobilenet): Nam eof landmark model
-                au_model (str, default=rf): Name of Action Unit detection model
+                au_model (str, default=svm): Name of Action Unit detection model
                 emotion_model (str, default=resmasknet): Path to emotion detection model.
-                facepose_model (str, default=pnp): Name of headpose detection model.
+                facepose_model (str, default=img2pose): Name of headpose detection model.
                 face_detection_columns (list): Column names for face detection ouput (x, y, w, h)
                 face_landmark_columns (list): Column names for face landmark output (x0, y0, x1, y1, ...)
                 emotion_model_columns (list): Column names for emotion model output
@@ -231,7 +231,7 @@ class Detector(object):
             self.logger.info(f"Loading AU model: {au}")
             self.au_model = fetch_model("au_model", au)
             self.info["au_model"] = au
-            if self.info["au_model"] in ["svm", "logistic", "rf", "xgb"]:
+            if self.info["au_model"] in ["svm", "xgb"]:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP["Feat"]
             else:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP[
@@ -271,7 +271,7 @@ class Detector(object):
 
     def change_model(self, **kwargs):
         """Swap one or more pre-trained detector models for another one. Just pass in
-        the the new models to use as kwargs, e.g. emotion_model='rf'"""
+        the the new models to use as kwargs, e.g. emotion_model='svm'"""
 
         face_model = kwargs.get("face_model", self.info["face_model"])
         landmark_model = kwargs.get("landmark_model", self.info["landmark_model"])
@@ -411,10 +411,6 @@ class Detector(object):
         are ignored. Use `detect_face` method in order to obtain bounding boxes
         corresponding to the detected poses returned by this method.
 
-        When used with pnp model, 'facebox' param is ignored, and the passed 2D
-        landmarks are used to compute the head pose for the single face associated with
-        the passed landmarks.
-
         Args:
             frame (np.ndarray): list of cv2 images
             landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images
@@ -433,7 +429,7 @@ class Detector(object):
             >>> imgpose_detector.detect_facepose(frame) # one shot computation
 
             >>> # Retina face detector
-            >>> retinaface_detector = Detector(face_model='retinaface', landmark_model='mobilefacenet', facepose_model='pnp')
+            >>> retinaface_detector = Detector(face_model='retinaface', landmark_model='mobilefacenet')
             >>> faces = retinaface_detector.detect_faces(frame)
             >>> landmarks = retinaface_detector.detect_landmarks(detected_faces=faces)
             >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
@@ -471,7 +467,7 @@ class Detector(object):
         frame = convert_image_to_tensor(frame, img_type="float32")
         # frame = transforms.ToTensor()(frame)
 
-        if self["au_model"].lower() in ["logistic", "svm", "rf", "xgb"]:
+        if self["au_model"].lower() in ["svm", "xgb"]:
             # transform = Grayscale(3)
             # frame = transform(frame)
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
@@ -549,20 +545,12 @@ class Detector(object):
 
         frame = convert_image_to_tensor(frame, img_type="float32")
 
-        if self.info["emotion_model"].lower() == "fer":
-            transform = Grayscale(3)
-            frame = transform(frame)
-
-            return self._convert_detector_output(
-                landmarks, self.emotion_model.detect_emo(frame, landmarks)
-            )
-
-        elif self.info["emotion_model"].lower() == "resmasknet":
+        if self.info["emotion_model"].lower() == "resmasknet":
             return self._convert_detector_output(
                 facebox, self.emotion_model.detect_emo(frame, facebox)
             )
 
-        elif self.info["emotion_model"].lower() in ["svm", "xgb"]:
+        elif self.info["emotion_model"].lower() == "svm":
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
             return self._convert_detector_output(
                 landmarks,

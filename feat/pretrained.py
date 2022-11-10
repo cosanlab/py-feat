@@ -9,13 +9,10 @@ from feat.landmark_detectors.basenet_test import MobileNet_GDConv
 from feat.landmark_detectors.pfld_compressed_test import PFLDInference
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
-from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 from feat.au_detectors.StatLearning.SL_test import SVMClassifier, XGBClassifier
-from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
     EmoSVMClassifier,
-    EmoXGBClassifier,
 )
 from feat.utils.io import get_resource_path, download_url
 import os
@@ -40,11 +37,8 @@ PRETRAINED_MODELS = {
     "emotion_model": [
         {"resmasknet": ResMaskNet},
         {"svm": EmoSVMClassifier},
-        {"xgb": EmoXGBClassifier},
-        {"fer": ferNetModule},
     ],
     "facepose_model": [
-        {"pnp": PerspectiveNPoint},
         {"img2pose": Img2Pose},
         {"img2pose-c": Img2Pose},
     ],
@@ -157,20 +151,6 @@ AU_LANDMARK_MAP = {
         "AU28",
         "AU43",
     ],
-    "jaanet": [
-        "AU01",
-        "AU02",
-        "AU04",
-        "AU06",
-        "AU07",
-        "AU10",
-        "AU12",
-        "AU14",
-        "AU15",
-        "AU17",
-        "AU23",
-        "AU24",
-    ],
 }
 
 
@@ -232,13 +212,6 @@ def get_pretrained_models(
             )
         for url in model_urls["au_detectors"][au_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
-            if ".zip" in url:
-                import zipfile
-
-                with zipfile.ZipFile(
-                    os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
-                ) as zip_ref:
-                    zip_ref.extractall(os.path.join(get_resource_path()))
             if au_model in ["xgb", "svm"]:
                 download_url(
                     model_urls["au_detectors"]["hog-pca"]["urls"][0],
@@ -269,7 +242,7 @@ def get_pretrained_models(
             )
         for url in model_urls["emotion_detectors"][emotion_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
-            if emotion_model in ["svm", "xgb"]:
+            if emotion_model in ["svm"]:
                 download_url(
                     model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
                     get_resource_path(),

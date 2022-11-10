@@ -6,7 +6,7 @@ from torchvision.io import read_image
 
 
 @pytest.mark.skip(
-    reason="This tests all 900 model detector combinations which takes ~20-30min. Run locally using test-detector-combos branch which will output results to file."
+    reason="This tests ALL model detector combinations which takes ~20-30min. Run locally by commenting this line and using pytest -k 'test_detector_combos'."
 )
 def test_detector_combos(
     face_model, landmark_model, au_model, emotion_model, facepose_model, single_face_img
@@ -43,8 +43,6 @@ class Test_Face_Models:
         out = default_detector.detect_faces(single_face_img_data)
         assert 180 < out[0][0][0] < 200
 
-    # FIXME: @tiankang MTCNN's face rect is not the same as faceboxes and retinaface
-    # the bounding box x coord of the bounding box is > 200
     def test_mtcnn(self, default_detector, single_face_img_data):
 
         default_detector.change_model(face_model="MTCNN")
@@ -122,22 +120,6 @@ class Test_Landmark_Models:
 class Test_AU_Models:
     """Test all pretrained AU models"""
 
-    @pytest.mark.skip("Deprecated?")
-    def test_jaanet(self, default_detector, single_face_img_data):
-
-        default_detector.change_model(
-            face_model="RetinaFace",
-            landmark_model="MobileFaceNet",
-            au_model="jaanet",
-        )
-
-        bboxes = default_detector.detect_faces(single_face_img_data)
-        landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)
-        aus = default_detector.detect_aus(single_face_img_data, landmarks)
-
-        assert np.sum(np.isnan(aus)) == 0
-        assert aus[0].shape[-1] == 12
-
     def test_svm_au(self, default_detector, single_face_img_data):
 
         default_detector.change_model(
@@ -187,43 +169,10 @@ class Test_Emotion_Models:
         out = default_detector.detect_image(single_face_img)
         assert out.emotions["happiness"].values > 0.5
 
-    # FIXME: @tiankang fails cause detected happiness is 0.1150
-    def test_xgb_emotion(self, default_detector, single_face_img):
-        default_detector.change_model(emotion_model="xgb")
-        out = default_detector.detect_image(single_face_img)
-        assert out.emotions["happiness"].values > 0.5
-
-    # FIXME: @tiankang fails cause detected happiness is 0.
-    def test_fer_emotion(self, default_detector, single_face_img):
-        default_detector.change_model(emotion_model="fer")
-        out = default_detector.detect_image(single_face_img)
-        assert out.emotions["happiness"].values > 0.5
-
 
 @pytest.mark.usefixtures("default_detector", "single_face_img_data")
 class Test_Facepose_Models:
     """Test all pretrained facepose models"""
-
-    # FIXME: error in call to .predict where list of landmarks is being caste to float32
-    def test_pnp(self, default_detector, single_face_img_data):
-        # Test that facepose can be estimated properly using landmarks + pnp algorithm
-        default_detector.change_model(
-            face_model="RetinaFace",
-            landmark_model="MobileFaceNet",
-            facepose_model="PnP",
-        )
-        bboxes = default_detector.detect_faces(frame=single_face_img_data)
-        lms = default_detector.detect_landmarks(
-            frame=single_face_img_data, detected_faces=bboxes
-        )
-        poses = default_detector.detect_facepose(
-            frame=single_face_img_data, landmarks=lms
-        )
-        pose_to_test = poses[0][0]  # first image and first face
-        pitch, roll, yaw = pose_to_test.reshape(-1)
-        assert -10 < pitch < 10
-        assert -5 < roll < 5
-        assert -10 < yaw < 10
 
     @pytest.mark.skip("TODO")
     def test_img2pose_facepose(self, default_detector, single_face_img_data):
