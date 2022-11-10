@@ -1,5 +1,32 @@
 # Change Log
 
+## 0.5.0
+
+### Notes
+
+This is a large overhaul and refactor of some of the core testing and API functionality to make future development, maintenance, and testing easier. Notable highlights include:
+- tighter integration with `torch` data loaders
+- dropping `opencv` as a dependency
+- experimental support for macOS m1 GPUs
+
+### New
+- SVM AU model has been retrained with new HOG feature PCA pipeline
+- new XGBoost AU model with new HOG feature PCA pipeline
+
+### Breaking Changes
+
+- remove support for `fer` emotion model
+- remove support for JAANET AU model
+- remove support for `pnp` facepose detector
+
+### Development changes
+
+- `test_pretrained_models.py` is now more organized using `pytest` classes
+
+### Fixes
+- data loading with multiple images of potentially different sizes should be faster and more reliable
+- batch processing should be faster and more reliable
+
 ## 0.4.0
 
 ### Major version breaking release!

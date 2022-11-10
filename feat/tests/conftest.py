@@ -54,7 +54,7 @@ def au_model(request):
 
 @fixture(
     scope="module",
-    params=["resmasknet", "svm", "xgb", "fer"],
+    params=["resmasknet", "svm"],
 )
 def emotion_model(request):
     """Supported emotion detectors"""
@@ -63,7 +63,7 @@ def emotion_model(request):
 
 @fixture(
     scope="module",
-    params=["pnp", "img2pose", "img2pose-c"],
+    params=["img2pose", "img2pose-c"],
 )
 def facepose_model(request):
     """Supported pose detectors"""

@@ -27,25 +27,17 @@
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU26.ubj",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU28.ubj",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU43.ubj"
-
             ]
         },
         "hog-pca": {
             "urls": [
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/upper_face_pcaSet.pkl",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/lower_face_pcaSet.pkl",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/full_face_pcaSet.pkl",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.joblib",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.h5"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/full_face_pcaSet.pkl"
             ]
         }
     },
     "emotion_detectors": {
-        "fer": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
-            ]
-        },
         "resmasknet": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth",
@@ -55,11 +47,6 @@
         "svm": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/emoSVM38.joblib"
-            ]
-        },
-        "xgb": {
-            "urls": [
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/emoXGB33.ubj"
             ]
         },
         "emo_scalar": {
@@ -129,11 +116,6 @@
         }
     },
     "facepose_detectors": {
-        "pnp": {
-            "urls": [
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy"
-            ]
-        },
         "img2pose": {
             "urls": [
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy",
@@ -148,6 +130,14 @@
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/img2pose_v1_ft_300w_lp.pth",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_mean_v1.npy",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_stddev_v1.npy"
+            ]
+        }
+    },
+    "viz_models": {
+        "pyfeat_aus_to_landmarks": {
+            "urls": [
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.joblib",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.h5"
             ]
         }
     }

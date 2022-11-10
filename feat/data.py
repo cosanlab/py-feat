@@ -1415,7 +1415,7 @@ class Fex(DataFrame):
             au = np.array(au + [0, 0, 0])
 
         elif self.detector == "Feat":
-            if self.au_model in ["svm", "logistic"]:
+            if self.au_model in ["svm", "xgb"]:
                 au_lookup = "Feat"
                 model = None
             else:
@@ -1424,7 +1424,7 @@ class Fex(DataFrame):
                     model = load_viz_model(f"{self.au_model}_aus_to_landmarks")
                 except ValueError as e:
                     raise NotImplementedError(
-                        f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'logistic') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
+                        f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'xgb') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
                     )
 
             feats = AU_LANDMARK_MAP[au_lookup]
