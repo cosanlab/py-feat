@@ -122,22 +122,6 @@ class Test_Landmark_Models:
 class Test_AU_Models:
     """Test all pretrained AU models"""
 
-    @pytest.mark.skip("Deprecated?")
-    def test_jaanet(self, default_detector, single_face_img_data):
-
-        default_detector.change_model(
-            face_model="RetinaFace",
-            landmark_model="MobileFaceNet",
-            au_model="jaanet",
-        )
-
-        bboxes = default_detector.detect_faces(single_face_img_data)
-        landmarks = default_detector.detect_landmarks(single_face_img_data, bboxes)
-        aus = default_detector.detect_aus(single_face_img_data, landmarks)
-
-        assert np.sum(np.isnan(aus)) == 0
-        assert aus[0].shape[-1] == 12
-
     def test_svm_au(self, default_detector, single_face_img_data):
 
         default_detector.change_model(
