@@ -21,6 +21,8 @@ from pathlib import Path
 from PIL import Image
 from textwrap import wrap
 from joblib import load
+from feat.utils.io import get_resource_path, download_url
+import json
 
 __all__ = [
     "draw_lineface",
@@ -1279,11 +1281,12 @@ def load_viz_model(
     joblib_path = os.path.join(get_resource_path(), f"{file_name}.joblib")
 
     # Make sure saved viz model exists
-    if not os.path.exists(h5_path):
-        raise ValueError(f"{h5_path} does not exist")
-
-    if not os.path.exists(joblib_path):
-        raise ValueError(f"{joblib_path} does not exist")
+    if not os.path.exists(h5_path) or not os.path.exists(joblib_path):
+        with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
+            model_urls = json.load(f)
+            urls = model_urls["viz_models"][file_name]["urls"]
+            for url in urls:
+                download_url(url, get_resource_path(), verbose=verbose)
 
     # Check sklearn and python version to see if we can load joblib
     my_skmajor, my_skminor, my_skpatch = skversion.split(".")
