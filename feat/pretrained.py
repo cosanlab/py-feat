@@ -153,20 +153,6 @@ AU_LANDMARK_MAP = {
         "AU28",
         "AU43",
     ],
-    "jaanet": [
-        "AU01",
-        "AU02",
-        "AU04",
-        "AU06",
-        "AU07",
-        "AU10",
-        "AU12",
-        "AU14",
-        "AU15",
-        "AU17",
-        "AU23",
-        "AU24",
-    ],
 }
 
 
@@ -228,13 +214,6 @@ def get_pretrained_models(
             )
         for url in model_urls["au_detectors"][au_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
-            if ".zip" in url:
-                import zipfile
-
-                with zipfile.ZipFile(
-                    os.path.join(get_resource_path(), "JAANetparams.zip"), "r"
-                ) as zip_ref:
-                    zip_ref.extractall(os.path.join(get_resource_path()))
             if au_model in ["xgb", "svm"]:
                 download_url(
                     model_urls["au_detectors"]["hog-pca"]["urls"][0],
