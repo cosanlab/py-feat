@@ -606,9 +606,10 @@ class Detector(object):
             faces = self.detect_faces(batch_data["Image"])
             landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
 
-            poses = self.detect_facepose(batch_data["Image"])
+            poses = self.detect_facepose(batch_data["Image"], landmarks)
             aus = self.detect_aus(batch_data["Image"], landmarks)
             emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+
             faces = _inverse_face_transform(faces, batch_data)
             landmarks = _inverse_landmark_transform(landmarks, batch_data)
             output = self._create_fex(

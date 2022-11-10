@@ -45,13 +45,13 @@ class SVMClassifier:
         landmarks = landmarks.reshape(-1, landmarks.shape[1] * landmarks.shape[2])
 
         pca_transformed_upper = self.pca_model_upper.transform(
-            self.scaler_upper.fit_transform(frame)
+            self.scaler_upper.transform(frame)
         )
         pca_transformed_lower = self.pca_model_lower.transform(
-            self.scaler_lower.fit_transform(frame)
+            self.scaler_lower.transform(frame)
         )
         pca_transformed_full = self.pca_model_full.transform(
-            self.scaler_full.fit_transform(frame)
+            self.scaler_full.transform(frame)
         )
 
         pca_transformed_upper = np.concatenate((pca_transformed_upper, landmarks), 1)
