@@ -663,7 +663,7 @@ class Detector(object):
 
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
-        return batch_output
+        return batch_output.set_index("frame", drop=False)
 
     def _convert_detector_output(detected_faces, detector_results):
         """Helper function to convert AU/Emotion detector output into frame by face list of lists.
