@@ -27,7 +27,6 @@
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU26.ubj",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU28.ubj",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU43.ubj"
-
             ]
         },
         "hog-pca": {
@@ -41,11 +40,6 @@
         }
     },
     "emotion_detectors": {
-        "fer": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
-            ]
-        },
         "resmasknet": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth",
@@ -55,11 +49,6 @@
         "svm": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/emoSVM38.joblib"
-            ]
-        },
-        "xgb": {
-            "urls": [
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/emoXGB33.ubj"
             ]
         },
         "emo_scalar": {

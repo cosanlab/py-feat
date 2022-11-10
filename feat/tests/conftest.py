@@ -54,7 +54,7 @@ def au_model(request):
 
 @fixture(
     scope="module",
-    params=["resmasknet", "svm", "xgb", "fer"],
+    params=["resmasknet", "svm"],
 )
 def emotion_model(request):
     """Supported emotion detectors"""

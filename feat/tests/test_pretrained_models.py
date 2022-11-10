@@ -187,18 +187,6 @@ class Test_Emotion_Models:
         out = default_detector.detect_image(single_face_img)
         assert out.emotions["happiness"].values > 0.5
 
-    # FIXME: @tiankang fails cause detected happiness is 0.1150
-    def test_xgb_emotion(self, default_detector, single_face_img):
-        default_detector.change_model(emotion_model="xgb")
-        out = default_detector.detect_image(single_face_img)
-        assert out.emotions["happiness"].values > 0.5
-
-    # FIXME: @tiankang fails cause detected happiness is 0.
-    def test_fer_emotion(self, default_detector, single_face_img):
-        default_detector.change_model(emotion_model="fer")
-        out = default_detector.detect_image(single_face_img)
-        assert out.emotions["happiness"].values > 0.5
-
 
 @pytest.mark.usefixtures("default_detector", "single_face_img_data")
 class Test_Facepose_Models:

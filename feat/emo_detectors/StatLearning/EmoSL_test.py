@@ -9,7 +9,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 import pickle
-import xgboost as xgb
 
 
 def load_classifier(cf_path):
@@ -55,34 +54,4 @@ class EmoSVMClassifier:
             pred_emo.append(emo_pred)
 
         pred_emos = np.array(pred_emo).T
-        return pred_emos
-
-
-class EmoXGBClassifier:
-    def __init__(self, **kwargs) -> None:
-        self.pca_model = load_classifier(
-            os.path.join(get_resource_path(), "emo_hog_pca.joblib")
-        )
-        self.classifier = xgb.XGBClassifier()
-        self.classifier.load_model(os.path.join(get_resource_path(), "emoXGB33.ubj"))
-
-        self.scaler = load_classifier(
-            os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
-        )
-
-    def detect_emo(self, frame, landmarks, **kwargs):
-        """
-        Note that here frame is represented by hogs
-        """
-
-        # landmarks = np.array(landmarks)
-        landmarks = np.concatenate(landmarks)
-        # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
-        landmarks = landmarks.reshape(-1, landmarks.shape[1] * landmarks.shape[2])
-
-        pca_transformed_frame = self.pca_model.transform(self.scaler.transform(frame))
-        feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
-
-        pred_emos = self.classifier.predict_proba(feature_cbd)
-
         return pred_emos

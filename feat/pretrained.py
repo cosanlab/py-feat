@@ -11,11 +11,9 @@ from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 from feat.facepose_detectors.pnp.pnp_test import PerspectiveNPoint
 from feat.au_detectors.StatLearning.SL_test import SVMClassifier, XGBClassifier
-from feat.emo_detectors.ferNet.ferNet_test import ferNetModule
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
     EmoSVMClassifier,
-    EmoXGBClassifier,
 )
 from feat.utils.io import get_resource_path, download_url
 import os
@@ -40,8 +38,6 @@ PRETRAINED_MODELS = {
     "emotion_model": [
         {"resmasknet": ResMaskNet},
         {"svm": EmoSVMClassifier},
-        {"xgb": EmoXGBClassifier},
-        {"fer": ferNetModule},
     ],
     "facepose_model": [
         {"pnp": PerspectiveNPoint},
@@ -269,7 +265,7 @@ def get_pretrained_models(
             )
         for url in model_urls["emotion_detectors"][emotion_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
-            if emotion_model in ["svm", "xgb"]:
+            if emotion_model in ["svm"]:
                 download_url(
                     model_urls["emotion_detectors"]["emo_pca"]["urls"][0],
                     get_resource_path(),

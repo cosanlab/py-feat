@@ -549,20 +549,12 @@ class Detector(object):
 
         frame = convert_image_to_tensor(frame, img_type="float32")
 
-        if self.info["emotion_model"].lower() == "fer":
-            transform = Grayscale(3)
-            frame = transform(frame)
-
-            return self._convert_detector_output(
-                landmarks, self.emotion_model.detect_emo(frame, landmarks)
-            )
-
-        elif self.info["emotion_model"].lower() == "resmasknet":
+        if self.info["emotion_model"].lower() == "resmasknet":
             return self._convert_detector_output(
                 facebox, self.emotion_model.detect_emo(frame, facebox)
             )
 
-        elif self.info["emotion_model"].lower() in ["svm", "xgb"]:
+        elif self.info["emotion_model"].lower() == "svm":
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
             return self._convert_detector_output(
                 landmarks,
