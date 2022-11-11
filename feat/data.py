@@ -36,6 +36,7 @@ import seaborn as sns
 from textwrap import wrap
 import torch
 from PIL import Image
+import logging
 
 __all__ = [
     "FexSeries",
@@ -1834,6 +1835,9 @@ class ImageDataset(Dataset):
             img = transforms.PILToTensor()(img)
 
         if self.output_size is not None:
+            logging.warn(
+                f"ImageDataSet: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
+            )
             transform = Compose(
                 [
                     Rescale(
@@ -1870,6 +1874,8 @@ def _inverse_face_transform(faces, batch_data):
     Returns:
         transformed list of lists
     """
+
+    logging.info("inverting face transform...")
 
     out_frame = []
     for frame, left, top, scale in zip(
@@ -1992,6 +1998,9 @@ class imageLoader_DISFAPlus(ImageDataset):
         label = self.main_file.loc[idx, self.avail_AUs].to_numpy().astype(np.int16)
 
         if self.output_size is not None:
+            logging.warn(
+                f"imageLoader_DISFAPlus: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
+            )
             transform = Compose(
                 [
                     Rescale(
@@ -2029,6 +2038,8 @@ def _inverse_landmark_transform(landmarks, batch_data):
     Returns:
         transformed list of lists
     """
+
+    logging.info("inverting landmark transform...")
 
     out_frame = []
     for frame, left, top, scale in zip(
@@ -2075,6 +2086,9 @@ class VideoDataset(Dataset):
 
         # Rescale if needed like in ImageDataset
         if self.output_size is not None:
+            logging.warn(
+                f"VideoDataset: RESCALING WARNING: from {self.video[idx].shape} to output_size={self.output_size}"
+            )
             transform = Compose(
                 [Rescale(self.output_size, preserve_aspect_ratio=True, padding=False)]
             )

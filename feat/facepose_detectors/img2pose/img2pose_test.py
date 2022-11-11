@@ -9,6 +9,7 @@ from .img2pose_model import img2poseModel
 from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path, get_test_data_path
 from feat.utils.image_operations import convert_to_euler, py_cpu_nms
+import logging
 
 
 class Img2Pose:
@@ -144,6 +145,9 @@ class Img2Pose:
         scale = 1
         border_size = 0
         if min(img.shape[-2:]) < self.MIN_SIZE or max(img.shape[-2:]) > self.MAX_SIZE:
+            logging.warn(
+                f"img2pose: RESCALING WARNING: img2pose has a min img size of {self.MIN_SIZE} and a max img size of {self.MAX_SIZE} but checked value is {img.shape[-2:]}."
+            )
             transform = Compose([Rescale(self.MAX_SIZE, preserve_aspect_ratio=True)])
             transformed_img = transform(img)
             img = transformed_img["Image"]
