@@ -1535,6 +1535,8 @@ class Fex(DataFrame):
                             img = video[row["frame"], :, :]
                         color = "w"
                         face_ax.imshow(img.permute([1, 2, 0]))
+                    else:
+                        color = "k"  # drawing lineface but not on photo
 
                     if faceboxes:
                         rect = Rectangle(
@@ -1563,6 +1565,8 @@ class Fex(DataFrame):
                         face_ax = draw_lineface(
                             currx, curry, ax=face_ax, color=color, linewidth=3
                         )
+                        if not plot_original_image:
+                            face_ax.invert_yaxis()
                     elif faces == "aus":
                         # Generate face from AU landmark model
                         if any(self.groupby("frame").size() > 1):
