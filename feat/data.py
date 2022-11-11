@@ -1830,7 +1830,7 @@ class ImageDataset(Dataset):
         # Dimensions are [channels, height, width]
         try:
             img = read_image(self.images[idx])
-        except:
+        except Exception:
             img = Image.open(self.images[idx])
             img = transforms.PILToTensor()(img)
 

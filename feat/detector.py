@@ -555,7 +555,7 @@ class Detector(object):
     def detect_image(
         self,
         input_file_list,
-        output_size=256,
+        output_size=None,
         batch_size=1,
         num_workers=0,
         pin_memory=False,
@@ -590,32 +590,40 @@ class Detector(object):
             shuffle=False,
         )
 
-        batch_output = []
-        for batch_id, batch_data in enumerate(tqdm(data_loader)):
-            frame_counter += frame_counter + batch_id * batch_size
-            faces = self.detect_faces(batch_data["Image"])
-            landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
-            poses = self.detect_facepose(batch_data["Image"], landmarks)
-            aus = self.detect_aus(batch_data["Image"], landmarks)
-            emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+        try:
 
-            faces = _inverse_face_transform(faces, batch_data)
-            landmarks = _inverse_landmark_transform(landmarks, batch_data)
-            output = self._create_fex(
-                faces,
-                landmarks,
-                poses,
-                aus,
-                emotions,
-                batch_data["FileNames"],
-                frame_counter,
+            batch_output = []
+            for batch_id, batch_data in enumerate(tqdm(data_loader)):
+                frame_counter += frame_counter + batch_id * batch_size
+                faces = self.detect_faces(batch_data["Image"])
+                landmarks = self.detect_landmarks(
+                    batch_data["Image"], detected_faces=faces
+                )
+                poses = self.detect_facepose(batch_data["Image"], landmarks)
+                aus = self.detect_aus(batch_data["Image"], landmarks)
+                emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+
+                faces = _inverse_face_transform(faces, batch_data)
+                landmarks = _inverse_landmark_transform(landmarks, batch_data)
+                output = self._create_fex(
+                    faces,
+                    landmarks,
+                    poses,
+                    aus,
+                    emotions,
+                    batch_data["FileNames"],
+                    frame_counter,
+                )
+                batch_output.append(output)
+
+            batch_output = pd.concat(batch_output)
+            batch_output.reset_index(drop=True, inplace=True)
+
+            return batch_output
+        except RuntimeError as e:
+            raise ValueError(
+                f"when using a batch_size > 1 all images must have the same dimensions or output_size must not be None so py-feat can rescale images to output_size. See pytorch error: \n{e}"
             )
-            batch_output.append(output)
-
-        batch_output = pd.concat(batch_output)
-        batch_output.reset_index(drop=True, inplace=True)
-
-        return batch_output
 
     def detect_video(
         self,
