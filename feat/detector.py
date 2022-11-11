@@ -97,8 +97,9 @@ class Detector(object):
             au_model=None,
             n_jobs=n_jobs,
         )
+        self.verbose = verbose
         # Setup verbosity
-        if verbose:
+        if self.verbose:
             logging.basicConfig(level=logging.INFO)
             logging.info("Verbose logging enabled")
 
