@@ -423,11 +423,13 @@ class Detector(object):
         """
 
         logging.info("detecting poses...")
-
         # Normalize Data
         frame = convert_image_to_tensor(frame, img_type="float32") / 255
 
-        poses = self.facepose_detector(frame, landmarks)
+        if "img2pose" in self.info["facepose_model"]:
+            faces, poses = self.facepose_detector(frame)
+        else:
+            poses = self.facepose_detector(frame, landmarks)
 
         return poses
 
