@@ -140,7 +140,7 @@ OPENFACE_ORIG_COLUMNS = (
 )
 
 
-def set_torch_device(device="auto"):
+def set_torch_device(device="cpu"):
     """Helper function to set device for pytorch model"""
 
     if not isinstance(device, torch.device):
@@ -166,7 +166,7 @@ def set_torch_device(device="auto"):
                 device = "cpu"
         else:
             device = device
-        return torch.device("cpu")
+        return torch.device(device)
 
     else:
         return device
