@@ -20,6 +20,8 @@ git clone https://github.com/cosanlab/feat.git
 cd feat && python setup.py install -e . 
 ```
 
+Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have **experimental** support for GPUs on macOS which you can try with `device='auto'`. However, we currently advise using the default (`cpu`) on macOS until PyTorch support stabilizes.
+
 ## Contributing
 
 **Note:** If you forked or cloned this repo prior to 04/26/2022, you'll want to create a new fork or clone as we've used `git-filter-repo` to clean up large files in the history. If you prefer to keep working on that old version, you can find an [archival repo here](https://github.com/cosanlab/py-feat-archive)
