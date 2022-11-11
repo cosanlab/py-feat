@@ -33,6 +33,51 @@ def test_landmark_with_batches(multiple_images_for_batch_testing):
     )
 
 
+@pytest.mark.skip("WIP")
+def test_detection_and_batching_with_diff_img_sizes(
+    single_face_img, multi_face_img, multiple_images_for_batch_testing
+):
+    """
+    Make sure that when the same images are passed in with and without batch
+    processing, the detected landmarks and poses come out to be the same
+    """
+    all_images = (
+        [single_face_img] + [multi_face_img] + multiple_images_for_batch_testing
+    )
+
+    detector = Detector()
+
+    # Multiple images with different sizes are ok as long as batch_size == 1
+    # Detections will be done in each image's native resolution
+    det_output_default = detector.detect_image(input_file_list=all_images, batch_size=1)
+
+    # If batch_size > 1 then output_size must be set otherwise we can't stack to make a
+    # tensor
+    with pytest.raises(ValueError):
+        det_output_batch_none = detector.detect_image(
+            input_file_list=all_images,
+            batch_size=5,
+        )
+
+    # Here we batch by resizing each image to 256x256
+    det_output_256 = detector.detect_image(
+        input_file_list=all_images, batch_size=5, output_size=256
+    )
+
+    # Same but 512x512
+    det_output_256 = detector.detect_image(
+        input_file_list=all_images, batch_size=5, output_size=512
+    )
+
+    # We can also forcibly resize images even if we don't batch process them
+    det_output_nonbatch_256 = detector.detect_image(
+        input_file_list=all_images, batch_size=1, output_size=256
+    )
+
+    # Currently this isn't true, closish but not the same
+    assert det_output_256.equals(det_output_nonbatch_256)
+
+
 def test_empty_init():
     """Should fail if not models provided"""
     with pytest.raises(ValueError):
@@ -101,7 +146,7 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (6, 173)
 
     out = default_detector.detect_image(
-        [multi_face_img, single_face_img] * 5, batch_size=5
+        [multi_face_img, single_face_img] * 5, batch_size=5, output_size=256
     )
     assert out.shape == (30, 173)
 
