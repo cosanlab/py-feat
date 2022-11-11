@@ -7,26 +7,21 @@ import numpy as np
 
 
 def test_landmark_with_batches(multiple_images_for_batch_testing):
-    # Make sure that when the same images are passed in with and without batch
-    # processing, the detected landmarks come out to be the same
+    """
+    Make sure that when the same images are passed in with and without batch
+    processing, the detected landmarks and poses come out to be the same
+    """
     detector = Detector()
     det_result_batch = detector.detect_image(
         input_file_list=multiple_images_for_batch_testing,
-        output_size=None,
         batch_size=5,
-        num_workers=0,
-        pin_memory=False,
-        frame_counter=0,
     )
 
     det_result_no_batch = detector.detect_image(
         input_file_list=multiple_images_for_batch_testing,
-        output_size=None,
         batch_size=1,
-        num_workers=0,
-        pin_memory=False,
-        frame_counter=0,
     )
+
     assert np.allclose(
         det_result_batch.loc[:, "x_0":"y_67"].to_numpy(),
         det_result_no_batch.loc[:, "x_0":"y_67"].to_numpy(),
