@@ -51,7 +51,7 @@ class Detector(object):
         au_model="svm",
         emotion_model="resmasknet",
         facepose_model="img2pose",
-        device="auto",
+        device="cpu",
         n_jobs=1,
         verbose=False,
     ):
@@ -61,7 +61,7 @@ class Detector(object):
 
         Args:
             n_jobs (int, default=1): Number of processes to use for extraction.
-            device (str): specify device to process data (default='auto'), can be ['auto', 'cpu', 'cuda', 'mps']
+            device (str): specify device to process data (default='cpu'), can be ['auto', 'cpu', 'cuda', 'mps']
 
         Attributes:
             info (dict):
