@@ -1518,7 +1518,7 @@ class Fex(DataFrame):
 
                     facebox = row[self.facebox_columns].values
 
-                    if plot_original_image:
+                    if not faces == "aus" and plot_original_image:
                         file_extension = os.path.basename(row["input"]).split(".")[-1]
                         if file_extension.lower() in [
                             "jpg",
@@ -1568,6 +1568,7 @@ class Fex(DataFrame):
                         )
                         if not plot_original_image:
                             face_ax.invert_yaxis()
+
                     elif faces == "aus":
                         # Generate face from AU landmark model
                         if any(self.groupby("frame").size() > 1):
@@ -1588,7 +1589,7 @@ class Fex(DataFrame):
                             gaze=gaze,
                             ax=face_ax,
                             muscles=muscles,
-                            title=title,
+                            title=None,
                         )
                     else:
                         raise ValueError(
@@ -1835,7 +1836,7 @@ class ImageDataset(Dataset):
             img = transforms.PILToTensor()(img)
 
         if self.output_size is not None:
-            logging.warn(
+            logging.info(
                 f"ImageDataSet: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
             )
             transform = Compose(
@@ -1998,7 +1999,7 @@ class imageLoader_DISFAPlus(ImageDataset):
         label = self.main_file.loc[idx, self.avail_AUs].to_numpy().astype(np.int16)
 
         if self.output_size is not None:
-            logging.warn(
+            logging.info(
                 f"imageLoader_DISFAPlus: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
             )
             transform = Compose(
@@ -2086,7 +2087,7 @@ class VideoDataset(Dataset):
 
         # Rescale if needed like in ImageDataset
         if self.output_size is not None:
-            logging.warn(
+            logging.info(
                 f"VideoDataset: RESCALING WARNING: from {self.video[idx].shape} to output_size={self.output_size}"
             )
             transform = Compose(
