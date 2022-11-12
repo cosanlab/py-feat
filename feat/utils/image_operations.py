@@ -179,7 +179,7 @@ def extract_face_from_bbox(frame, detected_faces, face_size=112, expand_bbox=1.2
             face[:-1], bottom_boundary=im_height, right_boundary=im_width
         ).expand_by_factor(expand_bbox)
         cropped = bbox.extract_from_image(frame[frame_assignment])
-        logging.warn(
+        logging.info(
             f"RESCALING WARNING: image_operations.extract_face_from_bbox() is rescaling cropped img with shape {cropped.shape} to {face_size}"
         )
         transform = Compose(
