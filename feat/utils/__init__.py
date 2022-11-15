@@ -31,28 +31,8 @@ FEAT_FACEBOX_COLUMNS = [
     "FaceRectHeight",
     "FaceScore",
 ]
-# FEAT_FACEBOX_COLUMNS = ['FaceRectX1','FaceRectY1','FaceRectX2','FaceRectY2']
 FEAT_TIME_COLUMNS = ["frame"]
-
-# FACET columns
-FACET_EMOTION_COLUMNS = [
-    "Joy",
-    "Anger",
-    "Surprise",
-    "Fear",
-    "Contempt",
-    "Disgust",
-    "Sadness",
-    "Confusion",
-    "Frustration",
-    "Neutral",
-    "Positive",
-    "Negative",
-]
-FACET_FACEBOX_COLUMNS = ["FaceRectX", "FaceRectY", "FaceRectWidth", "FaceRectHeight"]
-FACET_TIME_COLUMNS = ["Timestamp", "MediaTime", "FrameNo", "FrameTime"]
-FACET_FACEPOSE_COLUMNS = ["Pitch", "Roll", "Yaw"]
-FACET_DESIGN_COLUMNS = ["StimulusName", "SlideType", "EventSource", "Annotation"]
+FEAT_FACEPOSE_COLUMNS = ["Pitch", "Roll", "Yaw"]
 
 # OpenFace columns
 landmark_length = 68
