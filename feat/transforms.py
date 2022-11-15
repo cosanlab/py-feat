@@ -132,4 +132,5 @@ class Rescale(object):
         else:
             transform = Compose([Resize((int(new_height), int(new_width)))])
             padding_dict = {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0}
+        
         return {"Image": transform(image), "Scale": scale, "Padding": padding_dict}

@@ -1827,6 +1827,9 @@ class ImageDataset(Dataset):
         except:
             img = Image.open(self.images[idx])
             img = transforms.PILToTensor()(img)
+        
+        if img.shape[0] == 1:
+            img = torch.cat([img, img, img], dim=0)
 
         if self.output_size is not None:
             transform = Compose(
