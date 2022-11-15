@@ -561,12 +561,20 @@ class Detector(object):
         pin_memory=False,
         frame_counter=0,
     ):
-        """Detects FEX from an image file.
+        """
+        Detects FEX from one or more image files. If you want to speed up detection you
+        can process multiple images in batches by setting `batch_size > 1`. However, all
+        images must have **the same dimensions** to be processed in batches. Py-feat can
+        automatically adjust image sizes by using the `output_size=int`. Common
+        output-sizes include 256 and 512.
 
         Args:
             input_file_list (list of str): Path to a list of paths to image files.
-            output_size (int): image size to rescale all imagee preserving aspect ratio
-            batch_size (int): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
+            output_size (int): image size to rescale all image preserving aspect ratio.
+            Will raise an error if not set and batch_size > 1 but images are not the same size
+            batch_size (int): how many batches of images you want to run at one shot.
+            Larger gives faster speed but is more memory-consuming. Images must be the
+            same size to be run in batches!
             num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
             pin_memory (bool): If ``True``, the data loader will copy Tensors
                                 into CUDA pinned memory before returning them.  If your data elements
