@@ -10,11 +10,6 @@ from feat.utils import (
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FEAT_TIME_COLUMNS,
-    FACET_EMOTION_COLUMNS,
-    FACET_FACEBOX_COLUMNS,
-    FACET_FACEPOSE_COLUMNS,
-    FACET_TIME_COLUMNS,
-    FACET_DESIGN_COLUMNS,
     OPENFACE_ORIG_COLUMNS,
     openface_AU_columns,
     openface_2d_landmark_columns,
@@ -31,9 +26,6 @@ __all__ = [
     "get_test_data_path",
     "validate_input",
     "download_url",
-    "read_facet",
-    "read_affdex",
-    "read_affectiva",
     "read_openface",
 ]
 
@@ -111,73 +103,6 @@ def read_feat(fexfile):
         detector="Feat",
     )
     fex["input"] = fexfile
-    return fex
-
-
-def read_facet(facetfile, features=None, raw=False, sampling_freq=None):
-    """This function reads in an iMotions-FACET exported facial expression file.
-
-    Args:
-        facetfile: iMotions-FACET file. Files from iMotions 5, 6, and 7 have been tested and supported
-        features: If a list of iMotion-FACET column names are passed, those are returned. Otherwise, default columns are returned in the following format:['Timestamp','FaceRectX','FaceRectY','FaceRectWidth','FaceRectHeight', 'Joy','Anger','Surprise','Fear','Contempt', 'Disgust','Sadness','Confusion','Frustration', 'Neutral','Positive','Negative','AU1','AU2', 'AU4','AU5','AU6','AU7','AU9','AU10', 'AU12','AU14','AU15','AU17','AU18','AU20', 'AU23','AU24','AU25','AU26','AU28','AU43', 'Yaw', 'Pitch', 'Roll']. Note that these column names are different from the original files which has ' Evidence', ' Degrees' appended to each column.
-        raw (default=False): Set to True to return all columns without processing.
-        sampling_freq: sampling frequency to pass to Fex
-
-    Returns:
-        dataframe of processed facial expressions
-    """
-    # Check iMotions Version
-    versionstr = ""
-    try:
-        with open(facetfile, "r") as f:
-            studyname = f.readline().replace("\t", "").replace("\n", "")
-            studydate = f.readline().replace("\t", "").replace("\n", "")
-            versionstr = f.readline().replace("\t", "").replace("\n", "")
-        versionnum = int(versionstr.split(" ")[-1].split(".")[0])
-    except Exception:
-        raise TypeError(
-            "Cannot infer version of iMotions-FACET file. Check to make sure this is the raw iMotions-FACET file."
-        )
-
-    d = pd.read_csv(facetfile, skiprows=5, sep="\t")
-    # Check if features argument is passed and return only those features, else return all columns
-    if isinstance(features, list):
-        try:
-            d = d[features]
-            if raw:
-                return feat.Fex(d, filename=facetfile)
-        except Exception:
-            raise KeyError([features, "not in facetfile"])
-    elif isinstance(features, type(None)):
-        if raw:
-            return feat.Fex(d, filename=facetfile)
-        else:
-            fex_columns = [
-                col.replace(" Evidence", "").replace(" Degrees", "")
-                for col in d.columns
-                if "Evidence" in col or "Degrees" in col
-            ]
-            # Remove Intensity as this has been deprecated
-            cols2drop = [col for col in d.columns if "Intensity" in col]
-            d = d.drop(columns=cols2drop)
-            d.columns = [col.replace(" Evidence", "") for col in d.columns]
-            d.columns = [col.replace(" Degrees", "") for col in d.columns]
-            d.columns = [col.replace(" ", "") for col in d.columns]
-            # d._metadata = fex_columns
-    au_columns = [col for col in d.columns if "AU" in col]
-    fex = feat.Fex(
-        d,
-        filename=facetfile,
-        au_columns=au_columns,
-        emotion_columns=FACET_EMOTION_COLUMNS,
-        facebox_columns=FACET_FACEBOX_COLUMNS,
-        facepose_columns=FACET_FACEPOSE_COLUMNS,
-        time_columns=FACET_TIME_COLUMNS,
-        design_columns=FACET_DESIGN_COLUMNS,
-        detector="FACET",
-        sampling_freq=sampling_freq,
-    )
-    fex["input"] = facetfile
     return fex
 
 
@@ -273,70 +198,4 @@ def read_openface(openfacefile, features=None):
         detector="OpenFace",
     )
     fex["input"] = openfacefile
-    return fex
-
-
-def read_affectiva(affectivafile, orig_cols=False):
-    """
-    This function reads in affectiva file processed through the https://github.com/cosanlab/affectiva-api-app.
-
-    Args:
-        affectivafile: file to read
-        orig_cols: If True, convert original colnames to FACS names
-
-    Returns:
-        Fex of processed facial expressions
-    """
-    d = pd.read_json(affectivafile, lines=True)
-    rep_dict = {
-        "anger": "Anger",
-        "attention": "Attention",
-        "contempt": "Contempt",
-        "disgust": "Disgust",
-        "engagement": "Engagement",
-        "fear": "Fear",
-        "joy": "Joy",
-        "sadness": "Sadness",
-        "smirk": "Smirk",
-        "surprise": "Surprise",
-        "valence": "Valence",
-        "browFurrow": "AU04",
-        "smile": "AU12",
-        "browRaise": "AU02",
-        "cheekRaise": "AU06",
-        "chinRaise": "AU17",
-        "dimpler": "AU14",
-        "eyeClosure": "AU43",
-        "eyeWiden": "AU05",
-        "innerBrowRaise": "AU01",
-        "jawDrop": "AU26",
-        "lidTighten": "AU07",
-        "lipCornerDepressor": "AU15",
-        "lipPress": "AU24",
-        "lipPucker": "AU18",
-        "lipStretch": "AU20",
-        "lipSuck": "AU28",
-        "mouthOpen": "AU25",
-        "noseWrinkle": "AU09",
-        "upperLipRaise": "AU10",
-    }
-    affectiva_au_columns = [col for col in rep_dict.values() if "AU" in col]
-    detector = "Affectiva" if "AU01" in affectiva_au_columns else "Affectiva-named"
-    affectiva_emotion_columns = list(set(rep_dict.values()) - set(affectiva_au_columns))
-    if not orig_cols:
-        new_cols = []
-        for col in d.columns:
-            try:
-                new_cols.append(rep_dict[col])
-            except Exception:
-                new_cols.append(col)
-        d.columns = new_cols
-    fex = feat.Fex(
-        d,
-        filename=affectivafile,
-        au_columns=affectiva_au_columns,
-        emotion_columns=affectiva_emotion_columns,
-        detector=detector,
-    )
-    fex["input"] = affectivafile
     return fex

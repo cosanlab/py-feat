@@ -3,8 +3,8 @@ import pandas as pd
 from pandas import DataFrame
 import numpy as np
 import os
-from feat.data import Fex, Fextractor, ImageDataset, VideoDataset
-from feat.utils.io import read_facet, read_openface, read_affectiva, get_test_data_path
+from feat.data import Fex, Fextractor, ImageDataset
+from feat.utils.io import read_openface, get_test_data_path
 from nltools.data import Adjacency
 from feat.transforms import Rescale
 from torchvision.transforms import Compose
@@ -19,6 +19,7 @@ def test_info(capsys):
     assert importantstring in captured.out
 
 
+@pytest.mark.skip("TODO Rewrite as we drop support for facet, affectiva")
 def test_fex():
     with pytest.raises(Exception):
         fex = Fex().read_feat()
@@ -218,6 +219,7 @@ def test_fex():
     assert n_components == stats["weights"].shape[1]
 
 
+@pytest.mark.skip("TODO Rewrite as we drop support for facet, affectiva")
 def test_fextractor():
     filename = os.path.join(get_test_data_path(), "iMotions_Test_v6.txt")
     df = read_facet(filename)
@@ -367,14 +369,6 @@ def test_openface():
 
     # Test PSPI calculation b/c diff from facet
     assert len(openface.calc_pspi()) == len(openface)
-
-
-def test_affectiva():
-    filename = os.path.join(
-        get_test_data_path(), "sample_affectiva-api-app_output.json"
-    )
-    affdex = Fex(read_affectiva(filename), sampling_freq=1, detector="Affectiva")
-    assert affdex.shape[1] == 33
 
 
 def test_feat():
