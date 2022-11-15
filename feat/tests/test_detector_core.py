@@ -28,7 +28,6 @@ def test_landmark_with_batches(multiple_images_for_batch_testing):
     )
 
 
-@pytest.mark.skip("WIP")
 def test_detection_and_batching_with_diff_img_sizes(
     single_face_img, multi_face_img, multiple_images_for_batch_testing
 ):
@@ -36,6 +35,7 @@ def test_detection_and_batching_with_diff_img_sizes(
     Make sure that when the same images are passed in with and without batch
     processing, the detected landmarks and poses come out to be the same
     """
+    # Each sublist of images contains different sizes
     all_images = (
         [single_face_img] + [multi_face_img] + multiple_images_for_batch_testing
     )
@@ -49,28 +49,38 @@ def test_detection_and_batching_with_diff_img_sizes(
     # If batch_size > 1 then output_size must be set otherwise we can't stack to make a
     # tensor
     with pytest.raises(ValueError):
-        det_output_batch_none = detector.detect_image(
+        _ = detector.detect_image(
             input_file_list=all_images,
             batch_size=5,
         )
 
-    # Here we batch by resizing each image to 256x256
-    det_output_256 = detector.detect_image(
+    # Here we batch by resizing each image to 256xpadding
+    batched = detector.detect_image(
         input_file_list=all_images, batch_size=5, output_size=256
     )
 
-    # Same but 512x512
-    det_output_256 = detector.detect_image(
-        input_file_list=all_images, batch_size=5, output_size=512
-    )
-
     # We can also forcibly resize images even if we don't batch process them
-    det_output_nonbatch_256 = detector.detect_image(
+    nonbatched = detector.detect_image(
         input_file_list=all_images, batch_size=1, output_size=256
     )
 
-    # Currently this isn't true, closish but not the same
-    assert det_output_256.equals(det_output_nonbatch_256)
+    # To make sure that resizing doesn't interact unexpectedly with batching, we should
+    # check that the detections we get back for the same sized images are the same when
+    # processed as a batch or serially. We check each column separately
+    bad_cols = []
+    for col in batched.columns:
+        bcol, nbcol = batched[col].to_numpy(), nonbatched[col].to_numpy()
+        try:
+            if not np.allclose(bcol, nbcol):
+                bad_cols.append(col)
+        except TypeError as _:
+            if not all(bcol == nbcol):
+                bad_cols.append(col)
+
+    if len(bad_cols):
+        raise AssertionError(
+            f"Running the list of images resized to 256 returns different detections when running as a batch vs serially. The columns with different detection include: {bad_cols}\n See batched vs non-batched cols:\n{batched[bad_cols]}\n{nonbatched[bad_cols]}\n"
+        )
 
 
 def test_empty_init():
