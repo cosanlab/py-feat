@@ -50,13 +50,17 @@ class Test_Face_Models:
         # Mtcnn is a bit less accurate
         assert 180 < out[0][0][0] < 205
 
-    @pytest.mark.skip("TODO")
     def test_img2pose_face(self, default_detector, single_face_img_data):
-        pass
 
-    @pytest.mark.skip("TODO")
+        default_detector.change_model(face_model="img2pose")
+        out = default_detector.detect_faces(single_face_img_data)
+        assert 180 < out[0][0][0] < 200
+
     def test_img2pose_c_face(self, default_detector, single_face_img_data):
-        pass
+
+        default_detector.change_model(face_model="img2pose-c")
+        out = default_detector.detect_faces(single_face_img_data)
+        assert 180 < out[0][0][0] < 200
 
 
 @pytest.mark.usefixtures("default_detector", "single_face_img", "single_face_img_data")
@@ -174,10 +178,14 @@ class Test_Emotion_Models:
 class Test_Facepose_Models:
     """Test all pretrained facepose models"""
 
-    @pytest.mark.skip("TODO")
     def test_img2pose_facepose(self, default_detector, single_face_img_data):
-        pass
 
-    @pytest.mark.skip("TODO")
+        default_detector.change_model(facepose_model="img2pose")
+        poses = default_detector.detect_facepose(single_face_img_data)
+        assert np.allclose(poses, [0.86, -3.80, 6.60], atol=0.1)
+
     def test_img2pose_c_facepose(self, default_detector, single_face_img_data):
-        pass
+
+        default_detector.change_model(facepose_model="img2pose-c")
+        poses = default_detector.detect_facepose(single_face_img_data)
+        assert np.allclose(poses, [0.86, -3.80, 6.60], atol=0.1)

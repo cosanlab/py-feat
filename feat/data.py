@@ -36,6 +36,7 @@ import seaborn as sns
 from textwrap import wrap
 import torch
 from PIL import Image
+import logging
 
 __all__ = [
     "FexSeries",
@@ -669,13 +670,14 @@ class Fex(DataFrame):
             my = self[y]
         else:
             my = y
-        b, t, p, df, res = regress(mX, my, *args, **kwargs)
+        b, se, t, p, df, res = regress(mX, my, *args, **kwargs)
         b_df = pd.DataFrame(b, index=mX.columns, columns=my.columns)
+        se_df = pd.DataFrame(se, index=mX.columns, columns=my.columns)
         t_df = pd.DataFrame(t, index=mX.columns, columns=my.columns)
         p_df = pd.DataFrame(p, index=mX.columns, columns=my.columns)
         df_df = pd.DataFrame([df], index=[0], columns=my.columns)
         res_df = pd.DataFrame(res, columns=my.columns)
-        return b_df, t_df, p_df, df_df, res_df
+        return b_df, se_df, t_df, p_df, df_df, res_df
 
     def ttest_1samp(self, popmean=0, threshold_dict=None):
         """Conducts 1 sample ttest.
@@ -1516,7 +1518,7 @@ class Fex(DataFrame):
 
                     facebox = row[self.facebox_columns].values
 
-                    if plot_original_image:
+                    if not faces == "aus" and plot_original_image:
                         file_extension = os.path.basename(row["input"]).split(".")[-1]
                         if file_extension.lower() in [
                             "jpg",
@@ -1534,6 +1536,8 @@ class Fex(DataFrame):
                             img = video[row["frame"], :, :]
                         color = "w"
                         face_ax.imshow(img.permute([1, 2, 0]))
+                    else:
+                        color = "k"  # drawing lineface but not on photo
 
                     if faceboxes:
                         rect = Rectangle(
@@ -1562,6 +1566,9 @@ class Fex(DataFrame):
                         face_ax = draw_lineface(
                             currx, curry, ax=face_ax, color=color, linewidth=3
                         )
+                        if not plot_original_image:
+                            face_ax.invert_yaxis()
+
                     elif faces == "aus":
                         # Generate face from AU landmark model
                         if any(self.groupby("frame").size() > 1):
@@ -1582,7 +1589,7 @@ class Fex(DataFrame):
                             gaze=gaze,
                             ax=face_ax,
                             muscles=muscles,
-                            title=title,
+                            title=None,
                         )
                     else:
                         raise ValueError(
@@ -1824,7 +1831,7 @@ class ImageDataset(Dataset):
         # Dimensions are [channels, height, width]
         try:
             img = read_image(self.images[idx])
-        except:
+        except Exception:
             img = Image.open(self.images[idx])
             img = transforms.PILToTensor()(img)
         
@@ -1832,6 +1839,9 @@ class ImageDataset(Dataset):
             img = torch.cat([img, img, img], dim=0)
 
         if self.output_size is not None:
+            logging.info(
+                f"ImageDataSet: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
+            )
             transform = Compose(
                 [
                     Rescale(
@@ -1868,6 +1878,8 @@ def _inverse_face_transform(faces, batch_data):
     Returns:
         transformed list of lists
     """
+
+    logging.info("inverting face transform...")
 
     out_frame = []
     for frame, left, top, scale in zip(
@@ -1990,6 +2002,9 @@ class imageLoader_DISFAPlus(ImageDataset):
         label = self.main_file.loc[idx, self.avail_AUs].to_numpy().astype(np.int16)
 
         if self.output_size is not None:
+            logging.info(
+                f"imageLoader_DISFAPlus: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
+            )
             transform = Compose(
                 [
                     Rescale(
@@ -2027,6 +2042,8 @@ def _inverse_landmark_transform(landmarks, batch_data):
     Returns:
         transformed list of lists
     """
+
+    logging.info("inverting landmark transform...")
 
     out_frame = []
     for frame, left, top, scale in zip(
@@ -2073,6 +2090,9 @@ class VideoDataset(Dataset):
 
         # Rescale if needed like in ImageDataset
         if self.output_size is not None:
+            logging.info(
+                f"VideoDataset: RESCALING WARNING: from {self.video[idx].shape} to output_size={self.output_size}"
+            )
             transform = Compose(
                 [Rescale(self.output_size, preserve_aspect_ratio=True, padding=False)]
             )

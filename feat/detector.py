@@ -51,7 +51,7 @@ class Detector(object):
         au_model="svm",
         emotion_model="resmasknet",
         facepose_model="img2pose",
-        device="auto",
+        device="cpu",
         n_jobs=1,
         verbose=False,
     ):
@@ -61,7 +61,7 @@ class Detector(object):
 
         Args:
             n_jobs (int, default=1): Number of processes to use for extraction.
-            device (str): specify device to process data (default='auto'), can be ['auto', 'cpu', 'cuda', 'mps']
+            device (str): specify device to process data (default='cpu'), can be ['auto', 'cpu', 'cuda', 'mps']
 
         Attributes:
             info (dict):
@@ -97,14 +97,11 @@ class Detector(object):
             au_model=None,
             n_jobs=n_jobs,
         )
-        # Setup verbosity
-        self.logger = logging.getLogger("Detector")
         self.verbose = verbose
+        # Setup verbosity
         if self.verbose:
-            log_level = logging.INFO
-        else:
-            log_level = logging.WARNING
-        self.logger.setLevel(log_level)
+            logging.basicConfig(level=logging.INFO)
+            logging.info("Verbose logging enabled")
 
         # Setup device
         self.device = set_torch_device(device)
@@ -147,7 +144,7 @@ class Detector(object):
 
         # FACE MODEL
         if self.info["face_model"] != face:
-            self.logger.info(f"Loading Face model: {face}")
+            logging.info(f"Loading Face model: {face}")
             self.face_detector = fetch_model("face_model", face)
             self.info["face_model"] = face
             self.info["face_detection_columns"] = FEAT_FACEBOX_COLUMNS
@@ -164,7 +161,7 @@ class Detector(object):
 
         # LANDMARK MODEL
         if self.info["landmark_model"] != landmark:
-            self.logger.info(f"Loading Facial Landmark model: {landmark}")
+            logging.info(f"Loading Facial Landmark model: {landmark}")
             self.landmark_detector = fetch_model("landmark_model", landmark)
             if self.landmark_detector is not None:
                 if landmark == "mobilenet":
@@ -211,7 +208,7 @@ class Detector(object):
 
         # FACEPOSE MODEL
         if self.info["facepose_model"] != facepose:
-            self.logger.info("Loading facepose model: ", facepose)
+            logging.info(f"Loading facepose model: {facepose}")
             self.facepose_detector = fetch_model("facepose_model", facepose)
             if "img2pose" in facepose:
                 self.facepose_detector = self.facepose_detector(
@@ -228,7 +225,7 @@ class Detector(object):
 
         # AU MODEL
         if self.info["au_model"] != au:
-            self.logger.info(f"Loading AU model: {au}")
+            logging.info(f"Loading AU model: {au}")
             self.au_model = fetch_model("au_model", au)
             self.info["au_model"] = au
             if self.info["au_model"] in ["svm", "xgb"]:
@@ -249,7 +246,7 @@ class Detector(object):
 
         # EMOTION MODEL
         if self.info["emotion_model"] != emotion:
-            self.logger.info("Loading emotion model: ", emotion)
+            logging.info(f"Loading emotion model: {emotion}")
             self.emotion_model = fetch_model("emotion_model", emotion)
             self.info["emotion_model"] = emotion
             if self.emotion_model is not None:
@@ -331,6 +328,8 @@ class Detector(object):
             >>> detector.detect_faces(frame)
         """
 
+        logging.info("detecting faces...")
+
         frame = convert_image_to_tensor(frame, img_type="float32")
 
         if "img2pose" in self.info["face_model"]:
@@ -340,7 +339,7 @@ class Detector(object):
             faces = self.face_detector(frame)
 
         if len(faces) == 0:
-            self.logger.warning("Warning: NO FACE is detected")
+            logging.warning("Warning: NO FACE is detected")
         return faces
 
     def detect_landmarks(self, frame, detected_faces):
@@ -362,6 +361,7 @@ class Detector(object):
             >>> detector.detect_landmarks(frame, detected_faces)
         """
 
+        logging.info("detecting landmarks...")
         frame = convert_image_to_tensor(frame)
 
         if self.info["landmark_model"]:
@@ -412,28 +412,18 @@ class Detector(object):
         corresponding to the detected poses returned by this method.
 
         Args:
-            frame (np.ndarray): list of cv2 images
-            landmarks (np.ndarray): (num_images, num_faces, 68, 2) landmarks for the faces contained in list of images
+            frame (np.ndarray): list of images
+            landmarks (np.ndarray | None, optional): (num_images, num_faces, 68, 2)
+            landmarks for the faces contained in list of images; Default None and
+            ignored for img2pose and img2pose-c detectors
 
         Returns:
-            dict: {"faces": list of face bounding boxes, "poses": (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
+            list: poses (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
             degrees) for each face within in each image}
 
-        Examples:
-            >>> from feat import Detector
-            >>> from feat.utils import read_pictures
-            >>> frame = read_pictures(['my_image.jpg'])
-
-            >>> # Imgpose detector
-            >>> imgpose_detector = Detector(face_model='imgpose', facepose_model='img2pose')
-            >>> imgpose_detector.detect_facepose(frame) # one shot computation
-
-            >>> # Retina face detector
-            >>> retinaface_detector = Detector(face_model='retinaface', landmark_model='mobilefacenet')
-            >>> faces = retinaface_detector.detect_faces(frame)
-            >>> landmarks = retinaface_detector.detect_landmarks(detected_faces=faces)
-            >>> retinaface_detector.detect_facepose(frame=frame, landmarks=landmarks) # detect pose for all faces
         """
+
+        logging.info("detecting poses...")
         # Normalize Data
         frame = convert_image_to_tensor(frame, img_type="float32") / 255
 
@@ -441,9 +431,7 @@ class Detector(object):
             faces, poses = self.facepose_detector(frame)
         else:
             poses = self.facepose_detector(frame, landmarks)
-            # faces = detected_faces
 
-        # return {"faces": faces, "poses": poses}
         return poses
 
     def detect_aus(self, frame, landmarks):
@@ -464,6 +452,7 @@ class Detector(object):
             >>> detector.detect_aus(frame)
         """
 
+        logging.info("detecting aus...")
         frame = convert_image_to_tensor(frame, img_type="float32")
         # frame = transforms.ToTensor()(frame)
 
@@ -506,7 +495,7 @@ class Detector(object):
                 pixels_per_cell=(8, 8),
                 cells_per_block=(2, 2),
                 visualize=False,
-                multichannel=True,
+                channel_axis=-1,
             ).reshape(1, -1)
 
             if hogs_arr is None:
@@ -543,6 +532,7 @@ class Detector(object):
             >>> detector.detect_emotions(frame, detected_faces, detected_landmarks)
         """
 
+        logging.info("detecting emotions...")
         frame = convert_image_to_tensor(frame, img_type="float32")
 
         if self.info["emotion_model"].lower() == "resmasknet":
@@ -565,7 +555,7 @@ class Detector(object):
     def detect_image(
         self,
         input_file_list,
-        output_size=256,
+        output_size=None,
         batch_size=1,
         num_workers=0,
         pin_memory=False,
@@ -600,33 +590,40 @@ class Detector(object):
             shuffle=False,
         )
 
-        batch_output = []
-        for batch_id, batch_data in enumerate(tqdm(data_loader)):
-            frame_counter += frame_counter + batch_id * batch_size
-            faces = self.detect_faces(batch_data["Image"])
-            landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
+        try:
 
-            poses = self.detect_facepose(batch_data["Image"], landmarks)
-            aus = self.detect_aus(batch_data["Image"], landmarks) # Need to add error handling here in the AUs
-            emotions = self.detect_emotions(batch_data["Image"], faces, landmarks) # Need to handle problem here too.
+            batch_output = []
+            for batch_id, batch_data in enumerate(tqdm(data_loader)):
+                frame_counter += frame_counter + batch_id * batch_size
+                faces = self.detect_faces(batch_data["Image"])
+                landmarks = self.detect_landmarks(
+                    batch_data["Image"], detected_faces=faces
+                )
+                poses = self.detect_facepose(batch_data["Image"], landmarks)
+                aus = self.detect_aus(batch_data["Image"], landmarks)
+                emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
 
-            faces = _inverse_face_transform(faces, batch_data)
-            landmarks = _inverse_landmark_transform(landmarks, batch_data)
-            output = self._create_fex(
-                faces,
-                landmarks,
-                poses,
-                aus,
-                emotions,
-                batch_data["FileNames"],
-                frame_counter,
+                faces = _inverse_face_transform(faces, batch_data)
+                landmarks = _inverse_landmark_transform(landmarks, batch_data)
+                output = self._create_fex(
+                    faces,
+                    landmarks,
+                    poses,
+                    aus,
+                    emotions,
+                    batch_data["FileNames"],
+                    frame_counter,
+                )
+                batch_output.append(output)
+
+            batch_output = pd.concat(batch_output)
+            batch_output.reset_index(drop=True, inplace=True)
+
+            return batch_output
+        except RuntimeError as e:
+            raise ValueError(
+                f"when using a batch_size > 1 all images must have the same dimensions or output_size must not be None so py-feat can rescale images to output_size. See pytorch error: \n{e}"
             )
-            batch_output.append(output)
-
-        batch_output = pd.concat(batch_output)
-        batch_output.reset_index(drop=True, inplace=True)
-
-        return batch_output
 
     def detect_video(
         self,
@@ -677,7 +674,7 @@ class Detector(object):
 
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
-        return batch_output
+        return batch_output.set_index("frame", drop=False)
 
     def _convert_detector_output(detected_faces, detector_results):
         """Helper function to convert AU/Emotion detector output into frame by face list of lists.
@@ -717,6 +714,8 @@ class Detector(object):
         Returns:
             Fex object
         """
+
+        logging.info("creating fex output...")
         files = [[f] * n for f, n in zip(file_names, [len(x) for x in faces])]
 
         # Convert to Pandas Format

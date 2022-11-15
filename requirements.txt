@@ -1,4 +1,4 @@
-pandas>=0.20
+pandas>=1.0
 numpy>=1.9
 seaborn>=0.7.0
 matplotlib>=2.1
@@ -7,15 +7,12 @@ scikit-learn>=1.0
 pywavelets>=0.3.0
 h5py>=2.7.0
 Pillow>=6.0.0
-opencv-contrib-python>=4.4.0.46
-torch
 torchvision
 scikit-image>=0.19
 joblib
 easing_functions
 celluloid
 tqdm
-torchvision
 kornia
 av>=9.2.0
-xgboost>=1.7.0
+xgboost>=1.6.0

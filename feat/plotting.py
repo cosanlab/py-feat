@@ -1073,7 +1073,7 @@ def _create_empty_figure(
     return ax
 
 
-def imshow(obj, figsize=None, aspect="equal"):
+def imshow(obj, figsize=(3, 3), aspect="equal"):
     """
     Convenience wrapper function around matplotlib imshow that creates figure and axis
     boilerplate for single image plotting

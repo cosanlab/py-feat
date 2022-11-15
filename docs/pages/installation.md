@@ -13,6 +13,10 @@ Or get the latest development version by installing directly from github:
 pip install git+https://github.com/cosanlab/py-feat.git
 ```
 
+```{note}
+Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have **experimental** support for GPUs on macOS which you can try with `device='auto'`. However, we currently advise using the default (`cpu`) on macOS until PyTorch support stabilizes.
+```
+
 ## Using Google Colab
 On any page in these docs, you can you can simply click on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() badges you see to open that page in [Google Colab](http://colab.research.google.com/).
 ```{note}
