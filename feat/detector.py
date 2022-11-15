@@ -607,8 +607,8 @@ class Detector(object):
             landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
 
             poses = self.detect_facepose(batch_data["Image"], landmarks)
-            aus = self.detect_aus(batch_data["Image"], landmarks)
-            emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+            aus = self.detect_aus(batch_data["Image"], landmarks) # Need to add error handling here in the AUs
+            emotions = self.detect_emotions(batch_data["Image"], faces, landmarks) # Need to handle problem here too.
 
             faces = _inverse_face_transform(faces, batch_data)
             landmarks = _inverse_landmark_transform(landmarks, batch_data)
