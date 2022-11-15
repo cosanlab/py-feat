@@ -5,8 +5,26 @@ import numpy as np
 from torchvision.io import read_image
 
 
-@pytest.mark.skip(
-    reason="This tests ALL model detector combinations which takes ~20-30min. Run locally by commenting this line and using pytest -k 'test_detector_combos'."
+def is_not_third_sunday():
+    from datetime import datetime as dt
+    import calendar
+
+    c = calendar.Calendar(firstweekday=calendar.SUNDAY)
+    year = dt.now().year
+    month = dt.now().month
+    monthcal = c.monthdatescalendar(year, month)
+    third_sunday = [
+        day
+        for week in monthcal
+        for day in week
+        if day.weekday() == calendar.SUNDAY and day.month == month
+    ][2]
+    return not dt.date(dt.now()) == third_sunday
+
+
+@pytest.mark.skipif(
+    is_not_third_sunday(),
+    reason="This tests ALL model detector combinations which takes a while, so we only run it once a month on the third sunday. You can run it locally by commenting out this dectorator and using pytest -k 'test_detector_combos'.",
 )
 def test_detector_combos(
     face_model, landmark_model, au_model, emotion_model, facepose_model, single_face_img

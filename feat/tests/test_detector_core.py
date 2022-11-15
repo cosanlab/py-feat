@@ -156,14 +156,6 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (30, 173)
 
 
-# FIXME: This only works for the default detector and produces errors for some other
-# models, but we don't have combination testing yet:
-# Defaults:
-# face_model="retinaface",
-# landmark_model="mobilenet",
-# au_model="svm",
-# emotion_model="resmasknet",
-# facepose_model="img2pose",
 def test_detect_video(default_detector, single_face_mov):
     """Test detection on video file"""
     out = default_detector.detect_video(single_face_mov, skip_frames=24)
