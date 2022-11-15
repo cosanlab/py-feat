@@ -7,30 +7,80 @@ import numpy as np
 
 
 def test_landmark_with_batches(multiple_images_for_batch_testing):
-    # Make sure that when the same images are passed in with and without batch
-    # processing, the detected landmarks come out to be the same
+    """
+    Make sure that when the same images are passed in with and without batch
+    processing, the detected landmarks and poses come out to be the same
+    """
     detector = Detector()
     det_result_batch = detector.detect_image(
         input_file_list=multiple_images_for_batch_testing,
-        output_size=None,
         batch_size=5,
-        num_workers=0,
-        pin_memory=False,
-        frame_counter=0,
     )
 
     det_result_no_batch = detector.detect_image(
         input_file_list=multiple_images_for_batch_testing,
-        output_size=None,
         batch_size=1,
-        num_workers=0,
-        pin_memory=False,
-        frame_counter=0,
     )
+
     assert np.allclose(
         det_result_batch.loc[:, "x_0":"y_67"].to_numpy(),
         det_result_no_batch.loc[:, "x_0":"y_67"].to_numpy(),
     )
+
+
+def test_detection_and_batching_with_diff_img_sizes(
+    single_face_img, multi_face_img, multiple_images_for_batch_testing
+):
+    """
+    Make sure that when the same images are passed in with and without batch
+    processing, the detected landmarks and poses come out to be the same
+    """
+    # Each sublist of images contains different sizes
+    all_images = (
+        [single_face_img] + [multi_face_img] + multiple_images_for_batch_testing
+    )
+
+    detector = Detector()
+
+    # Multiple images with different sizes are ok as long as batch_size == 1
+    # Detections will be done in each image's native resolution
+    det_output_default = detector.detect_image(input_file_list=all_images, batch_size=1)
+
+    # If batch_size > 1 then output_size must be set otherwise we can't stack to make a
+    # tensor
+    with pytest.raises(ValueError):
+        _ = detector.detect_image(
+            input_file_list=all_images,
+            batch_size=5,
+        )
+
+    # Here we batch by resizing each image to 256xpadding
+    batched = detector.detect_image(
+        input_file_list=all_images, batch_size=5, output_size=256
+    )
+
+    # We can also forcibly resize images even if we don't batch process them
+    nonbatched = detector.detect_image(
+        input_file_list=all_images, batch_size=1, output_size=256
+    )
+
+    # To make sure that resizing doesn't interact unexpectedly with batching, we should
+    # check that the detections we get back for the same sized images are the same when
+    # processed as a batch or serially. We check each column separately
+    bad_cols = []
+    for col in batched.columns:
+        bcol, nbcol = batched[col].to_numpy(), nonbatched[col].to_numpy()
+        try:
+            if not np.allclose(bcol, nbcol):
+                bad_cols.append(col)
+        except TypeError as _:
+            if not all(bcol == nbcol):
+                bad_cols.append(col)
+
+    if len(bad_cols):
+        raise AssertionError(
+            f"Running the list of images resized to 256 returns different detections when running as a batch vs serially. The columns with different detection include: {bad_cols}\n See batched vs non-batched cols:\n{batched[bad_cols]}\n{nonbatched[bad_cols]}\n"
+        )
 
 
 def test_empty_init():
@@ -101,7 +151,7 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (6, 173)
 
     out = default_detector.detect_image(
-        [multi_face_img, single_face_img] * 5, batch_size=5
+        [multi_face_img, single_face_img] * 5, batch_size=5, output_size=256
     )
     assert out.shape == (30, 173)
 

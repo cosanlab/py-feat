@@ -394,7 +394,7 @@ def test_stats():
     aus.sessions = range(len(aus))
     y = aus[[i for i in aus.columns if "_r" in i]]
     X = pd.DataFrame(aus.sessions)
-    b, t, p, df, res = aus.regress(X, y, mode="ols", fit_intercept=True)
+    b, se, t, p, df, res = aus.regress(X, y, mode="ols", fit_intercept=True)
     assert b.shape == (2, 17)
     assert res.mean().mean() < 1
 

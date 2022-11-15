@@ -41,7 +41,7 @@ class img2poseModel:
         self.device = set_torch_device(device)
 
         # create network backbone
-        backbone = resnet_fpn_backbone(f"resnet{self.depth}", pretrained=True)
+        backbone = resnet_fpn_backbone(f"resnet{self.depth}", weights=True)
 
         if pose_mean is not None:
             pose_mean = torch.tensor(pose_mean)
