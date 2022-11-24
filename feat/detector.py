@@ -46,7 +46,7 @@ class Detector(object):
     def __init__(
         self,
         face_model="retinaface",
-        landmark_model="mobilenet",
+        landmark_model="mobilefacenet",
         au_model="svm",
         emotion_model="resmasknet",
         facepose_model="img2pose",
@@ -601,6 +601,10 @@ class Detector(object):
             shuffle=False,
         )
 
+        if self.info["landmark_model"] == "mobilenet" and batch_size > 1:
+            warnings.warn(
+                "Currently using mobilenet for landmark detection with batch_size > 1 may lead to erroneous detections. We recommend either setting batch_size=1 or using mobilefacenet as the landmark detection model. You can follow this issue for more: https://github.com/cosanlab/py-feat/issues/151"
+            )
         try:
 
             batch_output = []
