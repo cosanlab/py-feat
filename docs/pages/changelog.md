@@ -16,6 +16,7 @@ This is a large overhaul and refactor of some of the core testing and API functi
 
 ### Breaking Changes
 
+- the new default model for landmark detection was changed from `mobilenet` to `mobilefacenet`. Currently there is an [issue](https://github.com/cosanlab/py-feat/issues/151) with using `mobilenet` and batch processing that results in different detections vs non-batch processing, so we recommend using this new default.
 - remove support for `fer` emotion model
 - remove support for JAANET AU model
 - remove support for `pnp` facepose detector
