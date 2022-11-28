@@ -33,7 +33,7 @@ from feat.data import (
 )
 import torch
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, Normalize, Grayscale
+from torchvision.transforms import Compose, Normalize, Grayscale, ToTensor
 import logging
 import warnings
 from tqdm import tqdm
@@ -47,8 +47,8 @@ class Detector(object):
     def __init__(
         self,
         face_model="retinaface",
-        landmark_model="mobilenet",
-        au_model="svm",
+        landmark_model="mobilefacenet",
+        au_model="xgb",
         emotion_model="resmasknet",
         facepose_model="img2pose",
         device="cpu",
@@ -166,9 +166,6 @@ class Detector(object):
             if self.landmark_detector is not None:
                 if landmark == "mobilenet":
                     self.landmark_detector = self.landmark_detector(136)
-                    self.landmark_detector = torch.nn.DataParallel(
-                        self.landmark_detector
-                    )
                     checkpoint = torch.load(
                         os.path.join(
                             get_resource_path(),
@@ -176,7 +173,18 @@ class Detector(object):
                         ),
                         map_location=self.device,
                     )
-                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                    ##################################
+                    state_dict =checkpoint['state_dict']
+                    from collections import OrderedDict
+                    new_state_dict = OrderedDict()
+                    for k, v in state_dict.items():
+                        if 'module.' in k:
+                            k = k.replace('module.', '')
+                        new_state_dict[k]=v
+                    self.landmark_detector.load_state_dict(new_state_dict)
+                    #####################################
+
+                    # self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 elif landmark == "pfld":
                     self.landmark_detector = self.landmark_detector()
                     checkpoint = torch.load(
@@ -373,7 +381,7 @@ class Detector(object):
         extracted_faces, new_bbox = extract_face_from_bbox(
             frame, detected_faces, face_size=out_size
         )
-
+        
         extracted_faces = extracted_faces / 255.0
 
         if self.info["landmark_model"].lower() == "mobilenet":
