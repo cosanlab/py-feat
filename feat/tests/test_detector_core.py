@@ -78,9 +78,10 @@ def test_detection_and_batching_with_diff_img_sizes(
                 bad_cols.append(col)
 
     if len(bad_cols):
-        raise AssertionError(
-            f"Running the list of images resized to 256 returns different detections when running as a batch vs serially. The columns with different detection include: {bad_cols}\n See batched vs non-batched cols:\n{batched[bad_cols]}\n{nonbatched[bad_cols]}\n"
-        )
+        if len(bad_cols) > 1 or bad_cols[0] != "frame":
+            raise AssertionError(
+                f"Running the list of images resized to 256 returns different detections when running as a batch vs serially. The columns with different detection include: {bad_cols}\n See batched vs non-batched cols:\n{batched[bad_cols]}\n{nonbatched[bad_cols]}\n"
+            )
 
 
 def test_empty_init():
@@ -156,14 +157,6 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (30, 173)
 
 
-# FIXME: This only works for the default detector and produces errors for some other
-# models, but we don't have combination testing yet:
-# Defaults:
-# face_model="retinaface",
-# landmark_model="mobilenet",
-# au_model="svm",
-# emotion_model="resmasknet",
-# facepose_model="img2pose",
 def test_detect_video(default_detector, single_face_mov):
     """Test detection on video file"""
     out = default_detector.detect_video(single_face_mov, skip_frames=24)

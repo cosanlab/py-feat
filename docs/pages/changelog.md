@@ -12,16 +12,23 @@ This is a large overhaul and refactor of some of the core testing and API functi
 ### New
 - SVM AU model has been retrained with new HOG feature PCA pipeline
 - new XGBoost AU model with new HOG feature PCA pipeline
+- `.detect_image` and `.detect_video` now display a `tqdm` progressbar
 
 ### Breaking Changes
 
+- the new default model for landmark detection was changed from `mobilenet` to `mobilefacenet`. Currently there is an [issue](https://github.com/cosanlab/py-feat/issues/151) with using `mobilenet` and batch processing that results in different detections vs non-batch processing, so we recommend using this new default.
 - remove support for `fer` emotion model
 - remove support for JAANET AU model
 - remove support for `pnp` facepose detector
+- drop support for reading and manipulating Affectiva and FACET data
+- `.detect_image` will no longer resize images on load as the new default for `output_size=None`. If you want to process images with `batch_size > 1` and images differ in size, then you will be **required** to manually set `output_size` otherwise py-feat will raise a helpful error message
 
 ### Development changes
 
 - `test_pretrained_models.py` is now more organized using `pytest` classes
+- added tests for `img2pose` models
+- added more robust testing for the interaction between `batch_size` and `output_size`
+
 
 ### Fixes
 - data loading with multiple images of potentially different sizes should be faster and more reliable

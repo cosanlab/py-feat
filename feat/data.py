@@ -23,7 +23,7 @@ from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
 from torch import swapaxes
 from feat.transforms import Rescale
-from feat.utils.io import read_feat, read_affectiva, read_facet, read_openface
+from feat.utils.io import read_feat, read_openface
 from feat.utils.stats import wavelet, calc_hist_auc
 from feat.plotting import plot_face, draw_lineface, draw_facepose, load_viz_model
 from feat.pretrained import AU_LANDMARK_MAP
@@ -65,7 +65,9 @@ class FexSeries(Series):
         self.landmark_columns = kwargs.pop("landmark_columns", None)
         self.facepose_columns = kwargs.pop("facepose_columns", None)
         self.gaze_columns = kwargs.pop("gaze_columns", None)
-        self.time_columns = kwargs.pop("time_columns", None)
+        self.time_columns = kwargs.pop(
+            "time_columns", ["Timestamp", "MediaTime", "FrameNo", "FrameTime"]
+        )
         self.design_columns = kwargs.pop("design_columns", None)
 
         ### Meta data ###
@@ -231,7 +233,8 @@ class Fex(DataFrame):
 
     Args:
         filename: (str, optional) path to file
-        detector: (str, optional) name of software used to extract Fex. (Feat, FACET, OpenFace, or Affectiva)
+        detector: (str, optional) name of software used to extract Fex. Currently only
+        'Feat' is supported
         sampling_freq (float, optional): sampling rate of each row in Hz; defaults to None
         features (pd.Dataframe, optional): features that correspond to each Fex row
         sessions: Unique values indicating rows associated with a specific session (e.g., trial, subject, etc).Must be a 1D array of n_samples elements; defaults to None
@@ -447,30 +450,16 @@ class Fex(DataFrame):
         """
         return self[self.design_columns]
 
-    def read_file(self, *args, **kwargs):
+    def read_file(self):
         """Loads file into FEX class
-
-        This function checks the detector set in fex.detector and calls the appropriate read function that helps utilize functionalities of Feat.
-
-        Available detectors include:
-            FACET
-            OpenFace
-            Affectiva
-            Feat
 
         Returns:
             DataFrame: Fex class
         """
-        if self.detector == "FACET":
-            return self.read_facet(self.filename)
-        elif self.detector == "OpenFace":
+        if self.detector == "OpenFace":
             return self.read_openface(self.filename)
-        elif self.detector == "Affectiva":
-            return self.read_affectiva(self.filename)
-        elif self.detector == "Feat":
-            return self.read_feat(self.filename)
-        else:
-            print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
+
+        return self.read_feat(self.filename)
 
     @property
     def info(self):
@@ -502,28 +491,6 @@ class Fex(DataFrame):
         result = read_feat(filename, *args, **kwargs)
         return result
 
-    def read_facet(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from FACET
-
-        Args:
-            filename (string, optional): Path to file. Defaults to None.
-
-        Returns:
-            Fex
-        """
-        # Check if filename exists in metadata.
-        if filename is None:
-            if self.filename:
-                filename = self.filename
-            else:
-                raise ValueError("filename must be specified.")
-        result = read_facet(filename, *args, **kwargs)
-        for name in self._metadata:
-            attr_value = getattr(self, name, None)
-            if attr_value and getattr(result, name, None) == None:
-                setattr(result, name, attr_value)
-        return result
-
     def read_openface(self, filename=None, *args, **kwargs):
         """Reads facial expression detection results from OpenFace
 
@@ -539,27 +506,6 @@ class Fex(DataFrame):
             else:
                 raise ValueError("filename must be specified.")
         result = read_openface(filename, *args, **kwargs)
-        for name in self._metadata:
-            attr_value = getattr(self, name, None)
-            if attr_value and getattr(result, name, None) == None:
-                setattr(result, name, attr_value)
-        return result
-
-    def read_affectiva(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from Affectiva
-
-        Args:
-            filename (string, optional): Path to file. Defaults to None.
-
-        Returns:
-            Fex
-        """
-        if filename is None:
-            if self.filename:
-                filename = self.filename
-            else:
-                raise ValueError("filename must be specified.")
-        result = read_affectiva(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
             if attr_value and getattr(result, name, None) == None:
@@ -836,7 +782,7 @@ class Fex(DataFrame):
             data: cleaned FEX object
 
         """
-        #### TODO: CHECK IF FACET OR FIND WAY TO DO WITH OTHER ONES TOO #####
+
         if self.facebox_columns and self.au_columns and self.emotion_columns:
             cleaned = deepcopy(self)
             face_columns = self.facebox_columns
@@ -1361,14 +1307,6 @@ class Fex(DataFrame):
         )
 
     def calc_pspi(self):
-        if self.detector == "FACET":
-            pspi_aus = ["AU4", "AU6", "AU7", "AU9", "AU10", "AU43"]
-            out = (
-                self["AU4"]
-                + self[["AU6", "AU7"]].max(axis=1)
-                + self[["AU9", "AU10"]].max(axis=1)
-                + self["AU43"]
-            )
         if self.detector == "OpenFace":
             out = (
                 self["AU04_r"]
@@ -1393,45 +1331,23 @@ class Fex(DataFrame):
 
         """
 
-        if self.detector == "FACET":
-            model = load_viz_model("facet")
-            feats = AU_LANDMARK_MAP[self.detector]
-            au = row[feats].to_numpy().squeeze()
-            if muscles is not None:
-                muscles["facet"] = 1
-            gaze = None
-
-        elif self.detector == "OpenFace":
-            feats = AU_LANDMARK_MAP[self.detector]
-            au = row[feats].to_numpy().squeeze().tolist()
-            au = np.array(au + [0, 0, 0])
-
-            if gaze:
-                gaze_dat = ["gaze_0_x", "gaze_0_y", "gaze_1_x", "gaze_1_y"]
-                gaze = row[gaze_dat].to_numpy().squeeze().tolist()
-
-        elif self.detector == "Affectiva":
-            feats = AU_LANDMARK_MAP[self.detector]
-            au = row[feats].to_numpy().squeeze() / 20
-            au = au.tolist()
-            au = np.array(au + [0, 0, 0])
-
-        elif self.detector == "Feat":
-            if self.au_model in ["svm", "xgb"]:
-                au_lookup = "Feat"
-                model = None
-            else:
-                au_lookup = self.au_model
-                try:
-                    model = load_viz_model(f"{self.au_model}_aus_to_landmarks")
-                except ValueError as e:
-                    raise NotImplementedError(
-                        f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'xgb') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
-                    )
+        if self.au_model in ["svm", "xgb"]:
+            au_lookup = "pyfeat"
+            model = None
+            feats = AU_LANDMARK_MAP["Feat"]
+        else:
+            au_lookup = self.au_model
+            try:
+                model = load_viz_model(f"{au_lookup}_aus_to_landmarks")
+            except ValueError as e:
+                raise NotImplementedError(
+                    f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'xgb') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
+                )
 
             feats = AU_LANDMARK_MAP[au_lookup]
-            rrow = row.copy()
-            au = rrow[feats].to_numpy().squeeze()
+
+        rrow = row.copy()
+        au = rrow[feats].to_numpy().squeeze()
 
         gaze = None if isinstance(gaze, bool) else gaze
         return au, gaze, muscles, model
@@ -1834,7 +1750,7 @@ class ImageDataset(Dataset):
         except Exception:
             img = Image.open(self.images[idx])
             img = transforms.PILToTensor()(img)
-        
+
         if img.shape[0] == 1:
             img = torch.cat([img, img, img], dim=0)
 

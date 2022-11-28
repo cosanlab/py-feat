@@ -12,9 +12,8 @@ from feat.utils import (
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
-    FACET_FACEPOSE_COLUMNS,
+    FEAT_FACEPOSE_COLUMNS,
     FEAT_TIME_COLUMNS,
-    FACET_TIME_COLUMNS,
     set_torch_device,
 )
 from feat.utils.io import get_resource_path
@@ -47,7 +46,7 @@ class Detector(object):
     def __init__(
         self,
         face_model="retinaface",
-        landmark_model="mobilefacenet",
+        landmark_model="mobilefacefacenet",
         au_model="xgb",
         emotion_model="resmasknet",
         facepose_model="img2pose",
@@ -226,9 +225,13 @@ class Detector(object):
                 self.facepose_detector = self.facepose_detector()
             self.info["facepose_model"] = facepose
 
-            self.info["facepose_model_columns"] = FACET_FACEPOSE_COLUMNS
-            predictions = np.full_like(np.atleast_2d(FACET_FACEPOSE_COLUMNS), np.nan)
-            empty_facepose = pd.DataFrame(predictions, columns=FACET_FACEPOSE_COLUMNS)
+            self.info["facepose_model_columns"] = FEAT_FACEPOSE_COLUMNS
+            predictions = np.full_like(
+                np.atleast_2d(self.info["facepose_model_columns"]), np.nan
+            )
+            empty_facepose = pd.DataFrame(
+                predictions, columns=self.info["facepose_model_columns"]
+            )
             self._empty_facepose = empty_facepose
 
         # AU MODEL
@@ -266,11 +269,11 @@ class Detector(object):
 
         self.info["output_columns"] = (
             FEAT_TIME_COLUMNS
-            + FEAT_FACEBOX_COLUMNS
-            + openface_2d_landmark_columns
+            + self.info["face_detection_columns"]
+            + self.info["face_landmark_columns"]
             + self.info["au_presence_columns"]
-            + FACET_FACEPOSE_COLUMNS
-            + FEAT_EMOTION_COLUMNS
+            + self.info["facepose_model_columns"]
+            + self.info["emotion_model_columns"]
             + ["input"]
         )
 
@@ -569,12 +572,20 @@ class Detector(object):
         pin_memory=False,
         frame_counter=0,
     ):
-        """Detects FEX from an image file.
+        """
+        Detects FEX from one or more image files. If you want to speed up detection you
+        can process multiple images in batches by setting `batch_size > 1`. However, all
+        images must have **the same dimensions** to be processed in batches. Py-feat can
+        automatically adjust image sizes by using the `output_size=int`. Common
+        output-sizes include 256 and 512.
 
         Args:
             input_file_list (list of str): Path to a list of paths to image files.
-            output_size (int): image size to rescale all imagee preserving aspect ratio
-            batch_size (int): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
+            output_size (int): image size to rescale all image preserving aspect ratio.
+            Will raise an error if not set and batch_size > 1 but images are not the same size
+            batch_size (int): how many batches of images you want to run at one shot.
+            Larger gives faster speed but is more memory-consuming. Images must be the
+            same size to be run in batches!
             num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
             pin_memory (bool): If ``True``, the data loader will copy Tensors
                                 into CUDA pinned memory before returning them.  If your data elements
@@ -598,6 +609,10 @@ class Detector(object):
             shuffle=False,
         )
 
+        if self.info["landmark_model"] == "mobilenet" and batch_size > 1:
+            warnings.warn(
+                "Currently using mobilenet for landmark detection with batch_size > 1 may lead to erroneous detections. We recommend either setting batch_size=1 or using mobilefacenet as the landmark detection model. You can follow this issue for more: https://github.com/cosanlab/py-feat/issues/151"
+            )
         try:
 
             batch_output = []
@@ -740,7 +755,7 @@ class Detector(object):
                             face_in_frame[4],
                         ]
                     ],
-                    columns=self["face_detection_columns"],
+                    columns=self.info["face_detection_columns"],
                     index=[j],
                 )
 
@@ -752,13 +767,13 @@ class Detector(object):
 
                 landmarks_df = pd.DataFrame(
                     [landmarks[i][j].flatten(order="F")],
-                    columns=self["face_landmark_columns"],
+                    columns=self.info["face_landmark_columns"],
                     index=[j],
                 )
 
                 aus_df = pd.DataFrame(
                     aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
-                    columns=self["au_presence_columns"],
+                    columns=self.info["au_presence_columns"],
                     index=[j],
                 )
 
@@ -800,8 +815,7 @@ class Detector(object):
             emotion_columns=FEAT_EMOTION_COLUMNS,
             facebox_columns=FEAT_FACEBOX_COLUMNS,
             landmark_columns=openface_2d_landmark_columns,
-            facepose_columns=FACET_FACEPOSE_COLUMNS,
-            time_columns=FACET_TIME_COLUMNS,
+            facepose_columns=self.info["facepose_model_columns"],
             detector="Feat",
             face_model=self.info["face_model"],
             landmark_model=self.info["landmark_model"],
