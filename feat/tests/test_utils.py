@@ -42,3 +42,8 @@ def test_utils():
     # Test badfile.
     with pytest.raises(Exception):
         load_viz_model("badfile")
+
+
+# TODO: write me
+def test_set_torch_device():
+    pass
