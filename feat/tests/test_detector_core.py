@@ -40,7 +40,7 @@ def test_detection_and_batching_with_diff_img_sizes(
         [single_face_img] + [multi_face_img] + multiple_images_for_batch_testing
     )
 
-    detector = Detector()
+    detector = Detector(au_model='xgb')
 
     # Multiple images with different sizes are ok as long as batch_size == 1
     # Detections will be done in each image's native resolution

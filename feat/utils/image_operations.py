@@ -115,6 +115,14 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
     if not isinstance(frame, torch.Tensor):
         raise ValueError(f"image must be a tensor not {type(frame)}")
 
+    # import glob
+    # import pickle
+    # counter = 0
+    # while os.path.exists(f'/home/tiankang/src/py-feat/dev/batch_extractinp_{counter}.pkl'):
+    #     counter += 1
+    # with open(f'/home/tiankang/src/py-feat/dev/batch_extractinp_{counter}.pkl', 'wb') as fp:
+    #     pickle.dump([frame, landmarks], fp)
+
     if len(frame.shape) != 4:
         frame = frame.unsqueeze(0)
 
@@ -127,6 +135,14 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
         box_enlarge=2.5,
         img_size=face_size,
     )
+
+    # import glob
+    # import pickle
+    # counter = 0
+    # while os.path.exists(f'/home/tiankang/src/py-feat/dev/nonbatch_aligned_{counter}.pkl'):
+    #     counter += 1
+    # with open(f'/home/tiankang/src/py-feat/dev/nonbatch_aligned_{counter}.pkl', 'wb') as fp:
+    #     pickle.dump([aligned_img, new_landmarks], fp)
 
     hull = ConvexHull(new_landmarks)
     mask = grid_points_in_poly(
@@ -246,7 +262,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     """
 
     if landmark_type == 68:
-        left_eye0 = (
+        left_eye0 = float(
             landmarks[2 * 36]
             + landmarks[2 * 37]
             + landmarks[2 * 38]
@@ -254,7 +270,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             + landmarks[2 * 40]
             + landmarks[2 * 41]
         ) / 6.0
-        left_eye1 = (
+        left_eye1 = float(
             landmarks[2 * 36 + 1]
             + landmarks[2 * 37 + 1]
             + landmarks[2 * 38 + 1]
@@ -262,7 +278,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             + landmarks[2 * 40 + 1]
             + landmarks[2 * 41 + 1]
         ) / 6.0
-        right_eye0 = (
+        right_eye0 = float(
             landmarks[2 * 42]
             + landmarks[2 * 43]
             + landmarks[2 * 44]
@@ -270,7 +286,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             + landmarks[2 * 46]
             + landmarks[2 * 47]
         ) / 6.0
-        right_eye1 = (
+        right_eye1 = float(
             landmarks[2 * 42 + 1]
             + landmarks[2 * 43 + 1]
             + landmarks[2 * 44 + 1]
@@ -283,13 +299,13 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
-                [landmarks[2 * 30], landmarks[2 * 30 + 1], 1],
-                [landmarks[2 * 48], landmarks[2 * 48 + 1], 1],
-                [landmarks[2 * 54], landmarks[2 * 54 + 1], 1],
+                [float(landmarks[2 * 30]), float(landmarks[2 * 30 + 1]), 1.0],
+                [float(landmarks[2 * 48]), float(landmarks[2 * 48 + 1]), 1.0],
+                [float(landmarks[2 * 54]), float(landmarks[2 * 54 + 1]), 1.0],
             ]
         )
     elif landmark_type == 49:
-        left_eye0 = (
+        left_eye0 = float(
             landmarks[2 * 19]
             + landmarks[2 * 20]
             + landmarks[2 * 21]
@@ -297,7 +313,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             + landmarks[2 * 23]
             + landmarks[2 * 24]
         ) / 6.0
-        left_eye1 = (
+        left_eye1 = float(
             landmarks[2 * 19 + 1]
             + landmarks[2 * 20 + 1]
             + landmarks[2 * 21 + 1]
@@ -305,7 +321,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             + landmarks[2 * 23 + 1]
             + landmarks[2 * 24 + 1]
         ) / 6.0
-        right_eye0 = (
+        right_eye0 = float(
             landmarks[2 * 25]
             + landmarks[2 * 26]
             + landmarks[2 * 27]
@@ -313,7 +329,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             + landmarks[2 * 29]
             + landmarks[2 * 30]
         ) / 6.0
-        right_eye1 = (
+        right_eye1 = float(
             landmarks[2 * 25 + 1]
             + landmarks[2 * 26 + 1]
             + landmarks[2 * 27 + 1]
@@ -326,9 +342,9 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
-                [landmarks[2 * 13], landmarks[2 * 13 + 1], 1],
-                [landmarks[2 * 31], landmarks[2 * 31 + 1], 1],
-                [landmarks[2 * 37], landmarks[2 * 37 + 1], 1],
+                [float(landmarks[2 * 13]), float(landmarks[2 * 13 + 1]), 1.0],
+                [float(landmarks[2 * 31]), float(landmarks[2 * 31 + 1]), 1.0],
+                [float(landmarks[2 * 37]), float(landmarks[2 * 37 + 1]), 1.0],
             ]
         )
     else:
@@ -340,27 +356,25 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     l = math.sqrt(delta_x**2 + delta_y**2)
     sin_val = delta_y / l
     cos_val = delta_x / l
-    mat1 = np.mat([[cos_val, sin_val, 0], [-sin_val, cos_val, 0], [0, 0, 1]])
+    mat1 = np.mat([[cos_val, sin_val, 0.0], [-sin_val, cos_val, 0.0], [0.0, 0.0, 1.0]])
 
     mat2 = (mat1 * mat2.T).T
 
-    center_x = float((max(mat2[:, 0]) + min(mat2[:, 0]))) / 2
-    center_y = float((max(mat2[:, 1]) + min(mat2[:, 1]))) / 2
+    center_x = (max(mat2[:, 0]).item() + min(mat2[:, 0]).item()) / 2.0
+    center_y = (max(mat2[:, 1]).item() + min(mat2[:, 1]).item()) / 2.0
 
-    if float(max(mat2[:, 0]) - min(mat2[:, 0])) > float(
-        max(mat2[:, 1]) - min(mat2[:, 1])
-    ):
-        half_size = 0.5 * box_enlarge * float((max(mat2[:, 0]) - min(mat2[:, 0])))
+    if (max(mat2[:, 0]) - min(mat2[:, 0])) > (max(mat2[:, 1]) - min(mat2[:, 1])):
+        half_size = 0.5 * box_enlarge * (max(mat2[:, 0]).item() - min(mat2[:, 0]).item())
     else:
-        half_size = 0.5 * box_enlarge * float((max(mat2[:, 1]) - min(mat2[:, 1])))
+        half_size = 0.5 * box_enlarge * (max(mat2[:, 1]).item() - min(mat2[:, 1]).item())
 
     scale = (img_size - 1) / 2.0 / half_size
 
     mat3 = np.mat(
         [
-            [scale, 0, scale * (half_size - center_x)],
-            [0, scale, scale * (half_size - center_y)],
-            [0, 0, 1],
+            [scale, 0.0, scale * (half_size - center_x)],
+            [0.0, scale, scale * (half_size - center_y)],
+            [0.0, 0.0, 1.0],
         ]
     )
 
@@ -381,8 +395,8 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
         fill_value=(128, 128, 128),
     )
 
-    land_3d = np.ones((int(len(landmarks) / 2), 3))
-    land_3d[:, 0:2] = np.reshape(np.array(landmarks), (int(len(landmarks) / 2), 2))
+    land_3d = np.ones((len(landmarks) // 2, 3))
+    land_3d[:, 0:2] = np.reshape(np.array(landmarks), (len(landmarks) // 2, 2))
     mat_land_3d = np.mat(land_3d)
     new_landmarks = np.array((mat * mat_land_3d.T).T)
     new_landmarks = np.array(
