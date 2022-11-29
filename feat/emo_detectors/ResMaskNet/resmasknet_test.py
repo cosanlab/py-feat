@@ -743,7 +743,7 @@ class ResMaskNet:
 
     def _batch_make(self, frame, detected_face, *args, **kwargs):
 
-        transform = Compose([Grayscale(3), RandomHorizontalFlip(p=1)])
+        transform = Compose([Grayscale(3)])
         gray = transform(frame)
 
         len_index = [len(aa) for aa in detected_face]
