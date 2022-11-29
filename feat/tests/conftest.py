@@ -11,7 +11,9 @@ from pytest import fixture
 import os
 from feat.detector import Detector
 import numpy as np
-from torchvision.io import read_image, read_video
+from torchvision.io import read_image
+import pandas as pd
+from feat.data import Fex
 
 # AU constants for plotting
 @fixture(scope="module")
@@ -108,3 +110,53 @@ def multiple_images_for_batch_testing(data_path):
     from glob import glob
 
     return list(glob(os.path.join(data_path, "*-ph.jpg")))
+
+
+@fixture(scope="module")
+def imotions_data(data_path):
+    FACET_EMOTION_COLUMNS = [
+        "Joy",
+        "Anger",
+        "Surprise",
+        "Fear",
+        "Contempt",
+        "Disgust",
+        "Sadness",
+        "Confusion",
+        "Frustration",
+        "Neutral",
+        "Positive",
+        "Negative",
+    ]
+    FACET_FACEBOX_COLUMNS = [
+        "FaceRectX",
+        "FaceRectY",
+        "FaceRectWidth",
+        "FaceRectHeight",
+    ]
+    FACET_TIME_COLUMNS = ["Timestamp", "MediaTime", "FrameNo", "FrameTime"]
+    FACET_FACEPOSE_COLUMNS = ["Pitch", "Roll", "Yaw"]
+    FACET_DESIGN_COLUMNS = ["StimulusName", "SlideType", "EventSource", "Annotation"]
+
+    filename = os.path.join(data_path, "iMotions_Test_v6.txt")
+    d = pd.read_csv(filename, skiprows=5, sep="\t")
+    cols2drop = [col for col in d.columns if "Intensity" in col]
+    d = d.drop(columns=cols2drop)
+    d.columns = [col.replace(" Evidence", "") for col in d.columns]
+    d.columns = [col.replace(" Degrees", "") for col in d.columns]
+    d.columns = [col.replace(" ", "") for col in d.columns]
+    au_columns = [col for col in d.columns if "AU" in col]
+    df = Fex(
+        d,
+        filename=filename,
+        au_columns=au_columns,
+        emotion_columns=FACET_EMOTION_COLUMNS,
+        facebox_columns=FACET_FACEBOX_COLUMNS,
+        facepose_columns=FACET_FACEPOSE_COLUMNS,
+        time_columns=FACET_TIME_COLUMNS,
+        design_columns=FACET_DESIGN_COLUMNS,
+        detector="FACET",
+        sampling_freq=None,
+    )
+    df["input"] = filename
+    return df

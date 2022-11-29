@@ -16,36 +16,21 @@ def test_info(capsys):
     assert importantstring in captured.out
 
 
-# TODO: write me
-@pytest.mark.skip("TODO Rewrite as we drop support for facet, affectiva")
-def test_fex():
-    with pytest.raises(Exception):
-        fex = Fex().read_feat()
-    with pytest.raises(Exception):
-        fex = Fex().read_facet()
-    with pytest.raises(Exception):
-        fex = Fex().read_openface()
-    with pytest.raises(Exception):
-        fex = Fex().read_affectiva()
+def test_fex(imotions_data):
 
-    # For iMotions-FACET data files
-    # test reading iMotions file < version 6
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v5.txt")
-    dat = Fex(read_facet(filename), sampling_freq=30)
+    # Dropped support in >= 0.4.0
+    with pytest.raises(Exception):
+        Fex().read_facet()
+    with pytest.raises(Exception):
+        Fex().read_affectiva()
 
-    # test reading iMotions file > version 6
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v6.txt")
-    df = read_facet(filename)
+    df = imotions_data
 
-    # Test slicing functions.
+    # Test slicing functions
     assert df.aus.shape == (519, 20)
-
     assert df.emotions.shape == (519, 12)
-
     assert df.facebox.shape == (519, 4)
-
     assert df.time.shape[-1] == 4
-
     assert df.design.shape[-1] == 4
 
     # Test metadata propagation to sliced series
@@ -78,10 +63,6 @@ def test_fex():
     with pytest.raises(ValueError):
         Fex(df, sampling_freq=30, sessions=sessions[:10])
 
-    # Test KeyError
-    with pytest.raises(KeyError):
-        Fex(read_facet(filename, features=["NotHere"]), sampling_freq=30)
-
     # Test length
     assert len(dat) == 519
 
@@ -92,10 +73,8 @@ def test_fex():
     assert dat[["Joy"]].sampling_freq == dat.sampling_freq
     assert dat.iloc[:, 0].sampling_freq == dat.sampling_freq
     assert dat.iloc[0, :].sampling_freq == dat.sampling_freq
-
     assert dat.loc[[0], :].sampling_freq == dat.sampling_freq
     assert dat.loc[:, ["Joy"]].sampling_freq == dat.sampling_freq
-    # assert dat.loc[0].sampling_freq == dat.sampling_freq # DOES NOT WORK YET
 
     # Test Downsample
     assert len(dat.downsample(target=10)) == 52
@@ -125,9 +104,6 @@ def test_fex():
         df[df.au_columns].isna().sum()[0]
         < rectified[rectified.au_columns].isna().sum()[0]
     )
-
-    # Test pspi
-    assert len(df.calc_pspi()) == len(df)
 
     # Test baseline
     assert isinstance(dat.baseline(baseline="median"), Fex)
@@ -163,17 +139,6 @@ def test_fex():
     out = dat2.extract_summary(min=True, max=True, mean=True, ignore_sessions=True)
     assert len(out) == 1
     assert dat2.shape[1] * 3 == out.shape[1]
-
-    # Check if file is missing columns
-    data_bad = dat.iloc[:, 0:10]
-    with pytest.raises(Exception):
-        _check_if_fex(data_bad, imotions_columns)
-
-    # Check if file has too many columns
-    data_bad = dat.copy()
-    data_bad["Test"] = 0
-    with pytest.raises(Exception):
-        _check_if_fex(data_bad, imotions_columns)
 
     # Test clean
     assert isinstance(dat.clean(), Fex)
@@ -217,11 +182,8 @@ def test_fex():
     assert n_components == stats["weights"].shape[1]
 
 
-# TODO: rewrite me
-@pytest.mark.skip("TODO Rewrite as we drop support for facet, affectiva")
-def test_fextractor():
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v6.txt")
-    df = read_facet(filename)
+def test_fextractor(imotions_data):
+    df = imotions_data
     sessions = np.array([[x] * 10 for x in range(1 + int(len(df) / 10))]).flatten()[:-1]
     dat = Fex(df, sampling_freq=30, sessions=sessions)
     dat = dat[
@@ -267,7 +229,6 @@ def test_fextractor():
     extractor = Fextractor()
     dat2 = dat.loc[:, ["Positive", "Negative"]].interpolate()
     extractor.summary(fex_object=dat2, min=True, max=True, mean=True)
-    # [Pos, Neg] * [mean, max, min] + ['sessions']
     assert extractor.merge(out_format="wide").shape[1] == dat2.shape[1] * 3 + 1
 
     # Test wavelet extraction
@@ -309,9 +270,7 @@ def test_fextractor():
     assert out.sampling_freq == dat2.sampling_freq
 
     # Test Bag Of Temporal Features Extraction
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v6.txt")
-    facet = Fex(filename=filename, sampling_freq=30, detector="FACET")
-    facet = facet.read_file()
+    facet = Fex(df, sampling_freq=30, detector="FACET")
     facet_filled = facet.fillna(0)
     facet_filled = facet_filled[
         [
@@ -329,7 +288,6 @@ def test_fextractor():
             "Negative",
         ]
     ]
-    # assert isinstance(facet_filled,Facet)
     extractor = Fextractor()
     extractor.boft(facet_filled)
     assert isinstance(extractor.extracted_features[0], DataFrame)
@@ -340,7 +298,6 @@ def test_fextractor():
     )
 
 
-### Test Openface importer ###
 def test_openface():
     # For OpenFace data file
     filename = os.path.join(get_test_data_path(), "OpenFace_Test.csv")
@@ -365,9 +322,6 @@ def test_openface():
     assert openface.iloc[0].landmark.shape[0] == 136
     assert openface.landmark_x.shape[1] == openface.landmark_y.shape[1]
     assert openface.iloc[0].landmark_x.shape[0] == openface.iloc[0].landmark_y.shape[0]
-
-    # Test PSPI calculation b/c diff from facet
-    assert len(openface.calc_pspi()) == len(openface)
 
 
 def test_feat():
