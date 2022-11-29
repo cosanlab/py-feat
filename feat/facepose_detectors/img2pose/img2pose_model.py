@@ -28,8 +28,8 @@ class img2poseModel:
         pose_mean=None,
         pose_stddev=None,
         threed_68_points=None,
-        rpn_pre_nms_top_n_test=6000, #500
-        rpn_post_nms_top_n_test=1000, #10,
+        rpn_pre_nms_top_n_test=6000,  # 500
+        rpn_post_nms_top_n_test=1000,  # 10,
         bbox_x_factor=1.1,
         bbox_y_factor=1.1,
         expand_forehead=0.3,

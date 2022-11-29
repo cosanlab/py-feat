@@ -31,7 +31,7 @@ class Img2Pose:
         THREED_FACE_MODEL=os.path.join(
             get_resource_path(), "reference_3d_68_points_trans.npy"
         ),
-        **kwargs
+        **kwargs,
     ):
         """Creates an img2pose model. Constrained model is optimized for face detection/ pose estimation for
         front-facing faces ( [-90, 90] degree range) only. Unconstrained model can detect faces and poses at any angle,
@@ -60,7 +60,7 @@ class Img2Pose:
             pose_stddev=pose_stddev,
             threed_68_points=threed_points,
             device=self.device,
-            **kwargs
+            **kwargs,
         )
 
         # Load the constrained model
