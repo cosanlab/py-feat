@@ -67,29 +67,17 @@ def test_detection_and_batching_with_diff_img_sizes(
     # To make sure that resizing doesn't interact unexpectedly with batching, we should
     # check that the detections we get back for the same sized images are the same when
     # processed as a batch or serially. We check each column separately
-    au_diffs = np.abs(batched.aus - nonbatched.aus)
-    max_diff = au_diffs.max().max()
-    print(f"Max AU deviation (batched - nonbatched): {max_diff}")
-    if max_diff >= 0.5:
+    au_diffs = np.abs(batched.aus - nonbatched.aus).max()
+    TOL = 0.5
+    bad_aus = au_diffs[au_diffs > TOL]
+    if len(bad_aus):
         raise AssertionError(
-            f"Max AU deviation is larger than tolerance (0.5) when comparing batched vs non-batched detections: {max_diff}"
+            f"Max AU deviation is larger than tolerance ({TOL}) when comparing batched vs non-batched detections: {bad_aus}"
         )
-
-    # bad_cols = []
-    # for col in batched.columns:
-    #     bcol, nbcol = batched[col].to_numpy(), nonbatched[col].to_numpy()
-    #     try:
-    #         if not np.allclose(bcol, nbcol, atol=0.02):
-    #             bad_cols.append(col)
-    #     except TypeError as _:
-    #         if not all(bcol == nbcol):
-    #             bad_cols.append(col)
-
-    # if len(bad_cols):
-    #     if len(bad_cols) > 1 or bad_cols[0] != "frame":
-    #         raise AssertionError(
-    #             f"Running the list of images resized to 256 returns different detections when running as a batch vs serially. The columns with different detection include: {bad_cols}\n See batched vs non-batched cols:\n{batched[bad_cols]}\n{nonbatched[bad_cols]}\n"
-    #         )
+    else:
+        print(
+            f"Max AU deviation (batched - nonbatched): {au_diffs.idxmax()}: {au_diffs.max()}"
+        )
 
 
 def test_empty_init():
