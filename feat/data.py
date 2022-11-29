@@ -1195,7 +1195,7 @@ class Fex(DataFrame):
             for k, v in self.itersessions():
                 session = self.__class__(
                     pd.DataFrame(
-                        {x: convolve(y, wav, mode="same") for x, y in v.iteritems()}
+                        {x: convolve(y, wav, mode="same") for x, y in v.items()}
                     ),
                     sampling_freq=self.sampling_freq,
                 )
@@ -1305,16 +1305,6 @@ class Fex(DataFrame):
         return self.__class__(
             feats, sampling_freq=self.sampling_freq, features=self.features
         )
-
-    def calc_pspi(self):
-        if self.detector == "OpenFace":
-            out = (
-                self["AU04_r"]
-                + self[["AU06_r", "AU07_r"]].max(axis=1)
-                + self[["AU09_r", "AU10_r"]].max(axis=1)
-                + self["AU45_r"]
-            )
-        return out.__finalize__(self)
 
     def _prepare_plot_aus(self, row, muscles, gaze):
 
@@ -1700,6 +1690,7 @@ class Fextractor:
         Returns:
             merged: (DataFrame) DataFrame containing merged features extracted from a Fex instance.
         """
+        out = None
         out = reduce(
             lambda x, y: pd.merge(x, y, left_index=True, right_index=True),
             self.extracted_features,
@@ -1708,8 +1699,6 @@ class Fextractor:
 
         if out_format == "long":
             out = out.melt(id_vars="sessions")
-        elif out_format == "wide":
-            pass
         return out
 
 
