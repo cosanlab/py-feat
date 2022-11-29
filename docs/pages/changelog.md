@@ -34,6 +34,7 @@ This is a large overhaul and refactor of some of the core testing and API functi
 ### Fixes
 - data loading with multiple images of potentially different sizes should be faster and more reliable
 - batch processing should be faster and more reliable
+- fix bug in `resmasknet` that would give poor predictions when multiple faces were present and particularly small
 
 ## 0.4.0
 
