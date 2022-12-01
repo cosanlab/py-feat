@@ -3,6 +3,7 @@ from torch.nn import DataParallel, Module
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from .deps.models import FasterDoFRCNN
 from feat.utils import set_torch_device
+import warnings
 
 """
 Model adapted from https://github.com/vitoralbiero/img2pose
@@ -40,8 +41,16 @@ class img2poseModel:
 
         self.device = set_torch_device(device)
 
+        # TODO: Update to handle deprecation warning:
+        # UserWarning: Arguments other than a weight enum or `None` for 'weights'
+        # are deprecated since 0.13 and may be removed in the future. The current
+        # behavior is equivalent to passing
+        # `weights=ResNet18_Weights.IMAGENET1K_V1`. You can also use
+        # `weights=ResNet18_Weights.DEFAULT` to get the most up-to-date weights.
         # create network backbone
-        backbone = resnet_fpn_backbone(f"resnet{self.depth}", weights=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            backbone = resnet_fpn_backbone(f"resnet{self.depth}", weights=True)
 
         if pose_mean is not None:
             pose_mean = torch.tensor(pose_mean)

@@ -1436,9 +1436,14 @@ class Fex(DataFrame):
                         ]:
                             img = read_image(row["input"])
                         else:
-                            video, audio, info = read_video(
-                                row["input"], output_format="TCHW"
-                            )
+                            # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
+                            # pts_unit 'sec'. See why it's ok in this issue:
+                            # https://github.com/pytorch/vision/issues/1931
+                            with warnings.catch_warnings():
+                                warnings.simplefilter("ignore", UserWarning)
+                                video, audio, info = read_video(
+                                    row["input"], output_format="TCHW"
+                                )
                             img = video[row["frame"], :, :]
                         color = "w"
                         face_ax.imshow(img.permute([1, 2, 0]))
@@ -1978,14 +1983,21 @@ class VideoDataset(Dataset):
 
     def __init__(self, video_file, skip_frames=None, output_size=None):
 
-        # Video dimensions are: [time, height, width, channels]
-        self.video, self.audio, self.info = read_video(video_file)
+        # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
+        # pts_unit 'sec'. See why it's ok in this issue:
+        # https://github.com/pytorch/vision/issues/1931
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            # Video dimensions are: [time, height, width, channels]
+            self.video, self.audio, self.info = read_video(video_file)
         # Swap them to match output of read_image: [time, channels, height, width]
         # Otherwise detectors face on tensor dimension mismatch
         self.video = swapaxes(swapaxes(self.video, 1, 3), -1, -2)
         self.file_name = video_file
         self.output_size = output_size
-        self.video_frames = np.arange(0, self.video.shape[0], 1 if skip_frames is None else skip_frames)
+        self.video_frames = np.arange(
+            0, self.video.shape[0], 1 if skip_frames is None else skip_frames
+        )
         self.video = self.video[self.video_frames, :, :]
 
     def __len__(self):
