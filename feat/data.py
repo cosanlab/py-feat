@@ -1976,7 +1976,7 @@ class VideoDataset(Dataset):
         Dataset: dataset of [batch, channels, height, width] that can be passed to DataLoader
     """
 
-    def __init__(self, video_file, skip_frames=0, output_size=None):
+    def __init__(self, video_file, skip_frames=None, output_size=None):
 
         # Video dimensions are: [time, height, width, channels]
         self.video, self.audio, self.info = read_video(video_file)
@@ -1985,7 +1985,7 @@ class VideoDataset(Dataset):
         self.video = swapaxes(swapaxes(self.video, 1, 3), -1, -2)
         self.file_name = video_file
         self.output_size = output_size
-        self.video_frames = np.arange(0, self.video.shape[0], skip_frames)
+        self.video_frames = np.arange(0, self.video.shape[0], 1 if skip_frames is None else skip_frames)
         self.video = self.video[self.video_frames, :, :]
 
     def __len__(self):
