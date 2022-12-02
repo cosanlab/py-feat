@@ -1141,7 +1141,13 @@ def interpolate_aus(
 
 
 def animate_face(
-    AU=None, start=None, end=None, save=None, include_reverse=True, **kwargs
+    AU=None,
+    start=None,
+    end=None,
+    save=None,
+    include_reverse=True,
+    feature_range=None,
+    **kwargs,
 ):
     """
     Create a matplotlib animation interpolating between a starting and ending face. Can
@@ -1182,6 +1188,13 @@ def animate_face(
     padding = kwargs.pop("padding", 0.25)
     num_frames = int(np.ceil(fps * duration))
     interp_func = kwargs.pop("interp_func", None)
+
+    if start == "neutral":
+        start = np.zeros(20)
+
+    if feature_range is not None:
+        start = minmax_scale(start, feature_range=feature_range)
+        end = minmax_scale(end, feature_range=feature_range)
 
     if AU is not None:
         if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
@@ -1248,6 +1261,7 @@ def animate_face(
         #     _ = ax.set(title=title)
         _ = camera.snap()
     animation = camera.animate()
+    breakpoint()
     if save is not None:
         animation.save(save, fps=fps)
     return animation
