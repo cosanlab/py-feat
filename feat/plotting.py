@@ -1261,7 +1261,6 @@ def animate_face(
         #     _ = ax.set(title=title)
         _ = camera.snap()
     animation = camera.animate()
-    breakpoint()
     if save is not None:
         animation.save(save, fps=fps)
     return animation
