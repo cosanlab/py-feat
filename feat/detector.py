@@ -813,7 +813,7 @@ class Detector(object):
 
         return Fex(
             out,
-            au_columns=self["au_presence_columns"],
+            au_columns=self.info["au_presence_columns"],
             emotion_columns=FEAT_EMOTION_COLUMNS,
             facebox_columns=FEAT_FACEBOX_COLUMNS,
             landmark_columns=openface_2d_landmark_columns,
