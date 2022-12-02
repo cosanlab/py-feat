@@ -17,6 +17,7 @@ from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
 from torchvision.transforms import Compose
 from torchvision import transforms
 from torchvision.io import read_image, read_video
@@ -625,7 +626,7 @@ class Fex(DataFrame):
         res_df = pd.DataFrame(res, columns=my.columns)
         return b_df, se_df, t_df, p_df, df_df, res_df
 
-    def ttest_1samp(self, popmean=0, threshold_dict=None):
+    def ttest_1samp(self, popmean=0):
         """Conducts 1 sample ttest.
 
         Uses scipy.stats.ttest_1samp to conduct 1 sample ttest
@@ -639,25 +640,41 @@ class Fex(DataFrame):
         """
         return ttest_1samp(self, popmean)
 
-    def ttest_ind(self, col, sessions, threshold_dict=None):
+    def ttest_ind(self, col, sessions=None):
         """Conducts 2 sample ttest.
 
         Uses scipy.stats.ttest_ind to conduct 2 sample ttest on column col between sessions.
 
         Args:
             col (str): Column names to compare in a t-test between sessions
-            session_names (tuple): tuple of session names stored in Fex.sessions.
-            threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]
+            session (array-like): session name to query Fex.sessions, otherwise uses the
+            unique values in Fex.sessions.
 
         Returns:
             t, p: t-statistics and p-values
         """
+
+        if sessions is None:
+            sessions = pd.Series(self.sessions).unique()
+
+        if len(sessions) != 2:
+            raise ValueError(
+                f"There must be exactly 2 session types to perform an independent t-test but {len(sessions)} were found."
+            )
+
         sess1, sess2 = sessions
-        a = self[self.sessions == sess1][col]
-        b = self[self.sessions == sess2][col]
+        a_mask = self.sessions == sess1
+        a_mask = a_mask.values if isinstance(self.sessions, pd.Series) else a_mask
+        b_mask = self.sessions == sess2
+        b_mask = b_mask.values if isinstance(self.sessions, pd.Series) else b_mask
+        a = self.loc[a_mask, col]
+        b = self.loc[b_mask, col]
+
         return ttest_ind(a, b)
 
-    def predict(self, X, y, model=LinearRegression, *args, **kwargs):
+    def predict(
+        self, X, y, model=LinearRegression, cv_kwargs={"cv": 5}, *args, **kwargs
+    ):
         """Predicts y from X using a sklearn model.
 
         Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.
@@ -681,8 +698,9 @@ class Fex(DataFrame):
         else:
             my = y
         clf = model(*args, **kwargs)
-        clf.fit(mX, my)
-        return clf
+        scores = cross_val_score(clf, mX, my, **cv_kwargs)
+        _ = clf.fit(mX, my)
+        return clf, scores
 
     def downsample(self, target, **kwargs):
         """Downsample Fex columns. Relies on nltools.stats.downsample,
