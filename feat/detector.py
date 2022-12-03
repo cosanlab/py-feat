@@ -811,6 +811,7 @@ class Detector(object):
         out = pd.concat(out)
         out.reset_index(drop=True, inplace=True)
 
+        # TODO: Add in support for gaze_columns
         return Fex(
             out,
             au_columns=self.info["au_presence_columns"],

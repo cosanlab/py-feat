@@ -41,7 +41,25 @@ def test_fex(imotions_data):
     assert df.iloc[0].design.shape == (4,)
 
     sessions = np.array([[x] * 10 for x in range(1 + int(len(df) / 10))]).flatten()[:-1]
-    dat = Fex(df, sampling_freq=30, sessions=sessions)
+    dat = Fex(
+        df,
+        sampling_freq=30,
+        sessions=sessions,
+        emotion_columns=[
+            "Joy",
+            "Anger",
+            "Surprise",
+            "Fear",
+            "Contempt",
+            "Disgust",
+            "Sadness",
+            "Confusion",
+            "Frustration",
+            "Neutral",
+            "Positive",
+            "Negative",
+        ],
+    )
     dat = dat[
         [
             "Joy",
