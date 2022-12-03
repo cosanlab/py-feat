@@ -1,5 +1,5 @@
 """
-Py-FEAT Data classes. 
+Py-FEAT Data classes.
 """
 
 import warnings
@@ -607,6 +607,8 @@ class Fex(DataFrame):
         """
         if type(X) == list:
             mX = self[X]
+        elif isinstance(X, str) and X == "sessions":
+            mX = self.sessions
         else:
             mX = X
 
@@ -697,7 +699,10 @@ class Fex(DataFrame):
             my = self[y]
         else:
             my = y
-        clf = model(*args, **kwargs)
+        if isinstance(model, type):
+            clf = model(*args, **kwargs)
+        else:
+            clf = model
         scores = cross_val_score(clf, mX, my, **cv_kwargs)
         _ = clf.fit(mX, my)
         return clf, scores
@@ -724,7 +729,6 @@ class Fex(DataFrame):
             ds_features = self.features
         df_ds.features = ds_features
         return df_ds
-        # return self.__class__(df_ds, sampling_freq=target, features=ds_features)
 
     def isc(self, col, index="frame", columns="input", method="pearson"):
         """[summary]
@@ -738,9 +742,9 @@ class Fex(DataFrame):
         Returns:
             DataFrame: Correlation matrix with index as colmns
         """
-        if index == None:
+        if index is None:
             index = "frame"
-        if columns == None:
+        if columns is None:
             columns = "input"
         mat = pd.pivot_table(self, index=index, columns=columns, values=col).corr(
             method=method
@@ -892,7 +896,6 @@ class Fex(DataFrame):
                 else:
                     out = out.append(v - baseline_values, session_id=k)
         return out.__finalize__(self)
-        # return self.__class__(out, sampling_freq=self.sampling_freq, features=self.features, sessions=self.sessions)
 
     def clean(
         self,
@@ -1038,19 +1041,6 @@ class Fex(DataFrame):
         feats = feats.__finalize__(self)
         if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            attr_list = feats.__getattr__(attr_name)
-            if attr_list:
-                new_attr = [prefix + attr for attr in attr_list]
-                feats.__setattr__(attr_name, new_attr)
         return feats
 
     def extract_min(self, ignore_sessions=False, *args, **kwargs):
@@ -1073,21 +1063,8 @@ class Fex(DataFrame):
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            attr_list = feats.__getattr__(attr_name)
-            if attr_list:
-                new_attr = [prefix + attr for attr in attr_list]
-                feats.__setattr__(attr_name, new_attr)
         return feats
 
     def extract_max(self, ignore_sessions=False, *args, **kwargs):
@@ -1110,21 +1087,8 @@ class Fex(DataFrame):
         feats = self.__class__(feats)
         feats.columns = prefix + feats.columns
         feats = feats.__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            attr_list = feats.__getattr__(attr_name)
-            if attr_list:
-                new_attr = [prefix + attr for attr in attr_list]
-                feats.__setattr__(attr_name, new_attr)
         return feats
 
     def extract_summary(
@@ -1142,49 +1106,17 @@ class Fex(DataFrame):
             fex: (Fex)
         """
         out = self.__class__().__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             out.sessions = np.unique(self.sessions)
         if mean:
             new = self.extract_mean(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
-            # for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
-            #     if new.__getattr__(attr_name):
-            #         new_attr = new.__getattr__(attr_name)
-            #         out.__setattr__(attr_name, new_attr)
         if max:
             new = self.extract_max(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
-            # for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
-            #     if out.__getattr__(attr_name) and new.__getattr__(attr_name):
-            #         new_attr = out.__getattr__(attr_name) + new.__getattr__(attr_name)
-            #         out.__setattr__(attr_name, new_attr)
         if min:
             new = self.extract_min(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            if self.__getattr__(attr_name):
-                new_attr = []
-                if mean:
-                    new_attr.extend(
-                        ["mean_" + attr for attr in self.__getattr__(attr_name)]
-                    )
-                if max:
-                    new_attr.extend(
-                        ["max_" + attr for attr in self.__getattr__(attr_name)]
-                    )
-                if min:
-                    new_attr.extend(
-                        ["min_" + attr for attr in self.__getattr__(attr_name)]
-                    )
-                out.__setattr__(attr_name, new_attr)
         return out
 
     def extract_wavelet(self, freq, num_cyc=3, mode="complex", ignore_sessions=False):
@@ -1347,7 +1279,7 @@ class Fex(DataFrame):
             au_lookup = self.au_model
             try:
                 model = load_viz_model(f"{au_lookup}_aus_to_landmarks")
-            except ValueError as e:
+            except ValueError as _:
                 raise NotImplementedError(
                     f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'xgb') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
                 )
