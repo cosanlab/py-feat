@@ -8,6 +8,7 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="nilearn")
 import os
 from typing import Iterable
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
@@ -91,7 +92,7 @@ class FexSeries(Series):
         "facebox_columns",
         "landmark_columns",
         "facepose_columns",
-        "gaze_columns",
+        "gaze_columns",  # TODO: Not currently supported
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -141,7 +142,7 @@ class FexSeries(Series):
         return self[self.emotion_columns]
 
     @property
-    def landmark(self):
+    def landmarks(self):
         """Returns the landmark data
 
         Returns:
@@ -149,6 +150,44 @@ class FexSeries(Series):
         """
         return self[self.landmark_columns]
 
+    # DEPRECATE
+    @property
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns:
+            DataFrame: landmark data
+        """
+        warnings.warn(
+            "Fex.landmark has now been renamed to Fex.landmarks", DeprecationWarning
+        )
+        return self[self.landmark_columns]
+
+    @property
+    def poses(self):
+        """Returns the facepose data
+
+        Returns:
+            DataFrame: facepose data
+        """
+
+        return self[self.facepose_columns]
+
+    # DEPRECATE
+    @property
+    def faceposes(self):
+        """Returns the facepose data
+
+        Returns:
+            DataFrame: facepose data
+        """
+
+        warnings.warn(
+            "Fex.faceposes has now been renamed to Fex.poses", DeprecationWarning
+        )
+        return self[self.facepose_columns]
+
+    # DEPRECATE
     @property
     def facepose(self):
         """Returns the facepose data
@@ -156,8 +195,22 @@ class FexSeries(Series):
         Returns:
             DataFrame: facepose data
         """
+
+        warnings.warn(
+            "Fex.facepose has now been renamed to Fex.poses", DeprecationWarning
+        )
         return self[self.facepose_columns]
 
+    @property
+    def inputs(self):
+        """Returns input column as string
+
+        Returns:
+            string: path to input image
+        """
+        return self["input"]
+
+    # DEPRECATE
     @property
     def input(self):
         """Returns input column as string
@@ -165,6 +218,9 @@ class FexSeries(Series):
         Returns:
             string: path to input image
         """
+        warnings.warn(
+            "Fex.input has now been renamed to Fex.inputs", DeprecationWarning
+        )
         return self["input"]
 
     @property
@@ -248,7 +304,7 @@ class Fex(DataFrame):
         "facebox_columns",
         "landmark_columns",
         "facepose_columns",
-        "gaze_columns",
+        "gaze_columns",  # TODO: Not currently supported
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -473,6 +529,45 @@ class Fex(DataFrame):
         for name in self._metadata:
             attr_list.append(name + ": " + str(getattr(self, name, None)) + "\n")
         print(f"{self.__class__}\n" + "".join(attr_list))
+
+    def _update_extracted_colnames(self, prefix=None, mode="replace"):
+
+        cols2update = [
+            "au_columns",
+            "emotion_columns",
+            "facebox_columns",
+            "landmark_columns",
+            "facepose_columns",
+            # "gaze_columns", # doesn't currently exist
+            "time_columns",
+        ]
+
+        # Existing columns to handle different __init__s
+        cols2update = list(filter(lambda col: col in self.columns, cols2update))
+        original_vals = [getattr(self, c) for c in cols2update]
+
+        # Ignore prefix and remove any existing
+        if mode == "reset":
+            new_vals = [
+                list(map(lambda name: "".join(name.split("_")[1:]), names))
+                for names in original_vals
+            ]
+            _ = [setattr(self, col, val) for col, val in zip(cols2update, new_vals)]
+            return
+
+        if not isinstance(prefix, list):
+            prefix = [prefix]
+
+        for i, p in enumerate(prefix):
+            current_vals = [getattr(self, c) for c in cols2update]
+            new_vals = [
+                list(map(lambda name: f"{p}_{name}", names)) for names in original_vals
+            ]
+            if i == 0:
+                update = new_vals
+            else:
+                update = [current + new for current, new in zip(current_vals, new_vals)]
+            _ = [setattr(self, col, val) for col, val in zip(cols2update, update)]
 
     ###   Class Methods   ###
     def read_feat(self, filename=None, *args, **kwargs):
@@ -1019,7 +1114,7 @@ class Fex(DataFrame):
             ).T
         return out
 
-    def extract_mean(self, ignore_sessions=False, *args, **kwargs):
+    def extract_mean(self, ignore_sessions=False):
         """Extract mean of each feature
 
         Args:
@@ -1028,23 +1123,24 @@ class Fex(DataFrame):
         Returns:
             Fex: mean values for each feature
         """
-        prefix = "mean_"
+
+        prefix = "mean"
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.mean()).T
+            feats = pd.DataFrame(self.mean(numeric_only=True)).T
         else:
             feats = []
             for k, v in self.itersessions():
-                # TODO: Update to use pd.concat
-                feats.append(pd.Series(v.mean(), name=k))
+                feats.append(pd.Series(v.mean(numeric_only=True), name=k))
             feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
-        feats.columns = prefix + feats.columns
+        feats.columns = f"{prefix}_" + feats.columns
         feats = feats.__finalize__(self)
         if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
+        feats._update_extracted_colnames(prefix)
         return feats
 
-    def extract_min(self, ignore_sessions=False, *args, **kwargs):
+    def extract_min(self, ignore_sessions=False):
         """Extract minimum of each feature
 
         Args:
@@ -1053,22 +1149,24 @@ class Fex(DataFrame):
         Returns:
             Fex: (Fex) minimum values for each feature
         """
-        prefix = "min_"
+
+        prefix = "min"
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.min()).T
+            feats = pd.DataFrame(self.min(numeric_only=True)).T
         else:
             feats = []
             for k, v in self.itersessions():
-                feats.append(pd.Series(v.min(), name=k))
+                feats.append(pd.Series(v.min(numeric_only=True), name=k))
             feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
-        feats.columns = prefix + feats.columns
+        feats.columns = f"{prefix}_" + feats.columns
         feats = feats.__finalize__(self)
         if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
+        feats._update_extracted_colnames(prefix)
         return feats
 
-    def extract_max(self, ignore_sessions=False, *args, **kwargs):
+    def extract_max(self, ignore_sessions=False):
         """Extract maximum of each feature
 
         Args:
@@ -1077,19 +1175,20 @@ class Fex(DataFrame):
         Returns:
             fex: (Fex) maximum values for each feature
         """
-        prefix = "max_"
+        prefix = "max"
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.max()).T
+            feats = pd.DataFrame(self.max(numeric_only=True)).T
         else:
             feats = []
             for k, v in self.itersessions():
-                feats.append(pd.Series(v.max(), name=k))
+                feats.append(pd.Series(v.max(numeric_only=True), name=k))
             feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
-        feats.columns = prefix + feats.columns
+        feats.columns = f"{prefix}_" + feats.columns
         feats = feats.__finalize__(self)
         if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
+        feats._update_extracted_colnames(prefix)
         return feats
 
     def extract_summary(
@@ -1106,18 +1205,32 @@ class Fex(DataFrame):
         Returns:
             fex: (Fex)
         """
+
+        if mean is max is min is False:
+            raise ValueError("At least one of min, max, mean must be True")
+
         out = self.__class__().__finalize__(self)
         if ignore_sessions is False:
             out.sessions = np.unique(self.sessions)
+
+        col_updates = []
+
         if mean:
             new = self.extract_mean(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
+            col_updates.append("mean")
         if max:
             new = self.extract_max(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
+            col_updates.append("max")
         if min:
             new = self.extract_min(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
+            col_updates.append("min")
+
+        out._update_extracted_colnames(mode="reset")
+        out._update_extracted_colnames(col_updates)
+
         return out
 
     def extract_wavelet(self, freq, num_cyc=3, mode="complex", ignore_sessions=False):
@@ -1492,9 +1605,8 @@ class Fex(DataFrame):
     # interaction with how pandas sub-classing works?? - ejolly
     def update_sessions(self, new_sessions):
         """
-        Validate then update a Fex dataframe's .sessions attribute. `new_sessions`
-        should be a dictionary mapping old to new names or an iterable with the same
-        number of rows as the Fex dataframe
+        Returns a copy of the Fex dataframe with a new sessions attribute after
+        validation. `new_sessions` should be a dictionary mapping old to new names or an iterable with the same number of rows as the Fex dataframe
 
         Args:
             new_sessions (dict, Iterable): map or list of new session names
@@ -1503,26 +1615,28 @@ class Fex(DataFrame):
             Fex: self
         """
 
-        if isinstance(new_sessions, dict):
-            if not isinstance(self.sessions, pd.Series):
-                self.sessions = pd.Series(self.sessions)
+        out = deepcopy(self)
 
-            self.sessions = self.sessions.map(new_sessions)
+        if isinstance(new_sessions, dict):
+            if not isinstance(out.sessions, pd.Series):
+                out.sessions = pd.Series(out.sessions)
+
+            out.sessions = out.sessions.map(new_sessions)
 
         elif isinstance(new_sessions, Iterable):
-            if len(new_sessions) != self.shape[0]:
+            if len(new_sessions) != out.shape[0]:
                 raise ValueError(
-                    f"When new_sessions are not a dictionary then they must but an iterable with length == the number of rows of this Fex dataframe {self.shape[0]}, but they have length {len(new_sessions)}."
+                    f"When new_sessions are not a dictionary then they must but an iterable with length == the number of rows of this Fex dataframe {out.shape[0]}, but they have length {len(new_sessions)}."
                 )
 
-            self.sessions = new_sessions
+            out.sessions = new_sessions
 
         else:
             raise TypeError(
-                f"new_sessions must be either be a dictionary mapping between old and new session values or an iterable with the same number of rows as this Fex dataframe {self.shape[0]}, but was type: {type(new_sessions)}"
+                f"new_sessions must be either be a dictionary mapping between old and new session values or an iterable with the same number of rows as this Fex dataframe {out.shape[0]}, but was type: {type(new_sessions)}"
             )
 
-        return self
+        return out
 
 
 class Fextractor:
