@@ -180,10 +180,10 @@ def test_fex_old(imotions_data):
     assert len(out) == len(np.unique(dat2.sessions))
     assert np.array_equal(out.sessions, np.unique(dat2.sessions))
     assert out.sampling_freq == dat2.sampling_freq
-    assert dat2.shape[1] * 3 == out.shape[1]
+    assert dat2.shape[1] * 5 == out.shape[1]
     out = dat2.extract_summary(min=True, max=True, mean=True, ignore_sessions=True)
     assert len(out) == 1
-    assert dat2.shape[1] * 3 == out.shape[1]
+    assert dat2.shape[1] * 5 == out.shape[1]
 
     # Test clean
     assert isinstance(dat.clean(), Fex)
@@ -273,8 +273,8 @@ def test_fextractor(imotions_data):
     # Test summary method
     extractor = Fextractor()
     dat2 = dat.loc[:, ["Positive", "Negative"]].interpolate()
-    extractor.summary(fex_object=dat2, min=True, max=True, mean=True)
-    assert extractor.merge(out_format="wide").shape[1] == dat2.shape[1] * 3 + 1
+    extractor.summary(fex_object=dat2)
+    assert extractor.merge(out_format="wide").shape[1] == dat2.shape[1] * 5 + 1
 
     # Test wavelet extraction
     extractor = Fextractor()
@@ -390,7 +390,7 @@ def test_stats():
     assert b.shape == (2, 17)
     assert res.mean().mean() < 1
 
-    clf, scores = openface.predict(X=["AU02_c"], y="AU04_c")
+    clf, scores = openface.predict(X=["AU02_c"], y=["AU04_c"])
     assert clf.coef_ < 0
 
     clf, scores = openface.predict(X=openface[["AU02_c"]], y=openface["AU04_c"])

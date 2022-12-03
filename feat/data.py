@@ -175,20 +175,6 @@ class FexSeries(Series):
 
     # DEPRECATE
     @property
-    def faceposes(self):
-        """Returns the facepose data
-
-        Returns:
-            DataFrame: facepose data
-        """
-
-        warnings.warn(
-            "Fex.faceposes has now been renamed to Fex.poses", DeprecationWarning
-        )
-        return self[self.facepose_columns]
-
-    # DEPRECATE
-    @property
     def facepose(self):
         """Returns the facepose data
 
@@ -224,7 +210,7 @@ class FexSeries(Series):
         return self["input"]
 
     @property
-    def landmark_x(self):
+    def landmarks_x(self):
         """Returns the x landmarks.
 
         Returns:
@@ -233,8 +219,26 @@ class FexSeries(Series):
         x_cols = [col for col in self.landmark_columns if "x" in col]
         return self[x_cols]
 
+    # DEPRECATE
     @property
-    def landmark_y(self):
+    def landmark_x(self):
+        """Returns the x landmarks.
+
+        Returns:
+            DataFrame: x landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_x has been renamed to Fex.landmarks_x", DeprecationWarning
+            )
+
+        x_cols = [col for col in self.landmark_columns if "x" in col]
+        return self[x_cols]
+
+    @property
+    def landmarks_y(self):
         """Returns the y landmarks.
 
         Returns:
@@ -243,6 +247,34 @@ class FexSeries(Series):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    # DEPRECATE
+    @property
+    def landmark_y(self):
+        """Returns the y landmarks.
+
+        Returns:
+            DataFrame: y landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_y has been renamed to Fex.landmarks_y", DeprecationWarning
+            )
+
+        y_cols = [col for col in self.landmark_columns if "y" in col]
+        return self[y_cols]
+
+    @property
+    def faceboxes(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """
+        return self[self.facebox_columns]
+
+    # DEPRECATE
     @property
     def facebox(self):
         """Returns the facebox data
@@ -250,6 +282,13 @@ class FexSeries(Series):
         Returns:
             DataFrame: facebox data
         """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.facebox has been renamed to Fex.faceboxes", DeprecationWarning
+            )
+
         return self[self.facebox_columns]
 
     @property
@@ -420,7 +459,7 @@ class Fex(DataFrame):
         return self[self.emotion_columns]
 
     @property
-    def landmark(self):
+    def landmarks(self):
         """Returns the landmark data
 
         Returns landmark data using the columns set in fex.landmark_columns.
@@ -431,7 +470,21 @@ class Fex(DataFrame):
         return self[self.landmark_columns]
 
     @property
-    def facepose(self):
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns landmark data using the columns set in fex.landmark_columns.
+
+        Returns:
+            DataFrame: landmark data
+        """
+        warnings.warn(
+            "Fex.landmark has now been renamed to Fex.landmarks", DeprecationWarning
+        )
+        return self[self.landmark_columns]
+
+    @property
+    def poses(self):
         """Returns the facepose data using the columns set in fex.facepose_columns
 
         Returns:
@@ -439,8 +492,25 @@ class Fex(DataFrame):
         """
         return self[self.facepose_columns]
 
+    # DEPRECATE
     @property
-    def input(self):
+    def facepose(self):
+        """Returns the facepose data using the columns set in fex.facepose_columns
+
+        Returns:
+            DataFrame: facepose data
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.facepose has now been renamed to Fex.poses", DeprecationWarning
+            )
+
+        return self[self.facepose_columns]
+
+    @property
+    def inputs(self):
         """Returns input column as string
 
         Returns input data in the "input" column.
@@ -450,11 +520,28 @@ class Fex(DataFrame):
         """
         return self["input"]
 
+    # DEPRECATE
     @property
-    def landmark_x(self):
-        """Returns the x landmarks.
+    def input(self):
+        """Returns input column as string
 
-        Returns the x-coordinates for facial landmarks looking for "x" in fex.landmark_columns.
+        Returns input data in the "input" column.
+
+        Returns:
+            string: path to input image
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.input has now been renamed to Fex.inputs", DeprecationWarning
+            )
+
+        return self["input"]
+
+    @property
+    def landmarks_x(self):
+        """Returns the x landmarks.
 
         Returns:
             DataFrame: x landmarks.
@@ -462,11 +549,26 @@ class Fex(DataFrame):
         x_cols = [col for col in self.landmark_columns if "x" in col]
         return self[x_cols]
 
+    # DEPRECATE
     @property
-    def landmark_y(self):
-        """Returns the y landmarks.
+    def landmark_x(self):
+        """Returns the x landmarks.
 
-        Returns the y-coordinates for facial landmarks looking for "y" in fex.landmark_columns.
+        Returns:
+            DataFrame: x landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_x has been renamed to Fex.landmarks_x", DeprecationWarning
+            )
+        x_cols = [col for col in self.landmark_columns if "x" in col]
+        return self[x_cols]
+
+    @property
+    def landmarks_y(self):
+        """Returns the y landmarks.
 
         Returns:
             DataFrame: y landmarks.
@@ -474,15 +576,47 @@ class Fex(DataFrame):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    # DEPRECATE
     @property
-    def facebox(self):
-        """Returns the facebox data
+    def landmark_y(self):
+        """Returns the y landmarks.
 
-        Returns the facebox data using fex.facebox_columns.
+        Returns:
+            DataFrame: y landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_y has been renamed to Fex.landmarks_y", DeprecationWarning
+            )
+
+        y_cols = [col for col in self.landmark_columns if "y" in col]
+        return self[y_cols]
+
+    @property
+    def faceboxes(self):
+        """Returns the facebox data
 
         Returns:
             DataFrame: facebox data
         """
+        return self[self.facebox_columns]
+
+    # DEPRECATE
+    @property
+    def facebox(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.facebox has been renamed to Fex.faceboxes", DeprecationWarning
+            )
 
         return self[self.facebox_columns]
 
@@ -570,6 +704,54 @@ class Fex(DataFrame):
             else:
                 update = [current + new for current, new in zip(current_vals, new_vals)]
             _ = [setattr(self, col, val) for col, val in zip(cols2update, update)]
+
+    def _parse_features_labels(self, X, y):
+
+        feature_groups = [
+            "sessions",
+            "emotions",
+            "aus",
+            "poses",
+            "landmarks",
+            "faceboxes",
+        ]
+
+        # String attribute access
+        if isinstance(X, str) and any(
+            map(lambda feature: feature in X, feature_groups)
+        ):
+            X = X.split(",") if "," in X else [X]
+            mX = []
+            for x in X:
+                mX.append(getattr(self, x))
+
+            mX = pd.concat(mX, axis=1)
+            if X == ["sessions"]:
+                mX.columns = X
+
+        elif isinstance(X, list):
+            mX = self[X]
+        else:
+            mX = X
+
+        if isinstance(y, str) and any(
+            map(lambda feature: feature in y, feature_groups)
+        ):
+            y = y.split(",") if "," in y else [y]
+            my = []
+            for yy in y:
+                my.append(getattr(self, yy))
+
+            my = pd.concat(my, axis=1)
+            if y == ["sessions"]:
+                my.columns = y
+
+        elif isinstance(y, list):
+            my = self[y]
+        else:
+            my = y
+
+        return mX, my
 
     ###   Class Methods   ###
     def read_feat(self, filename=None, *args, **kwargs):
@@ -701,28 +883,20 @@ class Fex(DataFrame):
             fit_intercept (bool): Whether to add intercept before fitting. Defaults to True.
 
         Returns:
-            betas, t-stats, p-values, df, residuals
+            Dataframe of betas, ses, t-stats, p-values, df, residuals
         """
-        if type(X) == list:
-            mX = self[X]
-        elif isinstance(X, str) and X == "sessions":
-            mX = self.sessions
-        else:
-            mX = X
+
+        mX, my = self._parse_features_labels(X, y)
 
         if fit_intercept:
             mX["intercept"] = 1
 
-        if type(y) == str:
-            my = self[y]
-        else:
-            my = y
-        b, se, t, p, df, res = regress(mX, my, *args, **kwargs)
+        b, se, t, p, df, res = regress(mX.to_numpy(), my.to_numpy(), *args, **kwargs)
         b_df = pd.DataFrame(b, index=mX.columns, columns=my.columns)
         se_df = pd.DataFrame(se, index=mX.columns, columns=my.columns)
         t_df = pd.DataFrame(t, index=mX.columns, columns=my.columns)
         p_df = pd.DataFrame(p, index=mX.columns, columns=my.columns)
-        df_df = pd.DataFrame([df], index=[0], columns=my.columns)
+        df_df = pd.DataFrame(np.tile(df, (2, 1)), index=mX.columns, columns=my.columns)
         res_df = pd.DataFrame(res, columns=my.columns)
         return b_df, se_df, t_df, p_df, df_df, res_df
 
@@ -788,18 +962,14 @@ class Fex(DataFrame):
         Returns:
             model: Fit model instance.
         """
-        if type(X) == list:
-            mX = self[X]
-        else:
-            mX = X
 
-        if type(y) == str:
-            my = self[y]
-        else:
-            my = y
+        mX, my = self._parse_features_labels(X, y)
+
+        # user passes an unintialized class, e.g. LogisticRegression
         if isinstance(model, type):
             clf = model(*args, **kwargs)
         else:
+            # user passes an initialized estimator or pipeline, e.g. LogisticRegression()
             clf = model
         scores = cross_val_score(clf, mX, my, **cv_kwargs)
         _ = clf.fit(mX, my)
@@ -1142,6 +1312,58 @@ class Fex(DataFrame):
         feats._update_extracted_colnames(prefix)
         return feats
 
+    def extract_std(self, ignore_sessions=False):
+        """Extract std of each feature
+
+        Args:
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
+        Returns:
+            Fex: mean values for each feature
+        """
+
+        prefix = "std"
+        if self.sessions is None or ignore_sessions:
+            feats = pd.DataFrame(self.std(numeric_only=True)).T
+        else:
+            feats = []
+            for k, v in self.itersessions():
+                feats.append(pd.Series(v.std(numeric_only=True), name=k))
+            feats = pd.concat(feats, axis=1).T
+        feats = self.__class__(feats)
+        feats.columns = f"{prefix}_" + feats.columns
+        feats = feats.__finalize__(self)
+        if ignore_sessions is False:
+            feats.sessions = np.unique(self.sessions)
+        feats._update_extracted_colnames(prefix)
+        return feats
+
+    def extract_sem(self, ignore_sessions=False):
+        """Extract std of each feature
+
+        Args:
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
+        Returns:
+            Fex: mean values for each feature
+        """
+
+        prefix = "sem"
+        if self.sessions is None or ignore_sessions:
+            feats = pd.DataFrame(self.sem(numeric_only=True)).T
+        else:
+            feats = []
+            for k, v in self.itersessions():
+                feats.append(pd.Series(v.sem(numeric_only=True), name=k))
+            feats = pd.concat(feats, axis=1).T
+        feats = self.__class__(feats)
+        feats.columns = f"{prefix}_" + feats.columns
+        feats = feats.__finalize__(self)
+        if ignore_sessions is False:
+            feats.sessions = np.unique(self.sessions)
+        feats._update_extracted_colnames(prefix)
+        return feats
+
     def extract_min(self, ignore_sessions=False):
         """Extract minimum of each feature
 
@@ -1194,12 +1416,22 @@ class Fex(DataFrame):
         return feats
 
     def extract_summary(
-        self, mean=True, max=True, min=True, ignore_sessions=False, *args, **kwargs
+        self,
+        mean=True,
+        std=True,
+        sem=True,
+        max=True,
+        min=True,
+        ignore_sessions=False,
+        *args,
+        **kwargs,
     ):
         """Extract summary of multiple features
 
         Args:
             mean: (bool) extract mean of features
+            std: (bool) extract std of features
+            sem: (bool) extract sem of features
             max: (bool) extract max of features
             min: (bool) extract min of features
             ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
@@ -1221,6 +1453,14 @@ class Fex(DataFrame):
             new = self.extract_mean(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
             col_updates.append("mean")
+        if sem:
+            new = self.extract_sem(ignore_sessions=ignore_sessions, *args, **kwargs)
+            out = out.append(new, axis=1)
+            col_updates.append("sem")
+        if std:
+            new = self.extract_std(ignore_sessions=ignore_sessions, *args, **kwargs)
+            out = out.append(new, axis=1)
+            col_updates.append("std")
         if max:
             new = self.extract_max(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
@@ -1701,9 +1941,11 @@ class Fextractor:
     def summary(
         self,
         fex_object,
-        mean=False,
-        max=False,
-        min=False,
+        mean=True,
+        std=True,
+        sem=True,
+        max=True,
+        min=True,
         ignore_sessions=False,
         *args,
         **kwargs,
@@ -1721,7 +1963,9 @@ class Fextractor:
             fex: (Fex)
         """
         self.extracted_features.append(
-            fex_object.extract_summary(mean, max, min, ignore_sessions, *args, **kwargs)
+            fex_object.extract_summary(
+                mean, std, sem, max, min, ignore_sessions, *args, **kwargs
+            )
         )
 
     def wavelet(
