@@ -7,6 +7,7 @@ import warnings
 # Suppress nilearn warnings that come from importing nltools
 warnings.filterwarnings("ignore", category=FutureWarning, module="nilearn")
 import os
+from typing import Iterable
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
@@ -1485,6 +1486,43 @@ class Fex(DataFrame):
             f.tight_layout()
             all_figs.append(f)
         return all_figs
+
+    # TODO: turn this into a property using a @property and @sessions.settr decorators
+    # Tried it but was running into maximum recursion depth errors. Maybe some
+    # interaction with how pandas sub-classing works?? - ejolly
+    def update_sessions(self, new_sessions):
+        """
+        Validate then update a Fex dataframe's .sessions attribute. `new_sessions`
+        should be a dictionary mapping old to new names or an iterable with the same
+        number of rows as the Fex dataframe
+
+        Args:
+            new_sessions (dict, Iterable): map or list of new session names
+
+        Returns:
+            Fex: self
+        """
+
+        if isinstance(new_sessions, dict):
+            if not isinstance(self.sessions, pd.Series):
+                self.sessions = pd.Series(self.sessions)
+
+            self.sessions = self.sessions.map(new_sessions)
+
+        elif isinstance(new_sessions, Iterable):
+            if len(new_sessions) != self.shape[0]:
+                raise ValueError(
+                    f"When new_sessions are not a dictionary then they must but an iterable with length == the number of rows of this Fex dataframe {self.shape[0]}, but they have length {len(new_sessions)}."
+                )
+
+            self.sessions = new_sessions
+
+        else:
+            raise TypeError(
+                f"new_sessions must be either be a dictionary mapping between old and new session values or an iterable with the same number of rows as this Fex dataframe {self.shape[0]}, but was type: {type(new_sessions)}"
+            )
+
+        return self
 
 
 class Fextractor:
