@@ -543,7 +543,9 @@ class Fex(DataFrame):
         ]
 
         # Existing columns to handle different __init__s
-        cols2update = list(filter(lambda col: col in self.columns, cols2update))
+        cols2update = list(
+            filter(lambda col: getattr(self, col) is not None, cols2update)
+        )
         original_vals = [getattr(self, c) for c in cols2update]
 
         # Ignore prefix and remove any existing

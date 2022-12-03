@@ -4,7 +4,7 @@ from pandas import DataFrame
 import numpy as np
 import os
 from feat.data import Fex, Fextractor
-from feat.utils.io import read_openface, get_test_data_path
+from feat.utils.io import read_openface, get_test_data_path, read_feat
 from nltools.data import Adjacency
 
 
@@ -16,7 +16,34 @@ def test_info(capsys):
     assert importantstring in captured.out
 
 
-def test_fex(imotions_data):
+def test_fex_new(data_path):
+    fex = pd.concat(
+        map(lambda f: read_feat(os.path.join(data_path, f)), ["001.csv", "002.csv"])
+    )
+    assert fex.shape == (68, 173)
+
+    assert "AU01" in fex.au_columns
+
+    # Update sessions (grouping factor) to video ids to group rows (frames) by video
+    by_video = fex.update_sessions(fex["input"])
+    # Compute the mean per video
+    video_means = by_video.extract_mean()
+
+    # one row per video
+    assert video_means.shape == (2, 172)
+
+    # we rename columns when using extract methods
+    # test that attribute renames have also propagated correctly
+    hasprefix = lambda col: col.startswith("mean")
+    assert all(map(hasprefix, video_means.au_columns))
+    assert all(map(hasprefix, video_means.emotion_columns))
+    assert all(map(hasprefix, video_means.facebox_columns))
+    assert all(map(hasprefix, video_means.landmark_columns))
+    assert all(map(hasprefix, video_means.facepose_columns))
+    assert all(map(hasprefix, video_means.time_columns))
+
+
+def test_fex_old(imotions_data):
 
     # Dropped support in >= 0.4.0
     with pytest.raises(Exception):
