@@ -946,6 +946,7 @@ def plot_face(
         gaze = None
 
     title = kwargs.pop("title", None)
+    title_kwargs = kwargs.pop("title_kwargs", dict(wrap=True, fontsize=14, loc="left"))
     ax = draw_lineface(
         currx,
         curry,
@@ -970,12 +971,9 @@ def plot_face(
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
-        _ = ax.set_title(
-            "\n".join(wrap(title)),
-            loc="left",
-            wrap=True,
-            fontsize=14,
-        )
+        if title_kwargs["wrap"]:
+            title = "\n".join(wrap(title))
+        _ = ax.set_title(title, **title_kwargs)
     return ax
 
 
