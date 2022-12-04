@@ -100,6 +100,7 @@ def read_feat(fexfile):
         landmark_columns=openface_2d_landmark_columns,
         facebox_columns=FEAT_FACEBOX_COLUMNS,
         time_columns=FEAT_TIME_COLUMNS,
+        facepose_columns=["Pitch", "Roll", "Yaw"],
         detector="Feat",
     )
     fex["input"] = fexfile

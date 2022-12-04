@@ -134,7 +134,12 @@ class AnchorGenerator(nn.Module):
                 torch.arange(0, grid_height, dtype=torch.float32, device=device)
                 * stride_height
             )
-            shift_y, shift_x = torch.meshgrid(shifts_y, shifts_x)
+            # See UserWarning: torch.meshgrid: in an upcoming release, it will be
+            # required to pass the indexing argument. (Triggered internally at
+            # /Users/runner/work/pytorch/pytorch/pytorch/aten/src/ATen/native/TensorShape.cpp:3191.).
+            # And the recommended fix here:
+            # https://github.com/pytorch/pytorch/issues/50276#issuecomment-1011867174
+            shift_y, shift_x = torch.meshgrid(shifts_y, shifts_x, indexing="ij")
             shift_x = shift_x.reshape(-1)
             shift_y = shift_y.reshape(-1)
             shifts = torch.stack((shift_x, shift_y, shift_x, shift_y), dim=1)
