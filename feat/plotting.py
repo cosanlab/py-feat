@@ -1155,7 +1155,8 @@ def animate_face(
 
     Args:
         AU (str/int, optional): action unit id (e.g. 12 or 'AU12'). Defaults to None.
-        start (float/np.ndarray, optional): AU intensity to start at. Defaults to None.
+        start (float/np.ndarray, optional): AU intensity to start at. Defaults to None
+        which a neutral face with all AUs = 0.
         end (float/np.ndarray, optional): AU intensity(s) to end at. We don't recommend
         going beyond 3. Defaults to None.
         save (str, optional): file to save animation to. Defaults to None.
@@ -1187,7 +1188,7 @@ def animate_face(
     num_frames = int(np.ceil(fps * duration))
     interp_func = kwargs.pop("interp_func", None)
 
-    if start == "neutral":
+    if start is None:
         start = np.zeros(20)
 
     if feature_range is not None:
