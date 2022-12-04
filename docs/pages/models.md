@@ -35,7 +35,7 @@ Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 - `svm`: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
 
 ```{note}
-\*Currently `xbg` returns binary predictions for AU7 but continuous probabilities between 0-1 for all other AUs. This is because our AU7 classifier was trained with hinge-loss rather than cross-entropy loss, as this yielded substantially better detection performance given the labeled data available for this AU.
+\*For AU07, our `xbg` detector was trained with hinge-loss instead of cross-entropy loss like other AUs as this yielded substantially better detection peformance given the labeled data available for this AU. This means that while it returns continuous probability predictions,  these are more likely to appear binary in practice (i.e. be 0 or 1) and should be interpreted as *proportion of decision-trees with a detection* rather than *average decision-tree confidence* like other AU values.
 ```
 
 ## Emotion detection
