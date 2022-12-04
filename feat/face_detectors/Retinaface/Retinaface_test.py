@@ -22,10 +22,10 @@ class Retinaface:
         device="auto",
         resize=1,
         vis_threshold=0.5,
-        nms_threshold=0.3,
+        nms_threshold=0.4,
         keep_top_k=750,
         top_k=5000,
-        confidence_threshold=0.05,
+        confidence_threshold=0.02,
     ):
         """
         Function to perform inference with RetinaFace
