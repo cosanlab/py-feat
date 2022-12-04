@@ -3,8 +3,8 @@ import pandas as pd
 from pandas import DataFrame
 import numpy as np
 import os
-from feat.data import Fex, Fextractor
-from feat.utils.io import read_openface, get_test_data_path
+from feat.data import Fex
+from feat.utils.io import read_openface, get_test_data_path, read_feat
 from nltools.data import Adjacency
 
 
@@ -16,7 +16,34 @@ def test_info(capsys):
     assert importantstring in captured.out
 
 
-def test_fex(imotions_data):
+def test_fex_new(data_path):
+    fex = pd.concat(
+        map(lambda f: read_feat(os.path.join(data_path, f)), ["001.csv", "002.csv"])
+    )
+    assert fex.shape == (68, 173)
+
+    assert "AU01" in fex.au_columns
+
+    # Update sessions (grouping factor) to video ids to group rows (frames) by video
+    by_video = fex.update_sessions(fex["input"])
+    # Compute the mean per video
+    video_means = by_video.extract_mean()
+
+    # one row per video
+    assert video_means.shape == (2, 172)
+
+    # we rename columns when using extract methods
+    # test that attribute renames have also propagated correctly
+    hasprefix = lambda col: col.startswith("mean")
+    assert all(map(hasprefix, video_means.au_columns))
+    assert all(map(hasprefix, video_means.emotion_columns))
+    assert all(map(hasprefix, video_means.facebox_columns))
+    assert all(map(hasprefix, video_means.landmark_columns))
+    assert all(map(hasprefix, video_means.facepose_columns))
+    assert all(map(hasprefix, video_means.time_columns))
+
+
+def test_fex_old(imotions_data):
 
     # Dropped support in >= 0.4.0
     with pytest.raises(Exception):
@@ -41,7 +68,25 @@ def test_fex(imotions_data):
     assert df.iloc[0].design.shape == (4,)
 
     sessions = np.array([[x] * 10 for x in range(1 + int(len(df) / 10))]).flatten()[:-1]
-    dat = Fex(df, sampling_freq=30, sessions=sessions)
+    dat = Fex(
+        df,
+        sampling_freq=30,
+        sessions=sessions,
+        emotion_columns=[
+            "Joy",
+            "Anger",
+            "Surprise",
+            "Fear",
+            "Contempt",
+            "Disgust",
+            "Sadness",
+            "Confusion",
+            "Frustration",
+            "Neutral",
+            "Positive",
+            "Negative",
+        ],
+    )
     dat = dat[
         [
             "Joy",
@@ -135,10 +180,10 @@ def test_fex(imotions_data):
     assert len(out) == len(np.unique(dat2.sessions))
     assert np.array_equal(out.sessions, np.unique(dat2.sessions))
     assert out.sampling_freq == dat2.sampling_freq
-    assert dat2.shape[1] * 3 == out.shape[1]
+    assert dat2.shape[1] * 5 == out.shape[1]
     out = dat2.extract_summary(min=True, max=True, mean=True, ignore_sessions=True)
     assert len(out) == 1
-    assert dat2.shape[1] * 3 == out.shape[1]
+    assert dat2.shape[1] * 5 == out.shape[1]
 
     # Test clean
     assert isinstance(dat.clean(), Fex)
@@ -180,122 +225,6 @@ def test_fex(imotions_data):
     stats = dat.decompose(algorithm="fa", axis=0, n_components=n_components)
     assert n_components == stats["components"].shape[1]
     assert n_components == stats["weights"].shape[1]
-
-
-def test_fextractor(imotions_data):
-    df = imotions_data
-    sessions = np.array([[x] * 10 for x in range(1 + int(len(df) / 10))]).flatten()[:-1]
-    dat = Fex(df, sampling_freq=30, sessions=sessions)
-    dat = dat[
-        [
-            "Joy",
-            "Anger",
-            "Surprise",
-            "Fear",
-            "Contempt",
-            "Disgust",
-            "Sadness",
-            "Confusion",
-            "Frustration",
-            "Neutral",
-            "Positive",
-            "Negative",
-        ]
-    ]
-
-    # Test Fextractor class
-    extractor = Fextractor()
-    dat = dat.interpolate()  # interpolate data to get rid of NAs
-    f = 0.5
-    num_cyc = 3  # for wavelet extraction
-    # Test each extraction method
-    extractor.mean(fex_object=dat)
-    extractor.max(fex_object=dat)
-    extractor.min(fex_object=dat)
-    # boft needs a groupby function.
-    extractor.multi_wavelet(fex_object=dat)
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc)
-    # Test ValueError
-    with pytest.raises(ValueError):
-        extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, mode="BadValue")
-    # Test Fextracor merge method
-    newdat = extractor.merge(out_format="long")
-    assert newdat["sessions"].nunique() == 52
-    assert isinstance(newdat, DataFrame)
-    assert len(extractor.merge(out_format="long")) == 7488
-    assert len(extractor.merge(out_format="wide")) == 52
-
-    # Test summary method
-    extractor = Fextractor()
-    dat2 = dat.loc[:, ["Positive", "Negative"]].interpolate()
-    extractor.summary(fex_object=dat2, min=True, max=True, mean=True)
-    assert extractor.merge(out_format="wide").shape[1] == dat2.shape[1] * 3 + 1
-
-    # Test wavelet extraction
-    extractor = Fextractor()
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=False)
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True)
-    wavelet = extractor.extracted_features[0]  # ignore_sessions = False
-    assert wavelet.sampling_freq == dat.sampling_freq
-    assert len(wavelet) == len(dat)
-    wavelet = extractor.extracted_features[1]  # ignore_sessions = True
-    assert wavelet.sampling_freq == dat.sampling_freq
-    assert len(wavelet) == len(dat)
-    assert np.array_equal(wavelet.sessions, dat.sessions)
-    for i in ["filtered", "phase", "magnitude", "power"]:
-        extractor = Fextractor()
-        extractor.wavelet(
-            fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True, mode=i
-        )
-        wavelet = extractor.extracted_features[0]
-        assert wavelet.sampling_freq == dat.sampling_freq
-        assert len(wavelet) == len(dat)
-
-    # Test multi wavelet
-    dat2 = dat.loc[:, ["Positive", "Negative"]].interpolate()
-    n_bank = 4
-    extractor = Fextractor()
-    extractor.multi_wavelet(
-        fex_object=dat2,
-        min_freq=0.1,
-        max_freq=2,
-        bank=n_bank,
-        mode="power",
-        ignore_sessions=False,
-    )
-    out = extractor.extracted_features[0]
-    assert n_bank * dat2.shape[1] == out.shape[1]
-    assert len(out) == len(dat2)
-    assert np.array_equal(out.sessions, dat2.sessions)
-    assert out.sampling_freq == dat2.sampling_freq
-
-    # Test Bag Of Temporal Features Extraction
-    facet = Fex(df, sampling_freq=30, detector="FACET")
-    facet_filled = facet.fillna(0)
-    facet_filled = facet_filled[
-        [
-            "Joy",
-            "Anger",
-            "Surprise",
-            "Fear",
-            "Contempt",
-            "Disgust",
-            "Sadness",
-            "Confusion",
-            "Frustration",
-            "Neutral",
-            "Positive",
-            "Negative",
-        ]
-    ]
-    extractor = Fextractor()
-    extractor.boft(facet_filled)
-    assert isinstance(extractor.extracted_features[0], DataFrame)
-    filters, histograms = 8, 12
-    assert (
-        extractor.extracted_features[0].shape[1]
-        == facet_filled.columns.shape[0] * filters * histograms
-    )
 
 
 def test_openface():
@@ -345,10 +274,10 @@ def test_stats():
     assert b.shape == (2, 17)
     assert res.mean().mean() < 1
 
-    clf = openface.predict(X=["AU02_c"], y="AU04_c")
+    clf, scores = openface.predict(X=["AU02_c"], y=["AU04_c"])
     assert clf.coef_ < 0
 
-    clf = openface.predict(X=openface[["AU02_c"]], y=openface["AU04_c"])
+    clf, scores = openface.predict(X=openface[["AU02_c"]], y=openface["AU04_c"])
     assert clf.coef_ < 0
 
     t, p = openface[["AU02_c"]].ttest_1samp()

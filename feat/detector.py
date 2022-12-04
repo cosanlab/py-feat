@@ -652,7 +652,7 @@ class Detector(object):
     def detect_video(
         self,
         video_path,
-        skip_frames=0,
+        skip_frames=None,
         output_size=700,
         batch_size=1,
         num_workers=0,
@@ -662,7 +662,8 @@ class Detector(object):
 
         Args:
             video_path (str): Path to a video file.
-            skip_frames (int): number of frames to skip (speeds up inference, but less temporal information)
+            skip_frames (int or None): number of frames to skip (speeds up inference,
+            but less temporal information); Default None
             output_size (int): image size to rescale all imagee preserving aspect ratio
             batch_size (int): how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming
             num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
@@ -810,9 +811,10 @@ class Detector(object):
         out = pd.concat(out)
         out.reset_index(drop=True, inplace=True)
 
+        # TODO: Add in support for gaze_columns
         return Fex(
             out,
-            au_columns=self["au_presence_columns"],
+            au_columns=self.info["au_presence_columns"],
             emotion_columns=FEAT_EMOTION_COLUMNS,
             facebox_columns=FEAT_FACEBOX_COLUMNS,
             landmark_columns=openface_2d_landmark_columns,

@@ -9,20 +9,43 @@ This is a large overhaul and refactor of some of the core testing and API functi
 - dropping `opencv` as a dependency
 - experimental support for macOS m1 GPUs
 
-### New
+### `Detector` Updates
 - SVM AU model has been retrained with new HOG feature PCA pipeline
 - new XGBoost AU model with new HOG feature PCA pipeline
 - `.detect_image` and `.detect_video` now display a `tqdm` progressbar
 
-### Breaking Changes
+### Breaking `Detector` Changes
 
 - the new default model for landmark detection was changed from `mobilenet` to `mobilefacenet`. 
 - the new default model for action-unit detection was changed to our new `xgb` model which gives continuous value predictions between 0-1
 - remove support for `fer` emotion model
-- remove support for JAANET AU model
+- remove support for `jaanet` AU model
 - remove support for `pnp` facepose detector
 - drop support for reading and manipulating Affectiva and FACET data
 - `.detect_image` will no longer resize images on load as the new default for `output_size=None`. If you want to process images with `batch_size > 1` and images differ in size, then you will be **required** to manually set `output_size` otherwise py-feat will raise a helpful error message
+
+### `Fex` Updates
+
+- new `.update_sessions()` method that returns a **copy** of a `Fex` frame with the `.sessions` attribute updated, making it easy to chain operations
+- `.predict()` and `.regress()` now support attributes to `X` and or `Y` using string names that match the attribute names:
+  - `'emotions'` use all emotion columns (i.e. `.emotions`)
+  - `'aus'` use all AU columns (i.e. `.aus`)
+  - `'poses'` use all pose columns (i.e. `.poses`)
+  - `'landmarks'` use all landmark columns (i.e. `.landmarks`)
+  - `'faceboxes'` use all facebox columns (i.e. `.faceboxes`)
+  - You can also combine feature groups using a **comma-separated string**: `'emotions,poses'`, `'faceboxes,landmarks,emotions'`, etc
+- `.extract_*` methods now include `std` and `sem`
+  
+
+### Breaking `Fex` Changes
+
+- All `Fex` attributes have been pluralized as indicated below. For the time-being old attribute access will continue to work but will show a warning. We plan to formally drop support in a few versions
+    - `.landmark` -> `.landmarks` 
+    - `.facepose` -> `.poses`
+    - `.input` -> `.inputs`
+    - `.landmark_x` -> `.landmarks_x`
+    - `.landmark_y` -> `.landmarks_y`
+    - `.facebox` -> `.faceboxes`
 
 ### Development changes
 

@@ -946,6 +946,7 @@ def plot_face(
         gaze = None
 
     title = kwargs.pop("title", None)
+    title_kwargs = kwargs.pop("title_kwargs", dict(wrap=True, fontsize=14, loc="left"))
     ax = draw_lineface(
         currx,
         curry,
@@ -970,12 +971,9 @@ def plot_face(
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
-        _ = ax.set_title(
-            "\n".join(wrap(title)),
-            loc="left",
-            wrap=True,
-            fontsize=14,
-        )
+        if title_kwargs["wrap"]:
+            title = "\n".join(wrap(title))
+        _ = ax.set_title(title, **title_kwargs)
     return ax
 
 
@@ -1141,7 +1139,13 @@ def interpolate_aus(
 
 
 def animate_face(
-    AU=None, start=None, end=None, save=None, include_reverse=True, **kwargs
+    AU=None,
+    start=None,
+    end=None,
+    save=None,
+    include_reverse=True,
+    feature_range=None,
+    **kwargs,
 ):
     """
     Create a matplotlib animation interpolating between a starting and ending face. Can
@@ -1182,6 +1186,13 @@ def animate_face(
     padding = kwargs.pop("padding", 0.25)
     num_frames = int(np.ceil(fps * duration))
     interp_func = kwargs.pop("interp_func", None)
+
+    if start == "neutral":
+        start = np.zeros(20)
+
+    if feature_range is not None:
+        start = minmax_scale(start, feature_range=feature_range)
+        end = minmax_scale(end, feature_range=feature_range)
 
     if AU is not None:
         if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
