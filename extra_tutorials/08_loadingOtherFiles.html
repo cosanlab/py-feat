@@ -551,14 +551,14 @@ title="Print to PDF"
 <h2>Loading OpenFace data<a class="headerlink" href="#loading-openface-data" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">feat.tests.utils</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
-<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_openface</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import glob, os
+from feat.tests.utils import get_test_data_path
+from feat.utils import read_openface
 
-<span class="n">openface_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span> <span class="s2">&quot;OpenFace_Test.csv&quot;</span><span class="p">)</span>
-<span class="n">detections</span> <span class="o">=</span> <span class="n">read_openface</span><span class="p">(</span><span class="n">openface_file</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">detections</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">detections</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+openface_file = os.path.join(get_test_data_path(), &quot;OpenFace_Test.csv&quot;)
+detections = read_openface(openface_file)
+print(type(detections))
+display(detections.head())
 </pre></div>
 </div>
 </div>
@@ -736,7 +736,7 @@ title="Print to PDF"
 <p>All functionalities of the <code class="docutils literal notranslate"><span class="pre">Fex</span></code> class will be available when you load an OpenFace file using <code class="docutils literal notranslate"><span class="pre">read_openface</span></code>. For example, you can quickly grab the facial landmark columns using <code class="docutils literal notranslate"><span class="pre">landmarks()</span></code> or the aus using <code class="docutils literal notranslate"><span class="pre">aus()</span></code></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detections</span><span class="o">.</span><span class="n">landmark</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detections.landmark().head()
 </pre></div>
 </div>
 </div>
@@ -910,7 +910,7 @@ title="Print to PDF"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detections</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detections.aus().head()
 </pre></div>
 </div>
 </div>
@@ -1088,12 +1088,12 @@ title="Print to PDF"
 <p>Loading a FACET file as a Fex class is also simple using <code class="docutils literal notranslate"><span class="pre">read_facet</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_facet</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import read_facet
 
-<span class="n">facet</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span> <span class="s2">&quot;iMotions_Test_v6.txt&quot;</span><span class="p">)</span>
-<span class="n">detections</span> <span class="o">=</span> <span class="n">read_facet</span><span class="p">(</span><span class="n">facet</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">detections</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">detections</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+facet = os.path.join(get_test_data_path(), &quot;iMotions_Test_v6.txt&quot;)
+detections = read_facet(facet)
+print(type(detections))
+display(detections.head())
 </pre></div>
 </div>
 </div>
@@ -1271,7 +1271,7 @@ title="Print to PDF"
 <p>You can take advantage of the Fex functionalties such as grabbing the emotions</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detections</span><span class="o">.</span><span class="n">emotions</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detections.emotions().head()
 </pre></div>
 </div>
 </div>
@@ -1391,8 +1391,8 @@ title="Print to PDF"
 <p>You can also extract features from the data. For example, to extract bags of temporal features from this video, you would simply set the sampling frequency and run <code class="docutils literal notranslate"><span class="pre">extract_boft</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detections</span><span class="o">.</span><span class="n">sampling_freq</span> <span class="o">=</span> <span class="mi">30</span>
-<span class="n">detections</span><span class="o">.</span><span class="n">emotions</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">extract_boft</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detections.sampling_freq = 30
+detections.emotions().dropna().extract_boft()
 </pre></div>
 </div>
 </div>
@@ -1478,12 +1478,12 @@ title="Print to PDF"
 <p>You can also load an affectiva file processed through the <a class="reference external" href="https://blog.affectiva.com/javascript-emotion-sdk-for-youtube-facebook-and-twitch-api">Affectiva Javascript SDK</a> available <a class="reference external" href="http://jinhyuncheong.com/affectiva-app/affectiva_emotion_detector_photo.html">here</a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_affectiva</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import read_affectiva
 
-<span class="n">facet</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span> <span class="s2">&quot;sample_affectiva-api-app_output.json&quot;</span><span class="p">)</span>
-<span class="n">detections</span> <span class="o">=</span> <span class="n">read_affectiva</span><span class="p">(</span><span class="n">facet</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">detections</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">detections</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+facet = os.path.join(get_test_data_path(), &quot;sample_affectiva-api-app_output.json&quot;)
+detections = read_affectiva(facet)
+print(type(detections))
+display(detections.head())
 </pre></div>
 </div>
 </div>
@@ -1568,12 +1568,12 @@ title="Print to PDF"
 <p>It’s easy to cast a dataframe which might be neither an OpenFace or FACET outputs into a Fex class. Simply cast your dataframe as a Fex class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Fex</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">au_columns</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;AU</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
-<span class="n">fex</span> <span class="o">=</span> <span class="n">Fex</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">)))</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">au_columns</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">fex</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Fex
+import pandas as pd, numpy as np
+au_columns = [f&quot;AU{i}&quot; for i in range(20)]
+fex = Fex(pd.DataFrame(np.random.rand(20,20)))
+fex.columns = au_columns
+print(type(fex))
 </pre></div>
 </div>
 </div>
@@ -1586,8 +1586,8 @@ title="Print to PDF"
 <p>To take full advantage of Py-Feat’s features, make sure you set the attributes.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">au_columns</span> <span class="o">=</span> <span class="n">au_columns</span>
-<span class="n">display</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">aus</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>fex.au_columns = au_columns
+display(fex.aus().head())
 </pre></div>
 </div>
 </div>

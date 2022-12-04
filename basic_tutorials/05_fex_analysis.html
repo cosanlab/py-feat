@@ -604,8 +604,8 @@ title="Print to PDF"
 <p>In this analysis, we’ll explore any differences in facial expressions people made when receiving good or bad news (see the original paper for more details). The full dataset is available on <a class="reference external" href="https://osf.io/6tbwj/">OSF</a>, so we’ll first download the videos and their metadata. Then, we’ll load up some pre-trained emotion and action-unit (AU) detectors and use them to extract AU intensity from the videos in the dataset. Finally, we’ll demonstrate how easy it is to perform several different kinds of comparisons acoss experimental conditions (good vs bad) using the <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
-<span class="c1"># !pip install -q py-feat</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Uncomment the line below and run this only if you&#39;re using Google Collab
+# !pip install -q py-feat
 </pre></div>
 </div>
 </div>
@@ -615,47 +615,47 @@ title="Print to PDF"
 <p>First we’ll need to download all 20 video files and their corresponding attributes CSV files from OSF. The next cell should run quickly on Google Collab, but will depend on your own internet conection if you’re executing this notebook locally. You can rerun this cell in case the download fails for any reason, as it should skip downloading existing files:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;talk&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import os
+import glob
+import subprocess
+import numpy as np
+import pandas as pd
+import seaborn as sns
+sns.set_context(&quot;talk&quot;)
 
-<span class="n">files_to_download</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;4c5mb&quot;</span><span class="p">:</span> <span class="s1">&#39;clip_attrs.csv&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;n6rt3&quot;</span><span class="p">:</span> <span class="s1">&#39;001.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;3gh8v&quot;</span><span class="p">:</span> <span class="s1">&#39;002.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;twqxs&quot;</span><span class="p">:</span> <span class="s1">&#39;003.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;nc7d9&quot;</span><span class="p">:</span> <span class="s1">&#39;004.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;nrwcm&quot;</span><span class="p">:</span> <span class="s1">&#39;005.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;2rk9c&quot;</span><span class="p">:</span> <span class="s1">&#39;006.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;mxkzq&quot;</span><span class="p">:</span> <span class="s1">&#39;007.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;c2na7&quot;</span><span class="p">:</span> <span class="s1">&#39;008.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;wj7zy&quot;</span><span class="p">:</span> <span class="s1">&#39;009.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;mxywn&quot;</span><span class="p">:</span> <span class="s1">&#39;010.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;6bn3g&quot;</span><span class="p">:</span> <span class="s1">&#39;011.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;jkwsp&quot;</span><span class="p">:</span> <span class="s1">&#39;012.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;54gtv&quot;</span><span class="p">:</span> <span class="s1">&#39;013.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;c3hpm&quot;</span><span class="p">:</span> <span class="s1">&#39;014.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;utdqj&quot;</span><span class="p">:</span> <span class="s1">&#39;015.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;hpw4a&quot;</span><span class="p">:</span> <span class="s1">&#39;016.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;94swe&quot;</span><span class="p">:</span> <span class="s1">&#39;017.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;qte5y&quot;</span><span class="p">:</span> <span class="s1">&#39;018.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;aykvu&quot;</span><span class="p">:</span> <span class="s1">&#39;019.mp4&#39;</span><span class="p">,</span>
-    <span class="s2">&quot;3d5ry&quot;</span><span class="p">:</span> <span class="s1">&#39;020.mp4&#39;</span><span class="p">,</span>
-<span class="p">}</span>
+files_to_download = {
+    &quot;4c5mb&quot;: &#39;clip_attrs.csv&#39;,
+    &quot;n6rt3&quot;: &#39;001.mp4&#39;,
+    &quot;3gh8v&quot;: &#39;002.mp4&#39;,
+    &quot;twqxs&quot;: &#39;003.mp4&#39;,
+    &quot;nc7d9&quot;: &#39;004.mp4&#39;,
+    &quot;nrwcm&quot;: &#39;005.mp4&#39;,
+    &quot;2rk9c&quot;: &#39;006.mp4&#39;,
+    &quot;mxkzq&quot;: &#39;007.mp4&#39;,
+    &quot;c2na7&quot;: &#39;008.mp4&#39;,
+    &quot;wj7zy&quot;: &#39;009.mp4&#39;,
+    &quot;mxywn&quot;: &#39;010.mp4&#39;,
+    &quot;6bn3g&quot;: &#39;011.mp4&#39;,
+    &quot;jkwsp&quot;: &#39;012.mp4&#39;,
+    &quot;54gtv&quot;: &#39;013.mp4&#39;,
+    &quot;c3hpm&quot;: &#39;014.mp4&#39;,
+    &quot;utdqj&quot;: &#39;015.mp4&#39;,
+    &quot;hpw4a&quot;: &#39;016.mp4&#39;,
+    &quot;94swe&quot;: &#39;017.mp4&#39;,
+    &quot;qte5y&quot;: &#39;018.mp4&#39;,
+    &quot;aykvu&quot;: &#39;019.mp4&#39;,
+    &quot;3d5ry&quot;: &#39;020.mp4&#39;,
+}
 
-<span class="k">for</span> <span class="n">fid</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files_to_download</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;wget -O </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> --content-disposition https://osf.io/</span><span class="si">{</span><span class="n">fid</span><span class="si">}</span><span class="s2">/download&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Already downloaded: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+for fid, fname in files_to_download.items():
+    if not os.path.exists(fname):
+        subprocess.run(f&quot;wget -O {fname} --content-disposition https://osf.io/{fid}/download&quot;.split())
+    else:
+        print(f&#39;Already downloaded: {fname}&#39;)
 
-<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clip_attrs.csv&quot;</span><span class="p">)</span>
-<span class="n">videos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.mp4&quot;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">videos</span><span class="p">)</span>
+clip_attrs = pd.read_csv(&quot;clip_attrs.csv&quot;)
+videos = np.sort(glob.glob(&quot;*.mp4&quot;))
+print(videos)
 </pre></div>
 </div>
 </div>
@@ -694,17 +694,17 @@ Already downloaded: 020.mp4
 <p>Now we’ll initialize a new <code class="docutils literal notranslate"><span class="pre">Detector</span></code> and process each frame of each video, saving the results to csv files named after the video.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Detector
 
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span> <span class="o">=</span> <span class="s2">&quot;rf&quot;</span><span class="p">,</span> <span class="n">emotion_model</span> <span class="o">=</span> <span class="s2">&quot;resmasknet&quot;</span><span class="p">)</span>
+detector = Detector(au_model = &quot;rf&quot;, emotion_model = &quot;resmasknet&quot;)
 
-<span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">videos</span><span class="p">:</span> 
-    <span class="n">out_name</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_name</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Already processed: </span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing: </span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">inputFname</span> <span class="o">=</span> <span class="n">video</span><span class="p">,</span> <span class="n">outputFname</span> <span class="o">=</span> <span class="n">out_name</span><span class="p">)</span>
+for video in videos: 
+    out_name = video.replace(&quot;.mp4&quot;, &quot;.csv&quot;)
+    if os.path.exists(out_name):
+        print(f&quot;Already processed: {video}&quot;)
+    else:
+        print(f&quot;Processing: {video}&quot;)
+        detector.detect_video(inputFname = video, outputFname = out_name)
 </pre></div>
 </div>
 </div>
@@ -736,18 +736,18 @@ Already processed: 020.mp4
 <p>Then we can use <code class="docutils literal notranslate"><span class="pre">read_feat</span></code> to load each CSV file and concatenate them together:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_feat</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import read_feat
+import pandas as pd
 
-<span class="k">for</span> <span class="n">ix</span> <span class="p">,</span><span class="n">video</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">videos</span><span class="p">):</span>
-    <span class="n">out_name</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">ix</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
-        <span class="n">fex</span> <span class="o">=</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">out_name</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">fex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">fex</span><span class="p">,</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">out_name</span><span class="p">)])</span>
+for ix ,video in enumerate(videos):
+    out_name = video.replace(&quot;.mp4&quot;, &quot;.csv&quot;)
+    if ix == 0: 
+        fex = read_feat(out_name)
+    else:
+        fex = pd.concat([fex, read_feat(out_name)])
 
-<span class="n">fex</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+fex = fex.dropna()
+fex.head()
 </pre></div>
 </div>
 </div>
@@ -922,16 +922,16 @@ Already processed: 020.mp4
 <p>Lastly we can match the processed file names to the text that participants heard in the experiment using the attributes file:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load in attributes</span>
-<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clip_attrs.csv&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Load in attributes
+clip_attrs = pd.read_csv(&quot;clip_attrs.csv&quot;)
 
-<span class="c1"># Add in file names and rename conditions</span>
-<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
-    <span class="nb">input</span><span class="o">=</span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">clipN</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.mp4&quot;</span><span class="p">),</span>
-    <span class="n">condition</span><span class="o">=</span><span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;gn&quot;</span><span class="p">:</span> <span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="s2">&quot;ists&quot;</span><span class="p">:</span> <span class="s2">&quot;badNews&quot;</span><span class="p">}),</span>
-<span class="p">)</span>
+# Add in file names and rename conditions
+clip_attrs = clip_attrs.assign(
+    input=clip_attrs.clipN.apply(lambda x: str(x).zfill(3) + &quot;.mp4&quot;),
+    condition=clip_attrs[&quot;class&quot;].replace({&quot;gn&quot;: &quot;goodNews&quot;, &quot;ists&quot;: &quot;badNews&quot;}),
+)
 
-<span class="n">clip_attrs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+clip_attrs.head()
 </pre></div>
 </div>
 </div>
@@ -1018,12 +1018,12 @@ Already processed: 020.mp4
 <p><code class="docutils literal notranslate"><span class="pre">Fex</span></code> data classes have a special attribute called <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> that allow you to more easily compute summary statistics while respecting the grouping of an experimental setup. For example, if we set <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> to the name of each video, then we can easily calculate mean AU intensity separately for each video using <code class="docutils literal notranslate"><span class="pre">.extract_mean()</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set sessions to the input filenames</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;.mp4&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Set sessions to the input filenames
+fex.sessions = fex[&#39;input&#39;].str.replace(&#39;.csv&#39;, &#39;.mp4&#39;)
 
-<span class="c1"># Now extracting the mean is grouped by video </span>
-<span class="n">average_au_intensity_per_video</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
-<span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+# Now extracting the mean is grouped by video 
+average_au_intensity_per_video = fex.extract_mean()
+average_au_intensity_per_video.head()
 </pre></div>
 </div>
 </div>
@@ -1204,7 +1204,7 @@ Already processed: 020.mp4
 <p>However, you can set <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> to any grouping you desire. For the current analysis, setting <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> equal to the condition each frame belonged to, allows us to easily calculate mean AU intensity per condition using <code class="docutils literal notranslate"><span class="pre">.extract_mean()</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>clip_attrs.head()
 </pre></div>
 </div>
 </div>
@@ -1287,13 +1287,13 @@ Already processed: 020.mp4
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assign each processed frame to the condition it came from</span>
-<span class="n">conditions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">],</span> <span class="n">clip_attrs</span><span class="p">[</span><span class="s1">&#39;condition&#39;</span><span class="p">]))</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Assign each processed frame to the condition it came from
+conditions = dict(zip(clip_attrs[&#39;input&#39;], clip_attrs[&#39;condition&#39;]))
+fex.sessions = fex.sessions.map(conditions)
 
-<span class="c1"># Now extracting the mean is grouped by session (experimental condition)</span>
-<span class="n">average_au_intensity_per_condition</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
-<span class="n">average_au_intensity_per_condition</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+# Now extracting the mean is grouped by session (experimental condition)
+average_au_intensity_per_condition = fex.extract_mean()
+average_au_intensity_per_condition.head()
 </pre></div>
 </div>
 </div>
@@ -1404,23 +1404,23 @@ Already processed: 020.mp4
 <p>The results suggests more than half the AUs are significantly active beyond chance:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the session of the summary Fe instance to the experiental conditions</span>
-<span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
-    <span class="n">conditions</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Set the session of the summary Fe instance to the experiental conditions
+average_au_intensity_per_video.sessions = average_au_intensity_per_video.index.map(
+    conditions
+)
 
-<span class="c1"># Then we can perform a test for one condition only</span>
-<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">average_au_intensity_per_video</span><span class="p">[</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span> <span class="o">==</span> <span class="s1">&#39;goodNews&#39;</span><span class="p">]</span>
-    <span class="o">.</span><span class="n">aus</span>
-    <span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="p">)</span>
+# Then we can perform a test for one condition only
+t, p = (
+    average_au_intensity_per_video[average_au_intensity_per_video.sessions == &#39;goodNews&#39;]
+    .aus
+    .ttest_1samp(0.5)
+)
 
-<span class="c1"># Show significance start based on bonferroni correction</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-    <span class="p">{</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">p</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">au_columns</span>
-<span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sig</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">p</span> <span class="o">&lt;</span> <span class="mf">0.05</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;sig&#39;</span><span class="p">)</span>
-<span class="n">results</span>
+# Show significance start based on bonferroni correction
+results = pd.DataFrame(
+    {&quot;t&quot;: t, &quot;p&quot;: p}, index=average_au_intensity_per_video.au_columns
+).assign(sig=lambda df: df.p &lt; 0.05 / df.shape[0]).sort_values(by=&#39;sig&#39;)
+results
 </pre></div>
 </div>
 </div>
@@ -1581,16 +1581,16 @@ Already processed: 020.mp4
 <p>More likely we want to compare experimental conditions using a two-sample t-test. This allows us to answer separately for each AU: was intensity significantly different when participants received good vs bad news? We can do this using the <code class="docutils literal notranslate"><span class="pre">.ttest_ind()</span></code> method which takes a column and sessions to compare:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">columns2compare</span> <span class="o">=</span> <span class="s2">&quot;mean_AU12&quot;</span>
-<span class="n">sessions</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>columns2compare = &quot;mean_AU12&quot;
+sessions = (&quot;goodNews&quot;, &quot;badNews&quot;)
 
-<span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">ttest_ind</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="n">columns2compare</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">sessions</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T-test between </span><span class="si">{</span><span class="n">sessions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">sessions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">: t=</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2">, p=</span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="n">average_au_intensity_per_video</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="n">columns2compare</span><span class="p">,</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">average_au_intensity_per_video</span><span class="p">,</span>
-<span class="p">)</span>
+t, p = average_au_intensity_per_video.ttest_ind(col=columns2compare, sessions=sessions)
+print(f&quot;T-test between {sessions[0]} vs {sessions[1]}: t={t:.2g}, p={p:.3g}&quot;)
+sns.barplot(
+    x=average_au_intensity_per_video.sessions,
+    y=columns2compare,
+    data=average_au_intensity_per_video,
+)
 </pre></div>
 </div>
 </div>
@@ -1611,28 +1611,28 @@ Already processed: 020.mp4
 <p>This is analogous to the “mass-univariate” GLM approach in fMRI researchnd allows us to identify what AUs are significantly more active in condition vs another:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This time replace the labels for each condition with a numerical contrast code</span>
-<span class="c1"># We&#39;ll use these contrasts are predictors in our regression</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;goodNews&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">}))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># This time replace the labels for each condition with a numerical contrast code
+# We&#39;ll use these contrasts are predictors in our regression
+X = pd.DataFrame(fex.sessions.replace({&quot;goodNews&quot;: 0.5, &quot;badNews&quot;: -0.5}))
 
-<span class="c1"># Add an intercept to the regression</span>
-<span class="n">X</span><span class="p">[</span><span class="s2">&quot;intercept&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+# Add an intercept to the regression
+X[&quot;intercept&quot;] = 1
 
-<span class="c1"># The dependent variable is AU intensity</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">aus</span>
-<span class="c1"># Now we get a t-test at every AU</span>
-<span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">regress</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+# The dependent variable is AU intensity
+y = fex.aus
+# Now we get a t-test at every AU
+b, t, p, df, residuals = fex.regress(X=X, y=y)
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Betas comparing the contrast of good news AU intensity &gt; bad news AU intensity&quot;</span><span class="p">)</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-    <span class="p">[</span>
-        <span class="n">b</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;betas&quot;</span><span class="p">}),</span>
-        <span class="n">t</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;t-stats&quot;</span><span class="p">}),</span>
-        <span class="n">p</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;p-values&quot;</span><span class="p">}),</span>
-    <span class="p">]</span>
-<span class="p">)</span>
+print(&quot;Betas comparing the contrast of good news AU intensity &gt; bad news AU intensity&quot;)
+results = pd.concat(
+    [
+        b.round(3).loc[[0]].rename(index={0: &quot;betas&quot;}),
+        t.round(3).loc[[0]].rename(index={0: &quot;t-stats&quot;}),
+        p.round(3).loc[[0]].rename(index={0: &quot;p-values&quot;}),
+    ]
+)
 
-<span class="n">results</span>
+results
 </pre></div>
 </div>
 </div>
@@ -1766,16 +1766,16 @@ Already processed: 020.mp4
 <p>The results suggest that happy expressions have a very high feature weight when predicting good news:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from sklearn.linear_model import LogisticRegression
 
-<span class="c1"># Features = emotion predictions for each frame</span>
-<span class="c1"># Labels = experimental condition the frame belonged to</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-    <span class="n">X</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;liblinear&quot;</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;score: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="p">,</span> <span class="n">fex</span><span class="o">.</span><span class="n">sessions</span><span class="p">)</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;coefficients for predicting class: </span><span class="si">{</span><span class="n">clf</span><span class="o">.</span><span class="n">classes_</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">fex</span><span class="o">.</span><span class="n">emotions</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+# Features = emotion predictions for each frame
+# Labels = experimental condition the frame belonged to
+clf = fex.predict(
+    X=fex.emotions, y=fex.sessions, model=LogisticRegression, solver=&quot;liblinear&quot;
+)
+print(f&quot;score: {clf.score(fex.emotions, fex.sessions):.3g}&quot;)
+print(f&quot;coefficients for predicting class: {clf.classes_[1]}&quot;)
+pd.DataFrame(clf.coef_, columns=fex.emotions.columns)
 </pre></div>
 </div>
 </div>
@@ -1833,12 +1833,12 @@ coefficients for predicting class: goodNews
 <p>Warmer colors indicate a pair of videos elicited more <em>similar</em> AU 1 activity over time. We can see just by looking at this AU, how two video cluster seem to emerge reflecting the two experimental conditions: good news and bad news.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set sessions back to unique videos</span>
-<span class="n">fex</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="n">fex</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Set sessions back to unique videos
+fex.sessions = fex[&#39;input&#39;]
 
-<span class="c1"># ISC returns a video x video pearson correlation matrix</span>
-<span class="n">isc</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">isc</span><span class="p">(</span><span class="n">col</span> <span class="o">=</span> <span class="s2">&quot;AU01&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pearson&#39;</span><span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">isc</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">);</span>
+# ISC returns a video x video pearson correlation matrix
+isc = fex.isc(col = &quot;AU01&quot;, method=&#39;pearson&#39;)
+sns.heatmap(isc, center=0, vmin=-1, vmax=1, cmap=&quot;RdBu_r&quot;);
 </pre></div>
 </div>
 </div>

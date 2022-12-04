@@ -585,32 +585,32 @@ title="Print to PDF"
 <h2>Imports and Paths<a class="headerlink" href="#imports-and-paths" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">h5py</span>
-<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">get_resource_path</span><span class="p">,</span> <span class="n">load_viz_model</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
-<span class="kn">from</span> <span class="nn">sklearn.cross_decomposition</span> <span class="kn">import</span> <span class="n">PLSRegression</span>
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">skversion</span>
-<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">dump</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">feat.pretrained</span> <span class="kn">import</span> <span class="n">AU_LANDMARK_MAP</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+import sys
+import h5py
+from feat.utils import get_resource_path, load_viz_model
+from sklearn.model_selection import KFold
+from sklearn.cross_decomposition import PLSRegression
+from sklearn import __version__ as skversion
+from joblib import dump
+from pathlib import Path
+from feat.pretrained import AU_LANDMARK_MAP
+from typing import List, Union, Tuple
 
-<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+sns.set_style(&quot;white&quot;)
 
-<span class="c1"># Set data directory to data folder relative to location of this notebook</span>
-<span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
-<span class="n">base_dir</span> <span class="o">=</span> <span class="n">here</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
-<span class="n">data_dir</span> <span class="o">=</span> <span class="n">base_dir</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;extracted_labels_landmarks&quot;</span>
+# Set data directory to data folder relative to location of this notebook
+here = Path(os.path.realpath(&quot;&quot;))
+base_dir = here.parent.parent
+data_dir = base_dir / &quot;data&quot; / &quot;extracted_labels_landmarks&quot;
 
-<span class="c1"># Get the 20 AUs we use for training the model</span>
-<span class="n">au_cols</span> <span class="o">=</span> <span class="n">AU_LANDMARK_MAP</span><span class="p">[</span><span class="s2">&quot;Feat&quot;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">au_cols</span><span class="p">)</span><span class="si">}</span><span class="s2"> AUs&quot;</span><span class="p">)</span>
+# Get the 20 AUs we use for training the model
+au_cols = AU_LANDMARK_MAP[&quot;Feat&quot;]
+print(f&quot;Using {len(au_cols)} AUs&quot;)
 </pre></div>
 </div>
 </div>
@@ -626,49 +626,49 @@ title="Print to PDF"
 <p>First we load up the 3 datasets containing AU labels and facial landmarks and concatenate them into 2 dataframes. All AU values are also rescaled to 0-1 indicating the <em>presence</em> of an AU for that sample.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">load_landmark_au_data</span><span class="p">(</span>
-    <span class="n">au_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">concat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">]]:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def load_landmark_au_data(
+    au_cols: List, verbose: bool = True, concat: bool = True
+) -&gt; Union[Tuple[pd.DataFrame, pd.DataFrame], Tuple[List, List]]:
 
-    <span class="sd">&quot;&quot;&quot;Load and concatenate the emotionet, difsaplus, and bp4d datasets&quot;&quot;&quot;</span>
+    &quot;&quot;&quot;Load and concatenate the emotionet, difsaplus, and bp4d datasets&quot;&quot;&quot;
 
-    <span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;emotionet&quot;</span><span class="p">,</span> <span class="s2">&quot;disfaplus&quot;</span><span class="p">,</span> <span class="s2">&quot;bp4d&quot;</span><span class="p">]:</span>
+    labels, landmarks = [], []
+    for name in [&quot;emotionet&quot;, &quot;disfaplus&quot;, &quot;bp4d&quot;]:
 
-        <span class="n">labels_file</span><span class="p">,</span> <span class="n">landmarks_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_labels.csv&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_landmarks.csv&quot;</span>
+        labels_file, landmarks_file = f&quot;{name}_labels.csv&quot;, f&quot;{name}_landmarks.csv&quot;
 
-        <span class="n">labels_df</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">/</span> <span class="n">labels_file</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="mi">999</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">9</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})</span>
-            <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;URL&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;disfaplus&quot;</span> <span class="k">else</span> <span class="n">df</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">labels_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels_df</span><span class="p">)</span>
-        <span class="n">landmarks_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">landmarks_file</span><span class="p">))</span>
-        <span class="n">landmarks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">landmarks_df</span><span class="p">)</span>
+        labels_df = (
+            pd.read_csv(data_dir / labels_file)
+            .replace({999: np.nan, 9: np.nan})
+            .drop(columns=[&quot;URL&quot;], errors=&quot;ignore&quot;)
+            .pipe(lambda df: df.astype(&quot;float&quot;) / 5 if name == &quot;disfaplus&quot; else df)
+            .fillna(0)
+        )
+        if verbose:
+            print(f&quot;{name}: {labels_df.shape[0]}&quot;)
+        labels.append(labels_df)
+        landmarks_df = pd.read_csv(os.path.join(data_dir, landmarks_file))
+        landmarks.append(landmarks_df)
 
-    <span class="k">if</span> <span class="n">concat</span><span class="p">:</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">landmarks</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">landmarks</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">labels</span><span class="p">))</span>
-        <span class="n">landmarks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">landmarks</span><span class="p">))</span>
+    if concat:
+        labels = pd.concat(labels, axis=0, ignore_index=True)[au_cols].fillna(0)
+        landmarks = pd.concat(landmarks, axis=0, ignore_index=True).fillna(0)
+    else:
+        labels = list(map(lambda df: df.fillna(0), labels))
+        landmarks = list(map(lambda df: df.fillna(0), landmarks))
 
-    <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">concat</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aggregated landmarks: </span><span class="si">{</span><span class="n">landmarks</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aggregated labels: </span><span class="si">{</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    if verbose and concat:
+        print(f&quot;Aggregated landmarks: {landmarks.shape}&quot;)
+        print(f&quot;Aggregated labels: {labels.shape}&quot;)
 
-    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span>
+    return labels, landmarks
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="n">load_landmark_au_data</span><span class="p">(</span><span class="n">au_cols</span><span class="o">=</span><span class="n">au_cols</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>labels, landmarks = load_landmark_au_data(au_cols=au_cols)
 </pre></div>
 </div>
 </div>
@@ -685,8 +685,8 @@ Aggregated labels: (226206, 20)
 <p>We can examine the correlation between AU occurences across all the datasets to get a sense of what AU’s tend to co-occur:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Aggregated AU Correlations&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>ax = sns.heatmap(labels.corr(), cmap=&#39;bwr&#39;, vmin=-1, vmax=1)
+_ = ax.set(title=&#39;Aggregated AU Correlations&#39;)
 </pre></div>
 </div>
 </div>
@@ -697,12 +697,12 @@ Aggregated labels: (226206, 20)
 <p>However, due to differences in the AUs included in each dataset, these correlations vary:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">labels_list</span><span class="p">,</span> <span class="n">landmarks_list</span> <span class="o">=</span> <span class="n">load_landmark_au_data</span><span class="p">(</span><span class="n">au_cols</span><span class="o">=</span><span class="n">au_cols</span><span class="p">,</span> <span class="n">concat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>labels_list, landmarks_list = load_landmark_au_data(au_cols=au_cols, concat=False, verbose=False)
 
-<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels_list</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;emotionet&#39;</span><span class="p">,</span> <span class="s1">&#39;disfaplus&#39;</span><span class="p">,</span> <span class="s1">&#39;bp4d&#39;</span><span class="p">]):</span>
-    <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> AU correlations&quot;</span><span class="p">)</span>
+for label, name in zip(labels_list, [&#39;emotionet&#39;, &#39;disfaplus&#39;, &#39;bp4d&#39;]):
+    f, ax = plt.subplots(1,1)
+    ax = sns.heatmap(label.corr(), cmap=&#39;bwr&#39;, vmin=-1, vmax=1, ax=ax)
+    _ = ax.set(title=f&quot;{name} AU correlations&quot;)
     
 </pre></div>
 </div>
@@ -719,34 +719,34 @@ Aggregated labels: (226206, 20)
 <p>Because datasets differ in which AUs they contain and because AUs differ greatly in their occurence across samples, we sub-sample the aggregated data to generate a new dataset that contains at least 650 occurences of each AU. This number was chosen because it is the largest number of positive samples (samples where the AU was present) for the AU with the fewest positive samples (AU43). This helps balance the features out a bit:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pseudo_balance_au_occurences</span><span class="p">(</span>
-    <span class="n">labels</span><span class="p">,</span> <span class="n">au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Sub-sample the labels dataframe so for each AU at least min_pos_sample rows</span>
-<span class="sd">    contain an instance of that AU. This will generate a new dataset of shape</span>
-<span class="sd">    min_pos_sample * len(au_cols) x len(au_cols)&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">min_pos_sample</span> <span class="o">&gt;</span> <span class="n">labels</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;min_pos_sample must be </span><span class="si">{</span><span class="n">labels</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2"> or lower&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def pseudo_balance_au_occurences(
+    labels, au_cols, min_pos_sample=650, verbose=True, random_state=0
+):
+    &quot;&quot;&quot;Sub-sample the labels dataframe so for each AU at least min_pos_sample rows
+    contain an instance of that AU. This will generate a new dataset of shape
+    min_pos_sample * len(au_cols) x len(au_cols)&quot;&quot;&quot;
+    if min_pos_sample &gt; labels.sum().min():
+        raise ValueError(f&quot;min_pos_sample must be {labels.sum().min()} or lower&quot;)
 
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pseudo balancing samples&quot;</span><span class="p">)</span>
-    <span class="n">balY</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-    <span class="n">balX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">AU</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">[</span><span class="n">au_cols</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">AU</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">min_pos_sample</span><span class="p">:</span>
-            <span class="n">replace</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">replace</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">newSample</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">AU</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
-            <span class="n">min_pos_sample</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">replace</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
-        <span class="p">)</span>
-        <span class="n">balX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">balX</span><span class="p">,</span> <span class="n">newSample</span><span class="p">])</span>
-        <span class="n">balY</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">balY</span><span class="p">,</span> <span class="n">landmarks</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">newSample</span><span class="o">.</span><span class="n">index</span><span class="p">]])</span>
+    if verbose:
+        print(&quot;Pseudo balancing samples&quot;)
+    balY = pd.DataFrame()
+    balX = pd.DataFrame()
+    for AU in labels[au_cols].columns:
+        if np.sum(labels[AU] == 1) &gt; min_pos_sample:
+            replace = False
+        else:
+            replace = True
+        newSample = labels[labels[AU] &gt; 0.5].sample(
+            min_pos_sample, replace=replace, random_state=random_state
+        )
+        balX = pd.concat([balX, newSample])
+        balY = pd.concat([balY, landmarks.loc[newSample.index]])
 
-    <span class="c1"># Make sure we have more occurrences of each AU than in the original dataset</span>
-    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">balX</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">labels</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+    # Make sure we have more occurrences of each AU than in the original dataset
+    assert all(balX.mean() &gt; labels.mean())
 
-    <span class="k">return</span> <span class="n">balX</span><span class="p">,</span> <span class="n">balY</span>
+    return balX, balY
 </pre></div>
 </div>
 </div>
@@ -755,11 +755,11 @@ Aggregated labels: (226206, 20)
 (650 * 20) x 20</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Random-state for reproducibility</span>
-<span class="n">balX</span><span class="p">,</span> <span class="n">balY</span> <span class="o">=</span> <span class="n">pseudo_balance_au_occurences</span><span class="p">(</span>
-    <span class="n">labels</span><span class="p">,</span> <span class="n">au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resampled dataset shape: </span><span class="si">{</span><span class="n">balX</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Random-state for reproducibility
+balX, balY = pseudo_balance_au_occurences(
+    labels, au_cols, min_pos_sample=650, random_state=0
+)
+print(f&quot;Resampled dataset shape: {balX.shape}&quot;)
 </pre></div>
 </div>
 </div>
@@ -773,13 +773,13 @@ Resampled dataset shape: (13000, 20)
 <p>We can see that our resampled dataset contains signficantly higher proportions of each AU, which will make it a bit easier to train the model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">)</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">balX</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pseudo-balanced&quot;</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Proportion of Samples with AU present&#39;</span><span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>ax = labels.mean().plot(kind=&quot;bar&quot;, label=&quot;original&quot;)
+ax = balX.mean().plot(
+    kind=&quot;bar&quot;, color=&quot;orange&quot;, alpha=0.5, ax=ax, label=&quot;pseudo-balanced&quot;
+)
+_ = ax.legend()
+_ = ax.set(ylabel=&#39;Proportion of Samples with AU present&#39;)
+sns.despine()
 </pre></div>
 </div>
 </div>
@@ -793,76 +793,77 @@ Resampled dataset shape: (13000, 20)
 <p>Finally we can train a partial-least-squares regression model to map between AUs and facial landmarks. We first align facial landmarks to a template <em>neutral expression</em> face. This will allow us to use the regression weights to “warp” this face to display various expressions. To validate our model, we test predictive performance out-of-sample using 3-fold cross-validation. We also return the overall-fit across the full (resampled) data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">preprocess_features</span><span class="p">(</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">align_landmarks_to_neutral</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale_across_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">poly_degree</span><span class="o">=</span><span class="mi">1</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Take dataframes of labels and landmarks and prepare them for PLSRegression estimator&quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">registration</span><span class="p">,</span> <span class="n">neutral</span>
-    <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">scale</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def preprocess_features(
+    X, Y, align_landmarks_to_neutral=True, scale_across_features=False, poly_degree=1
+):
+    &quot;&quot;&quot;Take dataframes of labels and landmarks and prepare them for PLSRegression estimator&quot;&quot;&quot;
+    from feat.utils import registration, neutral
+    from sklearn.preprocessing import scale
 
-    <span class="n">_X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    _X = X.to_numpy()
 
-    <span class="c1"># We can optionally add more features prior to model fitting by creating new columns</span>
-    <span class="c1"># that capture the interactions between 2, 3, or more AUs via polynomial terms</span>
-    <span class="c1"># This might help model performance, at the cost of over-fitting so feel free to</span>
-    <span class="c1"># play around with this. </span>
-    <span class="c1"># We don&#39;t include any polynomial terms by default</span>
-    <span class="k">if</span> <span class="n">poly_degree</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
+    # We can optionally add more features prior to model fitting by creating new columns
+    # that capture the interactions between 2, 3, or more AUs via polynomial terms
+    # This might help model performance, at the cost of over-fitting so feel free to
+    # play around with this. 
+    # We don&#39;t include any polynomial terms by default
+    if poly_degree &gt; 1:
+        from sklearn.preprocessing import PolynomialFeatures
 
-        <span class="n">poly</span> <span class="o">=</span> <span class="n">PolynomialFeatures</span><span class="p">(</span>
-            <span class="n">degree</span><span class="o">=</span><span class="n">poly_degree</span><span class="p">,</span> <span class="n">interaction_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_bias</span><span class="o">=</span><span class="kc">False</span>
-        <span class="p">)</span>
-        <span class="n">_X</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">_X</span><span class="p">)</span>
+        poly = PolynomialFeatures(
+            degree=poly_degree, interaction_only=True, include_bias=False
+        )
+        _X = poly.fit_transform(_X)
 
-    <span class="c1"># It can also be helpful to scale AUs within each sample such that they reflect</span>
-    <span class="c1"># z-scores relative to the mean/std AU occurences within that sample, rather than</span>
-    <span class="c1"># values between 0-1. This can be helpful if you use a polynomial degree &gt; 1</span>
-    <span class="c1"># But we don&#39;t do this by default</span>
-    <span class="k">if</span> <span class="n">scale_across_features</span><span class="p">:</span>
-        <span class="n">_X</span> <span class="o">=</span> <span class="n">scale</span><span class="p">(</span><span class="n">_X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    # It can also be helpful to scale AUs within each sample such that they reflect
+    # z-scores relative to the mean/std AU occurences within that sample, rather than
+    # values between 0-1. This can be helpful if you use a polynomial degree &gt; 1
+    # But we don&#39;t do this by default
+    if scale_across_features:
+        _X = scale(_X, axis=1)
 
-    <span class="n">_Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    _Y = Y.to_numpy()
 
-    <span class="k">if</span> <span class="n">align_landmarks_to_neutral</span><span class="p">:</span>
-        <span class="n">_Y</span> <span class="o">=</span> <span class="n">registration</span><span class="p">(</span><span class="n">_Y</span><span class="p">,</span> <span class="n">neutral</span><span class="p">)</span>
+    if align_landmarks_to_neutral:
+        _Y = registration(_Y, neutral)
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data shape: </span><span class="si">{</span><span class="n">_X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_X</span><span class="p">,</span> <span class="n">_Y</span>
+    print(f&quot;Data shape: {_X.shape}\n&quot;)
+    return _X, _Y
 
 
-<span class="k">def</span> <span class="nf">fit_pls</span><span class="p">(</span>
-    <span class="n">X</span><span class="p">,</span>
-    <span class="n">Y</span><span class="p">,</span>
-    <span class="n">n_splits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-    <span class="n">refit_full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">n_components</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-    <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Fit and validate a PLSRegression model&quot;&quot;&quot;</span>
+def fit_pls(
+    X,
+    Y,
+    n_splits=3,
+    refit_full=True,
+    n_components=20,
+    max_iter=2000,
+):
+    &quot;&quot;&quot;Fit and validate a PLSRegression model&quot;&quot;&quot;
 
-    <span class="n">outstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Components: </span><span class="si">{</span><span class="n">n_components</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    outstr = f&quot;Components: {n_components}\n&quot;
 
-    <span class="k">if</span> <span class="n">n_splits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_splits</span><span class="p">)</span>
-        <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">train_index</span><span class="p">,</span> <span class="n">test_index</span> <span class="ow">in</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
-            <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
-            <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
-            <span class="n">clf</span> <span class="o">=</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span>
-            <span class="n">_</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
-            <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span>
+    if n_splits is not None:
+        kf = KFold(n_splits=n_splits)
+        scores = []
+        for train_index, test_index in kf.split(X):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = Y[train_index], Y[test_index]
+            clf = PLSRegression(n_components=n_components, max_iter=max_iter)
+            _ = clf.fit(X_train, y_train)
+            scores.append(clf.score(X_test, y_test))
 
-        <span class="n">outstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Test R^2 (</span><span class="si">{</span><span class="n">n_splits</span><span class="si">}</span><span class="s2">-fold): </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        outstr += f&quot;Test R^2 ({n_splits}-fold): {np.round(np.mean(scores),3)}&quot;
 
-    <span class="n">clf</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">refit_full</span><span class="p">:</span>
-        <span class="n">clf</span> <span class="o">=</span> <span class="n">PLSRegression</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
-        <span class="n">outstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Full R^2: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    clf = None
+    if refit_full:
+        clf = PLSRegression(n_components=n_components, max_iter=2000)
+        _ = clf.fit(X, Y)
+        outstr += f&quot;\tFull R^2: {np.round(clf.score(X, Y), 3)}\n&quot;
 
-    <span class="nb">print</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">clf</span>
+    print(outstr)
+    return clf
+
 </pre></div>
 </div>
 </div>
@@ -870,9 +871,9 @@ Resampled dataset shape: (13000, 20)
 <p>We can start by examiningd how changing the amount of dimensionality-reduction (number of PLS components) affect the model performance using just original 20d AUs:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">preprocess_features</span><span class="p">(</span><span class="n">balX</span><span class="p">,</span><span class="n">balY</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>X, Y = preprocess_features(balX,balY)
 
-<span class="n">clf</span> <span class="o">=</span> <span class="n">fit_pls</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">au_cols</span><span class="p">))</span>
+clf = fit_pls(X, Y, n_components=len(au_cols))
 </pre></div>
 </div>
 </div>
@@ -895,46 +896,46 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">save_viz_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">clf</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def save_viz_model(model_name, clf):
 
-    <span class="c1"># Add some extra attributes to the model instance and dump it</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">X_train</span> <span class="o">=</span> <span class="n">X</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">Y_train</span> <span class="o">=</span> <span class="n">Y</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">skversion</span> <span class="o">=</span> <span class="n">skversion</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">pyversion</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">model_name_</span> <span class="o">=</span> <span class="n">model_name</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">dump</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_resource_path</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.joblib&quot;</span><span class="p">))</span>
+    # Add some extra attributes to the model instance and dump it
+    clf.X_train = X
+    clf.Y_train = Y
+    clf.skversion = skversion
+    clf.pyversion = sys.version
+    clf.model_name_ = model_name
+    _ = dump(clf, os.path.join(get_resource_path(), f&quot;{model_name}.joblib&quot;))
 
-    <span class="c1"># Do the same as an hdf5 file</span>
-    <span class="n">hf</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_resource_path</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_weights&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_weights_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_mean&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_x_mean</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_mean&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_y_mean</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_std&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_x_std</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_std&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">_y_std</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_weights&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_weights_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_loadings&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_loadings_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_loadings&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_loadings_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_scores&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_scores_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_scores&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_scores_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_rotations&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">x_rotations_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_rotations&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">y_rotations_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;intercept&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">intercept_</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;x_train&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">X_train</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;y_train&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">Y_train</span><span class="p">)</span>
-    <span class="n">hf</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;skversion&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">skversion</span>
-    <span class="n">hf</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;pyversion&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">pyversion</span>
-    <span class="n">hf</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;model_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">model_name_</span>
-    <span class="n">hf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model saved!&quot;</span><span class="p">)</span>
+    # Do the same as an hdf5 file
+    hf = h5py.File(os.path.join(get_resource_path(), f&quot;{model_name}.h5&quot;), &quot;w&quot;)
+    _ = hf.create_dataset(&quot;coef&quot;, data=clf.coef_)
+    _ = hf.create_dataset(&quot;x_weights&quot;, data=clf.x_weights_)
+    _ = hf.create_dataset(&quot;x_mean&quot;, data=clf._x_mean)
+    _ = hf.create_dataset(&quot;y_mean&quot;, data=clf._y_mean)
+    _ = hf.create_dataset(&quot;x_std&quot;, data=clf._x_std)
+    _ = hf.create_dataset(&quot;y_std&quot;, data=clf._y_std)
+    _ = hf.create_dataset(&quot;y_weights&quot;, data=clf.y_weights_)
+    _ = hf.create_dataset(&quot;x_loadings&quot;, data=clf.x_loadings_)
+    _ = hf.create_dataset(&quot;y_loadings&quot;, data=clf.y_loadings_)
+    _ = hf.create_dataset(&quot;x_scores&quot;, data=clf.x_scores_)
+    _ = hf.create_dataset(&quot;y_scores&quot;, data=clf.y_scores_)
+    _ = hf.create_dataset(&quot;x_rotations&quot;, data=clf.x_rotations_)
+    _ = hf.create_dataset(&quot;y_rotations&quot;, data=clf.y_rotations_)
+    _ = hf.create_dataset(&quot;intercept&quot;, data=clf.intercept_)
+    _ = hf.create_dataset(&quot;x_train&quot;, data=clf.X_train)
+    _ = hf.create_dataset(&quot;y_train&quot;, data=clf.Y_train)
+    hf.attrs[&quot;skversion&quot;] = clf.skversion
+    hf.attrs[&quot;pyversion&quot;] = clf.pyversion
+    hf.attrs[&quot;model_name&quot;] = clf.model_name_
+    hf.close()
+    print(&quot;Model saved!&quot;)
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">save_viz_model</span><span class="p">(</span><span class="s2">&quot;pyfeat_aus_to_landmarks&quot;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>save_viz_model(&quot;pyfeat_aus_to_landmarks&quot;, clf)
 </pre></div>
 </div>
 </div>
@@ -952,8 +953,8 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 <p>If you don’t pass in a model name, the model we just trained is what gets loaded by default:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loaded_model</span> <span class="o">=</span> <span class="n">load_viz_model</span><span class="p">(</span><span class="s1">&#39;pyfeat_aus_to_landmarks&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">loaded_model</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>loaded_model = load_viz_model(&#39;pyfeat_aus_to_landmarks&#39;, verbose=True)
+loaded_model
 </pre></div>
 </div>
 </div>
@@ -966,8 +967,8 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 <p>We can make sure the loaded trained models are the same by comparing their learned coefficients and their performance on the aggregated data:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loaded_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span> <span class="o">==</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">loaded_model</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>loaded_model.score(X,Y) == clf.score(X,Y)
+np.allclose(loaded_model.coef_, clf.coef_)
 </pre></div>
 </div>
 </div>
@@ -990,16 +991,16 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 <p>Now you can visualize AU detections by passing setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> to the <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> method of a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> dataclass:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Detector
+from feat.utils import get_test_data_path
 
-<span class="n">single_face_img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span> <span class="s2">&quot;single_face.jpg&quot;</span><span class="p">)</span>
+single_face_img_path = os.path.join(get_test_data_path(), &quot;single_face.jpg&quot;)
 
-<span class="c1"># Both the svm and logistic au models will use our visualization model</span>
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">)</span>
+# Both the svm and logistic au models will use our visualization model
+detector = Detector(au_model=&#39;svm&#39;)
 
-<span class="n">single_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">)</span>
-<span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span> <span class="s1">&#39;aus&#39;</span><span class="p">,</span> <span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+single_face_prediction = detector.detect_image(single_face_img_path)
+figs = single_face_prediction.plot_detections(faces= &#39;aus&#39;, add_titles=False)
 </pre></div>
 </div>
 </div>
@@ -1018,27 +1019,27 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 <p>You can use a similar approach if you plan to add a custom AU detector that has a different set of AUs. You should use the naming convention: <code class="docutils literal notranslate"><span class="pre">[detector]_aus_to_landmarks</span></code> when saving models to disk</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get list of JAANET AUs</span>
-<span class="n">jaanet_au_cols</span> <span class="o">=</span> <span class="n">AU_LANDMARK_MAP</span><span class="p">[</span><span class="s2">&quot;jaanet&quot;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">jaanet_au_cols</span><span class="p">)</span><span class="si">}</span><span class="s2"> AUs&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Get list of JAANET AUs
+jaanet_au_cols = AU_LANDMARK_MAP[&quot;jaanet&quot;]
+print(f&quot;Using {len(jaanet_au_cols)} AUs&quot;)
 
-<span class="c1"># Load and aggregate only these 12 AUs from the different datasets</span>
-<span class="n">labels</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="n">load_landmark_au_data</span><span class="p">(</span><span class="n">au_cols</span><span class="o">=</span><span class="n">jaanet_au_cols</span><span class="p">)</span>
+# Load and aggregate only these 12 AUs from the different datasets
+labels, landmarks = load_landmark_au_data(au_cols=jaanet_au_cols)
 
-<span class="c1"># Pseudo-balance AU occurrences</span>
-<span class="n">balX</span><span class="p">,</span> <span class="n">balY</span> <span class="o">=</span> <span class="n">pseudo_balance_au_occurences</span><span class="p">(</span>
-    <span class="n">labels</span><span class="p">,</span> <span class="n">jaanet_au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resampled dataset shape: </span><span class="si">{</span><span class="n">balX</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+# Pseudo-balance AU occurrences
+balX, balY = pseudo_balance_au_occurences(
+    labels, jaanet_au_cols, min_pos_sample=650, random_state=0
+)
+print(f&quot;Resampled dataset shape: {balX.shape}&quot;)
 
-<span class="c1"># Plot the rebalancing</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">)</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">balX</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pseudo-balanced&quot;</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Proportion of Samples with AU present&#39;</span><span class="p">)</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
+# Plot the rebalancing
+ax = labels.mean().plot(kind=&quot;bar&quot;, label=&quot;original&quot;)
+ax = balX.mean().plot(
+    kind=&quot;bar&quot;, color=&quot;orange&quot;, alpha=0.5, ax=ax, label=&quot;pseudo-balanced&quot;
+)
+_ = ax.legend()
+_ = ax.set(ylabel=&#39;Proportion of Samples with AU present&#39;)
+sns.despine()
 </pre></div>
 </div>
 </div>
@@ -1059,14 +1060,14 @@ Resampled dataset shape: (7800, 12)
 <p>Then we fit, save, and verify the saved the model like before:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Align landmarks to the neutral face</span>
-<span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">preprocess_features</span><span class="p">(</span><span class="n">balX</span><span class="p">,</span><span class="n">balY</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Align landmarks to the neutral face
+X, Y = preprocess_features(balX,balY)
 
-<span class="c1"># Fit the model</span>
-<span class="n">jaanet_clf</span> <span class="o">=</span> <span class="n">fit_pls</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">jaanet_au_cols</span><span class="p">))</span>
+# Fit the model
+jaanet_clf = fit_pls(X, Y, n_components=len(jaanet_au_cols))
 
-<span class="c1"># Save it</span>
-<span class="n">save_viz_model</span><span class="p">(</span><span class="s2">&quot;jaanet_aus_to_landmarks&quot;</span><span class="p">,</span> <span class="n">jaanet_clf</span><span class="p">)</span>
+# Save it
+save_viz_model(&quot;jaanet_aus_to_landmarks&quot;, jaanet_clf)
 </pre></div>
 </div>
 </div>
@@ -1087,11 +1088,11 @@ Model saved!
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Verify the saved model</span>
-<span class="n">jaanet_loaded_model</span> <span class="o">=</span> <span class="n">load_viz_model</span><span class="p">(</span><span class="s1">&#39;jaanet_aus_to_landmarks&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Verify the saved model
+jaanet_loaded_model = load_viz_model(&#39;jaanet_aus_to_landmarks&#39;, verbose=True)
 
-<span class="n">jaanet_loaded_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span> <span class="o">==</span> <span class="n">jaanet_clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">jaanet_loaded_model</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">jaanet_clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
+jaanet_loaded_model.score(X,Y) == jaanet_clf.score(X,Y)
+np.allclose(jaanet_loaded_model.coef_, jaanet_clf.coef_)
 </pre></div>
 </div>
 </div>
@@ -1114,14 +1115,14 @@ Model saved!
 <p>Finally we can visualize the AU detection:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Swap the AU detector to jaanet</span>
-<span class="n">detector</span><span class="o">.</span><span class="n">change_model</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;jaanet&#39;</span><span class="p">)</span>
-<span class="n">single_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Swap the AU detector to jaanet
+detector.change_model(au_model=&#39;jaanet&#39;)
+single_face_prediction = detector.detect_image(single_face_img_path)
 
-<span class="c1"># This will automatically switch the visualization model behind the scenes</span>
-<span class="c1"># Notice the projected face is a bit different than our other model because there are</span>
-<span class="c1"># fewer AUs in JAANET</span>
-<span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span> <span class="s1">&#39;aus&#39;</span><span class="p">,</span> <span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+# This will automatically switch the visualization model behind the scenes
+# Notice the projected face is a bit different than our other model because there are
+# fewer AUs in JAANET
+figs = single_face_prediction.plot_detections(faces= &#39;aus&#39;, add_titles=False)
 </pre></div>
 </div>
 </div>

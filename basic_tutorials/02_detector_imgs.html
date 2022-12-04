@@ -607,8 +607,8 @@ title="Print to PDF"
 <p>In this tutorial we’ll explore the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/02_detector_imgs.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
-<span class="c1"># !pip install -q py-feat</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Uncomment the line below and run this only if you&#39;re using Google Collab
+# !pip install -q py-feat
 </pre></div>
 </div>
 </div>
@@ -620,17 +620,17 @@ title="Print to PDF"
 <p>When using the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> you can either specify specific models to use or just load the default models which are defined explicitly below:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Detector
 
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span>
-    <span class="n">face_model</span><span class="o">=</span><span class="s2">&quot;retinaface&quot;</span><span class="p">,</span>
-    <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span>
-    <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span>
-    <span class="n">emotion_model</span><span class="o">=</span><span class="s2">&quot;resmasknet&quot;</span><span class="p">,</span>
-    <span class="n">facepose_model</span><span class="o">=</span><span class="s2">&quot;img2pose&quot;</span><span class="p">,</span>
-<span class="p">)</span>
+detector = Detector(
+    face_model=&quot;retinaface&quot;,
+    landmark_model=&quot;mobilefacenet&quot;,
+    au_model=&#39;svm&#39;,
+    emotion_model=&quot;resmasknet&quot;,
+    facepose_model=&quot;img2pose&quot;,
+)
 
-<span class="n">detector</span>
+detector
 </pre></div>
 </div>
 </div>
@@ -643,18 +643,18 @@ title="Print to PDF"
 <p>Let’s process a single image with a single face. Py-feat includes a demo image for this purpose called <code class="docutils literal notranslate"><span class="pre">single_face.jpg</span></code> so lets use that. You can also use the convenient <code class="docutils literal notranslate"><span class="pre">imshow</span></code> function which will automatically load an image into a numpy array if provided a path unlike matplotlib:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
-<span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">imshow</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import get_test_data_path
+from feat.plotting import imshow
+import os
 
-<span class="c1"># Helper to point to the test data folder</span>
-<span class="n">test_data_dir</span> <span class="o">=</span> <span class="n">get_test_data_path</span><span class="p">()</span>
+# Helper to point to the test data folder
+test_data_dir = get_test_data_path()
 
-<span class="c1"># Get the full path</span>
-<span class="n">single_face_img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;single_face.jpg&quot;</span><span class="p">)</span>
+# Get the full path
+single_face_img_path = os.path.join(test_data_dir, &quot;single_face.jpg&quot;)
 
-<span class="c1"># Plot it</span>
-<span class="n">imshow</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">)</span>
+# Plot it
+imshow(single_face_img_path)
 </pre></div>
 </div>
 </div>
@@ -665,10 +665,10 @@ title="Print to PDF"
 <p>Now we use our initialized <code class="docutils literal notranslate"><span class="pre">detector</span></code> instance to make predictions with the <code class="docutils literal notranslate"><span class="pre">detect_image()</span></code> method. This is the main workhorse method that will perform face, landmark, au, and emotion detection using the loaded models. It always returns a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data instance:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>single_face_prediction = detector.detect_image(single_face_img_path)
 
-<span class="c1"># Show results</span>
-<span class="n">single_face_prediction</span>
+# Show results
+single_face_prediction
 </pre></div>
 </div>
 </div>
@@ -757,7 +757,7 @@ title="Print to PDF"
 <p>Fex data classes make it simple to access various columns of interest (AUs, emotion, faceboxes, etc):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">facebox</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>single_face_prediction.facebox
 </pre></div>
 </div>
 </div>
@@ -802,7 +802,7 @@ title="Print to PDF"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">aus</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>single_face_prediction.aus
 </pre></div>
 </div>
 </div>
@@ -877,7 +877,7 @@ title="Print to PDF"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">emotions</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>single_face_prediction.emotions
 </pre></div>
 </div>
 </div>
@@ -926,7 +926,7 @@ title="Print to PDF"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">facepose</span> <span class="c1"># (in degrees)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>single_face_prediction.facepose # (in degrees)
 </pre></div>
 </div>
 </div>
@@ -971,7 +971,7 @@ title="Print to PDF"
 <p>We can also save our detection directly to a file by specifying an <code class="docutils literal notranslate"><span class="pre">outputFname</span></code> when using <code class="docutils literal notranslate"><span class="pre">.detect_image</span></code>. The detector will return <code class="docutils literal notranslate"><span class="pre">True</span></code> when it’s finished.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">,</span> <span class="n">outputFname</span> <span class="o">=</span> <span class="s2">&quot;output.csv&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector.detect_image(single_face_img_path, outputFname = &quot;output.csv&quot;)
 </pre></div>
 </div>
 </div>
@@ -1053,13 +1053,13 @@ title="Print to PDF"
 <p>We can load this output using the <code class="docutils literal notranslate"><span class="pre">read_feat()</span></code> function, which behaves just like <code class="docutils literal notranslate"><span class="pre">pd.read_csv</span></code> from Pandas, but returns a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data class instead of a DataFrame. This gives you the full suite of Fex funcionality right away.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># prefer to pandas read_csv</span>
-<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_feat</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># prefer to pandas read_csv
+from feat.utils import read_feat
 
-<span class="n">input_prediction</span> <span class="o">=</span> <span class="n">read_feat</span><span class="p">(</span><span class="s2">&quot;output.csv&quot;</span><span class="p">)</span>
+input_prediction = read_feat(&quot;output.csv&quot;)
 
-<span class="c1"># Show results</span>
-<span class="n">input_prediction</span>
+# Show results
+input_prediction
 </pre></div>
 </div>
 </div>
@@ -1141,7 +1141,7 @@ title="Print to PDF"
 <p>We can use the <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> method to generate a summary figure of detected faces, action units and emotions. It always returns a list of matplotlib figures:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">poses</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>figs = single_face_prediction.plot_detections(poses=True)
 </pre></div>
 </div>
 </div>
@@ -1152,7 +1152,7 @@ title="Print to PDF"
 <p>By default <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will overlay facial lines on top of the input image. However, it’s also possible to visualize a face using Py-Feat’s standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> instead of the default <code class="docutils literal notranslate"><span class="pre">faces='landmarks'</span></code>. For more details about this kind of visualization see the <a class="reference internal" href="04_plotting.html"><span class="doc std std-doc">visualizing facial expressions</span></a> and the <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html"><span class="doc std std-doc">creating an AU visualization model</span></a> tutorials:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span><span class="s1">&#39;aus&#39;</span><span class="p">,</span> <span class="n">muscles</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>figs = single_face_prediction.plot_detections(faces=&#39;aus&#39;, muscles=True)
 </pre></div>
 </div>
 </div>
@@ -1169,11 +1169,11 @@ title="Print to PDF"
 <p>Notice how <code class="docutils literal notranslate"><span class="pre">image_prediction</span></code> is now a Fex instance with 5 rows, one for each detected face. We can confirm this by plotting our detection results and poses like before:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">multi_face_image_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;multi_face.jpg&quot;</span><span class="p">)</span>
-<span class="n">multi_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">multi_face_image_path</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>multi_face_image_path = os.path.join(test_data_dir, &quot;multi_face.jpg&quot;)
+multi_face_prediction = detector.detect_image(multi_face_image_path)
 
-<span class="c1"># Show results</span>
-<span class="n">multi_face_prediction</span>
+# Show results
+multi_face_prediction
 </pre></div>
 </div>
 </div>
@@ -1347,7 +1347,7 @@ title="Print to PDF"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">multi_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>figs = multi_face_prediction.plot_detections(add_titles=False)
 </pre></div>
 </div>
 </div>
@@ -1363,10 +1363,10 @@ title="Print to PDF"
 <p>Notice how the returned Fex data class instance has 6 rows: 1 for the first face in the first image, and 5 for the faces in the second image:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">single_face_img_path</span><span class="p">,</span> <span class="n">multi_face_image_path</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>img_list = [single_face_img_path, multi_face_image_path]
 
-<span class="n">mixed_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">img_list</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">mixed_prediction</span>
+mixed_prediction = detector.detect_image(img_list, batch_size=1)
+mixed_prediction
 </pre></div>
 </div>
 </div>
@@ -1565,7 +1565,7 @@ title="Print to PDF"
 <p>Calling <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will now plot detections for all images the detector was passed:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>figs = mixed_prediction.plot_detections(add_titles=False)
 </pre></div>
 </div>
 </div>
@@ -1577,8 +1577,8 @@ title="Print to PDF"
 <p>However, it’s easy to use pandas slicing sytax to just grab predictions for the image you want. For example you can use <code class="docutils literal notranslate"><span class="pre">.loc</span></code> and chain it to <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Just plot the detection corresponding to the first row in the Fex data</span>
-<span class="n">figs</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Just plot the detection corresponding to the first row in the Fex data
+figs = mixed_prediction.loc[0].plot_detections(add_titles=False)
 </pre></div>
 </div>
 </div>
@@ -1589,9 +1589,9 @@ title="Print to PDF"
 <p>Likewise you can use <code class="docutils literal notranslate"><span class="pre">.query()</span></code> and chain it to <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code>. <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data classes store each file path in the <code class="docutils literal notranslate"><span class="pre">'input'</span></code> column. So we can use regular pandas methods like <code class="docutils literal notranslate"><span class="pre">.unique()</span></code> to get all the unique images (2 in our case) and pick the second one.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Choose plot based on image file name</span>
-<span class="n">img_name</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">axes</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;input == @img_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Choose plot based on image file name
+img_name = mixed_prediction[&#39;input&#39;].unique()[1]
+axes = mixed_prediction.query(&quot;input == @img_name&quot;).plot_detections(add_titles=False)
 </pre></div>
 </div>
 </div>
