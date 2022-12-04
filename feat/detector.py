@@ -321,7 +321,7 @@ class Detector(object):
             openface_2d_landmark_columns,
         )
 
-    def detect_faces(self, frame):
+    def detect_faces(self, frame, threshold=0.75):
         """Detect faces from image or video frame
 
         Args:
@@ -352,6 +352,17 @@ class Detector(object):
 
         if len(faces) == 0:
             logging.warning("Warning: NO FACE is detected")
+        
+        thresholded_face = []
+        for face in faces:
+            thr1 = []
+            for fac in face:
+                thr2 = []
+                if fac[4] >= threshold:
+                    thr2.append(fac)
+            thr1.append(thr2)
+        thresholded_face.append(thr1)
+        
         return faces
 
     def detect_landmarks(self, frame, detected_faces):
