@@ -17,8 +17,7 @@ parts:
     chapters:
       - file: extra_tutorials/06_trainAUvisModel
       - file: extra_tutorials/07_extract_labels_and_landmarks
-      - file: extra_tutorials/08_loadingOtherFiles
-      - file: extra_tutorials/09_train_hogs
+      - file: extra_tutorials/08_train_hogs
   - caption: API
     chapters:
       - file: pages/api
