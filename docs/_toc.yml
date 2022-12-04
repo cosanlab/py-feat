@@ -18,6 +18,11 @@ parts:
       - file: extra_tutorials/06_trainAUvisModel
       - file: extra_tutorials/07_extract_labels_and_landmarks
       - file: extra_tutorials/08_train_hogs
+      - file: extra_tutorials/09_test_bbox
+      - file: extra_tutorials/10_test_lands
+      - file: extra_tutorials/11_test_PoseInfo
+      - file: extra_tutorials/12_test_aus
+      - file: extra_tutorials/13_test_emos
   - caption: API
     chapters:
       - file: pages/api
