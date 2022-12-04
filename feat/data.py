@@ -1826,6 +1826,7 @@ class imageLoader_DISFAPlus(ImageDataset):
         output_size=None,
         preserve_aspect_ratio=True,
         padding=False,
+        sample=None,
     ):
         super().__init__(
             images=None,
@@ -1851,6 +1852,7 @@ class imageLoader_DISFAPlus(ImageDataset):
         ]
 
         self.data_dir = data_dir
+        self.sample = sample
         self.main_file = self._load_data()
 
         self.output_size = output_size
@@ -1860,6 +1862,9 @@ class imageLoader_DISFAPlus(ImageDataset):
     def _load_data(self):
         print("data loading in progress")
         all_subjects = os.listdir(os.path.join(self.data_dir, "Labels"))
+        if self.sample:
+            all_subjects = np.random.choice(all_subjects, size=int(self.sample*len(all_subjects)), replace=False)
+
         sessions = [
             os.listdir(os.path.join(self.data_dir, "Labels", subj))
             for subj in all_subjects
@@ -1903,7 +1908,7 @@ class imageLoader_DISFAPlus(ImageDataset):
     def __getitem__(self, idx):
 
         # Dimensions are [channels, height, width]
-        img = read_image(self.main_file["image_path"][idx])
+        img = read_image(self.main_file["image_path"].iloc[idx])
         label = self.main_file.loc[idx, self.avail_AUs].to_numpy().astype(np.int16)
 
         if self.output_size is not None:
