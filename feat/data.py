@@ -2041,7 +2041,9 @@ class imageLoader_DISFAPlus(ImageDataset):
         print("data loading in progress")
         all_subjects = os.listdir(os.path.join(self.data_dir, "Labels"))
         if self.sample:
-            all_subjects = np.random.choice(all_subjects, size=int(self.sample*len(all_subjects)), replace=False)
+            all_subjects = np.random.choice(
+                all_subjects, size=int(self.sample * len(all_subjects)), replace=False
+            )
 
         sessions = [
             os.listdir(os.path.join(self.data_dir, "Labels", subj))
