@@ -14,6 +14,9 @@ feat/tests/data/cond_pain_2017-03-30_s20_r01.txt
 docs/**/*.csv
 docs/**/*.mp4
 docs/_build
+docs/basic_tutorials/*.jpg
+docs/basic_tutorials/*.gif
+docs/basic_tutorials/figure.ipynb
 
 #Ignore resources folder except config files and viz model
 resources/
