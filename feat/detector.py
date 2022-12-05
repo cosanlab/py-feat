@@ -352,15 +352,15 @@ class Detector(object):
 
         if len(faces) == 0:
             logging.warning("Warning: NO FACE is detected")
-        
+
         thresholded_face = []
-        for fframe in faces: # first level is each frame
+        for fframe in faces:  # first level is each frame
             fframe_x = []
-            for fface in fframe: # second level is each face within a frame
-                if fface[4] >= threshold: # set thresholds
+            for fface in fframe:  # second level is each face within a frame
+                if fface[4] >= threshold:  # set thresholds
                     fframe_x.append(fface)
             thresholded_face.append(fframe_x)
-        
+
         return thresholded_face
 
     def detect_landmarks(self, frame, detected_faces):
