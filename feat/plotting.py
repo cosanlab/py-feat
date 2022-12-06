@@ -876,8 +876,8 @@ def get_heat(muscle, au, log):
 
 
 def plot_face(
-    model=None,
     au=None,
+    model=None,
     vectorfield=None,
     muscles=None,
     ax=None,
@@ -915,12 +915,8 @@ def plot_face(
         if not isinstance(model, PLSRegression):
             raise ValueError("make sure that model is a PLSRegression instance")
 
-    if au is None:
+    if au is None or isinstance(au, str) and au == "neutral":
         au = np.zeros(model.n_components)
-        warnings.warn(
-            f"Don't forget to pass an 'au' vector of length 20, "
-            "using neutral as default"
-        )
 
     landmarks = predict(au, model, feature_range=feature_range)
     currx, curry = [landmarks[x, :] for x in range(2)]
@@ -929,7 +925,9 @@ def plot_face(
         ax = _create_empty_figure()
 
     if muscles is not None:
-        if not isinstance(muscles, dict):
+        if muscles is True:
+            muscles = {"all": "heatmap"}
+        elif not isinstance(muscles, dict):
             raise ValueError("muscles must be a dictionary ")
         if muscle_scaler is None:
             # Muscles are always scaled 0 - 100 b/c color palette is 0-100

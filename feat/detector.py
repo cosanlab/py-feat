@@ -321,7 +321,7 @@ class Detector(object):
             openface_2d_landmark_columns,
         )
 
-    def detect_faces(self, frame, threshold=0.5):
+    def detect_faces(self, frame, threshold=0.5, **kwargs):
         """Detect faces from image or video frame
 
         Args:
@@ -363,7 +363,7 @@ class Detector(object):
 
         return thresholded_face
 
-    def detect_landmarks(self, frame, detected_faces):
+    def detect_landmarks(self, frame, detected_faces, **kwargs):
         """Detect landmarks from image or video frame
 
         Args:
@@ -425,7 +425,7 @@ class Detector(object):
 
         return list_concat
 
-    def detect_facepose(self, frame, landmarks=None):
+    def detect_facepose(self, frame, landmarks=None, **kwargs):
         """Detect facepose from image or video frame.
 
         When used with img2pose, returns *all* detected poses, and facebox and landmarks
@@ -455,7 +455,7 @@ class Detector(object):
 
         return poses
 
-    def detect_aus(self, frame, landmarks):
+    def detect_aus(self, frame, landmarks, **kwargs):
         """Detect Action Units from image or video frame
 
         Args:
@@ -532,7 +532,7 @@ class Detector(object):
 
         return (hogs_arr, new_lands)
 
-    def detect_emotions(self, frame, facebox, landmarks):
+    def detect_emotions(self, frame, facebox, landmarks, **kwargs):
         """Detect emotions from image or video frame
 
         Args:
@@ -573,6 +573,26 @@ class Detector(object):
                 "Cannot recognize input emo model! Please try to re-type emotion model"
             )
 
+    def _check_detections(self, faces, landmarks, poses, aus, emotions, batch_data):
+        """
+        Private method to ensure that all detectors return the same number of detections
+        """
+
+        # Each input arg is a nested list with length == number of faces in the batch
+
+        # Check 1) img2pose sometimes gives fewer detections that other models, we can't
+        # properly assemble Fex when that's the case. Returning more or the same
+        # detections is ok for now
+        if len(poses[0]) >= len(faces[0]):
+            return
+
+        raise ValueError(
+            f"Mismatch across detectors when processing batch: {batch_data['FileNames']}\n\nAn error occurred trying to merge detections into a single Fex object, as each type of detector is detecting a different number of faces:\n\nface_detector: {len(faces[0])}\npose_detector: {len(poses[0])}\nlandmark_detector: {len(landmarks[0])}\nau_detector: {len(aus[0])}\nemotion_detector: {len(emotions[0])}\n\nThis can happen for a number of reasons. Here are a few solutions:\n\n1) the face_model is too liberal. You use the 'threshold' keyword argument to make the detector more conservative, e.g. threshold= some val > 0.5\n2) the pose_detector gives different predictions than other detectors. You can use the same model for both pose and face detection by setting face_model='img2pose' and pose_model='img2pose' (or 'img2pose-c')"
+        )
+
+    # TODO: We need to be able to pass kwargs to the underlying pretrained models
+    # Tricky cause we need to do this when we initialized each model, not when we detect
+    # an image
     def detect_image(
         self,
         input_file_list,
@@ -581,6 +601,8 @@ class Detector(object):
         num_workers=0,
         pin_memory=False,
         frame_counter=0,
+        skip_failed_detections=False,
+        **detector_kwargs,
     ):
         """
         Detects FEX from one or more image files. If you want to speed up detection you
@@ -628,27 +650,40 @@ class Detector(object):
             batch_output = []
             for batch_id, batch_data in enumerate(tqdm(data_loader)):
                 frame_counter += frame_counter + batch_id * batch_size
-                faces = self.detect_faces(batch_data["Image"])
+                faces = self.detect_faces(batch_data["Image"], **detector_kwargs)
                 landmarks = self.detect_landmarks(
-                    batch_data["Image"], detected_faces=faces
+                    batch_data["Image"], detected_faces=faces, **detector_kwargs
                 )
-                poses = self.detect_facepose(batch_data["Image"], landmarks)
-                aus = self.detect_aus(batch_data["Image"], landmarks)
-                emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+                poses = self.detect_facepose(
+                    batch_data["Image"], landmarks, **detector_kwargs
+                )
+                aus = self.detect_aus(batch_data["Image"], landmarks, **detector_kwargs)
+                emotions = self.detect_emotions(
+                    batch_data["Image"], faces, landmarks, **detector_kwargs
+                )
 
                 faces = _inverse_face_transform(faces, batch_data)
                 landmarks = _inverse_landmark_transform(landmarks, batch_data)
-                output = self._create_fex(
-                    faces,
-                    landmarks,
-                    poses,
-                    aus,
-                    emotions,
-                    batch_data["FileNames"],
-                    frame_counter,
-                )
-                batch_output.append(output)
-
+                try:
+                    self._check_detections(
+                        faces, landmarks, poses, aus, emotions, batch_data
+                    )
+                    output = self._create_fex(
+                        faces,
+                        landmarks,
+                        poses,
+                        aus,
+                        emotions,
+                        batch_data["FileNames"],
+                        frame_counter,
+                    )
+                    batch_output.append(output)
+                except ValueError as e:
+                    if skip_failed_detections:
+                        print(e)
+                        continue
+                    else:
+                        raise e
             batch_output = pd.concat(batch_output)
             batch_output.reset_index(drop=True, inplace=True)
 
@@ -666,6 +701,7 @@ class Detector(object):
         batch_size=1,
         num_workers=0,
         pin_memory=False,
+        **detector_kwargs,
     ):
         """Detects FEX from a video file.
 
@@ -694,11 +730,15 @@ class Detector(object):
 
         batch_output = []
         for batch_data in tqdm(data_loader):
-            faces = self.detect_faces(batch_data["Image"])
-            landmarks = self.detect_landmarks(batch_data["Image"], detected_faces=faces)
-            poses = self.detect_facepose(batch_data["Image"])
-            aus = self.detect_aus(batch_data["Image"], landmarks)
-            emotions = self.detect_emotions(batch_data["Image"], faces, landmarks)
+            faces = self.detect_faces(batch_data["Image"], **detector_kwargs)
+            landmarks = self.detect_landmarks(
+                batch_data["Image"], detected_faces=faces, **detector_kwargs
+            )
+            poses = self.detect_facepose(batch_data["Image"], **detector_kwargs)
+            aus = self.detect_aus(batch_data["Image"], landmarks, **detector_kwargs)
+            emotions = self.detect_emotions(
+                batch_data["Image"], faces, landmarks, **detector_kwargs
+            )
             frames = list(batch_data["Frame"].numpy())
             landmarks = _inverse_landmark_transform(landmarks, batch_data)
             output = self._create_fex(
@@ -772,7 +812,7 @@ class Detector(object):
 
                 facepose_df = pd.DataFrame(
                     [poses[i][j].flatten(order="F")],
-                    columns=self["facepose_model_columns"],
+                    columns=self.info["facepose_model_columns"],
                     index=[j],
                 )
 
