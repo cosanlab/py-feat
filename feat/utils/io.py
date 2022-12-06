@@ -103,7 +103,6 @@ def read_feat(fexfile):
         facepose_columns=["Pitch", "Roll", "Yaw"],
         detector="Feat",
     )
-    fex["input"] = fexfile
     return fex
 
 
