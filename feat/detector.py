@@ -53,6 +53,7 @@ class Detector(object):
         device="cpu",
         n_jobs=1,
         verbose=False,
+        **kwargs,
     ):
         """Detector class to detect FEX from images or videos.
 
@@ -60,7 +61,11 @@ class Detector(object):
 
         Args:
             n_jobs (int, default=1): Number of processes to use for extraction.
-            device (str): specify device to process data (default='cpu'), can be ['auto', 'cpu', 'cuda', 'mps']
+            device (str): specify device to process data (default='cpu'), can be
+            ['auto', 'cpu', 'cuda', 'mps']
+            verbose (bool): print logging and debug messages during operation
+            **kwargs: you can pass each detector specific kwargs using a dictionary
+            like: `face_model_kwargs = {...}, au_model_kwargs={...}, ...`
 
         Attributes:
             info (dict):
@@ -117,6 +122,7 @@ class Detector(object):
             emotion,
             facepose,
             openface_2d_landmark_columns,
+            **kwargs,
         )
 
     def __repr__(self):
@@ -133,9 +139,17 @@ class Detector(object):
         emotion,
         facepose,
         openface_2d_landmark_columns,
+        **kwargs,
     ):
         """Helper function called by __init__ and change_model to (re)initialize one of
         the supported detectors"""
+
+        # Keyword arguments than can be passed to the underlying models
+        face_model_kwargs = kwargs.pop("face_model_kwargs", dict())
+        landmark_model_kwargs = kwargs.pop("landmark_model_kwargs", dict())
+        au_model_kwargs = kwargs.pop("au_model_kwargs", dict())
+        emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
+        facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
 
         # Initialize model instances and any additional post init setup
         # Only initialize a model if the currently initialized model is diff than the
@@ -153,10 +167,14 @@ class Detector(object):
             if self.face_detector is not None:
                 if "img2pose" in face:
                     self.face_detector = self.face_detector(
-                        constrained="img2pose-c" == face, device=self.device
+                        constrained="img2pose-c" == face,
+                        device=self.device,
+                        **face_model_kwargs,
                     )
                 else:
-                    self.face_detector = self.face_detector(device=self.device)
+                    self.face_detector = self.face_detector(
+                        device=self.device, **face_model_kwargs
+                    )
 
         # LANDMARK MODEL
         if self.info["landmark_model"] != landmark:
@@ -164,7 +182,9 @@ class Detector(object):
             self.landmark_detector = fetch_model("landmark_model", landmark)
             if self.landmark_detector is not None:
                 if landmark == "mobilenet":
-                    self.landmark_detector = self.landmark_detector(136)
+                    self.landmark_detector = self.landmark_detector(
+                        136, **landmark_model_kwargs
+                    )
                     checkpoint = torch.load(
                         os.path.join(
                             get_resource_path(),
@@ -186,14 +206,18 @@ class Detector(object):
 
                     # self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 elif landmark == "pfld":
-                    self.landmark_detector = self.landmark_detector()
+                    self.landmark_detector = self.landmark_detector(
+                        **landmark_model_kwargs
+                    )
                     checkpoint = torch.load(
                         os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
                         map_location=self.device,
                     )
                     self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 elif landmark == "mobilefacenet":
-                    self.landmark_detector = self.landmark_detector([112, 112], 136)
+                    self.landmark_detector = self.landmark_detector(
+                        [112, 112], 136, **landmark_model_kwargs
+                    )
                     checkpoint = torch.load(
                         os.path.join(
                             get_resource_path(), "mobilefacenet_model_best.pth.tar"
@@ -220,10 +244,12 @@ class Detector(object):
             self.facepose_detector = fetch_model("facepose_model", facepose)
             if "img2pose" in facepose:
                 self.facepose_detector = self.facepose_detector(
-                    constrained="img2pose-c" == face, device=self.device
+                    constrained="img2pose-c" == face,
+                    device=self.device,
+                    **facepose_model_kwargs,
                 )
             else:
-                self.facepose_detector = self.facepose_detector()
+                self.facepose_detector = self.facepose_detector(**facepose_model_kwargs)
             self.info["facepose_model"] = facepose
 
             self.info["facepose_model_columns"] = FEAT_FACEPOSE_COLUMNS
@@ -247,7 +273,7 @@ class Detector(object):
                     self.info["au_model"]
                 ]
             if self.au_model is not None:
-                self.au_model = self.au_model()
+                self.au_model = self.au_model(**au_model_kwargs)
                 predictions = np.full_like(
                     np.atleast_2d(self.info["au_presence_columns"]), np.nan
                 )
@@ -262,7 +288,9 @@ class Detector(object):
             self.emotion_model = fetch_model("emotion_model", emotion)
             self.info["emotion_model"] = emotion
             if self.emotion_model is not None:
-                self.emotion_model = self.emotion_model(device=self.device)
+                self.emotion_model = self.emotion_model(
+                    device=self.device, **emotion_model_kwargs
+                )
                 self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
                 predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
                 empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
@@ -321,7 +349,7 @@ class Detector(object):
             openface_2d_landmark_columns,
         )
 
-    def detect_faces(self, frame, threshold=0.5, **kwargs):
+    def detect_faces(self, frame, threshold=0.5, **face_model_kwargs):
         """Detect faces from image or video frame
 
         Args:
@@ -346,9 +374,9 @@ class Detector(object):
 
         if "img2pose" in self.info["face_model"]:
             frame = frame / 255
-            faces, poses = self.face_detector(frame)
+            faces, poses = self.face_detector(frame, **face_model_kwargs)
         else:
-            faces = self.face_detector(frame)
+            faces = self.face_detector(frame, **face_model_kwargs)
 
         if len(faces) == 0:
             logging.warning("Warning: NO FACE is detected")
@@ -363,7 +391,7 @@ class Detector(object):
 
         return thresholded_face
 
-    def detect_landmarks(self, frame, detected_faces, **kwargs):
+    def detect_landmarks(self, frame, detected_faces, **landmark_model_kwargs):
         """Detect landmarks from image or video frame
 
         Args:
@@ -404,9 +432,17 @@ class Detector(object):
 
         # Run Landmark Model
         if self.info["landmark_model"].lower() == "mobilefacenet":
-            landmark = self.landmark_detector(extracted_faces)[0].cpu().data.numpy()
+            landmark = (
+                self.landmark_detector(extracted_faces, **landmark_model_kwargs)[0]
+                .cpu()
+                .data.numpy()
+            )
         else:
-            landmark = self.landmark_detector(extracted_faces).cpu().data.numpy()
+            landmark = (
+                self.landmark_detector(extracted_faces, **landmark_model_kwargs)
+                .cpu()
+                .data.numpy()
+            )
 
         landmark = landmark.reshape(landmark.shape[0], -1, 2)
 
@@ -425,7 +461,7 @@ class Detector(object):
 
         return list_concat
 
-    def detect_facepose(self, frame, landmarks=None, **kwargs):
+    def detect_facepose(self, frame, landmarks=None, **facepose_model_kwargs):
         """Detect facepose from image or video frame.
 
         When used with img2pose, returns *all* detected poses, and facebox and landmarks
@@ -449,13 +485,13 @@ class Detector(object):
         frame = convert_image_to_tensor(frame, img_type="float32") / 255
 
         if "img2pose" in self.info["facepose_model"]:
-            faces, poses = self.facepose_detector(frame)
+            faces, poses = self.facepose_detector(frame, **facepose_model_kwargs)
         else:
-            poses = self.facepose_detector(frame, landmarks)
+            poses = self.facepose_detector(frame, landmarks, **facepose_model_kwargs)
 
         return poses
 
-    def detect_aus(self, frame, landmarks, **kwargs):
+    def detect_aus(self, frame, landmarks, **au_model_kwargs):
         """Detect Action Units from image or video frame
 
         Args:
@@ -481,9 +517,13 @@ class Detector(object):
             # transform = Grayscale(3)
             # frame = transform(frame)
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
-            au_predictions = self.au_model.detect_au(frame=hog_arr, landmarks=new_lands)
+            au_predictions = self.au_model.detect_au(
+                frame=hog_arr, landmarks=new_lands, **au_model_kwargs
+            )
         else:
-            au_predictions = self.au_model.detect_au(frame, landmarks=landmarks)
+            au_predictions = self.au_model.detect_au(
+                frame, landmarks=landmarks, **au_model_kwargs
+            )
 
         return self._convert_detector_output(landmarks, au_predictions)
 
@@ -532,7 +572,7 @@ class Detector(object):
 
         return (hogs_arr, new_lands)
 
-    def detect_emotions(self, frame, facebox, landmarks, **kwargs):
+    def detect_emotions(self, frame, facebox, landmarks, **emotion_model_kwargs):
         """Detect emotions from image or video frame
 
         Args:
@@ -558,14 +598,17 @@ class Detector(object):
 
         if self.info["emotion_model"].lower() == "resmasknet":
             return self._convert_detector_output(
-                facebox, self.emotion_model.detect_emo(frame, facebox)
+                facebox,
+                self.emotion_model.detect_emo(frame, facebox, **emotion_model_kwargs),
             )
 
         elif self.info["emotion_model"].lower() == "svm":
             hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
             return self._convert_detector_output(
                 landmarks,
-                self.emotion_model.detect_emo(frame=hog_arr, landmarks=new_lands),
+                self.emotion_model.detect_emo(
+                    frame=hog_arr, landmarks=new_lands, **emotion_model_kwargs
+                ),
             )
 
         else:
@@ -602,7 +645,8 @@ class Detector(object):
         pin_memory=False,
         frame_counter=0,
         skip_failed_detections=False,
-        **detector_kwargs,
+        threshold=0.5,
+        **kwargs,
     ):
         """
         Detects FEX from one or more image files. If you want to speed up detection you
@@ -619,14 +663,23 @@ class Detector(object):
             Larger gives faster speed but is more memory-consuming. Images must be the
             same size to be run in batches!
             num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
-            pin_memory (bool): If ``True``, the data loader will copy Tensors
-                                into CUDA pinned memory before returning them.  If your data elements
-                                are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type
+            pin_memory (bool): If ``True``, the data loader will copy Tensors into CUDA pinned memory before returning them.  If your data elements are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type
             frame_counter (int): starting value to count frames
+            threshold (float): value between 0-1 to report a detection based on the
+            confidence of the face detector; Default >= 0.5
+            **kwargs: you can pass each detector specific kwargs using a dictionary
+            like: `face_model_kwargs = {...}, au_model_kwargs={...}, ...`
 
         Returns:
             Fex: Prediction results dataframe
         """
+
+        # Keyword arguments than can be passed to the underlying models
+        face_model_kwargs = kwargs.pop("face_model_kwargs", dict())
+        landmark_model_kwargs = kwargs.pop("landmark_model_kwargs", dict())
+        au_model_kwargs = kwargs.pop("au_model_kwargs", dict())
+        emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
+        facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
 
         data_loader = DataLoader(
             ImageDataset(
@@ -650,16 +703,18 @@ class Detector(object):
             batch_output = []
             for batch_id, batch_data in enumerate(tqdm(data_loader)):
                 frame_counter += frame_counter + batch_id * batch_size
-                faces = self.detect_faces(batch_data["Image"], **detector_kwargs)
+                faces = self.detect_faces(
+                    batch_data["Image"], threshold=threshold, **face_model_kwargs
+                )
                 landmarks = self.detect_landmarks(
-                    batch_data["Image"], detected_faces=faces, **detector_kwargs
+                    batch_data["Image"], detected_faces=faces, **landmark_model_kwargs
                 )
                 poses = self.detect_facepose(
-                    batch_data["Image"], landmarks, **detector_kwargs
+                    batch_data["Image"], landmarks, **facepose_model_kwargs
                 )
-                aus = self.detect_aus(batch_data["Image"], landmarks, **detector_kwargs)
+                aus = self.detect_aus(batch_data["Image"], landmarks, **au_model_kwargs)
                 emotions = self.detect_emotions(
-                    batch_data["Image"], faces, landmarks, **detector_kwargs
+                    batch_data["Image"], faces, landmarks, **emotion_model_kwargs
                 )
 
                 faces = _inverse_face_transform(faces, batch_data)

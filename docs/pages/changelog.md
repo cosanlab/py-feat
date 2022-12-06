@@ -10,6 +10,8 @@ This is a large overhaul and refactor of some of the core testing and API functi
 - experimental support for macOS m1 GPUs
 
 ### `Detector` Updates
+- you can now pass keyword arguments directly to the underlying pytorch/sklearn models on `Detector` initialization using dictionaries. For example you can do: `detector = Detector(facepose_model_kwargs={'keep_top_k': 500})` to initialize `img2pose` to only use 500 instead of 750 features
+- all `.detect_*` methods can also pass keyword arguments to the underlying pytorch/sklearn models, albeit these will be passed to their underlying `__call__` methods
 - SVM AU model has been retrained with new HOG feature PCA pipeline
 - new XGBoost AU model with new HOG feature PCA pipeline
 - `.detect_image` and `.detect_video` now display a `tqdm` progressbar
