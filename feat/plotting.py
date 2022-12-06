@@ -885,6 +885,7 @@ def plot_face(
     color="k",
     linewidth=1,
     linestyle="-",
+    border=True,
     gaze=None,
     muscle_scaler=None,
     *args,
@@ -932,6 +933,8 @@ def plot_face(
         if muscle_scaler is None:
             # Muscles are always scaled 0 - 100 b/c color palette is 0-100
             au = minmax_scale(au, feature_range=(0, 100))
+        elif isinstance(muscle_scaler, (int, float)):
+            au = minmax_scale(au, feature_range=(0, 100 * muscle_scaler))
         else:
             au = muscle_scaler.transform(np.array(au).reshape(-1, 1)).squeeze()
         ax = draw_muscles(currx, curry, ax=ax, au=au, **muscles)
@@ -944,7 +947,9 @@ def plot_face(
         gaze = None
 
     title = kwargs.pop("title", None)
-    title_kwargs = kwargs.pop("title_kwargs", dict(wrap=True, fontsize=14, loc="left"))
+    title_kwargs = kwargs.pop(
+        "title_kwargs", dict(wrap=True, fontsize=14, loc="center")
+    )
     ax = draw_lineface(
         currx,
         curry,
@@ -972,6 +977,8 @@ def plot_face(
         if title_kwargs["wrap"]:
             title = "\n".join(wrap(title))
         _ = ax.set_title(title, **title_kwargs)
+    if not border:
+        sns.despine(left=True, bottom=True, ax=ax)
     return ax
 
 
