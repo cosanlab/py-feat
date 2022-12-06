@@ -17,6 +17,7 @@ docs/_build
 docs/basic_tutorials/*.jpg
 docs/basic_tutorials/*.gif
 docs/basic_tutorials/figure.ipynb
+docs/basic_tutorials/fig_maker
 
 #Ignore resources folder except config files and viz model
 resources/

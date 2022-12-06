@@ -13,6 +13,8 @@ This is a large overhaul and refactor of some of the core testing and API functi
 - SVM AU model has been retrained with new HOG feature PCA pipeline
 - new XGBoost AU model with new HOG feature PCA pipeline
 - `.detect_image` and `.detect_video` now display a `tqdm` progressbar
+- new `skip_failed_detections` keyword argument to still generate a `Fex` object when processing multiple images and one ore more fail detection
+- `.detect_image()` and `.detect_video()` now support `detector_kwargs` that are keyword arguments that can be passed to the underlying models
 
 ### Breaking `Detector` Changes
 
