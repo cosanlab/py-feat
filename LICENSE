@@ -9,8 +9,13 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-FaceBoxes: https://github.com/cleardusk/3DDFA_V2/blob/master/LICENSE
-RetinaFace: https://github.com/biubug6/Pytorch_Retinaface/blob/master/LICENSE.MIT
-MTCNN: https://github.com/ipazc/mtcnn/blob/master/LICENSE
-FacialLandmarks: https://github.com/cunjian/pytorch_face_landmark
-Residual Masking Network: https://github.com/phamquiluan/ResidualMaskingNetwork/issues/18
+We also link to applicable licenses from models/code used in Py-Feat:
+
+- RetinaFace: https://github.com/biubug6/Pytorch_Retinaface/blob/master/LICENSE.MIT
+- FaceBoxes: https://github.com/cleardusk/3DDFA_V2/blob/master/LICENSE
+- MTCNN: https://github.com/ipazc/mtcnn/blob/master/LICENSE
+- Img2Pose: https://github.com/vitoralbiero/img2pose/blob/main/license.md
+- Mobilenet: https://github.com/cunjian/pytorch_face_landmark (basenet)
+- MobileFaceNet: https://github.com/cunjian/pytorch_face_landmark (mobilefacenet)
+- PFLD: https://github.com/cunjian/pytorch_face_landmark (pfld_compressed)
+- Residual Masking Network: https://github.com/phamquiluan/ResidualMaskingNetwork/issues/18
