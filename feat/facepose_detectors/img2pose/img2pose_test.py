@@ -1,13 +1,11 @@
-from functools import total_ordering
 import os
-from tokenize import Token
 import torch
 import numpy as np
 from torchvision.transforms import Compose, Pad
 from feat.transforms import Rescale
 from .img2pose_model import img2poseModel
 from feat.utils import set_torch_device
-from feat.utils.io import get_resource_path, get_test_data_path
+from feat.utils.io import get_resource_path
 from feat.utils.image_operations import convert_to_euler, py_cpu_nms
 import logging
 
@@ -26,6 +24,7 @@ class Img2Pose:
         DEPTH=18,
         MAX_SIZE=1400,
         MIN_SIZE=400,
+        RETURN_DIM=3,
         POSE_MEAN=os.path.join(get_resource_path(), "WIDER_train_pose_mean_v1.npy"),
         POSE_STDDEV=os.path.join(get_resource_path(), "WIDER_train_pose_stddev_v1.npy"),
         THREED_FACE_MODEL=os.path.join(
@@ -78,6 +77,7 @@ class Img2Pose:
             self.MIN_SIZE,
             self.MAX_SIZE,
             self.BORDER_SIZE,
+            self.RETURN_DIM,
         ) = (
             detection_threshold,
             nms_threshold,
@@ -87,6 +87,7 @@ class Img2Pose:
             MIN_SIZE,
             MAX_SIZE,
             BORDER_SIZE,
+            RETURN_DIM,
         )
 
     def load_model(self, model_path, optimizer=None):
@@ -224,9 +225,13 @@ class Img2Pose:
             if euler:  # Convert rotation vector into euler angles
                 pose_pred[:3] = convert_to_euler(pose_pred[:3])
 
-            three_dof_pose = pose_pred[:3]  # pitch, roll, yaw (when euler=True)
-            three_dof_pose = three_dof_pose.reshape(1, -1)
-            det_pose.append(three_dof_pose)
+            if self.RETURN_DIM == 3:
+                dof_pose = pose_pred[:3]  # pitch, roll, yaw (when euler=True)
+            else:
+                dof_pose = pose_pred[:]  # pitch, roll, yaw, x, y, z
+
+            dof_pose = dof_pose.reshape(1, -1)
+            det_pose.append(dof_pose)
 
         return {"boxes": det_bboxes, "poses": det_pose}
 

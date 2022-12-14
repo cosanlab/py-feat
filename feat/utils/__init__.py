@@ -32,7 +32,8 @@ FEAT_FACEBOX_COLUMNS = [
     "FaceScore",
 ]
 FEAT_TIME_COLUMNS = ["frame"]
-FEAT_FACEPOSE_COLUMNS = ["Pitch", "Roll", "Yaw"]
+FEAT_FACEPOSE_COLUMNS_3D = ["Pitch", "Roll", "Yaw"]
+FEAT_FACEPOSE_COLUMNS_6D = ["Pitch", "Roll", "Yaw", "X", "Y", "Z"]
 
 # OpenFace columns
 landmark_length = 68

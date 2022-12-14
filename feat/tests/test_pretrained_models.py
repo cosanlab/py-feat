@@ -192,15 +192,30 @@ class Test_Emotion_Models:
         assert out.emotions["happiness"].values > 0.5
 
 
-@pytest.mark.usefixtures("default_detector", "single_face_img_data")
+@pytest.mark.usefixtures("default_detector", "single_face_img", "single_face_img_data")
 class Test_Facepose_Models:
     """Test all pretrained facepose models"""
 
-    def test_img2pose_facepose(self, default_detector, single_face_img_data):
+    def test_img2pose_facepose(
+        self, default_detector, single_face_img, single_face_img_data
+    ):
 
         default_detector.change_model(facepose_model="img2pose")
         poses = default_detector.detect_facepose(single_face_img_data)
         assert np.allclose(poses, [0.86, -3.80, 6.60], atol=0.1)
+
+        # Test DOF kwarg
+        facepose_model_kwargs = {"RETURN_DIM": 6}
+        new_detector = Detector(facepose_model_kwargs=facepose_model_kwargs)
+        assert new_detector.facepose_detector.RETURN_DIM == 6
+
+        # Run as full detection
+        out = new_detector.detect_image(single_face_img)
+        assert "X" in out.poses.columns
+
+        # Also run directly
+        poses = new_detector.detect_facepose(single_face_img_data)
+        assert len(poses[0][0].squeeze()) == 6
 
     def test_img2pose_c_facepose(self, default_detector, single_face_img_data):
 
