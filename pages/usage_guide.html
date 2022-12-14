@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>How to install Py-Feat &#8212; Py-Feat</title>
+    <title>Usage Tips and Known Issues &#8212; Py-Feat</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -52,8 +52,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Included pre-trained detectors" href="models.html" />
-    <link rel="prev" title="Py-Feat: Python Facial Expression Analysis Toolbox" href="intro.html" />
+    <link rel="next" title="1. Py-Feat basics" href="../basic_tutorials/01_basics.html" />
+    <link rel="prev" title="Action Unit Reference" href="au_reference.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
     
@@ -119,8 +119,8 @@ const thebe_selector_output = ".output, .cell_output"
  </span>
 </p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
    How to install Py-Feat
   </a>
  </li>
@@ -134,8 +134,8 @@ const thebe_selector_output = ".output, .cell_output"
    Action Unit Reference
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="usage_guide.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Usage Tips and Known Issues
   </a>
  </li>
@@ -347,7 +347,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fpages/installation.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fpages/usage_guide.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -375,7 +375,7 @@ title="Open an issue"
   <div class="menu-dropdown__content">
     <ul>
       <li>
-        <a href="../_sources/pages/installation.md"
+        <a href="../_sources/pages/usage_guide.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -435,18 +435,8 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#basic-setup">
-   Basic setup
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#using-google-colab">
-   Using Google Colab
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#development-setup">
-   Development setup
+  <a class="reference internal nav-link" href="#known-issues">
+   Known issues
   </a>
  </li>
 </ul>
@@ -458,7 +448,7 @@ title="Print to PDF"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>How to install Py-Feat</h1>
+                <h1>Usage Tips and Known Issues</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -469,18 +459,8 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#basic-setup">
-   Basic setup
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#using-google-colab">
-   Using Google Colab
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#development-setup">
-   Development setup
+  <a class="reference internal nav-link" href="#known-issues">
+   Known issues
   </a>
  </li>
 </ul>
@@ -493,40 +473,16 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="how-to-install-py-feat">
-<h1>How to install Py-Feat<a class="headerlink" href="#how-to-install-py-feat" title="Permalink to this headline">#</a></h1>
-<section id="basic-setup">
-<h2>Basic setup<a class="headerlink" href="#basic-setup" title="Permalink to this headline">#</a></h2>
-<p>You can either install the latest stable version from Pypi using:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">py</span><span class="o">-</span><span class="n">feat</span>
-</pre></div>
-</div>
-<p>Or get the latest development version by installing directly from github:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">cosanlab</span><span class="o">/</span><span class="n">py</span><span class="o">-</span><span class="n">feat</span><span class="o">.</span><span class="n">git</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have <strong>experimental</strong> support for GPUs on macOS which you can try with <code class="docutils literal notranslate"><span class="pre">device='auto'</span></code>. However, we currently advise using the default (<code class="docutils literal notranslate"><span class="pre">cpu</span></code>) on macOS until PyTorch support stabilizes.</p>
-</div>
-</section>
-<section id="using-google-colab">
-<h2>Using Google Colab<a class="headerlink" href="#using-google-colab" title="Permalink to this headline">#</a></h2>
-<p>On any page in these docs, you can you can simply click on <span class="xref myst"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></span> badges you see to open that page in <a class="reference external" href="http://colab.research.google.com/">Google Colab</a>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Make sure to add and run <code class="docutils literal notranslate"><span class="pre">!pip</span> <span class="pre">install</span> <span class="pre">py-feat</span></code> as the <strong>first</strong> cell into the Colab notebook before running any other code!</p>
-</div>
-</section>
-<section id="development-setup">
-<h2>Development setup<a class="headerlink" href="#development-setup" title="Permalink to this headline">#</a></h2>
-<p>If you plan on contributing to py-feat then you might want to install an editable version so that any changes you make to source files are automatically reflected:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">cosanlab</span><span class="o">/</span><span class="n">py</span><span class="o">-</span><span class="n">feat</span><span class="o">.</span><span class="n">git</span>  
-<span class="n">cd</span> <span class="n">py</span><span class="o">-</span><span class="n">feat</span> 
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">-</span><span class="n">dev</span><span class="o">.</span><span class="n">txt</span>
-</pre></div>
-</div>
+  <section class="tex2jax_ignore mathjax_ignore" id="usage-tips-and-known-issues">
+<h1>Usage Tips and Known Issues<a class="headerlink" href="#usage-tips-and-known-issues" title="Permalink to this headline">#</a></h1>
+<p>Here are few general guidelines and known issues when using <code class="docutils literal notranslate"><span class="pre">py-feat</span></code>. We are always actively trying to improve these issues and make the toolbox easier to use. Please help us out by contributing on github!</p>
+<p>Always spot-check your detections! While we’ve done our best to thoroughly test, benchmark, and document all the <a class="reference internal" href="models.html"><span class="doc std std-doc">pre-trained models</span></a> included in Py-Feat it’s always possible that real-world images and videos reveal a quirk or limitation of an otherwise high-performing detector.</p>
+<section id="known-issues">
+<h2>Known issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">#</a></h2>
+<ul class="simple">
+<li><p>Currently when performing detections and using <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>, AU models output slightly different values. This is in part due to how Py-Feat integrates the underlying detectors and we are actively working to fix this. You can follow <a class="reference external" href="https://github.com/cosanlab/py-feat/issues/128">this issue</a> for more details.</p></li>
+<li><p>Detectors can be sensitive to difference in images sizes such that very large or very small images result in very different predictions. This is largely due differences in the hyper-parameters and images sizes used to train the underlying pre-trained models. To partially help with this issue, since <code class="docutils literal notranslate"><span class="pre">0.5.0</span></code> Py-Feat supports passing keyword arguments to underlying models during initializing or detection, e.g. <code class="docutils literal notranslate"><span class="pre">detector</span> <span class="pre">=</span> <span class="pre">Detector(facepose_model_kwargs={'keep_top_k':</span> <span class="pre">500})</span></code>. You can follow <a class="reference external" href="https://github.com/cosanlab/py-feat/issues/135">this issue</a> for more details.</p></li>
+</ul>
 </section>
 </section>
 
@@ -557,17 +513,17 @@ title="Print to PDF"
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="intro.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="au_reference.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Py-Feat: Python Facial Expression Analysis Toolbox</p>
+            <p class="prev-next-title">Action Unit Reference</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="models.html" title="next page">
+    <a class='right-next' id="next-link" href="../basic_tutorials/01_basics.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Included pre-trained detectors</p>
+        <p class="prev-next-title">1. Py-Feat basics</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
