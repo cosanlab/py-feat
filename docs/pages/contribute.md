@@ -11,7 +11,8 @@ We always welcome contributions to Py-Feat and recommend you follow these basic 
 7. Create or update the appropriate tests in `feat/tests/`.
 8. Run a single test to make sure your new functionality works: `pytest -k 'name_of_your_test'`
 9. Alternatively (or additionally) run the full Py-Feat test suite: `pytest`
-10. When your tests pass create a pull-request against the `master`/`main` branch on github!
+10. Add any applicable licenses to `LICENSE.txt`
+11. When your tests pass create a pull-request against the `master`/`main` branch on github!
 
 ## Tutorial contribution guidelines
 

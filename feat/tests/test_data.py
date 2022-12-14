@@ -3,8 +3,8 @@ import pandas as pd
 from pandas import DataFrame
 import numpy as np
 import os
-from feat.data import Fex, Fextractor
-from feat.utils import read_facet, read_openface, read_affectiva, get_test_data_path
+from feat.data import Fex
+from feat.utils.io import read_openface, get_test_data_path, read_feat
 from nltools.data import Adjacency
 
 
@@ -16,34 +16,48 @@ def test_info(capsys):
     assert importantstring in captured.out
 
 
-def test_fex():
-    with pytest.raises(Exception):
-        fex = Fex().read_feat()
-    with pytest.raises(Exception):
-        fex = Fex().read_facet()
-    with pytest.raises(Exception):
-        fex = Fex().read_openface()
-    with pytest.raises(Exception):
-        fex = Fex().read_affectiva()
+def test_fex_new(data_path):
+    fex = pd.concat(
+        map(lambda f: read_feat(os.path.join(data_path, f)), ["001.csv", "002.csv"])
+    )
+    assert fex.shape == (68, 173)
 
-    # For iMotions-FACET data files
-    # test reading iMotions file < version 6
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v5.txt")
-    dat = Fex(read_facet(filename), sampling_freq=30)
+    assert "AU01" in fex.au_columns
 
-    # test reading iMotions file > version 6
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v6.txt")
-    df = read_facet(filename)
+    # Update sessions (grouping factor) to video ids to group rows (frames) by video
+    by_video = fex.update_sessions(fex["input"])
+    # Compute the mean per video
+    video_means = by_video.extract_mean()
 
-    # Test slicing functions.
+    # one row per video
+    assert video_means.shape == (2, 172)
+
+    # we rename columns when using extract methods
+    # test that attribute renames have also propagated correctly
+    hasprefix = lambda col: col.startswith("mean")
+    assert all(map(hasprefix, video_means.au_columns))
+    assert all(map(hasprefix, video_means.emotion_columns))
+    assert all(map(hasprefix, video_means.facebox_columns))
+    assert all(map(hasprefix, video_means.landmark_columns))
+    assert all(map(hasprefix, video_means.facepose_columns))
+    assert all(map(hasprefix, video_means.time_columns))
+
+
+def test_fex_old(imotions_data):
+
+    # Dropped support in >= 0.4.0
+    with pytest.raises(Exception):
+        Fex().read_facet()
+    with pytest.raises(Exception):
+        Fex().read_affectiva()
+
+    df = imotions_data
+
+    # Test slicing functions
     assert df.aus.shape == (519, 20)
-
     assert df.emotions.shape == (519, 12)
-
     assert df.facebox.shape == (519, 4)
-
     assert df.time.shape[-1] == 4
-
     assert df.design.shape[-1] == 4
 
     # Test metadata propagation to sliced series
@@ -54,7 +68,25 @@ def test_fex():
     assert df.iloc[0].design.shape == (4,)
 
     sessions = np.array([[x] * 10 for x in range(1 + int(len(df) / 10))]).flatten()[:-1]
-    dat = Fex(df, sampling_freq=30, sessions=sessions)
+    dat = Fex(
+        df,
+        sampling_freq=30,
+        sessions=sessions,
+        emotion_columns=[
+            "Joy",
+            "Anger",
+            "Surprise",
+            "Fear",
+            "Contempt",
+            "Disgust",
+            "Sadness",
+            "Confusion",
+            "Frustration",
+            "Neutral",
+            "Positive",
+            "Negative",
+        ],
+    )
     dat = dat[
         [
             "Joy",
@@ -76,10 +108,6 @@ def test_fex():
     with pytest.raises(ValueError):
         Fex(df, sampling_freq=30, sessions=sessions[:10])
 
-    # Test KeyError
-    with pytest.raises(KeyError):
-        Fex(read_facet(filename, features=["NotHere"]), sampling_freq=30)
-
     # Test length
     assert len(dat) == 519
 
@@ -90,10 +118,8 @@ def test_fex():
     assert dat[["Joy"]].sampling_freq == dat.sampling_freq
     assert dat.iloc[:, 0].sampling_freq == dat.sampling_freq
     assert dat.iloc[0, :].sampling_freq == dat.sampling_freq
-
     assert dat.loc[[0], :].sampling_freq == dat.sampling_freq
     assert dat.loc[:, ["Joy"]].sampling_freq == dat.sampling_freq
-    # assert dat.loc[0].sampling_freq == dat.sampling_freq # DOES NOT WORK YET
 
     # Test Downsample
     assert len(dat.downsample(target=10)) == 52
@@ -123,9 +149,6 @@ def test_fex():
         df[df.au_columns].isna().sum()[0]
         < rectified[rectified.au_columns].isna().sum()[0]
     )
-
-    # Test pspi
-    assert len(df.calc_pspi()) == len(df)
 
     # Test baseline
     assert isinstance(dat.baseline(baseline="median"), Fex)
@@ -157,21 +180,10 @@ def test_fex():
     assert len(out) == len(np.unique(dat2.sessions))
     assert np.array_equal(out.sessions, np.unique(dat2.sessions))
     assert out.sampling_freq == dat2.sampling_freq
-    assert dat2.shape[1] * 3 == out.shape[1]
+    assert dat2.shape[1] * 5 == out.shape[1]
     out = dat2.extract_summary(min=True, max=True, mean=True, ignore_sessions=True)
     assert len(out) == 1
-    assert dat2.shape[1] * 3 == out.shape[1]
-
-    # Check if file is missing columns
-    data_bad = dat.iloc[:, 0:10]
-    with pytest.raises(Exception):
-        _check_if_fex(data_bad, imotions_columns)
-
-    # Check if file has too many columns
-    data_bad = dat.copy()
-    data_bad["Test"] = 0
-    with pytest.raises(Exception):
-        _check_if_fex(data_bad, imotions_columns)
+    assert dat2.shape[1] * 5 == out.shape[1]
 
     # Test clean
     assert isinstance(dat.clean(), Fex)
@@ -215,128 +227,6 @@ def test_fex():
     assert n_components == stats["weights"].shape[1]
 
 
-def test_fextractor():
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v6.txt")
-    df = read_facet(filename)
-    sessions = np.array([[x] * 10 for x in range(1 + int(len(df) / 10))]).flatten()[:-1]
-    dat = Fex(df, sampling_freq=30, sessions=sessions)
-    dat = dat[
-        [
-            "Joy",
-            "Anger",
-            "Surprise",
-            "Fear",
-            "Contempt",
-            "Disgust",
-            "Sadness",
-            "Confusion",
-            "Frustration",
-            "Neutral",
-            "Positive",
-            "Negative",
-        ]
-    ]
-
-    # Test Fextractor class
-    extractor = Fextractor()
-    dat = dat.interpolate()  # interpolate data to get rid of NAs
-    f = 0.5
-    num_cyc = 3  # for wavelet extraction
-    # Test each extraction method
-    extractor.mean(fex_object=dat)
-    extractor.max(fex_object=dat)
-    extractor.min(fex_object=dat)
-    # boft needs a groupby function.
-    extractor.multi_wavelet(fex_object=dat)
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc)
-    # Test ValueError
-    with pytest.raises(ValueError):
-        extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, mode="BadValue")
-    # Test Fextracor merge method
-    newdat = extractor.merge(out_format="long")
-    assert newdat["sessions"].nunique() == 52
-    assert isinstance(newdat, DataFrame)
-    assert len(extractor.merge(out_format="long")) == 7488
-    assert len(extractor.merge(out_format="wide")) == 52
-
-    # Test summary method
-    extractor = Fextractor()
-    dat2 = dat.loc[:, ["Positive", "Negative"]].interpolate()
-    extractor.summary(fex_object=dat2, min=True, max=True, mean=True)
-    # [Pos, Neg] * [mean, max, min] + ['sessions']
-    assert extractor.merge(out_format="wide").shape[1] == dat2.shape[1] * 3 + 1
-
-    # Test wavelet extraction
-    extractor = Fextractor()
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=False)
-    extractor.wavelet(fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True)
-    wavelet = extractor.extracted_features[0]  # ignore_sessions = False
-    assert wavelet.sampling_freq == dat.sampling_freq
-    assert len(wavelet) == len(dat)
-    wavelet = extractor.extracted_features[1]  # ignore_sessions = True
-    assert wavelet.sampling_freq == dat.sampling_freq
-    assert len(wavelet) == len(dat)
-    assert np.array_equal(wavelet.sessions, dat.sessions)
-    for i in ["filtered", "phase", "magnitude", "power"]:
-        extractor = Fextractor()
-        extractor.wavelet(
-            fex_object=dat, freq=f, num_cyc=num_cyc, ignore_sessions=True, mode=i
-        )
-        wavelet = extractor.extracted_features[0]
-        assert wavelet.sampling_freq == dat.sampling_freq
-        assert len(wavelet) == len(dat)
-
-    # Test multi wavelet
-    dat2 = dat.loc[:, ["Positive", "Negative"]].interpolate()
-    n_bank = 4
-    extractor = Fextractor()
-    extractor.multi_wavelet(
-        fex_object=dat2,
-        min_freq=0.1,
-        max_freq=2,
-        bank=n_bank,
-        mode="power",
-        ignore_sessions=False,
-    )
-    out = extractor.extracted_features[0]
-    assert n_bank * dat2.shape[1] == out.shape[1]
-    assert len(out) == len(dat2)
-    assert np.array_equal(out.sessions, dat2.sessions)
-    assert out.sampling_freq == dat2.sampling_freq
-
-    # Test Bag Of Temporal Features Extraction
-    filename = os.path.join(get_test_data_path(), "iMotions_Test_v6.txt")
-    facet = Fex(filename=filename, sampling_freq=30, detector="FACET")
-    facet = facet.read_file()
-    facet_filled = facet.fillna(0)
-    facet_filled = facet_filled[
-        [
-            "Joy",
-            "Anger",
-            "Surprise",
-            "Fear",
-            "Contempt",
-            "Disgust",
-            "Sadness",
-            "Confusion",
-            "Frustration",
-            "Neutral",
-            "Positive",
-            "Negative",
-        ]
-    ]
-    # assert isinstance(facet_filled,Facet)
-    extractor = Fextractor()
-    extractor.boft(facet_filled)
-    assert isinstance(extractor.extracted_features[0], DataFrame)
-    filters, histograms = 8, 12
-    assert (
-        extractor.extracted_features[0].shape[1]
-        == facet_filled.columns.shape[0] * filters * histograms
-    )
-
-
-### Test Openface importer ###
 def test_openface():
     # For OpenFace data file
     filename = os.path.join(get_test_data_path(), "OpenFace_Test.csv")
@@ -362,17 +252,6 @@ def test_openface():
     assert openface.landmark_x.shape[1] == openface.landmark_y.shape[1]
     assert openface.iloc[0].landmark_x.shape[0] == openface.iloc[0].landmark_y.shape[0]
 
-    # Test PSPI calculation b/c diff from facet
-    assert len(openface.calc_pspi()) == len(openface)
-
-
-def test_affectiva():
-    filename = os.path.join(
-        get_test_data_path(), "sample_affectiva-api-app_output.json"
-    )
-    affdex = Fex(read_affectiva(filename), sampling_freq=1, detector="Affectiva")
-    assert affdex.shape[1] == 33
-
 
 def test_feat():
     filename = os.path.join(get_test_data_path(), "Feat_Test.csv")
@@ -391,14 +270,14 @@ def test_stats():
     aus.sessions = range(len(aus))
     y = aus[[i for i in aus.columns if "_r" in i]]
     X = pd.DataFrame(aus.sessions)
-    b, t, p, df, res = aus.regress(X, y, mode="ols", fit_intercept=True)
+    b, se, t, p, df, res = aus.regress(X, y, mode="ols", fit_intercept=True)
     assert b.shape == (2, 17)
     assert res.mean().mean() < 1
 
-    clf = openface.predict(X=["AU02_c"], y="AU04_c")
+    clf, scores = openface.predict(X=["AU02_c"], y=["AU04_c"])
     assert clf.coef_ < 0
 
-    clf = openface.predict(X=openface[["AU02_c"]], y=openface["AU04_c"])
+    clf, scores = openface.predict(X=openface[["AU02_c"]], y=openface["AU04_c"])
     assert clf.coef_ < 0
 
     t, p = openface[["AU02_c"]].ttest_1samp()

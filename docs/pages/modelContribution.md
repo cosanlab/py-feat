@@ -42,7 +42,7 @@ feat/
 ```
 
 1. Create a folder for the model you are adding in the appropriate model sub-directory 
-2. Add your model code which can be a single `.py` file ending in `_test` (e.g. `feat/landmark_detectors/mobilefacenet_test.py`) or a separate sub-directory containing at least 3 files one of which ends in `_model` and the other that ends in `__test` (see `feat/au_detectors/JAANET` for an example): 
+2. Add your model code which can be a single `.py` file ending in `_test` (e.g. `feat/landmark_detectors/mobilefacenet_test.py`) or a separate sub-directory containing at least 3 files one of which ends in `_model` and the other that ends in `__test` (see `feat/facepose_detectors/img2pose` for an example): 
     - `__init__.py` (this can be empty)
     - `mynewmodel_model.py` (this should end in `_model`)
     - `mynewmodel_test.py` (this should end in `_test`)

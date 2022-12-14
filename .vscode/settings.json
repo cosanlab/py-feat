@@ -13,5 +13,6 @@
         "**/Thumbs.db": true,
         "docs/**/*.csv": true,
         "docs/**/*.mp4": true
-    }
+    },
+    "python.formatting.provider": "black"
 }

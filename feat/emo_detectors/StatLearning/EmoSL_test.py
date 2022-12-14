@@ -2,9 +2,13 @@
 # Please see https://www.cl.cam.ac.uk/~mmam3/pub/FG2015.pdf for more details and reasons
 # Currently support: SVM (as in the paper), RandomForest (new implementation).
 import numpy as np
-from feat.utils import get_resource_path
+from feat.utils.io import get_resource_path
 import joblib
 import os
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+import pickle
 
 
 def load_classifier(cf_path):
@@ -12,8 +16,13 @@ def load_classifier(cf_path):
     return clf
 
 
+def load_classifier_pkl(cf_path):
+    clf = pickle.load(open(cf_path, "rb"))
+    return clf
+
+
 class EmoSVMClassifier:
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         self.pca_model = load_classifier(
             os.path.join(get_resource_path(), "emo_hog_pca.joblib")
         )
@@ -24,7 +33,7 @@ class EmoSVMClassifier:
             os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
         )
 
-    def detect_emo(self, frame, landmarks):
+    def detect_emo(self, frame, landmarks, **kwargs):
         """
         Note that here frame is represented by hogs
         """

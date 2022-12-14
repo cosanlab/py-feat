@@ -2,12 +2,16 @@
 Helper functions for plotting
 """
 
+import os
+import sys
+import h5py
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
+from sklearn import __version__ as skversion
 from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
-from feat.utils import load_viz_model
 from feat.pretrained import AU_LANDMARK_MAP
+from feat.utils.io import get_resource_path
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -16,6 +20,9 @@ from sklearn.preprocessing import minmax_scale, MinMaxScaler
 from pathlib import Path
 from PIL import Image
 from textwrap import wrap
+from joblib import load
+from feat.utils.io import get_resource_path, download_url
+import json
 
 __all__ = [
     "draw_lineface",
@@ -869,8 +876,8 @@ def get_heat(muscle, au, log):
 
 
 def plot_face(
-    model=None,
     au=None,
+    model=None,
     vectorfield=None,
     muscles=None,
     ax=None,
@@ -878,6 +885,7 @@ def plot_face(
     color="k",
     linewidth=1,
     linestyle="-",
+    border=True,
     gaze=None,
     muscle_scaler=None,
     *args,
@@ -908,12 +916,8 @@ def plot_face(
         if not isinstance(model, PLSRegression):
             raise ValueError("make sure that model is a PLSRegression instance")
 
-    if au is None:
+    if au is None or isinstance(au, str) and au == "neutral":
         au = np.zeros(model.n_components)
-        warnings.warn(
-            f"Don't forget to pass an 'au' vector of length 20, "
-            "using neutral as default"
-        )
 
     landmarks = predict(au, model, feature_range=feature_range)
     currx, curry = [landmarks[x, :] for x in range(2)]
@@ -922,11 +926,15 @@ def plot_face(
         ax = _create_empty_figure()
 
     if muscles is not None:
-        if not isinstance(muscles, dict):
+        if muscles is True:
+            muscles = {"all": "heatmap"}
+        elif not isinstance(muscles, dict):
             raise ValueError("muscles must be a dictionary ")
         if muscle_scaler is None:
             # Muscles are always scaled 0 - 100 b/c color palette is 0-100
             au = minmax_scale(au, feature_range=(0, 100))
+        elif isinstance(muscle_scaler, (int, float)):
+            au = minmax_scale(au, feature_range=(0, 100 * muscle_scaler))
         else:
             au = muscle_scaler.transform(np.array(au).reshape(-1, 1)).squeeze()
         ax = draw_muscles(currx, curry, ax=ax, au=au, **muscles)
@@ -939,6 +947,9 @@ def plot_face(
         gaze = None
 
     title = kwargs.pop("title", None)
+    title_kwargs = kwargs.pop(
+        "title_kwargs", dict(wrap=True, fontsize=14, loc="center")
+    )
     ax = draw_lineface(
         currx,
         curry,
@@ -963,12 +974,11 @@ def plot_face(
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
-        _ = ax.set_title(
-            "\n".join(wrap(title)),
-            loc="left",
-            wrap=True,
-            fontsize=14,
-        )
+        if title_kwargs["wrap"]:
+            title = "\n".join(wrap(title))
+        _ = ax.set_title(title, **title_kwargs)
+    if not border:
+        sns.despine(left=True, bottom=True, ax=ax)
     return ax
 
 
@@ -1066,7 +1076,7 @@ def _create_empty_figure(
     return ax
 
 
-def imshow(obj, figsize=None, aspect="equal"):
+def imshow(obj, figsize=(3, 3), aspect="equal"):
     """
     Convenience wrapper function around matplotlib imshow that creates figure and axis
     boilerplate for single image plotting
@@ -1134,7 +1144,13 @@ def interpolate_aus(
 
 
 def animate_face(
-    AU=None, start=None, end=None, save=None, include_reverse=True, **kwargs
+    AU=None,
+    start=None,
+    end=None,
+    save=None,
+    include_reverse=True,
+    feature_range=None,
+    **kwargs,
 ):
     """
     Create a matplotlib animation interpolating between a starting and ending face. Can
@@ -1144,7 +1160,8 @@ def animate_face(
 
     Args:
         AU (str/int, optional): action unit id (e.g. 12 or 'AU12'). Defaults to None.
-        start (float/np.ndarray, optional): AU intensity to start at. Defaults to None.
+        start (float/np.ndarray, optional): AU intensity to start at. Defaults to None
+        which a neutral face with all AUs = 0.
         end (float/np.ndarray, optional): AU intensity(s) to end at. We don't recommend
         going beyond 3. Defaults to None.
         save (str, optional): file to save animation to. Defaults to None.
@@ -1175,6 +1192,13 @@ def animate_face(
     padding = kwargs.pop("padding", 0.25)
     num_frames = int(np.ceil(fps * duration))
     interp_func = kwargs.pop("interp_func", None)
+
+    if start is None:
+        start = np.zeros(20)
+
+    if feature_range is not None:
+        start = minmax_scale(start, feature_range=feature_range)
+        end = minmax_scale(end, feature_range=feature_range)
 
     if AU is not None:
         if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
@@ -1244,3 +1268,118 @@ def animate_face(
     if save is not None:
         animation.save(save, fps=fps)
     return animation
+
+
+def load_viz_model(
+    file_name=None,
+    prefer_joblib_if_version_match=True,
+    verbose=False,
+):
+    """Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
+    major and minor versions match those the model was trained with (3.8.x and 1.0.x
+    respectively), otherwise will reconstruct the model object using h5 data.
+
+    Args:
+        file_name (str, optional): Specify model to load.. Defaults to 'blue.h5'.
+        prefer_joblib_if_version_match (bool, optional): If the sklearn and python major.minor versions
+        match then return the pickled PLSRegression object. Otherwise build it from
+        scratch using .h5 data. Default True
+
+    Returns:
+        model: PLS model
+    """
+
+    file_name = "pyfeat_aus_to_landmarks" if file_name is None else file_name
+
+    if "." in file_name:
+        raise TypeError("Please use a file name with no extension")
+
+    h5_path = os.path.join(get_resource_path(), f"{file_name}.h5")
+    joblib_path = os.path.join(get_resource_path(), f"{file_name}.joblib")
+
+    # Make sure saved viz model exists
+    if not os.path.exists(h5_path) or not os.path.exists(joblib_path):
+        with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
+            model_urls = json.load(f)
+            urls = model_urls["viz_models"][file_name]["urls"]
+            for url in urls:
+                download_url(url, get_resource_path(), verbose=verbose)
+
+    # Check sklearn and python version to see if we can load joblib
+    my_skmajor, my_skminor, my_skpatch = skversion.split(".")
+    my_pymajor, my_pyminor, my_pymicro, *_ = sys.version_info
+
+    # Versions viz models were trained with
+    pymajor, pyminor, skmajor, skminor = 3, 8, 1, 1
+    if (
+        int(my_skmajor) == skmajor
+        and int(my_skminor) == skminor
+        and int(my_pymajor) == pymajor
+        and int(my_pyminor) == pyminor
+        and prefer_joblib_if_version_match
+    ):
+        can_load_joblib = True
+    else:
+        can_load_joblib = False
+
+    try:
+        if can_load_joblib:
+            if verbose:
+                print("Loading joblib")
+            model = load(joblib_path)
+            # We need the h5 file for some meta-data even when loading using joblib
+            hf = h5py.File(h5_path, mode="r")
+            model.__dict__["model_name_"] = hf.attrs["model_name"]
+            model.__dict__["skversion"] = hf.attrs["skversion"]
+            model.__dict__["pyversion"] = hf.attrs["pyversion"]
+            hf.close()
+        else:
+            if verbose:
+                print("Reconstructing from h5")
+            hf = h5py.File(h5_path, mode="r")
+            x_weights = np.array(hf.get("x_weights"))
+            model = PLSRegression(n_components=x_weights.shape[1])
+            # PLSRegression in sklearn < 1.1 storex coefs as samples x features, but
+            # recent versions transpose this. Check if the user is on Python 3.7 (which
+            # only supports sklearn 1.0.x) or < sklearn 1.1.x
+            if (my_pymajor == 3 and my_pyminor == 7) or (
+                my_skmajor == 1 and my_skminor != 1
+            ):
+                model.__dict__["coef_"] = np.array(hf.get("coef"))
+                model.__dict__["_coef_"] = np.array(hf.get("coef"))
+            else:
+                model.__dict__["coef_"] = np.array(hf.get("coef")).T
+                model.__dict__["_coef_"] = np.array(hf.get("coef")).T
+            model.__dict__["x_weights_"] = np.array(hf.get("x_weights"))
+            model.__dict__["y_weights_"] = np.array(hf.get("y_weights"))
+            model.__dict__["x_loadings"] = np.array(hf.get("x_loadings"))
+            model.__dict__["y_loadings"] = np.array(hf.get("y_loadings"))
+            model.__dict__["x_scores"] = np.array(hf.get("x_scores"))
+            model.__dict__["y_scores"] = np.array(hf.get("y_scores"))
+            model.__dict__["x_rotations"] = np.array(hf.get("x_rotations"))
+            model.__dict__["y_rotations"] = np.array(hf.get("y_rotations"))
+            model.__dict__["intercept"] = np.array(hf.get("intercept"))
+            model.__dict__["x_train"] = np.array(hf.get("X_train"))
+            model.__dict__["y_train"] = np.array(hf.get("Y_train"))
+            model.__dict__["X_train"] = np.array(hf.get("x_train"))
+            model.__dict__["Y_train"] = np.array(hf.get("y_train"))
+            model.__dict__["intercept_"] = np.array(hf.get("intercept"))
+            model.__dict__["model_name_"] = hf.attrs["model_name"]
+            model.__dict__["skversion"] = hf.attrs["skversion"]
+            model.__dict__["pyversion"] = hf.attrs["pyversion"]
+
+            # Older sklearn version named these attributes differently
+            if int(skversion.split(".")[0]) < 1:
+                model.__dict__["x_mean_"] = np.array(hf.get("x_mean"))
+                model.__dict__["y_mean_"] = np.array(hf.get("y_mean"))
+                model.__dict__["x_std_"] = np.array(hf.get("x_std"))
+                model.__dict__["y_std_"] = np.array(hf.get("y_std"))
+            else:
+                model.__dict__["_x_mean"] = np.array(hf.get("x_mean"))
+                model.__dict__["_y_mean"] = np.array(hf.get("y_mean"))
+                model.__dict__["_x_std"] = np.array(hf.get("x_std"))
+                model.__dict__["_y_std"] = np.array(hf.get("y_std"))
+            hf.close()
+    except Exception as e:
+        raise IOError(f"Unable to load data: {e}")
+    return model
