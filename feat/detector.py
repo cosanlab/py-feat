@@ -12,7 +12,8 @@ from feat.utils import (
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
-    FEAT_FACEPOSE_COLUMNS,
+    FEAT_FACEPOSE_COLUMNS_3D,
+    FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_TIME_COLUMNS,
     set_torch_device,
 )
@@ -252,7 +253,10 @@ class Detector(object):
                 self.facepose_detector = self.facepose_detector(**facepose_model_kwargs)
             self.info["facepose_model"] = facepose
 
-            self.info["facepose_model_columns"] = FEAT_FACEPOSE_COLUMNS
+            pose_dof = facepose_model_kwargs.get("RETURN_DIM", 3)
+            self.info["facepose_model_columns"] = (
+                FEAT_FACEPOSE_COLUMNS_3D if pose_dof == 3 else FEAT_FACEPOSE_COLUMNS_6D
+            )
             predictions = np.full_like(
                 np.atleast_2d(self.info["facepose_model_columns"]), np.nan
             )
@@ -633,9 +637,6 @@ class Detector(object):
             f"Mismatch across detectors when processing batch: {batch_data['FileNames']}\n\nAn error occurred trying to merge detections into a single Fex object, as each type of detector is detecting a different number of faces:\n\nface_detector: {len(faces[0])}\npose_detector: {len(poses[0])}\nlandmark_detector: {len(landmarks[0])}\nau_detector: {len(aus[0])}\nemotion_detector: {len(emotions[0])}\n\nThis can happen for a number of reasons. Here are a few solutions:\n\n1) the face_model is too liberal. You use the 'threshold' keyword argument to make the detector more conservative, e.g. threshold= some val > 0.5\n2) the pose_detector gives different predictions than other detectors. You can use the same model for both pose and face detection by setting face_model='img2pose' and pose_model='img2pose' (or 'img2pose-c')"
         )
 
-    # TODO: We need to be able to pass kwargs to the underlying pretrained models
-    # Tricky cause we need to do this when we initialized each model, not when we detect
-    # an image
     def detect_image(
         self,
         input_file_list,
@@ -654,6 +655,8 @@ class Detector(object):
         images must have **the same dimensions** to be processed in batches. Py-feat can
         automatically adjust image sizes by using the `output_size=int`. Common
         output-sizes include 256 and 512.
+
+        **NOTE: Currently batch processing images gives slightly different AU detection results due to the way that py-feat integrates the underlying models. You can examine the degree of tolerance by checking out the results of `test_detection_and_batching_with_diff_img_sizes` in our test-suite**
 
         Args:
             input_file_list (list of str): Path to a list of paths to image files.
