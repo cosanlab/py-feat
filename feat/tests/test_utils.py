@@ -1,14 +1,14 @@
 import pytest
 import numpy as np
 from os.path import join
-from feat.utils import (
+from feat.utils.io import (
+    get_test_data_path,
     read_feat,
     read_openface,
-    registration,
-    softmax,
-    load_viz_model,
-    get_test_data_path,
 )
+from feat.utils.image_operations import registration
+from feat.plotting import load_viz_model
+from feat.utils.stats import softmax
 from feat import Fex
 
 
@@ -42,3 +42,8 @@ def test_utils():
     # Test badfile.
     with pytest.raises(Exception):
         load_viz_model("badfile")
+
+
+# TODO: write me
+def test_set_torch_device():
+    pass

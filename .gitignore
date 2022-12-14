@@ -14,10 +14,15 @@ feat/tests/data/cond_pain_2017-03-30_s20_r01.txt
 docs/**/*.csv
 docs/**/*.mp4
 docs/_build
+docs/basic_tutorials/*.jpg
+docs/basic_tutorials/*.gif
+docs/basic_tutorials/figure.ipynb
+docs/basic_tutorials/fig_maker
 
 #Ignore resources folder except config files and viz model
 resources/
 !resources/model_list.json
+!resources/neutral_face_coordinates.csv
 
 # PytestCache
 .pytest_cache/
@@ -96,3 +101,6 @@ data/*
 
 # Ignore development notebooks and code
 dev/
+
+# CPU/GPU profiling script
+gpu_profiling.py

@@ -1,8 +1,9 @@
 import torch
 from torch.nn import DataParallel, Module
-from torch.nn.parallel import DistributedDataParallel
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from .deps.models import FasterDoFRCNN
+from feat.utils import set_torch_device
+import warnings
 
 """
 Model adapted from https://github.com/vitoralbiero/img2pose
@@ -24,14 +25,12 @@ class img2poseModel:
         depth,
         min_size,
         max_size,
-        model_path=None,
-        device=None,
+        device="auto",
         pose_mean=None,
         pose_stddev=None,
-        gpu=0,
         threed_68_points=None,
-        rpn_pre_nms_top_n_test=6000,
-        rpn_post_nms_top_n_test=1000,
+        rpn_pre_nms_top_n_test=6000,  # 500
+        rpn_post_nms_top_n_test=1000,  # 10,
         bbox_x_factor=1.1,
         bbox_y_factor=1.1,
         expand_forehead=0.3,
@@ -39,16 +38,19 @@ class img2poseModel:
         self.depth = depth
         self.min_size = min_size
         self.max_size = max_size
-        self.model_path = model_path
-        self.gpu = gpu
 
-        if device is None:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
+        self.device = set_torch_device(device)
 
+        # TODO: Update to handle deprecation warning:
+        # UserWarning: Arguments other than a weight enum or `None` for 'weights'
+        # are deprecated since 0.13 and may be removed in the future. The current
+        # behavior is equivalent to passing
+        # `weights=ResNet18_Weights.IMAGENET1K_V1`. You can also use
+        # `weights=ResNet18_Weights.DEFAULT` to get the most up-to-date weights.
         # create network backbone
-        backbone = resnet_fpn_backbone(f"resnet{self.depth}", pretrained=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            backbone = resnet_fpn_backbone(f"resnet{self.depth}", weights=True)
 
         if pose_mean is not None:
             pose_mean = torch.tensor(pose_mean)
@@ -73,16 +75,11 @@ class img2poseModel:
             expand_forehead=expand_forehead,
         )
 
-        # if using cpu, remove the parallel modules from the saved model
-        self.fpn_model_without_ddp = self.fpn_model
-
-        if str(self.device) == "cpu":
+        if self.device.type == "cpu":
             self.fpn_model = WrappedModel(self.fpn_model)
-            self.fpn_model_without_ddp = self.fpn_model
         else:  # GPU
             self.fpn_model = DataParallel(self.fpn_model)
-            self.fpn_model = self.fpn_model.to(self.device)
-            self.fpn_model_without_ddp = self.fpn_model
+        self.fpn_model = self.fpn_model.to(self.device)
 
     def evaluate(self):
         self.fpn_model.eval()
@@ -93,12 +90,11 @@ class img2poseModel:
 
     def run_model(self, imgs, targets=None):
         outputs = self.fpn_model(imgs, targets)
-
         return outputs
 
-    # def forward(self, imgs, targets):
-    #     losses = self.run_model(imgs, targets)
-    #     return losses
+    def forward(self, imgs, targets):
+        losses = self.run_model(imgs, targets)
+        return losses
 
     def predict(self, imgs):
         assert self.fpn_model.training is False

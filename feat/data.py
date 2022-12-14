@@ -1,12 +1,14 @@
 """
-Main Fex data class. The Fex class is a pandas DataFrame subclass that makes it
-easier to work with the results output from a Detector
+Py-FEAT Data classes.
 """
 
 import warnings
 
 # Suppress nilearn warnings that come from importing nltools
 warnings.filterwarnings("ignore", category=FutureWarning, module="nilearn")
+import os
+from typing import Iterable
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
@@ -17,26 +19,36 @@ from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
-
-from feat.utils import (
-    read_feat,
-    read_affectiva,
-    read_facet,
-    read_openface,
-    wavelet,
-    calc_hist_auc,
-    load_viz_model,
-)
-from feat.plotting import plot_face, draw_lineface, draw_facepose
+from sklearn.model_selection import cross_val_score
+from torchvision.transforms import Compose
+from torchvision import transforms
+from torchvision.io import read_image, read_video
+from torch.utils.data import Dataset
+from torch import swapaxes
+from feat.transforms import Rescale
+from feat.utils.io import read_feat, read_openface
+from feat.utils.stats import wavelet, calc_hist_auc
+from feat.plotting import plot_face, draw_lineface, draw_facepose, load_viz_model
 from feat.pretrained import AU_LANDMARK_MAP
 from nilearn.signal import clean
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
-from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import seaborn as sns
 from textwrap import wrap
+import torch
+from PIL import Image
+import logging
+
+__all__ = [
+    "FexSeries",
+    "Fex",
+    "ImageDataset",
+    "VideoDataset",
+    "_inverse_face_transform",
+    "_inverse_landmark_transform",
+]
 
 
 class FexSeries(Series):
@@ -55,7 +67,9 @@ class FexSeries(Series):
         self.landmark_columns = kwargs.pop("landmark_columns", None)
         self.facepose_columns = kwargs.pop("facepose_columns", None)
         self.gaze_columns = kwargs.pop("gaze_columns", None)
-        self.time_columns = kwargs.pop("time_columns", None)
+        self.time_columns = kwargs.pop(
+            "time_columns", ["Timestamp", "MediaTime", "FrameNo", "FrameTime"]
+        )
         self.design_columns = kwargs.pop("design_columns", None)
 
         ### Meta data ###
@@ -77,7 +91,7 @@ class FexSeries(Series):
         "facebox_columns",
         "landmark_columns",
         "facepose_columns",
-        "gaze_columns",
+        "gaze_columns",  # TODO: Not currently supported
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -127,7 +141,7 @@ class FexSeries(Series):
         return self[self.emotion_columns]
 
     @property
-    def landmark(self):
+    def landmarks(self):
         """Returns the landmark data
 
         Returns:
@@ -135,6 +149,30 @@ class FexSeries(Series):
         """
         return self[self.landmark_columns]
 
+    # DEPRECATE
+    @property
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns:
+            DataFrame: landmark data
+        """
+        warnings.warn(
+            "Fex.landmark has now been renamed to Fex.landmarks", DeprecationWarning
+        )
+        return self[self.landmark_columns]
+
+    @property
+    def poses(self):
+        """Returns the facepose data
+
+        Returns:
+            DataFrame: facepose data
+        """
+
+        return self[self.facepose_columns]
+
+    # DEPRECATE
     @property
     def facepose(self):
         """Returns the facepose data
@@ -142,10 +180,14 @@ class FexSeries(Series):
         Returns:
             DataFrame: facepose data
         """
+
+        warnings.warn(
+            "Fex.facepose has now been renamed to Fex.poses", DeprecationWarning
+        )
         return self[self.facepose_columns]
 
     @property
-    def input(self):
+    def inputs(self):
         """Returns input column as string
 
         Returns:
@@ -153,8 +195,21 @@ class FexSeries(Series):
         """
         return self["input"]
 
+    # DEPRECATE
     @property
-    def landmark_x(self):
+    def input(self):
+        """Returns input column as string
+
+        Returns:
+            string: path to input image
+        """
+        warnings.warn(
+            "Fex.input has now been renamed to Fex.inputs", DeprecationWarning
+        )
+        return self["input"]
+
+    @property
+    def landmarks_x(self):
         """Returns the x landmarks.
 
         Returns:
@@ -163,8 +218,26 @@ class FexSeries(Series):
         x_cols = [col for col in self.landmark_columns if "x" in col]
         return self[x_cols]
 
+    # DEPRECATE
     @property
-    def landmark_y(self):
+    def landmark_x(self):
+        """Returns the x landmarks.
+
+        Returns:
+            DataFrame: x landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_x has been renamed to Fex.landmarks_x", DeprecationWarning
+            )
+
+        x_cols = [col for col in self.landmark_columns if "x" in col]
+        return self[x_cols]
+
+    @property
+    def landmarks_y(self):
         """Returns the y landmarks.
 
         Returns:
@@ -173,6 +246,34 @@ class FexSeries(Series):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    # DEPRECATE
+    @property
+    def landmark_y(self):
+        """Returns the y landmarks.
+
+        Returns:
+            DataFrame: y landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_y has been renamed to Fex.landmarks_y", DeprecationWarning
+            )
+
+        y_cols = [col for col in self.landmark_columns if "y" in col]
+        return self[y_cols]
+
+    @property
+    def faceboxes(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """
+        return self[self.facebox_columns]
+
+    # DEPRECATE
     @property
     def facebox(self):
         """Returns the facebox data
@@ -180,6 +281,13 @@ class FexSeries(Series):
         Returns:
             DataFrame: facebox data
         """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.facebox has been renamed to Fex.faceboxes", DeprecationWarning
+            )
+
         return self[self.facebox_columns]
 
     @property
@@ -221,7 +329,8 @@ class Fex(DataFrame):
 
     Args:
         filename: (str, optional) path to file
-        detector: (str, optional) name of software used to extract Fex. (Feat, FACET, OpenFace, or Affectiva)
+        detector: (str, optional) name of software used to extract Fex. Currently only
+        'Feat' is supported
         sampling_freq (float, optional): sampling rate of each row in Hz; defaults to None
         features (pd.Dataframe, optional): features that correspond to each Fex row
         sessions: Unique values indicating rows associated with a specific session (e.g., trial, subject, etc).Must be a 1D array of n_samples elements; defaults to None
@@ -233,7 +342,7 @@ class Fex(DataFrame):
         "facebox_columns",
         "landmark_columns",
         "facepose_columns",
-        "gaze_columns",
+        "gaze_columns",  # TODO: Not currently supported
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -349,7 +458,7 @@ class Fex(DataFrame):
         return self[self.emotion_columns]
 
     @property
-    def landmark(self):
+    def landmarks(self):
         """Returns the landmark data
 
         Returns landmark data using the columns set in fex.landmark_columns.
@@ -360,7 +469,21 @@ class Fex(DataFrame):
         return self[self.landmark_columns]
 
     @property
-    def facepose(self):
+    def landmark(self):
+        """Returns the landmark data
+
+        Returns landmark data using the columns set in fex.landmark_columns.
+
+        Returns:
+            DataFrame: landmark data
+        """
+        warnings.warn(
+            "Fex.landmark has now been renamed to Fex.landmarks", DeprecationWarning
+        )
+        return self[self.landmark_columns]
+
+    @property
+    def poses(self):
         """Returns the facepose data using the columns set in fex.facepose_columns
 
         Returns:
@@ -368,8 +491,25 @@ class Fex(DataFrame):
         """
         return self[self.facepose_columns]
 
+    # DEPRECATE
     @property
-    def input(self):
+    def facepose(self):
+        """Returns the facepose data using the columns set in fex.facepose_columns
+
+        Returns:
+            DataFrame: facepose data
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.facepose has now been renamed to Fex.poses", DeprecationWarning
+            )
+
+        return self[self.facepose_columns]
+
+    @property
+    def inputs(self):
         """Returns input column as string
 
         Returns input data in the "input" column.
@@ -379,11 +519,28 @@ class Fex(DataFrame):
         """
         return self["input"]
 
+    # DEPRECATE
     @property
-    def landmark_x(self):
-        """Returns the x landmarks.
+    def input(self):
+        """Returns input column as string
 
-        Returns the x-coordinates for facial landmarks looking for "x" in fex.landmark_columns.
+        Returns input data in the "input" column.
+
+        Returns:
+            string: path to input image
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.input has now been renamed to Fex.inputs", DeprecationWarning
+            )
+
+        return self["input"]
+
+    @property
+    def landmarks_x(self):
+        """Returns the x landmarks.
 
         Returns:
             DataFrame: x landmarks.
@@ -391,11 +548,26 @@ class Fex(DataFrame):
         x_cols = [col for col in self.landmark_columns if "x" in col]
         return self[x_cols]
 
+    # DEPRECATE
     @property
-    def landmark_y(self):
-        """Returns the y landmarks.
+    def landmark_x(self):
+        """Returns the x landmarks.
 
-        Returns the y-coordinates for facial landmarks looking for "y" in fex.landmark_columns.
+        Returns:
+            DataFrame: x landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_x has been renamed to Fex.landmarks_x", DeprecationWarning
+            )
+        x_cols = [col for col in self.landmark_columns if "x" in col]
+        return self[x_cols]
+
+    @property
+    def landmarks_y(self):
+        """Returns the y landmarks.
 
         Returns:
             DataFrame: y landmarks.
@@ -403,15 +575,47 @@ class Fex(DataFrame):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    # DEPRECATE
     @property
-    def facebox(self):
-        """Returns the facebox data
+    def landmark_y(self):
+        """Returns the y landmarks.
 
-        Returns the facebox data using fex.facebox_columns.
+        Returns:
+            DataFrame: y landmarks.
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.landmark_y has been renamed to Fex.landmarks_y", DeprecationWarning
+            )
+
+        y_cols = [col for col in self.landmark_columns if "y" in col]
+        return self[y_cols]
+
+    @property
+    def faceboxes(self):
+        """Returns the facebox data
 
         Returns:
             DataFrame: facebox data
         """
+        return self[self.facebox_columns]
+
+    # DEPRECATE
+    @property
+    def facebox(self):
+        """Returns the facebox data
+
+        Returns:
+            DataFrame: facebox data
+        """
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", DeprecationWarning)
+            warnings.warn(
+                "Fex.facebox has been renamed to Fex.faceboxes", DeprecationWarning
+            )
 
         return self[self.facebox_columns]
 
@@ -437,30 +641,16 @@ class Fex(DataFrame):
         """
         return self[self.design_columns]
 
-    def read_file(self, *args, **kwargs):
+    def read_file(self):
         """Loads file into FEX class
-
-        This function checks the detector set in fex.detector and calls the appropriate read function that helps utilize functionalities of Feat.
-
-        Available detectors include:
-            FACET
-            OpenFace
-            Affectiva
-            Feat
 
         Returns:
             DataFrame: Fex class
         """
-        if self.detector == "FACET":
-            return self.read_facet(self.filename)
-        elif self.detector == "OpenFace":
+        if self.detector == "OpenFace":
             return self.read_openface(self.filename)
-        elif self.detector == "Affectiva":
-            return self.read_affectiva(self.filename)
-        elif self.detector == "Feat":
-            return self.read_feat(self.filename)
-        else:
-            print("Must specifiy which detector [Feat, FACET, OpenFace, or Affectiva]")
+
+        return self.read_feat(self.filename)
 
     @property
     def info(self):
@@ -472,6 +662,95 @@ class Fex(DataFrame):
         for name in self._metadata:
             attr_list.append(name + ": " + str(getattr(self, name, None)) + "\n")
         print(f"{self.__class__}\n" + "".join(attr_list))
+
+    def _update_extracted_colnames(self, prefix=None, mode="replace"):
+
+        cols2update = [
+            "au_columns",
+            "emotion_columns",
+            "facebox_columns",
+            "landmark_columns",
+            "facepose_columns",
+            # "gaze_columns", # doesn't currently exist
+            "time_columns",
+        ]
+
+        # Existing columns to handle different __init__s
+        cols2update = list(
+            filter(lambda col: getattr(self, col) is not None, cols2update)
+        )
+        original_vals = [getattr(self, c) for c in cols2update]
+
+        # Ignore prefix and remove any existing
+        if mode == "reset":
+            new_vals = [
+                list(map(lambda name: "".join(name.split("_")[1:]), names))
+                for names in original_vals
+            ]
+            _ = [setattr(self, col, val) for col, val in zip(cols2update, new_vals)]
+            return
+
+        if not isinstance(prefix, list):
+            prefix = [prefix]
+
+        for i, p in enumerate(prefix):
+            current_vals = [getattr(self, c) for c in cols2update]
+            new_vals = [
+                list(map(lambda name: f"{p}_{name}", names)) for names in original_vals
+            ]
+            if i == 0:
+                update = new_vals
+            else:
+                update = [current + new for current, new in zip(current_vals, new_vals)]
+            _ = [setattr(self, col, val) for col, val in zip(cols2update, update)]
+
+    def _parse_features_labels(self, X, y):
+
+        feature_groups = [
+            "sessions",
+            "emotions",
+            "aus",
+            "poses",
+            "landmarks",
+            "faceboxes",
+        ]
+
+        # String attribute access
+        if isinstance(X, str) and any(
+            map(lambda feature: feature in X, feature_groups)
+        ):
+            X = X.split(",") if "," in X else [X]
+            mX = []
+            for x in X:
+                mX.append(getattr(self, x))
+
+            mX = pd.concat(mX, axis=1)
+            if X == ["sessions"]:
+                mX.columns = X
+
+        elif isinstance(X, list):
+            mX = self[X]
+        else:
+            mX = X
+
+        if isinstance(y, str) and any(
+            map(lambda feature: feature in y, feature_groups)
+        ):
+            y = y.split(",") if "," in y else [y]
+            my = []
+            for yy in y:
+                my.append(getattr(self, yy))
+
+            my = pd.concat(my, axis=1)
+            if y == ["sessions"]:
+                my.columns = y
+
+        elif isinstance(y, list):
+            my = self[y]
+        else:
+            my = y
+
+        return mX, my
 
     ###   Class Methods   ###
     def read_feat(self, filename=None, *args, **kwargs):
@@ -492,28 +771,6 @@ class Fex(DataFrame):
         result = read_feat(filename, *args, **kwargs)
         return result
 
-    def read_facet(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from FACET
-
-        Args:
-            filename (string, optional): Path to file. Defaults to None.
-
-        Returns:
-            Fex
-        """
-        # Check if filename exists in metadata.
-        if filename is None:
-            if self.filename:
-                filename = self.filename
-            else:
-                raise ValueError("filename must be specified.")
-        result = read_facet(filename, *args, **kwargs)
-        for name in self._metadata:
-            attr_value = getattr(self, name, None)
-            if attr_value and getattr(result, name, None) == None:
-                setattr(result, name, attr_value)
-        return result
-
     def read_openface(self, filename=None, *args, **kwargs):
         """Reads facial expression detection results from OpenFace
 
@@ -529,27 +786,6 @@ class Fex(DataFrame):
             else:
                 raise ValueError("filename must be specified.")
         result = read_openface(filename, *args, **kwargs)
-        for name in self._metadata:
-            attr_value = getattr(self, name, None)
-            if attr_value and getattr(result, name, None) == None:
-                setattr(result, name, attr_value)
-        return result
-
-    def read_affectiva(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from Affectiva
-
-        Args:
-            filename (string, optional): Path to file. Defaults to None.
-
-        Returns:
-            Fex
-        """
-        if filename is None:
-            if self.filename:
-                filename = self.filename
-            else:
-                raise ValueError("filename must be specified.")
-        result = read_affectiva(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
             if attr_value and getattr(result, name, None) == None:
@@ -646,29 +882,24 @@ class Fex(DataFrame):
             fit_intercept (bool): Whether to add intercept before fitting. Defaults to True.
 
         Returns:
-            betas, t-stats, p-values, df, residuals
+            Dataframe of betas, ses, t-stats, p-values, df, residuals
         """
-        if type(X) == list:
-            mX = self[X]
-        else:
-            mX = X
+
+        mX, my = self._parse_features_labels(X, y)
 
         if fit_intercept:
             mX["intercept"] = 1
 
-        if type(y) == str:
-            my = self[y]
-        else:
-            my = y
-        b, t, p, df, res = regress(mX, my, *args, **kwargs)
+        b, se, t, p, df, res = regress(mX.to_numpy(), my.to_numpy(), *args, **kwargs)
         b_df = pd.DataFrame(b, index=mX.columns, columns=my.columns)
+        se_df = pd.DataFrame(se, index=mX.columns, columns=my.columns)
         t_df = pd.DataFrame(t, index=mX.columns, columns=my.columns)
         p_df = pd.DataFrame(p, index=mX.columns, columns=my.columns)
-        df_df = pd.DataFrame([df], index=[0], columns=my.columns)
+        df_df = pd.DataFrame(np.tile(df, (2, 1)), index=mX.columns, columns=my.columns)
         res_df = pd.DataFrame(res, columns=my.columns)
-        return b_df, t_df, p_df, df_df, res_df
+        return b_df, se_df, t_df, p_df, df_df, res_df
 
-    def ttest_1samp(self, popmean=0, threshold_dict=None):
+    def ttest_1samp(self, popmean=0):
         """Conducts 1 sample ttest.
 
         Uses scipy.stats.ttest_1samp to conduct 1 sample ttest
@@ -682,25 +913,41 @@ class Fex(DataFrame):
         """
         return ttest_1samp(self, popmean)
 
-    def ttest_ind(self, col, sessions, threshold_dict=None):
+    def ttest_ind(self, col, sessions=None):
         """Conducts 2 sample ttest.
 
         Uses scipy.stats.ttest_ind to conduct 2 sample ttest on column col between sessions.
 
         Args:
             col (str): Column names to compare in a t-test between sessions
-            session_names (tuple): tuple of session names stored in Fex.sessions.
-            threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]
+            session (array-like): session name to query Fex.sessions, otherwise uses the
+            unique values in Fex.sessions.
 
         Returns:
             t, p: t-statistics and p-values
         """
+
+        if sessions is None:
+            sessions = pd.Series(self.sessions).unique()
+
+        if len(sessions) != 2:
+            raise ValueError(
+                f"There must be exactly 2 session types to perform an independent t-test but {len(sessions)} were found."
+            )
+
         sess1, sess2 = sessions
-        a = self[self.sessions == sess1][col]
-        b = self[self.sessions == sess2][col]
+        a_mask = self.sessions == sess1
+        a_mask = a_mask.values if isinstance(self.sessions, pd.Series) else a_mask
+        b_mask = self.sessions == sess2
+        b_mask = b_mask.values if isinstance(self.sessions, pd.Series) else b_mask
+        a = self.loc[a_mask, col]
+        b = self.loc[b_mask, col]
+
         return ttest_ind(a, b)
 
-    def predict(self, X, y, model=LinearRegression, *args, **kwargs):
+    def predict(
+        self, X, y, model=LinearRegression, cv_kwargs={"cv": 5}, *args, **kwargs
+    ):
         """Predicts y from X using a sklearn model.
 
         Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.
@@ -714,18 +961,18 @@ class Fex(DataFrame):
         Returns:
             model: Fit model instance.
         """
-        if type(X) == list:
-            mX = self[X]
-        else:
-            mX = X
 
-        if type(y) == str:
-            my = self[y]
+        mX, my = self._parse_features_labels(X, y)
+
+        # user passes an unintialized class, e.g. LogisticRegression
+        if isinstance(model, type):
+            clf = model(*args, **kwargs)
         else:
-            my = y
-        clf = model(*args, **kwargs)
-        clf.fit(mX, my)
-        return clf
+            # user passes an initialized estimator or pipeline, e.g. LogisticRegression()
+            clf = model
+        scores = cross_val_score(clf, mX, my, **cv_kwargs)
+        _ = clf.fit(mX, my)
+        return clf, scores
 
     def downsample(self, target, **kwargs):
         """Downsample Fex columns. Relies on nltools.stats.downsample,
@@ -749,7 +996,6 @@ class Fex(DataFrame):
             ds_features = self.features
         df_ds.features = ds_features
         return df_ds
-        # return self.__class__(df_ds, sampling_freq=target, features=ds_features)
 
     def isc(self, col, index="frame", columns="input", method="pearson"):
         """[summary]
@@ -763,9 +1009,9 @@ class Fex(DataFrame):
         Returns:
             DataFrame: Correlation matrix with index as colmns
         """
-        if index == None:
+        if index is None:
             index = "frame"
-        if columns == None:
+        if columns is None:
             columns = "input"
         mat = pd.pivot_table(self, index=index, columns=columns, values=col).corr(
             method=method
@@ -825,7 +1071,7 @@ class Fex(DataFrame):
             data: cleaned FEX object
 
         """
-        #### TODO: CHECK IF FACET OR FIND WAY TO DO WITH OTHER ONES TOO #####
+
         if self.facebox_columns and self.au_columns and self.emotion_columns:
             cleaned = deepcopy(self)
             face_columns = self.facebox_columns
@@ -917,7 +1163,6 @@ class Fex(DataFrame):
                 else:
                     out = out.append(v - baseline_values, session_id=k)
         return out.__finalize__(self)
-        # return self.__class__(out, sampling_freq=self.sampling_freq, features=self.features, sessions=self.sessions)
 
     def clean(
         self,
@@ -1040,7 +1285,7 @@ class Fex(DataFrame):
             ).T
         return out
 
-    def extract_mean(self, ignore_sessions=False, *args, **kwargs):
+    def extract_mean(self, ignore_sessions=False):
         """Extract mean of each feature
 
         Args:
@@ -1049,36 +1294,76 @@ class Fex(DataFrame):
         Returns:
             Fex: mean values for each feature
         """
-        prefix = "mean_"
+
+        prefix = "mean"
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.mean()).T
+            feats = pd.DataFrame(self.mean(numeric_only=True)).T
         else:
             feats = []
             for k, v in self.itersessions():
-                # TODO: Update to use pd.concat
-                feats.append(pd.Series(v.mean(), name=k))
+                feats.append(pd.Series(v.mean(numeric_only=True), name=k))
             feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
-        feats.columns = prefix + feats.columns
+        feats.columns = f"{prefix}_" + feats.columns
         feats = feats.__finalize__(self)
         if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            attr_list = feats.__getattr__(attr_name)
-            if attr_list:
-                new_attr = [prefix + attr for attr in attr_list]
-                feats.__setattr__(attr_name, new_attr)
+        feats._update_extracted_colnames(prefix)
         return feats
 
-    def extract_min(self, ignore_sessions=False, *args, **kwargs):
+    def extract_std(self, ignore_sessions=False):
+        """Extract std of each feature
+
+        Args:
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
+        Returns:
+            Fex: mean values for each feature
+        """
+
+        prefix = "std"
+        if self.sessions is None or ignore_sessions:
+            feats = pd.DataFrame(self.std(numeric_only=True)).T
+        else:
+            feats = []
+            for k, v in self.itersessions():
+                feats.append(pd.Series(v.std(numeric_only=True), name=k))
+            feats = pd.concat(feats, axis=1).T
+        feats = self.__class__(feats)
+        feats.columns = f"{prefix}_" + feats.columns
+        feats = feats.__finalize__(self)
+        if ignore_sessions is False:
+            feats.sessions = np.unique(self.sessions)
+        feats._update_extracted_colnames(prefix)
+        return feats
+
+    def extract_sem(self, ignore_sessions=False):
+        """Extract std of each feature
+
+        Args:
+            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+
+        Returns:
+            Fex: mean values for each feature
+        """
+
+        prefix = "sem"
+        if self.sessions is None or ignore_sessions:
+            feats = pd.DataFrame(self.sem(numeric_only=True)).T
+        else:
+            feats = []
+            for k, v in self.itersessions():
+                feats.append(pd.Series(v.sem(numeric_only=True), name=k))
+            feats = pd.concat(feats, axis=1).T
+        feats = self.__class__(feats)
+        feats.columns = f"{prefix}_" + feats.columns
+        feats = feats.__finalize__(self)
+        if ignore_sessions is False:
+            feats.sessions = np.unique(self.sessions)
+        feats._update_extracted_colnames(prefix)
+        return feats
+
+    def extract_min(self, ignore_sessions=False):
         """Extract minimum of each feature
 
         Args:
@@ -1087,35 +1372,24 @@ class Fex(DataFrame):
         Returns:
             Fex: (Fex) minimum values for each feature
         """
-        prefix = "min_"
+
+        prefix = "min"
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.min()).T
+            feats = pd.DataFrame(self.min(numeric_only=True)).T
         else:
             feats = []
             for k, v in self.itersessions():
-                feats.append(pd.Series(v.min(), name=k))
+                feats.append(pd.Series(v.min(numeric_only=True), name=k))
             feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
-        feats.columns = prefix + feats.columns
+        feats.columns = f"{prefix}_" + feats.columns
         feats = feats.__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            attr_list = feats.__getattr__(attr_name)
-            if attr_list:
-                new_attr = [prefix + attr for attr in attr_list]
-                feats.__setattr__(attr_name, new_attr)
+        feats._update_extracted_colnames(prefix)
         return feats
 
-    def extract_max(self, ignore_sessions=False, *args, **kwargs):
+    def extract_max(self, ignore_sessions=False):
         """Extract maximum of each feature
 
         Args:
@@ -1124,41 +1398,39 @@ class Fex(DataFrame):
         Returns:
             fex: (Fex) maximum values for each feature
         """
-        prefix = "max_"
+        prefix = "max"
         if self.sessions is None or ignore_sessions:
-            feats = pd.DataFrame(self.max()).T
+            feats = pd.DataFrame(self.max(numeric_only=True)).T
         else:
             feats = []
             for k, v in self.itersessions():
-                feats.append(pd.Series(v.max(), name=k))
+                feats.append(pd.Series(v.max(numeric_only=True), name=k))
             feats = pd.concat(feats, axis=1).T
         feats = self.__class__(feats)
-        feats.columns = prefix + feats.columns
+        feats.columns = f"{prefix}_" + feats.columns
         feats = feats.__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             feats.sessions = np.unique(self.sessions)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            attr_list = feats.__getattr__(attr_name)
-            if attr_list:
-                new_attr = [prefix + attr for attr in attr_list]
-                feats.__setattr__(attr_name, new_attr)
+        feats._update_extracted_colnames(prefix)
         return feats
 
     def extract_summary(
-        self, mean=True, max=True, min=True, ignore_sessions=False, *args, **kwargs
+        self,
+        mean=True,
+        std=True,
+        sem=True,
+        max=True,
+        min=True,
+        ignore_sessions=False,
+        *args,
+        **kwargs,
     ):
         """Extract summary of multiple features
 
         Args:
             mean: (bool) extract mean of features
+            std: (bool) extract std of features
+            sem: (bool) extract sem of features
             max: (bool) extract max of features
             min: (bool) extract min of features
             ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
@@ -1166,50 +1438,40 @@ class Fex(DataFrame):
         Returns:
             fex: (Fex)
         """
+
+        if mean is max is min is False:
+            raise ValueError("At least one of min, max, mean must be True")
+
         out = self.__class__().__finalize__(self)
-        if ignore_sessions == False:
+        if ignore_sessions is False:
             out.sessions = np.unique(self.sessions)
+
+        col_updates = []
+
         if mean:
             new = self.extract_mean(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
-            # for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
-            #     if new.__getattr__(attr_name):
-            #         new_attr = new.__getattr__(attr_name)
-            #         out.__setattr__(attr_name, new_attr)
+            col_updates.append("mean")
+        if sem:
+            new = self.extract_sem(ignore_sessions=ignore_sessions, *args, **kwargs)
+            out = out.append(new, axis=1)
+            col_updates.append("sem")
+        if std:
+            new = self.extract_std(ignore_sessions=ignore_sessions, *args, **kwargs)
+            out = out.append(new, axis=1)
+            col_updates.append("std")
         if max:
             new = self.extract_max(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
-            # for attr_name in ['au_columns', 'emotion_columns', 'facebox_columns', 'landmark_columns', 'facepose_columns', 'gaze_columns', 'time_columns']:
-            #     if out.__getattr__(attr_name) and new.__getattr__(attr_name):
-            #         new_attr = out.__getattr__(attr_name) + new.__getattr__(attr_name)
-            #         out.__setattr__(attr_name, new_attr)
+            col_updates.append("max")
         if min:
             new = self.extract_min(ignore_sessions=ignore_sessions, *args, **kwargs)
             out = out.append(new, axis=1)
-        for attr_name in [
-            "au_columns",
-            "emotion_columns",
-            "facebox_columns",
-            "landmark_columns",
-            "facepose_columns",
-            "gaze_columns",
-            "time_columns",
-        ]:
-            if self.__getattr__(attr_name):
-                new_attr = []
-                if mean:
-                    new_attr.extend(
-                        ["mean_" + attr for attr in self.__getattr__(attr_name)]
-                    )
-                if max:
-                    new_attr.extend(
-                        ["max_" + attr for attr in self.__getattr__(attr_name)]
-                    )
-                if min:
-                    new_attr.extend(
-                        ["min_" + attr for attr in self.__getattr__(attr_name)]
-                    )
-                out.__setattr__(attr_name, new_attr)
+            col_updates.append("min")
+
+        out._update_extracted_colnames(mode="reset")
+        out._update_extracted_colnames(col_updates)
+
         return out
 
     def extract_wavelet(self, freq, num_cyc=3, mode="complex", ignore_sessions=False):
@@ -1238,7 +1500,7 @@ class Fex(DataFrame):
             for k, v in self.itersessions():
                 session = self.__class__(
                     pd.DataFrame(
-                        {x: convolve(y, wav, mode="same") for x, y in v.iteritems()}
+                        {x: convolve(y, wav, mode="same") for x, y in v.items()}
                     ),
                     sampling_freq=self.sampling_freq,
                 )
@@ -1349,24 +1611,6 @@ class Fex(DataFrame):
             feats, sampling_freq=self.sampling_freq, features=self.features
         )
 
-    def calc_pspi(self):
-        if self.detector == "FACET":
-            pspi_aus = ["AU4", "AU6", "AU7", "AU9", "AU10", "AU43"]
-            out = (
-                self["AU4"]
-                + self[["AU6", "AU7"]].max(axis=1)
-                + self[["AU9", "AU10"]].max(axis=1)
-                + self["AU43"]
-            )
-        if self.detector == "OpenFace":
-            out = (
-                self["AU04_r"]
-                + self[["AU06_r", "AU07_r"]].max(axis=1)
-                + self[["AU09_r", "AU10_r"]].max(axis=1)
-                + self["AU45_r"]
-            )
-        return out.__finalize__(self)
-
     def _prepare_plot_aus(self, row, muscles, gaze):
 
         """
@@ -1382,45 +1626,23 @@ class Fex(DataFrame):
 
         """
 
-        if self.detector == "FACET":
-            model = load_viz_model("facet")
-            feats = AU_LANDMARK_MAP[self.detector]
-            au = row[feats].to_numpy().squeeze()
-            if muscles is not None:
-                muscles["facet"] = 1
-            gaze = None
-
-        elif self.detector == "OpenFace":
-            feats = AU_LANDMARK_MAP[self.detector]
-            au = row[feats].to_numpy().squeeze().tolist()
-            au = np.array(au + [0, 0, 0])
-
-            if gaze:
-                gaze_dat = ["gaze_0_x", "gaze_0_y", "gaze_1_x", "gaze_1_y"]
-                gaze = row[gaze_dat].to_numpy().squeeze().tolist()
-
-        elif self.detector == "Affectiva":
-            feats = AU_LANDMARK_MAP[self.detector]
-            au = row[feats].to_numpy().squeeze() / 20
-            au = au.tolist()
-            au = np.array(au + [0, 0, 0])
-
-        elif self.detector == "Feat":
-            if self.au_model in ["svm", "logistic"]:
-                au_lookup = "Feat"
-                model = None
-            else:
-                au_lookup = self.au_model
-                try:
-                    model = load_viz_model(f"{self.au_model}_aus_to_landmarks")
-                except ValueError as e:
-                    raise NotImplementedError(
-                        f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'logistic') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
-                    )
+        if self.au_model in ["svm", "xgb"]:
+            au_lookup = "pyfeat"
+            model = None
+            feats = AU_LANDMARK_MAP["Feat"]
+        else:
+            au_lookup = self.au_model
+            try:
+                model = load_viz_model(f"{au_lookup}_aus_to_landmarks")
+            except ValueError as _:
+                raise NotImplementedError(
+                    f"The AU model used for detection '{self.au_model}' has no corresponding AU visualization model. To fallback to plotting detections with facial landmarks, set faces='landmarks' in your call to .plot_detections. Otherwise, you can either use one of Py-Feat's custom AU detectors ('svm' or 'xgb') or train your own visualization model by following the tutorial at:\n\nhttps://py-feat.org/extra_tutorials/trainAUvisModel.html"
+                )
 
             feats = AU_LANDMARK_MAP[au_lookup]
-            rrow = row.copy()
-            au = rrow[feats].to_numpy().squeeze()
+
+        rrow = row.copy()
+        au = rrow[feats].to_numpy().squeeze()
 
         gaze = None if isinstance(gaze, bool) else gaze
         return au, gaze, muscles, model
@@ -1435,6 +1657,7 @@ class Fex(DataFrame):
         add_titles=True,
         au_barplot=True,
         emotion_barplot=True,
+        plot_original_image=True,
     ):
         """
         Plots detection results by Feat. Can control plotting of face, AU barplot and
@@ -1478,11 +1701,10 @@ class Fex(DataFrame):
         # 8. Video - single and multi-face mix across frames
 
         sns.set_context("paper", font_scale=2.0)
-        all_figs = []
-        num_subplots = bool(faces) + au_barplot + emotion_barplot
-        if faces is not False and faces not in ["aus", "landmarks"]:
-            raise ValueError("faces should be one of 'False', 'landmarks', or 'aus'")
 
+        num_subplots = bool(faces) + au_barplot + emotion_barplot
+
+        all_figs = []
         for _, frame in enumerate(self.frame.unique()):
             # Determine figure width based on how many subplots we have
             f = plt.figure(figsize=(5 * num_subplots, 7))
@@ -1505,65 +1727,65 @@ class Fex(DataFrame):
                 # DRAW LANDMARKS ON IMAGE OR AU FACE
                 if face_ax is not None:
 
-                    if faces == "landmarks":
-                        # Try to load image file as background
-                        # Will fail if input is a video
-                        try:
-                            face_ax.imshow(Image.open(row["input"]))
-                            color = "w"
-                        except Exception as e:
-                            if self.verbose:
-                                print(f"{e}")
-                            color = "k"
+                    facebox = row[self.facebox_columns].values
 
+                    if not faces == "aus" and plot_original_image:
+                        file_extension = os.path.basename(row["input"]).split(".")[-1]
+                        if file_extension.lower() in [
+                            "jpg",
+                            "jpeg",
+                            "png",
+                            "bmp",
+                            "tiff",
+                            "pdf",
+                        ]:
+                            img = read_image(row["input"])
+                        else:
+                            # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
+                            # pts_unit 'sec'. See why it's ok in this issue:
+                            # https://github.com/pytorch/vision/issues/1931
+                            with warnings.catch_warnings():
+                                warnings.simplefilter("ignore", UserWarning)
+                                video, audio, info = read_video(
+                                    row["input"], output_format="TCHW"
+                                )
+                            img = video[row["frame"], :, :]
+                        color = "w"
+                        face_ax.imshow(img.permute([1, 2, 0]))
+                    else:
+                        color = "k"  # drawing lineface but not on photo
+
+                    if faceboxes:
+                        rect = Rectangle(
+                            (facebox[0], facebox[1]),
+                            facebox[2],
+                            facebox[3],
+                            linewidth=2,
+                            edgecolor="cyan",
+                            fill=False,
+                        )
+                        face_ax.add_patch(rect)
+
+                    if poses:
+                        face_ax = draw_facepose(
+                            pose=row[self.facepose_columns].values,
+                            facebox=facebox,
+                            ax=face_ax,
+                        )
+
+                    if faces == "landmarks":
                         landmark = row[self.landmark_columns].values
                         currx = landmark[:68]
                         curry = landmark[68:]
-                        facebox = row[self.facebox_columns].values
 
                         # facelines
                         face_ax = draw_lineface(
                             currx, curry, ax=face_ax, color=color, linewidth=3
                         )
-                        # facebox
-                        if faceboxes:
-                            rect = Rectangle(
-                                (facebox[0], facebox[1]),
-                                facebox[2],
-                                facebox[3],
-                                linewidth=2,
-                                edgecolor="cyan",
-                                fill=False,
-                            )
-                            face_ax.add_patch(rect)
+                        if not plot_original_image:
+                            face_ax.invert_yaxis()
 
-                        # facepose
-                        if poses:
-                            face_ax = draw_facepose(
-                                pose=row[self.facepose_columns].values,
-                                facebox=facebox,
-                                ax=face_ax,
-                            )
-
-                        # filename title
-                        if add_titles:
-                            _ = face_ax.set_title(
-                                "\n".join(wrap(row["input"])),
-                                loc="left",
-                                wrap=True,
-                                fontsize=14,
-                            )
-
-                        face_ax.axes.get_xaxis().set_visible(False)
-                        face_ax.axes.get_yaxis().set_visible(False)
-
-                        # Flip images for video frames
-                        if row["input"].endswith(".mov") or row["input"].endswith(
-                            ".mp4"
-                        ):
-                            _ = face_ax.invert_yaxis()
-
-                    if faces == "aus":
+                    elif faces == "aus":
                         # Generate face from AU landmark model
                         if any(self.groupby("frame").size() > 1):
                             raise NotImplementedError(
@@ -1583,8 +1805,23 @@ class Fex(DataFrame):
                             gaze=gaze,
                             ax=face_ax,
                             muscles=muscles,
-                            title=title,
+                            title=None,
                         )
+                    else:
+                        raise ValueError(
+                            f"faces={type(faces)} is not currently supported try ['False','landmarks','aus']."
+                        )
+
+                    if add_titles:
+                        _ = face_ax.set_title(
+                            "\n".join(wrap(os.path.basename(row["input"]))),
+                            loc="center",
+                            wrap=True,
+                            fontsize=14,
+                        )
+
+                    face_ax.axes.get_xaxis().set_visible(False)
+                    face_ax.axes.get_yaxis().set_visible(False)
 
             # DRAW AU BARPLOT
             if au_ax is not None:
@@ -1604,173 +1841,372 @@ class Fex(DataFrame):
             all_figs.append(f)
         return all_figs
 
-
-class Fextractor:
-    """
-    Fextractor is a class that extracts and merges features from a Fex instance
-    in preparation for data analysis.
-    """
-
-    def __init__(self):
-        self.extracted_features = []
-
-    def mean(self, fex_object, ignore_sessions=False, *args, **kwargs):
-        """Extract mean of each feature
+    # TODO: turn this into a property using a @property and @sessions.settr decorators
+    # Tried it but was running into maximum recursion depth errors. Maybe some
+    # interaction with how pandas sub-classing works?? - ejolly
+    def update_sessions(self, new_sessions):
+        """
+        Returns a copy of the Fex dataframe with a new sessions attribute after
+        validation. `new_sessions` should be a dictionary mapping old to new names or an iterable with the same number of rows as the Fex dataframe
 
         Args:
-            fex_object: (Fex) Fex instance to extract features from.
-            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+            new_sessions (dict, Iterable): map or list of new session names
 
         Returns:
-            Fex: mean values for each feature
+            Fex: self
         """
-        if not isinstance(fex_object, (Fex, DataFrame)):
-            raise ValueError("Must pass in a Fex object.")
-        self.extracted_features.append(
-            fex_object.extract_mean(ignore_sessions, *args, **kwargs)
-        )
 
-    def max(self, fex_object, ignore_sessions=False, *args, **kwargs):
-        """Extract maximum of each feature
+        out = deepcopy(self)
 
-        Args:
-            fex_object: (Fex) Fex instance to extract features from.
-            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+        if isinstance(new_sessions, dict):
+            if not isinstance(out.sessions, pd.Series):
+                out.sessions = pd.Series(out.sessions)
 
-        Returns:
-            Fex: (Fex) maximum values for each feature
-        """
-        if not isinstance(fex_object, (Fex, DataFrame)):
-            raise ValueError("Must pass in a Fex object.")
-        self.extracted_features.append(
-            fex_object.extract_max(ignore_sessions, *args, **kwargs)
-        )
+            out.sessions = out.sessions.map(new_sessions)
 
-    def min(self, fex_object, ignore_sessions=False, *args, **kwargs):
-        """Extract minimum of each feature
+        elif isinstance(new_sessions, Iterable):
+            if len(new_sessions) != out.shape[0]:
+                raise ValueError(
+                    f"When new_sessions are not a dictionary then they must but an iterable with length == the number of rows of this Fex dataframe {out.shape[0]}, but they have length {len(new_sessions)}."
+                )
 
-        Args:
-            fex_object: (Fex) Fex instance to extract features from.
-            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
+            out.sessions = new_sessions
 
-        Returns:
-            Fex: (Fex) minimum values for each feature
-        """
-        if not isinstance(fex_object, (Fex, DataFrame)):
-            raise ValueError("Must pass in a Fex object.")
-        self.extracted_features.append(
-            fex_object.extract_min(ignore_sessions, *args, **kwargs)
-        )
+        else:
+            raise TypeError(
+                f"new_sessions must be either be a dictionary mapping between old and new session values or an iterable with the same number of rows as this Fex dataframe {out.shape[0]}, but was type: {type(new_sessions)}"
+            )
 
-    def summary(
-        self,
-        fex_object,
-        mean=False,
-        max=False,
-        min=False,
-        ignore_sessions=False,
-        *args,
-        **kwargs,
-    ):
-        """Extract summary of multiple features
-
-        Args:
-            fex_object: (Fex) Fex instance to extract features from.
-            mean: (bool) extract mean of features
-            max: (bool) extract max of features
-            min: (bool) extract min of features
-            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
-
-        Returns:
-            fex: (Fex)
-        """
-        self.extracted_features.append(
-            fex_object.extract_summary(mean, max, min, ignore_sessions, *args, **kwargs)
-        )
-
-    def wavelet(
-        self, fex_object, freq, num_cyc=3, mode="complex", ignore_sessions=False
-    ):
-        """Perform feature extraction by convolving with a complex morlet
-        wavelet
-
-        Args:
-            fex_object: (Fex) Fex instance to extract features from.
-            freq: (float) frequency to extract
-            num_cyc: (float) number of cycles for wavelet
-            mode: (str) feature to extract, e.g., ['complex','filtered','phase','magnitude','power']
-            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
-
-        Returns:
-            convolved: (Fex instance)
-        """
-        if not isinstance(fex_object, (Fex, DataFrame)):
-            raise ValueError("Must pass in a Fex object.")
-        self.extracted_features.append(
-            fex_object.extract_wavelet(freq, num_cyc, mode, ignore_sessions)
-        )
-
-    def multi_wavelet(
-        self, fex_object, min_freq=0.06, max_freq=0.66, bank=8, *args, **kwargs
-    ):
-        """Convolve with a bank of morlet wavelets.
-
-        Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.
-
-        Args:
-            fex_object: (Fex) Fex instance to extract features from.
-            min_freq: (float) minimum frequency to extract
-            max_freq: (float) maximum frequency to extract
-            bank: (int) size of wavelet bank
-            num_cyc: (float) number of cycles for wavelet
-            mode: (str) feature to extract, e.g., ['complex','filtered','phase','magnitude','power']
-            ignore_sessions: (bool) ignore sessions or extract separately by sessions if available.
-
-        Returns:
-            convolved: (Fex instance)
-        """
-        if not isinstance(fex_object, (Fex, DataFrame)):
-            raise ValueError("Must pass in a Fex object.")
-        self.extracted_features.append(
-            fex_object.extract_multi_wavelet(min_freq, max_freq, bank, *args, **kwargs)
-        )
-
-    def boft(self, fex_object, min_freq=0.06, max_freq=0.66, bank=8, *args, **kwargs):
-        """Extract Bag of Temporal features
-
-        Args:
-            fex_object: (Fex) Fex instance to extract features from.
-            min_freq: maximum frequency of temporal filters
-            max_freq: minimum frequency of temporal filters
-            bank: number of temporal filter banks, filters are on exponential scale
-
-        Returns:
-            wavs: list of Morlet wavelets with corresponding freq
-            hzs:  list of hzs for each Morlet wavelet
-        """
-        if not isinstance(fex_object, (Fex, DataFrame)):
-            raise ValueError("Must pass in a Fex object.")
-        self.extracted_features.append(
-            fex_object.extract_boft(min_freq, max_freq, bank, *args, **kwargs)
-        )
-
-    def merge(self, out_format="long"):
-        """Merge all extracted features to a single dataframe
-
-        Args:
-            format: (str) Output format of merged data. Can be set to 'long' or 'wide'. Defaults to long.
-
-        Returns:
-            merged: (DataFrame) DataFrame containing merged features extracted from a Fex instance.
-        """
-        out = reduce(
-            lambda x, y: pd.merge(x, y, left_index=True, right_index=True),
-            self.extracted_features,
-        )
-        out["sessions"] = out.index
-
-        if out_format == "long":
-            out = out.melt(id_vars="sessions")
-        elif out_format == "wide":
-            pass
         return out
+
+
+class ImageDataset(Dataset):
+    """Torch Image Dataset
+
+    Args:
+        output_size (tuple or int): Desired output size. If tuple, output is matched to
+        output_size. If int, will set largest edge to output_size if target size is
+        bigger, or smallest edge if target size is smaller to keep aspect ratio the
+        same.
+        preserve_aspect_ratio (bool): Output size is matched to preserve aspect ratio. Note that longest edge of output size is preserved, but actual output may differ from intended output_size.
+        padding (bool): Transform image to exact output_size. If tuple, will preserve
+        aspect ratio by adding padding. If int, will set both sides to the same size.
+
+    Returns:
+        Dataset: dataset of [batch, channels, height, width] that can be passed to DataLoader
+    """
+
+    def __init__(
+        self, images, output_size=None, preserve_aspect_ratio=True, padding=False
+    ):
+        if isinstance(images, str):
+            images = [images]
+        self.images = images
+        self.output_size = output_size
+        self.preserve_aspect_ratio = preserve_aspect_ratio
+        self.padding = padding
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+
+        # Dimensions are [channels, height, width]
+        try:
+            img = read_image(self.images[idx])
+        except Exception:
+            img = Image.open(self.images[idx])
+            img = transforms.PILToTensor()(img)
+
+        if img.shape[0] == 1:
+            img = torch.cat([img, img, img], dim=0)
+
+        if self.output_size is not None:
+            logging.info(
+                f"ImageDataSet: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
+            )
+            transform = Compose(
+                [
+                    Rescale(
+                        self.output_size,
+                        preserve_aspect_ratio=self.preserve_aspect_ratio,
+                        padding=self.padding,
+                    )
+                ]
+            )
+            transformed_img = transform(img)
+            return {
+                "Image": transformed_img["Image"],
+                "Scale": transformed_img["Scale"],
+                "Padding": transformed_img["Padding"],
+                "FileNames": self.images[idx],
+            }
+
+        else:
+            return {
+                "Image": img,
+                "Scale": 1.0,
+                "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
+                "FileNames": self.images[idx],
+            }
+
+
+def _inverse_face_transform(faces, batch_data):
+    """Helper function to invert the Image Data batch transforms on the face bounding boxes
+
+    Args:
+        faces (list): list of lists from face_detector
+        batch_data (dict): batch data from Image Data Class
+
+    Returns:
+        transformed list of lists
+    """
+
+    logging.info("inverting face transform...")
+
+    out_frame = []
+    for frame, left, top, scale in zip(
+        faces,
+        batch_data["Padding"]["Left"].numpy(),
+        batch_data["Padding"]["Top"].numpy(),
+        batch_data["Scale"].numpy(),
+    ):
+        out_face = []
+        for face in frame:
+            out_face.append(
+                np.append(
+                    (
+                        np.array(
+                            [
+                                face[0] - left,
+                                face[1] - top,
+                                face[2] - left,
+                                face[3] - top,
+                            ]
+                        )
+                        / scale
+                    ),
+                    face[4],
+                )
+            )
+        out_frame.append(out_face)
+    return out_frame
+
+
+class imageLoader_DISFAPlus(ImageDataset):
+    """
+    Loading images from DISFA dataset. Assuming that the user has just unzipped the downloaded DISFAPlus data
+    """
+
+    def __init__(
+        self,
+        data_dir="/Storage/Data/DISFAPlusDataset/",
+        output_size=None,
+        preserve_aspect_ratio=True,
+        padding=False,
+        sample=None,
+    ):
+        super().__init__(
+            images=None,
+            output_size=output_size,
+            preserve_aspect_ratio=preserve_aspect_ratio,
+            padding=padding,
+        )
+
+        # Load all dir info for DISFA+
+        self.avail_AUs = [
+            "AU1",
+            "AU2",
+            "AU4",
+            "AU5",
+            "AU6",
+            "AU9",
+            "AU12",
+            "AU15",
+            "AU17",
+            "AU20",
+            "AU25",
+            "AU26",
+        ]
+
+        self.data_dir = data_dir
+        self.sample = sample
+        self.main_file = self._load_data()
+
+        self.output_size = output_size
+        self.preserve_aspect_ratio = preserve_aspect_ratio
+        self.padding = padding
+
+    def _load_data(self):
+        print("data loading in progress")
+        all_subjects = os.listdir(os.path.join(self.data_dir, "Labels"))
+        if self.sample:
+            all_subjects = np.random.choice(
+                all_subjects, size=int(self.sample * len(all_subjects)), replace=False
+            )
+
+        sessions = [
+            os.listdir(os.path.join(self.data_dir, "Labels", subj))
+            for subj in all_subjects
+        ]
+        # all image directory
+        dfs = []
+        for i, subj in enumerate(all_subjects):
+            for sess in sessions[i]:
+                AU_f = []
+                for au_added in self.avail_AUs:
+                    AU_file = pd.read_csv(
+                        os.path.join(self.data_dir, "Labels", subj, sess)
+                        + "/"
+                        + au_added
+                        + ".txt",
+                        skiprows=2,
+                        header=None,
+                        names=["intensity"],
+                        index_col=0,
+                        sep=r"\s{2,}",
+                    )
+                    AU_file.rename({"intensity": f"{au_added}"}, axis=1, inplace=True)
+                    AU_f.append(AU_file)
+                AU_pd = pd.concat(AU_f, axis=1)
+                AU_pd = AU_pd.reset_index(level=0)
+                AU_pd["session"] = sess
+                AU_pd["subject"] = subj
+                dfs.append(AU_pd)
+        df = pd.concat(dfs, ignore_index=True)
+        df["image_path"] = [
+            os.path.join(self.data_dir, "Images", df["subject"][i], df["session"][i])
+            + "/"
+            + df["index"][i]
+            for i in range(df.shape[0])
+        ]
+        return df
+
+    def __len__(self):
+        return self.main_file.shape[0]
+
+    def __getitem__(self, idx):
+
+        # Dimensions are [channels, height, width]
+        img = read_image(self.main_file["image_path"].iloc[idx])
+        label = self.main_file.loc[idx, self.avail_AUs].to_numpy().astype(np.int16)
+
+        if self.output_size is not None:
+            logging.info(
+                f"imageLoader_DISFAPlus: RESCALING WARNING: from {img.shape} to output_size={self.output_size}"
+            )
+            transform = Compose(
+                [
+                    Rescale(
+                        self.output_size,
+                        preserve_aspect_ratio=self.preserve_aspect_ratio,
+                        padding=self.padding,
+                    )
+                ]
+            )
+            transformed_img = transform(img)
+            return {
+                "Image": transformed_img["Image"],
+                "label": torch.from_numpy(label),
+                "Scale": transformed_img["Scale"],
+                "Padding": transformed_img["Padding"],
+                "FileNames": self.main_file["image_path"][idx],
+            }
+
+        else:
+            return {
+                "Image": img,
+                "label": torch.from_numpy(label),
+                "Scale": 1.0,
+                "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
+            }
+
+
+def _inverse_landmark_transform(landmarks, batch_data):
+    """Helper function to invert the Image Data batch transforms on the facial landmarks
+
+    Args:
+        landmarks (list): list of lists from landmark_detector
+        batch_data (dict): batch data from Image Data Class
+
+    Returns:
+        transformed list of lists
+    """
+
+    logging.info("inverting landmark transform...")
+
+    out_frame = []
+    for frame, left, top, scale in zip(
+        landmarks,
+        batch_data["Padding"]["Left"].numpy(),
+        batch_data["Padding"]["Top"].numpy(),
+        batch_data["Scale"].numpy(),
+    ):
+        out_landmark = []
+        for landmark in frame:
+            out_landmark.append(
+                (landmark - np.ones(landmark.shape) * [left, top]) / scale
+            )
+        out_frame.append(out_landmark)
+    return out_frame
+
+
+class VideoDataset(Dataset):
+    """Torch Video Dataset
+
+    Args:
+        skip_frames (int): number of frames to skip
+
+    Returns:
+        Dataset: dataset of [batch, channels, height, width] that can be passed to DataLoader
+    """
+
+    def __init__(self, video_file, skip_frames=None, output_size=None):
+
+        # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
+        # pts_unit 'sec'. See why it's ok in this issue:
+        # https://github.com/pytorch/vision/issues/1931
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            # Video dimensions are: [time, height, width, channels]
+            self.video, self.audio, self.info = read_video(video_file)
+        # Swap them to match output of read_image: [time, channels, height, width]
+        # Otherwise detectors face on tensor dimension mismatch
+        self.video = swapaxes(swapaxes(self.video, 1, 3), -1, -2)
+        self.file_name = video_file
+        self.output_size = output_size
+        self.video_frames = np.arange(
+            0, self.video.shape[0], 1 if skip_frames is None else skip_frames
+        )
+        self.video = self.video[self.video_frames, :, :]
+
+    def __len__(self):
+        return self.video.shape[0]
+
+    def __getitem__(self, idx):
+
+        # Rescale if needed like in ImageDataset
+        if self.output_size is not None:
+            logging.info(
+                f"VideoDataset: RESCALING WARNING: from {self.video[idx].shape} to output_size={self.output_size}"
+            )
+            transform = Compose(
+                [Rescale(self.output_size, preserve_aspect_ratio=True, padding=False)]
+            )
+            transformed_img = transform(self.video[idx])
+
+            return {
+                "Image": transformed_img["Image"],
+                "Frame": self.video_frames[idx],
+                "Scale": transformed_img["Scale"],
+                "Padding": transformed_img["Padding"],
+                "FileName": self.file_name,
+            }
+        else:
+            return {
+                "Image": self.video[idx],
+                "Frame": self.video_frames[idx],
+                "FileName": self.file_name,
+                "Scale": 1.0,
+                "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
+            }

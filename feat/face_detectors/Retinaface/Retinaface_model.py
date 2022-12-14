@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision.models._utils as _utils
 import torch.nn.functional as F
+import warnings
 
 
 def conv_bn(inp, oup, stride=1, leaky=0):
@@ -222,9 +223,24 @@ class RetinaFace(nn.Module):
         elif cfg["name"] == "Resnet50":
             import torchvision.models as models
 
-            backbone = models.resnet50(pretrained=cfg["pretrain"])
+            # TODO: Update to handle deprecation warning:
+            # UserWarning: Arguments other than a weight enum or `None` for 'weights'
+            # are deprecated since 0.13 and may be removed in the future. The current
+            # behavior is equivalent to passing
+            # `weights=ResNet18_Weights.IMAGENET1K_V1`. You can also use
+            # `weights=ResNet18_Weights.DEFAULT` to get the most up-to-date weights.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", UserWarning)
+                backbone = models.resnet50(weights=cfg["pretrain"])
 
-        self.body = _utils.IntermediateLayerGetter(backbone, cfg["return_layers"])
+        # TODO: Update to handle deprecation warning:
+        # UserWarning: Using 'backbone_name' as positional parameter(s) is deprecated
+        # since 0.13 and may be removed in the future. Please use keyword parameter(s)
+        # instead.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            self.body = _utils.IntermediateLayerGetter(backbone, cfg["return_layers"])
+
         in_channels_stage2 = cfg["in_channel"]
         in_channels_list = [
             in_channels_stage2 * 2,
@@ -305,7 +321,6 @@ class PriorBox(object):
             [ceil(self.image_size[0] / step), ceil(self.image_size[1] / step)]
             for step in self.steps
         ]
-        self.name = "s"
 
     def forward(self):
         anchors = []

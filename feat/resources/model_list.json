@@ -2,44 +2,42 @@
     "au_detectors": {
         "svm": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
-                "https://github.com/cosanlab/feat/releases/download/v0.1/svm_568.joblib",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.joblib",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.h5"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/svm_60_Nov22022.pkl"
             ]
         },
-        "logistic": {
+        "xgb": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib",
-                "https://github.com/cosanlab/feat/releases/download/v0.1/Logistic_520.joblib",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.joblib",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.h5"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU1.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU2.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU4.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU5.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU6.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU7.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU9.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU10.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU11.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU12.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU14.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU15.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU17.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU20.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU23.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU24.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU25.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU26.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU28.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/Oct30FinalXGB_AU43.ubj"
             ]
         },
         "hog-pca": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_pca_all_emotio.joblib"
-            ]
-        },
-        "au_scalar": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/hog_scalar_aus.joblib"
-            ]
-        },
-        "jaanet": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/JAANetparams.zip",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/jaanet_aus_to_landmarks.joblib",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/jaanet_aus_to_landmarks.h5"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/upper_face_pcaSet.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/lower_face_pcaSet.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/full_face_pcaSet.pkl"
             ]
         }
     },
     "emotion_detectors": {
-        "fer": {
-            "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/best_ferModel.pth"
-            ]
-        },
         "resmasknet": {
             "urls": [
                 "https://github.com/cosanlab/feat/releases/download/v0.1/ResMaskNet_Z_resmasking_dropout1_rot30.pth",
@@ -118,11 +116,6 @@
         }
     },
     "facepose_detectors": {
-        "pnp": {
-            "urls": [
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy"
-            ]
-        },
         "img2pose": {
             "urls": [
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/reference_3d_68_points_trans.npy",
@@ -137,6 +130,14 @@
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/img2pose_v1_ft_300w_lp.pth",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_mean_v1.npy",
                 "https://github.com/cosanlab/py-feat/releases/download/v0.1/WIDER_train_pose_stddev_v1.npy"
+            ]
+        }
+    },
+    "viz_models": {
+        "pyfeat_aus_to_landmarks": {
+            "urls": [
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.joblib",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/pyfeat_aus_to_landmarks.h5"
             ]
         }
     }

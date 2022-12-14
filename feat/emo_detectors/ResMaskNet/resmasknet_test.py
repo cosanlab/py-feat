@@ -1,19 +1,25 @@
 """
 All code & models from https://github.com/phamquiluan/ResidualMaskingNetwork
 """
+from lib2to3.pytree import convert
 import os
-import glob
 import json
-import cv2
+from typing_extensions import Self
 import numpy as np
 import torch
-from torchvision.transforms import transforms
-from torch.hub import load_state_dict_from_url
+from torchvision.transforms import (
+    Resize,
+    Grayscale,
+    Compose,
+    RandomHorizontalFlip,
+)
 import traceback
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from feat.utils import get_resource_path
+from feat.utils import set_torch_device
+from feat.utils.io import get_resource_path
+from feat.utils.image_operations import BBox
 
 model_urls = {
     "resnet18": "https://download.pytorch.org/models/resnet18-5c106cde.pth",
@@ -131,9 +137,8 @@ class ResNet(nn.Module):
 
         # NOTE: strictly set the in_channels = 3 to load the pretrained model
         self.conv1 = nn.Conv2d(
-            3, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False
+            in_channels, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False
         )
-        # self.conv1 = nn.Conv2d(in_channels, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -150,7 +155,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         # NOTE: strictly set the num_classes = 1000 to load the pretrained model
-        self.fc = nn.Linear(512 * block.expansion, 1000)
+        self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -606,9 +611,12 @@ def masking(in_channels, out_channels, depth, block=BasicBlock):
 
 
 class ResMasking(ResNet):
-    def __init__(self, weight_path):
+    def __init__(self, weight_path, in_channels=3):
         super(ResMasking, self).__init__(
-            block=BasicBlock, layers=[3, 4, 6, 3], in_channels=3, num_classes=1000
+            block=BasicBlock,
+            layers=[3, 4, 6, 3],
+            in_channels=in_channels,
+            num_classes=1000,
         )
         # state_dict = torch.load('saved/checkpoints/resnet18_rot30_2019Nov05_17.44')['net']
         # state_dict = load_state_dict_from_url(model_urls['resnet34'], progress=True)
@@ -660,33 +668,21 @@ class ResMasking(ResNet):
         return x
 
 
-def resmasking(in_channels, num_classes, weight_path=""):
-    return ResMasking(weight_path)
+# def resmasking(in_channels, num_classes, weight_path=""):
+#     return ResMasking(weight_path)
 
 
 def resmasking_dropout1(in_channels=3, num_classes=7, weight_path=""):
-    model = ResMasking(weight_path)
-    model.fc = nn.Sequential(
-        nn.Dropout(0.4),
-        nn.Linear(512, 7)
-        # nn.Linear(512, num_classes)
-    )
+    model = ResMasking(weight_path, in_channels=in_channels)
+    model.fc = nn.Sequential(nn.Dropout(0.4), nn.Linear(512, num_classes))
     return model
 
 
 ###########################
 
 
-def ensure_color(image):
-    if len(image.shape) == 2:
-        return np.dstack([image] * 3)
-    elif image.shape[2] == 1:
-        return np.dstack([image] * 3)
-    return image
-
-
 class ResMaskNet:
-    def __init__(self):
+    def __init__(self, device="auto"):
         """Initialize ResMaskNet
 
         @misc{luanresmaskingnet2020,
@@ -697,9 +693,8 @@ class ResMaskNet:
         }
 
         """
-        self.transform = transforms.Compose(
-            [transforms.ToPILImage(), transforms.ToTensor()]
-        )
+
+        self.device = set_torch_device(device)
 
         self.FER_2013_EMO_DICT = {
             0: "angry",
@@ -716,58 +711,30 @@ class ResMaskNet:
             open(os.path.join(get_resource_path(), "ResMaskNet_fer2013_config.json"))
         )
         self.image_size = (configs["image_size"], configs["image_size"])
-        self.use_gpu = torch.cuda.is_available()
-        # if self.use_gpu:
-        #     self.state = torch.load(
-        #         os.path.join(
-        #             get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
-        #         )
-        #     )
-        # else:
-        #     self.state = torch.load(
-        #         os.path.join(
-        #             get_resource_path(), "ResMaskNet_Z_resmasking_dropout1_rot30.pth"
-        #         ),
-        #         map_location={"cuda:0": "cpu"},
-        #     )
 
         self.model = resmasking_dropout1(in_channels=3, num_classes=7)
 
-        if self.use_gpu:
-            self.model.load_state_dict(
-                torch.load(
-                    os.path.join(
-                        get_resource_path(),
-                        "ResMaskNet_Z_resmasking_dropout1_rot30.pth",
-                    )
-                )["net"]
-            )
-            self.model.cuda()
+        self.model.load_state_dict(
+            torch.load(
+                os.path.join(
+                    get_resource_path(),
+                    "ResMaskNet_Z_resmasking_dropout1_rot30.pth",
+                ),
+                map_location=self.device,
+            )["net"]
+        )
 
-        else:
-            self.model.load_state_dict(
-                torch.load(
-                    os.path.join(
-                        get_resource_path(),
-                        "ResMaskNet_Z_resmasking_dropout1_rot30.pth",
-                    ),
-                    map_location={"cuda:0": "cpu"},
-                )["net"]
-            )
         self.model.eval()
 
     def detect_emo(self, frame, detected_face, *args, **kwargs):
         """Detect emotions.
-
         Args:
             frame ([type]): [description]
-
         Returns:
             List of predicted emotions in probability: [angry, disgust, fear, happy, sad, surprise, neutral]
         """
 
         face = self._batch_make(frame=frame, detected_face=detected_face)
-
         with torch.no_grad():
             output = self.model(face)
             proba = torch.softmax(output, 1)
@@ -776,41 +743,25 @@ class ResMaskNet:
 
     def _batch_make(self, frame, detected_face, *args, **kwargs):
 
-        len_index = [len(aa) for aa in detected_face]
-        lenth_cumu = np.cumsum(len_index)
+        transform = Compose([Grayscale(3)])
+        gray = transform(frame)
 
+        len_index = [len(aa) for aa in detected_face]
+        length_cumu = np.cumsum(len_index)
         flat_faces = [item for sublist in detected_face for item in sublist]
 
         concat_batch = None
-        for i in range(len(flat_faces)):
-            frame_choice = np.where(i <= lenth_cumu)[0][0]
-
-            frame0 = np.fliplr(frame[frame_choice]).astype(np.uint8)
-            h, w = frame0.shape[:2]
-            gray = cv2.cvtColor(frame0, cv2.COLOR_BGR2GRAY)
-
-            start_x, start_y, end_x, end_y, conf = np.array(flat_faces[i]).astype(int)
-            # covnert to square images
-            center_x, center_y = (start_x + end_x) // 2, (start_y + end_y) // 2
-            square_length = ((end_x - start_x) + (end_y - start_y)) // 2 // 2
-            square_length *= 1.1
-            start_x = int(center_x - square_length)
-            start_y = int(center_y - square_length)
-            end_x = int(center_x + square_length)
-            end_y = int(center_y + square_length)
-            if start_x < 0:
-                start_x = 0
-            if start_y < 0:
-                start_y = 0
-            face = gray[start_y:end_y, start_x:end_x]
-            face = ensure_color(face)
-            face = cv2.resize(face, self.image_size)
-            if self.use_gpu:
-                face = self.transform(face).cuda()
-            else:
-                face = self.transform(face)
-            face = torch.unsqueeze(face, dim=0)
-
+        for i, face in enumerate(flat_faces):
+            frame_choice = np.where(i < length_cumu)[0][0]
+            #     frame0 = np.fliplr(frame[frame_choice]).astype(np.uint8) # not sure why we need to flip the face
+            bbox = BBox(face[:-1])
+            face = (
+                bbox.expand_by_factor(1.1)
+                .extract_from_image(gray[frame_choice])
+                .unsqueeze(0)
+            )
+            transform = Resize(self.image_size)
+            face = transform(face) / 255
             if concat_batch is None:
                 concat_batch = face
             else:
