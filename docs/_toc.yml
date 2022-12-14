@@ -6,6 +6,7 @@ parts:
       - file: pages/installation
       - file: pages/models
       - file: pages/au_reference
+      - file: pages/usage_guide
   - caption: Basic Tutorials
     chapters:
       - file: basic_tutorials/01_basics
