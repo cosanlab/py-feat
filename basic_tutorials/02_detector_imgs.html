@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -625,7 +640,7 @@ title="Print to PDF"
 detector = Detector(
     face_model=&quot;retinaface&quot;,
     landmark_model=&quot;mobilefacenet&quot;,
-    au_model=&#39;svm&#39;,
+    au_model=&#39;xgb&#39;,
     emotion_model=&quot;resmasknet&quot;,
     facepose_model=&quot;img2pose&quot;,
 )
@@ -635,7 +650,7 @@ detector
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=xgb, emotion_model=resmasknet, facepose_model=img2pose)
 </pre></div>
 </div>
 </div>
@@ -643,7 +658,7 @@ detector
 <p>Let’s process a single image with a single face. Py-feat includes a demo image for this purpose called <code class="docutils literal notranslate"><span class="pre">single_face.jpg</span></code> so lets use that. You can also use the convenient <code class="docutils literal notranslate"><span class="pre">imshow</span></code> function which will automatically load an image into a numpy array if provided a path unlike matplotlib:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import get_test_data_path
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils.io import get_test_data_path
 from feat.plotting import imshow
 import os
 
@@ -673,8 +688,7 @@ single_face_prediction
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/torch/functional.py:568: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /Users/distiller/project/pytorch/aten/src/ATen/native/TensorShape.cpp:2228.)
-  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:03&lt;00:00,  3.58s/it]
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -695,7 +709,6 @@ single_face_prediction
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>frame</th>
       <th>FaceRectX</th>
       <th>FaceRectY</th>
       <th>FaceRectWidth</th>
@@ -705,9 +718,9 @@ single_face_prediction
       <th>x_1</th>
       <th>x_2</th>
       <th>x_3</th>
+      <th>x_4</th>
       <th>...</th>
-      <th>Roll</th>
-      <th>Yaw</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -716,32 +729,33 @@ single_face_prediction
       <th>surprise</th>
       <th>neutral</th>
       <th>input</th>
+      <th>frame</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>196.976837</td>
-      <td>140.997742</td>
-      <td>173.810486</td>
-      <td>257.639343</td>
-      <td>0.999681</td>
-      <td>191.624944</td>
-      <td>191.644596</td>
-      <td>193.813321</td>
-      <td>199.024401</td>
+      <td>192.561653</td>
+      <td>140.51021</td>
+      <td>179.37261</td>
+      <td>259.209973</td>
+      <td>0.999708</td>
+      <td>186.658539</td>
+      <td>187.411811</td>
+      <td>189.165036</td>
+      <td>193.472231</td>
+      <td>202.410419</td>
       <td>...</td>
-      <td>-3.809027</td>
-      <td>6.605721</td>
-      <td>0.000369</td>
-      <td>0.000026</td>
-      <td>0.000485</td>
-      <td>0.986996</td>
-      <td>0.000046</td>
-      <td>0.01201</td>
-      <td>0.000068</td>
+      <td>0.277524</td>
+      <td>0.000495</td>
+      <td>0.000025</td>
+      <td>0.001946</td>
+      <td>0.990421</td>
+      <td>0.000028</td>
+      <td>0.007057</td>
+      <td>0.000029</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
@@ -790,11 +804,11 @@ single_face_prediction
   <tbody>
     <tr>
       <th>0</th>
-      <td>196.976837</td>
-      <td>140.997742</td>
-      <td>173.810486</td>
-      <td>257.639343</td>
-      <td>0.999681</td>
+      <td>192.561653</td>
+      <td>140.51021</td>
+      <td>179.37261</td>
+      <td>259.209973</td>
+      <td>0.999708</td>
     </tr>
   </tbody>
 </table>
@@ -850,26 +864,26 @@ single_face_prediction
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
+      <td>0.360115</td>
+      <td>0.472855</td>
+      <td>0.508774</td>
+      <td>0.290168</td>
+      <td>0.775952</td>
+      <td>0.0</td>
+      <td>0.550643</td>
+      <td>0.982302</td>
+      <td>0.500063</td>
+      <td>0.880451</td>
+      <td>0.597636</td>
+      <td>0.181066</td>
+      <td>0.2801</td>
+      <td>1.0</td>
+      <td>0.326927</td>
+      <td>0.339884</td>
+      <td>0.996584</td>
+      <td>0.276738</td>
+      <td>0.025107</td>
+      <td>0.277524</td>
     </tr>
   </tbody>
 </table>
@@ -912,13 +926,13 @@ single_face_prediction
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.000369</td>
-      <td>0.000026</td>
-      <td>0.000485</td>
-      <td>0.986996</td>
-      <td>0.000046</td>
-      <td>0.01201</td>
-      <td>0.000068</td>
+      <td>0.000495</td>
+      <td>0.000025</td>
+      <td>0.001946</td>
+      <td>0.990421</td>
+      <td>0.000028</td>
+      <td>0.007057</td>
+      <td>0.000029</td>
     </tr>
   </tbody>
 </table>
@@ -957,9 +971,9 @@ single_face_prediction
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.832747</td>
-      <td>-3.809027</td>
-      <td>6.605721</td>
+      <td>0.863918</td>
+      <td>-3.837977</td>
+      <td>6.635625</td>
     </tr>
   </tbody>
 </table>
@@ -968,84 +982,13 @@ single_face_prediction
 </section>
 <section id="saving-detection-to-a-file">
 <h4>Saving detection to a file<a class="headerlink" href="#saving-detection-to-a-file" title="Permalink to this headline">#</a></h4>
-<p>We can also save our detection directly to a file by specifying an <code class="docutils literal notranslate"><span class="pre">outputFname</span></code> when using <code class="docutils literal notranslate"><span class="pre">.detect_image</span></code>. The detector will return <code class="docutils literal notranslate"><span class="pre">True</span></code> when it’s finished.</p>
+<p>Since a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> object is just a sub-classed <code class="docutils literal notranslate"><span class="pre">DataFrames</span></code> we can use the <code class="docutils literal notranslate"><span class="pre">.to_csv</span></code> method to save our detections toa file:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector.detect_image(single_face_img_path, outputFname = &quot;output.csv&quot;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>single_face_prediction.to_csv(&quot;output.csv&quot;, index=False)
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>frame</th>
-      <th>FaceRectX</th>
-      <th>FaceRectY</th>
-      <th>FaceRectWidth</th>
-      <th>FaceRectHeight</th>
-      <th>FaceScore</th>
-      <th>x_0</th>
-      <th>x_1</th>
-      <th>x_2</th>
-      <th>x_3</th>
-      <th>...</th>
-      <th>Roll</th>
-      <th>Yaw</th>
-      <th>anger</th>
-      <th>disgust</th>
-      <th>fear</th>
-      <th>happiness</th>
-      <th>sadness</th>
-      <th>surprise</th>
-      <th>neutral</th>
-      <th>input</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0</td>
-      <td>196.976837</td>
-      <td>140.997742</td>
-      <td>173.810486</td>
-      <td>257.639343</td>
-      <td>0.999681</td>
-      <td>191.624944</td>
-      <td>191.644596</td>
-      <td>193.813321</td>
-      <td>199.024401</td>
-      <td>...</td>
-      <td>-3.809027</td>
-      <td>6.605721</td>
-      <td>0.000369</td>
-      <td>0.000026</td>
-      <td>0.000485</td>
-      <td>0.986996</td>
-      <td>0.000046</td>
-      <td>0.01201</td>
-      <td>0.000068</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
-    </tr>
-  </tbody>
-</table>
-<p>1 rows × 173 columns</p>
-</div></div></div>
 </div>
 </section>
 <section id="loading-detection-results-from-a-saved-file">
@@ -1054,7 +997,7 @@ single_face_prediction
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># prefer to pandas read_csv
-from feat.utils import read_feat
+from feat.utils.io import read_feat
 
 input_prediction = read_feat(&quot;output.csv&quot;)
 
@@ -1082,7 +1025,6 @@ input_prediction
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>frame</th>
       <th>FaceRectX</th>
       <th>FaceRectY</th>
       <th>FaceRectWidth</th>
@@ -1092,9 +1034,9 @@ input_prediction
       <th>x_1</th>
       <th>x_2</th>
       <th>x_3</th>
+      <th>x_4</th>
       <th>...</th>
-      <th>Roll</th>
-      <th>Yaw</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1103,32 +1045,33 @@ input_prediction
       <th>surprise</th>
       <th>neutral</th>
       <th>input</th>
+      <th>frame</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>196.97684</td>
-      <td>140.99774</td>
-      <td>173.81049</td>
-      <td>257.63934</td>
-      <td>0.999681</td>
-      <td>191.624944</td>
-      <td>191.644596</td>
-      <td>193.813321</td>
-      <td>199.024401</td>
+      <td>192.561653</td>
+      <td>140.51021</td>
+      <td>179.37261</td>
+      <td>259.209973</td>
+      <td>0.999708</td>
+      <td>186.658539</td>
+      <td>187.411811</td>
+      <td>189.165036</td>
+      <td>193.472231</td>
+      <td>202.410419</td>
       <td>...</td>
-      <td>-3.809027</td>
-      <td>6.605721</td>
-      <td>0.000369</td>
-      <td>0.000026</td>
-      <td>0.000485</td>
-      <td>0.986996</td>
-      <td>0.000046</td>
-      <td>0.01201</td>
-      <td>0.000068</td>
+      <td>0.277524</td>
+      <td>0.000495</td>
+      <td>0.000025</td>
+      <td>0.001946</td>
+      <td>0.990421</td>
+      <td>0.000028</td>
+      <td>0.007057</td>
+      <td>0.000029</td>
       <td>output.csv</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
@@ -1178,6 +1121,9 @@ multi_face_prediction
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:08&lt;00:00,  8.47s/it]
+</pre></div>
+</div>
 <div class="output text_html"><div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -1196,7 +1142,6 @@ multi_face_prediction
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>frame</th>
       <th>FaceRectX</th>
       <th>FaceRectY</th>
       <th>FaceRectWidth</th>
@@ -1206,9 +1151,9 @@ multi_face_prediction
       <th>x_1</th>
       <th>x_2</th>
       <th>x_3</th>
+      <th>x_4</th>
       <th>...</th>
-      <th>Roll</th>
-      <th>Yaw</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1217,128 +1162,129 @@ multi_face_prediction
       <th>surprise</th>
       <th>neutral</th>
       <th>input</th>
+      <th>frame</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>683.844116</td>
-      <td>288.876495</td>
-      <td>103.788025</td>
-      <td>134.104675</td>
-      <td>0.999768</td>
-      <td>685.243732</td>
-      <td>683.924138</td>
-      <td>683.493398</td>
-      <td>684.032188</td>
+      <td>683.335838</td>
+      <td>288.563033</td>
+      <td>105.395773</td>
+      <td>134.118132</td>
+      <td>0.999814</td>
+      <td>685.494912</td>
+      <td>683.336467</td>
+      <td>682.095127</td>
+      <td>682.703083</td>
+      <td>686.400650</td>
       <td>...</td>
-      <td>-2.973639</td>
-      <td>-4.679388</td>
-      <td>0.050378</td>
-      <td>0.002782</td>
-      <td>0.160675</td>
-      <td>0.011653</td>
-      <td>0.587488</td>
-      <td>0.075299</td>
-      <td>0.111725</td>
+      <td>0.170883</td>
+      <td>0.000317</td>
+      <td>0.003644</td>
+      <td>0.000119</td>
+      <td>0.992836</td>
+      <td>0.000292</td>
+      <td>0.002569</td>
+      <td>0.000223</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0</td>
-      <td>533.678894</td>
-      <td>309.400024</td>
-      <td>96.237732</td>
-      <td>124.128448</td>
-      <td>0.999421</td>
-      <td>535.572383</td>
-      <td>533.746383</td>
-      <td>533.008999</td>
-      <td>533.146794</td>
+      <td>531.734346</td>
+      <td>309.172962</td>
+      <td>97.299739</td>
+      <td>123.768050</td>
+      <td>0.999358</td>
+      <td>533.901843</td>
+      <td>532.174873</td>
+      <td>531.632657</td>
+      <td>532.337446</td>
+      <td>535.039510</td>
       <td>...</td>
-      <td>4.255018</td>
-      <td>8.171312</td>
-      <td>0.03112</td>
-      <td>0.001458</td>
-      <td>0.186241</td>
-      <td>0.104354</td>
-      <td>0.269578</td>
-      <td>0.014566</td>
-      <td>0.392683</td>
+      <td>0.529417</td>
+      <td>0.000201</td>
+      <td>0.000161</td>
+      <td>0.000089</td>
+      <td>0.999188</td>
+      <td>0.000092</td>
+      <td>0.000251</td>
+      <td>0.000019</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0</td>
-      <td>316.984406</td>
-      <td>233.779205</td>
-      <td>92.016876</td>
-      <td>126.462952</td>
-      <td>0.999196</td>
-      <td>313.083172</td>
-      <td>314.54322</td>
-      <td>317.242715</td>
-      <td>321.314606</td>
+      <td>316.659267</td>
+      <td>236.801834</td>
+      <td>91.554931</td>
+      <td>120.343772</td>
+      <td>0.998964</td>
+      <td>313.344974</td>
+      <td>314.485803</td>
+      <td>316.831155</td>
+      <td>320.896162</td>
+      <td>327.509244</td>
       <td>...</td>
-      <td>9.734623</td>
-      <td>6.029476</td>
-      <td>0.033716</td>
-      <td>0.114599</td>
-      <td>0.055362</td>
-      <td>0.181432</td>
-      <td>0.060542</td>
-      <td>0.110806</td>
-      <td>0.443542</td>
+      <td>0.171810</td>
+      <td>0.000062</td>
+      <td>0.000046</td>
+      <td>0.000080</td>
+      <td>0.991157</td>
+      <td>0.000029</td>
+      <td>0.008593</td>
+      <td>0.000033</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>0</td>
-      <td>221.29747</td>
-      <td>64.152306</td>
-      <td>85.109207</td>
-      <td>109.057442</td>
-      <td>0.996842</td>
-      <td>219.466511</td>
-      <td>217.443319</td>
-      <td>216.14972</td>
-      <td>216.210632</td>
+      <td>435.008585</td>
+      <td>211.011886</td>
+      <td>82.006314</td>
+      <td>101.065502</td>
+      <td>0.994463</td>
+      <td>436.149135</td>
+      <td>437.005833</td>
+      <td>438.491356</td>
+      <td>440.477046</td>
+      <td>443.712133</td>
       <td>...</td>
-      <td>14.068047</td>
-      <td>-4.917797</td>
-      <td>0.000943</td>
-      <td>0.001107</td>
-      <td>0.036498</td>
-      <td>0.08564</td>
-      <td>0.020177</td>
-      <td>0.772348</td>
-      <td>0.083288</td>
+      <td>0.109600</td>
+      <td>0.013225</td>
+      <td>0.008497</td>
+      <td>0.000090</td>
+      <td>0.039161</td>
+      <td>0.005604</td>
+      <td>0.003555</td>
+      <td>0.929868</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>0</td>
-      <td>437.129089</td>
-      <td>213.861359</td>
-      <td>79.529785</td>
-      <td>97.050537</td>
-      <td>0.996773</td>
-      <td>437.59345</td>
-      <td>438.101893</td>
-      <td>439.270088</td>
-      <td>441.157225</td>
+      <td>219.923669</td>
+      <td>64.624866</td>
+      <td>85.467177</td>
+      <td>111.225995</td>
+      <td>0.994245</td>
+      <td>219.396966</td>
+      <td>217.687955</td>
+      <td>216.776542</td>
+      <td>217.055890</td>
+      <td>219.865002</td>
       <td>...</td>
-      <td>1.971143</td>
-      <td>-4.030666</td>
-      <td>0.20795</td>
-      <td>0.002251</td>
-      <td>0.002176</td>
-      <td>0.416435</td>
-      <td>0.002668</td>
-      <td>0.219107</td>
-      <td>0.149411</td>
+      <td>0.067352</td>
+      <td>0.000050</td>
+      <td>0.005056</td>
+      <td>0.000147</td>
+      <td>0.992222</td>
+      <td>0.000013</td>
+      <td>0.002488</td>
+      <td>0.000025</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
@@ -1358,9 +1304,11 @@ multi_face_prediction
 </section>
 <section id="detecting-faces-from-multiple-images">
 <h2>2.3 Detecting faces from multiple images<a class="headerlink" href="#detecting-faces-from-multiple-images" title="Permalink to this headline">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">Detector</span></code> is also flexible enough to process multiple image files simultaneously if <code class="docutils literal notranslate"><span class="pre">.detect_image()</span></code> is passed a list of images. You can process multiple images in a <em>batch</em> to speed up processing, but <strong>all images in a batch must have the same dimensions</strong>.</p>
-<p>In the example below we process both our single and multi-face example images from above, but force Py-Feat <strong>not</strong> to batch process them by setting <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Detector</span></code> is also flexible enough to process multiple image files if <code class="docutils literal notranslate"><span class="pre">.detect_image()</span></code> is passed a list of images. By default images will be processed serially, but you can set <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> to process multiple images in a <em>batch</em> and speed up processing. <strong>NOTE: All images in a batch must have the same dimensions for batch processing.</strong> This is because behind the scenes, <code class="docutils literal notranslate"><span class="pre">Detector</span></code> is assembling a <em>tensor</em> by stacking images together. You can ask <code class="docutils literal notranslate"><span class="pre">Detector</span></code> to rescale images by padding and preserving proportions using the <code class="docutils literal notranslate"><span class="pre">output_size</span></code> in conjunction with <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>. For example, the following would process a list of images in batches of 5 images at a time resizing each so one axis is 512:</p>
+<p><code class="docutils literal notranslate"><span class="pre">detector.detect_image(img_list,</span> <span class="pre">batch_size=5,</span> <span class="pre">output_size=512)</span> <span class="pre">#</span> <span class="pre">without</span> <span class="pre">output_size</span> <span class="pre">this</span> <span class="pre">would</span> <span class="pre">raise</span> <span class="pre">an</span> <span class="pre">error</span> <span class="pre">if</span> <span class="pre">image</span> <span class="pre">sizes</span> <span class="pre">differ!</span></code></p>
+<p>In the example below we keep things simple, by process both our single and multi-face example serislly by setting <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p>
 <p>Notice how the returned Fex data class instance has 6 rows: 1 for the first face in the first image, and 5 for the faces in the second image:</p>
+<p><strong>NOTE: Currently batch processing images gives slightly different AU detection results due to the way that py-feat integrates the underlying models. You can examine the degree of tolerance by checking out the results of <code class="docutils literal notranslate"><span class="pre">test_detection_and_batching_with_diff_img_sizes</span></code> in our test-suite</strong></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>img_list = [single_face_img_path, multi_face_image_path]
@@ -1371,6 +1319,9 @@ mixed_prediction
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 2/2 [00:12&lt;00:00,  6.20s/it]
+</pre></div>
+</div>
 <div class="output text_html"><div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -1389,7 +1340,6 @@ mixed_prediction
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>frame</th>
       <th>FaceRectX</th>
       <th>FaceRectY</th>
       <th>FaceRectWidth</th>
@@ -1399,9 +1349,9 @@ mixed_prediction
       <th>x_1</th>
       <th>x_2</th>
       <th>x_3</th>
+      <th>x_4</th>
       <th>...</th>
-      <th>Roll</th>
-      <th>Yaw</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -1410,152 +1360,153 @@ mixed_prediction
       <th>surprise</th>
       <th>neutral</th>
       <th>input</th>
+      <th>frame</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>196.976837</td>
-      <td>140.997742</td>
-      <td>173.810486</td>
-      <td>257.639343</td>
-      <td>0.999681</td>
-      <td>191.624944</td>
-      <td>191.644596</td>
-      <td>193.813321</td>
-      <td>199.024401</td>
+      <td>192.561653</td>
+      <td>140.510210</td>
+      <td>179.372610</td>
+      <td>259.209973</td>
+      <td>0.999708</td>
+      <td>186.658539</td>
+      <td>187.411811</td>
+      <td>189.165036</td>
+      <td>193.472231</td>
+      <td>202.410419</td>
       <td>...</td>
-      <td>-3.809027</td>
-      <td>6.605721</td>
-      <td>0.000369</td>
-      <td>0.000026</td>
-      <td>0.000485</td>
-      <td>0.986996</td>
-      <td>0.000046</td>
-      <td>0.01201</td>
-      <td>0.000068</td>
+      <td>0.277524</td>
+      <td>0.000495</td>
+      <td>0.000025</td>
+      <td>0.001946</td>
+      <td>0.990421</td>
+      <td>0.000028</td>
+      <td>0.007057</td>
+      <td>0.000029</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1</td>
-      <td>683.844116</td>
-      <td>288.876495</td>
-      <td>103.788025</td>
-      <td>134.104675</td>
-      <td>0.999768</td>
-      <td>685.243732</td>
-      <td>683.924138</td>
-      <td>683.493398</td>
-      <td>684.032188</td>
+      <td>683.335838</td>
+      <td>288.563033</td>
+      <td>105.395773</td>
+      <td>134.118132</td>
+      <td>0.999814</td>
+      <td>685.494912</td>
+      <td>683.336467</td>
+      <td>682.095127</td>
+      <td>682.703083</td>
+      <td>686.400650</td>
       <td>...</td>
-      <td>-2.973639</td>
-      <td>-4.679388</td>
-      <td>0.050378</td>
-      <td>0.002782</td>
-      <td>0.160675</td>
-      <td>0.011653</td>
-      <td>0.587488</td>
-      <td>0.075299</td>
-      <td>0.111725</td>
+      <td>0.170883</td>
+      <td>0.000317</td>
+      <td>0.003644</td>
+      <td>0.000119</td>
+      <td>0.992836</td>
+      <td>0.000292</td>
+      <td>0.002569</td>
+      <td>0.000223</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>1</td>
-      <td>533.678894</td>
-      <td>309.400024</td>
-      <td>96.237732</td>
-      <td>124.128448</td>
-      <td>0.999421</td>
-      <td>535.572383</td>
-      <td>533.746383</td>
-      <td>533.008999</td>
-      <td>533.146794</td>
+      <td>531.734346</td>
+      <td>309.172962</td>
+      <td>97.299739</td>
+      <td>123.768050</td>
+      <td>0.999358</td>
+      <td>533.901843</td>
+      <td>532.174873</td>
+      <td>531.632657</td>
+      <td>532.337446</td>
+      <td>535.039510</td>
       <td>...</td>
-      <td>4.255018</td>
-      <td>8.171312</td>
-      <td>0.03112</td>
-      <td>0.001458</td>
-      <td>0.186241</td>
-      <td>0.104354</td>
-      <td>0.269578</td>
-      <td>0.014566</td>
-      <td>0.392683</td>
+      <td>0.529417</td>
+      <td>0.000201</td>
+      <td>0.000161</td>
+      <td>0.000089</td>
+      <td>0.999188</td>
+      <td>0.000092</td>
+      <td>0.000251</td>
+      <td>0.000019</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>1</td>
-      <td>316.984406</td>
-      <td>233.779205</td>
-      <td>92.016876</td>
-      <td>126.462952</td>
-      <td>0.999196</td>
-      <td>313.083172</td>
-      <td>314.54322</td>
-      <td>317.242715</td>
-      <td>321.314606</td>
+      <td>316.659267</td>
+      <td>236.801834</td>
+      <td>91.554931</td>
+      <td>120.343772</td>
+      <td>0.998964</td>
+      <td>313.344974</td>
+      <td>314.485803</td>
+      <td>316.831155</td>
+      <td>320.896162</td>
+      <td>327.509244</td>
       <td>...</td>
-      <td>9.734623</td>
-      <td>6.029476</td>
-      <td>0.033716</td>
-      <td>0.114599</td>
-      <td>0.055362</td>
-      <td>0.181432</td>
-      <td>0.060542</td>
-      <td>0.110806</td>
-      <td>0.443542</td>
+      <td>0.171810</td>
+      <td>0.000062</td>
+      <td>0.000046</td>
+      <td>0.000080</td>
+      <td>0.991157</td>
+      <td>0.000029</td>
+      <td>0.008593</td>
+      <td>0.000033</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>1</td>
-      <td>221.29747</td>
-      <td>64.152306</td>
-      <td>85.109207</td>
-      <td>109.057442</td>
-      <td>0.996842</td>
-      <td>219.466511</td>
-      <td>217.443319</td>
-      <td>216.14972</td>
-      <td>216.210632</td>
+      <td>435.008585</td>
+      <td>211.011886</td>
+      <td>82.006314</td>
+      <td>101.065502</td>
+      <td>0.994463</td>
+      <td>436.149135</td>
+      <td>437.005833</td>
+      <td>438.491356</td>
+      <td>440.477046</td>
+      <td>443.712133</td>
       <td>...</td>
-      <td>14.068047</td>
-      <td>-4.917797</td>
-      <td>0.000943</td>
-      <td>0.001107</td>
-      <td>0.036498</td>
-      <td>0.08564</td>
-      <td>0.020177</td>
-      <td>0.772348</td>
-      <td>0.083288</td>
+      <td>0.109600</td>
+      <td>0.013225</td>
+      <td>0.008497</td>
+      <td>0.000090</td>
+      <td>0.039161</td>
+      <td>0.005604</td>
+      <td>0.003555</td>
+      <td>0.929868</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>1</td>
-      <td>437.129089</td>
-      <td>213.861359</td>
-      <td>79.529785</td>
-      <td>97.050537</td>
-      <td>0.996773</td>
-      <td>437.59345</td>
-      <td>438.101893</td>
-      <td>439.270088</td>
-      <td>441.157225</td>
+      <td>219.923669</td>
+      <td>64.624866</td>
+      <td>85.467177</td>
+      <td>111.225995</td>
+      <td>0.994245</td>
+      <td>219.396966</td>
+      <td>217.687955</td>
+      <td>216.776542</td>
+      <td>217.055890</td>
+      <td>219.865002</td>
       <td>...</td>
-      <td>1.971143</td>
-      <td>-4.030666</td>
-      <td>0.20795</td>
-      <td>0.002251</td>
-      <td>0.002176</td>
-      <td>0.416435</td>
-      <td>0.002668</td>
-      <td>0.219107</td>
-      <td>0.149411</td>
+      <td>0.067352</td>
+      <td>0.000050</td>
+      <td>0.005056</td>
+      <td>0.000147</td>
+      <td>0.992222</td>
+      <td>0.000013</td>
+      <td>0.002488</td>
+      <td>0.000025</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
     </tr>
   </tbody>
 </table>
@@ -1570,8 +1521,8 @@ mixed_prediction
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/02_detector_imgs_30_0.png" src="../_images/02_detector_imgs_30_0.png" />
-<img alt="../_images/02_detector_imgs_30_1.png" src="../_images/02_detector_imgs_30_1.png" />
+<img alt="../_images/02_detector_imgs_31_0.png" src="../_images/02_detector_imgs_31_0.png" />
+<img alt="../_images/02_detector_imgs_31_1.png" src="../_images/02_detector_imgs_31_1.png" />
 </div>
 </div>
 <p>However, it’s easy to use pandas slicing sytax to just grab predictions for the image you want. For example you can use <code class="docutils literal notranslate"><span class="pre">.loc</span></code> and chain it to <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code>:</p>
@@ -1583,7 +1534,7 @@ figs = mixed_prediction.loc[0].plot_detections(add_titles=False)
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/02_detector_imgs_32_0.png" src="../_images/02_detector_imgs_32_0.png" />
+<img alt="../_images/02_detector_imgs_33_0.png" src="../_images/02_detector_imgs_33_0.png" />
 </div>
 </div>
 <p>Likewise you can use <code class="docutils literal notranslate"><span class="pre">.query()</span></code> and chain it to <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code>. <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data classes store each file path in the <code class="docutils literal notranslate"><span class="pre">'input'</span></code> column. So we can use regular pandas methods like <code class="docutils literal notranslate"><span class="pre">.unique()</span></code> to get all the unique images (2 in our case) and pick the second one.</p>
@@ -1596,7 +1547,7 @@ axes = mixed_prediction.query(&quot;input == @img_name&quot;).plot_detections(ad
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/02_detector_imgs_34_0.png" src="../_images/02_detector_imgs_34_0.png" />
+<img alt="../_images/02_detector_imgs_35_0.png" src="../_images/02_detector_imgs_35_0.png" />
 </div>
 </div>
 </section>

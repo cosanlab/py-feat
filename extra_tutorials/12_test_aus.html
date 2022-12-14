@@ -1,0 +1,814 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>12. Benchmarking Action Unit detector using data &#8212; Py-Feat</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="13. Benchmarking pyfeat Emotion detection algorithms using data" href="13_test_emos.html" />
+    <link rel="prev" title="10. Benchmarking Landmark models using data" href="10_test_lands.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../pages/intro.html">
+                    Py-Feat: Python Facial Expression Analysis Toolbox
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Getting Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/installation.html">
+   How to install Py-Feat
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/models.html">
+   Included pre-trained detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/au_reference.html">
+   Action Unit Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Basic Tutorials
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/01_basics.html">
+   1. Py-Feat basics
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">
+   2. Detecting facial expressions from images
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/03_detector_vids.html">
+   3. Detecting facial expressions from videos
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/04_plotting.html">
+   4. Visualizing Facial Expressions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">
+   5. Running a full analysis
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Advanced Tutorials
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="06_trainAUvisModel.html">
+   6. Training an AU visualization model
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="07_extract_labels_and_landmarks.html">
+   7. Example labels and landmark dataset loading
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="08_train_hogs.html">
+   8. Training HOG-based AU detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/api.html">
+   API Reference
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  Contributing
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/contribute.html">
+   General contributions guidelines
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/modelContribution.html">
+   Contributing new detectors
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../pages/changelog.html">
+   Change Log
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/cosanlab/py-feat">
+   GitHub Repository
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<div class="menu-dropdown menu-dropdown-launch-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Launch interactive content">
+      <i class="fas fa-rocket"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/extra_tutorials/12_test_aus.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on Binder"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../_static/images/logo_binder.svg">
+  </span>
+<span class="headerbtn__text-container">Binder</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://jhub.dartmouth.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/extra_tutorials/12_test_aus.ipynb&branch=master"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on JupyterHub"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../_static/images/logo_jupyterhub.svg">
+  </span>
+<span class="headerbtn__text-container">JupyterHub</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/extra_tutorials/12_test_aus.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on Colab"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../_static/images/logo_colab.png">
+  </span>
+<span class="headerbtn__text-container">Colab</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/cosanlab/py-feat"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fextra_tutorials/12_test_aus.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/extra_tutorials/12_test_aus.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.ipynb</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#test-xgb-model">
+   1. Test XGB model
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#calculate-f1-score-metrics">
+     Calculate F1 score Metrics
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#test-svm-model">
+   2. Test SVM model
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id1">
+     Calculate F1 score Metrics
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>12. Benchmarking Action Unit detector using data</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#test-xgb-model">
+   1. Test XGB model
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#calculate-f1-score-metrics">
+     Calculate F1 score Metrics
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#test-svm-model">
+   2. Test SVM model
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id1">
+     Calculate F1 score Metrics
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <section id="benchmarking-action-unit-detector-using-data">
+<h1>12. Benchmarking Action Unit detector using data<a class="headerlink" href="#benchmarking-action-unit-detector-using-data" title="Permalink to this headline">#</a></h1>
+<p><em>written by Tiankang Xie</em></p>
+<p>In the tutorial we will demonstrate how to evaluate pyfeat AU algorithms with evaluation data</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import sys
+from copy import deepcopy
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+from torchvision import transforms
+from feat.utils.image_operations import extract_face_from_landmarks
+from PIL import Image
+import os 
+import pandas as pd
+from tqdm import tqdm
+from feat import Detector
+import glob
+from skimage.feature import hog
+import pickle
+from feat.data import imageLoader_DISFAPlus
+from sklearn.metrics import f1_score
+</pre></div>
+</div>
+</div>
+</div>
+<p>Provide the path for the</p>
+<ol class="simple">
+<li><p>raw dataset.</p></li>
+<li><p>where to save the validation results</p></li>
+</ol>
+<p>You can request it from http://mohammadmahoor.com/disfa/</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>save_result_dir = &#39;/Storage/Projects/pyfeat_testing/Data_Eshin/au_test/&#39;
+data_dir = &quot;/Storage/Data/DISFAPlusDataset/&quot;
+disfa_file_data = imageLoader_DISFAPlus(data_dir=data_dir) # We provide a special dataloader for disfaPlus
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="test-xgb-model">
+<h1>1. Test XGB model<a class="headerlink" href="#test-xgb-model" title="Permalink to this headline">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define the function just to extract landmarks from images
+detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&quot;mobilefacenet&quot;, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/tiankang/anaconda3/envs/py39/lib/python3.9/site-packages/torchvision/models/_utils.py:135: UserWarning: Using &#39;backbone_name&#39; as positional parameter(s) is deprecated since 0.13 and may be removed in the future. Please use keyword parameter(s) instead.
+  warnings.warn(
+/home/tiankang/anaconda3/envs/py39/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for &#39;weights&#39; are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet18_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet18_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>aus_classified = []
+for i, imgs in enumerate(tqdm(disfa_file_data)):
+    faces = detector.detect_faces(imgs[&#39;Image&#39;])
+    landmarks = detector.detect_landmarks(imgs[&#39;Image&#39;], detected_faces=faces)
+    poses = detector.detect_facepose(imgs[&#39;Image&#39;])
+    aus = detector.detect_aus(imgs[&#39;Image&#39;], landmarks)
+    aus_classified.append(aus)
+
+with open(save_result_dir+&#39;xgb_au_predictions.pkl&#39;, &#39;wb&#39;) as fp:
+    pickle.dump(aus_classified, fp)
+</pre></div>
+</div>
+</div>
+</div>
+<section id="calculate-f1-score-metrics">
+<h2>Calculate F1 score Metrics<a class="headerlink" href="#calculate-f1-score-metrics" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>with open(save_result_dir+&#39;xgb_au_predictions.pkl&#39;, &#39;rb&#39;) as fp:
+    aus_classified = pickle.load(fp)
+predictions = np.squeeze(np.stack(aus_classified[0]))
+labels = aus_classified[1]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>predicted_aus = [&quot;AU1&quot;,&quot;AU2&quot;,&quot;AU4&quot;,&quot;AU5&quot;,&quot;AU6&quot;,&quot;AU7&quot;,&quot;AU9&quot;,&quot;AU10&quot;,&quot;AU11&quot;,&quot;AU12&quot;,&quot;AU14&quot;,&quot;AU15&quot;,
+                    &quot;AU17&quot;,&quot;AU20&quot;,&quot;AU23&quot;,&quot;AU24&quot;,&quot;AU25&quot;,&quot;AU26&quot;,&quot;AU28&quot;, &quot;AU43&quot;]
+testing_aus = [&#39;AU1&#39;, &#39;AU2&#39;, &#39;AU4&#39;, &#39;AU5&#39;, &#39;AU6&#39;, &#39;AU9&#39;, &#39;AU12&#39;, &#39;AU15&#39;, &#39;AU17&#39;, &#39;AU20&#39;, &#39;AU25&#39;, &#39;AU26&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>for i, auname in enumerate(testing_aus):
+    print(&#39;======&#39;)
+    index_arr = predicted_aus.index(auname)
+    print(auname, &#39;,  f1 score: &#39;, f1_score((labels[auname]&gt;=2).astype(int), (predictions[:, index_arr]&gt;=0.5).astype(int)))
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="test-svm-model">
+<h1>2. Test SVM model<a class="headerlink" href="#test-svm-model" title="Permalink to this headline">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&quot;mobilefacenet&quot;, au_model=&#39;svm&#39;, device=&#39;cpu&#39;)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>aus_classified = []
+for i, imgs in enumerate(tqdm(disfa_file_data)):
+    faces = detector.detect_faces(imgs[&#39;Image&#39;])
+    landmarks = detector.detect_landmarks(imgs[&#39;Image&#39;], detected_faces=faces)
+    poses = detector.detect_facepose(imgs[&#39;Image&#39;])
+    aus = detector.detect_aus(imgs[&#39;Image&#39;], landmarks)
+    aus_classified.append(aus)
+
+with open(save_result_dir+&#39;svm_au_predictions.pkl&#39;, &#39;wb&#39;) as fp:
+    pickle.dump(aus_classified, fp)
+</pre></div>
+</div>
+</div>
+</div>
+<section id="id1">
+<h2>Calculate F1 score Metrics<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>with open(save_result_dir+&#39;svm_au_predictions.pkl&#39;, &#39;rb&#39;) as fp:
+    aus_classified = pickle.load(fp)
+predictions = np.squeeze(np.stack(aus_classified[0]))
+labels = aus_classified[1]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>predicted_aus = [&quot;AU1&quot;,&quot;AU2&quot;,&quot;AU4&quot;,&quot;AU5&quot;,&quot;AU6&quot;,&quot;AU7&quot;,&quot;AU9&quot;,&quot;AU10&quot;,&quot;AU11&quot;,&quot;AU12&quot;,&quot;AU14&quot;,&quot;AU15&quot;,
+                    &quot;AU17&quot;,&quot;AU20&quot;,&quot;AU23&quot;,&quot;AU24&quot;,&quot;AU25&quot;,&quot;AU26&quot;,&quot;AU28&quot;, &quot;AU43&quot;]
+testing_aus = [&#39;AU1&#39;, &#39;AU2&#39;, &#39;AU4&#39;, &#39;AU5&#39;, &#39;AU6&#39;, &#39;AU9&#39;, &#39;AU12&#39;, &#39;AU15&#39;, &#39;AU17&#39;, &#39;AU20&#39;, &#39;AU25&#39;, &#39;AU26&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>for i, auname in enumerate(testing_aus):
+    print(&#39;======&#39;)
+    index_arr = predicted_aus.index(auname)
+    print(auname, &#39; f1 score: &#39;, f1_score((labels[auname]&gt;=2).astype(int), (predictions[:, index_arr]&gt;=0.5).astype(int)))
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./extra_tutorials"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="10_test_lands.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">10. Benchmarking Landmark models using data</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="13_test_emos.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">13. Benchmarking pyfeat Emotion detection algorithms using data</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>

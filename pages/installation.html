@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -479,6 +494,10 @@ title="Print to PDF"
 <p>Or get the latest development version by installing directly from github:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">cosanlab</span><span class="o">/</span><span class="n">py</span><span class="o">-</span><span class="n">feat</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have <strong>experimental</strong> support for GPUs on macOS which you can try with <code class="docutils literal notranslate"><span class="pre">device='auto'</span></code>. However, we currently advise using the default (<code class="docutils literal notranslate"><span class="pre">cpu</span></code>) on macOS until PyTorch support stabilizes.</p>
 </div>
 </section>
 <section id="using-google-colab">

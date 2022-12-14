@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -478,6 +493,13 @@ title="Print to PDF"
   <a class="reference internal nav-link" href="#detectors">
    Detectors
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#default-detectors">
+     Default detectors
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#fex-data-classes">
@@ -507,6 +529,13 @@ title="Print to PDF"
   <a class="reference internal nav-link" href="#detectors">
    Detectors
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#default-detectors">
+     Default detectors
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#fex-data-classes">
@@ -539,6 +568,7 @@ title="Print to PDF"
 <section id="detectors">
 <h2>Detectors<a class="headerlink" href="#detectors" title="Permalink to this headline">#</a></h2>
 <p>A detector is a swiss-army-knife class that “glues” together a particular combination of a Face, Landmark, Action Unit, and Emotion detection model into a single object. This allows us to provide a very easy-to-use high-level API, e.g. <code class="docutils literal notranslate"><span class="pre">detector.detect_image('my_image.jpg')</span></code>, which will automatically make use of the correct underlying model to solve the sub-tasks of identifying face locations, getting landmarks, extracting action units, etc.</p>
+<p>The first time you initialize a <code class="docutils literal notranslate"><span class="pre">Detector</span></code> instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you and save them to disk. Everytime after that it will use existing model weights:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.detector import Detector
@@ -557,13 +587,16 @@ detector
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet0.25_Final.pth
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_568.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_60_Nov22022.pkl
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/upper_face_pcaSet.pkl
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/lower_face_pcaSet.pkl
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/full_face_pcaSet.pkl
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_fer2013_config.json
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/reference_3d_68_points_trans.npy
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/img2pose_v1.pth
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_mean_v1.npy
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_stddev_v1.npy
 </pre></div>
 </div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
@@ -571,7 +604,17 @@ Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat
 </div>
 </div>
 </div>
-<p>After initializing a detector you can easily swap one or more underlying models using the <code class="docutils literal notranslate"><span class="pre">.change_model</span></code> method.</p>
+<section id="default-detectors">
+<h3>Default detectors<a class="headerlink" href="#default-detectors" title="Permalink to this headline">#</a></h3>
+<p>The default models loaded by Py-Feat are the currently recommended ones for each detection task. You see a full list of supported models <a class="reference internal" href="../pages/models.html"><span class="doc std std-doc">here</span></a> and instructions for contributing a new detector <a class="reference internal" href="../pages/modelContribution.html"><span class="doc std std-doc">here</span></a>. The current defaults include:</p>
+<ul class="simple">
+<li><p>Face Model: <code class="docutils literal notranslate"><span class="pre">retinaface</span></code></p></li>
+<li><p>Landmark Model: <code class="docutils literal notranslate"><span class="pre">mobilefacenet</span></code></p></li>
+<li><p>AU Model: <code class="docutils literal notranslate"><span class="pre">svm</span></code></p></li>
+<li><p>Emotion Model: <code class="docutils literal notranslate"><span class="pre">resmasknet</span></code></p></li>
+<li><p>Face Pose Model:<code class="docutils literal notranslate"><span class="pre">img2pose</span></code></p></li>
+</ul>
+<p>After initializing a detector you can easily swap one or more underlying models using the <code class="docutils literal notranslate"><span class="pre">.change_model</span></code> method. All models names should be provided as strings and are case-insensitive:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector.change_model(face_model=&quot;MTCNN&quot;)
@@ -584,13 +627,16 @@ detector
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/pnet.pt
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/rnet.pt
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_568.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_pca_all_emotio.joblib
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/hog_scalar_aus.joblib
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_60_Nov22022.pkl
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/upper_face_pcaSet.pkl
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/lower_face_pcaSet.pkl
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/full_face_pcaSet.pkl
 Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_fer2013_config.json
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/reference_3d_68_points_trans.npy
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/img2pose_v1.pth
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_mean_v1.npy
+Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_stddev_v1.npy
 Changing face_model from retinaface -&gt; mtcnn
 </pre></div>
 </div>
@@ -600,6 +646,7 @@ Changing face_model from retinaface -&gt; mtcnn
 </div>
 </div>
 <p>You’ll primarily use a detector instance by calling its <code class="docutils literal notranslate"><span class="pre">.detect_image()</span></code> or <code class="docutils literal notranslate"><span class="pre">.detect_video()</span></code> methods. Both methods take as input a filename (or list of filenames) and return a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data class instance. Detectors also have lower-level detection methods like <code class="docutils literal notranslate"><span class="pre">.detect_face()</span></code> and <code class="docutils literal notranslate"><span class="pre">.detect_landmarks()</span></code> which operate on and return numpy arrays directly.</p>
+</section>
 </section>
 <section id="fex-data-classes">
 <h2>Fex data classes<a class="headerlink" href="#fex-data-classes" title="Permalink to this headline">#</a></h2>
@@ -635,16 +682,16 @@ isinstance(fex, pd.DataFrame)
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "python"
+            mode: "py-feat"
         },
         kernelOptions: {
-            kernelName: "python3",
+            kernelName: "py-feat",
             path: "./basic_tutorials"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'python3'</script>
+    <script>kernelName = 'py-feat'</script>
 
               </div>
               

@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -547,25 +562,19 @@ title="Print to PDF"
 </div>
 <section id="setting-up-the-detector">
 <h2>3.1 Setting up the Detector<a class="headerlink" href="#setting-up-the-detector" title="Permalink to this headline">#</a></h2>
-<p>We’ll begin by creating a new <code class="docutils literal notranslate"><span class="pre">Detector</span></code> instance just like the previous tutorial</p>
+<p>We’ll begin by creating a new <code class="docutils literal notranslate"><span class="pre">Detector</span></code> instance just like the previous tutorial and using the defaults:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Detector
 
-detector = Detector(
-    face_model=&quot;retinaface&quot;,
-    landmark_model=&quot;mobilefacenet&quot;,
-    au_model=&quot;svm&quot;,
-    emotion_model=&quot;resmasknet&quot;,
-    facepose_model=&quot;img2pose&quot;,
-)
+detector = Detector()
 
 detector
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=xgb, emotion_model=resmasknet, facepose_model=img2pose)
 </pre></div>
 </div>
 </div>
@@ -576,7 +585,7 @@ detector
 <p>Detecting facial expressions in videos is easy to do using the <code class="docutils literal notranslate"><span class="pre">.detect_video()</span></code> method. This sample video included in Py-Feat is by <a class="reference external" href="https://www.pexels.com/&#64;wolfgang-langer-1415383?utm_content=attributionCopyText&amp;utm_medium=referral&amp;utm_source=pexels">Wolfgang Langer</a> from <a class="reference external" href="https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/">Pexels</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import get_test_data_path
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils.io import get_test_data_path
 import os
 
 test_data_dir = get_test_data_path()
@@ -602,8 +611,7 @@ video_prediction.head()
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  ../aten/src/ATen/native/TensorShape.cpp:2157.)
-  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 20/20 [01:25&lt;00:00,  4.28s/it]
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -624,7 +632,6 @@ video_prediction.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>frame</th>
       <th>FaceRectX</th>
       <th>FaceRectY</th>
       <th>FaceRectWidth</th>
@@ -634,9 +641,9 @@ video_prediction.head()
       <th>x_1</th>
       <th>x_2</th>
       <th>x_3</th>
+      <th>x_4</th>
       <th>...</th>
-      <th>Roll</th>
-      <th>Yaw</th>
+      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -645,128 +652,153 @@ video_prediction.head()
       <th>surprise</th>
       <th>neutral</th>
       <th>input</th>
+      <th>frame</th>
+    </tr>
+    <tr>
+      <th>frame</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>334.117889</td>
-      <td>54.037693</td>
-      <td>215.074738</td>
-      <td>293.471466</td>
-      <td>0.999814</td>
-      <td>331.183881</td>
-      <td>332.67499</td>
-      <td>337.93965</td>
-      <td>345.98739</td>
+      <td>360.794758</td>
+      <td>46.423682</td>
+      <td>242.824230</td>
+      <td>340.237254</td>
+      <td>0.999792</td>
+      <td>330.937885</td>
+      <td>331.950171</td>
+      <td>336.753342</td>
+      <td>345.321682</td>
+      <td>357.413520</td>
       <td>...</td>
-      <td>-4.564205</td>
-      <td>12.390767</td>
-      <td>0.014724</td>
-      <td>0.00003</td>
-      <td>0.165501</td>
-      <td>0.001346</td>
-      <td>0.331741</td>
-      <td>0.063215</td>
-      <td>0.423442</td>
+      <td>0.791296</td>
+      <td>0.016698</td>
+      <td>0.002383</td>
+      <td>0.001483</td>
+      <td>0.037228</td>
+      <td>0.242431</td>
+      <td>0.000445</td>
+      <td>0.699332</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>24</th>
-      <td>24</td>
-      <td>352.668091</td>
-      <td>57.767002</td>
-      <td>209.387207</td>
-      <td>282.59494</td>
-      <td>0.999875</td>
-      <td>330.398783</td>
-      <td>332.1624</td>
-      <td>337.567593</td>
-      <td>345.755364</td>
+      <td>379.063714</td>
+      <td>48.109240</td>
+      <td>237.637756</td>
+      <td>331.771822</td>
+      <td>0.999691</td>
+      <td>350.583881</td>
+      <td>349.688437</td>
+      <td>352.349259</td>
+      <td>358.750487</td>
+      <td>369.011402</td>
       <td>...</td>
-      <td>-3.138013</td>
-      <td>14.580695</td>
-      <td>0.014894</td>
-      <td>0.000021</td>
-      <td>0.239515</td>
-      <td>0.000816</td>
-      <td>0.340588</td>
-      <td>0.070715</td>
-      <td>0.33345</td>
+      <td>0.880113</td>
+      <td>0.005219</td>
+      <td>0.047924</td>
+      <td>0.001224</td>
+      <td>0.012430</td>
+      <td>0.912106</td>
+      <td>0.000178</td>
+      <td>0.020918</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>24</td>
     </tr>
     <tr>
       <th>48</th>
-      <td>48</td>
-      <td>344.77536</td>
-      <td>38.98122</td>
-      <td>205.286224</td>
-      <td>288.010895</td>
-      <td>0.999842</td>
-      <td>345.17962</td>
-      <td>345.301341</td>
-      <td>349.045422</td>
-      <td>356.160386</td>
+      <td>369.284997</td>
+      <td>45.399081</td>
+      <td>234.262240</td>
+      <td>311.291356</td>
+      <td>0.999788</td>
+      <td>339.965203</td>
+      <td>337.887656</td>
+      <td>338.766776</td>
+      <td>341.886110</td>
+      <td>350.106161</td>
       <td>...</td>
-      <td>2.12017</td>
-      <td>3.003316</td>
-      <td>0.005543</td>
-      <td>0.000007</td>
-      <td>0.250209</td>
+      <td>0.536345</td>
       <td>0.000673</td>
-      <td>0.272148</td>
-      <td>0.057505</td>
-      <td>0.413915</td>
+      <td>0.003900</td>
+      <td>0.000301</td>
+      <td>0.000431</td>
+      <td>0.991942</td>
+      <td>0.000065</td>
+      <td>0.002688</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>48</td>
     </tr>
     <tr>
       <th>72</th>
-      <td>72</td>
-      <td>322.318298</td>
-      <td>63.507832</td>
-      <td>205.645325</td>
-      <td>297.096222</td>
-      <td>0.999252</td>
-      <td>343.375832</td>
-      <td>342.31017</td>
-      <td>344.141114</td>
-      <td>346.864314</td>
+      <td>341.876725</td>
+      <td>65.666523</td>
+      <td>239.259334</td>
+      <td>330.823833</td>
+      <td>0.999268</td>
+      <td>317.028251</td>
+      <td>316.485715</td>
+      <td>319.996523</td>
+      <td>326.639217</td>
+      <td>336.512378</td>
       <td>...</td>
-      <td>1.996875</td>
-      <td>6.923225</td>
-      <td>0.012626</td>
-      <td>0.000024</td>
-      <td>0.197583</td>
-      <td>0.000953</td>
-      <td>0.302611</td>
-      <td>0.078977</td>
-      <td>0.407226</td>
+      <td>0.642559</td>
+      <td>0.008556</td>
+      <td>0.002622</td>
+      <td>0.001716</td>
+      <td>0.002989</td>
+      <td>0.963796</td>
+      <td>0.000235</td>
+      <td>0.020085</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>72</td>
     </tr>
     <tr>
       <th>96</th>
-      <td>96</td>
-      <td>324.173523</td>
-      <td>88.114365</td>
-      <td>221.387939</td>
-      <td>296.47644</td>
-      <td>0.999382</td>
-      <td>315.561634</td>
-      <td>315.32702</td>
-      <td>318.230413</td>
-      <td>323.967994</td>
+      <td>347.486722</td>
+      <td>94.356160</td>
+      <td>253.997776</td>
+      <td>305.068640</td>
+      <td>0.998290</td>
+      <td>332.469232</td>
+      <td>330.426945</td>
+      <td>330.593582</td>
+      <td>335.371205</td>
+      <td>346.365239</td>
       <td>...</td>
-      <td>-0.717578</td>
-      <td>6.199114</td>
-      <td>0.004423</td>
-      <td>0.000037</td>
-      <td>0.285199</td>
-      <td>0.00071</td>
-      <td>0.247177</td>
-      <td>0.017002</td>
-      <td>0.445452</td>
+      <td>0.805766</td>
+      <td>0.029463</td>
+      <td>0.178668</td>
+      <td>0.005473</td>
+      <td>0.000884</td>
+      <td>0.774882</td>
+      <td>0.001347</td>
+      <td>0.009282</td>
       <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>96</td>
     </tr>
   </tbody>
 </table>
@@ -786,18 +818,6 @@ video_prediction.head()
 </div>
 </div>
 </div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>video_prediction.detector
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;Feat&#39;
-</pre></div>
-</div>
-</div>
-</div>
 </section>
 <section id="visualizing-predictions">
 <h2>3.3 Visualizing predictions<a class="headerlink" href="#visualizing-predictions" title="Permalink to this headline">#</a></h2>
@@ -813,11 +833,11 @@ video_prediction.loc[[48, 408]].plot_detections(faceboxes=False, add_titles=Fals
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;Figure size 1080x504 with 3 Axes&gt;, &lt;Figure size 1080x504 with 3 Axes&gt;]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;Figure size 1500x700 with 3 Axes&gt;, &lt;Figure size 1500x700 with 3 Axes&gt;]
 </pre></div>
 </div>
-<img alt="../_images/03_detector_vids_13_1.png" src="../_images/03_detector_vids_13_1.png" />
-<img alt="../_images/03_detector_vids_13_2.png" src="../_images/03_detector_vids_13_2.png" />
+<img alt="../_images/03_detector_vids_12_1.png" src="../_images/03_detector_vids_12_1.png" />
+<img alt="../_images/03_detector_vids_12_2.png" src="../_images/03_detector_vids_12_2.png" />
 </div>
 </div>
 <p>We can also leverage existing pandas plotting functions to show how emotions unfold over time. We can clearly see how her emotions change from sadness to happiness.</p>
@@ -828,7 +848,7 @@ video_prediction.loc[[48, 408]].plot_detections(faceboxes=False, add_titles=Fals
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/03_detector_vids_15_0.png" src="../_images/03_detector_vids_15_0.png" />
+<img alt="../_images/03_detector_vids_14_0.png" src="../_images/03_detector_vids_14_0.png" />
 </div>
 </div>
 <p>In situations you want to predict EVERY frame of the video, you can ust leave out the <code class="docutils literal notranslate"><span class="pre">skip_frames</span></code> argument. Speed of processing may vary depending on the detector you use and the length of the video:</p>

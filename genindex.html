@@ -177,17 +177,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -382,7 +397,6 @@ title="Open an issue"
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
- | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -409,21 +423,15 @@ title="Open an issue"
       <li><a href="pages/api.html#feat.data.Fex.baseline">baseline() (feat.data.Fex method)</a>
 </li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fextractor.boft">boft() (feat.data.Fextractor method)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fex.calc_pspi">calc_pspi() (feat.data.Fex method)</a>
+      <li><a href="pages/api.html#feat.detector.Detector.change_model">change_model() (feat.detector.Detector method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.detector.Detector.change_model">change_model() (feat.detector.Detector method)</a>
-</li>
       <li><a href="pages/api.html#feat.data.Fex.clean">clean() (feat.data.Fex method)</a>
 </li>
   </ul></td>
@@ -460,8 +468,6 @@ title="Open an issue"
 </li>
       <li><a href="pages/api.html#feat.data.Fex.distance">distance() (feat.data.Fex method)</a>
 </li>
-      <li><a href="pages/api.html#feat.utils.download_url">download_url() (in module feat.utils)</a>
-</li>
       <li><a href="pages/api.html#feat.data.Fex.downsample">downsample() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.plotting.draw_lineface">draw_lineface() (in module feat.plotting)</a>
@@ -484,19 +490,19 @@ title="Open an issue"
       </ul></li>
       <li><a href="pages/api.html#feat.data.Fex.extract_boft">extract_boft() (feat.data.Fex method)</a>
 </li>
-      <li><a href="pages/api.html#feat.detector.Detector.extract_face">extract_face() (feat.detector.Detector method)</a>
-</li>
-      <li><a href="pages/api.html#feat.detector.Detector.extract_hog">extract_hog() (feat.detector.Detector method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.extract_max">extract_max() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.extract_mean">extract_mean() (feat.data.Fex method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.extract_min">extract_min() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.extract_multi_wavelet">extract_multi_wavelet() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_sem">extract_sem() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_std">extract_std() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.extract_summary">extract_summary() (feat.data.Fex method)</a>
 </li>
@@ -512,6 +518,12 @@ title="Open an issue"
 
       <ul>
         <li><a href="pages/api.html#feat.data.FexSeries.facebox">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.faceboxes">faceboxes (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.faceboxes">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
       <li><a href="pages/api.html#feat.data.Fex.facepose">facepose (feat.data.Fex property)</a>
@@ -534,6 +546,8 @@ title="Open an issue"
         <li><a href="pages/api.html#module-feat.detector">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     feat.plotting
 
@@ -541,8 +555,6 @@ title="Open an issue"
         <li><a href="pages/api.html#module-feat.plotting">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     feat.pretrained
 
@@ -563,8 +575,6 @@ title="Open an issue"
 </li>
       <li><a href="pages/api.html#feat.data.FexSeries">FexSeries (class in feat.data)</a>
 </li>
-      <li><a href="pages/api.html#feat.data.Fextractor">Fextractor (class in feat.data)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -573,13 +583,9 @@ title="Open an issue"
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.plotting.get_heat">get_heat() (in module feat.plotting)</a>
 </li>
-      <li><a href="pages/api.html#feat.pretrained.get_pretrained_models">get_pretrained_models() (in module feat.pretrained)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.utils.get_resource_path">get_resource_path() (in module feat.utils)</a>
-</li>
-      <li><a href="pages/api.html#feat.utils.get_test_data_path">get_test_data_path() (in module feat.utils)</a>
+      <li><a href="pages/api.html#feat.pretrained.get_pretrained_models">get_pretrained_models() (in module feat.pretrained)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -587,6 +593,8 @@ title="Open an issue"
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.ImageDataset">ImageDataset (class in feat.data)</a>
+</li>
       <li><a href="pages/api.html#feat.plotting.imshow">imshow() (in module feat.plotting)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.info">info (feat.data.Fex property)</a>
@@ -603,6 +611,12 @@ title="Open an issue"
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.inputs">inputs (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.inputs">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
       <li><a href="pages/api.html#feat.plotting.interpolate_aus">interpolate_aus() (in module feat.plotting)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.isc">isc() (feat.data.Fex method)</a>
@@ -627,30 +641,38 @@ title="Open an issue"
         <li><a href="pages/api.html#feat.data.FexSeries.landmark_x">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.landmark_y">landmark_y (feat.data.Fex property)</a>
 
       <ul>
         <li><a href="pages/api.html#feat.data.FexSeries.landmark_y">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
-      <li><a href="pages/api.html#feat.utils.load_viz_model">load_viz_model() (in module feat.utils)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.landmarks">landmarks (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmarks">(feat.data.FexSeries property)</a>
 </li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.landmarks_x">landmarks_x (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmarks_x">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.landmarks_y">landmarks_y (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmarks_y">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fextractor.max">max() (feat.data.Fextractor method)</a>
-</li>
-      <li><a href="pages/api.html#feat.data.Fextractor.mean">mean() (feat.data.Fextractor method)</a>
-</li>
-      <li><a href="pages/api.html#feat.data.Fextractor.merge">merge() (feat.data.Fextractor method)</a>
-</li>
-      <li><a href="pages/api.html#feat.data.Fextractor.min">min() (feat.data.Fextractor method)</a>
-</li>
       <li>
     module
 
@@ -667,10 +689,6 @@ title="Open an issue"
 </li>
       </ul></li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fextractor.multi_wavelet">multi_wavelet() (feat.data.Fextractor method)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
@@ -686,51 +704,33 @@ title="Open an issue"
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.poses">poses (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.poses">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
       <li><a href="pages/api.html#feat.data.Fex.predict">predict() (feat.data.Fex method)</a>
 
       <ul>
         <li><a href="pages/api.html#feat.plotting.predict">(in module feat.plotting)</a>
 </li>
       </ul></li>
-      <li><a href="pages/api.html#feat.detector.Detector.process_frame">process_frame() (feat.detector.Detector method)</a>
-</li>
   </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fex.read_affectiva">read_affectiva() (feat.data.Fex method)</a>
-
-      <ul>
-        <li><a href="pages/api.html#feat.utils.read_affectiva">(in module feat.utils)</a>
-</li>
-      </ul></li>
-      <li><a href="pages/api.html#feat.data.Fex.read_facet">read_facet() (feat.data.Fex method)</a>
-
-      <ul>
-        <li><a href="pages/api.html#feat.utils.read_facet">(in module feat.utils)</a>
-</li>
-      </ul></li>
       <li><a href="pages/api.html#feat.data.Fex.read_feat">read_feat() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.read_file">read_file() (feat.data.Fex method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.detector.Detector.read_images">read_images() (feat.detector.Detector method)</a>
-</li>
       <li><a href="pages/api.html#feat.data.Fex.read_openface">read_openface() (feat.data.Fex method)</a>
-
-      <ul>
-        <li><a href="pages/api.html#feat.utils.read_openface">(in module feat.utils)</a>
-</li>
-      </ul></li>
-      <li><a href="pages/api.html#feat.utils.read_pictures">read_pictures() (in module feat.utils)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.rectification">rectification() (feat.data.Fex method)</a>
-</li>
-      <li><a href="pages/api.html#feat.utils.registration">registration() (in module feat.utils)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.regress">regress() (feat.data.Fex method)</a>
 </li>
@@ -740,11 +740,7 @@ title="Open an issue"
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.utils.softmax">softmax() (in module feat.utils)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fextractor.summary">summary() (feat.data.Fextractor method)</a>
+      <li><a href="pages/api.html#feat.utils.set_torch_device">set_torch_device() (in module feat.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -770,6 +766,10 @@ title="Open an issue"
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.update_sessions">update_sessions() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.upsample">upsample() (feat.data.Fex method)</a>
 </li>
   </ul></td>
@@ -778,15 +778,7 @@ title="Open an issue"
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.utils.validate_input">validate_input() (in module feat.utils)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="W">W</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fextractor.wavelet">wavelet() (feat.data.Fextractor method)</a>
+      <li><a href="pages/api.html#feat.data.VideoDataset">VideoDataset (class in feat.data)</a>
 </li>
   </ul></td>
 </tr></table>

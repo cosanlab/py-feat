@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -448,34 +463,34 @@ title="Print to PDF"
         },
         columns: [{name:'AU', formatter: (cell) => `AU${cell}`}, 'FACS Name', 'Muscles', 'FACS Category', 'Related Expression', 'Models', 'Notes'],
         data: [
-            [1, 'Inner Brow Raiser', 'Frontalis (medial)', 'main', 'sadness, surprise, fear', 'svm, logistic, JAANET, Py-Feat viz', ''],
-            [2, 'Outer Brow Raiser', 'Frontalis (lateral)', 'main', 'surprise, fear', 'svm, logistic, JAANET, Py-Feat viz', ''],
+            [1, 'Inner Brow Raiser', 'Frontalis (medial)', 'main', 'sadness, surprise, fear', 'svm, xgb,  Py-Feat viz', ''],
+            [2, 'Outer Brow Raiser', 'Frontalis (lateral)', 'main', 'surprise, fear', 'svm, xgb,  Py-Feat viz', ''],
             [3, 'Inner corner Brow Tightener', 'Procerus, Depressor Supercilii, Corrugator Supercilii', 'extended (Baby FACS)', '', 'none', 'Only in babies! Analogue of AU4 in adults'],
-            [4, 'Brow Lowerer', 'Procerus, Depressor Supercilii, Corrugator Supercilii', 'main', 'sadness, fear, anger', 'svm, logistic, JAANET, Py-Feat viz', ''],
-            [5, 'Upper Lid Raiser', 'Levator Palpebrae Superioris, Superior Tarsal Muscle', 'main', 'surprise, fear, anger', 'svm, logistic, Py-Feat viz', ''],
-            [6, 'Cheek Raiser', 'Orbicularis Oculi (orbital)', 'main', 'happiness, disgust, contempt', 'svm, logistic, Py-Feat viz', ''],
-            [7, 'Lid Tightener', 'Orbicularis Oculi (palpebral)', 'main', 'fear, anger', 'svm, logistic, JAANET, Py-Feat viz', ''],
+            [4, 'Brow Lowerer', 'Procerus, Depressor Supercilii, Corrugator Supercilii', 'main', 'sadness, fear, anger', 'svm, xgb,  Py-Feat viz', ''],
+            [5, 'Upper Lid Raiser', 'Levator Palpebrae Superioris, Superior Tarsal Muscle', 'main', 'surprise, fear, anger', 'svm, xgb, Py-Feat viz', ''],
+            [6, 'Cheek Raiser', 'Orbicularis Oculi (orbital)', 'main', 'happiness, disgust, contempt', 'svm, xgb, Py-Feat viz', ''],
+            [7, 'Lid Tightener', 'Orbicularis Oculi (palpebral)', 'main', 'fear, anger', 'svm, xgb,  Py-Feat viz', ''],
             [8, 'Lips Toward Each Other', 'Orbicularis Oris', 'main', 'none', ''],
-            [9, 'Nose Wrinkler', 'Levator Labii Superioris Alaeque Nasi', 'main', 'disgust', 'svm, logistic, Py-Feat viz', ''],
-            [10, 'Upper Lip Raiser', 'Levator Labii Superioris', 'main', '', 'svm, logistic, JAANET, Py-Feat viz', ''],
-            [11, 'Nasolabial Deepener', 'Zygomaticus Minor', 'main', 'disgust, fear', 'svm, logistic, Py-Feat viz', ''],
-            [12, 'Lip Corner Puller', 'Zygomaticus Major', 'main', 'happiness, contempt', 'svm, logistic, JAANET, Py-Feat viz', ''],
+            [9, 'Nose Wrinkler', 'Levator Labii Superioris Alaeque Nasi', 'main', 'disgust', 'svm, xgb, Py-Feat viz', ''],
+            [10, 'Upper Lip Raiser', 'Levator Labii Superioris', 'main', '', 'svm, xgb,  Py-Feat viz', ''],
+            [11, 'Nasolabial Deepener', 'Zygomaticus Minor', 'main', 'disgust, fear', 'svm, xgb, Py-Feat viz', ''],
+            [12, 'Lip Corner Puller', 'Zygomaticus Major', 'main', 'happiness, contempt', 'svm, xgb,  Py-Feat viz', ''],
             [13, 'Sharp Lip Puller', 'Levator Anguli Oris/Caninus', 'main', '', 'none', ''],
-            [14, 'Dimpler', 'Buccinator', 'main', 'contempt', 'svm, logistic, JAANET, Py-Feat viz', ''],
-            [15, 'Lip Corner Depressor', 'Depressor Anguli Oris', 'main', 'sadness, disgust', 'svm, logistic, JAANET, Py-Feat viz', ''],
+            [14, 'Dimpler', 'Buccinator', 'main', 'contempt', 'svm, xgb,  Py-Feat viz', ''],
+            [15, 'Lip Corner Depressor', 'Depressor Anguli Oris', 'main', 'sadness, disgust', 'svm, xgb,  Py-Feat viz', ''],
             [16, 'Lower Lip Depressor', 'Depressor Labii Inferioris', 'main', '', 'none', ''],
-            [17, 'Chin Raiser', 'Mentalis', 'main', 'disgust', 'svm, logistic, JAANET, Py-Feat viz', ''],
+            [17, 'Chin Raiser', 'Mentalis', 'main', 'disgust', 'svm, xgb,  Py-Feat viz', ''],
             [18, 'Lip Pucker', 'Incisvii Labii Superioris, Incisvii Labii Inferioris', 'main', '', 'none', ''],
             [19, 'Tongue Show', 'Genioglossus, Medial Pterygoid, Masseter', 'main', '', 'none', ''],
-            [20, 'Lip Stretcher', 'Risorius, Platysma', 'main', 'fear', 'svm, logistic, Py-Feat viz', ''],
+            [20, 'Lip Stretcher', 'Risorius, Platysma', 'main', 'fear', 'svm, xgb, Py-Feat viz', ''],
             [21, 'Neck Tightener', 'Platysma', 'main', '', 'none', ''],
             [22, 'Lip Funneler', 'Orbicularis Oris', 'main', '', 'none', ''],
-            [23, 'Lip Tightener', 'Orbicularis Oris', 'main', 'anger', 'svm, logistic, JAANET, Py-Feat viz', ''],
-            [24, 'Lip Pressor', 'Orbicularis Oris', 'main', '', 'svm, logistic, JAANET, Py-Feat viz', ''],
-            [25, 'Lip Part', 'Depressor Labii Inferioris', 'main', 'happiness, surprise, fear', 'svm, logistic, Py-Feat viz', ''],
-            [26, 'Jaw Drop', 'Masseter, Temporalis, Medial Pterygoid', 'main', 'fear, surprise', 'svm, logistic, Py-Feat viz', ''],
+            [23, 'Lip Tightener', 'Orbicularis Oris', 'main', 'anger', 'svm, xgb,  Py-Feat viz', ''],
+            [24, 'Lip Pressor', 'Orbicularis Oris', 'main', '', 'svm, xgb,  Py-Feat viz', ''],
+            [25, 'Lip Part', 'Depressor Labii Inferioris', 'main', 'happiness, surprise, fear', 'svm, xgb, Py-Feat viz', ''],
+            [26, 'Jaw Drop', 'Masseter, Temporalis, Medial Pterygoid', 'main', 'fear, surprise', 'svm, xgb, Py-Feat viz', ''],
             [27, 'Mouth Stretch', 'Pterygoids, Digastric', 'main', '', 'none', ''],
-            [28, 'Lip Suck', 'Orbicularis Oris', 'main', '', 'svm, logistic, Py-Feat viz', ''],
+            [28, 'Lip Suck', 'Orbicularis Oris', 'main', '', 'svm, xgb, Py-Feat viz', ''],
             [29, 'Jaw Thrust', 'Pterygoids, Masseter', 'behavioral', '', 'none', ''],
             [30, 'Jaw Sideways', 'Pterygoids, Masseter, Temporalis', 'behavioral', '', 'none', ''],
             [31, 'Jaw Clencher', 'Masseter', 'behavioral', '', 'none', ''],
@@ -489,7 +504,7 @@ title="Print to PDF"
             [40, 'Sniff', '', 'behavioral', '', 'none', ''],
             [41, 'Lid Drop', 'Levator Palpebrae Superioris (relaxation)', 'behavioral', '', 'none', ''],
             [42, 'Slit', 'Depressor Supercilii', 'behavioral', '', 'none', 'Different muscular strand than AU4'],
-            [43, 'Eyes Closed', 'Levator Palebrae Superioris (relaxation)', 'behavioral', '', 'svm, logistic, Py-Feat viz', ''],
+            [43, 'Eyes Closed', 'Levator Palebrae Superioris (relaxation)', 'behavioral', '', 'svm, xgb, Py-Feat viz', ''],
             [44, 'Squint', 'Corrugator Supercilii', 'behavioral', '', 'none', 'Different muscular strand than AU4'],
             [45, 'Blink', 'Levator Palebrae Superioris (relaxation), Orbicularis Oculi (contraction)', 'behavioral','', 'none', 'Different muscular strand than AU4'],
             [46, 'Wink', 'Orbicularis Oculi', 'behavioral', '', 'none', ''],

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>7. Extracting labels and landmarks &#8212; Py-Feat</title>
+    <title>7. Example labels and landmark dataset loading &#8212; Py-Feat</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -52,7 +52,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="8. Loading data from other detectors" href="08_loadingOtherFiles.html" />
+    <link rel="next" title="8. Training HOG-based AU detectors" href="08_train_hogs.html" />
     <link rel="prev" title="6. Training an AU visualization model" href="06_trainAUvisModel.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -493,7 +508,7 @@ title="Print to PDF"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>7. Extracting labels and landmarks</h1>
+                <h1>7. Example labels and landmark dataset loading</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -523,8 +538,8 @@ title="Print to PDF"
                 
               <div>
                 
-  <section class="tex2jax_ignore mathjax_ignore" id="extracting-labels-and-landmarks">
-<h1>7. Extracting labels and landmarks<a class="headerlink" href="#extracting-labels-and-landmarks" title="Permalink to this headline">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="example-labels-and-landmark-dataset-loading">
+<h1>7. Example labels and landmark dataset loading<a class="headerlink" href="#example-labels-and-landmark-dataset-loading" title="Permalink to this headline">#</a></h1>
 <p><em>written by Eshin Jolly</em></p>
 <p>This notebook demonstrates how we extracted labels and landmarks from the EmotioNet dataset. You’ll want to repeat this for the DISFA Plus and BP4d datasets prior to <a class="reference internal" href="06_trainAUvisModel.html"><span class="doc std std-doc">training the AU visualization model</span></a>.</p>
 <section id="imports-paths-and-helper-functions">
@@ -827,10 +842,10 @@ for ix, image in enumerate(tqdm(EmotioNet_images)):
             <p class="prev-next-title">6. Training an AU visualization model</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="08_loadingOtherFiles.html" title="next page">
+    <a class='right-next' id="next-link" href="08_train_hogs.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">8. Loading data from other detectors</p>
+        <p class="prev-next-title">8. Training HOG-based AU detectors</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

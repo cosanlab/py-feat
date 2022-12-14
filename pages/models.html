@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -410,16 +425,6 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#action-unit-detection">
-   Action Unit detection
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#emotion-detection">
-   Emotion detection
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#face-detection">
    Face detection
   </a>
@@ -430,8 +435,18 @@ title="Print to PDF"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#face-head-pose-estimation">
-   Face/Head pose estimation
+  <a class="reference internal nav-link" href="#facial-pose-estimation">
+   Facial Pose estimation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#action-unit-detection">
+   Action Unit detection
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#emotion-detection">
+   Emotion detection
   </a>
  </li>
 </ul>
@@ -454,16 +469,6 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#action-unit-detection">
-   Action Unit detection
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#emotion-detection">
-   Emotion detection
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#face-detection">
    Face detection
   </a>
@@ -474,8 +479,18 @@ title="Print to PDF"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#face-head-pose-estimation">
-   Face/Head pose estimation
+  <a class="reference internal nav-link" href="#facial-pose-estimation">
+   Facial Pose estimation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#action-unit-detection">
+   Action Unit detection
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#emotion-detection">
+   Emotion detection
   </a>
  </li>
 </ul>
@@ -490,43 +505,23 @@ title="Print to PDF"
                 
   <section class="tex2jax_ignore mathjax_ignore" id="included-pre-trained-detectors">
 <h1>Included pre-trained detectors<a class="headerlink" href="#included-pre-trained-detectors" title="Permalink to this headline">#</a></h1>
-<p>Below is a list of detectors included in Py-Feat and ready to use. The model names are in the titles followed by the reference publications.</p>
+<p>Below is a list of detectors included in Py-Feat and ready to use. The model names are in the titles followed by the reference publications. Bolded models are defaults.</p>
 <p>You can specify any of these models for use in the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class by passing in the name as a string, e.g.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span> <span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;jaanet&#39;</span><span class="p">)</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Models names are case-insensitive: <code class="docutils literal notranslate"><span class="pre">'resmasknet'</span> <span class="pre">==</span> <span class="pre">'ResMaskNet'</span></code></p>
 </div>
-<section id="action-unit-detection">
-<h2>Action Unit detection<a class="headerlink" href="#action-unit-detection" title="Permalink to this headline">#</a></h2>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">logistic</span></code>: Logistic Classifier model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">JAANET</span></code>: Joint facial action unit detection and face alignment via adaptive attention trained with BP4D and BP4D+ (<a class="reference external" href="https://arxiv.org/pdf/2003.08834v1.pdf">Shao et al., 2020</a>)</p></li>
-</ul>
-<div class="admonition caution">
-<p class="admonition-title">Caution</p>
-<p>If you plan to use a Histogram-based Action Unit model (e.g. <code class="docutils literal notranslate"><span class="pre">rf</span></code>, <code class="docutils literal notranslate"><span class="pre">svm</span></code>, <code class="docutils literal notranslate"><span class="pre">logistic</span></code>) you should <em>also</em> use a Histogram-based Emotion detection model (e.g. <code class="docutils literal notranslate"><span class="pre">rf</span></code>, <code class="docutils literal notranslate"><span class="pre">svm</span></code>). It’s not advised to mix Histogram-based models for Action Unit detection with deep-learning models for emotion detection and visa-versa.</p>
-</div>
-</section>
-<section id="emotion-detection">
-<h2>Emotion detection<a class="headerlink" href="#emotion-detection" title="Permalink to this headline">#</a></h2>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">fer</span></code>: Deep convolutional network</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ResMaskNet</span></code>: Facial expression recognition using residual masking network by (<a class="reference external" href="https://ieeexplore.ieee.org/document/9411919">Pham et al., 2020</a>)</p></li>
-</ul>
-</section>
 <section id="face-detection">
 <h2>Face detection<a class="headerlink" href="#face-detection" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">MTCNN</span></code>: Multi-task cascaded convolutional networks by (<a class="reference external" href="https://arxiv.org/pdf/1604.02878.pdf">Zhang et al., 2016</a>; <a class="reference external" href="https://ieeexplore.ieee.org/document/9239720">Zhang et al., 2020</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">FaceBoxes</span></code>: A CPU real-time fae detector with high accuracy by (<a class="reference external" href="https://arxiv.org/pdf/1708.05234v4.pdf">Zhang et al., 2018</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">RetinaFace</span></code>: Single-stage dense face localisation in the wild by (<a class="reference external" href="https://arxiv.org/pdf/1905.00641v2.pdf">Deng et al., 2019</a>)</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">retinaface</span></code>: Single-stage dense face localisation</strong> in the wild by (<a class="reference external" href="https://arxiv.org/pdf/1905.00641v2.pdf">Deng et al., 2019</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mtcnn</span></code>: Multi-task cascaded convolutional networks by (<a class="reference external" href="https://arxiv.org/pdf/1604.02878.pdf">Zhang et al., 2016</a>; <a class="reference external" href="https://ieeexplore.ieee.org/document/9239720">Zhang et al., 2020</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">faceboxes</span></code>: A CPU real-time face detector with high accuracy by (<a class="reference external" href="https://arxiv.org/pdf/1708.05234v4.pdf">Zhang et al., 2018</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">img2pose-c</span></code>: A ‘constrained’ version of the above model, fine-tuned on images of frontal faces with pitch, roll, yaw measures in the range of (-90, 90) degrees. Shows lesser performance on difficult face detection tasks, but state-of-the-art performance on face pose estimation for frontal faces</p></li>
 </ul>
@@ -534,17 +529,34 @@ title="Print to PDF"
 <section id="facial-landmark-detection">
 <h2>Facial landmark detection<a class="headerlink" href="#facial-landmark-detection" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">PFLD</span></code>: Practical Facial Landmark Detector by (<a class="reference external" href="https://arxiv.org/pdf/1902.10859.pdf">Guo et al, 2019</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">MobileFaceNet</span></code>: Efficient CNNs for accurate real time face verification on mobile devices (<a class="reference external" href="https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf">Chen et al, 2018</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">MobileNet</span></code>: Efficient convolutional neural networks for mobile vision applications (<a class="reference external" href="https://arxiv.org/pdf/1704.04861v1.pdf">Howard et al, 2017</a>)</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">mobilefacenet</span></code>: Efficient CNNs for accurate real time face verification on mobile devices</strong> (<a class="reference external" href="https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf">Chen et al, 2018</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mobilenet</span></code>: Efficient convolutional neural networks for mobile vision applications (<a class="reference external" href="https://arxiv.org/pdf/1704.04861v1.pdf">Howard et al, 2017</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pfld</span></code>: Practical Facial Landmark Detector by (<a class="reference external" href="https://arxiv.org/pdf/1902.10859.pdf">Guo et al, 2019</a>)</p></li>
 </ul>
 </section>
-<section id="face-head-pose-estimation">
-<h2>Face/Head pose estimation<a class="headerlink" href="#face-head-pose-estimation" title="Permalink to this headline">#</a></h2>
+<section id="facial-pose-estimation">
+<h2>Facial Pose estimation<a class="headerlink" href="#facial-pose-estimation" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation</strong> (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">img2pose-c</span></code>: A ‘constrained’ version of the above model, fine-tuned on images of frontal faces with pitch, roll, yaw measures in the range of (-90, 90) degrees. Shows lesser performance on hard face detection tasks, but state-of-the-art performance on head pose estimation for frontal faces.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Perspective-n-Point</span></code>: <a class="reference external" href="https://link.springer.com/article/10.1007/s11263-008-0152-6">Efficient PnP (EPnP)</a> method implemented via <code class="docutils literal notranslate"><span class="pre">cv2</span></code> to solve the <a class="reference external" href="https://en.wikipedia.org/wiki/Perspective-n-Point">Perspective n Point</a> (PnP) problem to obtain 3D head pose from 2D facial landmarks</p></li>
+</ul>
+</section>
+<section id="action-unit-detection">
+<h2>Action Unit detection<a class="headerlink" href="#action-unit-detection" title="Permalink to this headline">#</a></h2>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">xgb</span></code>: XGBoost Classifier model trained on Histogram of Oriented Gradients*</strong> extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>*For AU07, our <code class="docutils literal notranslate"><span class="pre">xbg</span></code> detector was trained with hinge-loss instead of cross-entropy loss like other AUs as this yielded substantially better detection peformance given the labeled data available for this AU. This means that while it returns continuous probability predictions,  these are more likely to appear binary in practice (i.e. be 0 or 1) and should be interpreted as <em>proportion of decision-trees with a detection</em> rather than <em>average decision-tree confidence</em> like other AU values.</p>
+</div>
+</section>
+<section id="emotion-detection">
+<h2>Emotion detection<a class="headerlink" href="#emotion-detection" title="Permalink to this headline">#</a></h2>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">resmasknet</span></code>: Facial expression recognition using residual masking network</strong> by (<a class="reference external" href="https://ieeexplore.ieee.org/document/9411919">Pham et al., 2020</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets</p></li>
 </ul>
 </section>
 </section>

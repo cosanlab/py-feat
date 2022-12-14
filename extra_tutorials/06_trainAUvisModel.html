@@ -52,7 +52,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7. Extracting labels and landmarks" href="07_extract_labels_and_landmarks.html" />
+    <link rel="next" title="7. Example labels and landmark dataset loading" href="07_extract_labels_and_landmarks.html" />
     <link rel="prev" title="5. Running a full analysis" href="../basic_tutorials/05_fex_analysis.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -504,11 +519,6 @@ title="Print to PDF"
    Visualizing detections using model
   </a>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#jaanet-visualization-model">
-   JAANET Visualization Model
-  </a>
- </li>
 </ul>
 
     </nav>
@@ -558,11 +568,6 @@ title="Print to PDF"
    Visualizing detections using model
   </a>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#jaanet-visualization-model">
-   JAANET Visualization Model
-  </a>
- </li>
 </ul>
 
                         </nav>
@@ -592,7 +597,8 @@ import seaborn as sns
 import os
 import sys
 import h5py
-from feat.utils import get_resource_path, load_viz_model
+from feat.utils.io import get_resource_path
+from feat.plotting import load_viz_model
 from sklearn.model_selection import KFold
 from sklearn.cross_decomposition import PLSRegression
 from sklearn import __version__ as skversion
@@ -797,7 +803,7 @@ sns.despine()
     X, Y, align_landmarks_to_neutral=True, scale_across_features=False, poly_degree=1
 ):
     &quot;&quot;&quot;Take dataframes of labels and landmarks and prepare them for PLSRegression estimator&quot;&quot;&quot;
-    from feat.utils import registration, neutral
+    from feat.utils.image_operations import registration, neutral
     from sklearn.preprocessing import scale
 
     _X = X.to_numpy()
@@ -962,7 +968,7 @@ loaded_model
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading joblib
 </pre></div>
 </div>
-<div class="output text_html"><style>#sk-container-id-5 {color: black;background-color: white;}#sk-container-id-5 pre{padding: 0;}#sk-container-id-5 div.sk-toggleable {background-color: white;}#sk-container-id-5 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-5 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-5 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-5 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-5 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-5 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-5 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-5 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-5 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-5 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-5 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-5 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-5 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-5 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-5 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-5 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-5 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-5 div.sk-item {position: relative;z-index: 1;}#sk-container-id-5 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-5 div.sk-item::before, #sk-container-id-5 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-5 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-5 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-5 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-5 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-5 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-5 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-5 div.sk-label-container {text-align: center;}#sk-container-id-5 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-5 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-5" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>PLSRegression(max_iter=2000, n_components=20)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" checked><label for="sk-estimator-id-5" class="sk-toggleable__label sk-toggleable__label-arrow">PLSRegression</label><div class="sk-toggleable__content"><pre>PLSRegression(max_iter=2000, n_components=20)</pre></div></div></div></div></div></div></div>
+<div class="output text_html"><style>#sk-container-id-1 {color: black;background-color: white;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>PLSRegression(max_iter=2000, n_components=20)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label sk-toggleable__label-arrow">PLSRegression</label><div class="sk-toggleable__content"><pre>PLSRegression(max_iter=2000, n_components=20)</pre></div></div></div></div></div></div></div>
 </div>
 <p>We can make sure the loaded trained models are the same by comparing their learned coefficients and their performance on the aggregated data:</p>
 <div class="cell docutils container">
@@ -992,12 +998,12 @@ np.allclose(loaded_model.coef_, clf.coef_)
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Detector
-from feat.utils import get_test_data_path
+from feat.utils.io import get_test_data_path
 
 single_face_img_path = os.path.join(get_test_data_path(), &quot;single_face.jpg&quot;)
 
 # Both the svm and logistic au models will use our visualization model
-detector = Detector(au_model=&#39;svm&#39;)
+detector = Detector()
 
 single_face_prediction = detector.detect_image(single_face_img_path)
 figs = single_face_prediction.plot_detections(faces= &#39;aus&#39;, add_titles=False)
@@ -1005,132 +1011,10 @@ figs = single_face_prediction.plot_detections(faces= &#39;aus&#39;, add_titles=F
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/torch/functional.py:568: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /Users/distiller/project/pytorch/aten/src/ATen/native/TensorShape.cpp:2228.)
-  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:03&lt;00:00,  3.71s/it]
 </pre></div>
 </div>
 <img alt="../_images/06_trainAUvisModel_30_1.png" src="../_images/06_trainAUvisModel_30_1.png" />
-</div>
-</div>
-</section>
-<section id="jaanet-visualization-model">
-<h2>JAANET Visualization Model<a class="headerlink" href="#jaanet-visualization-model" title="Permalink to this headline">#</a></h2>
-<p>Here we perform the same model training as before but this time using only the 12 AUs detected by JAANET: 1, 2, 4, 6, 7, 10, 12, 14, 15, 17, 23, 24.</p>
-<p>You can use a similar approach if you plan to add a custom AU detector that has a different set of AUs. You should use the naming convention: <code class="docutils literal notranslate"><span class="pre">[detector]_aus_to_landmarks</span></code> when saving models to disk</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Get list of JAANET AUs
-jaanet_au_cols = AU_LANDMARK_MAP[&quot;jaanet&quot;]
-print(f&quot;Using {len(jaanet_au_cols)} AUs&quot;)
-
-# Load and aggregate only these 12 AUs from the different datasets
-labels, landmarks = load_landmark_au_data(au_cols=jaanet_au_cols)
-
-# Pseudo-balance AU occurrences
-balX, balY = pseudo_balance_au_occurences(
-    labels, jaanet_au_cols, min_pos_sample=650, random_state=0
-)
-print(f&quot;Resampled dataset shape: {balX.shape}&quot;)
-
-# Plot the rebalancing
-ax = labels.mean().plot(kind=&quot;bar&quot;, label=&quot;original&quot;)
-ax = balX.mean().plot(
-    kind=&quot;bar&quot;, color=&quot;orange&quot;, alpha=0.5, ax=ax, label=&quot;pseudo-balanced&quot;
-)
-_ = ax.legend()
-_ = ax.set(ylabel=&#39;Proportion of Samples with AU present&#39;)
-sns.despine()
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 12 AUs
-emotionet: 24587
-disfaplus: 57668
-bp4d: 143951
-Aggregated landmarks: (226206, 136)
-Aggregated labels: (226206, 12)
-Pseudo balancing samples
-Resampled dataset shape: (7800, 12)
-</pre></div>
-</div>
-<img alt="../_images/06_trainAUvisModel_33_1.png" src="../_images/06_trainAUvisModel_33_1.png" />
-</div>
-</div>
-<p>Then we fit, save, and verify the saved the model like before:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Align landmarks to the neutral face
-X, Y = preprocess_features(balX,balY)
-
-# Fit the model
-jaanet_clf = fit_pls(X, Y, n_components=len(jaanet_au_cols))
-
-# Save it
-save_viz_model(&quot;jaanet_aus_to_landmarks&quot;, jaanet_clf)
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data shape: (7800, 12)
-
-Components: 12
-Test R^2 (3-fold): 0.088	Full R^2: 0.118
-
-Model saved!
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:507: FutureWarning: The attribute `coef_` will be transposed in version 1.3 to be consistent with other linear models in scikit-learn. Currently, `coef_` has a shape of (n_features, n_targets) and in the future it will have a shape of (n_targets, n_features).
-  warnings.warn(
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Verify the saved model
-jaanet_loaded_model = load_viz_model(&#39;jaanet_aus_to_landmarks&#39;, verbose=True)
-
-jaanet_loaded_model.score(X,Y) == jaanet_clf.score(X,Y)
-np.allclose(jaanet_loaded_model.coef_, jaanet_clf.coef_)
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading joblib
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/Esh/anaconda3/envs/py-feat/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:507: FutureWarning: The attribute `coef_` will be transposed in version 1.3 to be consistent with other linear models in scikit-learn. Currently, `coef_` has a shape of (n_features, n_targets) and in the future it will have a shape of (n_targets, n_features).
-  warnings.warn(
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
-</pre></div>
-</div>
-</div>
-</div>
-<p>Finally we can visualize the AU detection:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Swap the AU detector to jaanet
-detector.change_model(au_model=&#39;jaanet&#39;)
-single_face_prediction = detector.detect_image(single_face_img_path)
-
-# This will automatically switch the visualization model behind the scenes
-# Notice the projected face is a bit different than our other model because there are
-# fewer AUs in JAANET
-figs = single_face_prediction.plot_detections(faces= &#39;aus&#39;, add_titles=False)
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Changing au_model from svm -&gt; jaanet
-</pre></div>
-</div>
-<img alt="../_images/06_trainAUvisModel_38_1.png" src="../_images/06_trainAUvisModel_38_1.png" />
 </div>
 </div>
 </section>
@@ -1173,7 +1057,7 @@ figs = single_face_prediction.plot_detections(faces= &#39;aus&#39;, add_titles=F
     <a class='right-next' id="next-link" href="07_extract_labels_and_landmarks.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">7. Extracting labels and landmarks</p>
+        <p class="prev-next-title">7. Example labels and landmark dataset loading</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

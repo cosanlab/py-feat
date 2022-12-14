@@ -180,17 +180,32 @@ const thebe_selector_output = ".output, .cell_output"
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Extracting labels and landmarks
+   7. Example labels and landmark dataset loading
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_loadingOtherFiles.html">
-   8. Loading data from other detectors
+  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
+   8. Training HOG-based AU detectors
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_train_hogs.html">
-   9. Training HOG-based AU detectors
+  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
+   9. Benchmarking Bounding Box using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
+   10. Benchmarking Landmark models using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
+   12. Benchmarking Action Unit detector using data
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
+   13. Benchmarking pyfeat Emotion detection algorithms using data
   </a>
  </li>
 </ul>
@@ -512,7 +527,7 @@ title="Print to PDF"
 </div>
 <ol>
 <li><p>Create a folder for the model you are adding in the appropriate model sub-directory</p></li>
-<li><p>Add your model code which can be a single <code class="docutils literal notranslate"><span class="pre">.py</span></code> file ending in <code class="docutils literal notranslate"><span class="pre">_test</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">feat/landmark_detectors/mobilefacenet_test.py</span></code>) or a separate sub-directory containing at least 3 files one of which ends in <code class="docutils literal notranslate"><span class="pre">_model</span></code> and the other that ends in <code class="docutils literal notranslate"><span class="pre">__test</span></code> (see <code class="docutils literal notranslate"><span class="pre">feat/au_detectors/JAANET</span></code> for an example):</p>
+<li><p>Add your model code which can be a single <code class="docutils literal notranslate"><span class="pre">.py</span></code> file ending in <code class="docutils literal notranslate"><span class="pre">_test</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">feat/landmark_detectors/mobilefacenet_test.py</span></code>) or a separate sub-directory containing at least 3 files one of which ends in <code class="docutils literal notranslate"><span class="pre">_model</span></code> and the other that ends in <code class="docutils literal notranslate"><span class="pre">__test</span></code> (see <code class="docutils literal notranslate"><span class="pre">feat/facepose_detectors/img2pose</span></code> for an example):</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> (this can be empty)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mynewmodel_model.py</span></code> (this should end in <code class="docutils literal notranslate"><span class="pre">_model</span></code>)</p></li>
