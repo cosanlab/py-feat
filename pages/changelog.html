@@ -737,6 +737,7 @@ title="Print to PDF"
 <li><p>the new default model for AU detection was changed to our new <code class="docutils literal notranslate"><span class="pre">xgb</span></code> model which gives continuous valued predictions between 0-1</p></li>
 <li><p>remove support for <code class="docutils literal notranslate"><span class="pre">fer</span></code> emotion model</p></li>
 <li><p>remove support for <code class="docutils literal notranslate"><span class="pre">jaanet</span></code> AU model</p></li>
+<li><p>remove support for <code class="docutils literal notranslate"><span class="pre">logistic</span></code> AU model</p></li>
 <li><p>remove support for <code class="docutils literal notranslate"><span class="pre">pnp</span></code> facepose detector</p></li>
 <li><p>drop support for reading and manipulating Affectiva and FACET data</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.detect_image</span></code> will no longer resize images on load as the new default for <code class="docutils literal notranslate"><span class="pre">output_size=None</span></code>. If you want to process images with <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> and images differ in size, then you will be <strong>required</strong> to manually set <code class="docutils literal notranslate"><span class="pre">output_size</span></code> otherwise py-feat will raise a helpful error message</p></li>

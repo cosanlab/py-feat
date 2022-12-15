@@ -555,11 +555,15 @@ title="Print to PDF"
 <h2>Action Unit detection<a class="headerlink" href="#action-unit-detection" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">xgb</span></code>: XGBoost Classifier model trained on Histogram of Oriented Gradients*</strong> extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">svm</span></code>: SVM model trained on Histogram of Oriented Gradients** extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>*For AU07, our <code class="docutils literal notranslate"><span class="pre">xbg</span></code> detector was trained with hinge-loss instead of cross-entropy loss like other AUs as this yielded substantially better detection peformance given the labeled data available for this AU. This means that while it returns continuous probability predictions,  these are more likely to appear binary in practice (i.e. be 0 or 1) and should be interpreted as <em>proportion of decision-trees with a detection</em> rather than <em>average decision-tree confidence</em> like other AU values.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>** Our <code class="docutils literal notranslate"><span class="pre">svm</span></code> detector uses the <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html#sklearn.svm.LinearSVC"><code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code></a> implementation from <code class="docutils literal notranslate"><span class="pre">sklearn</span></code> and thus returns <strong>binary values</strong> for each AU rather than probabilities. If your use-case requires continuous-valued detections, we recommend the <code class="docutils literal notranslate"><span class="pre">xgb</span></code> detector instead.</p>
 </div>
 </section>
 <section id="emotion-detection">
