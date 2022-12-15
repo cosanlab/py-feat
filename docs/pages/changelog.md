@@ -25,6 +25,7 @@ This is a large overhaul and refactor of some of the core testing and API functi
 - the new default model for AU detection was changed to our new `xgb` model which gives continuous valued predictions between 0-1
 - remove support for `fer` emotion model
 - remove support for `jaanet` AU model
+- remove support for `logistic` AU model
 - remove support for `pnp` facepose detector
 - drop support for reading and manipulating Affectiva and FACET data
 - `.detect_image` will no longer resize images on load as the new default for `output_size=None`. If you want to process images with `batch_size > 1` and images differ in size, then you will be **required** to manually set `output_size` otherwise py-feat will raise a helpful error message
