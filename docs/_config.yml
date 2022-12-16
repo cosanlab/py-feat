@@ -2,10 +2,11 @@
 # Learn more at https://jupyterbook.org/customize/config.html
 
 title: Py-Feat
-author: Eshin Jolly, Jin Hyun Cheong, Tiankang Xie
+author: Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
 copyright: "2022"
 logo: "images/logo/pyfeat_logo_small.png"
-exclude_patterns            : [ README.md, _build, Thumbs.db, .DS_Store, "**.ipynb_checkpoints"]
+exclude_patterns            : [ README.md, _build, Thumbs.db, .DS_Store,
+"**.ipynb_checkpoints", "**/*/figure.ipynb"]
 
 execute:
   execute_notebooks         : off  # Whether to execute notebooks at build time. Must be one of ("auto", "force", "cache", "off")
@@ -36,7 +37,7 @@ html:
   home_page_in_navbar       : false  # Whether to include your home page in the left Navigation Bar
   baseurl                   : "" # The base URL where your book will be hosted. Used for creating image previews and social links. e.g.: https://mypage.com/mybook/
   comments:
-    hypothesis              : false
+    hypothesis              : true
     utterances              : false
 
 # Add GitHub buttons to your book
