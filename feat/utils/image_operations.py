@@ -22,6 +22,7 @@ from feat.utils import set_torch_device
 from copy import deepcopy
 from skimage import draw
 import logging
+from matplotlib.patches import Rectangle
 
 __all__ = [
     "neutral",
@@ -468,7 +469,29 @@ class BBox(object):
 
     def __repr__(self):
         return f"'height': {self.height}, 'width': {self.width}"
+    
+    def __mul__(self, bbox2):
+        '''Create a new BBox based on the intersection between two BBox instances (AND operation)'''
 
+        if isinstance(bbox2, (BBox)):
+            return BBox([np.max([self.left, bbox2.left]), 
+                         np.max([self.top, bbox2.top]), 
+                         np.min([self.right, bbox2.right]), 
+                         np.min([self.bottom, bbox2.bottom])])
+        else:
+            raise NotImplementedError('Multiplication is currently only supported between two BBox instances')
+    
+    def __add__(self, bbox2):
+        '''Create a new BBox based on the intersection between two BBox instances (OR Operation)'''
+        
+        if isinstance(bbox2, (BBox)):
+            return BBox([np.min([self.left, bbox2.left]), 
+                         np.min([self.top, bbox2.top]), 
+                         np.max([self.right, bbox2.right]), 
+                         np.max([self.bottom, bbox2.bottom])])
+        else:
+            raise NotImplementedError('Addition is currently only supported between two BBox instances')
+        
     def expand_by_factor(self, factor, symmetric=True):
         """Expand box by factor
 
@@ -624,6 +647,31 @@ class BBox(object):
             y = point[1] * self.height + self.top
             landmark_[i] = (x, y)
         return landmark_
+    
+    def area(self):
+        """Compute the area of the bounding box"""
+        return self.height * self.width
+
+    def overlap(self, bbox2):
+        """Compute the percent overlap between BBox with another BBox"""
+        return (self * bbox2).area()/self.area()
+    
+    def plot(self, ax=None, fill=False, linewidth=2, **kwargs):
+        """Plot bounding box
+        
+        Args:
+            ax: matplotlib axis
+            fill (bool): fill rectangle
+        """
+        
+        if ax is None:
+            fig, ax = plt.subplots()
+            ax.plot()
+            
+        ax.add_patch(Rectangle((self.left, self.top), 
+                               self.width, self.height, 
+                               fill=fill, linewidth=linewidth, **kwargs))
+        return ax  
 
 
 def reverse_color_order(img):

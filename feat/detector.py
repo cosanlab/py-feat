@@ -646,7 +646,7 @@ class Detector(object):
         pin_memory=False,
         frame_counter=0,
         skip_failed_detections=False,
-        threshold=0.5,
+        threshold=0.9,
         **kwargs,
     ):
         """
@@ -756,9 +756,11 @@ class Detector(object):
         video_path,
         skip_frames=None,
         output_size=700,
+        threshold=0.9,
         batch_size=1,
         num_workers=0,
         pin_memory=False,
+        skip_failed_detections=False,
         **detector_kwargs,
     ):
         """Detects FEX from a video file.
@@ -788,7 +790,9 @@ class Detector(object):
 
         batch_output = []
         for batch_data in tqdm(data_loader):
-            faces = self.detect_faces(batch_data["Image"], **detector_kwargs)
+            faces = self.detect_faces(
+                batch_data["Image"], threshold=threshold, **detector_kwargs
+            )
             landmarks = self.detect_landmarks(
                 batch_data["Image"], detected_faces=faces, **detector_kwargs
             )
@@ -799,9 +803,28 @@ class Detector(object):
             )
             frames = list(batch_data["Frame"].numpy())
             landmarks = _inverse_landmark_transform(landmarks, batch_data)
-            output = self._create_fex(
-                faces, landmarks, poses, aus, emotions, batch_data["FileName"], frames
-            )
+
+            try:
+                self._check_detections(
+                    faces, landmarks, poses, aus, emotions, batch_data
+                )
+                output = self._create_fex(
+                    faces,
+                    landmarks,
+                    poses,
+                    aus,
+                    emotions,
+                    batch_data["FileName"],
+                    frames,
+                )
+                batch_output.append(output)
+            except ValueError as e:
+                if skip_failed_detections:
+                    print(e)
+                    continue
+                else:
+                    raise e
+
             batch_output.append(output)
 
         batch_output = pd.concat(batch_output)
