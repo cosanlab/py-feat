@@ -108,6 +108,33 @@ def test_nofile(default_detector):
         _ = default_detector.detect_image(inputFname)
 
 
+# No Face images
+def test_detect_single_img_no_face(default_detector, no_face_img):
+    """Test detection of a single image with no face. Default detector returns 173 attributes"""
+    out = default_detector.detect_image(no_face_img)
+    assert type(out) == Fex
+    assert out.shape == (1, 173)
+    assert np.isnan(out.happiness.values[0])
+
+
+def test_detect_multi_img_no_face(default_detector, no_face_img):
+    """Test detection of a multiple images with no face. Default detector returns 173 attributes"""
+    out = default_detector.detect_image([no_face_img] * 3)
+    assert out.shape == (3, 173)
+
+
+def test_detect_multi_img_no_face_batching(default_detector, no_face_img):
+    """Test detection of a multiple images with no face. Default detector returns 173 attributes"""
+    out = default_detector.detect_image([no_face_img] * 5, batch_size=2)
+    assert out.shape == (5, 173)
+
+
+def test_detect_multi_img_mixed_no_face(default_detector, no_face_img, single_face_img):
+    """Test detection of a single image with no face. Default detector returns 173 attributes"""
+    out = default_detector.detect_image([no_face_img, single_face_img] * 3)
+    assert out.shape == (6, 173)
+
+
 # Single images
 def test_detect_single_img_single_face(default_detector, single_face_img):
     """Test detection of single face from single image. Default detector returns 173 attributes"""
@@ -151,7 +178,7 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (6, 173)
 
     out = default_detector.detect_image(
-        [multi_face_img, single_face_img] * 5, batch_size=5, output_size=256
+        [multi_face_img, single_face_img] * 5, batch_size=5, output_size=512
     )
     assert out.shape == (30, 173)
 
