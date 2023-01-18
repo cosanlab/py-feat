@@ -38,6 +38,7 @@ import logging
 import warnings
 from tqdm import tqdm
 import torchvision.transforms as transforms
+from collections import ChainMap
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -417,51 +418,54 @@ class Detector(object):
         logging.info("detecting landmarks...")
         frame = convert_image_to_tensor(frame)
 
-        if self.info["landmark_model"]:
-            if self.info["landmark_model"].lower() == "mobilenet":
-                out_size = 224
-            else:
-                out_size = 112
-
-        extracted_faces, new_bbox = extract_face_from_bbox(
-            frame, detected_faces, face_size=out_size
-        )
-
-        extracted_faces = extracted_faces / 255.0
-
-        if self.info["landmark_model"].lower() == "mobilenet":
-            extracted_faces = Compose(
-                [Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
-            )(extracted_faces)
-
-        # Run Landmark Model
-        if self.info["landmark_model"].lower() == "mobilefacenet":
-            landmark = (
-                self.landmark_detector(extracted_faces, **landmark_model_kwargs)[0]
-                .cpu()
-                .data.numpy()
-            )
+        if _is_list_of_lists_empty(detected_faces):
+            list_concat = detected_faces
         else:
-            landmark = (
-                self.landmark_detector(extracted_faces, **landmark_model_kwargs)
-                .cpu()
-                .data.numpy()
+            if self.info["landmark_model"]:
+                if self.info["landmark_model"].lower() == "mobilenet":
+                    out_size = 224
+                else:
+                    out_size = 112
+
+            extracted_faces, new_bbox = extract_face_from_bbox(
+                frame, detected_faces, face_size=out_size
             )
 
-        landmark = landmark.reshape(landmark.shape[0], -1, 2)
+            extracted_faces = extracted_faces / 255.0
 
-        landmark_results = []
-        for ik in range(landmark.shape[0]):
+            if self.info["landmark_model"].lower() == "mobilenet":
+                extracted_faces = Compose(
+                    [Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
+                )(extracted_faces)
 
-            landmark_results.append(
-                new_bbox[ik].inverse_transform_landmark(landmark[ik, :, :])
-            )
+            # Run Landmark Model
+            if self.info["landmark_model"].lower() == "mobilefacenet":
+                landmark = (
+                    self.landmark_detector(extracted_faces, **landmark_model_kwargs)[0]
+                    .cpu()
+                    .data.numpy()
+                )
+            else:
+                landmark = (
+                    self.landmark_detector(extracted_faces, **landmark_model_kwargs)
+                    .cpu()
+                    .data.numpy()
+                )
 
-        length_index = [len(x) for x in detected_faces]
-        new_lens = np.insert(np.cumsum(length_index), 0, 0)
-        list_concat = []
-        for ij in range(len(length_index)):
-            list_concat.append(landmark_results[new_lens[ij] : new_lens[ij + 1]])
+            landmark = landmark.reshape(landmark.shape[0], -1, 2)
+
+            landmark_results = []
+            for ik in range(landmark.shape[0]):
+
+                landmark_results.append(
+                    new_bbox[ik].inverse_transform_landmark(landmark[ik, :, :])
+                )
+
+            length_index = [len(x) for x in detected_faces]
+            new_lens = np.insert(np.cumsum(length_index), 0, 0)
+            list_concat = []
+            for ij in range(len(length_index)):
+                list_concat.append(landmark_results[new_lens[ij] : new_lens[ij + 1]])
 
         return list_concat
 
@@ -515,21 +519,23 @@ class Detector(object):
 
         logging.info("detecting aus...")
         frame = convert_image_to_tensor(frame, img_type="float32")
-        # frame = transforms.ToTensor()(frame)
 
-        if self["au_model"].lower() in ["svm", "xgb"]:
-            # transform = Grayscale(3)
-            # frame = transform(frame)
-            hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
-            au_predictions = self.au_model.detect_au(
-                frame=hog_arr, landmarks=new_lands, **au_model_kwargs
-            )
+        if _is_list_of_lists_empty(landmarks):
+            return landmarks
         else:
-            au_predictions = self.au_model.detect_au(
-                frame, landmarks=landmarks, **au_model_kwargs
-            )
+            if self["au_model"].lower() in ["svm", "xgb"]:
+                # transform = Grayscale(3)
+                # frame = transform(frame)
+                hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
+                au_predictions = self.au_model.detect_au(
+                    frame=hog_arr, landmarks=new_lands, **au_model_kwargs
+                )
+            else:
+                au_predictions = self.au_model.detect_au(
+                    frame, landmarks=landmarks, **au_model_kwargs
+                )
 
-        return self._convert_detector_output(landmarks, au_predictions)
+            return self._convert_detector_output(landmarks, au_predictions)
 
     def _batch_hog(self, frames, landmarks):
         """
@@ -600,25 +606,30 @@ class Detector(object):
         logging.info("detecting emotions...")
         frame = convert_image_to_tensor(frame, img_type="float32")
 
-        if self.info["emotion_model"].lower() == "resmasknet":
-            return self._convert_detector_output(
-                facebox,
-                self.emotion_model.detect_emo(frame, facebox, **emotion_model_kwargs),
-            )
-
-        elif self.info["emotion_model"].lower() == "svm":
-            hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
-            return self._convert_detector_output(
-                landmarks,
-                self.emotion_model.detect_emo(
-                    frame=hog_arr, landmarks=new_lands, **emotion_model_kwargs
-                ),
-            )
-
+        if _is_list_of_lists_empty(facebox):
+            return facebox
         else:
-            raise ValueError(
-                "Cannot recognize input emo model! Please try to re-type emotion model"
-            )
+            if self.info["emotion_model"].lower() == "resmasknet":
+                return self._convert_detector_output(
+                    facebox,
+                    self.emotion_model.detect_emo(
+                        frame, facebox, **emotion_model_kwargs
+                    ),
+                )
+
+            elif self.info["emotion_model"].lower() == "svm":
+                hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
+                return self._convert_detector_output(
+                    landmarks,
+                    self.emotion_model.detect_emo(
+                        frame=hog_arr, landmarks=new_lands, **emotion_model_kwargs
+                    ),
+                )
+
+            else:
+                raise ValueError(
+                    "Cannot recognize input emo model! Please try to re-type emotion model"
+                )
 
     def _check_detections(self, faces, landmarks, poses, aus, emotions, batch_data):
         """
@@ -626,6 +637,9 @@ class Detector(object):
         """
 
         # Each input arg is a nested list with length == number of faces in the batch
+
+        if _is_list_of_lists_empty(faces) & _is_list_of_lists_empty(poses):
+            return
 
         # Check 1) img2pose sometimes gives fewer detections that other models, we can't
         # properly assemble Fex when that's the case. Returning more or the same
@@ -871,91 +885,122 @@ class Detector(object):
         """
 
         logging.info("creating fex output...")
-        files = [[f] * n for f, n in zip(file_names, [len(x) for x in faces])]
 
-        # Convert to Pandas Format
-        out = []
-        for i, frame in enumerate(faces):
-            for j, face_in_frame in enumerate(frame):
-                facebox_df = pd.DataFrame(
-                    [
+        if _is_list_of_lists_empty(faces):
+            return Fex(
+                pd.DataFrame(
+                    pd.Series(
+                        ChainMap(
+                            {x: np.nan for x in self.info["face_detection_columns"]},
+                            {x: np.nan for x in self.info["facepose_model_columns"]},
+                            {x: np.nan for x in self.info["face_landmark_columns"]},
+                            {x: np.nan for x in self.info["au_presence_columns"]},
+                            {x: np.nan for x in self.info["emotion_model_columns"]},
+                            {
+                                FEAT_TIME_COLUMNS[0]: frame_counter,
+                                "input": file_names[0],
+                            },
+                        )
+                    )
+                ).T,
+                au_columns=self.info["au_presence_columns"],
+                emotion_columns=FEAT_EMOTION_COLUMNS,
+                facebox_columns=FEAT_FACEBOX_COLUMNS,
+                landmark_columns=openface_2d_landmark_columns,
+                facepose_columns=self.info["facepose_model_columns"],
+                detector="Feat",
+                face_model=self.info["face_model"],
+                landmark_model=self.info["landmark_model"],
+                au_model=self.info["au_model"],
+                emotion_model=self.info["emotion_model"],
+                facepose_model=self.info["facepose_model"],
+            )
+        else:
+            files = [[f] * n for f, n in zip(file_names, [len(x) for x in faces])]
+
+            # Convert to Pandas Format
+            out = []
+            for i, frame in enumerate(faces):
+                for j, face_in_frame in enumerate(frame):
+                    facebox_df = pd.DataFrame(
                         [
-                            face_in_frame[0],
-                            face_in_frame[1],
-                            face_in_frame[2] - face_in_frame[0],
-                            face_in_frame[3] - face_in_frame[1],
-                            face_in_frame[4],
-                        ]
-                    ],
-                    columns=self.info["face_detection_columns"],
-                    index=[j],
-                )
+                            [
+                                face_in_frame[0],
+                                face_in_frame[1],
+                                face_in_frame[2] - face_in_frame[0],
+                                face_in_frame[3] - face_in_frame[1],
+                                face_in_frame[4],
+                            ]
+                        ],
+                        columns=self.info["face_detection_columns"],
+                        index=[j],
+                    )
 
-                facepose_df = pd.DataFrame(
-                    [poses[i][j].flatten(order="F")],
-                    columns=self.info["facepose_model_columns"],
-                    index=[j],
-                )
+                    facepose_df = pd.DataFrame(
+                        [poses[i][j].flatten(order="F")],
+                        columns=self.info["facepose_model_columns"],
+                        index=[j],
+                    )
 
-                landmarks_df = pd.DataFrame(
-                    [landmarks[i][j].flatten(order="F")],
-                    columns=self.info["face_landmark_columns"],
-                    index=[j],
-                )
+                    landmarks_df = pd.DataFrame(
+                        [landmarks[i][j].flatten(order="F")],
+                        columns=self.info["face_landmark_columns"],
+                        index=[j],
+                    )
 
-                aus_df = pd.DataFrame(
-                    aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
-                    columns=self.info["au_presence_columns"],
-                    index=[j],
-                )
+                    aus_df = pd.DataFrame(
+                        aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
+                        columns=self.info["au_presence_columns"],
+                        index=[j],
+                    )
 
-                emotions_df = pd.DataFrame(
-                    emotions[i][j, :].reshape(1, len(FEAT_EMOTION_COLUMNS)),
-                    columns=FEAT_EMOTION_COLUMNS,
-                    index=[j],
-                )
+                    emotions_df = pd.DataFrame(
+                        emotions[i][j, :].reshape(1, len(FEAT_EMOTION_COLUMNS)),
+                        columns=FEAT_EMOTION_COLUMNS,
+                        index=[j],
+                    )
 
-                input_df = pd.DataFrame(
-                    files[i][j],
-                    columns=["input"],
-                    index=[j],
-                )
+                    input_df = pd.DataFrame(
+                        files[i][j],
+                        columns=["input"],
+                        index=[j],
+                    )
 
-                tmp_df = pd.concat(
-                    [
-                        facebox_df,
-                        landmarks_df,
-                        facepose_df,
-                        aus_df,
-                        emotions_df,
-                        input_df,
-                    ],
-                    axis=1,
-                )
+                    tmp_df = pd.concat(
+                        [
+                            facebox_df,
+                            landmarks_df,
+                            facepose_df,
+                            aus_df,
+                            emotions_df,
+                            input_df,
+                        ],
+                        axis=1,
+                    )
 
-                if isinstance(frame_counter, (list)):
-                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter[i]
-                else:
-                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
-                out.append(tmp_df)
-        out = pd.concat(out)
-        out.reset_index(drop=True, inplace=True)
+                    if isinstance(frame_counter, (list)):
+                        tmp_df[FEAT_TIME_COLUMNS] = frame_counter[i]
+                    else:
+                        tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
+                    out.append(tmp_df)
+            out = pd.concat(out)
+            out.reset_index(drop=True, inplace=True)
 
-        # TODO: Add in support for gaze_columns
-        return Fex(
-            out,
-            au_columns=self.info["au_presence_columns"],
-            emotion_columns=FEAT_EMOTION_COLUMNS,
-            facebox_columns=FEAT_FACEBOX_COLUMNS,
-            landmark_columns=openface_2d_landmark_columns,
-            facepose_columns=self.info["facepose_model_columns"],
-            detector="Feat",
-            face_model=self.info["face_model"],
-            landmark_model=self.info["landmark_model"],
-            au_model=self.info["au_model"],
-            emotion_model=self.info["emotion_model"],
-            facepose_model=self.info["facepose_model"],
-        )
+            # TODO: Add in support for gaze_columns
+            return Fex(
+                out,
+                au_columns=self.info["au_presence_columns"],
+                emotion_columns=FEAT_EMOTION_COLUMNS,
+                facebox_columns=FEAT_FACEBOX_COLUMNS,
+                landmark_columns=openface_2d_landmark_columns,
+                facepose_columns=self.info["facepose_model_columns"],
+                detector="Feat",
+                face_model=self.info["face_model"],
+                landmark_model=self.info["landmark_model"],
+                au_model=self.info["au_model"],
+                emotion_model=self.info["emotion_model"],
+                facepose_model=self.info["facepose_model"],
+            )
 
     def _convert_detector_output(self, detected_faces, detector_results):
         """
@@ -979,3 +1024,11 @@ class Detector(object):
         for ij in range(len(length_index)):
             list_concat.append(detector_results[new_lens[ij] : new_lens[ij + 1], :])
         return list_concat
+
+
+def _is_list_of_lists_empty(list_of_lists):
+    """Helper function to check if list of lists is empty"""
+    if not any(list_of_lists):
+        return True
+    else:
+        return False
