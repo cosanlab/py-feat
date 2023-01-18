@@ -85,6 +85,11 @@ def default_detector():
 
 
 @fixture(scope="module")
+def no_face_img(data_path):
+    return os.path.join(data_path, "free-mountain-vector-01.jpg")
+
+
+@fixture(scope="module")
 def single_face_img(data_path):
     return os.path.join(data_path, "single_face.jpg")
 
