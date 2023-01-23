@@ -23,6 +23,7 @@ from copy import deepcopy
 from skimage import draw
 import logging
 from matplotlib.patches import Rectangle
+import matplotlib.pyplot as plt
 
 __all__ = [
     "neutral",
@@ -667,7 +668,11 @@ class BBox(object):
 
     def overlap(self, bbox2):
         """Compute the percent overlap between BBox with another BBox"""
-        return (self * bbox2).area() / self.area()
+        overlap_bbox = self * bbox2
+        if (overlap_bbox.height < 0) or (overlap_bbox.width < 0):
+            return 0
+        else:
+            return (self * bbox2).area() / self.area()
 
     def plot(self, ax=None, fill=False, linewidth=2, **kwargs):
         """Plot bounding box
