@@ -215,6 +215,7 @@ def test_detect_mismatch_face_pose():
 
     new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
     assert len(new_faces[0]) == len(new_poses[0])
+    assert len(new_faces[0]) == 2
 
     # 1 face, multiple poses
     faces = [
@@ -250,7 +251,7 @@ def test_detect_mismatch_face_pose():
     ]
 
     new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
-    assert len(new_faces[0]) == 5
+    assert len(new_faces[0]) == 1
     assert len(new_poses[0]) == 1
 
     # 2 Faces, 5 Poses
@@ -295,6 +296,7 @@ def test_detect_mismatch_face_pose():
 
     new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
     assert len(new_faces[0]) == len(new_poses[0])
+    assert len(new_faces[0]) == 2
 
     # 5 Faces, 2 Poses
     faces = [
@@ -335,3 +337,4 @@ def test_detect_mismatch_face_pose():
 
     new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
     assert len(new_faces[0]) == len(new_poses[0])
+    assert len(new_faces[0]) == 2

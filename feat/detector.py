@@ -1035,8 +1035,10 @@ def _match_faces_to_poses(faces, faces_pose, poses):
                 matched_pose_index = np.where(
                     frame_overlap[0, :] == frame_overlap[0, :].max()
                 )[0][0]
+                print(frame_face)
+                print([frame_pose[matched_pose_index]])
                 overlap_faces.append(frame_face)
-                overlap_poses.append(frame_pose[matched_pose_index])
+                overlap_poses.append([frame_pose[matched_pose_index]])
 
             elif (n_faces > 1) & (n_poses == 1):
                 b2 = BBox(frame_face_pose[0][:-1])
