@@ -231,7 +231,7 @@ class Img2Pose:
                 dof_pose = pose_pred[:]  # pitch, roll, yaw, x, y, z
 
             dof_pose = dof_pose.reshape(1, -1)
-            det_pose.append(dof_pose)
+            det_pose.append(list(dof_pose.flatten()))
 
         return {"boxes": det_bboxes, "poses": det_pose}
 

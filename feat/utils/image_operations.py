@@ -797,7 +797,7 @@ def convert_to_euler(rotvec, is_rotvec=True):
         rotvec = Rotation.from_rotvec(rotvec).as_matrix()
     rot_mat_2 = np.transpose(rotvec)
     angle = Rotation.from_matrix(rot_mat_2).as_euler("xyz", degrees=True)
-    return np.array([angle[0], -angle[2], -angle[1]])  # pitch, roll, yaw
+    return [angle[0], -angle[2], -angle[1]]  # pitch, roll, yaw
 
 
 def py_cpu_nms(dets, thresh):
