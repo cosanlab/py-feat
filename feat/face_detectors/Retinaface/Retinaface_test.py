@@ -21,7 +21,7 @@ class Retinaface:
         self,
         device="auto",
         resize=1,
-        vis_threshold=0.5,
+        detection_threshold=0.5,
         nms_threshold=0.4,
         keep_top_k=750,
         top_k=5000,
@@ -34,7 +34,7 @@ class Retinaface:
             device: (str)
             timer_flag: (bool)
             resize: (int)
-            vis_threshold: (float)
+            detection_threshold: (float)
             nms_threshold: (float)
             keep_top_k: (float)
             top_k: (float)
@@ -78,14 +78,14 @@ class Retinaface:
         # Set cutoff parameters
         (
             self.resize,
-            self.vis_threshold,
+            self.detection_threshold,
             self.nms_threshold,
             self.keep_top_k,
             self.top_k,
             self.confidence_threshold,
         ) = (
             resize,
-            vis_threshold,
+            detection_threshold,
             nms_threshold,
             keep_top_k,
             top_k,
@@ -175,11 +175,11 @@ class Retinaface:
         # keep top-K faster NMS
         dets = dets[: self.keep_top_k, :]
 
-        # filter using vis_thres - rescale box size to be proportional to image size
+        # filter using detection_threshold - rescale box size to be proportional to image size
         scale_x, scale_y = (im_width / im_height, im_height / im_width)
         det_bboxes = []
         for b in dets:
-            if b[4] > self.vis_threshold:
+            if b[4] > self.detection_threshold:
                 xmin, ymin, xmax, ymax, score = b
                 det_bboxes.append(
                     [

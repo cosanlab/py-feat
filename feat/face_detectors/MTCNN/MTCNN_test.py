@@ -32,6 +32,7 @@ class MTCNN(nn.Module):
             (default: {0})
         min_face_size {int} -- Minimum face size to search for. (default: {20})
         thresholds {list} -- MTCNN face detection thresholds (default: {[0.6, 0.7, 0.7]})
+        detection_threshold (float): threshold for detectiong faces (default=0.5). Will override the last stage of thresholds
         factor {float} -- Factor used to create a scaling pyramid of face sizes. (default: {0.709})
         post_process {bool} -- Whether or not to post process images tensors before returning.
             (default: {True})
@@ -46,8 +47,7 @@ class MTCNN(nn.Module):
                     "center_weighted_size": box size minus weighted squared offset from image center
                 (default: {None})
         keep_all {bool} -- If True, all detected faces are returned, in the order dictated by the
-            select_largest parameter. If a save_path is specified, the first face is saved to that
-            path and the remaining faces are saved to <save_path>1, <save_path>2 etc.
+            select_largest parameter.
             (default: {False})
         device {torch.device} -- The device on which to run neural net passes. Image tensors and
             models are copied to this device before running forward passes. (default: 'auto')
@@ -59,11 +59,12 @@ class MTCNN(nn.Module):
         margin=0,
         min_face_size=20,
         thresholds=[0.6, 0.7, 0.7],
+        detection_threshold=0.5,
         factor=0.709,
         post_process=True,
         select_largest=True,
         selection_method=None,
-        keep_all=False,
+        keep_all=True,
         device="auto",
     ):
         super().__init__()
@@ -72,6 +73,7 @@ class MTCNN(nn.Module):
         self.margin = margin
         self.min_face_size = min_face_size
         self.thresholds = thresholds
+        self.thresholds[-1] = detection_threshold
         self.factor = factor
         self.post_process = post_process
         self.select_largest = select_largest
