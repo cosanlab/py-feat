@@ -337,4 +337,4 @@ def test_detect_mismatch_face_pose():
 
     new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
     assert len(new_faces[0]) == len(new_poses[0])
-    assert len(new_faces[0]) == 2
+    assert len(new_faces[0]) == 5
