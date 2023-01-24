@@ -1,4 +1,4 @@
-from feat.detector import Detector
+from feat.detector import Detector, _match_faces_to_poses
 from feat.data import Fex
 from feat.utils.io import get_test_data_path
 import os
@@ -190,7 +190,7 @@ def test_detect_video(default_detector, single_face_mov):
     assert out.happiness.values.max() > 0
 
 
-def test_detect_mismatch_face_pose(default_detector):
+def test_detect_mismatch_face_pose():
     # Multiple Faces, 1 pose
     faces = [
         [
@@ -210,8 +210,8 @@ def test_detect_mismatch_face_pose(default_detector):
             ],
         ]
     ]
-    faces_pose = [[46.0, 46.0, 66.0, 71.0, 0.99272925]]
-    poses = [[np.array([-3.72766398, 10.9359162, -3.19862351])]]
+    faces_pose = [[[46.0, 46.0, 66.0, 71.0, 0.99272925]]]
+    poses = [[[-3.72766398, 10.9359162, -3.19862351]]]
 
     new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
     assert len(new_faces[0]) == len(new_poses[0])
@@ -219,11 +219,13 @@ def test_detect_mismatch_face_pose(default_detector):
     # 1 face, multiple poses
     faces = [
         [
-            45.34465026855469,
-            49.546714782714844,
-            63.04056167602539,
-            70.38599395751953,
-            0.95337886,
+            [
+                45.34465026855469,
+                49.546714782714844,
+                63.04056167602539,
+                70.38599395751953,
+                0.95337886,
+            ]
         ]
     ]
 
@@ -239,11 +241,11 @@ def test_detect_mismatch_face_pose(default_detector):
 
     poses = [
         [
-            np.array([[-5.90236694, -2.81686444, -5.38250827]]),
-            np.array([[18.3324545, 7.2330487, 2.70649852]]),
-            np.array([[12.04520545, 5.91369713, 6.13698383]]),
-            np.array([[1.10688262, 1.56339815, -0.91693287]]),
-            np.array([[-3.72766398, 10.9359162, -3.19862351]]),
+            [-5.90236694, -2.81686444, -5.38250827],
+            [18.3324545, 7.2330487, 2.70649852],
+            [12.04520545, 5.91369713, 6.13698383],
+            [1.10688262, 1.56339815, -0.91693287],
+            [-3.72766398, 10.9359162, -3.19862351],
         ]
     ]
 
@@ -283,11 +285,11 @@ def test_detect_mismatch_face_pose(default_detector):
 
     poses = [
         [
-            np.array([[-5.90236694, -2.81686444, -5.38250827]]),
-            np.array([[18.3324545, 7.2330487, 2.70649852]]),
-            np.array([[12.04520545, 5.91369713, 6.13698383]]),
-            np.array([[1.10688262, 1.56339815, -0.91693287]]),
-            np.array([[-3.72766398, 10.9359162, -3.19862351]]),
+            [-5.90236694, -2.81686444, -5.38250827],
+            [18.3324545, 7.2330487, 2.70649852],
+            [12.04520545, 5.91369713, 6.13698383],
+            [1.10688262, 1.56339815, -0.91693287],
+            [-3.72766398, 10.9359162, -3.19862351],
         ]
     ]
 
@@ -326,8 +328,8 @@ def test_detect_mismatch_face_pose(default_detector):
 
     poses = [
         [
-            np.array([[-5.90236694, -2.81686444, -5.38250827]]),
-            np.array([[18.3324545, 7.2330487, 2.70649852]]),
+            [-5.90236694, -2.81686444, -5.38250827],
+            [18.3324545, 7.2330487, 2.70649852],
         ]
     ]
 
