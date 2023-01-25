@@ -40,7 +40,6 @@ import logging
 import warnings
 from tqdm import tqdm
 import torchvision.transforms as transforms
-from collections import ChainMap
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -535,9 +534,11 @@ class Detector(object):
             if self["au_model"].lower() in ["svm", "xgb"]:
                 # transform = Grayscale(3)
                 # frame = transform(frame)
-                hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
+                hog_features, new_landmarks = self._batch_hog(
+                    frames=frame, landmarks=landmarks
+                )
                 au_predictions = self.au_model.detect_au(
-                    frame=hog_arr, landmarks=new_lands, **au_model_kwargs
+                    frame=hog_features, landmarks=new_landmarks, **au_model_kwargs
                 )
             else:
                 au_predictions = self.au_model.detect_au(
@@ -552,44 +553,40 @@ class Detector(object):
         frames is a batch of frames
         """
 
-        len_index = [len(aa) for aa in landmarks]
-        lenth_cumu = np.cumsum(len_index)
-        lenth_cumu2 = np.insert(lenth_cumu, 0, 0)
-        new_lands_list = []
-        flat_land = [item for sublist in landmarks for item in sublist]
-        hogs_arr = None
+        hog_features = []
+        new_landmark_frames = []
+        for i, frame_landmark in enumerate(landmarks):
+            if len(frame_landmark) != 0:
+                new_landmarks_faces = []
+                for j in range(len(frame_landmark)):
+                    convex_hull, new_landmark = extract_face_from_landmarks(
+                        frame=frames[i],
+                        landmarks=frame_landmark[j],
+                        face_size=112,
+                    )
 
-        for i in range(len(flat_land)):
+                    hog_features.append(
+                        hog(
+                            transforms.ToPILImage()(convex_hull[0]),
+                            orientations=8,
+                            pixels_per_cell=(8, 8),
+                            cells_per_block=(2, 2),
+                            visualize=False,
+                            channel_axis=-1,
+                        ).reshape(1, -1)
+                    )
 
-            frame_assignment = np.where(i < lenth_cumu)[0][0]
-
-            convex_hull, new_lands = extract_face_from_landmarks(
-                frame=frames[frame_assignment],
-                landmarks=flat_land[i],
-                face_size=112,
-            )
-
-            hogs = hog(
-                transforms.ToPILImage()(convex_hull[0]),
-                orientations=8,
-                pixels_per_cell=(8, 8),
-                cells_per_block=(2, 2),
-                visualize=False,
-                channel_axis=-1,
-            ).reshape(1, -1)
-
-            if hogs_arr is None:
-                hogs_arr = hogs
+                    new_landmarks_faces.append(new_landmark)
+                new_landmark_frames.append(new_landmarks_faces)
             else:
-                hogs_arr = np.concatenate([hogs_arr, hogs], 0)
+                hog_features.append(
+                    np.zeros((1, 5408))
+                )  # LC: Need to confirm this size is fixed.
+                new_landmark_frames.append([np.zeros((68, 2))])
 
-            new_lands_list.append(new_lands)
+        hog_features = np.concatenate(hog_features)
 
-        new_lands = []
-        for i in range(len(lenth_cumu)):
-            new_lands.append(new_lands_list[lenth_cumu2[i] : (lenth_cumu2[i + 1])])
-
-        return (hogs_arr, new_lands)
+        return (hog_features, new_landmark_frames)
 
     def detect_emotions(self, frame, facebox, landmarks, **emotion_model_kwargs):
         """Detect emotions from image or video frame
@@ -627,11 +624,15 @@ class Detector(object):
                 )
 
             elif self.info["emotion_model"].lower() == "svm":
-                hog_arr, new_lands = self._batch_hog(frames=frame, landmarks=landmarks)
+                hog_features, new_landmarks = self._batch_hog(
+                    frames=frame, landmarks=landmarks
+                )
                 return _convert_detector_output(
                     landmarks,
                     self.emotion_model.detect_emo(
-                        frame=hog_arr, landmarks=new_lands, **emotion_model_kwargs
+                        frame=hog_features,
+                        landmarks=new_landmarks,
+                        **emotion_model_kwargs,
                     ),
                 )
 
@@ -712,8 +713,11 @@ class Detector(object):
                     threshold=face_detection_threshold,
                     **face_model_kwargs,
                 )
+
                 landmarks = self.detect_landmarks(
-                    batch_data["Image"], detected_faces=faces, **landmark_model_kwargs
+                    batch_data["Image"],
+                    detected_faces=faces,
+                    **landmark_model_kwargs,
                 )
                 poses_dict = self.detect_facepose(
                     batch_data["Image"], landmarks, **facepose_model_kwargs
@@ -849,123 +853,135 @@ class Detector(object):
 
         logging.info("creating fex output...")
 
-        if is_list_of_lists_empty(faces):
-            return Fex(
-                pd.DataFrame(
-                    pd.Series(
-                        ChainMap(
-                            {x: np.nan for x in self.info["face_detection_columns"]},
-                            {x: np.nan for x in self.info["facepose_model_columns"]},
-                            {x: np.nan for x in self.info["face_landmark_columns"]},
-                            {x: np.nan for x in self.info["au_presence_columns"]},
-                            {x: np.nan for x in self.info["emotion_model_columns"]},
-                            {
-                                FEAT_TIME_COLUMNS[0]: frame_counter,
-                                "input": file_names[0],
-                            },
-                        )
-                    )
-                ).T,
-                au_columns=self.info["au_presence_columns"],
-                emotion_columns=self.info["emotion_model_columns"],
-                facebox_columns=self.info["face_detection_columns"],
-                landmark_columns=self.info["face_landmark_columns"],
-                facepose_columns=self.info["facepose_model_columns"],
-                detector="Feat",
-                face_model=self.info["face_model"],
-                landmark_model=self.info["landmark_model"],
-                au_model=self.info["au_model"],
-                emotion_model=self.info["emotion_model"],
-                facepose_model=self.info["facepose_model"],
-            )
-        else:
-            files = [[f] * n for f, n in zip(file_names, [len(x) for x in faces])]
+        out = []
+        for i, frame in enumerate(faces):
+            if not frame:
+                facebox_df = pd.DataFrame(
+                    {x: np.nan for x in self.info["face_detection_columns"]},
+                    columns=self.info["face_detection_columns"],
+                    index=[i],
+                )
+                facepose_df = pd.DataFrame(
+                    {x: np.nan for x in self.info["facepose_model_columns"]},
+                    columns=self.info["facepose_model_columns"],
+                    index=[i],
+                )
+                landmarks_df = pd.DataFrame(
+                    {x: np.nan for x in self.info["face_landmark_columns"]},
+                    columns=self.info["face_landmark_columns"],
+                    index=[i],
+                )
+                aus_df = pd.DataFrame(
+                    {x: np.nan for x in self.info["au_presence_columns"]},
+                    columns=self.info["au_presence_columns"],
+                    index=[i],
+                )
+                emotions_df = pd.DataFrame(
+                    {x: np.nan for x in self.info["emotion_model_columns"]},
+                    columns=self.info["emotion_model_columns"],
+                    index=[i],
+                )
+                input_df = pd.DataFrame(file_names[i], columns=["input"], index=[i])
+                tmp_df = pd.concat(
+                    [
+                        facebox_df,
+                        landmarks_df,
+                        facepose_df,
+                        aus_df,
+                        emotions_df,
+                        input_df,
+                    ],
+                    axis=1,
+                )
+                if isinstance(frame_counter, (list)):
+                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter[i]
+                else:
+                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
+                out.append(tmp_df)
 
-            # Convert to Pandas Format
-            out = []
-            for i, frame in enumerate(faces):
-                for j, face_in_frame in enumerate(frame):
-                    facebox_df = pd.DataFrame(
+            for j, face_in_frame in enumerate(frame):
+                facebox_df = pd.DataFrame(
+                    [
                         [
-                            [
-                                face_in_frame[0],
-                                face_in_frame[1],
-                                face_in_frame[2] - face_in_frame[0],
-                                face_in_frame[3] - face_in_frame[1],
-                                face_in_frame[4],
-                            ]
-                        ],
-                        columns=self.info["face_detection_columns"],
-                        index=[j],
-                    )
+                            face_in_frame[0],
+                            face_in_frame[1],
+                            face_in_frame[2] - face_in_frame[0],
+                            face_in_frame[3] - face_in_frame[1],
+                            face_in_frame[4],
+                        ]
+                    ],
+                    columns=self.info["face_detection_columns"],
+                    index=[j],
+                )
 
-                    facepose_df = pd.DataFrame(
-                        [poses[i][j]],
-                        columns=self.info["facepose_model_columns"],
-                        index=[j],
-                    )
+                facepose_df = pd.DataFrame(
+                    [poses[i][j]],
+                    columns=self.info["facepose_model_columns"],
+                    index=[j],
+                )
 
-                    landmarks_df = pd.DataFrame(
-                        [landmarks[i][j].flatten(order="F")],
-                        columns=self.info["face_landmark_columns"],
-                        index=[j],
-                    )
+                landmarks_df = pd.DataFrame(
+                    [landmarks[i][j].flatten(order="F")],
+                    columns=self.info["face_landmark_columns"],
+                    index=[j],
+                )
 
-                    aus_df = pd.DataFrame(
-                        aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
-                        columns=self.info["au_presence_columns"],
-                        index=[j],
-                    )
+                aus_df = pd.DataFrame(
+                    aus[i][j, :].reshape(1, len(self["au_presence_columns"])),
+                    columns=self.info["au_presence_columns"],
+                    index=[j],
+                )
 
-                    emotions_df = pd.DataFrame(
-                        emotions[i][j, :].reshape(
-                            1, len(self.info["emotion_model_columns"])
-                        ),
-                        columns=self.info["emotion_model_columns"],
-                        index=[j],
-                    )
+                emotions_df = pd.DataFrame(
+                    emotions[i][j, :].reshape(
+                        1, len(self.info["emotion_model_columns"])
+                    ),
+                    columns=self.info["emotion_model_columns"],
+                    index=[j],
+                )
 
-                    input_df = pd.DataFrame(
-                        files[i][j],
-                        columns=["input"],
-                        index=[j],
-                    )
+                input_df = pd.DataFrame(
+                    file_names[i],
+                    columns=["input"],
+                    index=[j],
+                )
 
-                    tmp_df = pd.concat(
-                        [
-                            facebox_df,
-                            landmarks_df,
-                            facepose_df,
-                            aus_df,
-                            emotions_df,
-                            input_df,
-                        ],
-                        axis=1,
-                    )
+                tmp_df = pd.concat(
+                    [
+                        facebox_df,
+                        landmarks_df,
+                        facepose_df,
+                        aus_df,
+                        emotions_df,
+                        input_df,
+                    ],
+                    axis=1,
+                )
 
-                    if isinstance(frame_counter, (list)):
-                        tmp_df[FEAT_TIME_COLUMNS] = frame_counter[i]
-                    else:
-                        tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
-                    out.append(tmp_df)
-            out = pd.concat(out)
-            out.reset_index(drop=True, inplace=True)
+                if isinstance(frame_counter, (list)):
+                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter[i]
+                else:
+                    tmp_df[FEAT_TIME_COLUMNS] = frame_counter + i
+                out.append(tmp_df)
 
-            # TODO: Add in support for gaze_columns
-            return Fex(
-                out,
-                au_columns=self.info["au_presence_columns"],
-                emotion_columns=FEAT_EMOTION_COLUMNS,
-                facebox_columns=FEAT_FACEBOX_COLUMNS,
-                landmark_columns=openface_2d_landmark_columns,
-                facepose_columns=self.info["facepose_model_columns"],
-                detector="Feat",
-                face_model=self.info["face_model"],
-                landmark_model=self.info["landmark_model"],
-                au_model=self.info["au_model"],
-                emotion_model=self.info["emotion_model"],
-                facepose_model=self.info["facepose_model"],
-            )
+        out = pd.concat(out)
+        out.reset_index(drop=True, inplace=True)
+
+        # TODO: Add in support for gaze_columns
+        return Fex(
+            out,
+            au_columns=self.info["au_presence_columns"],
+            emotion_columns=self.info["emotion_model_columns"],
+            facebox_columns=self.info["face_detection_columns"],
+            landmark_columns=self.info["face_landmark_columns"],
+            facepose_columns=self.info["facepose_model_columns"],
+            detector="Feat",
+            face_model=self.info["face_model"],
+            landmark_model=self.info["landmark_model"],
+            au_model=self.info["au_model"],
+            emotion_model=self.info["emotion_model"],
+            facepose_model=self.info["facepose_model"],
+        )
 
 
 def _convert_detector_output(detected_faces, detector_results):
@@ -1006,7 +1022,8 @@ def _match_faces_to_poses(faces, faces_pose, poses):
             "Make sure the number of batches in faces and poses is the same."
         )
 
-    if is_list_of_lists_empty(faces) & is_list_of_lists_empty(poses):
+    if is_list_of_lists_empty(faces):
+        # Currently assuming no faces if no face is detected. Not running pose
         return (faces, poses)
 
     else:
@@ -1014,19 +1031,27 @@ def _match_faces_to_poses(faces, faces_pose, poses):
         overlap_faces = []
         overlap_poses = []
         for frame_face, frame_face_pose, frame_pose in zip(faces, faces_pose, poses):
-            if isinstance(frame_face[0], list):
+            if not frame_face:
+                n_faces = 0
+            elif isinstance(frame_face[0], list):
                 n_faces = len(frame_face)
             else:
                 n_faces = 1
 
-            if isinstance(frame_face_pose[0], list):
+            if not frame_face_pose:
+                n_poses = 0
+            elif isinstance(frame_face_pose[0], list):
                 n_poses = len(frame_face_pose)
             else:
                 n_poses = 1
 
             frame_overlap = np.zeros([n_faces, n_poses])
 
-            if (n_faces == 1) & (n_poses > 1):
+            if n_faces == 0:
+                overlap_faces.append([])
+                overlap_poses.append([])
+
+            elif (n_faces == 1) & (n_poses > 1):
                 b1 = BBox(frame_face[0][:-1])
 
                 for pose_idx in range(n_poses):
@@ -1035,8 +1060,6 @@ def _match_faces_to_poses(faces, faces_pose, poses):
                 matched_pose_index = np.where(
                     frame_overlap[0, :] == frame_overlap[0, :].max()
                 )[0][0]
-                print(frame_face)
-                print([frame_pose[matched_pose_index]])
                 overlap_faces.append(frame_face)
                 overlap_poses.append([frame_pose[matched_pose_index]])
 
