@@ -550,7 +550,14 @@ class Detector(object):
     def _batch_hog(self, frames, landmarks):
         """
         Helper function used in batch processing hog features
-        frames is a batch of frames
+
+        Args:
+            frames: a batch of frames
+            landmarks: a list of list of detected landmarks
+
+        Returns:
+            hog_features: a numpy array of hog features for each detected landmark
+            landmarks: updated landmarks
         """
 
         hog_features = []
@@ -1010,12 +1017,22 @@ def _convert_detector_output(detected_faces, detector_results):
 
 
 def _match_faces_to_poses(faces, faces_pose, poses):
-    """Function to match list of lists of faces and poses based on overlap in bounding boxes.
+    """Helper function to match list of lists of faces and poses based on overlap in bounding boxes.
 
     Sometimes the face detector finds different faces than the pose detector unless the user
     is using the same detector (i.e., img2pose).
 
     This function will match the faces and poses and will return nans if more faces are detected then poses.
+    Will only return poses that match faces even if more faces are detected by pose detector.
+
+    Args:
+        faces (list): list of lists of face bounding boxes from face detector
+        faces_pose (list): list of lists of face bounding boxes from pose detector
+        poses (list): list of lists of poses from pose detector
+
+    Returns:
+        faces (list): list of list of faces that have been matched to poses
+        poses (list): list of list of poses that have been matched to faces
     """
 
     if len(faces) != len(faces_pose):
