@@ -215,7 +215,7 @@ class Test_Facepose_Models:
 
         # Also run directly
         poses = new_detector.detect_facepose(single_face_img_data)
-        assert len(poses["poses"][0][0].squeeze()) == 6
+        assert len(poses["poses"][0][0]) == 6
 
     def test_img2pose_c_facepose(self, default_detector, single_face_img_data):
 
