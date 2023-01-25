@@ -129,10 +129,24 @@ def test_detect_multi_img_no_face_batching(default_detector, no_face_img):
     assert out.shape == (5, 173)
 
 
-def test_detect_multi_img_mixed_no_face(default_detector, no_face_img, single_face_img):
+def test_detect_multi_img_mixed_no_face(
+    default_detector, no_face_img, single_face_img, multi_face_img
+):
     """Test detection of a single image with no face. Default detector returns 173 attributes"""
-    out = default_detector.detect_image([no_face_img, single_face_img] * 3)
-    assert out.shape == (6, 173)
+    out = default_detector.detect_image(
+        [single_face_img, no_face_img, multi_face_img] * 2
+    )
+    assert out.shape == (12, 173)
+
+
+def test_detect_multi_img_mixed_no_face_batching(
+    default_detector, no_face_img, single_face_img, multi_face_img
+):
+    """Test detection of a single image with no face. Default detector returns 173 attributes"""
+    out = default_detector.detect_image(
+        [single_face_img, no_face_img, multi_face_img] * 2, batch_size=4
+    )
+    assert out.shape == (12, 173)
 
 
 # Single images
