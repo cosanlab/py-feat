@@ -809,8 +809,9 @@ class Detector(object):
             emotions = self.detect_emotions(
                 batch_data["Image"], faces, landmarks, **detector_kwargs
             )
-            frames = list(batch_data["Frame"].numpy())
+            faces = _inverse_face_transform(faces, batch_data)
             landmarks = _inverse_landmark_transform(landmarks, batch_data)
+            frames = list(batch_data["Frame"].numpy())
 
             # match faces to poses - sometimes face detector finds different faces than pose detector.
             faces, poses = _match_faces_to_poses(
