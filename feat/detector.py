@@ -1137,10 +1137,6 @@ def _match_faces_to_poses(faces, faces_pose, poses):
                             )
                         else:
                             overlap_poses_frame.append(np.ones(3) * np.nan)
-                        pose_idx = np.where(
-                            frame_overlap[face_idx, :]
-                            == frame_overlap[face_idx, :].max()
-                        )[0][0]
                 elif n_faces == n_poses:
                     overlap_faces_frame = frame_face
                     overlap_poses_frame = frame_pose
