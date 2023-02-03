@@ -153,9 +153,8 @@ def set_torch_device(device="cpu"):
         return device
 
 
+# TODO: Refactor the output of each detector into a reliable dataclass with the same
+# structure to avoid utility functions like this
 def is_list_of_lists_empty(list_of_lists):
     """Helper function to check if list of lists is empty"""
-    if not any(list_of_lists):
-        return True
-    else:
-        return False
+    return not any(list_of_lists)

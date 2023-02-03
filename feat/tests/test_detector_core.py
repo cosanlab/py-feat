@@ -1,4 +1,4 @@
-from feat.detector import Detector, _match_faces_to_poses
+from feat.detector import Detector
 from feat.data import Fex
 from feat.utils.io import get_test_data_path
 import os
@@ -206,7 +206,7 @@ def test_detect_video(default_detector, single_face_mov):
     assert out.happiness.values.max() > 0
 
 
-def test_detect_mismatch_face_pose():
+def test_detect_mismatch_face_pose(default_detector):
     # Multiple Faces, 1 pose
     faces = [
         [
@@ -229,7 +229,9 @@ def test_detect_mismatch_face_pose():
     faces_pose = [[[46.0, 46.0, 66.0, 71.0, 0.99272925]]]
     poses = [[[-3.72766398, 10.9359162, -3.19862351]]]
 
-    new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
+    new_faces, new_poses = default_detector._match_faces_to_poses(
+        faces, faces_pose, poses
+    )
     assert len(new_faces[0]) == len(new_poses[0])
     assert len(new_faces[0]) == 2
 
@@ -266,7 +268,9 @@ def test_detect_mismatch_face_pose():
         ]
     ]
 
-    new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
+    new_faces, new_poses = default_detector._match_faces_to_poses(
+        faces, faces_pose, poses
+    )
     assert len(new_faces[0]) == 1
     assert len(new_poses[0]) == 1
 
@@ -310,7 +314,9 @@ def test_detect_mismatch_face_pose():
         ]
     ]
 
-    new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
+    new_faces, new_poses = default_detector._match_faces_to_poses(
+        faces, faces_pose, poses
+    )
     assert len(new_faces[0]) == len(new_poses[0])
     assert len(new_faces[0]) == 2
 
@@ -351,6 +357,8 @@ def test_detect_mismatch_face_pose():
         ]
     ]
 
-    new_faces, new_poses = _match_faces_to_poses(faces, faces_pose, poses)
+    new_faces, new_poses = default_detector._match_faces_to_poses(
+        faces, faces_pose, poses
+    )
     assert len(new_faces[0]) == len(new_poses[0])
     assert len(new_faces[0]) == 5
