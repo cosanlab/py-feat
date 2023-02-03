@@ -31,6 +31,7 @@ def test_landmark_with_batches(multiple_images_for_batch_testing):
 
 # TODO: Currently making this test always pass even if batching gives slightly diff
 # results until @tiankang can debug whether we're in tolerance
+# Track progress updates in this issue: https://github.com/cosanlab/py-feat/issues/128
 def test_detection_and_batching_with_diff_img_sizes(
     single_face_img, multi_face_img, multiple_images_for_batch_testing
 ):
@@ -199,11 +200,36 @@ def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_fa
     assert out.shape == (30, 173)
 
 
-def test_detect_video(default_detector, single_face_mov):
+def test_detect_video(
+    default_detector, single_face_mov, no_face_mov, face_noface_mov, noface_face_mov
+):
     """Test detection on video file"""
     out = default_detector.detect_video(single_face_mov, skip_frames=24)
     assert len(out) == 3
     assert out.happiness.values.max() > 0
+
+    # Test no face movie
+    out = default_detector.detect_video(no_face_mov, skip_frames=24)
+    assert len(out) == 4
+    # Empty detections are filled with NaNs
+    assert out.aus.isnull().all().all()
+
+    # Test mixed movie, i.e. spliced vids of face -> noface and noface -> face
+    out = default_detector.detect_video(face_noface_mov, skip_frames=24)
+    assert len(out) == 3 + 4 + 1
+    # first few frames have a face
+    assert not out.aus.iloc[:3].isnull().all().all()
+    # But the rest are from a diff video that doesn't
+    assert out.aus.iloc[3:].isnull().all().all()
+
+    out = default_detector.detect_video(noface_face_mov, skip_frames=24)
+    assert len(out) == 3 + 4 + 1
+    # beginning no face
+    assert out.aus.iloc[:4].isnull().all().all()
+    # middle frames have face
+    assert not out.aus.iloc[4:7].isnull().all().all()
+    # ending doesn't
+    assert out.aus.iloc[7:].isnull().all().all()
 
 
 def test_detect_mismatch_face_pose(default_detector):
