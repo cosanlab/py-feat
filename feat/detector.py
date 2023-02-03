@@ -545,7 +545,7 @@ class Detector(object):
                     frame, landmarks=landmarks, **au_model_kwargs
                 )
 
-            return _convert_detector_output(landmarks, au_predictions)
+            return self._convert_detector_output(landmarks, au_predictions)
 
     def _batch_hog(self, frames, landmarks):
         """
@@ -623,7 +623,7 @@ class Detector(object):
             return facebox
         else:
             if self.info["emotion_model"].lower() == "resmasknet":
-                return _convert_detector_output(
+                return self._convert_detector_output(
                     facebox,
                     self.emotion_model.detect_emo(
                         frame, facebox, **emotion_model_kwargs
@@ -634,7 +634,7 @@ class Detector(object):
                 hog_features, new_landmarks = self._batch_hog(
                     frames=frame, landmarks=landmarks
                 )
-                return _convert_detector_output(
+                return self._convert_detector_output(
                     landmarks,
                     self.emotion_model.detect_emo(
                         frame=hog_features,
@@ -715,6 +715,7 @@ class Detector(object):
         try:
             batch_output = []
             for batch_id, batch_data in enumerate(tqdm(data_loader)):
+                # TODO: Refactor me to use waterfall
                 faces = self.detect_faces(
                     batch_data["Image"],
                     threshold=face_detection_threshold,
@@ -738,7 +739,7 @@ class Detector(object):
                 landmarks = _inverse_landmark_transform(landmarks, batch_data)
 
                 # match faces to poses - sometimes face detector finds different faces than pose detector.
-                faces, poses = _match_faces_to_poses(
+                faces, poses = self._match_faces_to_poses(
                     faces, poses_dict["faces"], poses_dict["poses"]
                 )
 
@@ -802,6 +803,7 @@ class Detector(object):
         )
 
         batch_output = []
+        # TODO: refactor into waterfall
         for batch_data in tqdm(data_loader):
             faces = self.detect_faces(
                 batch_data["Image"],
@@ -821,7 +823,7 @@ class Detector(object):
             frames = list(batch_data["Frame"].numpy())
 
             # match faces to poses - sometimes face detector finds different faces than pose detector.
-            faces, poses = _match_faces_to_poses(
+            faces, poses = self._match_faces_to_poses(
                 faces, poses_dict["faces"], poses_dict["poses"]
             )
 
@@ -991,157 +993,159 @@ class Detector(object):
             facepose_model=self.info["facepose_model"],
         )
 
+    @staticmethod
+    def _convert_detector_output(detected_faces, detector_results):
+        """
+        Helper function to convert AU/Emotion detector output into frame by face list of lists.
+        Either face or landmark detector list of list outputs can be used.
 
-def _convert_detector_output(detected_faces, detector_results):
-    """
-    Helper function to convert AU/Emotion detector output into frame by face list of lists.
-    Either face or landmark detector list of list outputs can be used.
+        Args:
+            detected_faces (list): list of lists output from face/landmark detector
+            au_results (np.array):, results from au/emotion detectors
 
-    Args:
-        detected_faces (list): list of lists output from face/landmark detector
-        au_results (np.array):, results from au/emotion detectors
+        Returns:
+            list_concat: (list of list). The list which contains the number of faces. for example
+            if you process 2 frames and each frame contains 4 faces, it will return:
+                [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
+        """
 
-    Returns:
-        list_concat: (list of list). The list which contains the number of faces. for example
-        if you process 2 frames and each frame contains 4 faces, it will return:
-            [[xxx,xxx,xxx,xxx],[xxx,xxx,xxx,xxx]]
-    """
+        length_index = [len(x) for x in detected_faces]
 
-    length_index = [len(x) for x in detected_faces]
+        list_concat = []
+        new_lens = np.insert(np.cumsum(length_index), 0, 0)
+        for ij in range(len(length_index)):
+            list_concat.append(detector_results[new_lens[ij] : new_lens[ij + 1], :])
+        return list_concat
 
-    list_concat = []
-    new_lens = np.insert(np.cumsum(length_index), 0, 0)
-    for ij in range(len(length_index)):
-        list_concat.append(detector_results[new_lens[ij] : new_lens[ij + 1], :])
-    return list_concat
+    @staticmethod
+    def _match_faces_to_poses(faces, faces_pose, poses):
+        """Helper function to match list of lists of faces and poses based on overlap in bounding boxes.
 
+        Sometimes the face detector finds different faces than the pose detector unless the user
+        is using the same detector (i.e., img2pose).
 
-def _match_faces_to_poses(faces, faces_pose, poses):
-    """Helper function to match list of lists of faces and poses based on overlap in bounding boxes.
+        This function will match the faces and poses and will return nans if more faces are detected then poses.
+        Will only return poses that match faces even if more faces are detected by pose detector.
 
-    Sometimes the face detector finds different faces than the pose detector unless the user
-    is using the same detector (i.e., img2pose).
+        Args:
+            faces (list): list of lists of face bounding boxes from face detector
+            faces_pose (list): list of lists of face bounding boxes from pose detector
+            poses (list): list of lists of poses from pose detector
 
-    This function will match the faces and poses and will return nans if more faces are detected then poses.
-    Will only return poses that match faces even if more faces are detected by pose detector.
+        Returns:
+            faces (list): list of list of faces that have been matched to poses
+            poses (list): list of list of poses that have been matched to faces
+        """
 
-    Args:
-        faces (list): list of lists of face bounding boxes from face detector
-        faces_pose (list): list of lists of face bounding boxes from pose detector
-        poses (list): list of lists of poses from pose detector
+        if len(faces) != len(faces_pose):
+            raise ValueError(
+                "Make sure the number of batches in faces and poses is the same."
+            )
 
-    Returns:
-        faces (list): list of list of faces that have been matched to poses
-        poses (list): list of list of poses that have been matched to faces
-    """
+        if is_list_of_lists_empty(faces):
+            # Currently assuming no faces if no face is detected. Not running pose
+            return (faces, poses)
 
-    if len(faces) != len(faces_pose):
-        raise ValueError(
-            "Make sure the number of batches in faces and poses is the same."
-        )
+        else:
 
-    if is_list_of_lists_empty(faces):
-        # Currently assuming no faces if no face is detected. Not running pose
-        return (faces, poses)
+            overlap_faces = []
+            overlap_poses = []
+            for frame_face, frame_face_pose, frame_pose in zip(
+                faces, faces_pose, poses
+            ):
+                if not frame_face:
+                    n_faces = 0
+                elif isinstance(frame_face[0], list):
+                    n_faces = len(frame_face)
+                else:
+                    n_faces = 1
 
-    else:
+                if not frame_face_pose:
+                    n_poses = 0
+                elif isinstance(frame_face_pose[0], list):
+                    n_poses = len(frame_face_pose)
+                else:
+                    n_poses = 1
 
-        overlap_faces = []
-        overlap_poses = []
-        for frame_face, frame_face_pose, frame_pose in zip(faces, faces_pose, poses):
-            if not frame_face:
-                n_faces = 0
-            elif isinstance(frame_face[0], list):
-                n_faces = len(frame_face)
-            else:
-                n_faces = 1
+                frame_overlap = np.zeros([n_faces, n_poses])
 
-            if not frame_face_pose:
-                n_poses = 0
-            elif isinstance(frame_face_pose[0], list):
-                n_poses = len(frame_face_pose)
-            else:
-                n_poses = 1
+                if n_faces == 0:
+                    overlap_faces.append([])
+                    overlap_poses.append([])
 
-            frame_overlap = np.zeros([n_faces, n_poses])
+                elif (n_faces == 1) & (n_poses > 1):
+                    b1 = BBox(frame_face[0][:-1])
 
-            if n_faces == 0:
-                overlap_faces.append([])
-                overlap_poses.append([])
-
-            elif (n_faces == 1) & (n_poses > 1):
-                b1 = BBox(frame_face[0][:-1])
-
-                for pose_idx in range(n_poses):
-                    b2 = BBox(frame_face_pose[pose_idx][:-1])
-                    frame_overlap[0, pose_idx] = b1.overlap(b2)
-                matched_pose_index = np.where(
-                    frame_overlap[0, :] == frame_overlap[0, :].max()
-                )[0][0]
-                overlap_faces.append(frame_face)
-                overlap_poses.append([frame_pose[matched_pose_index]])
-
-            elif (n_faces > 1) & (n_poses == 1):
-                b2 = BBox(frame_face_pose[0][:-1])
-                for face_idx in range(n_faces):
-                    b1 = BBox(frame_face[face_idx][:-1])
-                    frame_overlap[face_idx, 0] = b1.overlap(b2)
-                matched_face_index = np.where(
-                    frame_overlap[:, 0] == frame_overlap[:, 0].max()
-                )[0][0]
-                new_poses = []
-                for f_idx in range(n_faces):
-                    if f_idx == matched_face_index:
-                        new_poses.append(frame_pose[0])
-                    else:
-                        new_poses.append(np.ones(3) * np.nan)
-                overlap_faces.append(frame_face)
-                overlap_poses.append(new_poses)
-
-            else:
-                for face_idx in range(n_faces):
-                    b1 = BBox(frame_face[face_idx][:-1])
                     for pose_idx in range(n_poses):
                         b2 = BBox(frame_face_pose[pose_idx][:-1])
-                        frame_overlap[face_idx, pose_idx] = b1.overlap(b2)
+                        frame_overlap[0, pose_idx] = b1.overlap(b2)
+                    matched_pose_index = np.where(
+                        frame_overlap[0, :] == frame_overlap[0, :].max()
+                    )[0][0]
+                    overlap_faces.append(frame_face)
+                    overlap_poses.append([frame_pose[matched_pose_index]])
 
-                overlap_faces_frame = []
-                overlap_poses_frame = []
-                if n_faces < n_poses:
+                elif (n_faces > 1) & (n_poses == 1):
+                    b2 = BBox(frame_face_pose[0][:-1])
                     for face_idx in range(n_faces):
-                        pose_idx = np.where(
-                            frame_overlap[face_idx, :]
-                            == frame_overlap[face_idx, :].max()
-                        )[0][0]
-                        overlap_faces_frame.append(frame_face[face_idx])
-                        overlap_poses_frame.append(frame_pose[pose_idx])
-                elif n_faces > n_poses:
-                    matched_pose_index = []
-                    for pose_idx in range(n_poses):
-                        matched_pose_index.append(
-                            np.where(
-                                frame_overlap[:, pose_idx]
-                                == frame_overlap[:, pose_idx].max()
-                            )[0][0]
-                        )
-                    for face_idx in range(n_faces):
-                        overlap_faces_frame.append(frame_face[face_idx])
-                        if face_idx in matched_pose_index:
-                            overlap_poses_frame.append(
-                                frame_pose[
-                                    np.where(
-                                        frame_overlap[face_idx, :]
-                                        == frame_overlap[face_idx, :].max()
-                                    )[0][0]
-                                ]
-                            )
+                        b1 = BBox(frame_face[face_idx][:-1])
+                        frame_overlap[face_idx, 0] = b1.overlap(b2)
+                    matched_face_index = np.where(
+                        frame_overlap[:, 0] == frame_overlap[:, 0].max()
+                    )[0][0]
+                    new_poses = []
+                    for f_idx in range(n_faces):
+                        if f_idx == matched_face_index:
+                            new_poses.append(frame_pose[0])
                         else:
-                            overlap_poses_frame.append(np.ones(3) * np.nan)
-                elif n_faces == n_poses:
-                    overlap_faces_frame = frame_face
-                    overlap_poses_frame = frame_pose
+                            new_poses.append(np.ones(3) * np.nan)
+                    overlap_faces.append(frame_face)
+                    overlap_poses.append(new_poses)
 
-                overlap_faces.append(overlap_faces_frame)
-                overlap_poses.append(overlap_poses_frame)
+                else:
+                    for face_idx in range(n_faces):
+                        b1 = BBox(frame_face[face_idx][:-1])
+                        for pose_idx in range(n_poses):
+                            b2 = BBox(frame_face_pose[pose_idx][:-1])
+                            frame_overlap[face_idx, pose_idx] = b1.overlap(b2)
 
-        return (overlap_faces, overlap_poses)
+                    overlap_faces_frame = []
+                    overlap_poses_frame = []
+                    if n_faces < n_poses:
+                        for face_idx in range(n_faces):
+                            pose_idx = np.where(
+                                frame_overlap[face_idx, :]
+                                == frame_overlap[face_idx, :].max()
+                            )[0][0]
+                            overlap_faces_frame.append(frame_face[face_idx])
+                            overlap_poses_frame.append(frame_pose[pose_idx])
+                    elif n_faces > n_poses:
+                        matched_pose_index = []
+                        for pose_idx in range(n_poses):
+                            matched_pose_index.append(
+                                np.where(
+                                    frame_overlap[:, pose_idx]
+                                    == frame_overlap[:, pose_idx].max()
+                                )[0][0]
+                            )
+                        for face_idx in range(n_faces):
+                            overlap_faces_frame.append(frame_face[face_idx])
+                            if face_idx in matched_pose_index:
+                                overlap_poses_frame.append(
+                                    frame_pose[
+                                        np.where(
+                                            frame_overlap[face_idx, :]
+                                            == frame_overlap[face_idx, :].max()
+                                        )[0][0]
+                                    ]
+                                )
+                            else:
+                                overlap_poses_frame.append(np.ones(3) * np.nan)
+                    elif n_faces == n_poses:
+                        overlap_faces_frame = frame_face
+                        overlap_poses_frame = frame_pose
+
+                    overlap_faces.append(overlap_faces_frame)
+                    overlap_poses.append(overlap_poses_frame)
+
+            return (overlap_faces, overlap_poses)
