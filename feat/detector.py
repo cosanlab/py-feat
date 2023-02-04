@@ -648,6 +648,61 @@ class Detector(object):
                     "Cannot recognize input emo model! Please try to re-type emotion model"
                 )
 
+    def _run_detection_waterfall(
+        self,
+        batch_data,
+        face_detection_threshold,
+        face_model_kwargs,
+        landmark_model_kwargs,
+        facepose_model_kwargs,
+        emotion_model_kwargs,
+        au_model_kwargs,
+    ):
+        """
+        Main detection "waterfall." Calls each individual detector in the sequence
+        required to support any interactions between detections. Called
+        behind-the-scenes by .detect_image() and .detect_video()
+
+        Args:
+            batch_data (dict): singleton item from iterating over the output of a DataLoader
+            face_detection_threshold (float): value between 0-1
+            face_model_kwargs (dict): face model kwargs
+            landmark_model_kwargs (dict): landmark model kwargs
+            facepose_model_kwargs (dict): facepose model kwargs
+            emotion_model_kwargs (dict): emotion model kwargs
+            au_model_kwargs (dict): au model kwargs
+
+        Returns:
+            tuple: faces, landmarks, poses, aus, emotions
+        """
+        faces = self.detect_faces(
+            batch_data["Image"],
+            threshold=face_detection_threshold,
+            **face_model_kwargs,
+        )
+
+        landmarks = self.detect_landmarks(
+            batch_data["Image"],
+            detected_faces=faces,
+            **landmark_model_kwargs,
+        )
+        poses_dict = self.detect_facepose(
+            batch_data["Image"], landmarks, **facepose_model_kwargs
+        )
+        aus = self.detect_aus(batch_data["Image"], landmarks, **au_model_kwargs)
+        emotions = self.detect_emotions(
+            batch_data["Image"], faces, landmarks, **emotion_model_kwargs
+        )
+
+        faces = _inverse_face_transform(faces, batch_data)
+        landmarks = _inverse_landmark_transform(landmarks, batch_data)
+
+        # match faces to poses - sometimes face detector finds different faces than pose detector.
+        faces, poses = self._match_faces_to_poses(
+            faces, poses_dict["faces"], poses_dict["poses"]
+        )
+        return faces, landmarks, poses, aus, emotions
+
     def detect_image(
         self,
         input_file_list,
@@ -714,33 +769,17 @@ class Detector(object):
 
         try:
             batch_output = []
+
             for batch_id, batch_data in enumerate(tqdm(data_loader)):
-                # TODO: Refactor me to use waterfall
-                faces = self.detect_faces(
-                    batch_data["Image"],
-                    threshold=face_detection_threshold,
-                    **face_model_kwargs,
-                )
 
-                landmarks = self.detect_landmarks(
-                    batch_data["Image"],
-                    detected_faces=faces,
-                    **landmark_model_kwargs,
-                )
-                poses_dict = self.detect_facepose(
-                    batch_data["Image"], landmarks, **facepose_model_kwargs
-                )
-                aus = self.detect_aus(batch_data["Image"], landmarks, **au_model_kwargs)
-                emotions = self.detect_emotions(
-                    batch_data["Image"], faces, landmarks, **emotion_model_kwargs
-                )
-
-                faces = _inverse_face_transform(faces, batch_data)
-                landmarks = _inverse_landmark_transform(landmarks, batch_data)
-
-                # match faces to poses - sometimes face detector finds different faces than pose detector.
-                faces, poses = self._match_faces_to_poses(
-                    faces, poses_dict["faces"], poses_dict["poses"]
+                faces, landmarks, poses, aus, emotions = self._run_detection_waterfall(
+                    batch_data,
+                    face_detection_threshold,
+                    face_model_kwargs,
+                    landmark_model_kwargs,
+                    facepose_model_kwargs,
+                    emotion_model_kwargs,
+                    au_model_kwargs,
                 )
 
                 output = self._create_fex(
@@ -773,7 +812,7 @@ class Detector(object):
         num_workers=0,
         pin_memory=False,
         face_detection_threshold=0.5,
-        **detector_kwargs,
+        **kwargs,
     ):
         """Detects FEX from a video file.
 
@@ -794,6 +833,13 @@ class Detector(object):
             Fex: Prediction results dataframe
         """
 
+        # Keyword arguments than can be passed to the underlying models
+        face_model_kwargs = kwargs.pop("face_model_kwargs", dict())
+        landmark_model_kwargs = kwargs.pop("landmark_model_kwargs", dict())
+        au_model_kwargs = kwargs.pop("au_model_kwargs", dict())
+        emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
+        facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
+
         data_loader = DataLoader(
             VideoDataset(video_path, skip_frames=skip_frames, output_size=output_size),
             num_workers=num_workers,
@@ -803,29 +849,20 @@ class Detector(object):
         )
 
         batch_output = []
-        # TODO: refactor into waterfall
-        for batch_data in tqdm(data_loader):
-            faces = self.detect_faces(
-                batch_data["Image"],
-                threshold=face_detection_threshold,
-                **detector_kwargs,
-            )
-            landmarks = self.detect_landmarks(
-                batch_data["Image"], detected_faces=faces, **detector_kwargs
-            )
-            poses_dict = self.detect_facepose(batch_data["Image"], **detector_kwargs)
-            aus = self.detect_aus(batch_data["Image"], landmarks, **detector_kwargs)
-            emotions = self.detect_emotions(
-                batch_data["Image"], faces, landmarks, **detector_kwargs
-            )
-            faces = _inverse_face_transform(faces, batch_data)
-            landmarks = _inverse_landmark_transform(landmarks, batch_data)
-            frames = list(batch_data["Frame"].numpy())
 
-            # match faces to poses - sometimes face detector finds different faces than pose detector.
-            faces, poses = self._match_faces_to_poses(
-                faces, poses_dict["faces"], poses_dict["poses"]
+        for batch_data in tqdm(data_loader):
+
+            faces, landmarks, poses, aus, emotions = self._run_detection_waterfall(
+                batch_data,
+                face_detection_threshold,
+                face_model_kwargs,
+                landmark_model_kwargs,
+                facepose_model_kwargs,
+                emotion_model_kwargs,
+                au_model_kwargs,
             )
+
+            frames = list(batch_data["Frame"].numpy())
 
             output = self._create_fex(
                 faces,
