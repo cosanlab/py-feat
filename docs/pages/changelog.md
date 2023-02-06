@@ -1,5 +1,16 @@
 # Change Log
 
+# 0.5.1
+
+## Notes
+
+This is a maintenance release that addresses multiple under-the-hood issues with `py-feat` failing when images or videos contain 0 faces. It addresses the following specific issues amongst others and is recommended for all users:
+
+- [#153](https://github.com/cosanlab/py-feat/issues/153)
+- [#155](https://github.com/cosanlab/py-feat/issues/155)
+- [#158](https://github.com/cosanlab/py-feat/issues/158)
+- [#160](https://github.com/cosanlab/py-feat/issues/160)
+
 # 0.5.0
 
 ## Notes

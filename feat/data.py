@@ -1974,19 +1974,21 @@ def _inverse_face_transform(faces, batch_data):
         out_face = []
         for face in frame:
             out_face.append(
-                np.append(
-                    (
-                        np.array(
-                            [
-                                face[0] - left,
-                                face[1] - top,
-                                face[2] - left,
-                                face[3] - top,
-                            ]
-                        )
-                        / scale
-                    ),
-                    face[4],
+                list(
+                    np.append(
+                        (
+                            np.array(
+                                [
+                                    face[0] - left,
+                                    face[1] - top,
+                                    face[2] - left,
+                                    face[3] - top,
+                                ]
+                            )
+                            / scale
+                        ),
+                        face[4],
+                    )
                 )
             )
         out_frame.append(out_face)

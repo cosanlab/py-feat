@@ -52,7 +52,7 @@ class FaceBoxes:
         top_k=5000,
         keep_top_k=750,
         nms_threshold=0.3,
-        vis_threshold=0.5,
+        detection_threshold=0.5,
         resize=1,
         device="auto",
     ):
@@ -82,14 +82,14 @@ class FaceBoxes:
             self.top_k,
             self.keep_top_k,
             self.nms_threshold,
-            self.vis_threshold,
+            self.detection_threshold,
             self.resize,
         ) = (
             confidence_threshold,
             top_k,
             keep_top_k,
             nms_threshold,
-            vis_threshold,
+            detection_threshold,
             resize,
         )
 
@@ -148,11 +148,11 @@ class FaceBoxes:
         # keep top-K faster NMS
         dets = dets[: self.keep_top_k, :]
 
-        # filter using vis_thres - rescale box size to be proportional to image size
+        # filter using detection_threshold - rescale box size to be proportional to image size
         scale_x, scale_y = (im_width / im_height, im_height / im_width)
         det_bboxes = []
         for b in dets:
-            if b[4] > self.vis_threshold:
+            if b[4] > self.detection_threshold:
                 xmin, ymin, xmax, ymax, score = b
                 det_bboxes.append(
                     [

@@ -85,6 +85,11 @@ def default_detector():
 
 
 @fixture(scope="module")
+def no_face_img(data_path):
+    return os.path.join(data_path, "free-mountain-vector-01.jpg")
+
+
+@fixture(scope="module")
 def single_face_img(data_path):
     return os.path.join(data_path, "single_face.jpg")
 
@@ -98,6 +103,21 @@ def single_face_img_data(single_face_img):
 @fixture(scope="module")
 def single_face_mov(data_path):
     return os.path.join(data_path, "single_face.mp4")
+
+
+@fixture(scope="module")
+def no_face_mov(data_path):
+    return os.path.join(data_path, "no_face.mp4")
+
+
+@fixture(scope="module")
+def face_noface_mov(data_path):
+    return os.path.join(data_path, "face_noface.mov")
+
+
+@fixture(scope="module")
+def noface_face_mov(data_path):
+    return os.path.join(data_path, "noface_face.mov")
 
 
 @fixture(scope="module")
