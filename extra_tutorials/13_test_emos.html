@@ -593,48 +593,48 @@ title="Print to PDF"
 The evaluative data comes from a subset of affectnet. Please see the csv file inside this tutorial folder for more details</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import sys
-import torch
-import torch.nn as nn
-import math
-from feat.utils import set_torch_device
-import torch.nn.functional as F
-from copy import deepcopy
-import numpy as np
-from skimage import draw
-import matplotlib.pyplot as plt
-from PIL import Image
-from torchvision import transforms
-from feat.utils.image_operations import extract_face_from_landmarks
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">set_torch_device</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">skimage</span> <span class="kn">import</span> <span class="n">draw</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">feat.utils.image_operations</span> <span class="kn">import</span> <span class="n">extract_face_from_landmarks</span>
 
-from PIL import Image
-from itertools import product
-import os 
-from torchvision.transforms import Compose, Normalize, Grayscale
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">import</span> <span class="nn">os</span> 
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">Compose</span><span class="p">,</span> <span class="n">Normalize</span><span class="p">,</span> <span class="n">Grayscale</span>
 
-import pandas as pd
-from tqdm import tqdm
-from feat import Detector
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-from joblib import delayed, Parallel
-from torchvision.utils import save_image
-from torchvision.io import read_image, read_video
-from torch.utils.data import Dataset
-from feat.transforms import Rescale
-import glob
-from skimage.feature import hog
-import pickle
-import joblib
-from sklearn.metrics import f1_score
-import xgboost as xgb
-import torch
-from torch.utils.data import Dataset
-from torchvision import datasets
-from torchvision.transforms import ToTensor
-import matplotlib.pyplot as plt
-from sklearn import preprocessing
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">Parallel</span>
+<span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">save_image</span>
+<span class="kn">from</span> <span class="nn">torchvision.io</span> <span class="kn">import</span> <span class="n">read_image</span><span class="p">,</span> <span class="n">read_video</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">feat.transforms</span> <span class="kn">import</span> <span class="n">Rescale</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">hog</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">joblib</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
+<span class="kn">import</span> <span class="nn">xgboost</span> <span class="k">as</span> <span class="nn">xgb</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">ToTensor</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">preprocessing</span>
 
-from tqdm import tqdm
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 </pre></div>
 </div>
 </div>
@@ -648,11 +648,11 @@ from tqdm import tqdm
 <p>You can request access to AffectNet at http://mohammadmahoor.com/affectnet/</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>data_dir = &#39;/Storage/Data/AffectNet/Manual_Annot/Manually_Annotated_Images/&#39;
-save_result_dir = &#39;/Storage/Projects/pyfeat_testing/Data_Eshin/emo_test/&#39;
-test_file_csv = pd.read_csv(&#39;/Storage/Projects/pyfeat_testing/Data_Eshin/emo_test/affectnet_testSubset.csv&#39;, index_col=0)
-inp_fnames = [data_dir + fp for fp in test_file_csv.subDirectory_filePath]
-test_file_csv[&#39;filename&#39;] = test_file_csv.subDirectory_filePath.apply(lambda x: os.path.basename(x).split(&#39;.&#39;)[0])
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Data/AffectNet/Manual_Annot/Manually_Annotated_Images/&#39;</span>
+<span class="n">save_result_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data_Eshin/emo_test/&#39;</span>
+<span class="n">test_file_csv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data_Eshin/emo_test/affectnet_testSubset.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">inp_fnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_dir</span> <span class="o">+</span> <span class="n">fp</span> <span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">test_file_csv</span><span class="o">.</span><span class="n">subDirectory_filePath</span><span class="p">]</span>
+<span class="n">test_file_csv</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_file_csv</span><span class="o">.</span><span class="n">subDirectory_filePath</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -662,7 +662,7 @@ test_file_csv[&#39;filename&#39;] = test_file_csv.subDirectory_filePath.apply(la
 <h1>1. Test ResmaskNet<a class="headerlink" href="#test-resmasknet" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&quot;mobilefacenet&quot;, au_model=&#39;xgb&#39;, device=&#39;cuda&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -677,47 +677,47 @@ test_file_csv[&#39;filename&#39;] = test_file_csv.subDirectory_filePath.apply(la
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>predicted_data = []
-bad_file = 0
-for inp_name in tqdm(inp_fnames):
-    try:
-        img_df = detector.detect_image(input_file_list=inp_name, output_size=None, batch_size=1, num_workers=1)
-        emo_df = img_df[[&#39;anger&#39;,&#39;disgust&#39;,&#39;fear&#39;,&#39;happiness&#39;,&#39;sadness&#39;,&#39;surprise&#39;,&#39;neutral&#39;]]
-        emo_df[&#39;filename&#39;] = os.path.basename(inp_name).split(&#39;.&#39;)[0]
-        predicted_data.append(emo_df)
-    except:
-        bad_file += 1
-        continue;
-predicted_data = pd.concat(predicted_data)
-predicted_data.to_csv(save_result_dir+&#39;resmasknet_bench_result.csv&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predicted_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">bad_file</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">inp_name</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">inp_fnames</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">img_df</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">input_file_list</span><span class="o">=</span><span class="n">inp_name</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">emo_df</span> <span class="o">=</span> <span class="n">img_df</span><span class="p">[[</span><span class="s1">&#39;anger&#39;</span><span class="p">,</span><span class="s1">&#39;disgust&#39;</span><span class="p">,</span><span class="s1">&#39;fear&#39;</span><span class="p">,</span><span class="s1">&#39;happiness&#39;</span><span class="p">,</span><span class="s1">&#39;sadness&#39;</span><span class="p">,</span><span class="s1">&#39;surprise&#39;</span><span class="p">,</span><span class="s1">&#39;neutral&#39;</span><span class="p">]]</span>
+        <span class="n">emo_df</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">inp_name</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">predicted_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">emo_df</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">bad_file</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">continue</span><span class="p">;</span>
+<span class="n">predicted_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">predicted_data</span><span class="p">)</span>
+<span class="n">predicted_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;resmasknet_bench_result.csv&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def test_emo_resmasknet():
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_emo_resmasknet</span><span class="p">():</span>
 
-    emo_categories = [&#39;anger&#39;, &quot;disgust&quot;, &quot;fear&quot;, &quot;happiness&quot;, &quot;sadness&quot;, &quot;surprise&quot;, &quot;neutral&quot;]
-    a1 = pd.read_csv(save_result_dir+&#39;resmasknet_bench_result.csv&#39;, index_col=0)
-    a2 = pd.merge(a1, test_file_csv, on=[&#39;filename&#39;])
+    <span class="n">emo_categories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;anger&#39;</span><span class="p">,</span> <span class="s2">&quot;disgust&quot;</span><span class="p">,</span> <span class="s2">&quot;fear&quot;</span><span class="p">,</span> <span class="s2">&quot;happiness&quot;</span><span class="p">,</span> <span class="s2">&quot;sadness&quot;</span><span class="p">,</span> <span class="s2">&quot;surprise&quot;</span><span class="p">,</span> <span class="s2">&quot;neutral&quot;</span><span class="p">]</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;resmasknet_bench_result.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">a2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">test_file_csv</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">])</span>
 
-    lb = preprocessing.LabelBinarizer()
-    emo_labels_bi = lb.fit_transform(a2.expression)
-    emo_preds = np.round(a2[emo_categories])
+    <span class="n">lb</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">LabelBinarizer</span><span class="p">()</span>
+    <span class="n">emo_labels_bi</span> <span class="o">=</span> <span class="n">lb</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">expression</span><span class="p">)</span>
+    <span class="n">emo_preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">a2</span><span class="p">[</span><span class="n">emo_categories</span><span class="p">])</span>
 
-    emo_result = []
-    for i in range(7):
-        print(&#39;========&#39;)
-        print(emo_categories[i], &#39; f1 score: &#39;, f1_score(emo_labels_bi[:, i], emo_preds.iloc[:, i]))
-        emo_result.append(f1_score(emo_labels_bi[:, i], emo_preds.iloc[:, i]))
+    <span class="n">emo_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;========&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">emo_categories</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39; f1 score: &#39;</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">emo_labels_bi</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">emo_preds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]))</span>
+        <span class="n">emo_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f1_score</span><span class="p">(</span><span class="n">emo_labels_bi</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">emo_preds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]))</span>
     
-    arrangement_df_p1 = pd.DataFrame(emo_labels_bi, columns=[&#39;anger_label&#39;, &quot;disgust_label&quot;, &quot;fear_label&quot;, &quot;happiness_label&quot;, &quot;sadness_label&quot;, &quot;surprise_label&quot;, &quot;neutral_label&quot;])
-    arrangement_df_p2 = emo_preds.rename(columns={&#39;anger&#39;:&#39;anger_pred&#39;, &quot;disgust&quot;:&#39;disgust_pred&#39;, 
-                                                &quot;fear&quot;: &#39;fear_pred&#39;, &quot;happiness&quot;:&#39;happiness_pred&#39;, &quot;sadness&quot;:&#39;sadness_pred&#39;, &quot;surprise&quot;:&#39;surprise_pred&#39;, &quot;neutral&quot;:&#39;neutral_pred&#39;})
-    arrangement_df = pd.concat((arrangement_df_p1, arrangement_df_p2), 1)
+    <span class="n">arrangement_df_p1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">emo_labels_bi</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;anger_label&#39;</span><span class="p">,</span> <span class="s2">&quot;disgust_label&quot;</span><span class="p">,</span> <span class="s2">&quot;fear_label&quot;</span><span class="p">,</span> <span class="s2">&quot;happiness_label&quot;</span><span class="p">,</span> <span class="s2">&quot;sadness_label&quot;</span><span class="p">,</span> <span class="s2">&quot;surprise_label&quot;</span><span class="p">,</span> <span class="s2">&quot;neutral_label&quot;</span><span class="p">])</span>
+    <span class="n">arrangement_df_p2</span> <span class="o">=</span> <span class="n">emo_preds</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;anger&#39;</span><span class="p">:</span><span class="s1">&#39;anger_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;disgust&quot;</span><span class="p">:</span><span class="s1">&#39;disgust_pred&#39;</span><span class="p">,</span> 
+                                                <span class="s2">&quot;fear&quot;</span><span class="p">:</span> <span class="s1">&#39;fear_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;happiness&quot;</span><span class="p">:</span><span class="s1">&#39;happiness_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;sadness&quot;</span><span class="p">:</span><span class="s1">&#39;sadness_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;surprise&quot;</span><span class="p">:</span><span class="s1">&#39;surprise_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;neutral&quot;</span><span class="p">:</span><span class="s1">&#39;neutral_pred&#39;</span><span class="p">})</span>
+    <span class="n">arrangement_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">arrangement_df_p1</span><span class="p">,</span> <span class="n">arrangement_df_p2</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
 
-    return emo_result, arrangement_df
+    <span class="k">return</span> <span class="n">emo_result</span><span class="p">,</span> <span class="n">arrangement_df</span>
 </pre></div>
 </div>
 </div>
@@ -726,7 +726,7 @@ predicted_data.to_csv(save_result_dir+&#39;resmasknet_bench_result.csv&#39;)
 <h2>Calculating metrics in F1 scores<a class="headerlink" href="#calculating-metrics-in-f1-scores" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>rmn_result, rmn_individuals = test_emo_resmasknet()
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rmn_result</span><span class="p">,</span> <span class="n">rmn_individuals</span> <span class="o">=</span> <span class="n">test_emo_resmasknet</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -736,53 +736,53 @@ predicted_data.to_csv(save_result_dir+&#39;resmasknet_bench_result.csv&#39;)
 <h2>SVM model<a class="headerlink" href="#svm-model" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;svm&#39;, landmark_model=&quot;mobilefacenet&quot;, au_model=&#39;xgb&#39;, device=&#39;cuda&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>predicted_data = []
-for inp_name in tqdm(inp_fnames):
-    try:
-        eye_df = detector.detect_image(input_file_list=inp_name, output_size=None, batch_size=1, num_workers=1)
-        eye_new_df = eye_df[[&#39;anger&#39;,&#39;disgust&#39;,&#39;fear&#39;,&#39;happiness&#39;,&#39;sadness&#39;,&#39;surprise&#39;,&#39;neutral&#39;]]
-        eye_new_df[&#39;filename&#39;] = os.path.basename(inp_name).split(&#39;.&#39;)[0]
-        predicted_data.append(eye_new_df)
-    except:
-        continue;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predicted_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">inp_name</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">inp_fnames</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">eye_df</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_image</span><span class="p">(</span><span class="n">input_file_list</span><span class="o">=</span><span class="n">inp_name</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">eye_new_df</span> <span class="o">=</span> <span class="n">eye_df</span><span class="p">[[</span><span class="s1">&#39;anger&#39;</span><span class="p">,</span><span class="s1">&#39;disgust&#39;</span><span class="p">,</span><span class="s1">&#39;fear&#39;</span><span class="p">,</span><span class="s1">&#39;happiness&#39;</span><span class="p">,</span><span class="s1">&#39;sadness&#39;</span><span class="p">,</span><span class="s1">&#39;surprise&#39;</span><span class="p">,</span><span class="s1">&#39;neutral&#39;</span><span class="p">]]</span>
+        <span class="n">eye_new_df</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">inp_name</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">predicted_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eye_new_df</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">continue</span><span class="p">;</span>
         
-predicted_data = pd.concat(predicted_data)
-predicted_data.to_csv(save_result_dir+&#39;svm_bench_result.csv&#39;)
+<span class="n">predicted_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">predicted_data</span><span class="p">)</span>
+<span class="n">predicted_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;svm_bench_result.csv&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def test_svm_resmasknet():
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_svm_resmasknet</span><span class="p">():</span>
 
-    a1 = pd.read_csv(save_result_dir+&#39;svm_bench_result.csv&#39;, index_col=0)
-    a2 = pd.merge(a1, test_file_csv, on=[&#39;filename&#39;])
+    <span class="n">a1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;svm_bench_result.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">a2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">test_file_csv</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">])</span>
 
-    emo_categories = [&#39;anger&#39;, &quot;disgust&quot;, &quot;fear&quot;, &quot;happiness&quot;, &quot;sadness&quot;, &quot;surprise&quot;, &quot;neutral&quot;]
-    lb = preprocessing.LabelBinarizer()
-    emo_labels_bi = lb.fit_transform(a2.expression)
-    emo_preds = np.round(a2[emo_categories])
+    <span class="n">emo_categories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;anger&#39;</span><span class="p">,</span> <span class="s2">&quot;disgust&quot;</span><span class="p">,</span> <span class="s2">&quot;fear&quot;</span><span class="p">,</span> <span class="s2">&quot;happiness&quot;</span><span class="p">,</span> <span class="s2">&quot;sadness&quot;</span><span class="p">,</span> <span class="s2">&quot;surprise&quot;</span><span class="p">,</span> <span class="s2">&quot;neutral&quot;</span><span class="p">]</span>
+    <span class="n">lb</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">LabelBinarizer</span><span class="p">()</span>
+    <span class="n">emo_labels_bi</span> <span class="o">=</span> <span class="n">lb</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">expression</span><span class="p">)</span>
+    <span class="n">emo_preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">a2</span><span class="p">[</span><span class="n">emo_categories</span><span class="p">])</span>
 
-    emo_result = []
-    for i in range(7):
-        print(&#39;========&#39;)
-        print(emo_categories[i], &#39; f1 score: &#39;, f1_score(emo_labels_bi[:, i], emo_preds.iloc[:, i]))
-        emo_result.append(f1_score(emo_labels_bi[:, i], emo_preds.iloc[:, i]))
+    <span class="n">emo_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;========&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">emo_categories</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39; f1 score: &#39;</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">emo_labels_bi</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">emo_preds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]))</span>
+        <span class="n">emo_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f1_score</span><span class="p">(</span><span class="n">emo_labels_bi</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">emo_preds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]))</span>
     
-    arrangement_df_p1 = pd.DataFrame(emo_labels_bi, columns=[&#39;anger_label&#39;, &quot;disgust_label&quot;, &quot;fear_label&quot;, &quot;happiness_label&quot;, &quot;sadness_label&quot;, &quot;surprise_label&quot;, &quot;neutral_label&quot;])
-    arrangement_df_p2 = emo_preds.rename(columns={&#39;anger&#39;:&#39;anger_pred&#39;, &quot;disgust&quot;:&#39;disgust_pred&#39;, 
-                                                &quot;fear&quot;: &#39;fear_pred&#39;, &quot;happiness&quot;:&#39;happiness_pred&#39;, &quot;sadness&quot;:&#39;sadness_pred&#39;, &quot;surprise&quot;:&#39;surprise_pred&#39;, &quot;neutral&quot;:&#39;neutral_pred&#39;})
-    arrangement_df = pd.concat((arrangement_df_p1, arrangement_df_p2), 1)
+    <span class="n">arrangement_df_p1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">emo_labels_bi</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;anger_label&#39;</span><span class="p">,</span> <span class="s2">&quot;disgust_label&quot;</span><span class="p">,</span> <span class="s2">&quot;fear_label&quot;</span><span class="p">,</span> <span class="s2">&quot;happiness_label&quot;</span><span class="p">,</span> <span class="s2">&quot;sadness_label&quot;</span><span class="p">,</span> <span class="s2">&quot;surprise_label&quot;</span><span class="p">,</span> <span class="s2">&quot;neutral_label&quot;</span><span class="p">])</span>
+    <span class="n">arrangement_df_p2</span> <span class="o">=</span> <span class="n">emo_preds</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;anger&#39;</span><span class="p">:</span><span class="s1">&#39;anger_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;disgust&quot;</span><span class="p">:</span><span class="s1">&#39;disgust_pred&#39;</span><span class="p">,</span> 
+                                                <span class="s2">&quot;fear&quot;</span><span class="p">:</span> <span class="s1">&#39;fear_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;happiness&quot;</span><span class="p">:</span><span class="s1">&#39;happiness_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;sadness&quot;</span><span class="p">:</span><span class="s1">&#39;sadness_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;surprise&quot;</span><span class="p">:</span><span class="s1">&#39;surprise_pred&#39;</span><span class="p">,</span> <span class="s2">&quot;neutral&quot;</span><span class="p">:</span><span class="s1">&#39;neutral_pred&#39;</span><span class="p">})</span>
+    <span class="n">arrangement_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">arrangement_df_p1</span><span class="p">,</span> <span class="n">arrangement_df_p2</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
 
-    return emo_result, arrangement_df
+    <span class="k">return</span> <span class="n">emo_result</span><span class="p">,</span> <span class="n">arrangement_df</span>
 </pre></div>
 </div>
 </div>
@@ -791,7 +791,7 @@ predicted_data.to_csv(save_result_dir+&#39;svm_bench_result.csv&#39;)
 <h3>Calculating metrics in F1 scores<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>svm_result, svm_individuals = test_svm_resmasknet()
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">svm_result</span><span class="p">,</span> <span class="n">svm_individuals</span> <span class="o">=</span> <span class="n">test_svm_resmasknet</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>

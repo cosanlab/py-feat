@@ -574,25 +574,25 @@ title="Print to PDF"
 <p>In the tutorial we will demonstrate how to evaluate pyfeat landmark detection algorithms with evaluation data</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import glob
-from PIL import Image, ImageDraw
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy.io as sio
-import string
-from tqdm import tqdm
-import pandas as pd
-from feat import Detector
-import pickle
-import os 
-from feat.data import (
-    Fex,
-    ImageDataset,
-    VideoDataset,
-    _inverse_face_transform,
-    _inverse_landmark_transform,
-)
-from torch.utils.data import DataLoader
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">scipy.io</span> <span class="k">as</span> <span class="nn">sio</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">os</span> 
+<span class="kn">from</span> <span class="nn">feat.data</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Fex</span><span class="p">,</span>
+    <span class="n">ImageDataset</span><span class="p">,</span>
+    <span class="n">VideoDataset</span><span class="p">,</span>
+    <span class="n">_inverse_face_transform</span><span class="p">,</span>
+    <span class="n">_inverse_landmark_transform</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 </pre></div>
 </div>
 </div>
@@ -600,70 +600,70 @@ from torch.utils.data import DataLoader
 <p>We provide the following code for evaluating the normalized mean squared error for landmark detection algorithms. These codes have been slightly modified from: https://github.com/D-X-Y/landmark-detection</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def get_kpts(file_path, num_kpts = 68):
-    &quot;&quot;&quot;
-    Function to read the ground truth landmark labels in 300W
-    &quot;&quot;&quot;
-    kpts = []
-    f = open(file_path, &#39;r&#39;)
-    ln = f.readline()
-    while not ln.startswith(&#39;n_points&#39;):
-        ln = f.readline()
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_kpts</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">num_kpts</span> <span class="o">=</span> <span class="mi">68</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to read the ground truth landmark labels in 300W</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kpts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">ln</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">ln</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;n_points&#39;</span><span class="p">):</span>
+        <span class="n">ln</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
 
-    num_pts = ln.split(&#39;:&#39;)[1]
-    num_pts = num_pts.strip(&#39;\n&#39;).strip(&#39; &#39;)
-    # checking for the number of keypoints
-    if float(num_pts) != num_kpts:
-        print (&quot;encountered file with less than keypoints&quot;)
-        return None
+    <span class="n">num_pts</span> <span class="o">=</span> <span class="n">ln</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">num_pts</span> <span class="o">=</span> <span class="n">num_pts</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+    <span class="c1"># checking for the number of keypoints</span>
+    <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">num_pts</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_kpts</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;encountered file with less than keypoints&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
-    # skipping the line with &#39;{&#39;
-    ln = f.readline()
+    <span class="c1"># skipping the line with &#39;{&#39;</span>
+    <span class="n">ln</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
 
-    ln = f.readline()
-    while not ln.startswith(&#39;}&#39;):
-        vals = ln.split(&#39; &#39;)[:2]
-        vals = [v.strip(&#39;\n&#39;) for v in vals]
-        vals = [np.float32(v) for v in vals]
-        kpts.append(vals)
-        ln = f.readline()
-    return kpts
+    <span class="n">ln</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">ln</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">):</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">ln</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span>
+        <span class="n">kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+        <span class="n">ln</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">kpts</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def calculate_rmse(result_dir, data_dir):
-    &quot;&quot;&quot;
-    Function to calculate MSE between predicted and groundtruth land labels
-    &quot;&quot;&quot;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">calculate_rmse</span><span class="p">(</span><span class="n">result_dir</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to calculate MSE between predicted and groundtruth land labels</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     
-    with open(result_dir, &#39;rb&#39;) as fp:
-        lands, all_img_dir = pickle.load(fp)    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">result_dir</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">lands</span><span class="p">,</span> <span class="n">all_img_dir</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>    
 
-    paths_errors = []
-    for i, land_paths in enumerate(all_img_dir):
-        land = lands[i]
-        condition = os.path.basename(land_paths).split(&#39;_&#39;)[0]
-        if condition == &#39;indoor&#39;:
-            kpts = get_kpts(data_dir+&#39;01_Indoor/&#39;+os.path.basename(land_paths).replace(&#39;png&#39;,&#39;pts&#39;))
-            GT_points = np.asarray(kpts)
-        elif condition == &#39;outdoor&#39;:
-            kpts = get_kpts(data_dir+&#39;02_Outdoor/&#39;+os.path.basename(land_paths).replace(&#39;png&#39;,&#39;pts&#39;))
-            GT_points = np.asarray(kpts)
-        else:
-            raise ValueError(&#39;weird happened&#39;)
+    <span class="n">paths_errors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">land_paths</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_img_dir</span><span class="p">):</span>
+        <span class="n">land</span> <span class="o">=</span> <span class="n">lands</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">land_paths</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">condition</span> <span class="o">==</span> <span class="s1">&#39;indoor&#39;</span><span class="p">:</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">get_kpts</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="s1">&#39;01_Indoor/&#39;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">land_paths</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;png&#39;</span><span class="p">,</span><span class="s1">&#39;pts&#39;</span><span class="p">))</span>
+            <span class="n">GT_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">condition</span> <span class="o">==</span> <span class="s1">&#39;outdoor&#39;</span><span class="p">:</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">get_kpts</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="s1">&#39;02_Outdoor/&#39;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">land_paths</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;png&#39;</span><span class="p">,</span><span class="s1">&#39;pts&#39;</span><span class="p">))</span>
+            <span class="n">GT_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;weird happened&#39;</span><span class="p">)</span>
         
-        interocular_distance = np.linalg.norm(GT_points[36,:]-GT_points[45,:], ord=2)
-        ans_diff = []
-        for llnd in land[0]:
-            summ = np.linalg.norm(GT_points - llnd, ord=2, axis=0)
-            ans_diff.append(summ/(68*interocular_distance)) # normalize with interocular distance
-            # ans_diff.append(np.sqrt(np.mean(np.square(GT_points - llnd))))
-        paths_errors.append(np.min(ans_diff)*10)
+        <span class="n">interocular_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">GT_points</span><span class="p">[</span><span class="mi">36</span><span class="p">,:]</span><span class="o">-</span><span class="n">GT_points</span><span class="p">[</span><span class="mi">45</span><span class="p">,:],</span> <span class="nb">ord</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">ans_diff</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">llnd</span> <span class="ow">in</span> <span class="n">land</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">summ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">GT_points</span> <span class="o">-</span> <span class="n">llnd</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">ans_diff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">summ</span><span class="o">/</span><span class="p">(</span><span class="mi">68</span><span class="o">*</span><span class="n">interocular_distance</span><span class="p">))</span> <span class="c1"># normalize with interocular distance</span>
+            <span class="c1"># ans_diff.append(np.sqrt(np.mean(np.square(GT_points - llnd))))</span>
+        <span class="n">paths_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ans_diff</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
 
-    return np.mean(paths_errors)*100
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">paths_errors</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span>
 </pre></div>
 </div>
 </div>
@@ -675,9 +675,9 @@ from torch.utils.data import DataLoader
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>data_dir = &#39;/Storage/Data/300W/&#39;
-save_result_dir = &#39;/Storage/Projects/pyfeat_testing/Data_Eshin/land_test/&#39;
-all_img_dir = glob.glob(data_dir + &#39;01_Indoor/*.png&#39;) + glob.glob(data_dir + &#39;02_Outdoor/*.png&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Data/300W/&#39;</span>
+<span class="n">save_result_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data_Eshin/land_test/&#39;</span>
+<span class="n">all_img_dir</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;01_Indoor/*.png&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;02_Outdoor/*.png&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -687,44 +687,44 @@ all_img_dir = glob.glob(data_dir + &#39;01_Indoor/*.png&#39;) + glob.glob(data_d
 <h1>Test of MobileNet<a class="headerlink" href="#test-of-mobilenet" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%%capture 
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%capture</span> 
 
-chosen_model = &#39;mobilenet&#39;
-detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=chosen_model, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
+<span class="n">chosen_model</span> <span class="o">=</span> <span class="s1">&#39;mobilenet&#39;</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="n">chosen_model</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
 
-counter = 0
-lands = []
-for fp in tqdm(all_img_dir):
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">lands</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_img_dir</span><span class="p">):</span>
 
-    data_loader = DataLoader(
-        ImageDataset(
-            fp,
-            output_size=None,
-            preserve_aspect_ratio=True,
-            padding=True,
-        ),
-        num_workers=1,
-        batch_size=1,
-        pin_memory=False,
-        shuffle=False,
-    )
+    <span class="n">data_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">ImageDataset</span><span class="p">(</span>
+            <span class="n">fp</span><span class="p">,</span>
+            <span class="n">output_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">preserve_aspect_ratio</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    batch_output = []
-    for batch_id, batch_data in enumerate(tqdm(data_loader)):
-        faces = detector.detect_faces(batch_data[&quot;Image&quot;])
-        landmarks = detector.detect_landmarks(batch_data[&quot;Image&quot;], detected_faces=faces)
-    lands.append(landmarks)
+    <span class="n">batch_output</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">batch_id</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)):</span>
+        <span class="n">faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">])</span>
+        <span class="n">landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span> <span class="n">detected_faces</span><span class="o">=</span><span class="n">faces</span><span class="p">)</span>
+    <span class="n">lands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">landmarks</span><span class="p">)</span>
 
-# Save Result
-with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((lands, all_img_dir), fp)    
+<span class="c1"># Save Result</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">chosen_model</span><span class="si">}</span><span class="s1">_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">lands</span><span class="p">,</span> <span class="n">all_img_dir</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>    
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>mobilenet_normal = calculate_rmse(result_dir=save_result_dir+&#39;mobilenet_bench_results.pkl&#39;, data_dir=data_dir)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mobilenet_normal</span> <span class="o">=</span> <span class="n">calculate_rmse</span><span class="p">(</span><span class="n">result_dir</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;mobilenet_bench_results.pkl&#39;</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -732,7 +732,7 @@ with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#
 <p>Normalized mean squared error for the algorithm is</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(mobilenet_normal)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">mobilenet_normal</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -747,44 +747,44 @@ with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#
 <h1>Test of MobileFaceNet<a class="headerlink" href="#test-of-mobilefacenet" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%%capture 
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%capture</span> 
 
-chosen_model = &#39;mobilefacenet&#39;
-detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=chosen_model, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
+<span class="n">chosen_model</span> <span class="o">=</span> <span class="s1">&#39;mobilefacenet&#39;</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="n">chosen_model</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
 
-counter = 0
-lands = []
-for fp in tqdm(all_img_dir):
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">lands</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_img_dir</span><span class="p">):</span>
 
-    data_loader = DataLoader(
-        ImageDataset(
-            fp,
-            output_size=None,
-            preserve_aspect_ratio=True,
-            padding=True,
-        ),
-        num_workers=1,
-        batch_size=1,
-        pin_memory=False,
-        shuffle=False,
-    )
+    <span class="n">data_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">ImageDataset</span><span class="p">(</span>
+            <span class="n">fp</span><span class="p">,</span>
+            <span class="n">output_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">preserve_aspect_ratio</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    batch_output = []
-    for batch_id, batch_data in enumerate(tqdm(data_loader)):
-        faces = detector.detect_faces(batch_data[&quot;Image&quot;])
-        landmarks = detector.detect_landmarks(batch_data[&quot;Image&quot;], detected_faces=faces)
-    lands.append(landmarks)
+    <span class="n">batch_output</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">batch_id</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)):</span>
+        <span class="n">faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">])</span>
+        <span class="n">landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span> <span class="n">detected_faces</span><span class="o">=</span><span class="n">faces</span><span class="p">)</span>
+    <span class="n">lands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">landmarks</span><span class="p">)</span>
 
-# Save Result
-with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((lands, all_img_dir), fp)    
+<span class="c1"># Save Result</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">chosen_model</span><span class="si">}</span><span class="s1">_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">lands</span><span class="p">,</span> <span class="n">all_img_dir</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>    
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>mobilefacenet_normal = calculate_rmse(result_dir=save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, data_dir=data_dir)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mobilefacenet_normal</span> <span class="o">=</span> <span class="n">calculate_rmse</span><span class="p">(</span><span class="n">result_dir</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">chosen_model</span><span class="si">}</span><span class="s1">_bench_results.pkl&#39;</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -792,7 +792,7 @@ with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#
 <p>Normalized mean squared error for the algorithm is</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(mobilefacenet_normal)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">mobilefacenet_normal</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -807,44 +807,44 @@ with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#
 <h1>Test of PFLD<a class="headerlink" href="#test-of-pfld" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%%capture 
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%capture</span> 
 
-chosen_model = &#39;pfld&#39;
-detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=chosen_model, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
+<span class="n">chosen_model</span> <span class="o">=</span> <span class="s1">&#39;pfld&#39;</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="n">chosen_model</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
 
-counter = 0
-lands = []
-for fp in tqdm(all_img_dir):
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">lands</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_img_dir</span><span class="p">):</span>
 
-    data_loader = DataLoader(
-        ImageDataset(
-            fp,
-            output_size=None,
-            preserve_aspect_ratio=True,
-            padding=True,
-        ),
-        num_workers=1,
-        batch_size=1,
-        pin_memory=False,
-        shuffle=False,
-    )
+    <span class="n">data_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">ImageDataset</span><span class="p">(</span>
+            <span class="n">fp</span><span class="p">,</span>
+            <span class="n">output_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">preserve_aspect_ratio</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    batch_output = []
-    for batch_id, batch_data in enumerate(tqdm(data_loader)):
-        faces = detector.detect_faces(batch_data[&quot;Image&quot;])
-        landmarks = detector.detect_landmarks(batch_data[&quot;Image&quot;], detected_faces=faces)
-    lands.append(landmarks)
+    <span class="n">batch_output</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">batch_id</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)):</span>
+        <span class="n">faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">])</span>
+        <span class="n">landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span> <span class="n">detected_faces</span><span class="o">=</span><span class="n">faces</span><span class="p">)</span>
+    <span class="n">lands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">landmarks</span><span class="p">)</span>
 
-# Save Result
-with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((lands, all_img_dir), fp)    
+<span class="c1"># Save Result</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">chosen_model</span><span class="si">}</span><span class="s1">_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">lands</span><span class="p">,</span> <span class="n">all_img_dir</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>    
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>pfld_normal = calculate_rmse(result_dir=save_result_dir+&#39;pfld_bench_results.pkl&#39;, data_dir=data_dir)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pfld_normal</span> <span class="o">=</span> <span class="n">calculate_rmse</span><span class="p">(</span><span class="n">result_dir</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;pfld_bench_results.pkl&#39;</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -852,7 +852,7 @@ with open(save_result_dir+f&#39;{chosen_model}_bench_results.pkl&#39;, &#39;wb&#
 <p>Normalized mean squared error for the algorithm is</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(pfld_normal)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">pfld_normal</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

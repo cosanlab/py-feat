@@ -592,23 +592,23 @@ title="Print to PDF"
 <p>In the tutorial we will demonstrate how to evaluate pyfeat AU algorithms with evaluation data</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import sys
-from copy import deepcopy
-import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
-from torchvision import transforms
-from feat.utils.image_operations import extract_face_from_landmarks
-from PIL import Image
-import os 
-import pandas as pd
-from tqdm import tqdm
-from feat import Detector
-import glob
-from skimage.feature import hog
-import pickle
-from feat.data import imageLoader_DISFAPlus
-from sklearn.metrics import f1_score
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">feat.utils.image_operations</span> <span class="kn">import</span> <span class="n">extract_face_from_landmarks</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">os</span> 
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">hog</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">feat.data</span> <span class="kn">import</span> <span class="n">imageLoader_DISFAPlus</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
 </pre></div>
 </div>
 </div>
@@ -621,9 +621,9 @@ from sklearn.metrics import f1_score
 <p>You can request it from http://mohammadmahoor.com/disfa/</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>save_result_dir = &#39;/Storage/Projects/pyfeat_testing/Data_Eshin/au_test/&#39;
-data_dir = &quot;/Storage/Data/DISFAPlusDataset/&quot;
-disfa_file_data = imageLoader_DISFAPlus(data_dir=data_dir) # We provide a special dataloader for disfaPlus
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">save_result_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data_Eshin/au_test/&#39;</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;/Storage/Data/DISFAPlusDataset/&quot;</span>
+<span class="n">disfa_file_data</span> <span class="o">=</span> <span class="n">imageLoader_DISFAPlus</span><span class="p">(</span><span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span> <span class="c1"># We provide a special dataloader for disfaPlus</span>
 </pre></div>
 </div>
 </div>
@@ -633,8 +633,8 @@ disfa_file_data = imageLoader_DISFAPlus(data_dir=data_dir) # We provide a specia
 <h1>1. Test XGB model<a class="headerlink" href="#test-xgb-model" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define the function just to extract landmarks from images
-detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&quot;mobilefacenet&quot;, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the function just to extract landmarks from images</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -649,16 +649,16 @@ detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmaskne
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>aus_classified = []
-for i, imgs in enumerate(tqdm(disfa_file_data)):
-    faces = detector.detect_faces(imgs[&#39;Image&#39;])
-    landmarks = detector.detect_landmarks(imgs[&#39;Image&#39;], detected_faces=faces)
-    poses = detector.detect_facepose(imgs[&#39;Image&#39;])
-    aus = detector.detect_aus(imgs[&#39;Image&#39;], landmarks)
-    aus_classified.append(aus)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aus_classified</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">imgs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">disfa_file_data</span><span class="p">)):</span>
+    <span class="n">faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">])</span>
+    <span class="n">landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">],</span> <span class="n">detected_faces</span><span class="o">=</span><span class="n">faces</span><span class="p">)</span>
+    <span class="n">poses</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_facepose</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">])</span>
+    <span class="n">aus</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_aus</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">],</span> <span class="n">landmarks</span><span class="p">)</span>
+    <span class="n">aus_classified</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aus</span><span class="p">)</span>
 
-with open(save_result_dir+&#39;xgb_au_predictions.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump(aus_classified, fp)
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;xgb_au_predictions.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">aus_classified</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -667,29 +667,29 @@ with open(save_result_dir+&#39;xgb_au_predictions.pkl&#39;, &#39;wb&#39;) as fp:
 <h2>Calculate F1 score Metrics<a class="headerlink" href="#calculate-f1-score-metrics" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>with open(save_result_dir+&#39;xgb_au_predictions.pkl&#39;, &#39;rb&#39;) as fp:
-    aus_classified = pickle.load(fp)
-predictions = np.squeeze(np.stack(aus_classified[0]))
-labels = aus_classified[1]
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;xgb_au_predictions.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">aus_classified</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">aus_classified</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">aus_classified</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>predicted_aus = [&quot;AU1&quot;,&quot;AU2&quot;,&quot;AU4&quot;,&quot;AU5&quot;,&quot;AU6&quot;,&quot;AU7&quot;,&quot;AU9&quot;,&quot;AU10&quot;,&quot;AU11&quot;,&quot;AU12&quot;,&quot;AU14&quot;,&quot;AU15&quot;,
-                    &quot;AU17&quot;,&quot;AU20&quot;,&quot;AU23&quot;,&quot;AU24&quot;,&quot;AU25&quot;,&quot;AU26&quot;,&quot;AU28&quot;, &quot;AU43&quot;]
-testing_aus = [&#39;AU1&#39;, &#39;AU2&#39;, &#39;AU4&#39;, &#39;AU5&#39;, &#39;AU6&#39;, &#39;AU9&#39;, &#39;AU12&#39;, &#39;AU15&#39;, &#39;AU17&#39;, &#39;AU20&#39;, &#39;AU25&#39;, &#39;AU26&#39;]
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predicted_aus</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AU1&quot;</span><span class="p">,</span><span class="s2">&quot;AU2&quot;</span><span class="p">,</span><span class="s2">&quot;AU4&quot;</span><span class="p">,</span><span class="s2">&quot;AU5&quot;</span><span class="p">,</span><span class="s2">&quot;AU6&quot;</span><span class="p">,</span><span class="s2">&quot;AU7&quot;</span><span class="p">,</span><span class="s2">&quot;AU9&quot;</span><span class="p">,</span><span class="s2">&quot;AU10&quot;</span><span class="p">,</span><span class="s2">&quot;AU11&quot;</span><span class="p">,</span><span class="s2">&quot;AU12&quot;</span><span class="p">,</span><span class="s2">&quot;AU14&quot;</span><span class="p">,</span><span class="s2">&quot;AU15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;AU17&quot;</span><span class="p">,</span><span class="s2">&quot;AU20&quot;</span><span class="p">,</span><span class="s2">&quot;AU23&quot;</span><span class="p">,</span><span class="s2">&quot;AU24&quot;</span><span class="p">,</span><span class="s2">&quot;AU25&quot;</span><span class="p">,</span><span class="s2">&quot;AU26&quot;</span><span class="p">,</span><span class="s2">&quot;AU28&quot;</span><span class="p">,</span> <span class="s2">&quot;AU43&quot;</span><span class="p">]</span>
+<span class="n">testing_aus</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AU1&#39;</span><span class="p">,</span> <span class="s1">&#39;AU2&#39;</span><span class="p">,</span> <span class="s1">&#39;AU4&#39;</span><span class="p">,</span> <span class="s1">&#39;AU5&#39;</span><span class="p">,</span> <span class="s1">&#39;AU6&#39;</span><span class="p">,</span> <span class="s1">&#39;AU9&#39;</span><span class="p">,</span> <span class="s1">&#39;AU12&#39;</span><span class="p">,</span> <span class="s1">&#39;AU15&#39;</span><span class="p">,</span> <span class="s1">&#39;AU17&#39;</span><span class="p">,</span> <span class="s1">&#39;AU20&#39;</span><span class="p">,</span> <span class="s1">&#39;AU25&#39;</span><span class="p">,</span> <span class="s1">&#39;AU26&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>for i, auname in enumerate(testing_aus):
-    print(&#39;======&#39;)
-    index_arr = predicted_aus.index(auname)
-    print(auname, &#39;,  f1 score: &#39;, f1_score((labels[auname]&gt;=2).astype(int), (predictions[:, index_arr]&gt;=0.5).astype(int)))
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">auname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">testing_aus</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;======&#39;</span><span class="p">)</span>
+    <span class="n">index_arr</span> <span class="o">=</span> <span class="n">predicted_aus</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">auname</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">auname</span><span class="p">,</span> <span class="s1">&#39;,  f1 score: &#39;</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">((</span><span class="n">labels</span><span class="p">[</span><span class="n">auname</span><span class="p">]</span><span class="o">&gt;=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="p">(</span><span class="n">predictions</span><span class="p">[:,</span> <span class="n">index_arr</span><span class="p">]</span><span class="o">&gt;=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
@@ -700,23 +700,23 @@ testing_aus = [&#39;AU1&#39;, &#39;AU2&#39;, &#39;AU4&#39;, &#39;AU5&#39;, &#39;
 <h1>2. Test SVM model<a class="headerlink" href="#test-svm-model" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&quot;mobilefacenet&quot;, au_model=&#39;svm&#39;, device=&#39;cpu&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>aus_classified = []
-for i, imgs in enumerate(tqdm(disfa_file_data)):
-    faces = detector.detect_faces(imgs[&#39;Image&#39;])
-    landmarks = detector.detect_landmarks(imgs[&#39;Image&#39;], detected_faces=faces)
-    poses = detector.detect_facepose(imgs[&#39;Image&#39;])
-    aus = detector.detect_aus(imgs[&#39;Image&#39;], landmarks)
-    aus_classified.append(aus)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aus_classified</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">imgs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">disfa_file_data</span><span class="p">)):</span>
+    <span class="n">faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">])</span>
+    <span class="n">landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">],</span> <span class="n">detected_faces</span><span class="o">=</span><span class="n">faces</span><span class="p">)</span>
+    <span class="n">poses</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_facepose</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">])</span>
+    <span class="n">aus</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_aus</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">],</span> <span class="n">landmarks</span><span class="p">)</span>
+    <span class="n">aus_classified</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aus</span><span class="p">)</span>
 
-with open(save_result_dir+&#39;svm_au_predictions.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump(aus_classified, fp)
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;svm_au_predictions.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">aus_classified</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -725,29 +725,29 @@ with open(save_result_dir+&#39;svm_au_predictions.pkl&#39;, &#39;wb&#39;) as fp:
 <h2>Calculate F1 score Metrics<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>with open(save_result_dir+&#39;svm_au_predictions.pkl&#39;, &#39;rb&#39;) as fp:
-    aus_classified = pickle.load(fp)
-predictions = np.squeeze(np.stack(aus_classified[0]))
-labels = aus_classified[1]
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;svm_au_predictions.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">aus_classified</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">aus_classified</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">aus_classified</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>predicted_aus = [&quot;AU1&quot;,&quot;AU2&quot;,&quot;AU4&quot;,&quot;AU5&quot;,&quot;AU6&quot;,&quot;AU7&quot;,&quot;AU9&quot;,&quot;AU10&quot;,&quot;AU11&quot;,&quot;AU12&quot;,&quot;AU14&quot;,&quot;AU15&quot;,
-                    &quot;AU17&quot;,&quot;AU20&quot;,&quot;AU23&quot;,&quot;AU24&quot;,&quot;AU25&quot;,&quot;AU26&quot;,&quot;AU28&quot;, &quot;AU43&quot;]
-testing_aus = [&#39;AU1&#39;, &#39;AU2&#39;, &#39;AU4&#39;, &#39;AU5&#39;, &#39;AU6&#39;, &#39;AU9&#39;, &#39;AU12&#39;, &#39;AU15&#39;, &#39;AU17&#39;, &#39;AU20&#39;, &#39;AU25&#39;, &#39;AU26&#39;]
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predicted_aus</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AU1&quot;</span><span class="p">,</span><span class="s2">&quot;AU2&quot;</span><span class="p">,</span><span class="s2">&quot;AU4&quot;</span><span class="p">,</span><span class="s2">&quot;AU5&quot;</span><span class="p">,</span><span class="s2">&quot;AU6&quot;</span><span class="p">,</span><span class="s2">&quot;AU7&quot;</span><span class="p">,</span><span class="s2">&quot;AU9&quot;</span><span class="p">,</span><span class="s2">&quot;AU10&quot;</span><span class="p">,</span><span class="s2">&quot;AU11&quot;</span><span class="p">,</span><span class="s2">&quot;AU12&quot;</span><span class="p">,</span><span class="s2">&quot;AU14&quot;</span><span class="p">,</span><span class="s2">&quot;AU15&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;AU17&quot;</span><span class="p">,</span><span class="s2">&quot;AU20&quot;</span><span class="p">,</span><span class="s2">&quot;AU23&quot;</span><span class="p">,</span><span class="s2">&quot;AU24&quot;</span><span class="p">,</span><span class="s2">&quot;AU25&quot;</span><span class="p">,</span><span class="s2">&quot;AU26&quot;</span><span class="p">,</span><span class="s2">&quot;AU28&quot;</span><span class="p">,</span> <span class="s2">&quot;AU43&quot;</span><span class="p">]</span>
+<span class="n">testing_aus</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AU1&#39;</span><span class="p">,</span> <span class="s1">&#39;AU2&#39;</span><span class="p">,</span> <span class="s1">&#39;AU4&#39;</span><span class="p">,</span> <span class="s1">&#39;AU5&#39;</span><span class="p">,</span> <span class="s1">&#39;AU6&#39;</span><span class="p">,</span> <span class="s1">&#39;AU9&#39;</span><span class="p">,</span> <span class="s1">&#39;AU12&#39;</span><span class="p">,</span> <span class="s1">&#39;AU15&#39;</span><span class="p">,</span> <span class="s1">&#39;AU17&#39;</span><span class="p">,</span> <span class="s1">&#39;AU20&#39;</span><span class="p">,</span> <span class="s1">&#39;AU25&#39;</span><span class="p">,</span> <span class="s1">&#39;AU26&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>for i, auname in enumerate(testing_aus):
-    print(&#39;======&#39;)
-    index_arr = predicted_aus.index(auname)
-    print(auname, &#39; f1 score: &#39;, f1_score((labels[auname]&gt;=2).astype(int), (predictions[:, index_arr]&gt;=0.5).astype(int)))
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">auname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">testing_aus</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;======&#39;</span><span class="p">)</span>
+    <span class="n">index_arr</span> <span class="o">=</span> <span class="n">predicted_aus</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">auname</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">auname</span><span class="p">,</span> <span class="s1">&#39; f1 score: &#39;</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">((</span><span class="n">labels</span><span class="p">[</span><span class="n">auname</span><span class="p">]</span><span class="o">&gt;=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="p">(</span><span class="n">predictions</span><span class="p">[:,</span> <span class="n">index_arr</span><span class="p">]</span><span class="o">&gt;=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>

@@ -624,8 +624,8 @@ title="Print to PDF"
 <p>For more details on how this visualization model was trained and how to train your own see <a class="reference external" href="https://py-feat.org/extra_tutorials/trainAUvisModel.html">this advanced tutorial</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Uncomment the line below and run this only if you&#39;re using Google Collab
-# !pip install -q py-feat
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
+<span class="c1"># !pip install -q py-feat</span>
 </pre></div>
 </div>
 </div>
@@ -635,15 +635,15 @@ title="Print to PDF"
 <p>To plot a neutral facial expression just pass in an array of 0s to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> which always returns a matplotlib axis handle:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.plotting import plot_face
-import numpy as np
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">plot_face</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-# 20 dimensional vector of AU intensities
-# AUs ordered as:
-# 1, 2, 4, 5, 6, 7, 9, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43
-neutral = np.zeros(20)
+<span class="c1"># 20 dimensional vector of AU intensities</span>
+<span class="c1"># AUs ordered as:</span>
+<span class="c1"># 1, 2, 4, 5, 6, 7, 9, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43</span>
+<span class="n">neutral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
 
-ax = plot_face(au=neutral, title=&#39;Neutral&#39;)
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Neutral&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -658,11 +658,11 @@ ax = plot_face(au=neutral, title=&#39;Neutral&#39;)
 <p>In general based on how our visualization model works, we don’t recommend AU intensities greater than 3 as more exaggerated intensities can produce distorted facial expressions</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>raised_inner_brow = np.zeros(20)
-# Increase AU1 intensity: Inner brow raiser
-raised_inner_brow[0] = 3
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">raised_inner_brow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="c1"># Increase AU1 intensity: Inner brow raiser</span>
+<span class="n">raised_inner_brow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
 
-_ = plot_face(au=raised_inner_brow, title=&quot;Raised inner brow&quot;)
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">raised_inner_brow</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -676,13 +676,13 @@ _ = plot_face(au=raised_inner_brow, title=&quot;Raised inner brow&quot;)
 <p>Below we activate 2 AUs and use the key <code class="docutils literal notranslate"><span class="pre">'all'</span></code> with the value <code class="docutils literal notranslate"><span class="pre">'heatmap'</span></code> to overlay muscle movement intensities affected by these specific AUs:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Activate AUs
-smiling = np.array([3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Activate AUs</span>
+<span class="n">smiling</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 
-# Overlay muscles 
-muscles = {&#39;all&#39;: &#39;heatmap&#39;}
+<span class="c1"># Overlay muscles </span>
+<span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">}</span>
 
-_ = plot_face(au = smiling, muscles = muscles, title=&#39;Smiling&#39;)
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span> <span class="o">=</span> <span class="n">smiling</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="n">muscles</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Smiling&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -693,8 +693,8 @@ _ = plot_face(au = smiling, muscles = muscles, title=&#39;Smiling&#39;)
 <p>But it’s also possibile to arbitrarily highlight any facial muscle by setting it to a color instead. This ignores the AU intensity and useful for highlighting specific facial muscles. Below we higlight two different muscles on a neutral face:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>muscles = {&#39;temporalis_r_rel&#39;: &quot;red&quot;, &#39;pars_palp_l&#39;: &#39;green&#39;}
-_ = plot_face(au=neutral, muscles=muscles)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;temporalis_r_rel&#39;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s1">&#39;pars_palp_l&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">}</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">muscles</span><span class="o">=</span><span class="n">muscles</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -709,10 +709,10 @@ _ = plot_face(au=neutral, muscles=muscles)
 Gaze vectors are length 4 <code class="docutils literal notranslate"><span class="pre">(lefteye_x,</span> <span class="pre">lefteye_y,</span> <span class="pre">righteye_x,</span> <span class="pre">righteye_y)</span></code> where the y orientation is positive for looking upwards.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Add some gaze vectors: (lefteye_x, lefteye_y, righteye_x, righteye_y)
-gaze = [-1, 5, 1, 5]
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add some gaze vectors: (lefteye_x, lefteye_y, righteye_x, righteye_y)</span>
+<span class="n">gaze</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 
-_ = plot_face(au=neutral, gaze=gaze, title=&#39;Looking up&#39;)
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">gaze</span><span class="o">=</span><span class="n">gaze</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Looking up&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -726,35 +726,35 @@ _ = plot_face(au=neutral, gaze=gaze, title=&#39;Looking up&#39;)
 <p>One way we can highlight how a faces change between two expressions is by overlaying a vectorfield of arrows for each facial landmark pointing in the direction of movement from one face to another. To do so, we use the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> function to get landmark data for each array of AU intensities we want to plot and generate a <code class="docutils literal notranslate"><span class="pre">vectors</span></code> dictionary with keys for the <code class="docutils literal notranslate"><span class="pre">'target'</span></code> and <code class="docutils literal notranslate"><span class="pre">'reference'</span></code> faces. Then we can pass this dictionary to the <code class="docutils literal notranslate"><span class="pre">vectorfield</span></code> argument of <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.plotting import predict
-import matplotlib.pyplot as plt
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">predict</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-# Get landmarks
-neutral_landmarks = predict(neutral)
-raised_inner_brow_landmarks = predict(raised_inner_brow)
+<span class="c1"># Get landmarks</span>
+<span class="n">neutral_landmarks</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">neutral</span><span class="p">)</span>
+<span class="n">raised_inner_brow_landmarks</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">raised_inner_brow</span><span class="p">)</span>
 
-# Provide target landmarks and other vector specifications
-netural_to_target = {
-    &quot;target&quot;: raised_inner_brow_landmarks,
-    &quot;reference&quot;: neutral_landmarks,
-    &quot;color&quot;: &quot;blue&quot;,
-}
-target_to_neutral = {
-    &quot;target&quot;: raised_inner_brow_landmarks,
-    &quot;reference&quot;: neutral_landmarks,
-    &quot;color&quot;: &quot;blue&quot;,
-}
+<span class="c1"># Provide target landmarks and other vector specifications</span>
+<span class="n">netural_to_target</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">raised_inner_brow_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">neutral_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">target_to_neutral</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">raised_inner_brow_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">neutral_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 
-fig, axes = plt.subplots(1, 2)
-# Vectorfield goes from neutral -&gt; target on neutral face
-_ = plot_face(ax=axes[0], au=neutral, title=&quot;Neutral&quot;, vectorfield=netural_to_target)
-# Vectorfield goes target -&gt; neutral on target face
-_ = plot_face(
-    ax=axes[1],
-    au=raised_inner_brow,
-    title=&quot;Raised inner brow&quot;,
-    vectorfield=target_to_neutral,
-)
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Vectorfield goes from neutral -&gt; target on neutral face</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Neutral&quot;</span><span class="p">,</span> <span class="n">vectorfield</span><span class="o">=</span><span class="n">netural_to_target</span><span class="p">)</span>
+<span class="c1"># Vectorfield goes target -&gt; neutral on target face</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="n">au</span><span class="o">=</span><span class="n">raised_inner_brow</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">,</span>
+    <span class="n">vectorfield</span><span class="o">=</span><span class="n">target_to_neutral</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -770,15 +770,15 @@ _ = plot_face(
 <p>Below we pass in <code class="docutils literal notranslate"><span class="pre">12</span></code> which corresponds to AU20:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import get_test_data_path
-from feat.utils import read_openface
-from os.path import join
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
+<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_openface</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span>
 
-test_file = join(get_test_data_path(),&#39;OpenFace_Test.csv&#39;)
-openface = read_openface(test_file)
+<span class="n">test_file</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span><span class="s1">&#39;OpenFace_Test.csv&#39;</span><span class="p">)</span>
+<span class="n">openface</span> <span class="o">=</span> <span class="n">read_openface</span><span class="p">(</span><span class="n">test_file</span><span class="p">)</span>
 
-# 12th AU in Openface model is AU 20
-_ = openface.plot_aus(12, muscles={&#39;all&#39;: &quot;heatmap&quot;})
+<span class="c1"># 12th AU in Openface model is AU 20</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">openface</span><span class="o">.</span><span class="n">plot_aus</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">muscles</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s2">&quot;heatmap&quot;</span><span class="p">})</span>
 </pre></div>
 </div>
 </div>
@@ -797,12 +797,12 @@ _ = openface.plot_aus(12, muscles={&#39;all&#39;: &quot;heatmap&quot;})
 <p>The first style is mostly just a convenient way to visualize changes for a single AU. Below we use this style to animate raising of the inner brow:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.plotting import animate_face
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">animate_face</span>
 
-# Just pass in a FACS AU id, in this case we pass in 1 which is the inner brow raiser
-animation = animate_face(
-    AU=1, start=0, end=3, title=&quot;Raised inner brow&quot;, save=&quot;AU1.gif&quot;
-)
+<span class="c1"># Just pass in a FACS AU id, in this case we pass in 1 which is the inner brow raiser</span>
+<span class="n">animation</span> <span class="o">=</span> <span class="n">animate_face</span><span class="p">(</span>
+    <span class="n">AU</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="s2">&quot;AU1.gif&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1767,14 +1767,14 @@ if (IPython.notebook.kernel !== null) {
 <p>The second style is more flexible and behaves like <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>. It’s generally more useful when multiple AUs change together. Below we use this style to visualize 2 AUs changing with different intensities. We also overlay muscle activations which change dynamically in the animation:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># We reuse the AU arrays from above to morph between a neutral and smiling face
-animation = animate_face(
-    start=neutral,
-    end=smiling,
-    muscles={&quot;all&quot;: &quot;heatmap&quot;},
-    title=&#39;Smiling&#39;,
-    save=&quot;smiling.gif&quot;,
-)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># We reuse the AU arrays from above to morph between a neutral and smiling face</span>
+<span class="n">animation</span> <span class="o">=</span> <span class="n">animate_face</span><span class="p">(</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="n">smiling</span><span class="p">,</span>
+    <span class="n">muscles</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;all&quot;</span><span class="p">:</span> <span class="s2">&quot;heatmap&quot;</span><span class="p">},</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Smiling&#39;</span><span class="p">,</span>
+    <span class="n">save</span><span class="o">=</span><span class="s2">&quot;smiling.gif&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2739,14 +2739,14 @@ if (IPython.notebook.kernel !== null) {
 <p>It’s also possible to animate gaze directions using the <code class="docutils literal notranslate"><span class="pre">gaze_start</span></code> and <code class="docutils literal notranslate"><span class="pre">gaze_end</span></code> arguments to <code class="docutils literal notranslate"><span class="pre">animate_face()</span></code>. Here we pass the same neutral expression to <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> so the only thing being animates is gaze direction:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>animation = animate_face(
-    start=neutral,
-    end=neutral,
-    gaze_start = [0,0,0,0],
-    gaze_end = [-1, 5, 1, 5],
-    title=&#39;Looking Up&#39;,
-    save=&#39;looking_up.gif&#39;
-) 
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">animation</span> <span class="o">=</span> <span class="n">animate_face</span><span class="p">(</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span>
+    <span class="n">gaze_start</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">gaze_end</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Looking Up&#39;</span><span class="p">,</span>
+    <span class="n">save</span><span class="o">=</span><span class="s1">&#39;looking_up.gif&#39;</span>
+<span class="p">)</span> 
 </pre></div>
 </div>
 </div>
@@ -2758,84 +2758,84 @@ if (IPython.notebook.kernel !== null) {
 <p>We can easily make a grid of all 20 AUs and animate their intensity changes one at a time from a netural facial expression. To generate the animation from matplotlib plots, we use the <a class="reference external" href="https://github.com/jwkvam/celluloid"><code class="docutils literal notranslate"><span class="pre">celluloid</span></code></a> library that makes it a bit easier to work with matplotlib animations. It’s also what <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> uses under the hood:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils import RF_AU_presence # AU ids
-from feat.plotting import interpolate_aus # cubic easing interpolation
-from celluloid import Camera
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">RF_AU_presence</span> <span class="c1"># AU ids</span>
+<span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">interpolate_aus</span> <span class="c1"># cubic easing interpolation</span>
+<span class="kn">from</span> <span class="nn">celluloid</span> <span class="kn">import</span> <span class="n">Camera</span>
 
-# Link AU ids to their descriptions; might be wrong? see:
-au_name_map = list(
-    zip(
-        RF_AU_presence,
-        [
-            &quot;inner brow raiser&quot;,
-            &quot;outer brow raiser&quot;,
-            &quot;brow lowerer&quot;,
-            &quot;upper lid raiser&quot;,
-            &quot;cheek raiser&quot;,
-            &quot;lid tightener&quot;,
-            &quot;nose wrinkler&quot;,
-            &quot;upper lip raiser&quot;,
-            &quot;lip corner puller&quot;,
-            &quot;dimpler&quot;,
-            &quot;lip corner depressor&quot;,
-            &quot;chin raiser&quot;,
-            &quot;lip puckerer&quot;,
-            &quot;lip stretcher&quot;,
-            &quot;lip tightener&quot;,
-            &quot;lip pressor&quot;,
-            &quot;lips part&quot;,
-            &quot;jaw drop&quot;,
-            &quot;lip suck&quot;,
-            &quot;eyes closed&quot;,
-        ],
-    )
-)
+<span class="c1"># Link AU ids to their descriptions; might be wrong? see:</span>
+<span class="n">au_name_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="nb">zip</span><span class="p">(</span>
+        <span class="n">RF_AU_presence</span><span class="p">,</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;inner brow raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;outer brow raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;brow lowerer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upper lid raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cheek raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lid tightener&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;nose wrinkler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upper lip raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip corner puller&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dimpler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip corner depressor&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;chin raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip puckerer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip stretcher&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip tightener&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip pressor&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lips part&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;jaw drop&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip suck&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;eyes closed&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
 
-# Start all AUs at neutral
-starting_intensities = np.zeros((20, 20))
+<span class="c1"># Start all AUs at neutral</span>
+<span class="n">starting_intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
 
-# And eventually get to 3
-ending_intensities = np.eye(20) * 3
+<span class="c1"># And eventually get to 3</span>
+<span class="n">ending_intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
 
-# Define some animation settings
-fps = 15
-duration = 0.5
-padding = 0.25
-num_frames = int(np.ceil(fps * duration))
+<span class="c1"># Define some animation settings</span>
+<span class="n">fps</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">duration</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">padding</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="n">num_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">fps</span> <span class="o">*</span> <span class="n">duration</span><span class="p">))</span>
 
-# Add some padding frames so when the animation loops it pauses on the endpoints
-num_padding_frames = int(np.ceil(fps * padding))
-total_frames = (num_frames + num_padding_frames) * 2
+<span class="c1"># Add some padding frames so when the animation loops it pauses on the endpoints</span>
+<span class="n">num_padding_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">fps</span> <span class="o">*</span> <span class="n">padding</span><span class="p">))</span>
+<span class="n">total_frames</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_frames</span> <span class="o">+</span> <span class="n">num_padding_frames</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Loop over each frame of the animation, plot a 4 x 5 grid of faces
-fig, axs = plt.subplots(4, 5, figsize=(12, 18))
-camera = Camera(fig)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop over each frame of the animation, plot a 4 x 5 grid of faces</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">))</span>
+<span class="n">camera</span> <span class="o">=</span> <span class="n">Camera</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 
-for frame_num in range(total_frames):
-    for i, ax in enumerate(axs.flat):
-        au_interpolations = interpolate_aus(
-            start=starting_intensities[i, :],
-            end=ending_intensities[i, :],
-            num_frames=num_frames,
-            num_padding_frames=num_padding_frames,
-        )
+<span class="k">for</span> <span class="n">frame_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_frames</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axs</span><span class="o">.</span><span class="n">flat</span><span class="p">):</span>
+        <span class="n">au_interpolations</span> <span class="o">=</span> <span class="n">interpolate_aus</span><span class="p">(</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">starting_intensities</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">ending_intensities</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+            <span class="n">num_frames</span><span class="o">=</span><span class="n">num_frames</span><span class="p">,</span>
+            <span class="n">num_padding_frames</span><span class="o">=</span><span class="n">num_padding_frames</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        ax = plot_face(
-            model=None,
-            ax=ax,
-            au=au_interpolations[frame_num],
-            title=f&quot;{au_name_map[i][0]}\n{au_name_map[i][1]}&quot;,
-        )
-    _ = camera.snap()
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+            <span class="n">au</span><span class="o">=</span><span class="n">au_interpolations</span><span class="p">[</span><span class="n">frame_num</span><span class="p">],</span>
+            <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">au_name_map</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">au_name_map</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">snap</span><span class="p">()</span>
 
-# Create the animation
-animation = camera.animate()
-animation.save(&quot;all.gif&quot;, fps=fps)
+<span class="c1"># Create the animation</span>
+<span class="n">animation</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">animate</span><span class="p">()</span>
+<span class="n">animation</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;all.gif&quot;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

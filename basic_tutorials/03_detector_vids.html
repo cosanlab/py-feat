@@ -564,8 +564,8 @@ title="Print to PDF"
 <p>In this tutorial we’ll explore how to use the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class to process video files. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/03_detector_vids.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Uncomment the line below and run this only if you&#39;re using Google Collab
-# !pip install -q py-feat
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
+<span class="c1"># !pip install -q py-feat</span>
 </pre></div>
 </div>
 </div>
@@ -575,11 +575,11 @@ title="Print to PDF"
 <p>We’ll begin by creating a new <code class="docutils literal notranslate"><span class="pre">Detector</span></code> instance just like the previous tutorial and using the defaults:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Detector
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-detector = Detector()
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
 
-detector
+<span class="n">detector</span>
 </pre></div>
 </div>
 </div>
@@ -595,15 +595,15 @@ detector
 <p>Detecting facial expressions in videos is easy to do using the <code class="docutils literal notranslate"><span class="pre">.detect_video()</span></code> method. This sample video included in Py-Feat is by <a class="reference external" href="https://www.pexels.com/&#64;wolfgang-langer-1415383?utm_content=attributionCopyText&amp;utm_medium=referral&amp;utm_source=pexels">Wolfgang Langer</a> from <a class="reference external" href="https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/">Pexels</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils.io import get_test_data_path
-import os
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils.io</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
-test_data_dir = get_test_data_path()
-test_video_path = os.path.join(test_data_dir, &quot;WolfgangLanger_Pexels.mp4&quot;)
+<span class="n">test_data_dir</span> <span class="o">=</span> <span class="n">get_test_data_path</span><span class="p">()</span>
+<span class="n">test_video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;WolfgangLanger_Pexels.mp4&quot;</span><span class="p">)</span>
 
-# Show video
-from IPython.core.display import Video
-Video(test_video_path, embed=False)
+<span class="c1"># Show video</span>
+<span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="kn">import</span> <span class="n">Video</span>
+<span class="n">Video</span><span class="p">(</span><span class="n">test_video_path</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -615,8 +615,8 @@ Video(test_video_path, embed=False)
 <p>Just like <code class="docutils literal notranslate"><span class="pre">.detect_image()</span></code> we can just pass the path to the video file to <code class="docutils literal notranslate"><span class="pre">.detect_video()</span></code>. Here we also set <code class="docutils literal notranslate"><span class="pre">skip_frames=24</span></code> which tells the detector to process only every 24th frame for the sake of speed:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>video_prediction = detector.detect_video(test_video_path, skip_frames=24)
-video_prediction.head()
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">test_video_path</span><span class="p">,</span> <span class="n">skip_frames</span><span class="o">=</span><span class="mi">24</span><span class="p">)</span>
+<span class="n">video_prediction</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -818,7 +818,7 @@ video_prediction.head()
 <p>We can see that our 20s long video, recorded at 24 frames-per-second, produces 20 predictions because we set <code class="docutils literal notranslate"><span class="pre">skip_frames=24</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>video_prediction.shape
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">video_prediction</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
 </div>
@@ -835,10 +835,10 @@ video_prediction.head()
 <p>The video has 24 fps and the actress show sadness around the 0:02, and happiness at 0:14 seconds.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Frame 48 = ~0:02
-# Frame 408 = ~0:14
-# Frame numbers are the index so we can use .loc
-video_prediction.loc[[48, 408]].plot_detections(faceboxes=False, add_titles=False)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Frame 48 = ~0:02</span>
+<span class="c1"># Frame 408 = ~0:14</span>
+<span class="c1"># Frame numbers are the index so we can use .loc</span>
+<span class="n">video_prediction</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">48</span><span class="p">,</span> <span class="mi">408</span><span class="p">]]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faceboxes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -853,7 +853,7 @@ video_prediction.loc[[48, 408]].plot_detections(faceboxes=False, add_titles=Fals
 <p>We can also leverage existing pandas plotting functions to show how emotions unfold over time. We can clearly see how her emotions change from sadness to happiness.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>axes = video_prediction.emotions.plot()
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">axes</span> <span class="o">=</span> <span class="n">video_prediction</span><span class="o">.</span><span class="n">emotions</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -864,9 +864,9 @@ video_prediction.loc[[48, 408]].plot_detections(faceboxes=False, add_titles=Fals
 <p>In situations you want to predict EVERY frame of the video, you can ust leave out the <code class="docutils literal notranslate"><span class="pre">skip_frames</span></code> argument. Speed of processing may vary depending on the detector you use and the length of the video:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Run me to get a prediction for EVERY video frame.
-# WARNING MAY TAKE A WHILE!
-video_prediction = detector.detect_video(test_video_path)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run me to get a prediction for EVERY video frame.</span>
+<span class="c1"># WARNING MAY TAKE A WHILE!</span>
+<span class="n">video_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">test_video_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

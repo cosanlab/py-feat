@@ -557,184 +557,184 @@ title="Print to PDF"
 <p>Make sure to adjust data paths as needed. By default this notebook assumes datasets are in the <code class="docutils literal notranslate"><span class="pre">data/datasets</span></code> folder at the root of this repository.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from PIL import Image, ImageOps
-import math, cv2, csv
-from scipy.spatial import ConvexHull
-from skimage.morphology.convex_hull import grid_points_in_poly
-from feat import Detector
-import os, glob, pandas as pd, numpy as np
-from skimage.feature import hog
-from tqdm import tqdm
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span>
+<span class="kn">import</span> <span class="nn">math</span><span class="o">,</span> <span class="nn">cv2</span><span class="o">,</span> <span class="nn">csv</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">ConvexHull</span>
+<span class="kn">from</span> <span class="nn">skimage.morphology.convex_hull</span> <span class="kn">import</span> <span class="n">grid_points_in_poly</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">hog</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
-# Set data directory to data folder relative to location of this notebook
-data_dir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.realpath(&quot;&quot;))), &quot;data&quot;, &quot;datasets&quot;
-)
-
-
-def padding(img, expected_size):
-    desired_size = expected_size
-    delta_width = desired_size - img.size[0]
-    delta_height = desired_size - img.size[1]
-    pad_width = delta_width // 2
-    pad_height = delta_height // 2
-    padding = (
-        pad_width,
-        pad_height,
-        delta_width - pad_width,
-        delta_height - pad_height,
-    )
-    return ImageOps.expand(img, padding)
+<span class="c1"># Set data directory to data folder relative to location of this notebook</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))),</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;datasets&quot;</span>
+<span class="p">)</span>
 
 
-def resize_with_padding(img, expected_size):
-    img.thumbnail((expected_size[0], expected_size[1]))
-    delta_width = expected_size[0] - img.size[0]
-    delta_height = expected_size[1] - img.size[1]
-    pad_width = delta_width // 2
-    pad_height = delta_height // 2
-    padding = (
-        pad_width,
-        pad_height,
-        delta_width - pad_width,
-        delta_height - pad_height,
-    )
-    return ImageOps.expand(img, padding)
+<span class="k">def</span> <span class="nf">padding</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">expected_size</span><span class="p">):</span>
+    <span class="n">desired_size</span> <span class="o">=</span> <span class="n">expected_size</span>
+    <span class="n">delta_width</span> <span class="o">=</span> <span class="n">desired_size</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">delta_height</span> <span class="o">=</span> <span class="n">desired_size</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pad_width</span> <span class="o">=</span> <span class="n">delta_width</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">pad_height</span> <span class="o">=</span> <span class="n">delta_height</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pad_width</span><span class="p">,</span>
+        <span class="n">pad_height</span><span class="p">,</span>
+        <span class="n">delta_width</span> <span class="o">-</span> <span class="n">pad_width</span><span class="p">,</span>
+        <span class="n">delta_height</span> <span class="o">-</span> <span class="n">pad_height</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ImageOps</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
 
 
-def align_face_68pts(img, img_land, box_enlarge, img_size=112):
-    &quot;&quot;&quot;
-    img: image
-    img_land: landmarks 68
-    box_enlarge: relative size of face
-    img_size = 112
-
-    &quot;&quot;&quot;
-    leftEye0 = (
-        img_land[2 * 36]
-        + img_land[2 * 37]
-        + img_land[2 * 38]
-        + img_land[2 * 39]
-        + img_land[2 * 40]
-        + img_land[2 * 41]
-    ) / 6.0
-    leftEye1 = (
-        img_land[2 * 36 + 1]
-        + img_land[2 * 37 + 1]
-        + img_land[2 * 38 + 1]
-        + img_land[2 * 39 + 1]
-        + img_land[2 * 40 + 1]
-        + img_land[2 * 41 + 1]
-    ) / 6.0
-    rightEye0 = (
-        img_land[2 * 42]
-        + img_land[2 * 43]
-        + img_land[2 * 44]
-        + img_land[2 * 45]
-        + img_land[2 * 46]
-        + img_land[2 * 47]
-    ) / 6.0
-    rightEye1 = (
-        img_land[2 * 42 + 1]
-        + img_land[2 * 43 + 1]
-        + img_land[2 * 44 + 1]
-        + img_land[2 * 45 + 1]
-        + img_land[2 * 46 + 1]
-        + img_land[2 * 47 + 1]
-    ) / 6.0
-    deltaX = rightEye0 - leftEye0
-    deltaY = rightEye1 - leftEye1
-    l = math.sqrt(deltaX * deltaX + deltaY * deltaY)
-    sinVal = deltaY / l
-    cosVal = deltaX / l
-    mat1 = np.mat([[cosVal, sinVal, 0], [-sinVal, cosVal, 0], [0, 0, 1]])
-    mat2 = np.mat(
-        [
-            [leftEye0, leftEye1, 1],
-            [rightEye0, rightEye1, 1],
-            [img_land[2 * 30], img_land[2 * 30 + 1], 1],
-            [img_land[2 * 48], img_land[2 * 48 + 1], 1],
-            [img_land[2 * 54], img_land[2 * 54 + 1], 1],
-        ]
-    )
-    mat2 = (mat1 * mat2.T).T
-    cx = float((max(mat2[:, 0]) + min(mat2[:, 0]))) * 0.5
-    cy = float((max(mat2[:, 1]) + min(mat2[:, 1]))) * 0.5
-    if float(max(mat2[:, 0]) - min(mat2[:, 0])) &gt; float(
-        max(mat2[:, 1]) - min(mat2[:, 1])
-    ):
-        halfSize = 0.5 * box_enlarge * float((max(mat2[:, 0]) - min(mat2[:, 0])))
-    else:
-        halfSize = 0.5 * box_enlarge * float((max(mat2[:, 1]) - min(mat2[:, 1])))
-    scale = (img_size - 1) / 2.0 / halfSize
-    mat3 = np.mat(
-        [
-            [scale, 0, scale * (halfSize - cx)],
-            [0, scale, scale * (halfSize - cy)],
-            [0, 0, 1],
-        ]
-    )
-    mat = mat3 * mat1
-    aligned_img = cv2.warpAffine(
-        img,
-        mat[0:2, :],
-        (img_size, img_size),
-        cv2.INTER_LINEAR,
-        borderValue=(128, 128, 128),
-    )
-    land_3d = np.ones((int(len(img_land) / 2), 3))
-    land_3d[:, 0:2] = np.reshape(np.array(img_land), (int(len(img_land) / 2), 2))
-    mat_land_3d = np.mat(land_3d)
-    new_land = np.array((mat * mat_land_3d.T).T)
-    new_land = np.array(list(zip(new_land[:, 0], new_land[:, 1]))).astype(int)
-    return aligned_img, new_land
+<span class="k">def</span> <span class="nf">resize_with_padding</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">expected_size</span><span class="p">):</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="n">expected_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">expected_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">delta_width</span> <span class="o">=</span> <span class="n">expected_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">delta_height</span> <span class="o">=</span> <span class="n">expected_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pad_width</span> <span class="o">=</span> <span class="n">delta_width</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">pad_height</span> <span class="o">=</span> <span class="n">delta_height</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pad_width</span><span class="p">,</span>
+        <span class="n">pad_height</span><span class="p">,</span>
+        <span class="n">delta_width</span> <span class="o">-</span> <span class="n">pad_width</span><span class="p">,</span>
+        <span class="n">delta_height</span> <span class="o">-</span> <span class="n">pad_height</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ImageOps</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
 
 
-def extract_hog(image, detector):
-    im = cv2.imread(image)
-    detected_faces = np.array(detector.detect_faces(im)[0])
-    if np.any(detected_faces &lt; 0):
-        orig_size = np.array(im).shape
-        if np.where(detected_faces &lt; 0)[0][0] == 1:
-            new_size = (
-                orig_size[0],
-                int(orig_size[1] + 2 * abs(detected_faces[detected_faces &lt; 0][0])),
-            )
-        else:
-            new_size = (
-                int(orig_size[0] + 2 * abs(detected_faces[detected_faces &lt; 0][0])),
-                orig_size[1],
-            )
-        im = resize_with_padding(Image.fromarray(im), new_size)
-        im = np.asarray(im)
-        detected_faces = np.array(detector.detect_faces(np.array(im))[0])
-    detected_faces = detected_faces.astype(int)
-    points = detector.detect_landmarks(np.array(im), [detected_faces])[0].astype(int)
+<span class="k">def</span> <span class="nf">align_face_68pts</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_land</span><span class="p">,</span> <span class="n">box_enlarge</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">112</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    img: image</span>
+<span class="sd">    img_land: landmarks 68</span>
+<span class="sd">    box_enlarge: relative size of face</span>
+<span class="sd">    img_size = 112</span>
 
-    aligned_img, points = align_face_68pts(im, points.flatten(), 2.5)
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">leftEye0</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">36</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">37</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">38</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">39</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">40</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">41</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">leftEye1</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">36</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">37</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">38</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">39</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">40</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">41</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">rightEye0</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">42</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">43</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">44</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">45</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">46</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">47</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">rightEye1</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">42</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">43</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">44</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">45</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">46</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">47</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
+    <span class="n">deltaX</span> <span class="o">=</span> <span class="n">rightEye0</span> <span class="o">-</span> <span class="n">leftEye0</span>
+    <span class="n">deltaY</span> <span class="o">=</span> <span class="n">rightEye1</span> <span class="o">-</span> <span class="n">leftEye1</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">deltaX</span> <span class="o">*</span> <span class="n">deltaX</span> <span class="o">+</span> <span class="n">deltaY</span> <span class="o">*</span> <span class="n">deltaY</span><span class="p">)</span>
+    <span class="n">sinVal</span> <span class="o">=</span> <span class="n">deltaY</span> <span class="o">/</span> <span class="n">l</span>
+    <span class="n">cosVal</span> <span class="o">=</span> <span class="n">deltaX</span> <span class="o">/</span> <span class="n">l</span>
+    <span class="n">mat1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([[</span><span class="n">cosVal</span><span class="p">,</span> <span class="n">sinVal</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">sinVal</span><span class="p">,</span> <span class="n">cosVal</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">mat2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">leftEye0</span><span class="p">,</span> <span class="n">leftEye1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">rightEye0</span><span class="p">,</span> <span class="n">rightEye1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">30</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">48</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">48</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">54</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">54</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">mat2</span> <span class="o">=</span> <span class="p">(</span><span class="n">mat1</span> <span class="o">*</span> <span class="n">mat2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">cx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])))</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="n">cy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span>
+        <span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="p">):</span>
+        <span class="n">halfSize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">box_enlarge</span> <span class="o">*</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">halfSize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">box_enlarge</span> <span class="o">*</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">halfSize</span>
+    <span class="n">mat3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">halfSize</span> <span class="o">-</span> <span class="n">cx</span><span class="p">)],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">halfSize</span> <span class="o">-</span> <span class="n">cy</span><span class="p">)],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">mat3</span> <span class="o">*</span> <span class="n">mat1</span>
+    <span class="n">aligned_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span>
+        <span class="n">img</span><span class="p">,</span>
+        <span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span>
+        <span class="p">(</span><span class="n">img_size</span><span class="p">,</span> <span class="n">img_size</span><span class="p">),</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LINEAR</span><span class="p">,</span>
+        <span class="n">borderValue</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">land_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_land</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">land_3d</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img_land</span><span class="p">),</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_land</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">mat_land_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">land_3d</span><span class="p">)</span>
+    <span class="n">new_land</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">mat</span> <span class="o">*</span> <span class="n">mat_land_3d</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">new_land</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">new_land</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">new_land</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">aligned_img</span><span class="p">,</span> <span class="n">new_land</span>
 
-    hull = ConvexHull(points)
-    mask = grid_points_in_poly(
-        shape=np.array(aligned_img).shape,
-        verts=list(
-            zip(points[hull.vertices][:, 1], points[hull.vertices][:, 0])
-        ),  # for some reason verts need to be flipped
-    )
 
-    mask[0 : np.min([points[0][1], points[16][1]]), points[0][0] : points[16][0]] = True
-    aligned_img[~mask] = 0
-    resized_face_np = aligned_img
+<span class="k">def</span> <span class="nf">extract_hog</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">im</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">detected_faces</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">orig_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">detected_faces</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">new_size</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">orig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">orig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">detected_faces</span><span class="p">[</span><span class="n">detected_faces</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_size</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">orig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">detected_faces</span><span class="p">[</span><span class="n">detected_faces</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span>
+                <span class="n">orig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">resize_with_padding</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">im</span><span class="p">),</span> <span class="n">new_size</span><span class="p">)</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+        <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">detected_faces</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">),</span> <span class="p">[</span><span class="n">detected_faces</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
-    fd, hog_image = hog(
-        resized_face_np,
-        orientations=8,
-        pixels_per_cell=(8, 8),
-        cells_per_block=(2, 2),
-        visualize=True,
-        multichannel=True,
-    )
+    <span class="n">aligned_img</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">align_face_68pts</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="mf">2.5</span><span class="p">)</span>
 
-    return fd, hog_image, points
+    <span class="n">hull</span> <span class="o">=</span> <span class="n">ConvexHull</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">grid_points_in_poly</span><span class="p">(</span>
+        <span class="n">shape</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">aligned_img</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">verts</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">hull</span><span class="o">.</span><span class="n">vertices</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">hull</span><span class="o">.</span><span class="n">vertices</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="p">),</span>  <span class="c1"># for some reason verts need to be flipped</span>
+    <span class="p">)</span>
+
+    <span class="n">mask</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">points</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">aligned_img</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">resized_face_np</span> <span class="o">=</span> <span class="n">aligned_img</span>
+
+    <span class="n">fd</span><span class="p">,</span> <span class="n">hog_image</span> <span class="o">=</span> <span class="n">hog</span><span class="p">(</span>
+        <span class="n">resized_face_np</span><span class="p">,</span>
+        <span class="n">orientations</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">pixels_per_cell</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+        <span class="n">cells_per_block</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="n">visualize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">multichannel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fd</span><span class="p">,</span> <span class="n">hog_image</span><span class="p">,</span> <span class="n">points</span>
 </pre></div>
 </div>
 </div>
@@ -745,72 +745,72 @@ def extract_hog(image, detector):
 <p>You’ll need to run this for DISFA Plus and BP4d as well in order to <a class="reference internal" href="06_trainAUvisModel.html"><span class="doc std std-doc">train our AU visualization model</span></a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>dataset = &quot;EmotionNet&quot;
-labels_filename = &quot;emotionet_labels.csv&quot;
-landmarks_filename = &quot;emotionet_landmarks.csv&quot;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="s2">&quot;EmotionNet&quot;</span>
+<span class="n">labels_filename</span> <span class="o">=</span> <span class="s2">&quot;emotionet_labels.csv&quot;</span>
+<span class="n">landmarks_filename</span> <span class="o">=</span> <span class="s2">&quot;emotionet_landmarks.csv&quot;</span>
 
-detector = Detector(face_model=&quot;retinaface&quot;, landmark_model=&quot;mobilenet&quot;)
-EmotioNet_images = np.sort(glob.glob(os.path.join(data_dir, dataset, &quot;imgs&quot;, &quot;*.jpg&quot;)))
-labels = pd.read_csv(
-    os.path.join(data_dir, dataset, &quot;labels&quot;, &quot;EmotioNet_FACS_aws_2020_24600.csv&quot;)
-)
-labels = labels.dropna(axis=0)
-for col in labels.columns:
-    if &quot;AU&quot; in col:
-        kwargs = {col.replace(&quot;&#39;&quot;, &quot;&quot;).replace(&#39;&quot;&#39;, &quot;&quot;).replace(&quot; &quot;, &quot;&quot;): labels[[col]]}
-        labels = labels.assign(**kwargs)
-        labels = labels.drop(columns=col)
-labels = labels.assign(
-    URL=labels.URL.apply(lambda x: x.split(&quot;/&quot;)[-1].replace(&quot;&#39;&quot;, &quot;&quot;))
-)
-labels = labels.set_index(&quot;URL&quot;)
-labels = labels.drop(columns=[&quot;URL orig&quot;])
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s2">&quot;retinaface&quot;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilenet&quot;</span><span class="p">)</span>
+<span class="n">EmotioNet_images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;imgs&quot;</span><span class="p">,</span> <span class="s2">&quot;*.jpg&quot;</span><span class="p">)))</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">,</span> <span class="s2">&quot;EmotioNet_FACS_aws_2020_24600.csv&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">labels</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;AU&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">):</span> <span class="n">labels</span><span class="p">[[</span><span class="n">col</span><span class="p">]]}</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">col</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+    <span class="n">URL</span><span class="o">=</span><span class="n">labels</span><span class="o">.</span><span class="n">URL</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;URL&quot;</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;URL orig&quot;</span><span class="p">])</span>
 
-aus_to_train = [
-    &quot;AU1&quot;,
-    &quot;AU2&quot;,
-    &quot;AU4&quot;,
-    &quot;AU5&quot;,
-    &quot;AU6&quot;,
-    &quot;AU7&quot;,
-    &quot;AU9&quot;,
-    &quot;AU10&quot;,
-    &quot;AU11&quot;,
-    &quot;AU12&quot;,
-    &quot;AU14&quot;,
-    &quot;AU15&quot;,
-    &quot;AU17&quot;,
-    &quot;AU20&quot;,
-    &quot;AU23&quot;,
-    &quot;AU24&quot;,
-    &quot;AU25&quot;,
-    &quot;AU26&quot;,
-    &quot;AU28&quot;,
-    &quot;AU43&quot;,
-]
+<span class="n">aus_to_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;AU1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU4&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU6&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU7&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU9&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU10&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU11&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU12&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU14&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU15&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU17&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU20&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU23&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU24&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU25&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU26&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU28&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AU43&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
-with open(labels_filename, &quot;w&quot;, newline=&quot;&quot;) as csvfile:
-    writer = csv.writer(csvfile, delimiter=&quot;,&quot;)
-    writer.writerow([&quot;URL&quot;] + aus_to_train)
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">labels_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s2">&quot;URL&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">aus_to_train</span><span class="p">)</span>
 
-landmark_cols = [f&quot;x_{i}&quot; for i in range(68)] + [f&quot;y_{i}&quot; for i in range(68)]
-with open(landmarks_filename, &quot;w&quot;, newline=&quot;&quot;) as csvfile:
-    writer = csv.writer(csvfile, delimiter=&quot;,&quot;)
-    writer.writerow(landmark_cols)
+<span class="n">landmark_cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;x_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">68</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;y_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">68</span><span class="p">)]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">landmarks_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">landmark_cols</span><span class="p">)</span>
 
-for ix, image in enumerate(tqdm(EmotioNet_images)):
-    try:
-        imageURL = os.path.split(image)[-1]
-        label = labels.loc[imageURL][aus_to_train]
-        fd, _, points = extract_hog(image, detector=detector)
-        with open(labels_filename, &quot;a+&quot;, newline=&quot;&quot;) as csvfile:
-            writer = csv.writer(csvfile, delimiter=&quot;,&quot;)
-            writer.writerow([imageURL] + list(label.values))
-        with open(landmarks_filename, &quot;a+&quot;, newline=&quot;&quot;) as csvfile:
-            writer = csv.writer(csvfile, delimiter=&quot;,&quot;)
-            writer.writerow(points.T.flatten())
-    except:
-        print(f&quot;failed {image}&quot;)
+<span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">EmotioNet_images</span><span class="p">)):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">imageURL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">image</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">imageURL</span><span class="p">][</span><span class="n">aus_to_train</span><span class="p">]</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">extract_hog</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">detector</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">labels_filename</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="n">imageURL</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">landmarks_filename</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed </span><span class="si">{</span><span class="n">image</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -684,8 +684,8 @@ title="Print to PDF"
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Uncomment the line below and run this only if you&#39;re using Google Collab
-# !pip install -q py-feat
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
+<span class="c1"># !pip install -q py-feat</span>
 </pre></div>
 </div>
 </div>
@@ -696,61 +696,61 @@ title="Print to PDF"
 <p>Here’s we’ll download and save the first 20 video files and their corresponding attributes from OSF. The next cell should run quickly on Google Collab, but will depend on your own internet conection if you’re executing this notebook locally. You can rerun this cell in case the download fails for any reason, as it should skip downloading existing files:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import os
-import subprocess
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from glob import glob
-import seaborn as sns
-from tqdm import tqdm
-sns.set_context(&quot;talk&quot;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;talk&quot;</span><span class="p">)</span>
 
-files_to_download = {
-    &quot;4c5mb&quot;: &#39;clip_attrs.csv&#39;,
-    &quot;n6rt3&quot;: &#39;001.mp4&#39;,
-    &quot;3gh8v&quot;: &#39;002.mp4&#39;,
-    &quot;twqxs&quot;: &#39;003.mp4&#39;,
-    &quot;nc7d9&quot;: &#39;004.mp4&#39;,
-    &quot;nrwcm&quot;: &#39;005.mp4&#39;,
-    &quot;2rk9c&quot;: &#39;006.mp4&#39;,
-    &quot;mxkzq&quot;: &#39;007.mp4&#39;,
-    &quot;c2na7&quot;: &#39;008.mp4&#39;,
-    &quot;wj7zy&quot;: &#39;009.mp4&#39;,
-    &quot;mxywn&quot;: &#39;010.mp4&#39;,
-    &quot;6bn3g&quot;: &#39;011.mp4&#39;,
-    &quot;jkwsp&quot;: &#39;012.mp4&#39;,
-    &quot;54gtv&quot;: &#39;013.mp4&#39;,
-    &quot;c3hpm&quot;: &#39;014.mp4&#39;,
-    &quot;utdqj&quot;: &#39;015.mp4&#39;,
-    &quot;hpw4a&quot;: &#39;016.mp4&#39;,
-    &quot;94swe&quot;: &#39;017.mp4&#39;,
-    &quot;qte5y&quot;: &#39;018.mp4&#39;,
-    &quot;aykvu&quot;: &#39;019.mp4&#39;,
-    &quot;3d5ry&quot;: &#39;020.mp4&#39;,
-}
+<span class="n">files_to_download</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;4c5mb&quot;</span><span class="p">:</span> <span class="s1">&#39;clip_attrs.csv&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;n6rt3&quot;</span><span class="p">:</span> <span class="s1">&#39;001.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;3gh8v&quot;</span><span class="p">:</span> <span class="s1">&#39;002.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;twqxs&quot;</span><span class="p">:</span> <span class="s1">&#39;003.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;nc7d9&quot;</span><span class="p">:</span> <span class="s1">&#39;004.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;nrwcm&quot;</span><span class="p">:</span> <span class="s1">&#39;005.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;2rk9c&quot;</span><span class="p">:</span> <span class="s1">&#39;006.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;mxkzq&quot;</span><span class="p">:</span> <span class="s1">&#39;007.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;c2na7&quot;</span><span class="p">:</span> <span class="s1">&#39;008.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;wj7zy&quot;</span><span class="p">:</span> <span class="s1">&#39;009.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;mxywn&quot;</span><span class="p">:</span> <span class="s1">&#39;010.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;6bn3g&quot;</span><span class="p">:</span> <span class="s1">&#39;011.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;jkwsp&quot;</span><span class="p">:</span> <span class="s1">&#39;012.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;54gtv&quot;</span><span class="p">:</span> <span class="s1">&#39;013.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;c3hpm&quot;</span><span class="p">:</span> <span class="s1">&#39;014.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;utdqj&quot;</span><span class="p">:</span> <span class="s1">&#39;015.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;hpw4a&quot;</span><span class="p">:</span> <span class="s1">&#39;016.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;94swe&quot;</span><span class="p">:</span> <span class="s1">&#39;017.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;qte5y&quot;</span><span class="p">:</span> <span class="s1">&#39;018.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;aykvu&quot;</span><span class="p">:</span> <span class="s1">&#39;019.mp4&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;3d5ry&quot;</span><span class="p">:</span> <span class="s1">&#39;020.mp4&#39;</span><span class="p">,</span>
+<span class="p">}</span>
 
-for fid, fname in files_to_download.items():
-    if not os.path.exists(fname):
-        print(f&quot;Downloading: {fname}&quot;)
-        subprocess.run(f&quot;wget -O {fname} --content-disposition https://osf.io/{fid}/download&quot;.split())
+<span class="k">for</span> <span class="n">fid</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files_to_download</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;wget -O </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> --content-disposition https://osf.io/</span><span class="si">{</span><span class="n">fid</span><span class="si">}</span><span class="s2">/download&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
 
-videos = np.sort(glob(&quot;*.mp4&quot;))
+<span class="n">videos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.mp4&quot;</span><span class="p">))</span>
 
-# Load in attributes
-clip_attrs = pd.read_csv(&quot;clip_attrs.csv&quot;)
+<span class="c1"># Load in attributes</span>
+<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;clip_attrs.csv&quot;</span><span class="p">)</span>
 
-# Add in file names and rename conditions
-clip_attrs = clip_attrs.assign(
-    input=clip_attrs.clipN.apply(lambda x: str(x).zfill(3) + &quot;.mp4&quot;),
-    condition=clip_attrs[&quot;class&quot;].replace({&quot;gn&quot;: &quot;goodNews&quot;, &quot;ists&quot;: &quot;badNews&quot;}),
-)
+<span class="c1"># Add in file names and rename conditions</span>
+<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+    <span class="nb">input</span><span class="o">=</span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">clipN</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.mp4&quot;</span><span class="p">),</span>
+    <span class="n">condition</span><span class="o">=</span><span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;gn&quot;</span><span class="p">:</span> <span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="s2">&quot;ists&quot;</span><span class="p">:</span> <span class="s2">&quot;badNews&quot;</span><span class="p">}),</span>
+<span class="p">)</span>
 
-# We&#39;re only using a subset of videos for this tutorial so drop the rest
-clip_attrs = clip_attrs.query(&quot;input in @videos&quot;)
+<span class="c1"># We&#39;re only using a subset of videos for this tutorial so drop the rest</span>
+<span class="n">clip_attrs</span> <span class="o">=</span> <span class="n">clip_attrs</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;input in @videos&quot;</span><span class="p">)</span>
 
-print(f&quot;Downloaded {len(videos)} videos&quot;)
-print(f&quot;Downloaded attributes files with {clip_attrs.shape[0]} rows&quot;)
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">videos</span><span class="p">)</span><span class="si">}</span><span class="s2"> videos&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded attributes files with </span><span class="si">{</span><span class="n">clip_attrs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -767,22 +767,22 @@ Downloaded attributes files with 20 rows
 <p>Now we’ll initialize a new <code class="docutils literal notranslate"><span class="pre">Detector</span></code>, process each frame of each video using <code class="docutils literal notranslate"><span class="pre">.detect_video()</span></code>, and save the results to csv files named after the video.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat import Detector
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-# Initialize the default detector
-detector = Detector()
+<span class="c1"># Initialize the default detector</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
 
-# Loop over and process each video and save results to csv
-for video in tqdm(videos):
-    out_name = video.replace(&quot;.mp4&quot;, &quot;.csv&quot;)
-    if not os.path.exists(out_name):
+<span class="c1"># Loop over and process each video and save results to csv</span>
+<span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">videos</span><span class="p">):</span>
+    <span class="n">out_name</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_name</span><span class="p">):</span>
 
-        print(f&quot;Processing: {video}&quot;)
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing: </span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        # This is the line that does detection!
-        fex = detector.detect_video(video)
+        <span class="c1"># This is the line that does detection!</span>
+        <span class="n">fex</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_video</span><span class="p">(</span><span class="n">video</span><span class="p">)</span>
 
-        fex.to_csv(out_name, index=False)
+        <span class="n">fex</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">out_name</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -798,13 +798,13 @@ for video in tqdm(videos):
 <p>Then we can use <code class="docutils literal notranslate"><span class="pre">read_feat</span></code> to load each CSV file and concatenate them together:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.utils.io import read_feat
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils.io</span> <span class="kn">import</span> <span class="n">read_feat</span>
 
-fex = pd.concat(map(lambda video: read_feat(video.replace(&quot;.mp4&quot;, &quot;.csv&quot;)), videos))
+<span class="n">fex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">video</span><span class="p">:</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)),</span> <span class="n">videos</span><span class="p">))</span>
 
-print(f&quot;Unique videos: {fex.inputs.nunique()}&quot;)
-print(f&quot;Total processed frames: {fex.shape[0]}&quot;)
-print(f&quot;Avg frames per video: {fex.groupby(&#39;input&#39;).size().mean()}&quot;)
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unique videos: </span><span class="si">{</span><span class="n">fex</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total processed frames: </span><span class="si">{</span><span class="n">fex</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Avg frames per video: </span><span class="si">{</span><span class="n">fex</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -819,8 +819,8 @@ Avg frames per video: 47.35
 <p>Our <code class="docutils literal notranslate"><span class="pre">Fex</span></code> dataframe now contains all detections for all frames of each video</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>fex.shape
-fex.head()
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">fex</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1001,12 +1001,12 @@ fex.head()
 <p>For example, if we update the sessions to be the name of each video, then <code class="docutils literal notranslate"><span class="pre">.extract_mean()</span></code> will group video-frames (rows) by video making it easy to compute a single summary statistic per file:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>by_video = fex.update_sessions(fex[&quot;input&quot;])
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">by_video</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">update_sessions</span><span class="p">(</span><span class="n">fex</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">])</span>
 
-# Compute the mean per video
-video_means = by_video.extract_mean()
+<span class="c1"># Compute the mean per video</span>
+<span class="n">video_means</span> <span class="o">=</span> <span class="n">by_video</span><span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
 
-video_means # 20 rows for 20 videos
+<span class="n">video_means</span> <span class="c1"># 20 rows for 20 videos</span>
 </pre></div>
 </div>
 </div>
@@ -1541,13 +1541,13 @@ video_means # 20 rows for 20 videos
 <p>Then we can grab the AU detections and call standard pandas methods like <code class="docutils literal notranslate"><span class="pre">.loc</span></code> and <code class="docutils literal notranslate"><span class="pre">.plot</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Grab the aus just for video 1
-video001_aus = video_means.aus.loc[&#39;001.csv&#39;]
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Grab the aus just for video 1</span>
+<span class="n">video001_aus</span> <span class="o">=</span> <span class="n">video_means</span><span class="o">.</span><span class="n">aus</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;001.csv&#39;</span><span class="p">]</span>
 
-# Plot them
-ax = video001_aus.plot(kind=&#39;bar&#39;, title=&#39;Video 001 AU detection&#39;);
-ax.set(ylabel=&#39;Average Probability&#39;);
-sns.despine();
+<span class="c1"># Plot them</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">video001_aus</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Video 001 AU detection&#39;</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Average Probability&#39;</span><span class="p">);</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -1561,24 +1561,24 @@ sns.despine();
 <p><code class="docutils literal notranslate"><span class="pre">.update_sessions()</span></code> always returns a <strong>copy</strong> of the Fex object, so that you can <strong>chain</strong> operations together including existing pandas methods like <code class="docutils literal notranslate"><span class="pre">.plot()</span></code>. Here’s an example passing a dictionary to <code class="docutils literal notranslate"><span class="pre">.update_sessions()</span></code>, which maps between old and new session names:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Which condition each video belonged to
-video2condition = dict(
-    zip(
-        clip_attrs[&quot;input&quot;].str.replace(&quot;.mp4&quot;, &quot;.csv&quot;, regex=False),
-        clip_attrs[&quot;condition&quot;],
-    )
-)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Which condition each video belonged to</span>
+<span class="n">video2condition</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="nb">zip</span><span class="p">(</span>
+        <span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;condition&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
 
-# Update sesssions to group by condition, compute means (per condition), and make a
-# barplot of the mean AUs for each condition
-ax = (
-    by_video.update_sessions(video2condition)
-    .extract_mean()
-    .aus.plot(kind=&quot;bar&quot;, legend=False, title=&quot;Mean AU detection by condition&quot;)
-)
-ax.set(ylabel=&#39;Average Probability&#39;, title=&#39;AU detection by condition&#39;, xticklabels=[&#39;Good News&#39;, &#39;Bad News&#39;]);
-plt.xticks(rotation=0);
-sns.despine();
+<span class="c1"># Update sesssions to group by condition, compute means (per condition), and make a</span>
+<span class="c1"># barplot of the mean AUs for each condition</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">by_video</span><span class="o">.</span><span class="n">update_sessions</span><span class="p">(</span><span class="n">video2condition</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">extract_mean</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">aus</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mean AU detection by condition&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Average Probability&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;AU detection by condition&#39;</span><span class="p">,</span> <span class="n">xticklabels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Good News&#39;</span><span class="p">,</span> <span class="s1">&#39;Bad News&#39;</span><span class="p">]);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -1589,32 +1589,32 @@ sns.despine();
 <p>We can also focus in on the AUs associated with happiness:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>aus = [&quot;AU06&quot;, &quot;AU12&quot;, &quot;AU25&quot;]  # from https://py-feat.org/pages/au_reference.html
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aus</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AU06&quot;</span><span class="p">,</span> <span class="s2">&quot;AU12&quot;</span><span class="p">,</span> <span class="s2">&quot;AU25&quot;</span><span class="p">]</span>  <span class="c1"># from https://py-feat.org/pages/au_reference.html</span>
 
-# Update the sessions to condition compute summary stats
-summary = by_video.update_sessions(video2condition).extract_summary(
-    mean=True, sem=True, std=False, min=False, max=False
-)
+<span class="c1"># Update the sessions to condition compute summary stats</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">by_video</span><span class="o">.</span><span class="n">update_sessions</span><span class="p">(</span><span class="n">video2condition</span><span class="p">)</span><span class="o">.</span><span class="n">extract_summary</span><span class="p">(</span>
+    <span class="n">mean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sem</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
 
-# Organize them for plotting
-bad_means = summary.loc[&quot;badNews&quot;, [f&quot;mean_{au}&quot; for au in aus]]
-bad_sems = summary.loc[&quot;badNews&quot;, [f&quot;sem_{au}&quot; for au in aus]]
-good_means = summary.loc[&quot;goodNews&quot;, [f&quot;mean_{au}&quot; for au in aus]]
-good_sems = summary.loc[&quot;goodNews&quot;, [f&quot;sem_{au}&quot; for au in aus]]
+<span class="c1"># Organize them for plotting</span>
+<span class="n">bad_means</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;badNews&quot;</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mean_</span><span class="si">{</span><span class="n">au</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">aus</span><span class="p">]]</span>
+<span class="n">bad_sems</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;badNews&quot;</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sem_</span><span class="si">{</span><span class="n">au</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">aus</span><span class="p">]]</span>
+<span class="n">good_means</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mean_</span><span class="si">{</span><span class="n">au</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">aus</span><span class="p">]]</span>
+<span class="n">good_sems</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;goodNews&quot;</span><span class="p">,</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sem_</span><span class="si">{</span><span class="n">au</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">au</span> <span class="ow">in</span> <span class="n">aus</span><span class="p">]]</span>
 
-# Plot
-fig, ax = plt.subplots(figsize=(3, 4))
-ind = np.arange(len(bad_means))
-width = 0.35
-rects1 = ax.bar(ind - width / 2, bad_means, width, yerr=bad_sems, label=&quot;Bad News&quot;);
-rects2 = ax.bar(ind + width / 2, good_means, width, yerr=good_sems, label=&quot;Good News&quot;);
-ax.set(ylabel=&quot;Average Probability&quot;, title=&quot;&quot;, xticks=ind, xticklabels=aus, ylim=(0, 1));
-ax.legend(loc=&quot;upper left&quot;, frameon=False);
-plt.axhline(0.5, ls=&quot;--&quot;, color=&quot;k&quot;);
-sns.despine();
-plt.xticks(rotation=45);
-plt.tight_layout();
-plt.savefig(&#39;./fig_maker/au_diffs.pdf&#39;, bbox_inches=&#39;tight&#39;);
+<span class="c1"># Plot</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bad_means</span><span class="p">))</span>
+<span class="n">width</span> <span class="o">=</span> <span class="mf">0.35</span>
+<span class="n">rects1</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ind</span> <span class="o">-</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">bad_means</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">bad_sems</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Bad News&quot;</span><span class="p">);</span>
+<span class="n">rects2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">good_means</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">good_sems</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Good News&quot;</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Average Probability&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">xticks</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">xticklabels</span><span class="o">=</span><span class="n">aus</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">);</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">();</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;./fig_maker/au_diffs.pdf&#39;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1630,44 +1630,44 @@ plt.savefig(&#39;./fig_maker/au_diffs.pdf&#39;, bbox_inches=&#39;tight&#39;);
 <p>This is analogous to the “mass-univariate” GLM approach in fMRI research, and allows us to identify what AUs are significantly more active in one condition vs another:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Save the by_condition fex from above
-by_condition = video_means.update_sessions(video2condition)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save the by_condition fex from above</span>
+<span class="n">by_condition</span> <span class="o">=</span> <span class="n">video_means</span><span class="o">.</span><span class="n">update_sessions</span><span class="p">(</span><span class="n">video2condition</span><span class="p">)</span>
 
-# We set numerical contrasts to compare mean good news &gt; mean bad news
-by_condition_codes = by_condition.update_sessions({&quot;goodNews&quot;: 1., &quot;badNews&quot;: -1})
+<span class="c1"># We set numerical contrasts to compare mean good news &gt; mean bad news</span>
+<span class="n">by_condition_codes</span> <span class="o">=</span> <span class="n">by_condition</span><span class="o">.</span><span class="n">update_sessions</span><span class="p">({</span><span class="s2">&quot;goodNews&quot;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span> <span class="s2">&quot;badNews&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">})</span>
 
-# Now we perform a regression (t-test) at every AU
-b, se, t, p, df, residuals = by_condition_codes.regress(
-    X=&quot;sessions&quot;, y=&quot;aus&quot;, fit_intercept=True
-)
+<span class="c1"># Now we perform a regression (t-test) at every AU</span>
+<span class="n">b</span><span class="p">,</span> <span class="n">se</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="n">by_condition_codes</span><span class="o">.</span><span class="n">regress</span><span class="p">(</span>
+    <span class="n">X</span><span class="o">=</span><span class="s2">&quot;sessions&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;aus&quot;</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 
-# We can perform bonferroni correction for multiple comparisions:
-p_bonf = p / p.shape[1]
+<span class="c1"># We can perform bonferroni correction for multiple comparisions:</span>
+<span class="n">p_bonf</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-results = pd.concat(
-    [
-        b.round(3).loc[[&quot;sessions&quot;]].rename(index={&quot;sessions&quot;: &quot;betas&quot;}),
-        se.round(3).loc[[&quot;sessions&quot;]].rename(index={&quot;sessions&quot;: &quot;ses&quot;}),
-        t.round(3).loc[[&quot;sessions&quot;]].rename(index={&quot;sessions&quot;: &quot;t-stats&quot;}),
-        df.round(3).loc[[&quot;sessions&quot;]].rename(index={&quot;sessions&quot;: &quot;dof&quot;}),
-        p_bonf.round(3).loc[[&quot;sessions&quot;]].rename(index={&quot;sessions&quot;: &quot;p-values&quot;}),
-    ]
-)
+<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">b</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">&quot;sessions&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sessions&quot;</span><span class="p">:</span> <span class="s2">&quot;betas&quot;</span><span class="p">}),</span>
+        <span class="n">se</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">&quot;sessions&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sessions&quot;</span><span class="p">:</span> <span class="s2">&quot;ses&quot;</span><span class="p">}),</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">&quot;sessions&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sessions&quot;</span><span class="p">:</span> <span class="s2">&quot;t-stats&quot;</span><span class="p">}),</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">&quot;sessions&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sessions&quot;</span><span class="p">:</span> <span class="s2">&quot;dof&quot;</span><span class="p">}),</span>
+        <span class="n">p_bonf</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">&quot;sessions&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sessions&quot;</span><span class="p">:</span> <span class="s2">&quot;p-values&quot;</span><span class="p">}),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 
-ax = results.loc[&quot;betas&quot;].plot(
-    kind=&quot;bar&quot;,
-    yerr=results.loc[&quot;ses&quot;],
-    color=[
-        &quot;steelblue&quot; if elem else &quot;gray&quot;
-        for elem in results.loc[&quot;p-values&quot;] &lt; 0.01
-    ],
-    title=&quot;Good News &gt; Bad News\n(blue: p &lt; .01)&quot;,
-);
-xticks = ax.get_xticklabels();
-xticks = [elem.get_text().split(&#39;_&#39;)[-1] for elem in xticks]
-ax.set_xticklabels(xticks);
-ax.set_ylabel(&#39;Beta +/- SE&#39;);
-sns.despine();
+<span class="n">ax</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;betas&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+    <span class="n">yerr</span><span class="o">=</span><span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;ses&quot;</span><span class="p">],</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;steelblue&quot;</span> <span class="k">if</span> <span class="n">elem</span> <span class="k">else</span> <span class="s2">&quot;gray&quot;</span>
+        <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;p-values&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span>
+    <span class="p">],</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Good News &gt; Bad News</span><span class="se">\n</span><span class="s2">(blue: p &lt; .01)&quot;</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">xticks</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">();</span>
+<span class="n">xticks</span> <span class="o">=</span> <span class="p">[</span><span class="n">elem</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">xticks</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">xticks</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Beta +/- SE&#39;</span><span class="p">);</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -1682,75 +1682,75 @@ sns.despine();
 <p>To do this we can use the <code class="docutils literal notranslate"><span class="pre">.predict()</span></code> which behaves just like <code class="docutils literal notranslate"><span class="pre">.regress()</span></code> but also requires a <code class="docutils literal notranslate"><span class="pre">sklearn</span></code> <code class="docutils literal notranslate"><span class="pre">Estimator</span></code>. We can use keyword arguments to perform 10-fold cross-validation to test the accuracy of each decoder:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.preprocessing import (
-    StandardScaler,
-)  # always a good idea to normalize your features!
-from sklearn.pipeline import make_pipeline
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.discriminant_analysis</span> <span class="kn">import</span> <span class="n">LinearDiscriminantAnalysis</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StandardScaler</span><span class="p">,</span>
+<span class="p">)</span>  <span class="c1"># always a good idea to normalize your features!</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
 
-# List of different models we&#39;ll train
-feature_list = [&quot;emotions&quot;, &quot;aus&quot;, &quot;poses&quot;, &quot;emotions,poses&quot;, &quot;aus,poses&quot;]
-results = []
-models = {}
+<span class="c1"># List of different models we&#39;ll train</span>
+<span class="n">feature_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;emotions&quot;</span><span class="p">,</span> <span class="s2">&quot;aus&quot;</span><span class="p">,</span> <span class="s2">&quot;poses&quot;</span><span class="p">,</span> <span class="s2">&quot;emotions,poses&quot;</span><span class="p">,</span> <span class="s2">&quot;aus,poses&quot;</span><span class="p">]</span>
+<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
 
-for features in feature_list:
+<span class="k">for</span> <span class="n">features</span> <span class="ow">in</span> <span class="n">feature_list</span><span class="p">:</span>
 
-    # .predict is just like .regress, but this time session is our y.
-    model, accuracy = by_condition.predict(
-        X=features,
-        y=&quot;sessions&quot;,
-        model=make_pipeline(StandardScaler(), LinearDiscriminantAnalysis()),
-        cv_kwargs={&quot;cv&quot;: 10},
-    )
+    <span class="c1"># .predict is just like .regress, but this time session is our y.</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="n">by_condition</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="s2">&quot;sessions&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">LinearDiscriminantAnalysis</span><span class="p">()),</span>
+        <span class="n">cv_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cv&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="p">)</span>
 
-    # Save the model
-    models[features] = model
+    <span class="c1"># Save the model</span>
+    <span class="n">models</span><span class="p">[</span><span class="n">features</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
 
-    # Save the performance for plotting
-    results.append(
-        pd.DataFrame(
-            {&quot;Accuracy&quot;: accuracy * 100, &quot;Features&quot;: [features] * len(accuracy)}
-        )
-    )
-    # Print performance
-    print(
-        f&quot;{features} model accuracy: {accuracy.mean()*100:.3g}% +/- {accuracy.std()*100:.3g}%&quot;
-    )
+    <span class="c1"># Save the performance for plotting</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;Accuracy&quot;</span><span class="p">:</span> <span class="n">accuracy</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;Features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">features</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">accuracy</span><span class="p">)}</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="c1"># Print performance</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">features</span><span class="si">}</span><span class="s2"> model accuracy: </span><span class="si">{</span><span class="n">accuracy</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">% +/- </span><span class="si">{</span><span class="n">accuracy</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">%&quot;</span>
+    <span class="p">)</span>
 
-# Concat results into a single dataframe and tweak column names
-results = pd.concat(results).assign(
-    Features=lambda df: df.Features.map(
-        {
-            &quot;emotions&quot;: &quot;Emotions&quot;,
-            &quot;poses&quot;: &quot;Pose&quot;,
-            &quot;aus&quot;: &quot;AUs&quot;,
-            &quot;emotions,poses&quot;: &quot;Emotions\n+ Pose&quot;,
-            &quot;aus,poses&quot;: &quot;AUs+Pose&quot;,
-        }
-    )
-)
-# Plot it
-# with sns.plotting_context(&quot;talk&quot;, font_scale=1.8):
-f, ax = plt.subplots(1, 1, figsize=(3.75,4));
-ax = sns.barplot(
-    x=&quot;Features&quot;,
-    y=&quot;Accuracy&quot;,
-    errorbar=&quot;sd&quot;,
-    dodge=False,
-    hue=&quot;Features&quot;,
-    data=results,
-    ax=ax,
-    order=[&quot;Emotions&quot;, &quot;Emotions\n+ Pose&quot;, &quot;AUs+Pose&quot;, &quot;AUs&quot;, &quot;Pose&quot;],
-);
-ax.get_legend().remove();
-ax.set_title(&quot;Good News vs Bad News\nClassifier Performance&quot;);
-ax.set(ylabel=&quot;Accuracy&quot;, xlabel=&quot;&quot;);
-sns.despine();
-plt.axhline(y=50, ls=&quot;--&quot;, color=&quot;k&quot;);
-plt.xticks(rotation=90);
-plt.tight_layout();
+<span class="c1"># Concat results into a single dataframe and tweak column names</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+    <span class="n">Features</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">Features</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;emotions&quot;</span><span class="p">:</span> <span class="s2">&quot;Emotions&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;poses&quot;</span><span class="p">:</span> <span class="s2">&quot;Pose&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;aus&quot;</span><span class="p">:</span> <span class="s2">&quot;AUs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;emotions,poses&quot;</span><span class="p">:</span> <span class="s2">&quot;Emotions</span><span class="se">\n</span><span class="s2">+ Pose&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;aus,poses&quot;</span><span class="p">:</span> <span class="s2">&quot;AUs+Pose&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="c1"># Plot it</span>
+<span class="c1"># with sns.plotting_context(&quot;talk&quot;, font_scale=1.8):</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">3.75</span><span class="p">,</span><span class="mi">4</span><span class="p">));</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;Features&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Accuracy&quot;</span><span class="p">,</span>
+    <span class="n">errorbar</span><span class="o">=</span><span class="s2">&quot;sd&quot;</span><span class="p">,</span>
+    <span class="n">dodge</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;Features&quot;</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">results</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+    <span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Emotions&quot;</span><span class="p">,</span> <span class="s2">&quot;Emotions</span><span class="se">\n</span><span class="s2">+ Pose&quot;</span><span class="p">,</span> <span class="s2">&quot;AUs+Pose&quot;</span><span class="p">,</span> <span class="s2">&quot;AUs&quot;</span><span class="p">,</span> <span class="s2">&quot;Pose&quot;</span><span class="p">],</span>
+<span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">();</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Good News vs Bad News</span><span class="se">\n</span><span class="s2">Classifier Performance&quot;</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Accuracy&quot;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">);</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">();</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
 
-plt.savefig(&#39;./decoding_acc.pdf&#39;, bbox_inches=&#39;tight&#39;);
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;./decoding_acc.pdf&#39;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1770,18 +1770,18 @@ aus,poses model accuracy: 90% +/- 20%
 <p>Using what we learned in the previous tutorial, we can visualize the coefficients for any models that used AU features. This allows us to “see” the underlying facial expression that the classifier learned!</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.plotting import plot_face
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">plot_face</span>
 
-plot_face(
-    au=models[&#39;aus&#39;][1].coef_.squeeze(), # the LDA coefs from the AUs pipeline model
-    feature_range=(0, 1),
-    muscles={&quot;all&quot;: &quot;heatmap&quot;},
-    title=&quot;Expression reconstructed from\nAU classifier weights&quot;,
-    title_kwargs={&#39;wrap&#39;:False}
-);
-sns.despine(left=True,bottom=True);
+<span class="n">plot_face</span><span class="p">(</span>
+    <span class="n">au</span><span class="o">=</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;aus&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="c1"># the LDA coefs from the AUs pipeline model</span>
+    <span class="n">feature_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">muscles</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;all&quot;</span><span class="p">:</span> <span class="s2">&quot;heatmap&quot;</span><span class="p">},</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Expression reconstructed from</span><span class="se">\n</span><span class="s2">AU classifier weights&quot;</span><span class="p">,</span>
+    <span class="n">title_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;wrap&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
+<span class="p">);</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
 
-plt.savefig(&#39;./fig_maker/weights.pdf&#39;, bbox_inches=&#39;tight&#39;);
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;./fig_maker/weights.pdf&#39;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1792,15 +1792,15 @@ plt.savefig(&#39;./fig_maker/weights.pdf&#39;, bbox_inches=&#39;tight&#39;);
 <p>Even cooler we can <em>animate</em> that face expression to <strong>emphasize what’s changing.</strong> Here we start from a neutral face:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.plotting import animate_face
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">animate_face</span>
 
-animation = animate_face(
-    end=models[&#39;aus&#39;][1].coef_.squeeze(), # same as before
-    feature_range=(0, 1),
-    muscles={&#39;all&#39;: &#39;heatmap&#39;},
-    title=&quot;Good vs Bad News Classifier Weights&quot;,
-    save=&quot;weights.gif&quot;,
-)
+<span class="n">animation</span> <span class="o">=</span> <span class="n">animate_face</span><span class="p">(</span>
+    <span class="n">end</span><span class="o">=</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;aus&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="c1"># same as before</span>
+    <span class="n">feature_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">muscles</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">},</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Good vs Bad News Classifier Weights&quot;</span><span class="p">,</span>
+    <span class="n">save</span><span class="o">=</span><span class="s2">&quot;weights.gif&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1814,55 +1814,55 @@ animation = animate_face(
 <p>We use some helper functions to cluster, sort, and plot the correlation matrix. Warmer colors indicate a pair of videos elicited more <em>similar</em> detected Happiness over time. We see that some videos show high-correlation in-terms of their detected happiness over-time. This is likely why the classifier above was able to decode conditions so well.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># ISC returns a video x video pearson correlation matrix
-isc = fex.isc(col = &quot;happiness&quot;, method=&#39;pearson&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ISC returns a video x video pearson correlation matrix</span>
+<span class="n">isc</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">isc</span><span class="p">(</span><span class="n">col</span> <span class="o">=</span> <span class="s2">&quot;happiness&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pearson&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def cluster_corrs(df):
-    &quot;&quot;&quot;Helper to reorder rows and cols of correlation matrix based on clustering&quot;&quot;&quot;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cluster_corrs</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to reorder rows and cols of correlation matrix based on clustering&quot;&quot;&quot;</span>
 
-    import scipy.cluster.hierarchy as sch
+    <span class="kn">import</span> <span class="nn">scipy.cluster.hierarchy</span> <span class="k">as</span> <span class="nn">sch</span>
 
-    pairwise_distances = sch.distance.pdist(df)
-    linkage = sch.linkage(pairwise_distances, method=&quot;complete&quot;)
-    cluster_distance_threshold = pairwise_distances.max() / 2
-    idx_to_cluster_array = sch.fcluster(
-        linkage, cluster_distance_threshold, criterion=&quot;distance&quot;
-    )
-    idx = np.argsort(idx_to_cluster_array)
-    return df.iloc[idx, :].T.iloc[idx, :]
+    <span class="n">pairwise_distances</span> <span class="o">=</span> <span class="n">sch</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">pdist</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">linkage</span> <span class="o">=</span> <span class="n">sch</span><span class="o">.</span><span class="n">linkage</span><span class="p">(</span><span class="n">pairwise_distances</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">)</span>
+    <span class="n">cluster_distance_threshold</span> <span class="o">=</span> <span class="n">pairwise_distances</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">idx_to_cluster_array</span> <span class="o">=</span> <span class="n">sch</span><span class="o">.</span><span class="n">fcluster</span><span class="p">(</span>
+        <span class="n">linkage</span><span class="p">,</span> <span class="n">cluster_distance_threshold</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span>
+    <span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">idx_to_cluster_array</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
 
-def add_cond_to_ticks(ax):
-    &quot;&quot;&quot;Helper to add condition info to each tick label&quot;&quot;&quot;
-    xlabels, ylabels = [], []
-    for xlabel, ylabel in zip(ax.get_xticklabels(), ax.get_yticklabels()):
-        x_condition = video2condition[xlabel.get_text()]
-        y_condition = video2condition[ylabel.get_text()]
-        x_new = f&quot;{x_condition[:-4]}_{xlabel.get_text().split(&#39;.csv&#39;)[0][1:]}&quot;
-        y_new = f&quot;{y_condition[:-4]}_{ylabel.get_text().split(&#39;.csv&#39;)[0][1:]}&quot;
-        xlabels.append(x_new)
-        ylabels.append(y_new)
+<span class="k">def</span> <span class="nf">add_cond_to_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to add condition info to each tick label&quot;&quot;&quot;</span>
+    <span class="n">xlabels</span><span class="p">,</span> <span class="n">ylabels</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">()):</span>
+        <span class="n">x_condition</span> <span class="o">=</span> <span class="n">video2condition</span><span class="p">[</span><span class="n">xlabel</span><span class="o">.</span><span class="n">get_text</span><span class="p">()]</span>
+        <span class="n">y_condition</span> <span class="o">=</span> <span class="n">video2condition</span><span class="p">[</span><span class="n">ylabel</span><span class="o">.</span><span class="n">get_text</span><span class="p">()]</span>
+        <span class="n">x_new</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x_condition</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">xlabel</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">y_new</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">y_condition</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">ylabel</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">xlabels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_new</span><span class="p">)</span>
+        <span class="n">ylabels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_new</span><span class="p">)</span>
 
-    ax.set_xticklabels(xlabels);
-    ax.set_yticklabels(ylabels);
-    return ax
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">xlabels</span><span class="p">);</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">ylabels</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">ax</span>
 
-# Plot it
-ax = sns.heatmap(
-    cluster_corrs(isc),
-    cmap=&quot;RdBu_r&quot;,
-    vmin=-1, vmax=1,
-    square=True,
-)
+<span class="c1"># Plot it</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+    <span class="n">cluster_corrs</span><span class="p">(</span><span class="n">isc</span><span class="p">),</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
 
-ax = add_cond_to_ticks(ax)
+<span class="n">ax</span> <span class="o">=</span> <span class="n">add_cond_to_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
 
-ax.set(xlabel=&quot;&quot;, ylabel=&quot;&quot;, title=&quot;Inter-video Happiness\ntimeseries correlation&quot;);
-plt.savefig(&#39;./fig_maker/isc.pdf&#39;, bbox_inches=&#39;tight&#39;);
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Inter-video Happiness</span><span class="se">\n</span><span class="s2">timeseries correlation&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;./fig_maker/isc.pdf&#39;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>

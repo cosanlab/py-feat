@@ -634,7 +634,10 @@ degrees) for each face within in each image}</p>
 <dd><p>Detect faces from image or video frame</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – threshold for detectiong faces (default=0.5)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>list of lists with the same length as the number of frames. Each list
@@ -657,7 +660,7 @@ face in that frame.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_image">
-<span class="sig-name descname"><span class="pre">detect_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_failed_detections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_image" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">detect_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_image" title="Permalink to this definition">#</a></dt>
 <dd><p>Detects FEX from one or more image files. If you want to speed up detection you
 can process multiple images in batches by setting <cite>batch_size &gt; 1</cite>. However, all
 images must have <strong>the same dimensions</strong> to be processed in batches. Py-feat can
@@ -668,18 +671,18 @@ output-sizes include 256 and 512.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input_file_list</strong> (<em>list of str</em>) – Path to a list of paths to image files.</p></li>
-<li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all image preserving aspect ratio.</p></li>
-<li><p><strong>size</strong> (<em>Will raise an error if not set and batch_size &gt; 1 but images are not the same</em>) – </p></li>
-<li><p><strong>batch_size</strong> (<em>int</em>) – how many batches of images you want to run at one shot.</p></li>
-<li><p><strong>the</strong> (<em>Larger gives faster speed but is more memory-consuming. Images must be</em>) – </p></li>
+<li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all image preserving aspect ratio.
+Will raise an error if not set and batch_size &gt; 1 but images are not the same size</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – how many batches of images you want to run at one shot.
+Larger gives faster speed but is more memory-consuming. Images must be the</p></li>
 <li><p><strong>batches!</strong> (<em>same size to be run in</em>) – </p></li>
 <li><p><strong>num_workers</strong> (<em>int</em>) – how many subprocesses to use for data loading. <code class="docutils literal notranslate"><span class="pre">0</span></code> means that the data will be loaded in the main process.</p></li>
 <li><p><strong>pin_memory</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data loader will copy Tensors into CUDA pinned memory before returning them.  If your data elements are a custom type, or your <code class="xref py py-attr docutils literal notranslate"><span class="pre">collate_fn</span></code> returns a batch that is a custom type</p></li>
 <li><p><strong>frame_counter</strong> (<em>int</em>) – starting value to count frames</p></li>
-<li><p><strong>threshold</strong> (<em>float</em>) – value between 0-1 to report a detection based on the</p></li>
-<li><p><strong>0.5</strong> (<em>confidence of the face detector; Default &gt;=</em>) – </p></li>
-<li><p><strong>**kwargs</strong> – you can pass each detector specific kwargs using a dictionary</p></li>
-<li><p><strong>like</strong> – <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li>
+<li><p><strong>face_detection_threshold</strong> (<em>float</em>) – value between 0-1 to report a detection based on the
+confidence of the face detector; Default &gt;= 0.5</p></li>
+<li><p><strong>**kwargs</strong> – you can pass each detector specific kwargs using a dictionary
+like: <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -722,7 +725,7 @@ output-sizes include 256 and 512.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_video">
-<span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">700</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">detector_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">700</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">#</a></dt>
 <dd><p>Detects FEX from a video file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -736,6 +739,8 @@ output-sizes include 256 and 512.</p>
 <li><p><strong>pin_memory</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data loader will copy Tensors
 into CUDA pinned memory before returning them.  If your data elements
 are a custom type, or your <code class="xref py py-attr docutils literal notranslate"><span class="pre">collate_fn</span></code> returns a batch that is a custom type</p></li>
+<li><p><strong>face_detection_threshold</strong> (<em>float</em>) – value between 0-1 to report a detection based on the
+confidence of the face detector; Default &gt;= 0.5</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2064,6 +2069,12 @@ non-linear easing functions</p>
 <section id="module-feat.utils">
 <span id="feat-utils-module"></span><h1>feat.utils module<a class="headerlink" href="#module-feat.utils" title="Permalink to this headline">#</a></h1>
 <p>py-feat helper functions and variables</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.utils.is_list_of_lists_empty">
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">is_list_of_lists_empty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_lists</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.is_list_of_lists_empty" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to check if list of lists is empty</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.set_torch_device">
 <span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">set_torch_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.set_torch_device" title="Permalink to this definition">#</a></dt>

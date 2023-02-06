@@ -569,8 +569,8 @@ title="Print to PDF"
 <p>At a broad level you will be working with 2 main objects in Py-Feat:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Uncomment the line below and run this only if you&#39;re using Google Collab
-# !pip install -q py-feat
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
+<span class="c1"># !pip install -q py-feat</span>
 </pre></div>
 </div>
 </div>
@@ -581,16 +581,16 @@ title="Print to PDF"
 <p>The first time you initialize a <code class="docutils literal notranslate"><span class="pre">Detector</span></code> instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you and save them to disk. Everytime after that it will use existing model weights:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.detector import Detector
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.detector</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-# The verbose flag will print out messages indicating whether a pre-trained model
-# is being downloaded for the first time, or being loaded from disk.
-# In this case I already have all the models downloaded, but if you run this notebook on
-# your personal computer or Google Collab, these will be downloaded the first time you
-# use a Detector.
-detector = Detector(verbose=True)
+<span class="c1"># The verbose flag will print out messages indicating whether a pre-trained model</span>
+<span class="c1"># is being downloaded for the first time, or being loaded from disk.</span>
+<span class="c1"># In this case I already have all the models downloaded, but if you run this notebook on</span>
+<span class="c1"># your personal computer or Google Collab, these will be downloaded the first time you</span>
+<span class="c1"># use a Detector.</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-detector
+<span class="n">detector</span>
 </pre></div>
 </div>
 </div>
@@ -627,8 +627,8 @@ Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat
 <p>After initializing a detector you can easily swap one or more underlying models using the <code class="docutils literal notranslate"><span class="pre">.change_model</span></code> method. All models names should be provided as strings and are case-insensitive:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector.change_model(face_model=&quot;MTCNN&quot;)
-detector
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span><span class="o">.</span><span class="n">change_model</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s2">&quot;MTCNN&quot;</span><span class="p">)</span>
+<span class="n">detector</span>
 </pre></div>
 </div>
 </div>
@@ -664,12 +664,12 @@ Changing face_model from retinaface -&gt; mtcnn
 <p>Fex data instances have helper methods on them to quickly retrieve the appropriate data you want without having to search through column names yourself, e.g.  <code class="docutils literal notranslate"><span class="pre">fex.emotions()</span></code>. They also have methods for plotting e.g. <code class="docutils literal notranslate"><span class="pre">fex.plot_detections()</span></code>, signal-processing e.g. <code class="docutils literal notranslate"><span class="pre">fex.downsample()</span></code>, and statistical analysis e.g. <code class="docutils literal notranslate"><span class="pre">fex.regress()</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.data import Fex
-import pandas as pd
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.data</span> <span class="kn">import</span> <span class="n">Fex</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-fex = Fex()
+<span class="n">fex</span> <span class="o">=</span> <span class="n">Fex</span><span class="p">()</span>
 
-isinstance(fex, pd.DataFrame)
+<span class="nb">isinstance</span><span class="p">(</span><span class="n">fex</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

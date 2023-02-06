@@ -564,59 +564,59 @@ title="Print to PDF"
 <p>In the tutorial we will demonstrate how to evaluate pyfeat bounding pose detection algorithms with evaluation data</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import glob
-import os
-# Extract Pose information from 
-from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
-from PIL import Image, ImageDraw
-import torchvision.transforms as transforms
-import torch
-from feat import Detector
-import matplotlib.pyplot as plt
-import glob
-from torchvision import datasets, transforms
-from torch.utils.data import Dataset, DataLoader
-from tqdm import tqdm
-import pickle
-import numpy as np
-from scipy.spatial.transform import Rotation
-from feat import Detector
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="c1"># Extract Pose information from </span>
+<span class="kn">from</span> <span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span> <span class="kn">import</span> <span class="n">Img2Pose</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.transform</span> <span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-def convert_to_aflw(rotvec, is_rotvec=True):
-    if is_rotvec:
-        rotvec = Rotation.from_rotvec(rotvec).as_matrix()
-    rot_mat_2 = np.transpose(rotvec)
-    angle = Rotation.from_matrix(rot_mat_2).as_euler(&#39;xyz&#39;, degrees=True)
+<span class="k">def</span> <span class="nf">convert_to_aflw</span><span class="p">(</span><span class="n">rotvec</span><span class="p">,</span> <span class="n">is_rotvec</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">is_rotvec</span><span class="p">:</span>
+        <span class="n">rotvec</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_rotvec</span><span class="p">(</span><span class="n">rotvec</span><span class="p">)</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="n">rot_mat_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">rotvec</span><span class="p">)</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">rot_mat_2</span><span class="p">)</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     
-    return np.array([angle[0], -angle[1], -angle[2]])
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">angle</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">angle</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">angle</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>class GenericImageDataset(Dataset):
-    &quot;&quot;&quot;Generic Image dataset loader for PyTorch.&quot;&quot;&quot;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GenericImageDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generic Image dataset loader for PyTorch.&quot;&quot;&quot;</span>
 
-    def __init__(self, file_paths, transform=None):
-        &quot;&quot;&quot;
-        Args:
-            csv_file (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
-        &quot;&quot;&quot;
-        self.filePaths = file_paths
-        self.transform = transform
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_paths</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            csv_file (string): Path to the csv file with annotations.</span>
+<span class="sd">            root_dir (string): Directory with all the images.</span>
+<span class="sd">            transform (callable, optional): Optional transform to be applied</span>
+<span class="sd">                on a sample.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span> <span class="o">=</span> <span class="n">file_paths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
 
-    def __len__(self):
-        return len(self.filePaths)
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span><span class="p">)</span>
 
-    def __getitem__(self, idx):
-        img = Image.open(self.filePaths[idx])
-        if self.transform:
-            img = self.transform(img)
-        return img
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">img</span>
 </pre></div>
 </div>
 </div>
@@ -624,8 +624,8 @@ def convert_to_aflw(rotvec, is_rotvec=True):
 <p>Provide the path for the data. It can be downloaded from https://www.kaggle.com/datasets/kmader/biwi-kinect-head-pose-database</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>data_dir = &#39;/Storage/Data/Kinect_Pose/hpdb/&#39;
-all_imgs_paths = glob.glob(data_dir+&#39;**/*.png&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Data/Kinect_Pose/hpdb/&#39;</span>
+<span class="n">all_imgs_paths</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="s1">&#39;**/*.png&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -635,57 +635,57 @@ all_imgs_paths = glob.glob(data_dir+&#39;**/*.png&#39;)
 <h1>Unconstrained<a class="headerlink" href="#unconstrained" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>imclassifier = Img2Pose(constrained=False, detection_threshold=0.25, rpn_pre_nms_top_n_test=6000, rpn_post_nms_top_n_test=1000)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">imclassifier</span> <span class="o">=</span> <span class="n">Img2Pose</span><span class="p">(</span><span class="n">constrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">detection_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">rpn_pre_nms_top_n_test</span><span class="o">=</span><span class="mi">6000</span><span class="p">,</span> <span class="n">rpn_post_nms_top_n_test</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 
-img_trans = transforms.Compose([
-    transforms.ToTensor()
-])
+<span class="n">img_trans</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>
+<span class="p">])</span>
 
-dataset = GenericImageDataset(all_imgs_paths, transform=img_trans)
-dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=2)
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">GenericImageDataset</span><span class="p">(</span><span class="n">all_imgs_paths</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_trans</span><span class="p">)</span>
+<span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-all_pred_vals = []
-for i_batch, sample_batched in enumerate(tqdm(dataloader)):
-    preds = imclassifier(sample_batched)
-    all_pred_vals.append(preds[1])
+<span class="n">all_pred_vals</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i_batch</span><span class="p">,</span> <span class="n">sample_batched</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">imclassifier</span><span class="p">(</span><span class="n">sample_batched</span><span class="p">)</span>
+    <span class="n">all_pred_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-pose_targets = []
-for img_path in all_imgs_paths:
-    annotations  = open(img_path.replace(&quot;_rgb.png&quot;, &quot;_pose.txt&quot;))
-    lines = annotations.readlines()
+<span class="n">pose_targets</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">img_path</span> <span class="ow">in</span> <span class="n">all_imgs_paths</span><span class="p">:</span>
+    <span class="n">annotations</span>  <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">img_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_rgb.png&quot;</span><span class="p">,</span> <span class="s2">&quot;_pose.txt&quot;</span><span class="p">))</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
 
-    pose_target = []
-    for i in range(3):
-        lines[i] = str(lines[i].rstrip(&quot;\n&quot;)) 
-        pose_target.append(lines[i].split(&quot; &quot;)[:3])
-    pose_target = np.asarray(pose_target).astype(float)     
-    pose_target = convert_to_aflw(pose_target, False)
-    pose_targets.append(pose_target)
-pose_target_arr = np.asarray(pose_targets)#[np.array(invalids), :]
-pose_target_arr[:, [1, 2]] = pose_target_arr[:, [2, 1]]
+    <span class="n">pose_target</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span> 
+        <span class="n">pose_target</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[:</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">pose_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pose_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>     
+    <span class="n">pose_target</span> <span class="o">=</span> <span class="n">convert_to_aflw</span><span class="p">(</span><span class="n">pose_target</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">pose_targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pose_target</span><span class="p">)</span>
+<span class="n">pose_target_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pose_targets</span><span class="p">)</span><span class="c1">#[np.array(invalids), :]</span>
+<span class="n">pose_target_arr</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pose_target_arr</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
 
-new_arr = []
-invalids = []
-for i, arrr1 in enumerate(tqdm(all_pred_vals)):
-    if len(arrr1[0]) &gt; 0: 
-        if len(arrr1[0]) == 1: 
-            new_arr.append(arrr1[0][0][0])
-            invalids.append(i)
-        else:
-            vv = []
-            for part_arr in arrr1[0]:
-                val = np.sum(abs(part_arr - pose_target_arr[i]))
-                vv.append(val)
-            argmin = np.argmin(vv)
-            new_arr.append(arrr1[0][argmin][0])
-            invalids.append(i)
-    else:
-        continue;
-new_arr = np.vstack(new_arr)
+<span class="n">new_arr</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">invalids</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arrr1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">all_pred_vals</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> 
+            <span class="n">new_arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">invalids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vv</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">part_arr</span> <span class="ow">in</span> <span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">part_arr</span> <span class="o">-</span> <span class="n">pose_target_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="n">vv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">argmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+            <span class="n">new_arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">argmin</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">invalids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">continue</span><span class="p">;</span>
+<span class="n">new_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">new_arr</span><span class="p">)</span>
 
-pose_ae = abs(new_arr - pose_target_arr[invalids,:])
-pose_ae_summed = np.sum(pose_ae, axis=1)
-neg_index = np.where(pose_ae_summed&gt;100)
+<span class="n">pose_ae</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_arr</span> <span class="o">-</span> <span class="n">pose_target_arr</span><span class="p">[</span><span class="n">invalids</span><span class="p">,:])</span>
+<span class="n">pose_ae_summed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pose_ae</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">neg_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pose_ae_summed</span><span class="o">&gt;</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -702,10 +702,10 @@ neg_index = np.where(pose_ae_summed&gt;100)
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&#39;pitch, yaw, roll error in degrees:&#39;)
-print(np.mean(pose_ae,0))
-print(&#39;average grand mean&#39;)
-print(np.mean(pose_ae))
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;pitch, yaw, roll error in degrees:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pose_ae</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;average grand mean&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pose_ae</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -723,57 +723,57 @@ average grand mean
 <h1>Constrained<a class="headerlink" href="#constrained" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>imclassifier = Img2Pose(constrained=True, detection_threshold=0.25, rpn_pre_nms_top_n_test=2000, rpn_post_nms_top_n_test=200)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">imclassifier</span> <span class="o">=</span> <span class="n">Img2Pose</span><span class="p">(</span><span class="n">constrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">detection_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">rpn_pre_nms_top_n_test</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">rpn_post_nms_top_n_test</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 
-img_trans = transforms.Compose([
-    transforms.ToTensor()
-])
+<span class="n">img_trans</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>
+<span class="p">])</span>
 
-dataset = GenericImageDataset(all_imgs_paths, transform=img_trans)
-dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=2)
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">GenericImageDataset</span><span class="p">(</span><span class="n">all_imgs_paths</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_trans</span><span class="p">)</span>
+<span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-all_pred_vals = []
-for i_batch, sample_batched in enumerate(tqdm(dataloader)):
-    preds = imclassifier(sample_batched)
-    all_pred_vals.append(preds[1])
+<span class="n">all_pred_vals</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i_batch</span><span class="p">,</span> <span class="n">sample_batched</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">imclassifier</span><span class="p">(</span><span class="n">sample_batched</span><span class="p">)</span>
+    <span class="n">all_pred_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-pose_targets = []
-for img_path in all_imgs_paths:
-    annotations  = open(img_path.replace(&quot;_rgb.png&quot;, &quot;_pose.txt&quot;))
-    lines = annotations.readlines()
+<span class="n">pose_targets</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">img_path</span> <span class="ow">in</span> <span class="n">all_imgs_paths</span><span class="p">:</span>
+    <span class="n">annotations</span>  <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">img_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_rgb.png&quot;</span><span class="p">,</span> <span class="s2">&quot;_pose.txt&quot;</span><span class="p">))</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
 
-    pose_target = []
-    for i in range(3):
-        lines[i] = str(lines[i].rstrip(&quot;\n&quot;)) 
-        pose_target.append(lines[i].split(&quot; &quot;)[:3])
-    pose_target = np.asarray(pose_target).astype(float)     
-    pose_target = convert_to_aflw(pose_target, False)
-    pose_targets.append(pose_target)
-pose_target_arr = np.asarray(pose_targets)#[np.array(invalids), :]
-pose_target_arr[:, [1, 2]] = pose_target_arr[:, [2, 1]]
+    <span class="n">pose_target</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span> 
+        <span class="n">pose_target</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[:</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">pose_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pose_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>     
+    <span class="n">pose_target</span> <span class="o">=</span> <span class="n">convert_to_aflw</span><span class="p">(</span><span class="n">pose_target</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">pose_targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pose_target</span><span class="p">)</span>
+<span class="n">pose_target_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pose_targets</span><span class="p">)</span><span class="c1">#[np.array(invalids), :]</span>
+<span class="n">pose_target_arr</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pose_target_arr</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
 
-new_arr = []
-invalids = []
-for i, arrr1 in enumerate(tqdm(all_pred_vals)):
-    if len(arrr1[0]) &gt; 0: 
-        if len(arrr1[0]) == 1: 
-            new_arr.append(arrr1[0][0][0])
-            invalids.append(i)
-        else:
-            vv = []
-            for part_arr in arrr1[0]:
-                val = np.sum(abs(part_arr - pose_target_arr[i]))
-                vv.append(val)
-            argmin = np.argmin(vv)
-            new_arr.append(arrr1[0][argmin][0])
-            invalids.append(i)
-    else:
-        continue;
-new_arr = np.vstack(new_arr)
+<span class="n">new_arr</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">invalids</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arrr1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">all_pred_vals</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> 
+            <span class="n">new_arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">invalids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vv</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">part_arr</span> <span class="ow">in</span> <span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">part_arr</span> <span class="o">-</span> <span class="n">pose_target_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="n">vv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">argmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+            <span class="n">new_arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arrr1</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">argmin</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">invalids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">continue</span><span class="p">;</span>
+<span class="n">new_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">new_arr</span><span class="p">)</span>
 
-pose_ae = abs(new_arr - pose_target_arr[invalids,:])
-pose_ae_summed = np.sum(pose_ae, axis=1)
-neg_index = np.where(pose_ae_summed&gt;100)
+<span class="n">pose_ae</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_arr</span> <span class="o">-</span> <span class="n">pose_target_arr</span><span class="p">[</span><span class="n">invalids</span><span class="p">,:])</span>
+<span class="n">pose_ae_summed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pose_ae</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">neg_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pose_ae_summed</span><span class="o">&gt;</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -786,10 +786,10 @@ neg_index = np.where(pose_ae_summed&gt;100)
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&#39;pitch, yaw, roll scores in degrees:&#39;)
-print(np.mean(pose_ae,0))
-print(&#39;average grand mean&#39;)
-print(np.mean(pose_ae))
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;pitch, yaw, roll scores in degrees:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pose_ae</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;average grand mean&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pose_ae</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>

@@ -587,7 +587,7 @@ to demonstrate how to test the trained models with additional test data</p>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="k">def</span> <span class="nf">align_face_68pts</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_land</span><span class="p">,</span> <span class="n">box_enlarge</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">112</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adapted from https://github.com/ZhiwenShao/PyTorch-JAANet by Zhiwen Shao, modified by Tiankang Xie</span>
 <span class="sd">    img: image</span>
 <span class="sd">    img_land: landmarks 68</span>
@@ -860,7 +860,7 @@ Loading emotion model:  None
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train a classifier</span>
 <span class="k">def</span> <span class="nf">balanced_sample_maker</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; return a balanced data set by sampling all classes with sample_size </span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; return a balanced data set by sampling all classes with sample_size </span>
 <span class="sd">        current version is developed on assumption that the positive</span>
 <span class="sd">        class is the minority.</span>
 

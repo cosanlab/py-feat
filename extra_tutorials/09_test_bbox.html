@@ -608,24 +608,24 @@ title="Print to PDF"
 <p>In the tutorial we will demonstrate how to evaluate pyfeat bounding box algorithms with evaluation data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import pickle
-import numpy as np
-import os
-from scipy.io import loadmat
-from tqdm import tqdm
-from PIL import Image, ImageDraw
-import matplotlib.pyplot as plt
-import pandas as pd
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">loadmat</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
-from PIL import Image, ImageDraw
-import torchvision.transforms as transforms
-import torch
-import glob
-from feat import Detector
-import matplotlib.pyplot as plt
+<span class="kn">from</span> <span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span> <span class="kn">import</span> <span class="n">Img2Pose</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
+<span class="kn">from</span> <span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span> <span class="kn">import</span> <span class="n">Img2Pose</span>
 </pre></div>
 </div>
 </div>
@@ -633,265 +633,265 @@ from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 <p>The benchmark script has already been provided by the authors in Matlab. We borrow code from https://github.com/wondervictor/WiderFace-Evaluation, which is a Python version of the original Matlab code.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Copyright (c) OpenMMLab. All rights reserved.
-def voc_ap(rec, prec):
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright (c) OpenMMLab. All rights reserved.</span>
+<span class="k">def</span> <span class="nf">voc_ap</span><span class="p">(</span><span class="n">rec</span><span class="p">,</span> <span class="n">prec</span><span class="p">):</span>
 
-    # correct AP calculation
-    # first append sentinel values at the end
-    mrec = np.concatenate(([0.], rec, [1.]))
-    mpre = np.concatenate(([0.], prec, [0.]))
+    <span class="c1"># correct AP calculation</span>
+    <span class="c1"># first append sentinel values at the end</span>
+    <span class="n">mrec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mf">0.</span><span class="p">],</span> <span class="n">rec</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.</span><span class="p">]))</span>
+    <span class="n">mpre</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mf">0.</span><span class="p">],</span> <span class="n">prec</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.</span><span class="p">]))</span>
 
-    # compute the precision envelope
-    for i in range(mpre.size - 1, 0, -1):
-        mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+    <span class="c1"># compute the precision envelope</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mpre</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">mpre</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">mpre</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">mpre</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-    # to calculate area under PR curve, look for points
-    # where X axis (recall) changes value
-    i = np.where(mrec[1:] != mrec[:-1])[0]
+    <span class="c1"># to calculate area under PR curve, look for points</span>
+    <span class="c1"># where X axis (recall) changes value</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mrec</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">mrec</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
-    # and sum (\Delta recall) * prec
-    ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
-    return ap
+    <span class="c1"># and sum (\Delta recall) * prec</span>
+    <span class="n">ap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">mrec</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">mrec</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">mpre</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ap</span>
     
-def dataset_pr_info(thresh_num, pr_curve, count_face):
-    _pr_curve = np.zeros((thresh_num, 2))
-    for i in range(thresh_num):
-        _pr_curve[i, 0] = pr_curve[i, 1] / pr_curve[i, 0]
-        _pr_curve[i, 1] = pr_curve[i, 1] / count_face
-    return _pr_curve
+<span class="k">def</span> <span class="nf">dataset_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pr_curve</span><span class="p">,</span> <span class="n">count_face</span><span class="p">):</span>
+    <span class="n">_pr_curve</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">thresh_num</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">):</span>
+        <span class="n">_pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">_pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">count_face</span>
+    <span class="k">return</span> <span class="n">_pr_curve</span>
 
-def img_pr_info(thresh_num, pred_info, proposal_list, pred_recall):
-    pr_info = np.zeros((thresh_num, 2)).astype(&#39;float&#39;)
-    for t in range(thresh_num):
+<span class="k">def</span> <span class="nf">img_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pred_info</span><span class="p">,</span> <span class="n">proposal_list</span><span class="p">,</span> <span class="n">pred_recall</span><span class="p">):</span>
+    <span class="n">pr_info</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">thresh_num</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">):</span>
 
-        thresh = 1 - (t+1)/thresh_num
-        r_index = np.where(pred_info[:, 4] &gt;= thresh)[0]
-        if len(r_index) == 0:
-            pr_info[t, 0] = 0
-            pr_info[t, 1] = 0
-        else:
-            r_index = r_index[-1]
-            p_index = np.where(proposal_list[:r_index+1] == 1)[0]
-            pr_info[t, 0] = len(p_index)
-            pr_info[t, 1] = pred_recall[r_index]
-    return pr_info
+        <span class="n">thresh</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">thresh_num</span>
+        <span class="n">r_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">pred_info</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">thresh</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pr_info</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">pr_info</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r_index</span> <span class="o">=</span> <span class="n">r_index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">p_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">proposal_list</span><span class="p">[:</span><span class="n">r_index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pr_info</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_index</span><span class="p">)</span>
+            <span class="n">pr_info</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_recall</span><span class="p">[</span><span class="n">r_index</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pr_info</span>
 
-def bbox_overlaps(bboxes1,
-                  bboxes2,
-                  mode=&#39;iou&#39;,
-                  eps=1e-6,
-                  use_legacy_coordinate=False):
-    &quot;&quot;&quot;Calculate the ious between each bbox of bboxes1 and bboxes2.
-    Args:
-        bboxes1 (ndarray): Shape (n, 4)
-        bboxes2 (ndarray): Shape (k, 4)
-        mode (str): IOU (intersection over union) or IOF (intersection
-            over foreground)
-        use_legacy_coordinate (bool): Whether to use coordinate system in
-            mmdet v1.x. which means width, height should be
-            calculated as &#39;x2 - x1 + 1` and &#39;y2 - y1 + 1&#39; respectively.
-            Note when function is used in `VOCDataset`, it should be
-            True to align with the official implementation
-            `http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar`
-            Default: False.
-    Returns:
-        ious (ndarray): Shape (n, k)
-    &quot;&quot;&quot;
+<span class="k">def</span> <span class="nf">bbox_overlaps</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">,</span>
+                  <span class="n">bboxes2</span><span class="p">,</span>
+                  <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;iou&#39;</span><span class="p">,</span>
+                  <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+                  <span class="n">use_legacy_coordinate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the ious between each bbox of bboxes1 and bboxes2.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        bboxes1 (ndarray): Shape (n, 4)</span>
+<span class="sd">        bboxes2 (ndarray): Shape (k, 4)</span>
+<span class="sd">        mode (str): IOU (intersection over union) or IOF (intersection</span>
+<span class="sd">            over foreground)</span>
+<span class="sd">        use_legacy_coordinate (bool): Whether to use coordinate system in</span>
+<span class="sd">            mmdet v1.x. which means width, height should be</span>
+<span class="sd">            calculated as &#39;x2 - x1 + 1` and &#39;y2 - y1 + 1&#39; respectively.</span>
+<span class="sd">            Note when function is used in `VOCDataset`, it should be</span>
+<span class="sd">            True to align with the official implementation</span>
+<span class="sd">            `http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar`</span>
+<span class="sd">            Default: False.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        ious (ndarray): Shape (n, k)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    assert mode in [&#39;iou&#39;, &#39;iof&#39;]
-    if not use_legacy_coordinate:
-        extra_length = 0.
-    else:
-        extra_length = 1.
-    bboxes1 = bboxes1.astype(np.float32)
-    bboxes2 = bboxes2.astype(np.float32)
-    rows = bboxes1.shape[0]
-    cols = bboxes2.shape[0]
-    ious = np.zeros((rows, cols), dtype=np.float32)
-    if rows * cols == 0:
-        return ious
-    exchange = False
-    if bboxes1.shape[0] &gt; bboxes2.shape[0]:
-        bboxes1, bboxes2 = bboxes2, bboxes1
-        ious = np.zeros((cols, rows), dtype=np.float32)
-        exchange = True
-    area1 = (bboxes1[:, 2] - bboxes1[:, 0] + extra_length) * (
-        bboxes1[:, 3] - bboxes1[:, 1] + extra_length)
-    area2 = (bboxes2[:, 2] - bboxes2[:, 0] + extra_length) * (
-        bboxes2[:, 3] - bboxes2[:, 1] + extra_length)
-    for i in range(bboxes1.shape[0]):
-        x_start = np.maximum(bboxes1[i, 0], bboxes2[:, 0])
-        y_start = np.maximum(bboxes1[i, 1], bboxes2[:, 1])
-        x_end = np.minimum(bboxes1[i, 2], bboxes2[:, 2])
-        y_end = np.minimum(bboxes1[i, 3], bboxes2[:, 3])
-        overlap = np.maximum(x_end - x_start + extra_length, 0) * np.maximum(
-            y_end - y_start + extra_length, 0)
-        if mode == &#39;iou&#39;:
-            union = area1[i] + area2 - overlap
-        else:
-            union = area1[i] if not exchange else area2
-        union = np.maximum(union, eps)
-        ious[i, :] = overlap / union
-    if exchange:
-        ious = ious.T
-    return ious
+    <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;iou&#39;</span><span class="p">,</span> <span class="s1">&#39;iof&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">use_legacy_coordinate</span><span class="p">:</span>
+        <span class="n">extra_length</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">extra_length</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">bboxes1</span> <span class="o">=</span> <span class="n">bboxes1</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">bboxes2</span> <span class="o">=</span> <span class="n">bboxes2</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">bboxes1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">bboxes2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ious</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rows</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ious</span>
+    <span class="n">exchange</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">bboxes1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bboxes2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">bboxes1</span><span class="p">,</span> <span class="n">bboxes2</span> <span class="o">=</span> <span class="n">bboxes2</span><span class="p">,</span> <span class="n">bboxes1</span>
+        <span class="n">ious</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">cols</span><span class="p">,</span> <span class="n">rows</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">exchange</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">area1</span> <span class="o">=</span> <span class="p">(</span><span class="n">bboxes1</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bboxes1</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">extra_length</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">bboxes1</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">bboxes1</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">extra_length</span><span class="p">)</span>
+    <span class="n">area2</span> <span class="o">=</span> <span class="p">(</span><span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">extra_length</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">extra_length</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bboxes1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">x_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">y_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">x_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">y_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">bboxes2</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x_end</span> <span class="o">-</span> <span class="n">x_start</span> <span class="o">+</span> <span class="n">extra_length</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+            <span class="n">y_end</span> <span class="o">-</span> <span class="n">y_start</span> <span class="o">+</span> <span class="n">extra_length</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;iou&#39;</span><span class="p">:</span>
+            <span class="n">union</span> <span class="o">=</span> <span class="n">area1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">area2</span> <span class="o">-</span> <span class="n">overlap</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">union</span> <span class="o">=</span> <span class="n">area1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">exchange</span> <span class="k">else</span> <span class="n">area2</span>
+        <span class="n">union</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+        <span class="n">ious</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">overlap</span> <span class="o">/</span> <span class="n">union</span>
+    <span class="k">if</span> <span class="n">exchange</span><span class="p">:</span>
+        <span class="n">ious</span> <span class="o">=</span> <span class="n">ious</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">ious</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def image_eval(pred, gt, ignore, iou_thresh):
-    &quot;&quot;&quot; single image evaluation
-    pred: Nx5
-    gt: Nx4
-    ignore:
-    &quot;&quot;&quot;
-    _pred = pred.copy()
-    _gt = gt.copy()
-    pred_recall = np.zeros(_pred.shape[0])
-    recall_list = np.zeros(_gt.shape[0])
-    proposal_list = np.ones(_pred.shape[0])
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">image_eval</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">gt</span><span class="p">,</span> <span class="n">ignore</span><span class="p">,</span> <span class="n">iou_thresh</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; single image evaluation</span>
+<span class="sd">    pred: Nx5</span>
+<span class="sd">    gt: Nx4</span>
+<span class="sd">    ignore:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">_gt</span> <span class="o">=</span> <span class="n">gt</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">pred_recall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">recall_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">_gt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">proposal_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-    # _pred[:, 2] = _pred[:, 2] + _pred[:, 0]
-    # _pred[:, 3] = _pred[:, 3] + _pred[:, 1]
-    _gt[:, 2] = _gt[:, 2] + _gt[:, 0]
-    _gt[:, 3] = _gt[:, 3] + _gt[:, 1]
+    <span class="c1"># _pred[:, 2] = _pred[:, 2] + _pred[:, 0]</span>
+    <span class="c1"># _pred[:, 3] = _pred[:, 3] + _pred[:, 1]</span>
+    <span class="n">_gt</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gt</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">_gt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">_gt</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gt</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">_gt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
 
-    overlaps = bbox_overlaps(_pred[:, :4], _gt)
+    <span class="n">overlaps</span> <span class="o">=</span> <span class="n">bbox_overlaps</span><span class="p">(</span><span class="n">_pred</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">_gt</span><span class="p">)</span>
 
-    for h in range(_pred.shape[0]):
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
 
-        gt_overlap = overlaps[h]
-        max_overlap, max_idx = gt_overlap.max(), gt_overlap.argmax()
-        if max_overlap &gt;= iou_thresh:
-            if ignore[max_idx] == 0:
-                recall_list[max_idx] = -1
-                proposal_list[h] = -1
-            elif recall_list[max_idx] == 0:
-                recall_list[max_idx] = 1
+        <span class="n">gt_overlap</span> <span class="o">=</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+        <span class="n">max_overlap</span><span class="p">,</span> <span class="n">max_idx</span> <span class="o">=</span> <span class="n">gt_overlap</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">gt_overlap</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">max_overlap</span> <span class="o">&gt;=</span> <span class="n">iou_thresh</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ignore</span><span class="p">[</span><span class="n">max_idx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">recall_list</span><span class="p">[</span><span class="n">max_idx</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">proposal_list</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">recall_list</span><span class="p">[</span><span class="n">max_idx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">recall_list</span><span class="p">[</span><span class="n">max_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
-        r_keep_index = np.where(recall_list == 1)[0]
-        pred_recall[h] = len(r_keep_index)
-    return pred_recall, proposal_list
+        <span class="n">r_keep_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">recall_list</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pred_recall</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_keep_index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pred_recall</span><span class="p">,</span> <span class="n">proposal_list</span>
     
-def get_gt_boxes(gt_dir):
-    &quot;&quot;&quot; gt dir: (wider_face_val.mat, wider_easy_val.mat, wider_medium_val.mat, wider_hard_val.mat)&quot;&quot;&quot;
+<span class="k">def</span> <span class="nf">get_gt_boxes</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; gt dir: (wider_face_val.mat, wider_easy_val.mat, wider_medium_val.mat, wider_hard_val.mat)&quot;&quot;&quot;</span>
 
-    gt_mat = loadmat(os.path.join(gt_dir, &#39;wider_face_val.mat&#39;))
-    hard_mat = loadmat(os.path.join(gt_dir, &#39;wider_hard_val.mat&#39;))
-    medium_mat = loadmat(os.path.join(gt_dir, &#39;wider_medium_val.mat&#39;))
-    easy_mat = loadmat(os.path.join(gt_dir, &#39;wider_easy_val.mat&#39;))
+    <span class="n">gt_mat</span> <span class="o">=</span> <span class="n">loadmat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">,</span> <span class="s1">&#39;wider_face_val.mat&#39;</span><span class="p">))</span>
+    <span class="n">hard_mat</span> <span class="o">=</span> <span class="n">loadmat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">,</span> <span class="s1">&#39;wider_hard_val.mat&#39;</span><span class="p">))</span>
+    <span class="n">medium_mat</span> <span class="o">=</span> <span class="n">loadmat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">,</span> <span class="s1">&#39;wider_medium_val.mat&#39;</span><span class="p">))</span>
+    <span class="n">easy_mat</span> <span class="o">=</span> <span class="n">loadmat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">,</span> <span class="s1">&#39;wider_easy_val.mat&#39;</span><span class="p">))</span>
 
-    facebox_list = gt_mat[&#39;face_bbx_list&#39;]
-    event_list = gt_mat[&#39;event_list&#39;]
-    file_list = gt_mat[&#39;file_list&#39;]
+    <span class="n">facebox_list</span> <span class="o">=</span> <span class="n">gt_mat</span><span class="p">[</span><span class="s1">&#39;face_bbx_list&#39;</span><span class="p">]</span>
+    <span class="n">event_list</span> <span class="o">=</span> <span class="n">gt_mat</span><span class="p">[</span><span class="s1">&#39;event_list&#39;</span><span class="p">]</span>
+    <span class="n">file_list</span> <span class="o">=</span> <span class="n">gt_mat</span><span class="p">[</span><span class="s1">&#39;file_list&#39;</span><span class="p">]</span>
 
-    hard_gt_list = hard_mat[&#39;gt_list&#39;]
-    medium_gt_list = medium_mat[&#39;gt_list&#39;]
-    easy_gt_list = easy_mat[&#39;gt_list&#39;]
+    <span class="n">hard_gt_list</span> <span class="o">=</span> <span class="n">hard_mat</span><span class="p">[</span><span class="s1">&#39;gt_list&#39;</span><span class="p">]</span>
+    <span class="n">medium_gt_list</span> <span class="o">=</span> <span class="n">medium_mat</span><span class="p">[</span><span class="s1">&#39;gt_list&#39;</span><span class="p">]</span>
+    <span class="n">easy_gt_list</span> <span class="o">=</span> <span class="n">easy_mat</span><span class="p">[</span><span class="s1">&#39;gt_list&#39;</span><span class="p">]</span>
 
-    return facebox_list, event_list, file_list, hard_gt_list, medium_gt_list, easy_gt_list
+    <span class="k">return</span> <span class="n">facebox_list</span><span class="p">,</span> <span class="n">event_list</span><span class="p">,</span> <span class="n">file_list</span><span class="p">,</span> <span class="n">hard_gt_list</span><span class="p">,</span> <span class="n">medium_gt_list</span><span class="p">,</span> <span class="n">easy_gt_list</span>
     
-def load_preds(pred_dir=&#39;/Storage/Projects/pyfeat_testing/Data/WIDER_BBOX_IMG2POSE/preds.pkl&#39;):
-    with open(pred_dir, &#39;rb&#39;) as fp:
-        all_imgs, all_pred_vals = pickle.load(fp)
-    boxes = dict()
-    for i, img_name in enumerate(all_imgs):
-        event_name = [mai for mai in img_name.split(&#39;/&#39;) if &#39;--&#39; in mai][0]
-        if event_name not in boxes:
-            boxes[event_name] = {}
+<span class="k">def</span> <span class="nf">load_preds</span><span class="p">(</span><span class="n">pred_dir</span><span class="o">=</span><span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data/WIDER_BBOX_IMG2POSE/preds.pkl&#39;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pred_dir</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">all_imgs</span><span class="p">,</span> <span class="n">all_pred_vals</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">img_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_imgs</span><span class="p">):</span>
+        <span class="n">event_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">mai</span> <span class="k">for</span> <span class="n">mai</span> <span class="ow">in</span> <span class="n">img_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;--&#39;</span> <span class="ow">in</span> <span class="n">mai</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">event_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+            <span class="n">boxes</span><span class="p">[</span><span class="n">event_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         
-        pred_box = np.array(all_pred_vals[i])
-        boxes[event_name][os.path.basename(img_name).rstrip(&#39;.jpg&#39;)] = pred_box
-    return boxes
+        <span class="n">pred_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">all_pred_vals</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">boxes</span><span class="p">[</span><span class="n">event_name</span><span class="p">][</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">img_name</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;.jpg&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">pred_box</span>
+    <span class="k">return</span> <span class="n">boxes</span>
 
-def norm_score(pred):
-    &quot;&quot;&quot; norm score
-    pred {key: [[x1,y1,x2,y2,s]]}
-    &quot;&quot;&quot;
+<span class="k">def</span> <span class="nf">norm_score</span><span class="p">(</span><span class="n">pred</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; norm score</span>
+<span class="sd">    pred {key: [[x1,y1,x2,y2,s]]}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    max_score = 0
-    min_score = 1
+    <span class="n">max_score</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">min_score</span> <span class="o">=</span> <span class="mi">1</span>
 
-    for _, k in pred.items():
-        for _, v in k.items():
-            if len(v.shape) == 0 or len(v) == 0:
-                continue
-            _min = np.min(v[:, -1])
-            _max = np.max(v[:, -1])
-            max_score = max(_max, max_score)
-            min_score = min(_min, min_score)
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">k</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">max_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">_max</span><span class="p">,</span> <span class="n">max_score</span><span class="p">)</span>
+            <span class="n">min_score</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">_min</span><span class="p">,</span> <span class="n">min_score</span><span class="p">)</span>
 
-    diff = max_score - min_score
-    for _, k in pred.items():
-        for _, v in k.items():
-            if len(v.shape) == 0 or len(v) == 0:
-                continue
-            v[:, -1] = (v[:, -1] - min_score)/diff
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">max_score</span> <span class="o">-</span> <span class="n">min_score</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pred</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">k</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">v</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">min_score</span><span class="p">)</span><span class="o">/</span><span class="n">diff</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def print_ap_scores(result_fp):
-    iou_thresh=0.5
-    pred = load_preds(pred_dir=result_fp) # Where you save the result in the extract_bbox_img2Pose.py script
-    norm_score(pred)
-    facebox_list, event_list, file_list, hard_gt_list, medium_gt_list, easy_gt_list = get_gt_boxes(gt_dir=&#39;/Storage/Data/wider/wider_face_split/&#39;) # Where ground-truth are stored
-    event_num = len(event_list)
-    thresh_num = 1000
-    settings = [&#39;easy&#39;, &#39;medium&#39;, &#39;hard&#39;]
-    setting_gts = [easy_gt_list, medium_gt_list, hard_gt_list]
-    aps = []
-    for setting_id in range(3):
-        # different setting
-        gt_list = setting_gts[setting_id]
-        count_face = 0
-        pr_curve = np.zeros((thresh_num, 2)).astype(&#39;float&#39;)
-        # [hard, medium, easy]
-        pbar = tqdm(range(event_num))
-        for i in pbar:
-            pbar.set_description(&#39;Processing {}&#39;.format(settings[setting_id]))
-            event_name = str(event_list[i][0][0])
-            img_list = file_list[i][0]
-            pred_list = pred[event_name]
-            sub_gt_list = gt_list[i][0]
-            # img_pr_info_list = np.zeros((len(img_list), thresh_num, 2))
-            gt_bbx_list = facebox_list[i][0]
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="p">):</span>
+    <span class="n">iou_thresh</span><span class="o">=</span><span class="mf">0.5</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">load_preds</span><span class="p">(</span><span class="n">pred_dir</span><span class="o">=</span><span class="n">result_fp</span><span class="p">)</span> <span class="c1"># Where you save the result in the extract_bbox_img2Pose.py script</span>
+    <span class="n">norm_score</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+    <span class="n">facebox_list</span><span class="p">,</span> <span class="n">event_list</span><span class="p">,</span> <span class="n">file_list</span><span class="p">,</span> <span class="n">hard_gt_list</span><span class="p">,</span> <span class="n">medium_gt_list</span><span class="p">,</span> <span class="n">easy_gt_list</span> <span class="o">=</span> <span class="n">get_gt_boxes</span><span class="p">(</span><span class="n">gt_dir</span><span class="o">=</span><span class="s1">&#39;/Storage/Data/wider/wider_face_split/&#39;</span><span class="p">)</span> <span class="c1"># Where ground-truth are stored</span>
+    <span class="n">event_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_list</span><span class="p">)</span>
+    <span class="n">thresh_num</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;easy&#39;</span><span class="p">,</span> <span class="s1">&#39;medium&#39;</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">]</span>
+    <span class="n">setting_gts</span> <span class="o">=</span> <span class="p">[</span><span class="n">easy_gt_list</span><span class="p">,</span> <span class="n">medium_gt_list</span><span class="p">,</span> <span class="n">hard_gt_list</span><span class="p">]</span>
+    <span class="n">aps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">setting_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="c1"># different setting</span>
+        <span class="n">gt_list</span> <span class="o">=</span> <span class="n">setting_gts</span><span class="p">[</span><span class="n">setting_id</span><span class="p">]</span>
+        <span class="n">count_face</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pr_curve</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">thresh_num</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="c1"># [hard, medium, easy]</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">event_num</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="s1">&#39;Processing </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="n">setting_id</span><span class="p">]))</span>
+            <span class="n">event_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">event_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">img_list</span> <span class="o">=</span> <span class="n">file_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pred_list</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[</span><span class="n">event_name</span><span class="p">]</span>
+            <span class="n">sub_gt_list</span> <span class="o">=</span> <span class="n">gt_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># img_pr_info_list = np.zeros((len(img_list), thresh_num, 2))</span>
+            <span class="n">gt_bbx_list</span> <span class="o">=</span> <span class="n">facebox_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
-            for j in range(len(img_list)):
-                pred_info = pred_list[str(img_list[j][0][0])]
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_list</span><span class="p">)):</span>
+                <span class="n">pred_info</span> <span class="o">=</span> <span class="n">pred_list</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">img_list</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])]</span>
 
-                gt_boxes = gt_bbx_list[j][0].astype(&#39;float&#39;)
-                keep_index = sub_gt_list[j][0]
-                count_face += len(keep_index)
+                <span class="n">gt_boxes</span> <span class="o">=</span> <span class="n">gt_bbx_list</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+                <span class="n">keep_index</span> <span class="o">=</span> <span class="n">sub_gt_list</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">count_face</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">keep_index</span><span class="p">)</span>
 
-                if len(gt_boxes) == 0 or len(pred_info.shape) == 0 or len(pred_info) == 0:
-                    continue
-                ignore = np.zeros(gt_boxes.shape[0])
-                if len(keep_index) != 0:
-                    ignore[keep_index-1] = 1
-                pred_recall, proposal_list = image_eval(pred_info, gt_boxes, ignore, iou_thresh)
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred_info</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred_info</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">ignore</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keep_index</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ignore</span><span class="p">[</span><span class="n">keep_index</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">pred_recall</span><span class="p">,</span> <span class="n">proposal_list</span> <span class="o">=</span> <span class="n">image_eval</span><span class="p">(</span><span class="n">pred_info</span><span class="p">,</span> <span class="n">gt_boxes</span><span class="p">,</span> <span class="n">ignore</span><span class="p">,</span> <span class="n">iou_thresh</span><span class="p">)</span>
 
-                _img_pr_info = img_pr_info(thresh_num, pred_info, proposal_list, pred_recall)
+                <span class="n">_img_pr_info</span> <span class="o">=</span> <span class="n">img_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pred_info</span><span class="p">,</span> <span class="n">proposal_list</span><span class="p">,</span> <span class="n">pred_recall</span><span class="p">)</span>
 
-                pr_curve += _img_pr_info
-        pr_curve = dataset_pr_info(thresh_num, pr_curve, count_face)
+                <span class="n">pr_curve</span> <span class="o">+=</span> <span class="n">_img_pr_info</span>
+        <span class="n">pr_curve</span> <span class="o">=</span> <span class="n">dataset_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pr_curve</span><span class="p">,</span> <span class="n">count_face</span><span class="p">)</span>
 
-        propose = pr_curve[:, 0]
-        recall = pr_curve[:, 1]
+        <span class="n">propose</span> <span class="o">=</span> <span class="n">pr_curve</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">recall</span> <span class="o">=</span> <span class="n">pr_curve</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
 
-        ap = voc_ap(recall, propose)
-        aps.append(ap)
+        <span class="n">ap</span> <span class="o">=</span> <span class="n">voc_ap</span><span class="p">(</span><span class="n">recall</span><span class="p">,</span> <span class="n">propose</span><span class="p">)</span>
+        <span class="n">aps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
 
-    print(&quot;==================== Results ====================&quot;)
-    print(&quot;Easy   Val AP: {}&quot;.format(aps[0]))
-    print(&quot;Medium Val AP: {}&quot;.format(aps[1]))
-    print(&quot;Hard   Val AP: {}&quot;.format(aps[2]))
-    print(&quot;=================================================&quot;)
-    return aps
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;==================== Results ====================&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Easy   Val AP: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aps</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Medium Val AP: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aps</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hard   Val AP: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aps</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=================================================&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">aps</span>
 </pre></div>
 </div>
 </div>
@@ -900,10 +900,10 @@ def norm_score(pred):
 Dataset and ground truth labels can be downloaded at http://shuoyang1213.me/WIDERFACE/</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>data_dir = &#39;/Storage/Data/wider/&#39;
-true_result_dir = &#39;/Storage/Data/wider/wider_face_split/&#39;
-save_result_dir = &#39;/Storage/Projects/pyfeat_testing/Data_Eshin/facebox_test/&#39;
-all_imgs = glob.glob(data_dir+&#39;WIDER_val/images/**/*.jpg&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Data/wider/&#39;</span>
+<span class="n">true_result_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Data/wider/wider_face_split/&#39;</span>
+<span class="n">save_result_dir</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data_Eshin/facebox_test/&#39;</span>
+<span class="n">all_imgs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="s1">&#39;WIDER_val/images/**/*.jpg&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -913,16 +913,16 @@ all_imgs = glob.glob(data_dir+&#39;WIDER_val/images/**/*.jpg&#39;)
 <h1>1. Test of FaceBoxes<a class="headerlink" href="#test-of-faceboxes" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector = Detector(face_model=&#39;faceboxes&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&#39;mobilefacenet&#39;, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
-all_pred_vals = []
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;faceboxes&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s1">&#39;mobilefacenet&#39;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="n">all_pred_vals</span> <span class="o">=</span> <span class="p">[]</span>
 
-for img in tqdm(all_imgs):
-    im1 = Image.open(img)
-    face_aus = detector.detect_faces(im1)
-    all_pred_vals.append(face_aus[0])
+<span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_imgs</span><span class="p">):</span>
+    <span class="n">im1</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="n">face_aus</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">im1</span><span class="p">)</span>
+    <span class="n">all_pred_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">face_aus</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-with open(save_result_dir+&#39;FaceBoxes_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((all_imgs, all_pred_vals), fp)
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;FaceBoxes_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">all_imgs</span><span class="p">,</span> <span class="n">all_pred_vals</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -934,7 +934,7 @@ with open(save_result_dir+&#39;FaceBoxes_bench_results.pkl&#39;, &#39;wb&#39;) a
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>facebox_normal = print_ap_scores(result_fp=save_result_dir+&#39;FaceBoxes_bench_results.pkl&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">facebox_normal</span> <span class="o">=</span> <span class="n">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;FaceBoxes_bench_results.pkl&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -961,16 +961,16 @@ Hard   Val AP: 0.14662014664396028
 <h1>2. Test of MTCNN<a class="headerlink" href="#test-of-mtcnn" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector = Detector(face_model=&#39;mtcnn&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&#39;mobilefacenet&#39;, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
-all_pred_vals = []
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;mtcnn&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s1">&#39;mobilefacenet&#39;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="n">all_pred_vals</span> <span class="o">=</span> <span class="p">[]</span>
 
-for img in tqdm(all_imgs):
-    im1 = Image.open(img)
-    face_aus = detector.detect_faces(im1)
-    all_pred_vals.append(face_aus[0])
+<span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_imgs</span><span class="p">):</span>
+    <span class="n">im1</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="n">face_aus</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">im1</span><span class="p">)</span>
+    <span class="n">all_pred_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">face_aus</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-with open(save_result_dir+&#39;MTCNN_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((all_imgs, all_pred_vals), fp)
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;MTCNN_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">all_imgs</span><span class="p">,</span> <span class="n">all_pred_vals</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -986,7 +986,7 @@ with open(save_result_dir+&#39;MTCNN_bench_results.pkl&#39;, &#39;wb&#39;) as fp
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>mtcnn_normal = print_ap_scores(result_fp=save_result_dir+&#39;MTCNN_bench_results.pkl&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mtcnn_normal</span> <span class="o">=</span> <span class="n">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;MTCNN_bench_results.pkl&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1013,16 +1013,16 @@ Hard   Val AP: 0.47326227608164284
 <h1>3. Test of RetinaFace<a class="headerlink" href="#test-of-retinaface" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>detector = Detector(face_model=&#39;retinaface&#39;,emotion_model=&#39;resmasknet&#39;, landmark_model=&#39;mobilefacenet&#39;, au_model=&#39;xgb&#39;, device=&#39;cpu&#39;)
-all_pred_vals = []
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s1">&#39;mobilefacenet&#39;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="n">all_pred_vals</span> <span class="o">=</span> <span class="p">[]</span>
 
-for img in tqdm(all_imgs):
-    im1 = Image.open(img)
-    face_aus = detector.detect_faces(im1)
-    all_pred_vals.append(face_aus[0])
+<span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">all_imgs</span><span class="p">):</span>
+    <span class="n">im1</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="n">face_aus</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">im1</span><span class="p">)</span>
+    <span class="n">all_pred_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">face_aus</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-with open(save_result_dir+&#39;RetinaFace_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((all_imgs, all_pred_vals), fp)
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;RetinaFace_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">all_imgs</span><span class="p">,</span> <span class="n">all_pred_vals</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1038,7 +1038,7 @@ with open(save_result_dir+&#39;RetinaFace_bench_results.pkl&#39;, &#39;wb&#39;) 
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>retinaface_normal = print_ap_scores(result_fp=save_result_dir+&#39;RetinaFace_bench_results.pkl&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">retinaface_normal</span> <span class="o">=</span> <span class="n">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;RetinaFace_bench_results.pkl&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1050,59 +1050,59 @@ with open(save_result_dir+&#39;RetinaFace_bench_results.pkl&#39;, &#39;wb&#39;) 
 <h2>Img2Pose models are heavy both in architecture and in number of hyperparameters. We advise to use different parameter combinations for different settings, especially for constrained vs unconstrained<a class="headerlink" href="#img2pose-models-are-heavy-both-in-architecture-and-in-number-of-hyperparameters-we-advise-to-use-different-parameter-combinations-for-different-settings-especially-for-constrained-vs-unconstrained" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
-from torch.utils.data import Dataset, DataLoader
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span> <span class="kn">import</span> <span class="n">Img2Pose</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>class GenericImageDataset(Dataset):
-    &quot;&quot;&quot;Face Landmarks dataset.&quot;&quot;&quot;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GenericImageDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Face Landmarks dataset.&quot;&quot;&quot;</span>
 
-    def __init__(self, file_paths, transform=None):
-        &quot;&quot;&quot;
-        Args:
-            csv_file (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
-        &quot;&quot;&quot;
-        self.filePaths = file_paths
-        self.transform = transform
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_paths</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            csv_file (string): Path to the csv file with annotations.</span>
+<span class="sd">            root_dir (string): Directory with all the images.</span>
+<span class="sd">            transform (callable, optional): Optional transform to be applied</span>
+<span class="sd">                on a sample.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span> <span class="o">=</span> <span class="n">file_paths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
 
-    def __len__(self):
-        return len(self.filePaths)
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span><span class="p">)</span>
 
-    def __getitem__(self, idx):
-        img = Image.open(self.filePaths[idx])
-        if self.transform:
-            img = self.transform(img)
-        return img
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">img</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>imclassifier = Img2Pose(constrained=False, detection_threshold=0.25, rpn_pre_nms_top_n_test=6000, rpn_post_nms_top_n_test=1000)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">imclassifier</span> <span class="o">=</span> <span class="n">Img2Pose</span><span class="p">(</span><span class="n">constrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">detection_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">rpn_pre_nms_top_n_test</span><span class="o">=</span><span class="mi">6000</span><span class="p">,</span> <span class="n">rpn_post_nms_top_n_test</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 
-img_trans = transforms.Compose([
-    transforms.ToTensor()
-])
+<span class="n">img_trans</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>
+<span class="p">])</span>
 
-dataset = GenericImageDataset(all_imgs, transform=img_trans)
-dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">GenericImageDataset</span><span class="p">(</span><span class="n">all_imgs</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_trans</span><span class="p">)</span>
+<span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-all_pred_vals = []
-for i_batch, sample_batched in enumerate(tqdm(dataloader)):
-    preds = imclassifier(sample_batched)
-    all_pred_vals.append(preds[0][0]) # Append Face Bounding Box
+<span class="n">all_pred_vals</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i_batch</span><span class="p">,</span> <span class="n">sample_batched</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">imclassifier</span><span class="p">(</span><span class="n">sample_batched</span><span class="p">)</span>
+    <span class="n">all_pred_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># Append Face Bounding Box</span>
 
-# Save Result
-with open(save_result_dir+&#39;Img2poseuncon_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((all_imgs, all_pred_vals), fp)
+<span class="c1"># Save Result</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;Img2poseuncon_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">all_imgs</span><span class="p">,</span> <span class="n">all_pred_vals</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1114,7 +1114,7 @@ with open(save_result_dir+&#39;Img2poseuncon_bench_results.pkl&#39;, &#39;wb&#39
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>img2pose_uncon_normal = print_ap_scores(result_fp=save_result_dir+&#39;Img2poseuncon_bench_results.pkl&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img2pose_uncon_normal</span> <span class="o">=</span> <span class="n">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;Img2poseuncon_bench_results.pkl&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1142,23 +1142,23 @@ Hard   Val AP: 0.5739961257745989
 <h1>5. Test of Img2Pose constrained<a class="headerlink" href="#test-of-img2pose-constrained" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>imclassifier = Img2Pose(constrained=True, detection_threshold=0.25, rpn_pre_nms_top_n_test=2000, rpn_post_nms_top_n_test=200)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">imclassifier</span> <span class="o">=</span> <span class="n">Img2Pose</span><span class="p">(</span><span class="n">constrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">detection_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">rpn_pre_nms_top_n_test</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">rpn_post_nms_top_n_test</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 
-img_trans = transforms.Compose([
-    transforms.ToTensor()
-])
+<span class="n">img_trans</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>
+<span class="p">])</span>
 
-dataset = GenericImageDataset(all_imgs, transform=img_trans)
-dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">GenericImageDataset</span><span class="p">(</span><span class="n">all_imgs</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">img_trans</span><span class="p">)</span>
+<span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-all_pred_vals = []
-for i_batch, sample_batched in enumerate(tqdm(dataloader)):
-    preds = imclassifier(sample_batched)
-    all_pred_vals.append(preds[0][0]) # Append Face Bounding Box
+<span class="n">all_pred_vals</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i_batch</span><span class="p">,</span> <span class="n">sample_batched</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">imclassifier</span><span class="p">(</span><span class="n">sample_batched</span><span class="p">)</span>
+    <span class="n">all_pred_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># Append Face Bounding Box</span>
 
-# Save Result
-with open(save_result_dir+&#39;Img2posecon_bench_results.pkl&#39;, &#39;wb&#39;) as fp:
-    pickle.dump((all_imgs, all_pred_vals), fp)
+<span class="c1"># Save Result</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;Img2posecon_bench_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">all_imgs</span><span class="p">,</span> <span class="n">all_pred_vals</span><span class="p">),</span> <span class="n">fp</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1170,7 +1170,7 @@ with open(save_result_dir+&#39;Img2posecon_bench_results.pkl&#39;, &#39;wb&#39;)
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>img2pose_con_normal = print_ap_scores(result_fp=save_result_dir+&#39;Img2posecon_bench_results.pkl&#39;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img2pose_con_normal</span> <span class="o">=</span> <span class="n">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="o">=</span><span class="n">save_result_dir</span><span class="o">+</span><span class="s1">&#39;Img2posecon_bench_results.pkl&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
