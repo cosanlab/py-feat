@@ -22,6 +22,8 @@ from feat.utils import set_torch_device
 from copy import deepcopy
 from skimage import draw
 import logging
+from matplotlib.patches import Rectangle
+import matplotlib.pyplot as plt
 
 __all__ = [
     "neutral",
@@ -188,9 +190,10 @@ def extract_face_from_bbox(frame, detected_faces, face_size=112, expand_bbox=1.2
         cropped_faces.append(transform(cropped))
         bbox_list.append(bbox)
 
-    faces = torch.cat(
-        tuple([convert_image_to_tensor(x["Image"]) for x in cropped_faces]), 0
-    )
+        faces = torch.cat(
+            tuple([convert_image_to_tensor(x["Image"]) for x in cropped_faces]), 0
+        )
+
     return (faces, bbox_list)
 
 
@@ -469,6 +472,40 @@ class BBox(object):
     def __repr__(self):
         return f"'height': {self.height}, 'width': {self.width}"
 
+    def __mul__(self, bbox2):
+        """Create a new BBox based on the intersection between two BBox instances (AND operation)"""
+
+        if isinstance(bbox2, (BBox)):
+            return BBox(
+                [
+                    np.max([self.left, bbox2.left]),
+                    np.max([self.top, bbox2.top]),
+                    np.min([self.right, bbox2.right]),
+                    np.min([self.bottom, bbox2.bottom]),
+                ]
+            )
+        else:
+            raise NotImplementedError(
+                "Multiplication is currently only supported between two BBox instances"
+            )
+
+    def __add__(self, bbox2):
+        """Create a new BBox based on the intersection between two BBox instances (OR Operation)"""
+
+        if isinstance(bbox2, (BBox)):
+            return BBox(
+                [
+                    np.min([self.left, bbox2.left]),
+                    np.min([self.top, bbox2.top]),
+                    np.max([self.right, bbox2.right]),
+                    np.max([self.bottom, bbox2.bottom]),
+                ]
+            )
+        else:
+            raise NotImplementedError(
+                "Addition is currently only supported between two BBox instances"
+            )
+
     def expand_by_factor(self, factor, symmetric=True):
         """Expand box by factor
 
@@ -625,6 +662,42 @@ class BBox(object):
             landmark_[i] = (x, y)
         return landmark_
 
+    def area(self):
+        """Compute the area of the bounding box"""
+        return self.height * self.width
+
+    def overlap(self, bbox2):
+        """Compute the percent overlap between BBox with another BBox"""
+        overlap_bbox = self * bbox2
+        if (overlap_bbox.height < 0) or (overlap_bbox.width < 0):
+            return 0
+        else:
+            return (self * bbox2).area() / self.area()
+
+    def plot(self, ax=None, fill=False, linewidth=2, **kwargs):
+        """Plot bounding box
+
+        Args:
+            ax: matplotlib axis
+            fill (bool): fill rectangle
+        """
+
+        if ax is None:
+            fig, ax = plt.subplots()
+            ax.plot()
+
+        ax.add_patch(
+            Rectangle(
+                (self.left, self.top),
+                self.width,
+                self.height,
+                fill=fill,
+                linewidth=linewidth,
+                **kwargs,
+            )
+        )
+        return ax
+
 
 def reverse_color_order(img):
     """Convert BGR OpenCV image to RGB format"""
@@ -724,7 +797,7 @@ def convert_to_euler(rotvec, is_rotvec=True):
         rotvec = Rotation.from_rotvec(rotvec).as_matrix()
     rot_mat_2 = np.transpose(rotvec)
     angle = Rotation.from_matrix(rot_mat_2).as_euler("xyz", degrees=True)
-    return np.array([angle[0], -angle[2], -angle[1]])  # pitch, roll, yaw
+    return [angle[0], -angle[2], -angle[1]]  # pitch, roll, yaw
 
 
 def py_cpu_nms(dets, thresh):
