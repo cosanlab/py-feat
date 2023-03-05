@@ -1,48 +1,56 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>API Reference &#8212; Py-Feat</title>
-    
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  <link href="../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
-    
-  <link rel="stylesheet"
-    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=4ec06e9971c5264fbd345897d5258098f11cc577" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
-    
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=8bf782fb4ee92b3d3646425e50f299c4e1fd152d"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
 const thebe_selector = ".thebe,.cell"
@@ -50,61 +58,536 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'pages/api';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="General contributions guidelines" href="contribute.html" />
     <link rel="prev" title="13. Benchmarking pyfeat Emotion detection algorithms using data" href="../extra_tutorials/13_test_emos.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay overlay-navbar" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
-</label>
-<!-- Checkboxes to toggle the in-page toc -->
-<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
-<label class="overlay overlay-pagetoc" for="__page-toc">
-    <div class="visually-hidden">Toggle in-page Table of Contents</div>
-</label>
-<!-- Headers at the top -->
-<div class="announcement header-item noprint"></div>
-<div class="header header-item noprint"></div>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
 
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Sidebar -->
-<div class="bd-sidebar noprint" id="site-navigation">
-    <div class="bd-sidebar__content">
-        <div class="bd-sidebar__top"><div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../index.html">
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
       
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="intro.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/pyfeat_logo_small.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/pyfeat_logo_small.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
         
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        How to install Py-Feat
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="models.html">
+                        Included pre-trained detectors
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="au_reference.html">
+                        Action Unit Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="usage_guide.html">
+                        Tips, Community, and Known Issues
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/01_basics.html">
+                        1. Py-Feat basics
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/02_detector_imgs.html">
+                        2. Detecting facial expressions from images
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/03_detector_vids.html">
+                        3. Detecting facial expressions from videos
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/04_plotting.html">
+                        4. Visualizing Facial Expressions
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/05_fex_analysis.html">
+                        5. Running a full analysis
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/06_trainAUvisModel.html">
+                        6. Training an AU visualization model
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+                        7. Example labels and landmark dataset loading
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/08_train_hogs.html">
+                        8. Training HOG-based AU detectors
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/09_test_bbox.html">
+                        9. Benchmarking Bounding Box using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/10_test_lands.html">
+                        10. Benchmarking Landmark models using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/11_test_Poseinfo.html">
+                        11. Benchmarking Pose detectors using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/12_test_aus.html">
+                        12. Benchmarking Action Unit detector using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/13_test_emos.html">
+                        13. Benchmarking pyfeat Emotion detection algorithms using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="contribute.html">
+                        General contributions guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="modelContribution.html">
+                        Contributing new detectors
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="changelog.html">
+                        Change Log
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-external" href="https://github.com/cosanlab/py-feat">
+                        GitHub Repository
+                      </a>
+                    </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
       
       
-      <img src="../_static/pyfeat_logo_small.png" class="logo" alt="logo">
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
       
-      <h1 class="site-logo" id="site-title">Py-Feat</h1>
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
       
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        How to install Py-Feat
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="models.html">
+                        Included pre-trained detectors
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="au_reference.html">
+                        Action Unit Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="usage_guide.html">
+                        Tips, Community, and Known Issues
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/01_basics.html">
+                        1. Py-Feat basics
+                      </a>
+                    </li>
+                
+            <div class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More
+                </button>
+                <div class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/02_detector_imgs.html">
+                        2. Detecting facial expressions from images
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/03_detector_vids.html">
+                        3. Detecting facial expressions from videos
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/04_plotting.html">
+                        4. Visualizing Facial Expressions
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../basic_tutorials/05_fex_analysis.html">
+                        5. Running a full analysis
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/06_trainAUvisModel.html">
+                        6. Training an AU visualization model
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
+                        7. Example labels and landmark dataset loading
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/08_train_hogs.html">
+                        8. Training HOG-based AU detectors
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/09_test_bbox.html">
+                        9. Benchmarking Bounding Box using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/10_test_lands.html">
+                        10. Benchmarking Landmark models using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/11_test_Poseinfo.html">
+                        11. Benchmarking Pose detectors using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/12_test_aus.html">
+                        12. Benchmarking Action Unit detector using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../extra_tutorials/13_test_emos.html">
+                        13. Benchmarking pyfeat Emotion detection algorithms using data
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="contribute.html">
+                        General contributions guidelines
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="modelContribution.html">
+                        Contributing new detectors
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="changelog.html">
+                        Change Log
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-external" href="https://github.com/cosanlab/py-feat">
+                        GitHub Repository
+                      </a>
+                    </li>
+                
+                </div>
+            </div>
+            
+    </ul>
+</nav>
+      </div>
+      
+      </div>
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item">
+  
+
+
+<a class="navbar-brand logo" href="intro.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/pyfeat_logo_small.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/pyfeat_logo_small.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    </div>
+    <div class="sidebar-start-items__item">
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
@@ -113,422 +596,270 @@ const thebe_selector_output = ".output, .cell_output"
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Getting Started
- </span>
-</p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="installation.html">
-   How to install Py-Feat
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="models.html">
-   Included pre-trained detectors
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="au_reference.html">
-   Action Unit Reference
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="usage_guide.html">
-   Tips, Community, and Known Issues
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">How to install Py-Feat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Included pre-trained detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="au_reference.html">Action Unit Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage_guide.html">Tips, Community, and Known Issues</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Basic Tutorials
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../basic_tutorials/01_basics.html">
-   1. Py-Feat basics
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">
-   2. Detecting facial expressions from images
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../basic_tutorials/03_detector_vids.html">
-   3. Detecting facial expressions from videos
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../basic_tutorials/04_plotting.html">
-   4. Visualizing Facial Expressions
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">
-   5. Running a full analysis
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Py-Feat basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">2. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_detector_vids.html">3. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_plotting.html">4. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">5. Running a full analysis</a></li>
+
+
+
+
+
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Advanced Tutorials
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">
-   6. Training an AU visualization model
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">
-   7. Example labels and landmark dataset loading
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/08_train_hogs.html">
-   8. Training HOG-based AU detectors
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/09_test_bbox.html">
-   9. Benchmarking Bounding Box using data
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/10_test_lands.html">
-   10. Benchmarking Landmark models using data
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/11_test_Poseinfo.html">
-   11. Benchmarking Pose detectors using data
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/12_test_aus.html">
-   12. Benchmarking Action Unit detector using data
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../extra_tutorials/13_test_emos.html">
-   13. Benchmarking pyfeat Emotion detection algorithms using data
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">6. Training an AU visualization model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">7. Example labels and landmark dataset loading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/08_train_hogs.html">8. Training HOG-based AU detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/09_test_bbox.html">9. Benchmarking Bounding Box using data</a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/10_test_lands.html">10. Benchmarking Landmark models using data</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/11_test_Poseinfo.html">11. Benchmarking Pose detectors using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/12_test_aus.html">12. Benchmarking Action Unit detector using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/13_test_emos.html">13. Benchmarking pyfeat Emotion detection algorithms using data</a></li>
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  API
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   API Reference
-  </a>
- </li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">API Reference</a></li>
+
+
+
+
+
 </ul>
-<p aria-level="2" class="caption" role="heading">
- <span class="caption-text">
-  Contributing
- </span>
-</p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="contribute.html">
-   General contributions guidelines
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="modelContribution.html">
-   Contributing new detectors
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="changelog.html">
-   Change Log
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/cosanlab/py-feat">
-   GitHub Repository
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">General contributions guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelContribution.html">Contributing new detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+
+
+
+
+
+
+<li class="toctree-l1"><a class="reference external" href="https://github.com/cosanlab/py-feat">GitHub Repository</a></li>
 </ul>
 
     </div>
-</nav></div>
-        <div class="bd-sidebar__bottom">
-             <!-- To handle the deprecated key -->
-            
-            <div class="navbar_extra_footer">
-            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-            </div>
-            
-        </div>
+</nav>
     </div>
-    <div id="rtd-footer-container"></div>
-</div>
+  </div>
+  
 
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
 
-          
+  
+  <div id="rtd-footer-container"></div>
 
-
-          
-<!-- A tiny helper pixel to detect if we've scrolled -->
-<div class="sbt-scroll-pixel-helper"></div>
-<!-- Main content -->
-<div class="col py-0 content-container">
-    
-    <div class="header-article row sticky-top noprint">
+      </div>
+      <main id="main-content" class="bd-main">
         
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
 
 
 
 <div class="col py-1 d-flex header-article-main">
     <div class="header-article__left">
-        
-        <label for="__navigation"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="right"
-title="Toggle navigation"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-bars"></i>
-  </span>
-
-</label>
-
-        
+        <label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" data-toggle="tooltip" data-placement="right" title="Toggle primary sidebar">
+            <span class="fa-solid fa-bars"></span>
+        </label>
     </div>
     <div class="header-article__right">
 <button onclick="toggleFullScreen()"
-  class="headerbtn"
+  class="btn btn-sm"
   data-toggle="tooltip"
 data-placement="bottom"
 title="Fullscreen mode"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-expand"></i>
   </span>
 
 </button>
 
-<div class="menu-dropdown menu-dropdown-repository-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Source repositories">
-      <i class="fab fa-github"></i>
+
+
+<div class="dropdown dropdown-repository-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="https://github.com/cosanlab/py-feat"
-   class="headerbtn"
+  <ul class="dropdown-menu">
+      <li><a href="https://github.com/cosanlab/py-feat" target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Source repository"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fab fa-github"></i>
   </span>
-<span class="headerbtn__text-container">repository</span>
+<span class="btn__text-container">repository</span>
 </a>
-
-      </li>
+</a>
       
-      <li>
-        <a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fpages/api.html&body=Your%20issue%20content%20here."
-   class="headerbtn"
+      <li><a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fpages/api.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Open an issue"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
   </span>
-<span class="headerbtn__text-container">open issue</span>
+<span class="btn__text-container">open issue</span>
 </a>
-
-      </li>
+</a>
       
-    </ul>
-  </div>
+  </ul>
 </div>
 
-<div class="menu-dropdown menu-dropdown-download-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Download this page">
-      <i class="fas fa-download"></i>
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="../_sources/pages/api.rst"
-   class="headerbtn"
+  <ul class="dropdown-menu">
+      <li><a href="../_sources/pages/api.rst" target="_blank"
+   class="btn btn-sm dropdown-item"
    data-toggle="tooltip"
 data-placement="left"
 title="Download source file"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="headerbtn__text-container">.rst</span>
+<span class="btn__text-container">.rst</span>
 </a>
-
-      </li>
+</a>
       
       <li>
-        
 <button onclick="printPdf(this)"
-  class="headerbtn"
+  class="btn btn-sm dropdown-item"
   data-toggle="tooltip"
 data-placement="left"
 title="Print to PDF"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   <i class="fas fa-file-pdf"></i>
   </span>
-<span class="headerbtn__text-container">.pdf</span>
+<span class="btn__text-container">.pdf</span>
 </button>
-
-      </li>
+</a>
       
-    </ul>
-  </div>
+  </ul>
 </div>
-<label for="__page-toc"
-  class="headerbtn headerbtn-page-toc"
-  
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-list"></i>
-  </span>
-
-</label>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary" data-toggle="tooltip" data-placement="left" title="Toggle secondary sidebar">
+            <span class="fa-solid fa-list"></span>
+        </label>
     </div>
 </div>
-
-<!-- Table of contents -->
-<div class="col-md-3 bd-toc show noprint">
-    <div class="tocsection onthispage pt-5 pb-3">
-        <i class="fas fa-list"></i> Contents
-    </div>
-    <nav id="bd-toc-nav" aria-label="Page">
-        <ul class="visible nav section-nav flex-column">
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#">
-   API Reference
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.detector">
-   feat.detector module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.data">
-   feat.data module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.plotting">
-   feat.plotting module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.utils">
-   feat.utils module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.pretrained">
-   feat.pretrained module
-  </a>
- </li>
-</ul>
-
-    </nav>
-</div>
-    </div>
-    <div class="article row">
-        <div class="col pl-md-3 pl-lg-5 content-container">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1>API Reference</h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                        <div>
-                            <h2> Contents </h2>
-                        </div>
-                        <nav aria-label="Page">
-                            <ul class="visible nav section-nav flex-column">
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#">
-   API Reference
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.detector">
-   feat.detector module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.data">
-   feat.data module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.plotting">
-   feat.plotting module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.utils">
-   feat.utils module
-  </a>
- </li>
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-feat.pretrained">
-   feat.pretrained module
-  </a>
- </li>
-</ul>
-
-                        </nav>
-                    </div>
-                </div>
             </div>
-            <main id="main-content" role="main">
-                
-              <div>
-                
+            
+            
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>API Reference</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   API Reference
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.detector">
+   feat.detector module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.data">
+   feat.data module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.plotting">
+   feat.plotting module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.utils">
+   feat.utils module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.pretrained">
+   feat.pretrained module
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+            <article class="bd-article" role="main">
+              
   <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">#</a></h1>
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">#</a></h1>
 <p>This reference provides detailed documentation for all the features in FEAT</p>
 </section>
 <section id="module-feat.detector">
-<span id="feat-detector-module"></span><h1>feat.detector module<a class="headerlink" href="#module-feat.detector" title="Permalink to this headline">#</a></h1>
+<span id="feat-detector-module"></span><h1>feat.detector module<a class="headerlink" href="#module-feat.detector" title="Permalink to this heading">#</a></h1>
 <p>Main Detector class. The Detector class wraps other pre-trained models
 (e.g. face detector, au detector) and provides a high-level API to make it easier to
 perform detection</p>
@@ -548,16 +879,16 @@ the the new models to use as kwargs, e.g. emotion_model=’svm’</p>
 <span class="sig-name descname"><span class="pre">detect_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">au_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_aus" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect Action Units from image or video frame</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>frame</strong> (<em>np.ndarray</em>) – image loaded in array format (n, m, 3)</p></li>
 <li><p><strong>landmarks</strong> (<em>array</em>) – 68 landmarks used to localize face.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Action Unit predictions</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>array</p>
 </dd>
 </dl>
@@ -576,17 +907,17 @@ the the new models to use as kwargs, e.g. emotion_model=’svm’</p>
 <span class="sig-name descname"><span class="pre">detect_emotions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">emotion_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_emotions" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect emotions from image or video frame</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>frame</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
 <li><p><strong>facebox</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
 <li><p><strong>landmarks</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Action Unit predictions</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>array</p>
 </dd>
 </dl>
@@ -610,7 +941,7 @@ the the new models to use as kwargs, e.g. emotion_model=’svm’</p>
 are ignored. Use <cite>detect_face</cite> method in order to obtain bounding boxes
 corresponding to the detected poses returned by this method.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>frame</strong> (<em>np.ndarray</em>) – list of images</p></li>
 <li><p><strong>landmarks</strong> (<em>np.ndarray</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – (num_images, num_faces, 68, 2)</p></li>
@@ -618,11 +949,11 @@ corresponding to the detected poses returned by this method.</p>
 <li><p><strong>detectors</strong> (<em>ignored for img2pose and img2pose-c</em>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>poses (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
 degrees) for each face within in each image}</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -633,18 +964,18 @@ degrees) for each face within in each image}</p>
 <span class="sig-name descname"><span class="pre">detect_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">face_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_faces" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect faces from image or video frame</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
 <li><p><strong>threshold</strong> (<em>float</em>) – threshold for detectiong faces (default=0.5)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of lists with the same length as the number of frames. Each list
 item is a list containing the (x1, y1, x2, y2) coordinates of each detected
 face in that frame.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -668,7 +999,7 @@ automatically adjust image sizes by using the <cite>output_size=int</cite>. Comm
 output-sizes include 256 and 512.</p>
 <p><strong>NOTE: Currently batch processing images gives slightly different AU detection results due to the way that py-feat integrates the underlying models. You can examine the degree of tolerance by checking out the results of `test_detection_and_batching_with_diff_img_sizes` in our test-suite</strong></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input_file_list</strong> (<em>list of str</em>) – Path to a list of paths to image files.</p></li>
 <li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all image preserving aspect ratio.
@@ -685,10 +1016,10 @@ confidence of the face detector; Default &gt;= 0.5</p></li>
 like: <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Prediction results dataframe</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
 </dd>
 </dl>
@@ -699,16 +1030,16 @@ like: <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li
 <span class="sig-name descname"><span class="pre">detect_landmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">landmark_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_landmarks" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect landmarks from image or video frame</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
 <li><p><strong>detected_faces</strong> (<em>array</em>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>x and y landmark coordinates (1,68,2)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -728,7 +1059,7 @@ like: <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li
 <span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">700</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">#</a></dt>
 <dd><p>Detects FEX from a video file.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>video_path</strong> (<em>str</em>) – Path to a video file.</p></li>
 <li><p><strong>skip_frames</strong> (<em>int</em><em> or </em><em>None</em>) – number of frames to skip (speeds up inference,</p></li>
@@ -743,10 +1074,10 @@ are a custom type, or your <code class="xref py py-attr docutils literal notrans
 confidence of the face detector; Default &gt;= 0.5</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Prediction results dataframe</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
 </dd>
 </dl>
@@ -756,16 +1087,16 @@ confidence of the face detector; Default &gt;= 0.5</p></li>
 
 </section>
 <section id="module-feat.data">
-<span id="feat-data-module"></span><h1>feat.data module<a class="headerlink" href="#module-feat.data" title="Permalink to this headline">#</a></h1>
+<span id="feat-data-module"></span><h1>feat.data module<a class="headerlink" href="#module-feat.data" title="Permalink to this heading">#</a></h1>
 <p>Py-FEAT Data classes.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.data.Fex">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">Fex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.frame.DataFrame</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
 <p>Fex is a class to represent facial expression (Fex) data</p>
 <p>Fex class is  an enhanced pandas dataframe, with extra attributes and methods to help with facial expression data analysis.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> – (str, optional) path to file</p></li>
 <li><p><strong>detector</strong> – (str, optional) name of software used to extract Fex. Currently only</p></li>
@@ -781,14 +1112,14 @@ confidence of the face detector; Default &gt;= 0.5</p></li>
 <span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.append" title="Permalink to this definition">#</a></dt>
 <dd><p>Append a new Fex object to an existing object</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> – (Fex) Fex instance to append</p></li>
 <li><p><strong>session_id</strong> – session label</p></li>
 <li><p><strong>axis</strong> – ([0,1]) Axis to append. Rows=0, Cols=1</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Fex instance</p>
 </dd>
 </dl>
@@ -800,10 +1131,10 @@ confidence of the face detector; Default &gt;= 0.5</p></li>
 <dd><p>Returns the Action Units data</p>
 <p>Returns Action Unit data using the columns set in fex.au_columns.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Action Units data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -814,14 +1145,14 @@ confidence of the face detector; Default &gt;= 0.5</p></li>
 <span class="sig-name descname"><span class="pre">baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'median'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.baseline" title="Permalink to this definition">#</a></dt>
 <dd><p>Reference a Fex object to a baseline.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong> – {‘median’, ‘mean’, ‘begin’, FexSeries instance}. Will subtract baseline from Fex object (e.g., mean, median).  If passing a Fex object, it will treat that as the baseline.</p></li>
 <li><p><strong>normalize</strong> – (str). Can normalize results of baseline. Values can be [None, ‘db’,’pct’]; default None.</p></li>
 <li><p><strong>ignore_sessions</strong> – (bool) If True, will ignore Fex.sessions information. Otherwise, method will be applied separately to each unique session.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Fex object</p>
 </dd>
 </dl>
@@ -838,7 +1169,7 @@ detrend, etc.</p>
 the following order: detrend, standardize, remove confounds, low and high-pass filter</p>
 <p>If Fex.sessions is not None, sessions will be cleaned separately.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>confounds</strong> – (numpy.ndarray, str or list of Confounds timeseries) Shape must be (instant number, confound number), or just (instant number,). The number of time instants in signals and confounds must be identical (i.e. signals.shape[0] == confounds.shape[0]). If a string is provided, it is assumed to be the name of a csv file containing signals as columns, with an optional one-line header. If a list is provided, all confounds are removed from the input signal, as if all were in the same array.</p></li>
 <li><p><strong>low_pass</strong> – (float) low pass cutoff frequencies in Hz.</p></li>
@@ -849,7 +1180,7 @@ the following order: detrend, standardize, remove confounds, low and high-pass f
 <li><p><strong>ignore_sessions</strong> – (bool) If True, will ignore Fex.sessions information. Otherwise, method will be applied separately to each unique session.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>cleaned Fex instance</p>
 </dd>
 </dl>
@@ -860,17 +1191,17 @@ the following order: detrend, standardize, remove confounds, low and high-pass f
 <span class="sig-name descname"><span class="pre">decompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pca'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.decompose" title="Permalink to this definition">#</a></dt>
 <dd><p>Decompose Fex instance</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>algorithm</strong> – (str) Algorithm to perform decomposition types=[‘pca’,’ica’,’nnmf’,’fa’]</p></li>
 <li><p><strong>axis</strong> – dimension to decompose [0,1]</p></li>
 <li><p><strong>n_components</strong> – (int) number of components. If None then retain as many as possible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>a dictionary of decomposition parameters</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>output</p>
 </dd>
 </dl>
@@ -882,10 +1213,10 @@ the following order: detrend, standardize, remove confounds, low and high-pass f
 <dd><p>Returns the design data</p>
 <p>Returns the study design information using columns in fex.design_columns.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>time data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -896,14 +1227,14 @@ the following order: detrend, standardize, remove confounds, low and high-pass f
 <span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.distance" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate distance between rows within a Fex() instance.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>method</strong> – type of distance metric (can use any scikit learn or
 sciypy metric)</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Outputs a 2D distance matrix.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dist</p>
 </dd>
 </dl>
@@ -917,7 +1248,7 @@ sciypy metric)</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target</strong> (<em>float</em>) – downsampling target, typically in samples not seconds</p></li>
 <li><p><strong>kwargs</strong> – additional inputs to nltools.stats.downsample</p></li>
@@ -932,10 +1263,10 @@ sciypy metric)</p>
 <dd><p>Returns the emotion data</p>
 <p>Returns emotions data using the columns set in fex.emotion_columns.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>emotion data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -946,18 +1277,18 @@ sciypy metric)</p>
 <span class="sig-name descname"><span class="pre">extract_boft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_boft" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract Bag of Temporal features</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>min_freq</strong> – maximum frequency of temporal filters</p></li>
 <li><p><strong>max_freq</strong> – minimum frequency of temporal filters</p></li>
 <li><p><strong>bank</strong> – number of temporal filter banks, filters are on exponential scale</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of Morlet wavelets with corresponding freq
 hzs:  list of hzs for each Morlet wavelet</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>wavs</p>
 </dd>
 </dl>
@@ -968,13 +1299,13 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">extract_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_max" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract maximum of each feature</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(Fex) maximum values for each feature</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>fex</p>
 </dd>
 </dl>
@@ -985,13 +1316,13 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">extract_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_mean" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract mean of each feature</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>mean values for each feature</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
 </dd>
 </dl>
@@ -1002,13 +1333,13 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">extract_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_min" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract minimum of each feature</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(Fex) minimum values for each feature</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
 </dd>
 </dl>
@@ -1020,7 +1351,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <dd><p>Convolve with a bank of morlet wavelets.</p>
 <p>Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>min_freq</strong> – (float) minimum frequency to extract</p></li>
 <li><p><strong>max_freq</strong> – (float) maximum frequency to extract</p></li>
@@ -1030,10 +1361,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <li><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(Fex instance)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>convolved</p>
 </dd>
 </dl>
@@ -1044,13 +1375,13 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">extract_sem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_sem" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract std of each feature</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>mean values for each feature</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
 </dd>
 </dl>
@@ -1061,13 +1392,13 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">extract_std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_std" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract std of each feature</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>mean values for each feature</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
 </dd>
 </dl>
@@ -1078,7 +1409,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">extract_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_summary" title="Permalink to this definition">#</a></dt>
 <dd><p>Extract summary of multiple features</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mean</strong> – (bool) extract mean of features</p></li>
 <li><p><strong>std</strong> – (bool) extract std of features</p></li>
@@ -1088,10 +1419,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <li><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(Fex)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>fex</p>
 </dd>
 </dl>
@@ -1102,7 +1433,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">extract_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cyc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_wavelet" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform feature extraction by convolving with a complex morlet wavelet</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>freq</strong> – (float) frequency to extract</p></li>
 <li><p><strong>num_cyc</strong> – (float) number of cycles for wavelet</p></li>
@@ -1110,10 +1441,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <li><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(Fex instance)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>convolved</p>
 </dd>
 </dl>
@@ -1124,10 +1455,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.Fex.facebox" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facebox data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facebox data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1138,10 +1469,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faceboxes</span></span><a class="headerlink" href="#feat.data.Fex.faceboxes" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facebox data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facebox data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1152,10 +1483,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.Fex.facepose" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facepose data using the columns set in fex.facepose_columns</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facepose data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1174,10 +1505,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <dd><p>Returns input column as string</p>
 <p>Returns input data in the “input” column.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>path to input image</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>string</p>
 </dd>
 </dl>
@@ -1189,10 +1520,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <dd><p>Returns input column as string</p>
 <p>Returns input data in the “input” column.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>path to input image</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>string</p>
 </dd>
 </dl>
@@ -1203,7 +1534,7 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">isc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'input'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.isc" title="Permalink to this definition">#</a></dt>
 <dd><p>[summary]</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>col</strong> (<em>str</em><em>]</em>) – Column name to compute the ISC for.</p></li>
 <li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – Column to be used in computing ISC. Usually this would be the column identifying the time such as the number of the frame. Defaults to “frame”.</p></li>
@@ -1211,10 +1542,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Method to use for correlation pearson, kendall, or spearman. Defaults to “pearson”.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Correlation matrix with index as colmns</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1225,10 +1556,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <span class="sig-name descname"><span class="pre">itersessions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.itersessions" title="Permalink to this definition">#</a></dt>
 <dd><p>Iterate over Fex sessions as (session, series) pairs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>a generator that iterates over the sessions of the fex instance</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>it</p>
 </dd>
 </dl>
@@ -1240,10 +1571,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <dd><p>Returns the landmark data</p>
 <p>Returns landmark data using the columns set in fex.landmark_columns.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>landmark data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1254,10 +1585,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.Fex.landmark_x" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the x landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>x landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1268,10 +1599,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.Fex.landmark_y" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the y landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>y landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1283,10 +1614,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <dd><p>Returns the landmark data</p>
 <p>Returns landmark data using the columns set in fex.landmark_columns.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>landmark data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1297,10 +1628,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_x</span></span><a class="headerlink" href="#feat.data.Fex.landmarks_x" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the x landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>x landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1311,10 +1642,10 @@ hzs:  list of hzs for each Morlet wavelet</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_y</span></span><a class="headerlink" href="#feat.data.Fex.landmarks_y" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the y landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>y landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1330,7 +1661,7 @@ visualization model using detected AUs. If detection was performed on a video an
 faces = ‘landmarks’, only an outline of the face will be draw without loading
 the underlying vidoe frame to save memory.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>faces</strong> (<em>str</em><em>, </em><em>optional</em>) – ‘landmarks’ to draw detected landmarks or ‘aus’ to</p></li>
 <li><p><strong>model.</strong> (<em>generate a face from AU detections using Py-Feat's AU landmark</em>) – </p></li>
@@ -1348,10 +1679,10 @@ the underlying vidoe frame to save memory.</p>
 <li><p><strong>emotion_barplot</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include a subplot for emotion detections. Defaults to True.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of matplotlib figures</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -1362,10 +1693,10 @@ the underlying vidoe frame to save memory.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">poses</span></span><a class="headerlink" href="#feat.data.Fex.poses" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facepose data using the columns set in fex.facepose_columns</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facepose data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1377,7 +1708,7 @@ the underlying vidoe frame to save memory.</p>
 <dd><p>Predicts y from X using a sklearn model.</p>
 <p>Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>X</strong> (<em>list</em><em> or </em><em>DataFrame</em>) – List of column names or dataframe to be used as features for prediction</p></li>
 <li><p><strong>y</strong> (<em>string</em><em> or </em><em>array</em>) – y values to be predicted</p></li>
@@ -1386,10 +1717,10 @@ the underlying vidoe frame to save memory.</p>
 <li><p><strong>kwargs</strong> – Model arguments</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Fit model instance.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>model</p>
 </dd>
 </dl>
@@ -1400,10 +1731,10 @@ the underlying vidoe frame to save memory.</p>
 <span class="sig-name descname"><span class="pre">read_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_feat" title="Permalink to this definition">#</a></dt>
 <dd><p>Reads facial expression detection results from Feat Detector</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>filename</strong> (<em>string</em><em>, </em><em>optional</em>) – Path to file. Defaults to None.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Fex</p>
 </dd>
 </dl>
@@ -1414,10 +1745,10 @@ the underlying vidoe frame to save memory.</p>
 <span class="sig-name descname"><span class="pre">read_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_file" title="Permalink to this definition">#</a></dt>
 <dd><p>Loads file into FEX class</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Fex class</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1428,10 +1759,10 @@ the underlying vidoe frame to save memory.</p>
 <span class="sig-name descname"><span class="pre">read_openface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_openface" title="Permalink to this definition">#</a></dt>
 <dd><p>Reads facial expression detection results from OpenFace</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>filename</strong> (<em>string</em><em>, </em><em>optional</em>) – Path to file. Defaults to None.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Fex</p>
 </dd>
 </dl>
@@ -1443,13 +1774,13 @@ the underlying vidoe frame to save memory.</p>
 <dd><p>Removes time points when the face position moved
 more than N standard deviations from the mean.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>std</strong> (<em>default 3</em>) – standard deviation from mean to remove outlier face locations</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>cleaned FEX object</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>data</p>
 </dd>
 </dl>
@@ -1461,14 +1792,14 @@ more than N standard deviations from the mean.</p>
 <dd><p>Regress using nltools.stats.regress.</p>
 <p>fMRI-like regression to predict Fex activity (y) from set of regressors (X).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>X</strong> (<em>list</em><em> or </em><em>str</em>) – Independent variable to predict.</p></li>
 <li><p><strong>y</strong> (<em>list</em><em> or </em><em>str</em>) – Dependent variable to be predicted.</p></li>
 <li><p><strong>fit_intercept</strong> (<em>bool</em>) – Whether to add intercept before fitting. Defaults to True.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dataframe of betas, ses, t-stats, p-values, df, residuals</p>
 </dd>
 </dl>
@@ -1480,10 +1811,10 @@ more than N standard deviations from the mean.</p>
 <dd><p>Returns the time data</p>
 <p>Returns the time information using fex.time_columns.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>time data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1495,16 +1826,16 @@ more than N standard deviations from the mean.</p>
 <dd><p>Conducts 1 sample ttest.</p>
 <p>Uses scipy.stats.ttest_1samp to conduct 1 sample ttest</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>popmean</strong> (<em>int</em><em>, </em><em>optional</em>) – Population mean to test against. Defaults to 0.</p></li>
 <li><p><strong>threshold_dict</strong> (<em>[</em><em>type</em><em>]</em><em>, </em><em>optional</em>) – Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>t-statistics and p-values</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>t, p</p>
 </dd>
 </dl>
@@ -1516,17 +1847,17 @@ more than N standard deviations from the mean.</p>
 <dd><p>Conducts 2 sample ttest.</p>
 <p>Uses scipy.stats.ttest_ind to conduct 2 sample ttest on column col between sessions.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>col</strong> (<em>str</em>) – Column names to compare in a t-test between sessions</p></li>
 <li><p><strong>session</strong> (<em>array-like</em>) – session name to query Fex.sessions, otherwise uses the</p></li>
 <li><p><strong>Fex.sessions.</strong> (<em>unique values in</em>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>t-statistics and p-values</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>t, p</p>
 </dd>
 </dl>
@@ -1538,13 +1869,13 @@ more than N standard deviations from the mean.</p>
 <dd><p>Returns a copy of the Fex dataframe with a new sessions attribute after
 validation. <cite>new_sessions</cite> should be a dictionary mapping old to new names or an iterable with the same number of rows as the Fex dataframe</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new_sessions</strong> (<em>dict</em><em>, </em><em>Iterable</em>) – map or list of new session names</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>self</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
 </dd>
 </dl>
@@ -1558,7 +1889,7 @@ validation. <cite>new_sessions</cite> should be a dictionary mapping old to new 
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target</strong> (<em>float</em>) – upsampling target, default ‘hz’ (also ‘samples’, ‘seconds’)</p></li>
 <li><p><strong>kwargs</strong> – additional inputs to nltools.stats.upsample</p></li>
@@ -1572,7 +1903,7 @@ validation. <cite>new_sessions</cite> should be a dictionary mapping old to new 
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.data.FexSeries">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">FexSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></p>
 <p>This is a sub-class of pandas series. While not having additional methods
 of it’s own required to retain normal slicing functionality for the
 Fex class, i.e. how slicing is typically handled in pandas.
@@ -1582,10 +1913,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aus</span></span><a class="headerlink" href="#feat.data.FexSeries.aus" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the Action Units data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Action Units data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1596,10 +1927,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">design</span></span><a class="headerlink" href="#feat.data.FexSeries.design" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the design data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>time data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1610,10 +1941,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">emotions</span></span><a class="headerlink" href="#feat.data.FexSeries.emotions" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the emotion data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>emotion data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1624,10 +1955,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.FexSeries.facebox" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facebox data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facebox data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1638,10 +1969,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faceboxes</span></span><a class="headerlink" href="#feat.data.FexSeries.faceboxes" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facebox data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facebox data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1652,10 +1983,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.FexSeries.facepose" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facepose data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facepose data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1672,10 +2003,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input</span></span><a class="headerlink" href="#feat.data.FexSeries.input" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns input column as string</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>path to input image</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>string</p>
 </dd>
 </dl>
@@ -1686,10 +2017,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#feat.data.FexSeries.inputs" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns input column as string</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>path to input image</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>string</p>
 </dd>
 </dl>
@@ -1700,10 +2031,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the landmark data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>landmark data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1714,10 +2045,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_x" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the x landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>x landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1728,10 +2059,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_y" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the y landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>y landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1742,10 +2073,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks</span></span><a class="headerlink" href="#feat.data.FexSeries.landmarks" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the landmark data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>landmark data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1756,10 +2087,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_x</span></span><a class="headerlink" href="#feat.data.FexSeries.landmarks_x" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the x landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>x landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1770,10 +2101,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_y</span></span><a class="headerlink" href="#feat.data.FexSeries.landmarks_y" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the y landmarks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>y landmarks.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1790,10 +2121,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">poses</span></span><a class="headerlink" href="#feat.data.FexSeries.poses" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the facepose data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>facepose data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1804,10 +2135,10 @@ All methods should be called on Fex below.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#feat.data.FexSeries.time" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the time data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>time data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame</p>
 </dd>
 </dl>
@@ -1818,10 +2149,10 @@ All methods should be called on Fex below.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.data.ImageDataset">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">ImageDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_aspect_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.ImageDataset" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.dataset.Dataset</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
 <p>Torch Image Dataset</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output_size</strong> (<em>tuple</em><em> or </em><em>int</em>) – Desired output size. If tuple, output is matched to</p></li>
 <li><p><strong>int</strong> (<em>aspect ratio by adding padding. If</em>) – </p></li>
@@ -1835,10 +2166,10 @@ All methods should be called on Fex below.</p>
 <li><p><strong>size.</strong> (<em>will set both sides to the same</em>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dataset of [batch, channels, height, width] that can be passed to DataLoader</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Dataset</p>
 </dd>
 </dl>
@@ -1847,16 +2178,16 @@ All methods should be called on Fex below.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.data.VideoDataset">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">VideoDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.dataset.Dataset</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
 <p>Torch Video Dataset</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>skip_frames</strong> (<em>int</em>) – number of frames to skip</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dataset of [batch, channels, height, width] that can be passed to DataLoader</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Dataset</p>
 </dd>
 </dl>
@@ -1864,7 +2195,7 @@ All methods should be called on Fex below.</p>
 
 </section>
 <section id="module-feat.plotting">
-<span id="feat-plotting-module"></span><h1>feat.plotting module<a class="headerlink" href="#module-feat.plotting" title="Permalink to this headline">#</a></h1>
+<span id="feat-plotting-module"></span><h1>feat.plotting module<a class="headerlink" href="#module-feat.plotting" title="Permalink to this heading">#</a></h1>
 <p>Helper functions for plotting</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.animate_face">
@@ -1874,7 +2205,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <cite>end</cite>, or by animating a single AU using the <cite>AU</cite> keyword argument and setting
 <cite>start</cite> and <cite>end</cite> to a scalar value.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>AU</strong> (<em>str/int</em><em>, </em><em>optional</em>) – action unit id (e.g. 12 or ‘AU12’). Defaults to None.</p></li>
 <li><p><strong>start</strong> (<em>float/np.ndarray</em><em>, </em><em>optional</em>) – AU intensity to start at. Defaults to None</p></li>
@@ -1896,7 +2227,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <li><p><strong>https</strong> – //github.com/semitable/easing-functions for other options.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>matplotlib Animation</p>
 </dd>
 </dl>
@@ -1907,7 +2238,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_lineface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_lineface" title="Permalink to this definition">#</a></dt>
 <dd><p>Plot Line Face</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>currx</strong> – vector (len(68)) of x coordinates</p></li>
 <li><p><strong>curry</strong> – vector (len(68)) of y coordinates</p></li>
@@ -1926,7 +2257,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_muscles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_muscles" title="Permalink to this definition">#</a></dt>
 <dd><p>Draw Muscles</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>currx</strong> – vector (len(68)) of x coordinates</p></li>
 <li><p><strong>curry</strong> – vector (len(68)) of y coordinates</p></li>
@@ -1941,7 +2272,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_vectorfield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.007</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_vectorfield" title="Permalink to this definition">#</a></dt>
 <dd><p>Draw vectorfield from reference to target</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reference</strong> – reference landmarks (2,68)</p></li>
 <li><p><strong>target</strong> – target landmarks (2,68)</p></li>
@@ -1957,14 +2288,14 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">get_heat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">muscle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.get_heat" title="Permalink to this definition">#</a></dt>
 <dd><p>Function to create heatmap from au vector</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>muscle</strong> (<em>string</em>) – string representation of a muscle</p></li>
 <li><p><strong>au</strong> (<em>list</em>) – vector of action units</p></li>
 <li><p><strong>log</strong> (<em>boolean</em>) – whether the action unit values are on a log scale</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>color of muscle according to its au value</p>
 </dd>
 </dl>
@@ -1976,7 +2307,7 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <dd><p>Convenience wrapper function around matplotlib imshow that creates figure and axis
 boilerplate for single image plotting</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>obj</strong> (<em>str/Path/PIL.Imag</em>) – string or Path to image file or pre-loaded PIL.Image instance</p></li>
 <li><p><strong>figsize</strong> (<em>tuple</em><em>, </em><em>optional</em>) – matplotlib figure size. Defaults to None.</p></li>
@@ -1992,7 +2323,7 @@ boilerplate for single image plotting</p>
 <dd><p>Helper function to interpolate between starting and ending AU values using
 non-linear easing functions</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> (<em>np.ndarray</em>) – array of starting intensities</p></li>
 <li><p><strong>end</strong> (<em>np.ndarray</em>) – array of ending intensities</p></li>
@@ -2004,10 +2335,10 @@ non-linear easing functions</p>
 <li><p><strong>True.</strong> (<em>the end of the interpolation. Useful for animating start -&gt; end -&gt; start. Defaults to</em>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>frames x au 2d array</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
@@ -2018,7 +2349,7 @@ non-linear easing functions</p>
 <span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorfield</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscle_scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.plot_face" title="Permalink to this definition">#</a></dt>
 <dd><p>Core face plotting function</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<em>Default's to Py-Feat's 20 AU landmark AU</em>) – (str/PLSRegression instance) Name of AU visualization model to use.</p></li>
 <li><p><strong>model</strong> – </p></li>
@@ -2034,10 +2365,10 @@ non-linear easing functions</p>
 <li><p><strong>gaze</strong> – array of gaze vectors (len(4))</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>plot handle</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ax</p>
 </dd>
 </dl>
@@ -2048,7 +2379,7 @@ non-linear easing functions</p>
 <span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.predict" title="Permalink to this definition">#</a></dt>
 <dd><p>Helper function to predict landmarks from au given a sklearn model</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>au</strong> – vector of action unit intensities</p></li>
 <li><p><strong>model</strong> – sklearn pls object (uses pretrained model by default)</p></li>
@@ -2056,10 +2387,10 @@ non-linear easing functions</p>
 <li><p><strong>default</strong> – None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Array of landmarks (2,68)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>landmarks</p>
 </dd>
 </dl>
@@ -2067,7 +2398,7 @@ non-linear easing functions</p>
 
 </section>
 <section id="module-feat.utils">
-<span id="feat-utils-module"></span><h1>feat.utils module<a class="headerlink" href="#module-feat.utils" title="Permalink to this headline">#</a></h1>
+<span id="feat-utils-module"></span><h1>feat.utils module<a class="headerlink" href="#module-feat.utils" title="Permalink to this heading">#</a></h1>
 <p>py-feat helper functions and variables</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.is_list_of_lists_empty">
@@ -2083,7 +2414,7 @@ non-linear easing functions</p>
 
 </section>
 <section id="module-feat.pretrained">
-<span id="feat-pretrained-module"></span><h1>feat.pretrained module<a class="headerlink" href="#module-feat.pretrained" title="Permalink to this headline">#</a></h1>
+<span id="feat-pretrained-module"></span><h1>feat.pretrained module<a class="headerlink" href="#module-feat.pretrained" title="Permalink to this heading">#</a></h1>
 <p>Helper functions specifically for working with included pre-trained models</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.pretrained.fetch_model">
@@ -2120,50 +2451,130 @@ necessary using the URLs in the included JSON file. User by detector init</p>
     </script>
     <script>kernelName = 'python3'</script>
 
-              </div>
-              
-            </main>
-            <footer class="footer-article noprint">
-                
-    <!-- Previous / next buttons -->
+            </article>
+            
+
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../extra_tutorials/13_test_emos.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">13. Benchmarking pyfeat Emotion detection algorithms using data</p>
-        </div>
-    </a>
-    <a class='right-next' id="next-link" href="contribute.html" title="next page">
-    <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">General contributions guidelines</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
-    </a>
+  <a class='left-prev' id="prev-link" href="../extra_tutorials/13_test_emos.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">13. Benchmarking pyfeat Emotion detection algorithms using data</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="contribute.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">General contributions guidelines</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
             </footer>
-        </div>
-    </div>
-    <div class="footer-content row">
-        <footer class="col footer"><p>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
   
-    By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang<br/>
-  
-      &copy; Copyright 2022.<br/>
-</p>
-        </footer>
-    </div>
-    
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   API Reference
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.detector">
+   feat.detector module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.data">
+   feat.data module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.plotting">
+   feat.plotting module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.utils">
+   feat.utils module
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-feat.pretrained">
+   feat.pretrained module
+  </a>
+ </li>
+</ul>
+
+</nav>
 </div>
 
-
-      </div>
-    </div>
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+<div class="bd-footer-content__inner container">
   
-  <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <div class="footer-item">
+    
+<p class="component-author">
+By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
+</p>
 
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2022.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+Last updated on None.<br>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </div>
+        </footer>
+        
+
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
   </body>
 </html>
