@@ -574,7 +574,7 @@ class Detector(object):
 
                     hog_features.append(
                         hog(
-                            transforms.ToPILImage()(convex_hull[0]),
+                            transforms.ToPILImage()(convex_hull[0] / 255.0),
                             orientations=8,
                             pixels_per_cell=(8, 8),
                             cells_per_block=(2, 2),
