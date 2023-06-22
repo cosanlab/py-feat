@@ -40,6 +40,8 @@ from textwrap import wrap
 import torch
 from PIL import Image
 import logging
+import av
+from itertools import islice
 
 __all__ = [
     "FexSeries",
@@ -664,7 +666,6 @@ class Fex(DataFrame):
         print(f"{self.__class__}\n" + "".join(attr_list))
 
     def _update_extracted_colnames(self, prefix=None, mode="replace"):
-
         cols2update = [
             "au_columns",
             "emotion_columns",
@@ -705,7 +706,6 @@ class Fex(DataFrame):
             _ = [setattr(self, col, val) for col, val in zip(cols2update, update)]
 
     def _parse_features_labels(self, X, y):
-
         feature_groups = [
             "sessions",
             "emotions",
@@ -1612,7 +1612,6 @@ class Fex(DataFrame):
         )
 
     def _prepare_plot_aus(self, row, muscles, gaze):
-
         """
         Plot one or more faces based on their AU representation. This method is just a
         convenient wrapper for feat.plotting.plot_face. See that function for additional
@@ -1723,10 +1722,8 @@ class Fex(DataFrame):
                 col_count += 1
 
             for _, row in plot_data.iterrows():
-
                 # DRAW LANDMARKS ON IMAGE OR AU FACE
                 if face_ax is not None:
-
                     facebox = row[self.facebox_columns].values
 
                     if not faces == "aus" and plot_original_image:
@@ -1910,7 +1907,6 @@ class ImageDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-
         # Dimensions are [channels, height, width]
         try:
             img = read_image(self.images[idx])
@@ -2088,7 +2084,6 @@ class imageLoader_DISFAPlus(ImageDataset):
         return self.main_file.shape[0]
 
     def __getitem__(self, idx):
-
         # Dimensions are [channels, height, width]
         img = read_image(self.main_file["image_path"].iloc[idx])
         label = self.main_file.loc[idx, self.avail_AUs].to_numpy().astype(np.int16)
@@ -2164,51 +2159,81 @@ class VideoDataset(Dataset):
     """
 
     def __init__(self, video_file, skip_frames=None, output_size=None):
-
-        # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
-        # pts_unit 'sec'. See why it's ok in this issue:
-        # https://github.com/pytorch/vision/issues/1931
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-            # Video dimensions are: [time, height, width, channels]
-            self.video, self.audio, self.info = read_video(video_file)
-        # Swap them to match output of read_image: [time, channels, height, width]
-        # Otherwise detectors face on tensor dimension mismatch
-        self.video = swapaxes(swapaxes(self.video, 1, 3), -1, -2)
         self.file_name = video_file
+        self.skip_frames = skip_frames
         self.output_size = output_size
+        self.get_video_metadata(video_file)
+        # This is the list of frame ids used to slice the video not video_frames
         self.video_frames = np.arange(
-            0, self.video.shape[0], 1 if skip_frames is None else skip_frames
+            0, self.metadata["num_frames"], 1 if skip_frames is None else skip_frames
         )
-        self.video = self.video[self.video_frames, :, :]
 
     def __len__(self):
-        return self.video.shape[0]
+        # Number of frames respective skip_frames
+        return len(self.video_frames)
 
     def __getitem__(self, idx):
+        # Get the frame data and frame number respective skip_frames
+        frame_data, frame_idx = self.load_frame(idx)
+
+        # Swap frame dims to match output of read_image: [time, channels, height, width]
+        # Otherwise detectors face on tensor dimension mismatch
+        frame_data = swapaxes(swapaxes(frame_data, 0, -1), 1, 2)
 
         # Rescale if needed like in ImageDataset
         if self.output_size is not None:
             logging.info(
-                f"VideoDataset: RESCALING WARNING: from {self.video[idx].shape} to output_size={self.output_size}"
+                f"VideoDataset: RESCALING WARNING: from {self.metadata['shape']} to output_size={self.output_size}"
             )
             transform = Compose(
                 [Rescale(self.output_size, preserve_aspect_ratio=True, padding=False)]
             )
-            transformed_img = transform(self.video[idx])
+            transformed_frame_data = transform(frame_data)
 
             return {
-                "Image": transformed_img["Image"],
-                "Frame": self.video_frames[idx],
-                "Scale": transformed_img["Scale"],
-                "Padding": transformed_img["Padding"],
+                "Image": transformed_frame_data["Image"],
+                "Frame": frame_idx,
                 "FileName": self.file_name,
+                "Scale": transformed_frame_data["Scale"],
+                "Padding": transformed_frame_data["Padding"],
             }
         else:
             return {
-                "Image": self.video[idx],
-                "Frame": self.video_frames[idx],
+                "Image": frame_data,
+                "Frame": frame_idx,
                 "FileName": self.file_name,
                 "Scale": 1.0,
                 "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
             }
+
+    def get_video_metadata(self, video_file):
+        container = av.open(video_file)
+        stream = container.streams.video[0]
+        fps = stream.average_rate
+        height = stream.height
+        width = stream.width
+        num_frames = stream.frames
+        container.close()
+        self.metadata = {
+            "fps": float(fps),
+            "fps_frac": fps,
+            "height": height,
+            "width": width,
+            "num_frames": num_frames,
+            "shape": (height, width),
+        }
+
+    def load_frame(self, idx):
+        """Load in a single frame from the video using a lazy generator"""
+
+        # Get frame number respecting skip_frames
+        frame_idx = int(self.video_frames[idx])
+
+        # Use a py-av generator to load in just this frame
+        container = av.open(self.file_name)
+        stream = container.streams.video[0]
+        frame = next(islice(container.decode(stream), frame_idx, None))
+        frame_data = torch.from_numpy(frame.to_ndarray(format="rgb24"))
+        container.close()
+
+        return frame_data, frame_idx
