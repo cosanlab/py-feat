@@ -164,7 +164,21 @@ def get_pretrained_models(
                     get_resource_path(),
                     verbose=verbose,
                 )
-
+                download_url(
+                    model_urls["au_detectors"]["hog-pca"]["urls"][3],
+                    get_resource_path(),
+                    verbose=verbose,
+                )
+                download_url(
+                    model_urls["au_detectors"]["hog-pca"]["urls"][4],
+                    get_resource_path(),
+                    verbose=verbose,
+                )
+                download_url(
+                    model_urls["au_detectors"]["hog-pca"]["urls"][5],
+                    get_resource_path(),
+                    verbose=verbose,
+                )
     # Emotion model
     if emotion_model is None:
         raise ValueError(
