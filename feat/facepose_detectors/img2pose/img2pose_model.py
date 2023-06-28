@@ -50,7 +50,7 @@ class img2poseModel:
         # create network backbone
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            backbone = resnet_fpn_backbone(f"resnet{self.depth}", weights=True)
+            backbone = resnet_fpn_backbone(f"resnet{self.depth}", pretrained=True)
 
         if pose_mean is not None:
             pose_mean = torch.tensor(pose_mean)
