@@ -847,8 +847,12 @@ class Detector(object):
         emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
         facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
 
+        dataset = VideoDataset(
+            video_path, skip_frames=skip_frames, output_size=output_size
+        )
+
         data_loader = DataLoader(
-            VideoDataset(video_path, skip_frames=skip_frames, output_size=output_size),
+            dataset,
             num_workers=num_workers,
             batch_size=batch_size,
             pin_memory=pin_memory,
@@ -884,6 +888,9 @@ class Detector(object):
 
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
+        batch_output["approx_time"] = [
+            dataset.calc_approx_frame_time(x) for x in batch_output["frame"].to_numpy()
+        ]
         return batch_output.set_index("frame", drop=False)
 
     def _create_fex(
