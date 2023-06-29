@@ -2237,3 +2237,23 @@ class VideoDataset(Dataset):
         container.close()
 
         return frame_data, frame_idx
+
+    def calc_approx_frame_time(self, idx):
+        """Calculate the approximate time of a frame in a video
+
+        Args:
+            frame_idx (int): frame number
+
+        Returns:
+            float: time in seconds
+        """
+        frame_time = idx / self.metadata["fps"]
+        total_time = self.metadata["num_frames"] / self.metadata["fps"]
+        time = total_time if idx >= self.metadata["num_frames"] else frame_time
+        return self.convert_sec_to_min_sec(time)
+
+    @staticmethod
+    def convert_sec_to_min_sec(duration):
+        minutes = int(duration // 60)
+        seconds = int(duration % 60)
+        return f"{minutes:02d}:{seconds:02d}"
