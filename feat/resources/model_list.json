@@ -2,41 +2,41 @@
     "au_detectors": {
         "svm": {
             "urls": [
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/svm_60_June2023.pkl"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/svm_60_July2023.pkl"
             ]
         },
         "xgb": {
             "urls": [
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU1_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU2_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU4_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU5_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU6_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU7_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU9_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU10_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU11_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU12_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU14_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU15_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU17_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU20_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU23_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU24_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU25_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU26_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU28_XGB.ubj",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/June25_AU43_XGB.ubj"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU1_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU2_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU4_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU5_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU6_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU7_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU9_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU10_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU11_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU12_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU14_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU15_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU17_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU20_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU23_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU24_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU25_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU26_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU28_XGB.ubj",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/July4_AU43_XGB.ubj"
             ]
         },
         "hog-pca": {
             "urls": [
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Upperpca_Jun23.pkl",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Upperscalar_Jun23.pkl",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Lowerpca_Jun23.pkl",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Lowerscalar_Jun23.pkl",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Fullpca_Jun23.pkl",
-                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Fullscalar_Jun23.pkl"
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Upperpca_June30.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Upperscalar_June30.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Lowerpca_June30.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Lowerscalar_June30.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Fullpca_June30.pkl",
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/all_data_Fullscalar_June30.pkl"
             ]
         }
     },
@@ -49,17 +49,17 @@
         },
         "svm": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/emoSVM38.joblib"
+                "https://github.com/cosanlab/feat/releases/download/v0.1/July4_emo_SVM.pkl"
             ]
         },
         "emo_scalar": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_scalar.joblib"
+                "https://github.com/cosanlab/feat/releases/download/v0.1/emo_data_Fullpca_Jun30.pkl"
             ]
         },
         "emo_pca": {
             "urls": [
-                "https://github.com/cosanlab/feat/releases/download/v0.1/emo_hog_pca.joblib"
+                "https://github.com/cosanlab/feat/releases/download/v0.1/emo_data_Fullscalar_Jun30.pkl"
             ]
         }
     },
