@@ -425,7 +425,6 @@ class Detector(object):
         else:
             if self.info["landmark_model"]:
                 if self.info["landmark_model"].lower() == "mobilenet":
-
                     out_size = 224
                 else:
                     out_size = 112
@@ -459,7 +458,6 @@ class Detector(object):
 
             landmark_results = []
             for ik in range(landmark.shape[0]):
-
                 landmark_results.append(
                     new_bbox[ik].inverse_transform_landmark(landmark[ik, :, :])
                 )
@@ -657,6 +655,7 @@ class Detector(object):
         facepose_model_kwargs,
         emotion_model_kwargs,
         au_model_kwargs,
+        suppress_torchvision_warnings=True,
     ):
         """
         Main detection "waterfall." Calls each individual detector in the sequence
@@ -675,6 +674,15 @@ class Detector(object):
         Returns:
             tuple: faces, landmarks, poses, aus, emotions
         """
+
+        # Reset warnings
+        warnings.filterwarnings("default", category=UserWarning, module="torchvision")
+
+        if suppress_torchvision_warnings:
+            warnings.filterwarnings(
+                "ignore", category=UserWarning, module="torchvision"
+            )
+
         faces = self.detect_faces(
             batch_data["Image"],
             threshold=face_detection_threshold,
@@ -771,7 +779,6 @@ class Detector(object):
             batch_output = []
 
             for batch_id, batch_data in enumerate(tqdm(data_loader)):
-
                 faces, landmarks, poses, aus, emotions = self._run_detection_waterfall(
                     batch_data,
                     face_detection_threshold,
@@ -840,8 +847,12 @@ class Detector(object):
         emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
         facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
 
+        dataset = VideoDataset(
+            video_path, skip_frames=skip_frames, output_size=output_size
+        )
+
         data_loader = DataLoader(
-            VideoDataset(video_path, skip_frames=skip_frames, output_size=output_size),
+            dataset,
             num_workers=num_workers,
             batch_size=batch_size,
             pin_memory=pin_memory,
@@ -851,7 +862,6 @@ class Detector(object):
         batch_output = []
 
         for batch_data in tqdm(data_loader):
-
             faces, landmarks, poses, aus, emotions = self._run_detection_waterfall(
                 batch_data,
                 face_detection_threshold,
@@ -878,6 +888,9 @@ class Detector(object):
 
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
+        batch_output["approx_time"] = [
+            dataset.calc_approx_frame_time(x) for x in batch_output["frame"].to_numpy()
+        ]
         return batch_output.set_index("frame", drop=False)
 
     def _create_fex(
@@ -1084,7 +1097,6 @@ class Detector(object):
             return (faces, poses)
 
         else:
-
             overlap_faces = []
             overlap_poses = []
             for frame_face, frame_face_pose, frame_pose in zip(
