@@ -24,13 +24,13 @@ def load_classifier_pkl(cf_path):
 class EmoSVMClassifier:
     def __init__(self, **kwargs) -> None:
         self.pca_model = load_classifier(
-            os.path.join(get_resource_path(), "emo_hog_pca.joblib")
+            os.path.join(get_resource_path(), "emo_data_Fullpca_Jun30.pkl")
         )
         self.classifier = load_classifier(
-            os.path.join(get_resource_path(), "emoSVM38.joblib")
+            os.path.join(get_resource_path(), "July4_emo_SVM.pkl")
         )
         self.scaler = load_classifier(
-            os.path.join(get_resource_path(), "emo_hog_scalar.joblib")
+            os.path.join(get_resource_path(), "emo_data_Fullscalar_Jun30.pkl")
         )
 
     def detect_emo(self, frame, landmarks, **kwargs):
@@ -47,8 +47,10 @@ class EmoSVMClassifier:
             self.scaler.fit_transform(frame)
         )
         feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
+        emo_columns = ["anger", "disgust", "fear", "happ", "sad", "sur", "neutral"]
+
         pred_emo = []
-        for keys in self.classifier:
+        for keys in emo_columns:
             emo_pred = self.classifier[keys].predict(feature_cbd)
             emo_pred = emo_pred  # probably need to delete this
             pred_emo.append(emo_pred)
