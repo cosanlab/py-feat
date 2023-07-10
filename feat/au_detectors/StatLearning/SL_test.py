@@ -22,16 +22,25 @@ def load_classifier_pkl(cf_path):
 class SVMClassifier:
     def __init__(self) -> None:
         self.scaler_upper, self.pca_model_upper = load_classifier_pkl(
-            os.path.join(get_resource_path(), "upper_face_pcaSet.pkl")
+            os.path.join(get_resource_path(), "all_data_Upperscalar_June30.pkl")
+        ), load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Upperpca_June30.pkl")
         )
+
         self.scaler_lower, self.pca_model_lower = load_classifier_pkl(
-            os.path.join(get_resource_path(), "lower_face_pcaSet.pkl")
+            os.path.join(get_resource_path(), "all_data_Lowerscalar_June30.pkl")
+        ), load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Lowerpca_June30.pkl")
         )
+
         self.scaler_full, self.pca_model_full = load_classifier_pkl(
-            os.path.join(get_resource_path(), "full_face_pcaSet.pkl")
+            os.path.join(get_resource_path(), "all_data_Fullscalar_June30.pkl")
+        ), load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Fullpca_June30.pkl")
         )
+
         self.classifier = load_classifier(
-            os.path.join(get_resource_path(), "svm_60_Nov22022.pkl")
+            os.path.join(get_resource_path(), "svm_60_July2023.pkl")
         )
 
     def detect_au(self, frame, landmarks):
@@ -61,11 +70,26 @@ class SVMClassifier:
 
         pred_aus = []
         for keys in aus_list:
-            if keys in ["AU1", "AU2", "AU4", "AU5", "AU6", "AU9", "AU43"]:
+            if keys in ["AU1", "AU4", "AU6"]:
                 au_pred = self.classifier[keys].predict(pca_transformed_upper)
-            elif keys in ["AU10", "AU11", "AU12", "AU15", "AU23", "AU25", "AU28"]:
+            elif keys in ["AU11", "AU12", "AU17"]:
                 au_pred = self.classifier[keys].predict(pca_transformed_lower)
-            elif keys in ["AU7", "AU14", "AU17", "AU20", "AU24", "AU26"]:
+            elif keys in [
+                "AU2",
+                "AU5",
+                "AU7",
+                "AU9",
+                "AU10",
+                "AU14",
+                "AU15",
+                "AU20",
+                "AU23",
+                "AU24",
+                "AU25",
+                "AU26",
+                "AU28",
+                "AU43",
+            ]:
                 au_pred = self.classifier[keys].predict(pca_transformed_full)
             else:
                 raise ValueError("unknown AU detected")
@@ -77,9 +101,24 @@ class SVMClassifier:
 
 class XGBClassifier:
     def __init__(self) -> None:
-        self.scaler, self.pca_model = load_classifier_pkl(
-            os.path.join(get_resource_path(), "full_face_pcaSet.pkl")
+        self.scaler_upper, self.pca_model_upper = load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Upperscalar_June30.pkl")
+        ), load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Upperpca_June30.pkl")
         )
+
+        self.scaler_lower, self.pca_model_lower = load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Lowerscalar_June30.pkl")
+        ), load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Lowerpca_June30.pkl")
+        )
+
+        self.scaler_full, self.pca_model_full = load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Fullscalar_June30.pkl")
+        ), load_classifier_pkl(
+            os.path.join(get_resource_path(), "all_data_Fullpca_June30.pkl")
+        )
+
         self.au_keys = [
             "AU1",
             "AU2",
@@ -113,18 +152,48 @@ class XGBClassifier:
         # landmarks = landmarks.reshape(landmarks.shape[0]*landmarks.shape[1],landmarks.shape[2],landmarks.shape[3])
         landmarks = landmarks.reshape(-1, landmarks.shape[1] * landmarks.shape[2])
 
-        pca_transformed_frame = self.pca_model.transform(self.scaler.transform(frame))
-        feature_cbd = np.concatenate((pca_transformed_frame, landmarks), 1)
+        pca_transformed_upper = self.pca_model_upper.transform(
+            self.scaler_upper.transform(frame)
+        )
+        pca_transformed_lower = self.pca_model_lower.transform(
+            self.scaler_lower.transform(frame)
+        )
+        pca_transformed_full = self.pca_model_full.transform(
+            self.scaler_full.transform(frame)
+        )
+
+        pca_transformed_upper = np.concatenate((pca_transformed_upper, landmarks), 1)
+        pca_transformed_lower = np.concatenate((pca_transformed_lower, landmarks), 1)
+        pca_transformed_full = np.concatenate((pca_transformed_full, landmarks), 1)
 
         pred_aus = []
         for keys in self.au_keys:
-
-            model_xgb = xgb.XGBClassifier()
-            model_xgb.load_model(
-                os.path.join(get_resource_path(), f"Oct30FinalXGB_{keys}.ubj")
+            classifier = xgb.XGBClassifier()
+            classifier.load_model(
+                os.path.join(get_resource_path(), f"July4_{keys}_XGB.ubj")
             )
 
-            au_pred = model_xgb.predict_proba(feature_cbd)[:, 1]
+            if keys in ["AU1", "AU2", "AU7"]:
+                au_pred = classifier.predict_proba(pca_transformed_upper)[:, 1]
+            elif keys in ["AU11", "AU14", "AU17", "AU23", "AU24", "AU26"]:
+                au_pred = classifier.predict_proba(pca_transformed_lower)[:, 1]
+            elif keys in [
+                "AU4",
+                "AU5",
+                "AU6",
+                "AU9",
+                "AU10",
+                "AU12",
+                "AU15",
+                "AU20",
+                "AU25",
+                "AU28",
+                "AU43",
+            ]:
+                au_pred = classifier.predict_proba(pca_transformed_full)[:, 1]
+            else:
+                raise ValueError("unknown AU detected")
+
             # au_pred = au_pred[:, 1]
             pred_aus.append(au_pred)
 
