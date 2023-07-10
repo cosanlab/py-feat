@@ -1,5 +1,15 @@
 # Change Log
 
+# 0.6.0
+
+## Notes
+
+This is a large model-update release. Several users noted issues with our AU models due to problematic HOG feature extraction. We have now retrained all of our models that were affected by this issue. This version will automatically download the new model weights and use them without any additional user input.
+
+## `Detector` Changes
+
+We have made the decision to make video processing much more memory efficient at the trade-off of increased processing time. Previously `py-feat` would load all frames into RAM and then process them. This was problematic for large videos and would cause kernel panics or system freezes. Now, `py-feat` will lazy-load video-frames one at a time, which scales to videos of any length or size assuming that your system has enough RAM to hold a few frames in memory (determined by `batch_size`). However, this also makes processing videos a bit slower and GPU benefits less dramatic. We have made this trade-off in favor of an easier end-user experience, but will be watching torch's [VideoReader](https://pytorch.org/vision/stable/generated/torchvision.io.VideoReader.html#torchvision.io.VideoReader) implementation closely and likely use that in future versions.
+
 # 0.5.1
 
 ## Notes
@@ -16,6 +26,7 @@ This is a maintenance release that addresses multiple under-the-hood issues with
 ## Notes
 
 This is a large overhaul and refactor of some of the core testing and API functionality to make future development, maintenance, and testing easier. Notable highlights include:
+
 - tighter integration with `torch` data loaders
 - dropping `opencv` as a dependency
 - experimental support for macOS m1 GPUs
@@ -24,6 +35,7 @@ This is a large overhaul and refactor of some of the core testing and API functi
 ## `Detector` Changes
 
 ### New
+
 - you can now pass keyword arguments directly to the underlying pytorch/sklearn models on `Detector` initialization using dictionaries. For example you can do: `detector = Detector(facepose_model_kwargs={'keep_top_k': 500})` to initialize `img2pose` to only use 500 instead of 750 features
 - all `.detect_*` methods can also pass keyword arguments to the underlying pytorch/sklearn models, albeit these will be passed to their underlying `__call__` methods
 - SVM AU model has been retrained with new HOG feature PCA pipeline
@@ -32,7 +44,8 @@ This is a large overhaul and refactor of some of the core testing and API functi
 - new `skip_failed_detections` keyword argument to still generate a `Fex` object when processing multiple images and one or more detections fail
 
 ### Breaking
-- the new default model for landmark detection was changed from `mobilenet` to `mobilefacenet`. 
+
+- the new default model for landmark detection was changed from `mobilenet` to `mobilefacenet`.
 - the new default model for AU detection was changed to our new `xgb` model which gives continuous valued predictions between 0-1
 - remove support for `fer` emotion model
 - remove support for `jaanet` AU model
@@ -44,6 +57,7 @@ This is a large overhaul and refactor of some of the core testing and API functi
 ## `Fex` Changes
 
 ### New
+
 - new `.update_sessions()` method that returns a **copy** of a `Fex` frame with the `.sessions` attribute updated, making it easy to chain operations
 - `.predict()` and `.regress()` now support passing attributes to `X` and or `Y` using string names that match the attribute names:
   - `'emotions'` use all emotion columns (i.e. `fex.emotions`)
@@ -53,23 +67,25 @@ This is a large overhaul and refactor of some of the core testing and API functi
   - `'faceboxes'` use all facebox columns (i.e. `fex.faceboxes`)
   - You can also combine feature groups using a **comma-separated string** e.g. `fex.regress(X='emotions,poses', y='landmarks')`
 - `.extract_*` methods now include `std` and `sem`. These are also included in `.extract_summary()`
-  
 
 ### Breaking
+
 - All `Fex` attributes have been pluralized as indicated below. For the time-being old attribute access will continue to work but will show a warning. We plan to formally drop support in a few versions
-    - `.landmark` -> `.landmarks` 
-    - `.facepose` -> `.poses`
-    - `.input` -> `.inputs`
-    - `.landmark_x` -> `.landmarks_x`
-    - `.landmark_y` -> `.landmarks_y`
-    - `.facebox` -> `.faceboxes`
+  - `.landmark` -> `.landmarks`
+  - `.facepose` -> `.poses`
+  - `.input` -> `.inputs`
+  - `.landmark_x` -> `.landmarks_x`
+  - `.landmark_y` -> `.landmarks_y`
+  - `.facebox` -> `.faceboxes`
 
 ## Development changes
+
 - `test_pretrained_models.py` is now more organized using `pytest` classes
 - added tests for `img2pose` models
 - added more robust testing for the interaction between `batch_size` and `output_size`
 
 ## General Fixes
+
 - data loading with multiple images of potentially different sizes should be faster and more reliable
 - fix bug in `resmasknet` that would give poor predictions when multiple faces were present and particularly small
 - #150
@@ -90,32 +106,37 @@ This is a large overhaul and refactor of some of the core testing and API functi
 # 0.4.0
 
 ## Major version breaking release!
+
 - This release includes numerous bug fixes, api updates, and code base changes make it largely incompatible with previous releases
 - To fork development from an older version of `py-feat` you can use [this archival repo](https://github.com/cosanlab/py-feat-archive) instead
 
 ## New
+
 - Added `animate_face` and `plot_face` functions in `feat.plotting` module
 - `Fex` data-classes returned from `Detector.detect_image()` or `Detector.detect_video()` now store the names of the different detectors used as attributes: `.face_model`, `.au_model`, etc
 - The AU visualization model used by `plot_face` and `Detector.plot_detections(faces='aus')` has been updated to include AU11 and remove AU18 making it consistent with Py-feat's custom AU detectors (`svm` and `logistic`)
-- A new AU visualization model supporting the `jaanet` AU detector, which only has 12 AUs, has now been added and will automatically be used if `Detector(au_model='jaanet')`. 
-    - This visualization model can also be used by the `plot_face` function by by passing it to the `model` argument: `plot_face(model='jaanet_aus_to_landmarks')`
+- A new AU visualization model supporting the `jaanet` AU detector, which only has 12 AUs, has now been added and will automatically be used if `Detector(au_model='jaanet')`.
+  - This visualization model can also be used by the `plot_face` function by by passing it to the `model` argument: `plot_face(model='jaanet_aus_to_landmarks')`
 
 ### Breaking Changes
+
 - `Detector` no longer support unintialized models, e.g. `any_model = None`
-    - This is is also true for `Detector.change_model`
-- Columns of interest on `Fex` data classes were previously accessed like class *methods*, i.e. `fex.aus()`. These have now been changed to class *attributes*, i.e. `fex.aus`
+  - This is is also true for `Detector.change_model`
+- Columns of interest on `Fex` data classes were previously accessed like class _methods_, i.e. `fex.aus()`. These have now been changed to class _attributes_, i.e. `fex.aus`
 - Remove support for `DRML` AU detector
 - Remove support for `RF` AU and emotion detectors
 - New default detectors:
-    - `svm` for AUs
-    - `resmasknet` for emotions
-    - `img2pose` for head-pose
+  - `svm` for AUs
+  - `resmasknet` for emotions
+  - `img2pose` for head-pose
 
 ## Development changes
+
 - Revamped pre-trained detector handling in new `feat.pretrained` module
 - More tests including testing all detector combinations
 
 ## Fixes
+
 - [#80](https://github.com/cosanlab/py-feat/issues/80)
 - [#81](https://github.com/cosanlab/py-feat/issues/81)
 - [#94](https://github.com/cosanlab/py-feat/issues/94)
@@ -129,12 +150,14 @@ This is a large overhaul and refactor of some of the core testing and API functi
 - [#119](https://github.com/cosanlab/py-feat/issues/119)
 - [#125](https://github.com/cosanlab/py-feat/issues/125)
 
-
 # 0.3.7
+
 - Fix import error due to missing init
 
 # 0.3.6
+
 - Trigger Zenodo release
 
 # 0.2.0
+
 - Testing pypi upload
