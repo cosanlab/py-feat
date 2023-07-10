@@ -483,8 +483,9 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-1-extracting-hogs-and-landmarks">Part 1: Extracting HOGs and Landmarks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-train-models-with-hog">Part 2: Train Models with Hog</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#validate-the-results-on-benchmark-data">3. Validate the results on benchmark data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-conduct-dimension-reduction-on-hog">Part 2: Conduct Dimension Reduction on HOG</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-3-prepare-training-data-label-and-conduct-machine-learning">Part 3: Prepare training data &amp; label, and conduct Machine Learning</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-4-validate-the-results-on-benchmark-data">Part 4. Validate the results on benchmark data</a></li>
 </ul>
             </nav>
         </div>
@@ -507,192 +508,717 @@ to demonstrate how to test the trained models with additional test data</p>
 <h2>Part 1: Extracting HOGs and Landmarks<a class="headerlink" href="#part-1-extracting-hogs-and-landmarks" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageOps</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">ConvexHull</span>
-<span class="kn">from</span> <span class="nn">skimage.morphology.convex_hull</span> <span class="kn">import</span> <span class="n">grid_points_in_poly</span>
-<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="kn">from</span> <span class="nn">feat.tests.utils</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="c1">## EXTRACT HOGS</span>
-<span class="kn">from</span> <span class="nn">skimage</span> <span class="kn">import</span> <span class="n">data</span><span class="p">,</span> <span class="n">exposure</span>
-<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">hog</span>
-<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">import</span> <span class="nn">cv2</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">csv</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="k">def</span> <span class="nf">align_face_68pts</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_land</span><span class="p">,</span> <span class="n">box_enlarge</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">112</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Adapted from https://github.com/ZhiwenShao/PyTorch-JAANet by Zhiwen Shao, modified by Tiankang Xie</span>
-<span class="sd">    img: image</span>
-<span class="sd">    img_land: landmarks 68</span>
-<span class="sd">    box_enlarge: relative size of face</span>
-<span class="sd">    img_size = 112</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">leftEye0</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">36</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">37</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">38</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">39</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">40</span><span class="p">]</span> <span class="o">+</span>
-                <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">41</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
-    <span class="n">leftEye1</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">36</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">37</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">38</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">39</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
-                <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">40</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">41</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
-    <span class="n">rightEye0</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">42</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">43</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">44</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">45</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">46</span><span class="p">]</span> <span class="o">+</span>
-                 <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">47</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
-    <span class="n">rightEye1</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">42</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">43</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">44</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">45</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
-                 <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">46</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">47</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">6.0</span>
-    <span class="n">deltaX</span> <span class="o">=</span> <span class="p">(</span><span class="n">rightEye0</span> <span class="o">-</span> <span class="n">leftEye0</span><span class="p">)</span>
-    <span class="n">deltaY</span> <span class="o">=</span> <span class="p">(</span><span class="n">rightEye1</span> <span class="o">-</span> <span class="n">leftEye1</span><span class="p">)</span>
-    <span class="n">l</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">deltaX</span> <span class="o">*</span> <span class="n">deltaX</span> <span class="o">+</span> <span class="n">deltaY</span> <span class="o">*</span> <span class="n">deltaY</span><span class="p">)</span>
-    <span class="n">sinVal</span> <span class="o">=</span> <span class="n">deltaY</span> <span class="o">/</span> <span class="n">l</span>
-    <span class="n">cosVal</span> <span class="o">=</span> <span class="n">deltaX</span> <span class="o">/</span> <span class="n">l</span>
-    <span class="n">mat1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([[</span><span class="n">cosVal</span><span class="p">,</span> <span class="n">sinVal</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">sinVal</span><span class="p">,</span> <span class="n">cosVal</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-    <span class="n">mat2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([[</span><span class="n">leftEye0</span><span class="p">,</span> <span class="n">leftEye1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">rightEye0</span><span class="p">,</span> <span class="n">rightEye1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">30</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span>
-                   <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">48</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">48</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">54</span><span class="p">],</span> <span class="n">img_land</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">54</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">]])</span>
-    <span class="n">mat2</span> <span class="o">=</span> <span class="p">(</span><span class="n">mat1</span> <span class="o">*</span> <span class="n">mat2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-    <span class="n">cx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])))</span> <span class="o">*</span> <span class="mf">0.5</span>
-    <span class="n">cy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span> <span class="o">*</span> <span class="mf">0.5</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))):</span>
-        <span class="n">halfSize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">box_enlarge</span> <span class="o">*</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">halfSize</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">box_enlarge</span> <span class="o">*</span> <span class="nb">float</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">mat2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span>
-    <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">halfSize</span>
-    <span class="n">mat3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">([[</span><span class="n">scale</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">halfSize</span> <span class="o">-</span> <span class="n">cx</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">halfSize</span> <span class="o">-</span> <span class="n">cy</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-    <span class="n">mat</span> <span class="o">=</span> <span class="n">mat3</span> <span class="o">*</span> <span class="n">mat1</span>
-    <span class="n">aligned_img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">warpAffine</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="p">(</span><span class="n">img_size</span><span class="p">,</span> <span class="n">img_size</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">INTER_LINEAR</span><span class="p">,</span> <span class="n">borderValue</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span>
-    <span class="n">land_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_land</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
-    <span class="n">land_3d</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img_land</span><span class="p">),</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_land</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">mat_land_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">land_3d</span><span class="p">)</span>
-    <span class="n">new_land</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">mat</span> <span class="o">*</span> <span class="n">mat_land_3d</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-    <span class="n">new_land</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">new_land</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_land</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">aligned_img</span><span class="p">,</span> <span class="n">new_land</span>
-
-
-<span class="k">def</span> <span class="nf">extract_hog</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
-    <span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-    <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">im</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
-    <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">detected_faces</span> <span class="o">=</span> <span class="n">detected_faces</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="n">points</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">),</span> <span class="p">[</span><span class="n">detected_faces</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-    <span class="n">aligned_img</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">align_face_68pts</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="mf">2.5</span><span class="p">)</span>
-
-    <span class="n">hull</span> <span class="o">=</span> <span class="n">ConvexHull</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">grid_points_in_poly</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">aligned_img</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> 
-                               <span class="n">verts</span><span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">hull</span><span class="o">.</span><span class="n">vertices</span><span class="p">][:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">hull</span><span class="o">.</span><span class="n">vertices</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]))</span> <span class="c1"># for some reason verts need to be flipped</span>
-                               <span class="p">)</span>
-    <span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span><span class="n">points</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">aligned_img</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">resized_face_np</span> <span class="o">=</span> <span class="n">aligned_img</span>
-
-    <span class="n">fd</span><span class="p">,</span> <span class="n">hog_image</span> <span class="o">=</span> <span class="n">hog</span><span class="p">(</span><span class="n">resized_face_np</span><span class="p">,</span> <span class="n">orientations</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pixels_per_cell</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
-                    <span class="n">cells_per_block</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">visualize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">multichannel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">fd</span><span class="p">,</span> <span class="n">points</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">resized_face_np</span><span class="p">,</span> <span class="n">hog_image</span>
-
-<span class="c1"># Initialize a detector class to detect landmarks and bounding box</span>
-<span class="n">A01</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;RetinaFace&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilenet&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1">#initialize model</span>
-
-<span class="n">master_file</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;/home/tiankang/AU_Dataset/DISFA/toy_disfa.csv&quot;</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">master_file</span><span class="p">)</span>
-<span class="c1"># Make sure that in the master file you have a column (called original_path), which points to the path of the images</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading Face Detection model:  RetinaFace
-Loading Face Landmark model:  mobilenet
-Loading au occurence model:  None
-Loading emotion model:  None
-                                        original_path  AU1  AU2  AU4  AU6  \
-0   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0   
-1   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0   
-2   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0   
-3   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0   
-4   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0   
-5   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0   
-6   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0   
-7   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0   
-8   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    0    1    1   
-9   /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    0    1    1   
-10  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    0    1    1   
-11  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    0    1    1   
-12  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    0    1    1   
-13  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    0    1    1   
-14  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    0    1    1   
-
-    AU9  AU12  AU17  AU25  AU26  
-0     0     0     0     0     0  
-1     0     0     1     0     0  
-2     0     0     0     0     0  
-3     0     0     0     1     1  
-4     0     1     0     1     1  
-5     0     0     0     1     1  
-6     0     1     0     1     1  
-7     0     0     0     1     1  
-8     1     0     1     1     0  
-9     1     0     1     1     0  
-10    1     0     1     1     0  
-11    1     0     1     1     0  
-12    1     0     1     1     0  
-13    1     0     1     1     0  
-14    1     0     1     1     0  
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### To speed up training the HOGs, we will first try to extract the HOG and landmark features from image paths using py-feat</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">write_path</span> <span class="o">=</span> <span class="s2">&quot;/home/tiankang/AU_Dataset/OpenFace/tutorial&quot;</span> <span class="c1"># This is the path where you store all hog and landmark files</span>
-<span class="n">master_file</span><span class="p">[</span><span class="s2">&quot;Marked&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># THis mark column serves to check whether each image can be correctly processed by the algorithm.</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">set_torch_device</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">skimage</span> <span class="kn">import</span> <span class="n">draw</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">feat.utils.image_operations</span> <span class="kn">import</span> <span class="n">extract_face_from_landmarks</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;hogs_file.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5408</span><span class="p">)))</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">import</span> <span class="nn">os</span> 
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">Compose</span><span class="p">,</span> <span class="n">Normalize</span><span class="p">,</span> <span class="n">Grayscale</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;new_landmarks_files.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">136</span><span class="p">)))</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-<span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">master_file</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">imageURL</span> <span class="o">=</span> <span class="n">master_file</span><span class="p">[</span><span class="s1">&#39;original_path&#39;</span><span class="p">][</span><span class="n">ix</span><span class="p">]</span>
-        <span class="n">fd</span><span class="p">,</span> <span class="n">landpts</span><span class="p">,</span> <span class="n">cropped_img</span><span class="p">,</span> <span class="n">hogs</span> <span class="o">=</span> <span class="n">extract_hog</span><span class="p">(</span><span class="n">imageURL</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">A01</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;hogs_file.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
-        
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;new_landmarks_files.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">landpts</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
-        
-    <span class="k">except</span><span class="p">:</span>
-        <span class="n">master_file</span><span class="p">[</span><span class="s1">&#39;Marked&#39;</span><span class="p">][</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;failed to load&quot;</span><span class="p">,</span><span class="n">imageURL</span><span class="p">)</span>
-        <span class="k">continue</span><span class="p">;</span>
-
-<span class="c1"># Try to visualize one subject</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hogs</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="c1"># Save the master file</span>
-<span class="n">master_file</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;HOG_master_file.csv&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">Parallel</span>
+<span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">save_image</span>
+<span class="kn">from</span> <span class="nn">torchvision.io</span> <span class="kn">import</span> <span class="n">read_image</span><span class="p">,</span> <span class="n">read_video</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">feat.transforms</span> <span class="kn">import</span> <span class="n">Rescale</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">hog</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">feat.data</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Fex</span><span class="p">,</span>
+    <span class="n">ImageDataset</span><span class="p">,</span>
+    <span class="n">VideoDataset</span><span class="p">,</span>
+    <span class="n">_inverse_face_transform</span><span class="p">,</span>
+    <span class="n">_inverse_landmark_transform</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">feat.utils.image_operations</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">extract_face_from_landmarks</span><span class="p">,</span>
+    <span class="n">extract_face_from_bbox</span><span class="p">,</span>
+    <span class="n">convert_image_to_tensor</span><span class="p">,</span>
+    <span class="n">BBox</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">au_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/home/tiankang/AU_Dataset/EmotioNet/EmotioNet_master.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># This is the file of the AU annotations.</span>
+<span class="c1"># It should look like something: |filepath|AU1|AU2|AU3..., where the first filepath column indicates the filepath of the input image </span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">au_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span> 
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 15/15 [00:04&lt;00:00,  3.32it/s]
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>filepath</th>
+      <th>AU1</th>
+      <th>AU2</th>
+      <th>AU4</th>
+      <th>AU5</th>
+      <th>AU6</th>
+      <th>AU9</th>
+      <th>AU12</th>
+      <th>AU17</th>
+      <th>AU20</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>AU43</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>/Storage/Data/EmotioNet/imgs/N_0000000001_0000...</td>
+      <td>0.0</td>
+      <td>999.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>/Storage/Data/EmotioNet/imgs/N_0000000001_0000...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>/Storage/Data/EmotioNet/imgs/N_0000000001_0000...</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>/Storage/Data/EmotioNet/imgs/N_0000000001_0000...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>/Storage/Data/EmotioNet/imgs/N_0000000001_0000...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">)</span>
+
+<span class="n">SAVE_HOG_DIR</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Projects/pyfeat_testing/HOGFeatures/MyHOGFeatures/&#39;</span>
+<span class="n">input_file_list</span> <span class="o">=</span> <span class="n">au_df</span><span class="p">[</span><span class="s1">&#39;filepath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SAVE_HOG_DIR</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SAVE_HOG_DIR</span><span class="p">)</span>
+
+<span class="c1"># a list of all path figures</span>
+
+<span class="n">data_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">ImageDataset</span><span class="p">(</span>
+        <span class="n">input_file_list</span><span class="p">,</span>
+        <span class="n">output_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+        <span class="n">preserve_aspect_ratio</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_batch_hog</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">landmarks</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function used in batch processing hog features</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        frames: a batch of frames</span>
+<span class="sd">        landmarks: a list of list of detected landmarks</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        hog_features: a numpy array of hog features for each detected landmark</span>
+<span class="sd">        landmarks: updated landmarks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="n">convert_image_to_tensor</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">img_type</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+    <span class="n">hog_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">hog_images</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">new_landmark_frames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_landmark</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">landmarks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame_landmark</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">new_landmarks_faces</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_landmark</span><span class="p">)):</span>
+                <span class="n">convex_hull</span><span class="p">,</span> <span class="n">new_landmark</span> <span class="o">=</span> <span class="n">extract_face_from_landmarks</span><span class="p">(</span>
+                    <span class="n">frame</span><span class="o">=</span><span class="n">frames</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">landmarks</span><span class="o">=</span><span class="n">frame_landmark</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                    <span class="n">face_size</span><span class="o">=</span><span class="mi">112</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">fd</span><span class="p">,</span> <span class="n">hog_image</span><span class="o">=</span><span class="n">hog</span><span class="p">(</span>
+                        <span class="n">transforms</span><span class="o">.</span><span class="n">ToPILImage</span><span class="p">()(</span><span class="n">convex_hull</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">),</span>
+                        <span class="n">orientations</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                        <span class="n">pixels_per_cell</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                        <span class="n">cells_per_block</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                        <span class="n">visualize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">channel_axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+                                
+                <span class="n">hog_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+                <span class="n">hog_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hog_image</span><span class="p">)</span>
+                <span class="n">new_landmarks_faces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_landmark</span><span class="p">)</span>
+            
+            <span class="n">new_landmark_frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_landmarks_faces</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hog_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5408</span><span class="p">))</span>
+            <span class="p">)</span>  <span class="c1"># LC: Need to confirm this size is fixed.</span>
+            <span class="n">new_landmark_frames</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">68</span><span class="p">,</span> <span class="mi">2</span><span class="p">))])</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">hog_features</span><span class="p">,</span> <span class="n">hog_images</span><span class="p">,</span> <span class="n">new_landmark_frames</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">cc</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)):</span>
+    <span class="c1"># Iterate through all the images in dataloader to get the hog feature and landmark feature</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span>
+                <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span>
+                <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                
+        <span class="n">landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span>
+            <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span>
+            <span class="n">detected_faces</span><span class="o">=</span><span class="n">faces</span><span class="p">)</span>
+
+        <span class="n">hog_features</span><span class="p">,</span> <span class="n">hog_images</span><span class="p">,</span> <span class="n">new_landmark_frames</span> <span class="o">=</span> <span class="n">_batch_hog</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span> <span class="n">landmarks</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hog_features</span><span class="p">)):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">SAVE_HOG_DIR</span><span class="o">+</span><span class="n">batch_data</span><span class="p">[</span><span class="s1">&#39;FileNames&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">hog_features</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">new_landmark_frames</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="n">fp</span><span class="p">)</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;something went wrong with reading the image&#39;</span><span class="p">)</span>
+        <span class="k">continue</span><span class="p">;</span>
 </pre></div>
 </div>
-<img alt="../_images/c246ae65310fc00f076c56656f06ee59ee417f3da9355e6d99dedb4a340b6d69.png" src="../_images/c246ae65310fc00f076c56656f06ee59ee417f3da9355e6d99dedb4a340b6d69.png" />
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  1%|          | 218/21938 [00:12&lt;19:32, 18.52it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  1%|▏         | 302/21938 [00:16&lt;20:07, 17.92it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  2%|▏         | 337/21938 [00:18&lt;19:27, 18.50it/s]WARNING:root:Warning: NO FACE is detected
+  3%|▎         | 605/21938 [00:33&lt;20:56, 16.98it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  4%|▍         | 987/21938 [00:53&lt;21:58, 15.89it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  6%|▌         | 1208/21938 [01:04&lt;19:44, 17.50it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  6%|▌         | 1258/21938 [01:07&lt;18:34, 18.55it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  6%|▋         | 1372/21938 [01:13&lt;21:06, 16.24it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  7%|▋         | 1585/21938 [01:24&lt;17:33, 19.32it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  9%|▉         | 2066/21938 [01:49&lt;17:49, 18.59it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 11%|█         | 2318/21938 [02:02&lt;17:28, 18.71it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 11%|█         | 2436/21938 [02:09&lt;17:02, 19.07it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 12%|█▏        | 2578/21938 [02:16&lt;16:13, 19.88it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 12%|█▏        | 2704/21938 [02:23&lt;19:09, 16.73it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 14%|█▍        | 3161/21938 [02:46&lt;16:18, 19.19it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 21%|██        | 4534/21938 [03:57&lt;15:30, 18.70it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 21%|██▏       | 4689/21938 [04:05&lt;14:58, 19.20it/s]WARNING:root:Warning: NO FACE is detected
+ 22%|██▏       | 4865/21938 [04:14&lt;15:39, 18.17it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 23%|██▎       | 5013/21938 [04:22&lt;16:13, 17.38it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 25%|██▍       | 5401/21938 [04:42&lt;15:46, 17.47it/s]WARNING:root:Warning: NO FACE is detected
+ 25%|██▍       | 5483/21938 [04:47&lt;14:43, 18.63it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 25%|██▌       | 5573/21938 [04:51&lt;15:09, 17.99it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 26%|██▌       | 5757/21938 [05:01&lt;14:06, 19.12it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 28%|██▊       | 6191/21938 [05:23&lt;14:05, 18.62it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 29%|██▊       | 6292/21938 [05:28&lt;14:03, 18.55it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 32%|███▏      | 6940/21938 [06:02&lt;12:33, 19.90it/s]WARNING:root:Warning: NO FACE is detected
+ 32%|███▏      | 6984/21938 [06:04&lt;13:07, 18.98it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 32%|███▏      | 7106/21938 [06:11&lt;14:20, 17.24it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 34%|███▍      | 7463/21938 [06:29&lt;12:13, 19.74it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 35%|███▍      | 7577/21938 [06:35&lt;12:26, 19.23it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 37%|███▋      | 8151/21938 [07:04&lt;12:09, 18.90it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 40%|███▉      | 8678/21938 [07:32&lt;13:01, 16.96it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 40%|████      | 8796/21938 [07:38&lt;11:36, 18.87it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 42%|████▏     | 9148/21938 [07:56&lt;12:48, 16.65it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 44%|████▎     | 9569/21938 [08:17&lt;11:14, 18.33it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 45%|████▍     | 9841/21938 [08:31&lt;10:32, 19.12it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 45%|████▌     | 9926/21938 [08:35&lt;10:13, 19.59it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 46%|████▌     | 9984/21938 [08:39&lt;10:56, 18.21it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 50%|█████     | 10987/21938 [09:30&lt;10:08, 17.99it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 52%|█████▏    | 11455/21938 [09:54&lt;09:31, 18.34it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 54%|█████▎    | 11777/21938 [10:10&lt;08:56, 18.94it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 54%|█████▍    | 11811/21938 [10:12&lt;08:59, 18.77it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 55%|█████▍    | 12008/21938 [10:22&lt;08:22, 19.76it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 59%|█████▉    | 12969/21938 [11:11&lt;08:02, 18.60it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 59%|█████▉    | 13008/21938 [11:13&lt;08:00, 18.57it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 60%|█████▉    | 13136/21938 [11:19&lt;07:25, 19.78it/s]WARNING:root:Warning: NO FACE is detected
+ 63%|██████▎   | 13714/21938 [11:49&lt;07:22, 18.58it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 63%|██████▎   | 13855/21938 [11:56&lt;06:54, 19.52it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 63%|██████▎   | 13862/21938 [11:56&lt;07:40, 17.54it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 64%|██████▎   | 13959/21938 [12:01&lt;06:40, 19.94it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 65%|██████▍   | 14161/21938 [12:11&lt;07:00, 18.49it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 65%|██████▌   | 14359/21938 [12:22&lt;06:51, 18.40it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 66%|██████▌   | 14458/21938 [12:27&lt;06:47, 18.35it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 67%|██████▋   | 14776/21938 [12:43&lt;06:12, 19.22it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 68%|██████▊   | 14821/21938 [12:46&lt;06:07, 19.38it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 68%|██████▊   | 14848/21938 [12:47&lt;06:08, 19.22it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 68%|██████▊   | 14871/21938 [12:48&lt;06:10, 19.08it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 69%|██████▉   | 15191/21938 [13:05&lt;06:30, 17.26it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 71%|███████   | 15623/21938 [13:27&lt;05:38, 18.63it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 72%|███████▏  | 15834/21938 [13:38&lt;05:25, 18.74it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 75%|███████▌  | 16542/21938 [14:15&lt;04:42, 19.11it/s]WARNING:root:Warning: NO FACE is detected
+ 77%|███████▋  | 16801/21938 [14:29&lt;04:26, 19.28it/s]WARNING:root:Warning: NO FACE is detected
+ 77%|███████▋  | 16834/21938 [14:30&lt;04:14, 20.03it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 77%|███████▋  | 16858/21938 [14:31&lt;04:18, 19.66it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 79%|███████▊  | 17269/21938 [14:53&lt;04:12, 18.48it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 80%|███████▉  | 17451/21938 [15:03&lt;04:16, 17.51it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 85%|████████▌ | 18663/21938 [16:06&lt;02:40, 20.40it/s]WARNING:root:Warning: NO FACE is detected
+ 85%|████████▌ | 18739/21938 [16:10&lt;02:54, 18.37it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 86%|████████▋ | 18940/21938 [16:20&lt;02:41, 18.54it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 87%|████████▋ | 19045/21938 [16:26&lt;02:41, 17.86it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 87%|████████▋ | 19089/21938 [16:28&lt;02:32, 18.62it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 90%|█████████ | 19816/21938 [17:06&lt;02:01, 17.48it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 91%|█████████ | 19957/21938 [17:13&lt;01:42, 19.40it/s]WARNING:root:Warning: NO FACE is detected
+ 95%|█████████▍| 20830/21938 [17:59&lt;00:57, 19.12it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 95%|█████████▌| 20904/21938 [18:02&lt;00:54, 19.10it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 97%|█████████▋| 21318/21938 [18:24&lt;00:31, 19.44it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>something went wrong with reading the image
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 21938/21938 [18:56&lt;00:00, 19.31it/s]
+</pre></div>
+</div>
 </div>
 </div>
 </section>
-<section id="part-2-train-models-with-hog">
-<h2>Part 2: Train Models with Hog<a class="headerlink" href="#part-2-train-models-with-hog" title="Permalink to this heading">#</a></h2>
+<section id="part-2-conduct-dimension-reduction-on-hog">
+<h2>Part 2: Conduct Dimension Reduction on HOG<a class="headerlink" href="#part-2-conduct-dimension-reduction-on-hog" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">classification_report</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">LinearSVC</span><span class="p">,</span> <span class="n">SVC</span>
@@ -704,541 +1230,539 @@ Loading emotion model:  None
 <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.multioutput</span> <span class="kn">import</span> <span class="n">MultiOutputClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">StratifiedKFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load in y labels from the stored master file</span>
-<span class="n">master_file_hog</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;HOG_master_file.csv&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">master_file_hog</span> <span class="o">=</span> <span class="n">master_file_hog</span><span class="p">[</span><span class="n">master_file_hog</span><span class="p">[</span><span class="s1">&#39;Marked&#39;</span><span class="p">]</span><span class="o">==</span><span class="kc">True</span><span class="p">]</span>
-<span class="n">master_file_hog</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">master_file_hog</span><span class="o">.</span><span class="n">head</span><span class="p">())</span> 
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compile_dataset</span><span class="p">(</span><span class="n">saved_hog_path</span><span class="p">,</span> <span class="n">au_df</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;compile the saved hog and landmark features </span>
+<span class="sd">    Args:</span>
+<span class="sd">        saved_hog_path: where you saved the HOGs in the last section</span>
+<span class="sd">        au_df: a pandas dataframe that contains filepaths and AU annotations</span>
 
-<span class="c1"># We see that there are 9 possible AUs</span>
-<span class="n">AU_nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">26</span><span class="p">]</span>
-<span class="n">AU_LABELS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AU&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">AU_nums</span><span class="p">]</span>
-
-<span class="n">master_ylabels</span> <span class="o">=</span> <span class="n">master_file_hog</span><span class="p">[</span><span class="n">AU_LABELS</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">master_ylabels</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                                       original_path  AU1  AU2  AU4  AU6  AU9  \
-0  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-1  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-2  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-3  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0    0   
-4  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0    0   
-
-   AU12  AU17  AU25  AU26  Marked  
-0     0     0     0     0    True  
-1     0     1     0     0    True  
-2     0     0     0     0    True  
-3     0     0     1     1    True  
-4     1     0     1     1    True  
-    AU1  AU2  AU4  AU6  AU9  AU12  AU17  AU25  AU26
-0     0    0    0    0    0     0     0     0     0
-1     0    0    0    0    0     0     1     0     0
-2     0    0    0    0    0     0     0     0     0
-3     1    1    0    0    0     0     0     1     1
-4     1    1    0    0    0     1     0     1     1
-5     1    1    0    0    0     0     0     1     1
-6     1    1    0    0    0     1     0     1     1
-7     1    1    0    0    0     0     0     1     1
-8     1    0    1    1    1     0     1     1     0
-9     1    0    1    1    1     0     1     1     0
-10    1    0    1    1    1     0     1     1     0
-11    1    0    1    1    1     0     1     1     0
-12    1    0    1    1    1     0     1     1     0
-13    1    0    1    1    1     0     1     1     0
-14    1    0    1    1    1     0     1     1     0
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load in hogs and landmarks</span>
-<span class="n">hogs_vals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;hogs_file.csv&quot;</span><span class="p">)</span>
-<span class="n">landmarks_ts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;new_landmarks_files.csv&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">hogs_vals</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">landmarks_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(15, 5408)
-(15, 136)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Perform PCA on the hogs and concatenate it with landmarks</span>
-<span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
-<span class="n">hogs_cbd_std</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hogs_vals</span><span class="p">)</span>
-<span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">svd_solver</span> <span class="o">=</span> <span class="s1">&#39;full&#39;</span><span class="p">)</span>
-<span class="n">hogs_transformed</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hogs_cbd_std</span><span class="p">)</span>
-<span class="n">x_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">hogs_transformed</span><span class="p">,</span><span class="n">landmarks_ts</span><span class="p">),</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x_features</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(15, 148)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train a classifier</span>
-<span class="k">def</span> <span class="nf">balanced_sample_maker</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; return a balanced data set by sampling all classes with sample_size </span>
-<span class="sd">        current version is developed on assumption that the positive</span>
-<span class="sd">        class is the minority.</span>
-
-<span class="sd">    Parameters:</span>
-<span class="sd">    ===========</span>
-<span class="sd">    X: {numpy.ndarrray}</span>
-<span class="sd">    y: {numpy.ndarray}</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        np.stack(hog_feats): a numpy array of hog features </span>
+<span class="sd">        np.stack(land_feats): a numpy array of landmarks </span>
+<span class="sd">        au_df.iloc[all_valid, :]: a pandas df of AU annotations </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">uniq_levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-    <span class="n">uniq_counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">level</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="n">level</span><span class="p">)</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">uniq_levels</span><span class="p">}</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">random_seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_seed</span><span class="p">)</span>
-
-    <span class="c1"># find observation index of each class levels</span>
-    <span class="n">groupby_levels</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">uniq_levels</span><span class="p">):</span>
-        <span class="n">obs_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">level</span><span class="p">]</span>
-        <span class="n">groupby_levels</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="n">obs_idx</span>
-    <span class="c1"># oversampling on observations of each label</span>
-    <span class="n">balanced_copy_idx</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">gb_level</span><span class="p">,</span> <span class="n">gb_idx</span> <span class="ow">in</span> <span class="n">groupby_levels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">over_sample_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">gb_idx</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">sample_size</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">balanced_copy_idx</span><span class="o">+=</span><span class="n">over_sample_idx</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">balanced_copy_idx</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">balanced_copy_idx</span><span class="p">,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">balanced_copy_idx</span><span class="p">],</span> <span class="n">balanced_copy_idx</span><span class="p">)</span>
-    
-<span class="k">def</span> <span class="nf">_return_SVM</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="p">(</span><span class="n">balX</span><span class="p">,</span> <span class="n">baly</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">=</span> <span class="n">balanced_sample_maker</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">==</span><span class="mi">1</span><span class="p">),</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># Scale HOG features</span>
-    <span class="c1">#balXstd = scaler.fit_transform(balX)</span>
-    <span class="n">balXstd</span> <span class="o">=</span> <span class="n">balX</span>
-    <span class="c1">#     Fit model</span>
-    <span class="n">clf</span> <span class="o">=</span> <span class="n">LinearSVC</span><span class="p">(</span><span class="n">C</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1200</span><span class="p">)</span> <span class="c1"># Change parameter here</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">balXstd</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">baly</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training report:&quot;</span><span class="p">,</span> <span class="n">classification_report</span><span class="p">(</span><span class="n">baly</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">balXstd</span><span class="p">)))</span>
-    <span class="k">return</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">_return_RF</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
-    <span class="c1">#print(np.isnan(hog_feature_cbd).sum())</span>
-    <span class="p">(</span><span class="n">balX</span><span class="p">,</span> <span class="n">baly</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">=</span> <span class="n">balanced_sample_maker</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">==</span><span class="mi">1</span><span class="p">),</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">balXstd</span> <span class="o">=</span> <span class="n">balX</span>
-    <span class="n">clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">140</span><span class="p">,</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">min_samples_split</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span> <span class="c1">#Change parameter here</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">balXstd</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">baly</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training report:&quot;</span><span class="p">,</span> <span class="n">classification_report</span><span class="p">(</span><span class="n">baly</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">balXstd</span><span class="p">)))</span>
-    <span class="k">return</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">_return_Logistic</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="p">(</span><span class="n">balX</span><span class="p">,</span> <span class="n">baly</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">=</span> <span class="n">balanced_sample_maker</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">==</span><span class="mi">1</span><span class="p">),</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">balXstd</span> <span class="o">=</span> <span class="n">balX</span>
-    <span class="c1">#     Fit model</span>
-    <span class="n">clf</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># Change parameter here</span>
-    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">balXstd</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">baly</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training report:&quot;</span><span class="p">,</span> <span class="n">classification_report</span><span class="p">(</span><span class="n">baly</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">balXstd</span><span class="p">)))</span>
-    <span class="k">return</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">fit_transform_test</span><span class="p">(</span><span class="n">hog_features</span><span class="p">,</span> <span class="n">au_matrix</span><span class="p">,</span> <span class="n">AuNum_list</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;SVM&#39;</span><span class="p">):</span>
-    
-    <span class="n">all_svm_params</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
-
-    <span class="k">for</span> <span class="n">AuNum</span> <span class="ow">in</span> <span class="n">AuNum_list</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;==========&quot;</span><span class="p">,</span> <span class="s2">&quot;processing AU:&quot;</span><span class="p">,</span><span class="n">AuNum</span><span class="p">,</span><span class="s1">&#39;====================&#39;</span><span class="p">)</span>
         
-        <span class="n">y</span> <span class="o">=</span> <span class="n">au_matrix</span><span class="p">[</span><span class="n">AuNum</span><span class="p">]</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">all_valid</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># Which images are valid images detectable by Py-Feat?</span>
+    <span class="n">hog_feats</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># Aggregated HOG Features</span>
+    <span class="n">land_feats</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># Aggregated Landmark Features</span>
+    <span class="n">all_o_filename</span> <span class="o">=</span> <span class="n">au_df</span><span class="p">[</span><span class="s1">&#39;filepath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span> <span class="c1"># Filenames in the annotation file</span>
+    <span class="n">all_hog_fp</span> <span class="o">=</span> <span class="p">[</span><span class="n">saved_hog_path</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">op</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.pkl&#39;</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">all_o_filename</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;SVM&#39;</span><span class="p">:</span>
-            <span class="n">new_clf</span> <span class="o">=</span> <span class="n">_return_SVM</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="o">=</span><span class="n">hog_features</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;RF&#39;</span><span class="p">:</span>
-            <span class="n">new_clf</span> <span class="o">=</span> <span class="n">_return_RF</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="o">=</span><span class="n">hog_features</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;Logistic&#39;</span><span class="p">:</span>
-            <span class="n">new_clf</span> <span class="o">=</span> <span class="n">_return_Logistic</span><span class="p">(</span><span class="n">hog_feature_cbd</span><span class="o">=</span><span class="n">hog_features</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ji</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_hog_fp</span><span class="p">)):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">all_hog_fp</span><span class="p">[</span><span class="n">ji</span><span class="p">],</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">hog_feat</span><span class="p">,</span> <span class="n">new_lands</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hog_feat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5408</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new_lands</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">68</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new_lands</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span> <span class="c1"># Restrict to valid HOGs</span>
+            <span class="n">all_valid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">hog_feats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hog_feat</span><span class="p">)</span>
+            <span class="n">land_feats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_lands</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">all_valid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="n">all_svm_params</span><span class="p">[</span><span class="n">AuNum</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_clf</span>
-
-    <span class="k">return</span><span class="p">(</span><span class="n">all_svm_params</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">hog_feats</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">land_feats</span><span class="p">),</span> <span class="n">au_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">all_valid</span><span class="p">,</span> <span class="p">:]</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trained_svm</span> <span class="o">=</span> <span class="n">fit_transform_test</span><span class="p">(</span><span class="n">hog_features</span><span class="o">=</span><span class="n">x_features</span><span class="p">,</span><span class="n">au_matrix</span><span class="o">=</span><span class="n">master_ylabels</span><span class="p">,</span><span class="n">AuNum_list</span><span class="o">=</span><span class="n">AU_LABELS</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;SVM&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trained_hogs</span><span class="p">,</span> <span class="n">trained_land</span><span class="p">,</span> <span class="n">labels_df</span> <span class="o">=</span> <span class="n">compile_dataset</span><span class="p">(</span><span class="n">saved_hog_path</span><span class="o">=</span><span class="s1">&#39;/Storage/Projects/pyfeat_testing/HOGFeatures/MyHOGFeatures/&#39;</span><span class="p">,</span>
+                                                        <span class="n">au_df</span><span class="o">=</span><span class="n">au_df</span><span class="p">)</span>
+<span class="n">trained_land</span> <span class="o">=</span> <span class="n">trained_land</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">trained_hogs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">trained_hogs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">trained_land</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">labels_df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>========== processing AU: AU1 ====================
-Training report:               precision    recall  f1-score   support
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(21929, 5408)
+(21929, 136)
+(21929, 13)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note that it is possible to use only upper face features / only lower face features / full face features to predict AUs</span>
+<span class="c1"># For demonstration purporses we will only be using full face features in the later section.</span>
+<span class="n">scaler_upper</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="n">scaler_lower</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="n">scaler_full</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
 
-           0       1.00      1.00      1.00        12
-           1       1.00      1.00      1.00        12
+<span class="n">pca_full</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+<span class="n">pca_upper</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mf">0.98</span><span class="p">)</span>
+<span class="n">pca_lower</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mf">0.98</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hog_data_upper</span> <span class="o">=</span> <span class="n">trained_hogs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">hog_data_upper</span><span class="p">[:,</span> <span class="mi">2414</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Restrict to upper feature </span>
+<span class="n">hog_data_upper_std</span> <span class="o">=</span> <span class="n">scaler_upper</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hog_data_upper</span><span class="p">)</span>
+<span class="n">hog_data_upper_transformed</span> <span class="o">=</span> <span class="n">pca_upper</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hog_data_upper_std</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">hog_data_upper</span><span class="p">,</span> <span class="n">hog_data_upper_std</span>
 
-    accuracy                           1.00        24
-   macro avg       1.00      1.00      1.00        24
-weighted avg       1.00      1.00      1.00        24
+<span class="n">hog_data_lower</span> <span class="o">=</span> <span class="n">trained_hogs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">hog_data_lower</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2221</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Restrict to lower feature </span>
+<span class="n">hog_data_lower_std</span> <span class="o">=</span> <span class="n">scaler_lower</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hog_data_lower</span><span class="p">)</span>
+<span class="n">hog_data_lower_transformed</span> <span class="o">=</span> <span class="n">pca_lower</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hog_data_lower_std</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">hog_data_lower</span><span class="p">,</span> <span class="n">hog_data_lower_std</span>
 
-========== processing AU: AU2 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         5
-           1       1.00      1.00      1.00         5
-
-    accuracy                           1.00        10
-   macro avg       1.00      1.00      1.00        10
-weighted avg       1.00      1.00      1.00        10
-
-========== processing AU: AU4 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         7
-           1       1.00      1.00      1.00         7
-
-    accuracy                           1.00        14
-   macro avg       1.00      1.00      1.00        14
-weighted avg       1.00      1.00      1.00        14
-
-========== processing AU: AU6 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         7
-           1       1.00      1.00      1.00         7
-
-    accuracy                           1.00        14
-   macro avg       1.00      1.00      1.00        14
-weighted avg       1.00      1.00      1.00        14
-
-========== processing AU: AU9 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         7
-           1       1.00      1.00      1.00         7
-
-    accuracy                           1.00        14
-   macro avg       1.00      1.00      1.00        14
-weighted avg       1.00      1.00      1.00        14
-
-========== processing AU: AU12 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      0.50      0.67         2
-           1       0.67      1.00      0.80         2
-
-    accuracy                           0.75         4
-   macro avg       0.83      0.75      0.73         4
-weighted avg       0.83      0.75      0.73         4
-
-========== processing AU: AU17 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       0.89      1.00      0.94         8
-           1       1.00      0.88      0.93         8
-
-    accuracy                           0.94        16
-   macro avg       0.94      0.94      0.94        16
-weighted avg       0.94      0.94      0.94        16
-
-========== processing AU: AU25 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00        12
-           1       1.00      1.00      1.00        12
-
-    accuracy                           1.00        24
-   macro avg       1.00      1.00      1.00        24
-weighted avg       1.00      1.00      1.00        24
-
-========== processing AU: AU26 ====================
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         5
-           1       1.00      1.00      1.00         5
-
-    accuracy                           1.00        10
-   macro avg       1.00      1.00      1.00        10
-weighted avg       1.00      1.00      1.00        10
+<span class="n">hog_data_full_std</span> <span class="o">=</span> <span class="n">scaler_full</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">trained_hogs</span><span class="p">)</span>
+<span class="n">hog_data_full_transformed</span> <span class="o">=</span> <span class="n">pca_full</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hog_data_full_std</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">hog_data_full_std</span>
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="validate-the-results-on-benchmark-data">
-<h2>3. Validate the results on benchmark data<a class="headerlink" href="#validate-the-results-on-benchmark-data" title="Permalink to this heading">#</a></h2>
+<section id="part-3-prepare-training-data-label-and-conduct-machine-learning">
+<h2>Part 3: Prepare training data &amp; label, and conduct Machine Learning<a class="headerlink" href="#part-3-prepare-training-data-label-and-conduct-machine-learning" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># If we have a test data:</span>
-<span class="n">test_master_file</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;/home/tiankang/AU_Dataset/DISFA/toy_test.csv&quot;</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">test_master_file</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">classification_report</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">LinearSVC</span><span class="p">,</span> <span class="n">SVC</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span><span class="p">,</span> <span class="n">RandomizedSearchCV</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span> 
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.multioutput</span> <span class="kn">import</span> <span class="n">MultiOutputClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span><span class="p">,</span> <span class="n">precision_recall_fscore_support</span><span class="p">,</span> <span class="n">accuracy_score</span>
+
+<span class="kn">from</span> <span class="nn">imblearn.over_sampling</span> <span class="kn">import</span> <span class="n">RandomOverSampler</span><span class="p">,</span> <span class="n">SMOTE</span><span class="p">,</span> <span class="n">ADASYN</span>
+<span class="kn">from</span> <span class="nn">imblearn.under_sampling</span> <span class="kn">import</span> <span class="n">RandomUnderSampler</span>
+<span class="kn">from</span> <span class="nn">imblearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">imblearn</span> <span class="kn">import</span> <span class="n">FunctionSampler</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># In this tutorial we will be using full face features as an example. Feel free to use upper / lower</span>
+<span class="n">x_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">hog_data_full_transformed</span><span class="p">,</span> <span class="n">trained_land</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1"># In this tutorial we will be using only AU1</span>
+<span class="n">y_features</span> <span class="o">=</span> <span class="n">labels_df</span><span class="p">[</span><span class="s1">&#39;AU1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">func_samp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+
+<span class="k">def</span> <span class="nf">_run_and_testData</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">x_features</span><span class="p">,</span> <span class="n">y_features</span><span class="p">,</span> <span class="n">sampling_method</span><span class="o">=</span><span class="s1">&#39;under&#39;</span><span class="p">,</span> <span class="n">cv_n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function runs n-fold cross-validation on the dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sampling_method</span> <span class="o">==</span> <span class="s1">&#39;under&#39;</span><span class="p">:</span>
+        <span class="n">ros</span> <span class="o">=</span> <span class="n">RandomUnderSampler</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">sampling_method</span> <span class="o">==</span> <span class="s1">&#39;smote&#39;</span><span class="p">:</span>
+        <span class="n">ros1</span> <span class="o">=</span> <span class="n">SMOTE</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sampling_strategy</span><span class="o">=</span><span class="mf">0.60</span><span class="p">)</span>
+        <span class="n">ros2</span> <span class="o">=</span> <span class="n">RandomUnderSampler</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sampling_strategy</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ros</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ros1</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">ros2</span><span class="p">)])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ros</span> <span class="o">=</span> <span class="n">FunctionSampler</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">func_samp</span><span class="p">)</span>
+
+    <span class="n">valid_train_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">y_features</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y_features</span><span class="o">==</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x_training_valid</span><span class="p">,</span> <span class="n">y_training_valid</span> <span class="o">=</span> <span class="n">x_features</span><span class="p">[</span><span class="n">valid_train_idx</span><span class="p">,</span> <span class="p">:],</span> <span class="n">y_features</span><span class="p">[</span><span class="n">valid_train_idx</span><span class="p">]</span>
+
+    <span class="n">skf</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">cv_n_splits</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">train_index</span><span class="p">,</span> <span class="n">val_index</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">skf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">x_training_valid</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_training_valid</span><span class="p">)):</span>
+    
+        <span class="n">xx_train</span><span class="p">,</span> <span class="n">xx_val</span> <span class="o">=</span> <span class="n">x_training_valid</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">x_training_valid</span><span class="p">[</span><span class="n">val_index</span><span class="p">]</span>
+        <span class="n">yy_train</span><span class="p">,</span> <span class="n">yy_val</span> <span class="o">=</span> <span class="n">y_training_valid</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">y_training_valid</span><span class="p">[</span><span class="n">val_index</span><span class="p">]</span>
+        
+        <span class="n">xx_bal</span><span class="p">,</span> <span class="n">yy_bal</span> <span class="o">=</span> <span class="n">ros</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">xx_train</span><span class="p">,</span> <span class="n">yy_train</span><span class="p">)</span>
+        <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xx_bal</span><span class="p">,</span> <span class="n">yy_bal</span><span class="p">)</span>
+        <span class="n">fitted_pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xx_bal</span><span class="p">)</span>
+        <span class="n">prec</span><span class="p">,</span> <span class="n">rec</span><span class="p">,</span> <span class="n">fscore</span><span class="p">,</span> <span class="n">supp</span> <span class="o">=</span> <span class="n">precision_recall_fscore_support</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">yy_bal</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">fitted_pred</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;training score:&#39;</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">rec</span><span class="p">,</span> <span class="n">fscore</span><span class="p">)</span>
+
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xx_val</span><span class="p">)</span>
+        <span class="n">prec</span><span class="p">,</span> <span class="n">rec</span><span class="p">,</span> <span class="n">fscore</span><span class="p">,</span> <span class="n">supp</span> <span class="o">=</span> <span class="n">precision_recall_fscore_support</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">yy_val</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">yy_val</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">preds</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;validation score:&#39;</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">rec</span><span class="p">,</span> <span class="n">fscore</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_AU1</span> <span class="o">=</span> <span class="n">LinearSVC</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="s1">&#39;l2&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">5e-5</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;squared_hinge&#39;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">2e-4</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<span class="n">_run_and_testData</span><span class="p">(</span><span class="n">clf</span><span class="o">=</span><span class="n">model_AU1</span><span class="p">,</span>
+                  <span class="n">x_features</span><span class="o">=</span><span class="n">x_features</span><span class="p">,</span> <span class="n">y_features</span><span class="o">=</span><span class="n">y_features</span><span class="p">,</span> <span class="n">sampling_method</span><span class="o">=</span><span class="s1">&#39;under&#39;</span><span class="p">,</span> <span class="n">cv_n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                                       original_path  AU1  AU2  AU4  AU6  AU9  \
-0  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-1  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    1    0   
-2  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-3  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-4  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    1    1   
-
-   AU12  AU17  AU25  AU26  
-0     0     0     0     0  
-1     1     0     1     0  
-2     0     0     0     0  
-3     0     0     0     0  
-4     0     0     1     0  
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>training score: 0.8882575757575758 0.9036608863198459 0.8958930276981855
+validation score: 0.19434306569343066 0.8223938223938224 0.31439114391143913 0.7734146341463415
+training score: 0.878645343367827 0.9006750241080038 0.8895238095238095
+validation score: 0.180073126142596 0.7576923076923077 0.29098966026587886 0.7658536585365854
+training score: 0.8709073900841908 0.8977820636451301 0.8841405508072175
+validation score: 0.19941634241245138 0.7884615384615384 0.3183229813664596 0.7858536585365854
+training score: 0.8782771535580525 0.9036608863198459 0.8907882241215574
+validation score: 0.1894150417827298 0.7876447876447876 0.3053892215568862 0.7736033178824103
+training score: 0.8711484593837535 0.8988439306358381 0.8847795163584637
+validation score: 0.18973418881759854 0.7992277992277992 0.3066666666666667 0.7716516223469139
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="part-4-validate-the-results-on-benchmark-data">
+<h2>Part 4. Validate the results on benchmark data<a class="headerlink" href="#part-4-validate-the-results-on-benchmark-data" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## We will be only using a small subset of DisfaPlus for testing, as an example</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We will again process the HOGs ad landmarks for test data</span>
-<span class="n">write_path</span> <span class="o">=</span> <span class="s2">&quot;/home/tiankang/AU_Dataset/OpenFace/tutorial&quot;</span> <span class="c1"># This is the path where you store all hog and landmark files</span>
-<span class="n">master_file</span><span class="p">[</span><span class="s2">&quot;Marked&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># THis mark column serves to check whether each image can be correctly processed by the algorithm.</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disfaP_toy_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s1">&#39;/home/tiankang/src/feat/dev/disfaP_toy.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+<span class="c1"># This is the csv file that contains filepath and AU labels</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disfaP_toy_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;hogs_file_test.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5408</span><span class="p">)))</span>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;new_landmarks_files_test.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">136</span><span class="p">)))</span>
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Unnamed: 0</th>
+      <th>aligned_landmark</th>
+      <th>subject</th>
+      <th>task</th>
+      <th>frame</th>
+      <th>AU1</th>
+      <th>AU2</th>
+      <th>AU4</th>
+      <th>AU5</th>
+      <th>AU6</th>
+      <th>AU9</th>
+      <th>AU12</th>
+      <th>AU15</th>
+      <th>AU17</th>
+      <th>AU20</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>filepath</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>33543</th>
+      <td>5885</td>
+      <td>[ 42.96360929  43.31080323  53.19024402  38.23...</td>
+      <td>SN010</td>
+      <td>Y_SadDescribed_TrailNo_1</td>
+      <td>34</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>/Storage/Data/DISFAPlusDataset/Images/SN010/Y_...</td>
+    </tr>
+    <tr>
+      <th>53616</th>
+      <td>2508</td>
+      <td>[ 43.97696623  51.17963593  53.27121144  45.34...</td>
+      <td>SN025</td>
+      <td>Y_FearDescribed_TrailNo_1</td>
+      <td>74</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>/Storage/Data/DISFAPlusDataset/Images/SN025/Y_...</td>
+    </tr>
+    <tr>
+      <th>46436</th>
+      <td>1824</td>
+      <td>[ 47.81582882  53.83295079  57.0445239   46.36...</td>
+      <td>SN001</td>
+      <td>C1_AU26_TrailNo_2</td>
+      <td>94</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>/Storage/Data/DISFAPlusDataset/Images/SN001/C1...</td>
+    </tr>
+    <tr>
+      <th>26573</th>
+      <td>7612</td>
+      <td>[ 47.98804535  48.04893453  57.13419986  42.65...</td>
+      <td>SN027</td>
+      <td>A3_AU1_2_TrailNo_1</td>
+      <td>99</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>/Storage/Data/DISFAPlusDataset/Images/SN027/A3...</td>
+    </tr>
+    <tr>
+      <th>37144</th>
+      <td>3215</td>
+      <td>[ 45.78620683  48.71779324  55.53607682  42.76...</td>
+      <td>SN007</td>
+      <td>A7_AU5z_TrailNo_2</td>
+      <td>32</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>/Storage/Data/DISFAPlusDataset/Images/SN007/A7...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Again use the pyfeat modules to get the HOG and Landmark features</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s1">&#39;retinaface&#39;</span><span class="p">,</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;resmasknet&#39;</span><span class="p">,</span> <span class="n">landmark_model</span><span class="o">=</span><span class="s2">&quot;mobilefacenet&quot;</span><span class="p">,</span> <span class="n">au_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">master_file</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+<span class="n">SAVE_HOG_DIR</span> <span class="o">=</span> <span class="s1">&#39;/Storage/Projects/pyfeat_testing/HOGFeatures/MyHOGTestFeatures/&#39;</span>
+<span class="n">input_file_list</span> <span class="o">=</span> <span class="n">disfaP_toy_df</span><span class="p">[</span><span class="s1">&#39;filepath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SAVE_HOG_DIR</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SAVE_HOG_DIR</span><span class="p">)</span>
+
+<span class="c1"># a list of all path figures</span>
+
+<span class="n">data_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">ImageDataset</span><span class="p">(</span>
+        <span class="n">input_file_list</span><span class="p">,</span>
+        <span class="n">output_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+        <span class="n">preserve_aspect_ratio</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_batch_hog</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">landmarks</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function used in batch processing hog features</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        frames: a batch of frames</span>
+<span class="sd">        landmarks: a list of list of detected landmarks</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        hog_features: a numpy array of hog features for each detected landmark</span>
+<span class="sd">        landmarks: updated landmarks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="n">convert_image_to_tensor</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">img_type</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+    <span class="n">hog_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">hog_images</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">new_landmark_frames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_landmark</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">landmarks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame_landmark</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">new_landmarks_faces</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_landmark</span><span class="p">)):</span>
+                <span class="n">convex_hull</span><span class="p">,</span> <span class="n">new_landmark</span> <span class="o">=</span> <span class="n">extract_face_from_landmarks</span><span class="p">(</span>
+                    <span class="n">frame</span><span class="o">=</span><span class="n">frames</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">landmarks</span><span class="o">=</span><span class="n">frame_landmark</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                    <span class="n">face_size</span><span class="o">=</span><span class="mi">112</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">fd</span><span class="p">,</span> <span class="n">hog_image</span><span class="o">=</span><span class="n">hog</span><span class="p">(</span>
+                        <span class="n">transforms</span><span class="o">.</span><span class="n">ToPILImage</span><span class="p">()(</span><span class="n">convex_hull</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">),</span>
+                        <span class="n">orientations</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                        <span class="n">pixels_per_cell</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                        <span class="n">cells_per_block</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                        <span class="n">visualize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">channel_axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+                                
+                <span class="n">hog_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+                <span class="n">hog_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hog_image</span><span class="p">)</span>
+                <span class="n">new_landmarks_faces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_landmark</span><span class="p">)</span>
+            
+            <span class="n">new_landmark_frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_landmarks_faces</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hog_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5408</span><span class="p">))</span>
+            <span class="p">)</span>  <span class="c1"># LC: Need to confirm this size is fixed.</span>
+            <span class="n">new_landmark_frames</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">68</span><span class="p">,</span> <span class="mi">2</span><span class="p">))])</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">hog_features</span><span class="p">,</span> <span class="n">hog_images</span><span class="p">,</span> <span class="n">new_landmark_frames</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">cc</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)):</span>
+    <span class="c1"># Iterate through all the images in dataloader to get the hog feature and landmark feature</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">imageURL</span> <span class="o">=</span> <span class="n">master_file</span><span class="p">[</span><span class="s1">&#39;original_path&#39;</span><span class="p">][</span><span class="n">ix</span><span class="p">]</span>
-        <span class="n">fd</span><span class="p">,</span> <span class="n">landpts</span><span class="p">,</span> <span class="n">cropped_img</span><span class="p">,</span> <span class="n">hogs</span> <span class="o">=</span> <span class="n">extract_hog</span><span class="p">(</span><span class="n">imageURL</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">A01</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;hogs_file_test.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
-        
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s1">&#39;new_landmarks_files_test.csv&#39;</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">landpts</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
-        
+        <span class="n">faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span>
+                <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span>
+                <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                
+        <span class="n">landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span>
+            <span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span>
+            <span class="n">detected_faces</span><span class="o">=</span><span class="n">faces</span><span class="p">)</span>
+
+        <span class="n">hog_features</span><span class="p">,</span> <span class="n">hog_images</span><span class="p">,</span> <span class="n">new_landmark_frames</span> <span class="o">=</span> <span class="n">_batch_hog</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&quot;Image&quot;</span><span class="p">],</span> <span class="n">landmarks</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hog_features</span><span class="p">)):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">SAVE_HOG_DIR</span><span class="o">+</span><span class="n">batch_data</span><span class="p">[</span><span class="s1">&#39;FileNames&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">hog_features</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">new_landmark_frames</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="n">fp</span><span class="p">)</span>
+
     <span class="k">except</span><span class="p">:</span>
-        <span class="n">master_file</span><span class="p">[</span><span class="s1">&#39;Marked&#39;</span><span class="p">][</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;failed to load&quot;</span><span class="p">,</span><span class="n">imageURL</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;something went wrong with reading the image&#39;</span><span class="p">)</span>
         <span class="k">continue</span><span class="p">;</span>
-<span class="c1"># Save the master file</span>
-<span class="n">master_file</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;HOG_master_file_test.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 15/15 [00:04&lt;00:00,  3.72it/s]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 100/100 [00:06&lt;00:00, 15.38it/s]
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load in y labels from the stored master file</span>
-<span class="n">master_file_hog_test</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;HOG_master_file_test.csv&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">master_file_hog_test</span> <span class="o">=</span> <span class="n">master_file_hog_test</span><span class="p">[</span><span class="n">master_file_hog_test</span><span class="p">[</span><span class="s1">&#39;Marked&#39;</span><span class="p">]</span><span class="o">==</span><span class="kc">True</span><span class="p">]</span>
-<span class="n">master_file_hog_test</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">master_file_hog_test</span><span class="o">.</span><span class="n">head</span><span class="p">())</span> 
-
-<span class="c1"># We see that there are 9 possible AUs</span>
-<span class="n">AU_nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">26</span><span class="p">]</span>
-<span class="n">AU_LABELS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AU&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">AU_nums</span><span class="p">]</span>
-
-<span class="n">master_ylabels_test</span> <span class="o">=</span> <span class="n">master_file_hog_test</span><span class="p">[</span><span class="n">AU_LABELS</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">master_ylabels_test</span><span class="p">)</span>
-
-<span class="c1"># Load in hogs and landmarks</span>
-<span class="n">hogs_test</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;hogs_file_test.csv&quot;</span><span class="p">)</span>
-<span class="n">landmarks_test</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">+</span><span class="s2">&quot;new_landmarks_files_test.csv&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">hogs_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">landmarks_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                                       original_path  AU1  AU2  AU4  AU6  AU9  \
-0  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-1  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-2  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    0    0    0    0    0   
-3  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0    0   
-4  /home/tiankang/DISFA_DL/outputs/frames/LeftVid...    1    1    0    0    0   
-
-   AU12  AU17  AU25  AU26  Marked  
-0     0     0     0     0    True  
-1     0     1     0     0    True  
-2     0     0     0     0    True  
-3     0     0     1     1    True  
-4     1     0     1     1    True  
-    AU1  AU2  AU4  AU6  AU9  AU12  AU17  AU25  AU26
-0     0    0    0    0    0     0     0     0     0
-1     0    0    0    0    0     0     1     0     0
-2     0    0    0    0    0     0     0     0     0
-3     1    1    0    0    0     0     0     1     1
-4     1    1    0    0    0     1     0     1     1
-5     1    1    0    0    0     0     0     1     1
-6     1    1    0    0    0     1     0     1     1
-7     1    1    0    0    0     0     0     1     1
-8     1    0    1    1    1     0     1     1     0
-9     1    0    1    1    1     0     1     1     0
-10    1    0    1    1    1     0     1     1     0
-11    1    0    1    1    1     0     1     1     0
-12    1    0    1    1    1     0     1     1     0
-13    1    0    1    1    1     0     1     1     0
-14    1    0    1    1    1     0     1     1     0
-(15, 5408)
-(15, 136)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Obtain the HOG &amp; Land Features for test dataset</span>
+<span class="n">test_hogs</span><span class="p">,</span> <span class="n">test_land</span><span class="p">,</span> <span class="n">test_labels_df</span> <span class="o">=</span> <span class="n">compile_dataset</span><span class="p">(</span><span class="n">saved_hog_path</span><span class="o">=</span><span class="s1">&#39;/Storage/Projects/pyfeat_testing/HOGFeatures/MyHOGTestFeatures/&#39;</span><span class="p">,</span>
+                                                        <span class="n">au_df</span><span class="o">=</span><span class="n">disfaP_toy_df</span><span class="p">)</span>
+<span class="n">test_land</span> <span class="o">=</span> <span class="n">test_land</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">test_hogs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Perform PCA on the hogs and concatenate it with landmarks</span>
-<span class="c1"># Use the previous PCA and scalar</span>
-<span class="n">hogs_test_std</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hogs_test</span><span class="p">)</span>
-<span class="n">hogs_test_transformed</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">hogs_test_std</span><span class="p">)</span>
-<span class="n">x_features_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">hogs_test_transformed</span><span class="p">,</span><span class="n">landmarks_test</span><span class="p">),</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x_features_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(15, 148)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Apply dimension reduction on HOG</span>
+<span class="n">test_data_full_std</span> <span class="o">=</span> <span class="n">scaler_full</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_hogs</span><span class="p">)</span>
+<span class="n">test_data_full_transformed</span> <span class="o">=</span> <span class="n">pca_full</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_data_full_std</span><span class="p">)</span>
+<span class="n">test_feature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">test_data_full_transformed</span><span class="p">,</span> <span class="n">test_land</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">AU_m</span> <span class="ow">in</span> <span class="n">trained_svm</span><span class="p">:</span>
-    <span class="n">clf</span> <span class="o">=</span> <span class="n">trained_svm</span><span class="p">[</span><span class="n">AU_m</span><span class="p">]</span>
-    <span class="n">pred_y</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">x_features_test</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;prediction result for AU:&quot;</span><span class="p">,</span> <span class="n">AU_m</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training report:&quot;</span><span class="p">,</span> <span class="n">classification_report</span><span class="p">(</span><span class="n">master_ylabels_test</span><span class="p">[</span><span class="n">AU_m</span><span class="p">],</span> <span class="n">pred_y</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;f1_score:&quot;</span><span class="p">,</span><span class="n">f1_score</span><span class="p">(</span><span class="n">master_ylabels_test</span><span class="p">[</span><span class="n">AU_m</span><span class="p">],</span> <span class="n">pred_y</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict and calculate score</span>
+<span class="n">AU1_predicted</span> <span class="o">=</span> <span class="n">model_AU1</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_feature</span><span class="p">)</span>
+<span class="n">AU1_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">test_labels_df</span><span class="p">[</span><span class="s1">&#39;AU1&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># Note that DISFAP uses labels that range from 0 to 5. </span>
+<span class="c1"># We binarize this label to 0 and 1.</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tested F1 score: &quot;</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">AU1_labels</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">AU1_predicted</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>prediction result for AU: AU1
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         3
-           1       1.00      1.00      1.00        12
-
-    accuracy                           1.00        15
-   macro avg       1.00      1.00      1.00        15
-weighted avg       1.00      1.00      1.00        15
-
-f1_score: 1.0
-prediction result for AU: AU2
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00        10
-           1       1.00      1.00      1.00         5
-
-    accuracy                           1.00        15
-   macro avg       1.00      1.00      1.00        15
-weighted avg       1.00      1.00      1.00        15
-
-f1_score: 1.0
-prediction result for AU: AU4
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         8
-           1       1.00      1.00      1.00         7
-
-    accuracy                           1.00        15
-   macro avg       1.00      1.00      1.00        15
-weighted avg       1.00      1.00      1.00        15
-
-f1_score: 1.0
-prediction result for AU: AU6
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         8
-           1       1.00      1.00      1.00         7
-
-    accuracy                           1.00        15
-   macro avg       1.00      1.00      1.00        15
-weighted avg       1.00      1.00      1.00        15
-
-f1_score: 1.0
-prediction result for AU: AU9
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         8
-           1       1.00      1.00      1.00         7
-
-    accuracy                           1.00        15
-   macro avg       1.00      1.00      1.00        15
-weighted avg       1.00      1.00      1.00        15
-
-f1_score: 1.0
-prediction result for AU: AU12
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      0.69      0.82        13
-           1       0.33      1.00      0.50         2
-
-    accuracy                           0.73        15
-   macro avg       0.67      0.85      0.66        15
-weighted avg       0.91      0.73      0.78        15
-
-f1_score: 0.5
-prediction result for AU: AU17
-Training report:               precision    recall  f1-score   support
-
-           0       0.88      1.00      0.93         7
-           1       1.00      0.88      0.93         8
-
-    accuracy                           0.93        15
-   macro avg       0.94      0.94      0.93        15
-weighted avg       0.94      0.93      0.93        15
-
-f1_score: 0.9333333333333333
-prediction result for AU: AU25
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00         3
-           1       1.00      1.00      1.00        12
-
-    accuracy                           1.00        15
-   macro avg       1.00      1.00      1.00        15
-weighted avg       1.00      1.00      1.00        15
-
-f1_score: 1.0
-prediction result for AU: AU26
-Training report:               precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00        10
-           1       1.00      1.00      1.00         5
-
-    accuracy                           1.00        15
-   macro avg       1.00      1.00      1.00        15
-weighted avg       1.00      1.00      1.00        15
-
-f1_score: 1.0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tested F1 score:  0.41558441558441556
 </pre></div>
 </div>
 </div>
@@ -1258,13 +1782,13 @@ f1_score: 1.0
             mode: "python"
         },
         kernelOptions: {
-            name: "python385jvsc74a57bd06960b3bc1a3b2abcb9e388f819b95d034c745297426716e1231a46f10f2638a7",
+            name: "python3",
             path: "./extra_tutorials"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'python385jvsc74a57bd06960b3bc1a3b2abcb9e388f819b95d034c745297426716e1231a46f10f2638a7'</script>
+    <script>kernelName = 'python3'</script>
 
                 </article>
               
@@ -1314,8 +1838,9 @@ f1_score: 1.0
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-1-extracting-hogs-and-landmarks">Part 1: Extracting HOGs and Landmarks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-train-models-with-hog">Part 2: Train Models with Hog</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#validate-the-results-on-benchmark-data">3. Validate the results on benchmark data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-conduct-dimension-reduction-on-hog">Part 2: Conduct Dimension Reduction on HOG</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-3-prepare-training-data-label-and-conduct-machine-learning">Part 3: Prepare training data &amp; label, and conduct Machine Learning</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-4-validate-the-results-on-benchmark-data">Part 4. Validate the results on benchmark data</a></li>
 </ul>
   </nav></div>
 

@@ -626,11 +626,6 @@ Downloaded attributes files with 20 rows
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 20/20 [00:00&lt;00:00, 9074.65it/s]
-</pre></div>
-</div>
-</div>
 </div>
 </section>
 <section id="aggregate-detections-using-a-fex-dataframe">
@@ -665,7 +660,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(947, 173)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(947, 174)
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -697,7 +692,6 @@ Avg frames per video: 47.35
       <th>x_3</th>
       <th>x_4</th>
       <th>...</th>
-      <th>AU43</th>
       <th>anger</th>
       <th>disgust</th>
       <th>fear</th>
@@ -707,15 +701,16 @@ Avg frames per video: 47.35
       <th>neutral</th>
       <th>input</th>
       <th>frame</th>
+      <th>approx_time</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>236.153809</td>
-      <td>182.587204</td>
-      <td>254.930786</td>
-      <td>349.109451</td>
+      <td>364.351590</td>
+      <td>281.705972</td>
+      <td>393.321784</td>
+      <td>538.626011</td>
       <td>0.999326</td>
       <td>355.590267</td>
       <td>361.166635</td>
@@ -723,7 +718,6 @@ Avg frames per video: 47.35
       <td>382.002333</td>
       <td>405.379242</td>
       <td>...</td>
-      <td>0.017959</td>
       <td>0.000438</td>
       <td>0.000117</td>
       <td>0.000483</td>
@@ -731,15 +725,16 @@ Avg frames per video: 47.35
       <td>0.001495</td>
       <td>0.013396</td>
       <td>0.002497</td>
-      <td>001.csv</td>
+      <td>001.mp4</td>
       <td>0</td>
+      <td>00:00</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>236.198212</td>
-      <td>182.582245</td>
-      <td>254.905151</td>
-      <td>349.177582</td>
+      <td>364.420098</td>
+      <td>281.698321</td>
+      <td>393.282234</td>
+      <td>538.731126</td>
       <td>0.999327</td>
       <td>355.947047</td>
       <td>361.429636</td>
@@ -747,7 +742,6 @@ Avg frames per video: 47.35
       <td>382.098332</td>
       <td>405.381871</td>
       <td>...</td>
-      <td>0.031311</td>
       <td>0.000422</td>
       <td>0.000110</td>
       <td>0.000471</td>
@@ -755,15 +749,16 @@ Avg frames per video: 47.35
       <td>0.001407</td>
       <td>0.013663</td>
       <td>0.002437</td>
-      <td>001.csv</td>
+      <td>001.mp4</td>
       <td>1</td>
+      <td>00:00</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>237.683929</td>
-      <td>181.546631</td>
-      <td>254.771271</td>
-      <td>349.269104</td>
+      <td>366.712348</td>
+      <td>280.100516</td>
+      <td>393.075675</td>
+      <td>538.872332</td>
       <td>0.999371</td>
       <td>357.488551</td>
       <td>363.557662</td>
@@ -771,7 +766,6 @@ Avg frames per video: 47.35
       <td>385.126006</td>
       <td>408.333512</td>
       <td>...</td>
-      <td>0.022510</td>
       <td>0.000379</td>
       <td>0.000112</td>
       <td>0.000329</td>
@@ -779,15 +773,16 @@ Avg frames per video: 47.35
       <td>0.001477</td>
       <td>0.006877</td>
       <td>0.001954</td>
-      <td>001.csv</td>
+      <td>001.mp4</td>
       <td>2</td>
+      <td>00:00</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>239.606812</td>
-      <td>181.352219</td>
-      <td>254.592834</td>
-      <td>351.001907</td>
+      <td>369.679081</td>
+      <td>279.800566</td>
+      <td>392.800373</td>
+      <td>541.545800</td>
       <td>0.999298</td>
       <td>358.248297</td>
       <td>364.062520</td>
@@ -795,7 +790,6 @@ Avg frames per video: 47.35
       <td>385.128103</td>
       <td>407.907217</td>
       <td>...</td>
-      <td>0.040652</td>
       <td>0.000451</td>
       <td>0.000122</td>
       <td>0.000229</td>
@@ -803,15 +797,16 @@ Avg frames per video: 47.35
       <td>0.001519</td>
       <td>0.005104</td>
       <td>0.003346</td>
-      <td>001.csv</td>
+      <td>001.mp4</td>
       <td>3</td>
+      <td>00:00</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>238.934204</td>
-      <td>177.416992</td>
-      <td>257.367035</td>
-      <td>356.700012</td>
+      <td>368.641343</td>
+      <td>273.729074</td>
+      <td>397.080568</td>
+      <td>550.337162</td>
       <td>0.999240</td>
       <td>353.728640</td>
       <td>360.555682</td>
@@ -819,7 +814,6 @@ Avg frames per video: 47.35
       <td>382.294048</td>
       <td>405.861680</td>
       <td>...</td>
-      <td>0.090656</td>
       <td>0.000388</td>
       <td>0.000067</td>
       <td>0.000447</td>
@@ -827,12 +821,13 @@ Avg frames per video: 47.35
       <td>0.001275</td>
       <td>0.016979</td>
       <td>0.004573</td>
-      <td>001.csv</td>
+      <td>001.mp4</td>
       <td>4</td>
+      <td>00:00</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 173 columns</p>
+<p>5 rows × 174 columns</p>
 </div></div></div>
 </div>
 <section id="summarize-data-with-fex-sessions">
@@ -894,11 +889,11 @@ Avg frames per video: 47.35
   </thead>
   <tbody>
     <tr>
-      <th>001.csv</th>
-      <td>234.431216</td>
-      <td>179.408653</td>
-      <td>253.195079</td>
-      <td>349.057933</td>
+      <th>001.mp4</th>
+      <td>361.693876</td>
+      <td>276.801922</td>
+      <td>390.643836</td>
+      <td>538.546526</td>
       <td>0.999415</td>
       <td>351.745947</td>
       <td>358.669057</td>
@@ -906,8 +901,8 @@ Avg frames per video: 47.35
       <td>382.289621</td>
       <td>405.340749</td>
       <td>...</td>
-      <td>0.335354</td>
-      <td>0.058032</td>
+      <td>0.400157</td>
+      <td>0.078763</td>
       <td>0.000840</td>
       <td>0.000170</td>
       <td>0.002119</td>
@@ -918,11 +913,11 @@ Avg frames per video: 47.35
       <td>19.5</td>
     </tr>
     <tr>
-      <th>002.csv</th>
-      <td>235.137069</td>
-      <td>177.244835</td>
-      <td>247.376738</td>
-      <td>346.628496</td>
+      <th>002.mp4</th>
+      <td>362.782907</td>
+      <td>273.463460</td>
+      <td>381.666967</td>
+      <td>534.798252</td>
       <td>0.999420</td>
       <td>351.152403</td>
       <td>356.936973</td>
@@ -930,8 +925,8 @@ Avg frames per video: 47.35
       <td>378.847147</td>
       <td>401.092449</td>
       <td>...</td>
-      <td>0.388296</td>
-      <td>0.091377</td>
+      <td>0.310074</td>
+      <td>0.123018</td>
       <td>0.000609</td>
       <td>0.000115</td>
       <td>0.001898</td>
@@ -942,11 +937,11 @@ Avg frames per video: 47.35
       <td>13.5</td>
     </tr>
     <tr>
-      <th>003.csv</th>
-      <td>231.095030</td>
-      <td>175.658435</td>
-      <td>251.547485</td>
-      <td>351.115814</td>
+      <th>003.mp4</th>
+      <td>356.546617</td>
+      <td>271.015871</td>
+      <td>388.101834</td>
+      <td>541.721541</td>
       <td>0.999401</td>
       <td>342.375212</td>
       <td>346.903972</td>
@@ -954,8 +949,8 @@ Avg frames per video: 47.35
       <td>365.250301</td>
       <td>386.696666</td>
       <td>...</td>
-      <td>0.144093</td>
-      <td>0.047709</td>
+      <td>0.263471</td>
+      <td>0.037146</td>
       <td>0.000355</td>
       <td>0.000061</td>
       <td>0.001733</td>
@@ -966,11 +961,11 @@ Avg frames per video: 47.35
       <td>23.0</td>
     </tr>
     <tr>
-      <th>004.csv</th>
-      <td>220.796929</td>
-      <td>176.294354</td>
-      <td>252.812039</td>
-      <td>353.827636</td>
+      <th>004.mp4</th>
+      <td>340.658119</td>
+      <td>271.997003</td>
+      <td>390.052859</td>
+      <td>545.905496</td>
       <td>0.999425</td>
       <td>328.644936</td>
       <td>334.260224</td>
@@ -978,8 +973,8 @@ Avg frames per video: 47.35
       <td>354.501717</td>
       <td>376.853730</td>
       <td>...</td>
-      <td>0.147945</td>
-      <td>0.099202</td>
+      <td>0.264972</td>
+      <td>0.099364</td>
       <td>0.000721</td>
       <td>0.000068</td>
       <td>0.001341</td>
@@ -990,11 +985,11 @@ Avg frames per video: 47.35
       <td>22.0</td>
     </tr>
     <tr>
-      <th>005.csv</th>
-      <td>208.867616</td>
-      <td>189.404122</td>
-      <td>255.296208</td>
-      <td>349.989491</td>
+      <th>005.mp4</th>
+      <td>322.252894</td>
+      <td>292.223503</td>
+      <td>393.885578</td>
+      <td>539.983786</td>
       <td>0.999394</td>
       <td>312.148711</td>
       <td>317.922322</td>
@@ -1002,8 +997,8 @@ Avg frames per video: 47.35
       <td>339.933222</td>
       <td>363.364786</td>
       <td>...</td>
-      <td>0.199008</td>
-      <td>0.078288</td>
+      <td>0.366397</td>
+      <td>0.132650</td>
       <td>0.000226</td>
       <td>0.000043</td>
       <td>0.000490</td>
@@ -1014,11 +1009,11 @@ Avg frames per video: 47.35
       <td>22.0</td>
     </tr>
     <tr>
-      <th>006.csv</th>
-      <td>228.037525</td>
-      <td>170.552953</td>
-      <td>248.412705</td>
-      <td>350.898739</td>
+      <th>006.mp4</th>
+      <td>351.829324</td>
+      <td>263.138842</td>
+      <td>383.265317</td>
+      <td>541.386626</td>
       <td>0.999457</td>
       <td>339.691768</td>
       <td>343.841731</td>
@@ -1026,8 +1021,8 @@ Avg frames per video: 47.35
       <td>361.316873</td>
       <td>382.081545</td>
       <td>...</td>
-      <td>0.205943</td>
-      <td>0.046411</td>
+      <td>0.366849</td>
+      <td>0.059786</td>
       <td>0.000246</td>
       <td>0.000036</td>
       <td>0.000628</td>
@@ -1038,11 +1033,11 @@ Avg frames per video: 47.35
       <td>23.5</td>
     </tr>
     <tr>
-      <th>007.csv</th>
-      <td>232.329588</td>
-      <td>173.086361</td>
-      <td>249.666888</td>
-      <td>349.413313</td>
+      <th>007.mp4</th>
+      <td>358.451365</td>
+      <td>267.047528</td>
+      <td>385.200341</td>
+      <td>539.094825</td>
       <td>0.999380</td>
       <td>345.372773</td>
       <td>348.641482</td>
@@ -1050,8 +1045,8 @@ Avg frames per video: 47.35
       <td>364.639966</td>
       <td>384.731837</td>
       <td>...</td>
-      <td>0.109040</td>
-      <td>0.069314</td>
+      <td>0.326419</td>
+      <td>0.043416</td>
       <td>0.000374</td>
       <td>0.000058</td>
       <td>0.002243</td>
@@ -1062,11 +1057,11 @@ Avg frames per video: 47.35
       <td>13.0</td>
     </tr>
     <tr>
-      <th>008.csv</th>
-      <td>217.474341</td>
-      <td>174.956181</td>
-      <td>252.330176</td>
-      <td>351.949308</td>
+      <th>008.mp4</th>
+      <td>335.531841</td>
+      <td>269.932394</td>
+      <td>389.309414</td>
+      <td>543.007503</td>
       <td>0.999335</td>
       <td>322.590086</td>
       <td>328.698168</td>
@@ -1074,8 +1069,8 @@ Avg frames per video: 47.35
       <td>348.969558</td>
       <td>369.878785</td>
       <td>...</td>
-      <td>0.293920</td>
-      <td>0.046400</td>
+      <td>0.482863</td>
+      <td>0.037955</td>
       <td>0.000327</td>
       <td>0.000091</td>
       <td>0.004953</td>
@@ -1086,11 +1081,11 @@ Avg frames per video: 47.35
       <td>17.5</td>
     </tr>
     <tr>
-      <th>009.csv</th>
-      <td>221.263109</td>
-      <td>167.619245</td>
-      <td>249.194669</td>
-      <td>355.021916</td>
+      <th>009.mp4</th>
+      <td>341.377368</td>
+      <td>258.612550</td>
+      <td>384.471775</td>
+      <td>547.748099</td>
       <td>0.999307</td>
       <td>328.585905</td>
       <td>334.560713</td>
@@ -1098,8 +1093,8 @@ Avg frames per video: 47.35
       <td>355.424001</td>
       <td>377.394425</td>
       <td>...</td>
-      <td>0.262887</td>
-      <td>0.044629</td>
+      <td>0.428292</td>
+      <td>0.048874</td>
       <td>0.000317</td>
       <td>0.000195</td>
       <td>0.014244</td>
@@ -1110,11 +1105,11 @@ Avg frames per video: 47.35
       <td>20.5</td>
     </tr>
     <tr>
-      <th>010.csv</th>
-      <td>227.248687</td>
-      <td>184.991356</td>
-      <td>248.113907</td>
-      <td>348.310015</td>
+      <th>010.mp4</th>
+      <td>350.612259</td>
+      <td>285.415234</td>
+      <td>382.804314</td>
+      <td>537.392594</td>
       <td>0.999450</td>
       <td>336.439669</td>
       <td>342.711365</td>
@@ -1122,8 +1117,8 @@ Avg frames per video: 47.35
       <td>365.147914</td>
       <td>388.132257</td>
       <td>...</td>
-      <td>0.252469</td>
-      <td>0.041731</td>
+      <td>0.452048</td>
+      <td>0.068882</td>
       <td>0.000243</td>
       <td>0.000051</td>
       <td>0.005075</td>
@@ -1134,11 +1129,11 @@ Avg frames per video: 47.35
       <td>26.5</td>
     </tr>
     <tr>
-      <th>011.csv</th>
-      <td>222.215382</td>
-      <td>209.882381</td>
-      <td>246.810548</td>
-      <td>348.319372</td>
+      <th>011.mp4</th>
+      <td>342.846589</td>
+      <td>323.818531</td>
+      <td>380.793417</td>
+      <td>537.407032</td>
       <td>0.999462</td>
       <td>317.001702</td>
       <td>329.615415</td>
@@ -1146,8 +1141,8 @@ Avg frames per video: 47.35
       <td>367.541387</td>
       <td>397.147639</td>
       <td>...</td>
-      <td>0.236520</td>
-      <td>0.022382</td>
+      <td>0.382106</td>
+      <td>0.053013</td>
       <td>0.130460</td>
       <td>0.007293</td>
       <td>0.067473</td>
@@ -1158,11 +1153,11 @@ Avg frames per video: 47.35
       <td>17.5</td>
     </tr>
     <tr>
-      <th>012.csv</th>
-      <td>224.773651</td>
-      <td>223.677334</td>
-      <td>243.875583</td>
-      <td>341.147256</td>
+      <th>012.mp4</th>
+      <td>346.793633</td>
+      <td>345.102172</td>
+      <td>376.265186</td>
+      <td>526.341481</td>
       <td>0.999400</td>
       <td>321.367646</td>
       <td>334.862112</td>
@@ -1170,8 +1165,8 @@ Avg frames per video: 47.35
       <td>374.908646</td>
       <td>405.053755</td>
       <td>...</td>
-      <td>0.168390</td>
-      <td>0.171352</td>
+      <td>0.308746</td>
+      <td>0.191442</td>
       <td>0.002793</td>
       <td>0.001974</td>
       <td>0.073120</td>
@@ -1182,11 +1177,11 @@ Avg frames per video: 47.35
       <td>23.5</td>
     </tr>
     <tr>
-      <th>013.csv</th>
-      <td>229.422940</td>
-      <td>188.842976</td>
-      <td>246.955987</td>
-      <td>350.861501</td>
+      <th>013.mp4</th>
+      <td>353.966822</td>
+      <td>291.357734</td>
+      <td>381.017808</td>
+      <td>541.329173</td>
       <td>0.999402</td>
       <td>341.007234</td>
       <td>351.553327</td>
@@ -1194,8 +1189,8 @@ Avg frames per video: 47.35
       <td>382.232456</td>
       <td>408.826613</td>
       <td>...</td>
-      <td>0.305139</td>
-      <td>0.027319</td>
+      <td>0.471486</td>
+      <td>0.040775</td>
       <td>0.001247</td>
       <td>0.000341</td>
       <td>0.027139</td>
@@ -1206,11 +1201,11 @@ Avg frames per video: 47.35
       <td>13.5</td>
     </tr>
     <tr>
-      <th>014.csv</th>
-      <td>226.500757</td>
-      <td>180.036496</td>
-      <td>245.309567</td>
-      <td>352.485154</td>
+      <th>014.mp4</th>
+      <td>349.458311</td>
+      <td>277.770594</td>
+      <td>378.477618</td>
+      <td>543.834237</td>
       <td>0.999373</td>
       <td>326.507088</td>
       <td>338.703004</td>
@@ -1218,8 +1213,8 @@ Avg frames per video: 47.35
       <td>375.844798</td>
       <td>405.824674</td>
       <td>...</td>
-      <td>0.125695</td>
-      <td>0.031951</td>
+      <td>0.320477</td>
+      <td>0.036352</td>
       <td>0.004123</td>
       <td>0.002852</td>
       <td>0.259469</td>
@@ -1230,11 +1225,11 @@ Avg frames per video: 47.35
       <td>22.0</td>
     </tr>
     <tr>
-      <th>015.csv</th>
-      <td>221.191514</td>
-      <td>194.450694</td>
-      <td>244.257210</td>
-      <td>350.411649</td>
+      <th>015.mp4</th>
+      <td>341.266907</td>
+      <td>300.009642</td>
+      <td>376.853981</td>
+      <td>540.635116</td>
       <td>0.999404</td>
       <td>318.571982</td>
       <td>329.832546</td>
@@ -1242,8 +1237,8 @@ Avg frames per video: 47.35
       <td>364.710552</td>
       <td>393.250724</td>
       <td>...</td>
-      <td>0.149373</td>
-      <td>0.102222</td>
+      <td>0.245678</td>
+      <td>0.134054</td>
       <td>0.001375</td>
       <td>0.000311</td>
       <td>0.195097</td>
@@ -1254,11 +1249,11 @@ Avg frames per video: 47.35
       <td>29.0</td>
     </tr>
     <tr>
-      <th>016.csv</th>
-      <td>201.787207</td>
-      <td>188.279645</td>
-      <td>248.485522</td>
-      <td>345.852839</td>
+      <th>016.mp4</th>
+      <td>311.328833</td>
+      <td>290.488594</td>
+      <td>383.377662</td>
+      <td>533.601522</td>
       <td>0.999459</td>
       <td>297.753369</td>
       <td>309.231162</td>
@@ -1266,8 +1261,8 @@ Avg frames per video: 47.35
       <td>343.137091</td>
       <td>370.771578</td>
       <td>...</td>
-      <td>0.302705</td>
-      <td>0.028967</td>
+      <td>0.408074</td>
+      <td>0.042457</td>
       <td>0.002659</td>
       <td>0.001119</td>
       <td>0.053669</td>
@@ -1278,11 +1273,11 @@ Avg frames per video: 47.35
       <td>38.5</td>
     </tr>
     <tr>
-      <th>017.csv</th>
-      <td>215.591319</td>
-      <td>195.263961</td>
-      <td>246.963525</td>
-      <td>342.558035</td>
+      <th>017.mp4</th>
+      <td>332.626607</td>
+      <td>301.264397</td>
+      <td>381.029439</td>
+      <td>528.518111</td>
       <td>0.999355</td>
       <td>323.741976</td>
       <td>329.358193</td>
@@ -1290,8 +1285,8 @@ Avg frames per video: 47.35
       <td>351.548930</td>
       <td>373.243177</td>
       <td>...</td>
-      <td>0.192169</td>
-      <td>0.035812</td>
+      <td>0.271463</td>
+      <td>0.037381</td>
       <td>0.000944</td>
       <td>0.000358</td>
       <td>0.061095</td>
@@ -1302,11 +1297,11 @@ Avg frames per video: 47.35
       <td>28.0</td>
     </tr>
     <tr>
-      <th>018.csv</th>
-      <td>229.367711</td>
-      <td>186.727653</td>
-      <td>246.125126</td>
-      <td>352.387675</td>
+      <th>018.mp4</th>
+      <td>353.881611</td>
+      <td>288.094093</td>
+      <td>379.735909</td>
+      <td>543.683842</td>
       <td>0.999429</td>
       <td>328.829019</td>
       <td>337.406731</td>
@@ -1314,8 +1309,8 @@ Avg frames per video: 47.35
       <td>368.037250</td>
       <td>395.964752</td>
       <td>...</td>
-      <td>0.149709</td>
-      <td>0.030375</td>
+      <td>0.328093</td>
+      <td>0.033050</td>
       <td>0.007092</td>
       <td>0.002789</td>
       <td>0.155484</td>
@@ -1326,11 +1321,11 @@ Avg frames per video: 47.35
       <td>26.5</td>
     </tr>
     <tr>
-      <th>019.csv</th>
-      <td>203.091716</td>
-      <td>183.023964</td>
-      <td>253.458237</td>
-      <td>352.042444</td>
+      <th>019.mp4</th>
+      <td>313.341504</td>
+      <td>282.379830</td>
+      <td>391.049851</td>
+      <td>543.151199</td>
       <td>0.999275</td>
       <td>303.143011</td>
       <td>310.439069</td>
@@ -1338,8 +1333,8 @@ Avg frames per video: 47.35
       <td>334.650816</td>
       <td>358.007455</td>
       <td>...</td>
-      <td>0.383015</td>
-      <td>0.036445</td>
+      <td>0.364117</td>
+      <td>0.040580</td>
       <td>0.000663</td>
       <td>0.000140</td>
       <td>0.116914</td>
@@ -1350,11 +1345,11 @@ Avg frames per video: 47.35
       <td>31.5</td>
     </tr>
     <tr>
-      <th>020.csv</th>
-      <td>196.402858</td>
-      <td>186.635690</td>
-      <td>250.095409</td>
-      <td>339.914147</td>
+      <th>020.mp4</th>
+      <td>303.021553</td>
+      <td>287.952208</td>
+      <td>385.861488</td>
+      <td>524.438969</td>
       <td>0.999489</td>
       <td>293.626183</td>
       <td>302.517683</td>
@@ -1362,8 +1357,8 @@ Avg frames per video: 47.35
       <td>329.424593</td>
       <td>353.108089</td>
       <td>...</td>
-      <td>0.346318</td>
-      <td>0.040663</td>
+      <td>0.322978</td>
+      <td>0.040657</td>
       <td>0.000776</td>
       <td>0.000236</td>
       <td>0.086137</td>
@@ -1382,7 +1377,8 @@ Avg frames per video: 47.35
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Grab the aus just for video 1</span>
-<span class="n">video001_aus</span> <span class="o">=</span> <span class="n">video_means</span><span class="o">.</span><span class="n">aus</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;001.csv&#39;</span><span class="p">]</span>
+<span class="n">video001_aus</span> <span class="o">=</span> <span class="n">video_means</span><span class="o">.</span><span class="n">aus</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;001.mp4&#39;</span><span class="p">]</span>
+<span class="c1"># video001_aus = video_means.aus.loc[&#39;001.csv&#39;] # if loading pre-computed csv</span>
 
 <span class="c1"># Plot them</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">video001_aus</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Video 001 AU detection&#39;</span><span class="p">);</span>
@@ -1392,7 +1388,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/f999366a809508ef682618fd254d514cc074f8b46ac52b4c72ad6093730b7450.png" src="../_images/f999366a809508ef682618fd254d514cc074f8b46ac52b4c72ad6093730b7450.png" />
+<img alt="../_images/365d9c6c6798c72c7116ab8b657fec9fc31e7609bb5f7f411cf33c57f8f399e1.png" src="../_images/365d9c6c6798c72c7116ab8b657fec9fc31e7609bb5f7f411cf33c57f8f399e1.png" />
 </div>
 </div>
 </section>
@@ -1404,7 +1400,9 @@ Avg frames per video: 47.35
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Which condition each video belonged to</span>
 <span class="n">video2condition</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
     <span class="nb">zip</span><span class="p">(</span>
-        <span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="c1"># if loading pre-computed csv</span>
+        <span class="c1"># clip_attrs[&quot;input&quot;].str.replace(&quot;.mp4&quot;, &quot;.csv&quot;, regex=False),</span>
+        <span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span>
         <span class="n">clip_attrs</span><span class="p">[</span><span class="s2">&quot;condition&quot;</span><span class="p">],</span>
     <span class="p">)</span>
 <span class="p">)</span>
@@ -1423,7 +1421,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/4ebbddad26668718768690273cf63a8c6237905d2458bb83942541f97e3048c3.png" src="../_images/4ebbddad26668718768690273cf63a8c6237905d2458bb83942541f97e3048c3.png" />
+<img alt="../_images/2f668549e32dfc3e7a820d9f3f29f5ebe34fdea426f41bdd58571f09e65c4c1a.png" src="../_images/2f668549e32dfc3e7a820d9f3f29f5ebe34fdea426f41bdd58571f09e65c4c1a.png" />
 </div>
 </div>
 <p>We can also focus in on the AUs associated with happiness:</p>
@@ -1449,7 +1447,7 @@ Avg frames per video: 47.35
 <span class="n">rects1</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ind</span> <span class="o">-</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">bad_means</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">bad_sems</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Bad News&quot;</span><span class="p">);</span>
 <span class="n">rects2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">good_means</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">good_sems</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Good News&quot;</span><span class="p">);</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Average Probability&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">xticks</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">xticklabels</span><span class="o">=</span><span class="n">aus</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.25</span><span class="p">));</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">);</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">();</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">);</span>
@@ -1459,7 +1457,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/9a9793b35f75c32705f541264d3085a52b71e0709d1c5f92a1ba93d1386f3718.png" src="../_images/9a9793b35f75c32705f541264d3085a52b71e0709d1c5f92a1ba93d1386f3718.png" />
+<img alt="../_images/acc224f1e10121820ad399bffb251924e71c4ccce37e2e3338424351d3d6e89b.png" src="../_images/acc224f1e10121820ad399bffb251924e71c4ccce37e2e3338424351d3d6e89b.png" />
 </div>
 </div>
 </section>
@@ -1512,7 +1510,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/49ee6142578819d2c535cac2f1c2494cd12fd06054c2a1ddb109749504adedc2.png" src="../_images/49ee6142578819d2c535cac2f1c2494cd12fd06054c2a1ddb109749504adedc2.png" />
+<img alt="../_images/595e7591d9157f6da50ab0f055f7d6b7fa4f72387f1d8056dfc0eaf6444e19bf.png" src="../_images/595e7591d9157f6da50ab0f055f7d6b7fa4f72387f1d8056dfc0eaf6444e19bf.png" />
 </div>
 </div>
 </section>
@@ -1590,19 +1588,19 @@ Avg frames per video: 47.35
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">);</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;./decoding_acc.pdf&#39;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;./fig_maker/decoding_acc.pdf&#39;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>emotions model accuracy: 100% +/- 0%
-aus model accuracy: 85% +/- 22.9%
+aus model accuracy: 100% +/- 0%
 poses model accuracy: 80% +/- 33.2%
 emotions,poses model accuracy: 95% +/- 15%
-aus,poses model accuracy: 90% +/- 20%
+aus,poses model accuracy: 95% +/- 15%
 </pre></div>
 </div>
-<img alt="../_images/acbb2c060ac812f5d716f1bbdfa5fb6d5b15edc447572a8a824267af01a556e8.png" src="../_images/acbb2c060ac812f5d716f1bbdfa5fb6d5b15edc447572a8a824267af01a556e8.png" />
+<img alt="../_images/c1de55c5ba2d1cba15a80d734c701d850d698f105263be50921d5ff7f5994fa5.png" src="../_images/c1de55c5ba2d1cba15a80d734c701d850d698f105263be50921d5ff7f5994fa5.png" />
 </div>
 </div>
 <section id="visualizing-decoder-weights">
@@ -1626,7 +1624,7 @@ aus,poses model accuracy: 90% +/- 20%
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/20b33507067c99a99b90184cc297f17f87fa741a35002157623157375b366fa2.png" src="../_images/20b33507067c99a99b90184cc297f17f87fa741a35002157623157375b366fa2.png" />
+<img alt="../_images/2431e668a201e4207c712df7c5ef937c57c0f01918356a8561c76eb1c7d60c60.png" src="../_images/2431e668a201e4207c712df7c5ef937c57c0f01918356a8561c76eb1c7d60c60.png" />
 </div>
 </div>
 <p>Even cooler we can <em>animate</em> that face expression to <strong>emphasize what’s changing.</strong> Here we start from a neutral face:</p>
@@ -1707,7 +1705,7 @@ aus,poses model accuracy: 90% +/- 20%
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/5c61e7f62437abc25af4e52de40683f1d46093db59dd41ce729e1780d835ec20.png" src="../_images/5c61e7f62437abc25af4e52de40683f1d46093db59dd41ce729e1780d835ec20.png" />
+<img alt="../_images/d3e038c766e590a57e82299643a72a62d43a707b5be90730c702a0bd0970dd03.png" src="../_images/d3e038c766e590a57e82299643a72a62d43a707b5be90730c702a0bd0970dd03.png" />
 </div>
 </div>
 </section>

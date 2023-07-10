@@ -1770,6 +1770,39 @@ All methods should be called on Fex below.</p>
 <dd class="field-odd"><p>Dataset</p>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.calc_approx_frame_time">
+<span class="sig-name descname"><span class="pre">calc_approx_frame_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.calc_approx_frame_time" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate the approximate time of a frame in a video</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>frame_idx</strong> (<em>int</em>) – frame number</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>time in seconds</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.convert_sec_to_min_sec">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_sec_to_min_sec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.convert_sec_to_min_sec" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.get_video_metadata">
+<span class="sig-name descname"><span class="pre">get_video_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.get_video_metadata" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.load_frame">
+<span class="sig-name descname"><span class="pre">load_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.load_frame" title="Permalink to this definition">#</a></dt>
+<dd><p>Load in a single frame from the video using a lazy generator</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
