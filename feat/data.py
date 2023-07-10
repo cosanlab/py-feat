@@ -2167,8 +2167,6 @@ class VideoDataset(Dataset):
         self.video_frames = np.arange(
             0, self.metadata["num_frames"], 1 if skip_frames is None else skip_frames
         )
-        self.container = av.open(self.file_name)
-        self.stream = self.container.streams.video[0]
 
     def __len__(self):
         # Number of frames respective skip_frames
@@ -2232,11 +2230,11 @@ class VideoDataset(Dataset):
         frame_idx = int(self.video_frames[idx])
 
         # Use a py-av generator to load in just this frame
-        # container = av.open(self.file_name)
-        # stream = container.streams.video[0]
-        frame = next(islice(self.container.decode(self.stream), frame_idx, None))
+        container = av.open(self.file_name)
+        stream = container.streams.video[0]
+        frame = next(islice(container.decode(stream), frame_idx, None))
         frame_data = torch.from_numpy(frame.to_ndarray(format="rgb24"))
-        # container.close()
+        container.close()
 
         return frame_data, frame_idx
 
