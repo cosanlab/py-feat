@@ -3,7 +3,7 @@ numpy>=1.9
 seaborn>=0.7.0
 matplotlib>=2.1
 nltools>=0.4.7
-numpexpr<2.8.5
+numexpr<2.8.5
 scikit-learn>=1.2
 pywavelets>=0.3.0
 h5py>=2.7.0
