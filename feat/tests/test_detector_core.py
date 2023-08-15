@@ -168,6 +168,13 @@ def test_detect_single_img_multi_face(default_detector, multi_face_img):
     assert out.shape == (5, 173)
 
 
+def test_detect_with_alpha(default_detector):
+    png_file = os.path.join(get_test_data_path(), "Image1.png")
+
+    with pytest.raises(TypeError):
+        out = default_detector.detect_image(png_file)
+
+
 # Multiple images
 def test_detect_multi_img_single_face(default_detector, single_face_img):
     """Test detection of single face from multiple images"""
