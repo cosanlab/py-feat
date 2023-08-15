@@ -367,12 +367,6 @@ class Detector(object):
             item is a list containing the (x1, y1, x2, y2) coordinates of each detected
             face in that frame.
 
-        Examples:
-            >>> from feat import Detector
-            >>> from feat.utils import read_pictures
-            >>> img_data = read_pictures(['my_image.jpg'])
-            >>> detector = Detector()
-            >>> detector.detect_faces(frame)
         """
 
         logging.info("detecting faces...")
