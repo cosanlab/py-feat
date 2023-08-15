@@ -1914,10 +1914,10 @@ class ImageDataset(Dataset):
             img = Image.open(self.images[idx])
             img = transforms.PILToTensor()(img)
 
+        # Drop alpha channel
         if img.shape[0] == 4:
-            raise TypeError(
-                f"Py-feat doesn't currently support images with an alpha channel. Please try resaving {self.images[idx]} as a .png or .jpg with the alpha channel removed."
-            )
+            img = img[:3, ...]
+
         if img.shape[0] == 1:
             img = torch.cat([img, img, img], dim=0)
 
