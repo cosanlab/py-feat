@@ -169,10 +169,8 @@ def test_detect_single_img_multi_face(default_detector, multi_face_img):
 
 
 def test_detect_with_alpha(default_detector):
-    png_file = os.path.join(get_test_data_path(), "Image1.png")
-
-    with pytest.raises(TypeError):
-        out = default_detector.detect_image(png_file)
+    image = os.path.join(get_test_data_path(), "Image_with_alpha.png")
+    out = default_detector.detect_image(image)
 
 
 # Multiple images
