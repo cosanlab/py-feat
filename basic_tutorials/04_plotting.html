@@ -222,6 +222,7 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 
+
 <li class="toctree-l1"><a class="reference external" href="https://github.com/cosanlab/py-feat">GitHub Repository</a></li>
 </ul>
 
@@ -509,7 +510,7 @@ document.write(`
   <section id="visualizing-facial-expressions">
 <h1>4. Visualizing Facial Expressions<a class="headerlink" href="#visualizing-facial-expressions" title="Permalink to this heading">#</a></h1>
 <p><em>written by Eshin Jolly</em></p>
-<p>In this tutorial we’ll explore plotting in Py-Feat using functions from the <code class="docutils literal notranslate"><span class="pre">feat.plotting</span></code> module along with plotting methods using the Fex data class. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/05_plotting.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
+<p>In this tutorial we’ll explore plotting in Py-Feat using functions from the <code class="docutils literal notranslate"><span class="pre">feat.plotting</span></code> module along with plotting methods using the Fex data class. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/04_plotting.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>To help visualize facial expressions in a standardized way, Py-Feat includes a pre-trained partial-least-squares (PLS) model that can map between an array of AU intensities (between 0-N) and facial landmark coordinates. Just pass in a numpy array of AU intensities to the <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> function to visualize the resulting facial expression. In general we find that a 4 by 5 aspect ratio seems to work best when plotting faces (default in <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>).</p>
 <p>For more details on how this visualization model was trained and how to train your own see <a class="reference external" href="https://py-feat.org/extra_tutorials/trainAUvisModel.html">this advanced tutorial</a>.</p>
 <div class="cell docutils container">

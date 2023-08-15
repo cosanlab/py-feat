@@ -1,5 +1,17 @@
 # Change Log
 
+# 0.6.1
+
+## Notes
+
+This version **drops support for Python 3.7** and fixes several dependency related issues:
+
+- [#162](https://github.com/cosanlab/py-feat/issues/162)
+- [#176](https://github.com/cosanlab/py-feat/issues/176)
+- We can now handle images with an alpha-channel by just grabbing the RGB channels (typically in png files)
+- Update minimum `scikit-learn` version requirement to ensure our viz models are loaded correctly
+- Soft-pin `numexpr` version until this upstream pandas issue is [fixed](https://github.com/pandas-dev/pandas/issues/54449)
+
 # 0.6.0
 
 ## Notes
