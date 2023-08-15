@@ -1914,6 +1914,10 @@ class ImageDataset(Dataset):
             img = Image.open(self.images[idx])
             img = transforms.PILToTensor()(img)
 
+        # Drop alpha channel
+        if img.shape[0] == 4:
+            img = img[:3, ...]
+
         if img.shape[0] == 1:
             img = torch.cat([img, img, img], dim=0)
 
