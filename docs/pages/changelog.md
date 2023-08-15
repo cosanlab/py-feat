@@ -1,6 +1,12 @@
 # Change Log
 
+<<<<<<< HEAD
 # 0.6.0
+=======
+# 0.6.1
+
+## Notes
+>>>>>>> 8981302 (fix version)
 
 ## Notes
 
