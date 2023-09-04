@@ -164,3 +164,9 @@ def is_list_of_lists_empty(list_of_lists):
     return not any(list_of_lists)
 
 
+def flatten_list(data):
+    """Helper function to flatten a list of lists"""
+    flat_list = []
+    for row in data:
+        flat_list += row
+    return flat_list
