@@ -11,7 +11,6 @@ from sklearn import __version__ as skversion
 from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
-from feat.utils.io import get_resource_path
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -21,6 +20,7 @@ from pathlib import Path
 from PIL import Image
 from textwrap import wrap
 from joblib import load
+from feat.utils import flatten_list
 from feat.utils.io import get_resource_path, download_url
 import json
 
