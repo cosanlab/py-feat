@@ -4,13 +4,13 @@ Helper functions for plotting
 
 import os
 import sys
+import tqdm
 import h5py
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn import __version__ as skversion
 from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
-from feat.pretrained import AU_LANDMARK_MAP
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -22,7 +22,16 @@ from textwrap import wrap
 from joblib import load
 from feat.utils import flatten_list
 from feat.utils.io import get_resource_path, download_url
+from feat.utils.image_operations import convert_image_to_tensor
+from feat.pretrained import AU_LANDMARK_MAP
+from feat.detector import Detector
 import json
+import av
+import torch
+import asyncio
+from ipywidgets import Button, VBox, HBox, Output
+from IPython.display import display
+import plotly.graph_objects as go
 
 __all__ = [
     "draw_lineface",
@@ -2430,3 +2439,566 @@ def emotion_annotation_position(
         )
 
     return (x_position, y_position, align, valign)
+
+
+def run_pyfeat_detection(
+    detector, frame_img, frame_counter, face_detection_threshold=0.5
+):
+    """Function to run pyfeat detection on a single captured image frame
+
+    Args:
+        detector (Detector): an initialized detector instance
+        frame_img: a single image frame. can be numpy array, PIL image, or tensor
+        frame_counter (int): an index for the frame for fex output
+        face_detection_threshold (float): threshold to use for detecting faces
+
+    Returns:
+        detector output (Fex): Returns a Fex instance
+    """
+
+    data = {
+        "Image": convert_image_to_tensor(frame_img),
+        "Scale": torch.ones(1),
+        "Padding": {
+            "Left": torch.zeros(1),
+            "Top": torch.zeros(1),
+            "Right": torch.zeros(1),
+            "Bottom": torch.zeros(1),
+        },
+        "FileNames": str(np.nan),
+    }
+    faces, landmarks, poses, aus, emotions = detector._run_detection_waterfall(
+        data, face_detection_threshold, {}, {}, {}, {}, {}
+    )
+    frame_fex = detector._create_fex(
+        faces,
+        landmarks,
+        poses,
+        aus,
+        emotions,
+        data["FileNames"],
+        frame_counter,
+    )
+    return frame_fex
+
+
+async def run_pyfeat_detection_async(
+    detector, frame_img, frame_counter, face_detection_threshold=0.5
+):
+    """Function to run pyfeat asynchronously on a single frame
+
+    Args:
+        detector (Detector): an initialized detector instance
+        frame_img: a single image frame. can be numpy array, PIL image, or tensor
+        frame_counter (int): an index for the frame for fex output
+        face_detection_threshold (float): threshold to use for detecting faces
+
+    Returns:
+        detector output (Fex): Returns a Fex instance
+    """
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        None, run_pyfeat_detection, frame_img, frame_counter, face_detection_threshold
+    )
+    return result
+
+
+def _create_detector_elements(
+    frame_fex,
+    img_height,
+    img_width,
+    fig,
+    facebox_color="cyan",
+    facebox_width=3,
+    pose_width=2,
+    landmark_color="white",
+    landmark_width=2,
+    emotions_position="left",
+    emotions_opacity=0.9,
+    emotions_color="pink",
+    emotions_size=12,
+    au_heatmap_resolution=1000,
+    au_opacity=0.9,
+    au_cmap="Blues",
+):
+    """Helper function to create all of the various detector elements for plotting
+
+    Args:
+        frame_fex (Fex): a Fex instance
+        img_height (int): height of the image frame
+        img_width (int): width of the image frame
+        fig: a plotly FigureWidget instance handle
+        face_detection_threshold (float): threshold for detecting face within image
+        image_opacity (float): opacity of the image frame
+        facebox_color (str): color of the facebox
+        facebox_width (int): facebox line width
+        pose_width (int): pose line width
+        landmark_color (str): color of the landmarks "white",
+        landmark_width (int): landmark line width
+        emotions_position (str): where to place the emotion annotation labels relative to facebox ['left','right','top','bottom']
+        emotions_opacity (float): opacity of the emotion annotation labels
+        emotions_color (str): color of emotion annotation labels
+        emotions_size (int): font size for emotion annotation labels 16
+        au_heatmap_resolution (int): resolution of the AU heatmap overlay
+        au_opacity (float): opacity of the AU heatmap
+        au_cmap (str): colormap to use for AU heatmap
+
+    Returns:
+        faceboxes_path: svg path for facebox rectangle shape overlay
+        landmarks_path: svg path for landmark polygon shape overlay
+        poses_path: svg path for pose shape overlay
+        aus_path: svg for au polygon shape overlay
+        emotions_annotations: list of emotion annotation labels
+    """
+
+    # Faceboxes path
+    faceboxes_path = [
+        dict(
+            type="rect",
+            x0=row["FaceRectX"],
+            y0=img_height - row["FaceRectY"],
+            x1=row["FaceRectX"] + row["FaceRectWidth"],
+            y1=img_height - row["FaceRectY"] - row["FaceRectHeight"],
+            line=dict(color=facebox_color, width=facebox_width),
+        )
+        for i, row in frame_fex.iterrows()
+    ]
+
+    # Landmarks path
+    landmarks_path = [
+        draw_plotly_landmark(
+            row,
+            img_height,
+            fig,
+            line_color=landmark_color,
+            line_width=landmark_width,
+        )
+        for i, row in frame_fex.iterrows()
+    ]
+
+    # Pose path
+    poses_path = flatten_list(
+        [
+            draw_plotly_pose(row, img_height, fig, line_width=pose_width)
+            for i, row in frame_fex.iterrows()
+        ]
+    )
+
+    # AU Heatmaps
+    aus_path = flatten_list(
+        [
+            draw_plotly_au(
+                row,
+                img_height,
+                fig,
+                cmap=au_cmap,
+                au_opacity=au_opacity,
+                heatmap_resolution=au_heatmap_resolution,
+            )
+            for i, row in frame_fex.iterrows()
+        ]
+    )
+
+    # Emotions annotations
+    emotions_annotations = []
+    for i, row in frame_fex.iterrows():
+        emotion_dict = (
+            row[
+                [
+                    "anger",
+                    "disgust",
+                    "fear",
+                    "happiness",
+                    "sadness",
+                    "surprise",
+                    "neutral",
+                ]
+            ]
+            .sort_values(ascending=False)
+            .to_dict()
+        )
+
+        x_position, y_position, align, valign = emotion_annotation_position(
+            row,
+            img_height,
+            img_width,
+            emotions_size=emotions_size,
+            emotions_position=emotions_position,
+        )
+
+        emotion_text = ""
+        for emotion in emotion_dict:
+            emotion_text += f"{emotion}: <i>{emotion_dict[emotion]:.2f}</i><br>"
+
+        emotions_annotations.append(
+            dict(
+                text=emotion_text,
+                x=x_position,
+                y=y_position,
+                opacity=emotions_opacity,
+                showarrow=False,
+                align=align,
+                valign=valign,
+                font=dict(color=emotions_color, size=emotions_size),
+            )
+        )
+    return (faceboxes_path, landmarks_path, poses_path, aus_path, emotions_annotations)
+
+
+def pyfeat_live_demo(
+    save_fex_file=None,
+    max_frames=50,
+    face_detection_threshold=0.5,
+    image_opacity=0.9,
+    facebox_color="cyan",
+    facebox_width=3,
+    pose_width=2,
+    landmark_color="white",
+    landmark_width=2,
+    emotions_position="left",
+    emotions_opacity=0.9,
+    emotions_color="pink",
+    emotions_size=16,
+    au_heatmap_resolution=1000,
+    au_opacity=0.9,
+    au_cmap="Blues",
+    av_format="avfoundation",
+    av_file="default:none",
+    av_options={"video_size": "1280x720", "framerate": "30"},
+):
+    """A function to create a live interactive demo of pyfeat models captured from webcam.
+
+    To start video capture, press the "start" button. to stop video capture press the "stop" button. This will start a video capture using the webcam specified in the keywords. Pyfeat detection is run on every frame and the detector output can be visualized by interactively toggling each detector. The output can be recorded by specifying a file name for the fex output and pressing the "record" button. A folder with the same basename as the fex file will be created and each frame will be saved as a png. These can then be aggregated into a mp4 or a gif using separate functions.
+
+    This function uses pyav, which is a wrapper for ffmpeg. You must have ffmpeg installed on your system for this to work. You will also need to specify some of the keyword arguments to work on your system. The defaults are for an M1 Mac.
+
+    Args:
+        save_fex_file (str): filename with path to save output if record button is toggled.
+        max_frames (int): maximum number of frames to collect before stopping recording
+        frame_fex (Fex): a Fex instance
+        img_height (int): height of the image frame
+        img_width (int): width of the image frame
+        fig: a plotly FigureWidget instance handle
+        face_detection_threshold (float): threshold for detecting face within image
+        image_opacity (float): opacity of the image frame
+        facebox_color (str): color of the facebox
+        facebox_width (int): facebox line width
+        pose_width (int): pose line width
+        landmark_color (str): color of the landmarks "white",
+        landmark_width (int): landmark line width
+        emotions_position (str): where to place the emotion annotation labels relative to facebox ['left','right','top','bottom']
+        emotions_opacity (float): opacity of the emotion annotation labels
+        emotions_color (str): color of emotion annotation labels
+        emotions_size (int): font size for emotion annotation labels 16
+        au_heatmap_resolution (int): resolution of the AU heatmap overlay
+        au_opacity (float): opacity of the AU heatmap
+        au_cmap (str): colormap to use for AU heatmap
+        av_format (str): pyav format to use for ffmpeg image capture . Will depend on system. 'avfoundation',
+        av_file (str): pyav file for image capture (video:audio)
+        av_options (dict): dictionary of optional arguments for pyav {'video_size': '1280x720','framerate': '30'}
+
+    """
+
+    global capture_start_flag, capture_stop_flag, record_video, image_visible, facebox_visible, landmark_visible, pose_visible, au_visible, emotion_visible, active_button_color, inactive_button_color
+    capture_start_flag = False
+    capture_stop_flag = False
+    record_video = False
+    image_visible = True
+    facebox_visible = False
+    landmark_visible = False
+    pose_visible = False
+    au_visible = False
+    emotion_visible = False
+
+    active_button_color = "darkgray"
+    inactive_button_color = "lightgray"
+
+    def start_capture_async(b, av_format, av_file, av_options):
+        loop = asyncio.get_event_loop()
+        loop.create_task(
+            start_capture(
+                b, av_format=av_format, av_file=av_file, av_options=av_options
+            )
+        )
+
+    async def start_capture(
+        b, av_format=av_format, av_file=av_file, av_options=av_options
+    ):
+        global capture_start_flag, capture_stop_flag
+        if not capture_start_flag:
+            capture_start_flag = True
+            capture_stop_flag = False
+            with output:
+                await capture_video(
+                    av_format=av_format, av_file=av_file, av_options=av_options
+                )
+            capture_start_flag = False
+
+    def stop_capture(b):
+        global capture_stop_flag
+        capture_stop_flag = True
+
+    async def record_fex_to_file(save_fex_file, frame_fex, fig):
+        """Helper function to write Fex capture to csv"""
+
+        # Write Fex Output to CSV
+        if save_fex_file is not None:
+            if not os.path.exists(save_fex_file):
+                frame_fex.to_csv(save_fex_file, header=True, index=False)
+            else:
+                frame_fex.to_csv(save_fex_file, mode="a", header=False, index=False)
+        else:
+            warnings.warn(
+                "You have not specified a file to save your fex output. Nothing will be saved."
+            )
+
+        # Write Plotly Figure to png
+        fex_file_name_base, fex_file_name_extension = os.path.splitext(
+            os.path.basename(save_fex_file)
+        )
+        if not os.path.exists(
+            os.path.join(os.path.dirname(save_fex_file), fex_file_name_base)
+        ):
+            os.makedirs(
+                os.path.join(os.path.dirname(save_fex_file), fex_file_name_base)
+            )
+        else:
+            fig.write_image(
+                os.path.join(
+                    os.path.dirname(save_fex_file),
+                    fex_file_name_base,
+                    f'{fex_file_name_base}_frame{frame_fex["frame"].unique()[0]}.png',
+                )
+            )
+
+    def record_on_click(b):
+        global record_video
+        record_video = not record_video
+
+        if record_video:
+            record_button.style.button_color = "red"
+        else:
+            record_button.style.button_color = inactive_button_color
+
+    def image_on_click(b):
+        toggle_detector("image", image_button)
+
+    def facebox_on_click(b):
+        toggle_detector("facebox", facebox_button)
+
+    def landmark_on_click(b):
+        toggle_detector("landmark", landmark_button)
+
+    def pose_on_click(b):
+        toggle_detector("pose", pose_button)
+
+    def au_on_click(b):
+        toggle_detector("au", au_button)
+
+    def emotion_on_click(b):
+        toggle_detector("emotion", emotion_button)
+
+    def toggle_detector(detector_type, button):
+        global image_visible, facebox_visible, landmark_visible, pose_visible, au_visible, emotion_visible
+        flag = globals()[f"{detector_type}_visible"]
+        globals()[f"{detector_type}_visible"] = not flag
+
+        if globals()[f"{detector_type}_visible"]:
+            button.style.button_color = active_button_color
+        else:
+            button.style.button_color = inactive_button_color
+
+    async def capture_video(
+        av_format=av_format, av_file=av_file, av_options=av_options
+    ):
+        """Asyncronous function to capture video from webcam and process it with py-feat"""
+
+        def update_figure_elements():
+            """Update all figure elements depending on what is toggled"""
+
+            global image_visible, facebox_visible, landmark_visible, pose_visible, au_visible, emotion_visible
+
+            new_detectors = []
+            new_annotations = []
+            new_images = []
+
+            if image_visible:
+                new_images.append(image_frame)
+
+            if facebox_visible:
+                new_detectors.append(faceboxes_path)
+
+            if landmark_visible:
+                new_detectors.append(landmarks_path)
+
+            if pose_visible:
+                new_detectors.append(poses_path)
+
+            if au_visible:
+                new_detectors.append(aus_path)
+
+            if emotion_visible:
+                new_annotations.append(emotions_annotations)
+
+            with fig.batch_update():
+                fig.layout.shapes = flatten_list(new_detectors)
+                fig.layout.annotations = flatten_list(new_annotations)
+                fig.layout.images = new_images
+
+        container = av.open(format=av_format, file=av_file, options=av_options)
+
+        detector = Detector(verbose=False, device="cpu")
+
+        frame_counter = 0
+        for frame in tqdm(container.decode(video=0)):
+            if capture_stop_flag:
+                container.close()
+                break
+
+            await asyncio.sleep(0.1)  # Yield control back to the event loop
+
+            frame_fex = await run_pyfeat_detection_async(
+                detector,
+                frame.to_image(),
+                frame_counter,
+                face_detection_threshold=face_detection_threshold,
+            )
+
+            # Background image
+            img_width = frame.to_image().width
+            img_height = frame.to_image().height
+            image_frame = dict(
+                x=0,
+                sizex=img_width,
+                y=img_height,
+                sizey=img_height,
+                xref="x",
+                yref="y",
+                opacity=image_opacity,
+                layer="below",
+                sizing="stretch",
+                source=frame.to_image(),
+            )
+            if frame_counter == 0:
+                # Create figure
+                figure = go.Figure()
+
+                # Add invisible scatter trace to help the autoresize logic work.
+                figure.add_trace(
+                    go.Scatter(
+                        x=[0, img_width],
+                        y=[0, img_height],
+                        mode="markers",
+                        marker_opacity=0,
+                    )
+                )
+
+                # Add image
+                figure.add_layout_image(image_frame)
+
+                # Configure other layout
+                figure.update_layout(
+                    width=img_width,
+                    height=img_height,
+                    xaxis=dict(visible=False, range=[0, img_width]),
+                    yaxis=dict(visible=False, range=[0, img_height], scaleanchor="x"),
+                    margin={"l": 0, "r": 0, "t": 0, "b": 0},
+                )
+
+                # Display Figure
+                fig = go.FigureWidget(figure)
+                buttons = HBox(
+                    [
+                        image_button,
+                        facebox_button,
+                        landmark_button,
+                        pose_button,
+                        au_button,
+                        emotion_button,
+                        record_button,
+                    ]
+                )
+                vb = VBox([buttons, fig])
+                display(vb)
+
+            (
+                faceboxes_path,
+                landmarks_path,
+                poses_path,
+                aus_path,
+                emotions_annotations,
+            ) = _create_detector_elements(
+                frame_fex,
+                img_height,
+                img_width,
+                fig,
+                facebox_color=facebox_color,
+                facebox_width=facebox_width,
+                pose_width=pose_width,
+                landmark_color=landmark_color,
+                landmark_width=landmark_width,
+                emotions_position=emotions_position,
+                emotions_opacity=emotions_opacity,
+                emotions_color=emotions_color,
+                emotions_size=emotions_size,
+                au_heatmap_resolution=au_heatmap_resolution,
+                au_opacity=au_opacity,
+                au_cmap=au_cmap,
+            )
+
+            update_figure_elements()
+            frame_counter += 1
+
+            if record_video:
+                loop = asyncio.get_event_loop()
+                loop.create_task(record_fex_to_file(save_fex_file, frame_fex, fig))
+
+            # Stop if hit max frames
+            if frame_counter > max_frames:
+                container.close()
+                break
+
+    # Initialize Buttons
+    start_button = Button(description="Start Video")
+    stop_button = Button(description="Stop Video")
+    record_button = Button(
+        description="Record", style={"button_color": inactive_button_color}
+    )
+    image_button = Button(
+        description="Image", style={"button_color": active_button_color}
+    )
+    facebox_button = Button(
+        description="Bounding Box", style={"button_color": inactive_button_color}
+    )
+    landmark_button = Button(
+        description="Landmarks", style={"button_color": inactive_button_color}
+    )
+    pose_button = Button(
+        description="Pose", style={"button_color": inactive_button_color}
+    )
+    au_button = Button(description="AUs", style={"button_color": inactive_button_color})
+    emotion_button = Button(
+        description="Emotions", style={"button_color": inactive_button_color}
+    )
+
+    # Create event handlers for the buttons
+    start_button.on_click(
+        lambda b: start_capture_async(
+            b, av_format=av_format, av_file=av_file, av_options=av_options
+        )
+    )
+    stop_button.on_click(stop_capture)
+    record_button.on_click(record_on_click)
+    image_button.on_click(image_on_click)
+    facebox_button.on_click(facebox_on_click)
+    landmark_button.on_click(landmark_on_click)
+    pose_button.on_click(pose_on_click)
+    au_button.on_click(au_on_click)
+    emotion_button.on_click(emotion_on_click)
+
+    # Show Start/Stop Buttons
+    display(HBox([start_button, stop_button]))
+    output = Output()
+    display(output)
+
+    return
