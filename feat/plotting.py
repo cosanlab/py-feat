@@ -24,7 +24,6 @@ from feat.utils import flatten_list
 from feat.utils.io import get_resource_path, download_url
 from feat.utils.image_operations import convert_image_to_tensor
 from feat.pretrained import AU_LANDMARK_MAP
-from feat.detector import Detector
 import json
 import av
 import torch
@@ -2698,6 +2697,7 @@ def pyfeat_live_demo(
         av_options (dict): dictionary of optional arguments for pyav {'video_size': '1280x720','framerate': '30'}
 
     """
+    from feat.detector import Detector
 
     global capture_start_flag, capture_stop_flag, record_video, image_visible, facebox_visible, landmark_visible, pose_visible, au_visible, emotion_visible, active_button_color, inactive_button_color
     capture_start_flag = False
