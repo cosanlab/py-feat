@@ -2225,9 +2225,13 @@ def draw_plotly_au(
     elif output == "dictionary":
         muscles = []
         for muscle in list(muscle_au_dict.keys()):
-            color = cmap.as_hex()[
-                int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
-            ]
+            
+            if isinstance(row[aus[muscle_au_dict[muscle]]],(np.nan)):
+                au_intensity = 0
+            else:
+                au_intensity = int(row[aus[muscle_au_dict[muscle]]]                
+            color = cmap.as_hex()[au_intensity * heatmap_resolution]
+            
             muscles.append(
                 dict(
                     type="path",
