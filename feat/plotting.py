@@ -31,6 +31,7 @@ import asyncio
 from ipywidgets import Button, VBox, HBox, Output
 from IPython.display import display
 import plotly.graph_objects as go
+from tqdm.notebook import tqdm
 
 __all__ = [
     "draw_lineface",
@@ -2497,7 +2498,12 @@ async def run_pyfeat_detection_async(
     """
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(
-        None, run_pyfeat_detection, frame_img, frame_counter, face_detection_threshold
+        None,
+        run_pyfeat_detection,
+        detector,
+        frame_img,
+        frame_counter,
+        face_detection_threshold,
     )
     return result
 
