@@ -17,4 +17,5 @@ tqdm
 kornia
 av>=9.2.0
 xgboost>=1.6.0
-plotly
+plotly>=5.6.0
+kaleido
