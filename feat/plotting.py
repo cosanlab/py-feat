@@ -29,7 +29,8 @@ import av
 import torch
 import asyncio
 from ipywidgets import Button, VBox, HBox, Output
-from IPython.display import display
+
+# from IPython.display import display
 import plotly.graph_objects as go
 from tqdm.notebook import tqdm
 
@@ -2189,11 +2190,14 @@ def draw_plotly_au(
 
     if output == "figure":
         for muscle in list(muscle_au_dict.keys()):
-            if np.isnan(row[aus[muscle_au_dict[muscle]]]):
+            if np.isnan(row[aus[muscle_au_dict[muscle]]][0]):
                 au_intensity = 0
             else:
-                au_intensity = int(row[aus[muscle_au_dict[muscle]]])
-            color = cmap.as_hex()[au_intensity * heatmap_resolution]
+                au_intensity = int(
+                    row[aus[muscle_au_dict[muscle]]][0] * heatmap_resolution
+                )
+
+            color = cmap.as_hex()[au_intensity]
             fig.add_shape(
                 type="path",
                 path=eval(muscle),
@@ -2233,8 +2237,10 @@ def draw_plotly_au(
             if np.isnan(row[aus[muscle_au_dict[muscle]]]):
                 au_intensity = 0
             else:
-                au_intensity = int(row[aus[muscle_au_dict[muscle]]])
-            color = cmap.as_hex()[au_intensity * heatmap_resolution]
+                au_intensity = int(
+                    row[aus[muscle_au_dict[muscle]]] * heatmap_resolution
+                )
+            color = cmap.as_hex()[au_intensity]
 
             muscles.append(
                 dict(
@@ -2819,7 +2825,9 @@ def pyfeat_live_demo(
     ):
         """Asyncronous function to capture video from webcam and process it with py-feat"""
 
-        def update_figure_elements():
+        def update_figure_elements(
+            fig, image_frame, faceboxes_path, landmarks_path, poses_path, aus_path
+        ):
             """Update all figure elements depending on what is toggled"""
 
             global image_visible, facebox_visible, landmark_visible, pose_visible, au_visible, emotion_visible
@@ -2885,6 +2893,7 @@ def pyfeat_live_demo(
                 sizing="stretch",
                 source=frame.to_image(),
             )
+
             if frame_counter == 0:
                 # Create figure
                 figure = go.Figure()
@@ -2952,12 +2961,15 @@ def pyfeat_live_demo(
                 au_cmap=au_cmap,
             )
 
-            update_figure_elements()
-            frame_counter += 1
+            update_figure_elements(
+                fig, image_frame, faceboxes_path, landmarks_path, poses_path, aus_path
+            )
 
             if record_video:
                 loop = asyncio.get_event_loop()
                 loop.create_task(record_fex_to_file(save_fex_file, frame_fex, fig))
+
+            frame_counter += 1
 
             # Stop if hit max frames
             if frame_counter > max_frames:
