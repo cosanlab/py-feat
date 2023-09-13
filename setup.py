@@ -15,7 +15,7 @@ setup(
     description="Facial Expression Analysis Toolbox",
     long_description="Facial Expression Analysis Toolbox",
     author="Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Eshin Jolly, Luke Chang",
-    author_email="jcheong0428@gmail.com, eshin.jolly@gmail.com",
+    author_email="jcheong0428@gmail.com, eshin.jolly@gmail.com, luke.j.chang@dartmouth.edu",
     url="https://github.com/cosanlab/py-feat",
     packages=find_packages(),
     package_data={"feat": ["resources/*", "tests/*", "tests/data/*"]},
