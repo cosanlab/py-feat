@@ -34,6 +34,7 @@ FEAT_FACEBOX_COLUMNS = [
 FEAT_TIME_COLUMNS = ["frame"]
 FEAT_FACEPOSE_COLUMNS_3D = ["Pitch", "Roll", "Yaw"]
 FEAT_FACEPOSE_COLUMNS_6D = ["Pitch", "Roll", "Yaw", "X", "Y", "Z"]
+FEAT_IDENTITY_COLUMNS = ["Identity"]  # could add identity embeddings too (512)
 
 # OpenFace columns
 landmark_length = 68
