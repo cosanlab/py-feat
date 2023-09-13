@@ -19,3 +19,4 @@ We also link to applicable licenses from models/code used in Py-Feat:
 - MobileFaceNet: https://github.com/cunjian/pytorch_face_landmark (mobilefacenet)
 - PFLD: https://github.com/cunjian/pytorch_face_landmark (pfld_compressed)
 - Residual Masking Network: https://github.com/phamquiluan/ResidualMaskingNetwork/issues/18
+- Facenet: https://github.com/timesler/facenet-pytorch/blob/master/LICENSE.md
