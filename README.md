@@ -41,5 +41,8 @@ Automated testing is handled by Github Actions according to the following rules:
 
 *Note*: Each of these workflows can also be run manually. They can also be skipped by adding 'skip ci' anywhere inside your commit message.
 
+## Model Weights
+Model weights are stored as assets in release tag v0.1. They will automatically download as needed.
+
 ## Licenses
 Py-FEAT is provided under the MIT license. You also need to respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 
