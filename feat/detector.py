@@ -671,9 +671,7 @@ class Detector(object):
                     "Cannot recognize input emo model! Please try to re-type emotion model"
                 )
 
-    def detect_identity(
-        self, frame, facebox, threshold=0.5, **representation_model_kwargs
-    ):
+    def detect_identity(self, frame, facebox, threshold=0.5, **identity_model_kwargs):
         """Detects identity of faces from image or video frame using face representation embeddings
 
         Args:
@@ -695,7 +693,7 @@ class Detector(object):
             return facebox
         else:
             extracted_faces, new_bbox = extract_face_from_bbox(frame, facebox)
-            face_embeddings = self.identity_model(
+            face_embeddings = self.identity_detector(
                 extracted_faces, **identity_model_kwargs
             )
 
@@ -770,10 +768,6 @@ class Detector(object):
             batch_data["Image"], faces, landmarks, **emotion_model_kwargs
         )
 
-        identities = self.detect_identity(
-            batch_data["Image"], faces, **identity_model_kwargs
-        )
-
         faces = _inverse_face_transform(faces, batch_data)
         landmarks = _inverse_landmark_transform(landmarks, batch_data)
 
@@ -781,7 +775,12 @@ class Detector(object):
         faces, poses = self._match_faces_to_poses(
             faces, poses_dict["faces"], poses_dict["poses"]
         )
-        return faces, landmarks, poses, aus, emotions
+
+        identities = self.detect_identity(
+            batch_data["Image"], faces, **identity_model_kwargs
+        )
+
+        return faces, landmarks, poses, aus, emotions, identities
 
     def detect_image(
         self,
