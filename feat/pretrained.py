@@ -14,7 +14,7 @@ from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
     EmoSVMClassifier,
 )
-from feat.identity_detectors.facenet.facenet_model import Facenet
+from feat.identity_detectors.facenet.facenet_test import Facenet
 from feat.utils.io import get_resource_path, download_url
 import os
 import json
@@ -237,7 +237,7 @@ def get_pretrained_models(
             raise ValueError(
                 f"Requested representation_model was {identity_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['identity_model']]}"
             )
-        for url in model_urls["representation_detectors"][identity_model]["urls"]:
+        for url in model_urls["identity_detectors"][identity_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
 
     return (

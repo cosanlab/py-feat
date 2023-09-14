@@ -2,10 +2,12 @@
 # import requests
 # from requests.adapters import HTTPAdapter
 
+import os
 import torch
 from torch import nn
 from torch.nn import functional as F
 from feat.utils import set_torch_device
+from feat.utils.io import get_resource_path
 
 # from .utils.download import download_url_to_file
 
@@ -214,6 +216,7 @@ class InceptionResnetV1(nn.Module):
         self.pretrained = pretrained
         self.classify = classify
         self.num_classes = num_classes
+        self.device = set_torch_device(device)
 
         if pretrained == "vggface2":
             tmp_classes = 8631
@@ -268,12 +271,19 @@ class InceptionResnetV1(nn.Module):
 
         if pretrained is not None:
             self.logits = nn.Linear(512, tmp_classes)
-            load_weights(self, pretrained)
+            self.load_state_dict(
+                torch.load(
+                    os.path.join(
+                        get_resource_path(),
+                        "facenet_20180402_114759_vggface2.pth",
+                    ),
+                    map_location=self.device,
+                )
+            )
+        #   load_weights(self, pretrained)
 
         if self.classify and self.num_classes is not None:
             self.logits = nn.Linear(512, self.num_classes)
-
-        self.device = set_torch_device(device)
 
     def forward(self, x):
         """Calculate embeddings or logits given a batch of input image tensors.

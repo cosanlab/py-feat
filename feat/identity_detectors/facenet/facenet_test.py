@@ -1,8 +1,6 @@
-import os
 import torch
 from feat.utils import set_torch_device
-from feat.utils.io import get_resource_path
-from feat.representation_detectors.facenet.facenet_model import InceptionResnetV1
+from feat.identity_detectors.facenet.facenet_model import InceptionResnetV1
 
 
 class Facenet:
@@ -44,16 +42,6 @@ class Facenet:
 
         self.device = set_torch_device(device)
 
-        self.model.load_state_dict(
-            torch.load(
-                os.path.join(
-                    get_resource_path(),
-                    "facenet_20180402_114759_vggface2.pth",
-                ),
-                map_location=self.device,
-            )["net"]
-        )
-
         self.model.eval()
 
     def __call__(self, img):
@@ -61,4 +49,4 @@ class Facenet:
         img is of shape BxCxHxW --
         """
 
-        return self.forward(img)
+        return self.model.forward(img)
