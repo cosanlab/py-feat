@@ -28,7 +28,7 @@ from torch import swapaxes
 from feat.transforms import Rescale
 from feat.utils import flatten_list
 from feat.utils.io import read_feat, read_openface
-from feat.utils.stats import wavelet, calc_hist_auc
+from feat.utils.stats import wavelet, calc_hist_auc, cluster_identities
 from feat.plotting import (
     plot_face,
     draw_lineface,
@@ -83,6 +83,7 @@ class FexSeries(Series):
         self.facebox_columns = kwargs.pop("facebox_columns", None)
         self.landmark_columns = kwargs.pop("landmark_columns", None)
         self.facepose_columns = kwargs.pop("facepose_columns", None)
+        self.identity_columns = kwargs.pop("identity_columns", None)
         self.gaze_columns = kwargs.pop("gaze_columns", None)
         self.time_columns = kwargs.pop(
             "time_columns", ["Timestamp", "MediaTime", "FrameNo", "FrameTime"]
@@ -98,6 +99,7 @@ class FexSeries(Series):
         self.au_model = kwargs.pop("au_model", None)
         self.emotion_model = kwargs.pop("emotion_model", None)
         self.facepose_model = kwargs.pop("facepose_model", None)
+        self.identity_model = kwargs.pop("identity_model", None)
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
         super().__init__(*args, **kwargs)
@@ -108,6 +110,7 @@ class FexSeries(Series):
         "facebox_columns",
         "landmark_columns",
         "facepose_columns",
+        "identity_columns",
         "gaze_columns",  # TODO: Not currently supported
         "time_columns",
         "design_columns",
@@ -122,6 +125,7 @@ class FexSeries(Series):
         "au_model",
         "emotion_model",
         "facepose_model",
+        "identity_model",
         "verbose",
     ]
 
@@ -308,6 +312,15 @@ class FexSeries(Series):
         return self[self.facebox_columns]
 
     @property
+    def identity(self):
+        """Returns the identity data
+
+        Returns:
+            DataFrame: identity data
+        """
+        return self[self.identity_columns]
+
+    @property
     def time(self):
         """Returns the time data
 
@@ -359,6 +372,7 @@ class Fex(DataFrame):
         "facebox_columns",
         "landmark_columns",
         "facepose_columns",
+        "identity_columns",
         "gaze_columns",  # TODO: Not currently supported
         "time_columns",
         "design_columns",
@@ -373,6 +387,7 @@ class Fex(DataFrame):
         "au_model",
         "emotion_model",
         "facepose_model",
+        "identity_model",
         "verbose",
     ]
 
@@ -397,6 +412,7 @@ class Fex(DataFrame):
         self.facebox_columns = kwargs.pop("facebox_columns", None)
         self.landmark_columns = kwargs.pop("landmark_columns", None)
         self.facepose_columns = kwargs.pop("facepose_columns", None)
+        self.identity_columns = kwargs.pop("identity_columns", None)
         self.gaze_columns = kwargs.pop("gaze_columns", None)
         self.time_columns = kwargs.pop("time_columns", None)
         self.design_columns = kwargs.pop("design_columns", None)
@@ -410,6 +426,7 @@ class Fex(DataFrame):
         self.au_model = kwargs.pop("au_model", None)
         self.emotion_model = kwargs.pop("emotion_model", None)
         self.facepose_model = kwargs.pop("facepose_model", None)
+        self.identity_model = kwargs.pop("identity_model", None)
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
 
@@ -526,6 +543,15 @@ class Fex(DataFrame):
         return self[self.facepose_columns]
 
     @property
+    def poses(self):
+        """Returns the identity data using the columns set in fex.identity_columns
+
+        Returns:
+            DataFrame: facepose data
+        """
+        return self[self.identity_columns]
+
+    @property
     def inputs(self):
         """Returns input column as string
 
@@ -635,6 +661,15 @@ class Fex(DataFrame):
             )
 
         return self[self.facebox_columns]
+
+    @property
+    def identity(self):
+        """Returns the identity data
+
+        Returns:
+            DataFrame: identity data
+        """
+        return self[self.identity_columns]
 
     @property
     def time(self):
@@ -2349,6 +2384,19 @@ class Fex(DataFrame):
             )
 
         return fig
+
+    def compute_identities(self, threshold=0.8, inplace=True):
+        """Compute Identities using face embeddings from identity detector using threshold"""
+        if inplace:
+            self["Identity"] = cluster_identities(
+                self.identity.drop(columns="Identity"), threshold=threshold
+            )
+        else:
+            out = self.copy()
+            out["Identity"] = cluster_identities(
+                out.identity.drop(columns="Identity"), threshold=threshold
+            )
+            return out
 
         # Deprecated original plot_detections plot using matplotlib backend
 
