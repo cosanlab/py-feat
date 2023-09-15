@@ -26,6 +26,7 @@ from feat.utils.image_operations import (
     convert_image_to_tensor,
     BBox,
 )
+from feat.utils.stats import cluster_identities
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 from feat.data import (
     Fex,
@@ -140,7 +141,7 @@ class Detector(object):
         )
 
     def __repr__(self):
-        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']})"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']}, identity_model={self.info['identity_model']})"
 
     def __getitem__(self, i):
         return self.info[i]
@@ -315,6 +316,20 @@ class Detector(object):
                 empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
                 self._empty_emotion = empty_emotion
 
+        # IDENTITY MODEL
+        if self.info["identity_model"] != identity:
+            logging.info(f"Loading Identity model: {identity}")
+            self.identity_model = fetch_model("identity_model", identity)
+            self.info["identity_model"] = identity
+            self.info["identity_model_columns"] = FEAT_IDENTITY_COLUMNS
+            predictions = np.full_like(np.atleast_2d(FEAT_IDENTITY_COLUMNS), np.nan)
+            empty_identity = pd.DataFrame(predictions, columns=FEAT_IDENTITY_COLUMNS)
+            self._empty_identity = empty_identity
+            if self.identity_model is not None:
+                self.identity_model = self.identity_model(
+                    device=self.device, **identity_model_kwargs
+                )
+
         self.info["output_columns"] = (
             FEAT_TIME_COLUMNS
             + self.info["face_detection_columns"]
@@ -322,22 +337,9 @@ class Detector(object):
             + self.info["au_presence_columns"]
             + self.info["facepose_model_columns"]
             + self.info["emotion_model_columns"]
+            + self.info["identity_model_columns"]
             + ["input"]
         )
-
-        # IDENTITY MODEL
-        if self.info["identity_model"] != identity:
-            logging.info(f"Loading Identity model: {identity}")
-            self.identity_detector = fetch_model("identity_model", identity)
-            self.info["identity_model"] = identity
-            self.info["identity_detection_columns"] = FEAT_IDENTITY_COLUMNS
-            predictions = np.full_like(np.atleast_2d(FEAT_IDENTITY_COLUMNS), np.nan)
-            empty_identity = pd.DataFrame(predictions, columns=FEAT_IDENTITY_COLUMNS)
-            self._empty_identity = empty_identity
-            if self.identity_detector is not None:
-                self.identity_detector = self.identity_detector(
-                    device=self.device, **identity_model_kwargs
-                )
 
     def change_model(self, **kwargs):
         """Swap one or more pre-trained detector models for another one. Just pass in
@@ -693,19 +695,18 @@ class Detector(object):
             return facebox
         else:
             extracted_faces, new_bbox = extract_face_from_bbox(frame, facebox)
-            face_embeddings = self.identity_detector(
+            face_embeddings = self.identity_model(
                 extracted_faces, **identity_model_kwargs
             )
-
-        # thresholded_face = []
-        # for fframe in faces:  # first level is each frame
-        #     fframe_x = []
-        #     for fface in fframe:  # second level is each face within a frame
-        #         if fface[4] >= threshold:  # set thresholds
-        #             fframe_x.append(fface)
-        #     thresholded_face.append(fframe_x)
-
-        return face_embeddings
+        output = {}
+        identities = cluster_identities(face_embeddings, threshold=threshold)
+        output["identities"] = self._convert_detector_output(
+            facebox, np.array(identities).reshape(-1, 1)
+        )
+        output["embeddings"] = self._convert_detector_output(
+            facebox, face_embeddings.numpy()
+        )
+        return output
 
     def _run_detection_waterfall(
         self,
@@ -768,6 +769,10 @@ class Detector(object):
             batch_data["Image"], faces, landmarks, **emotion_model_kwargs
         )
 
+        identities_dict = self.detect_identity(
+            batch_data["Image"], faces, **identity_model_kwargs
+        )
+
         faces = _inverse_face_transform(faces, batch_data)
         landmarks = _inverse_landmark_transform(landmarks, batch_data)
 
@@ -776,11 +781,7 @@ class Detector(object):
             faces, poses_dict["faces"], poses_dict["poses"]
         )
 
-        identities = self.detect_identity(
-            batch_data["Image"], faces, **identity_model_kwargs
-        )
-
-        return faces, landmarks, poses, aus, emotions, identities
+        return faces, landmarks, poses, aus, emotions, identities_dict
 
     def detect_image(
         self,
@@ -875,6 +876,7 @@ class Detector(object):
                     poses,
                     aus,
                     emotions,
+                    identities,
                     batch_data["FileNames"],
                     frame_counter,
                 )
@@ -1106,9 +1108,12 @@ class Detector(object):
                 )
 
                 identity_df = pd.DataFrame(
-                    identities[i][j, :].reshape(
-                        1, len(self.info["identity_model_columns"])
-                    ),
+                    np.array(
+                        list(identities["identities"][i][j])
+                        + list(identities["embeddings"][i][j])
+                    )
+                    .reshape(-1, 1)
+                    .T,
                     columns=self.info["identity_model_columns"],
                     index=[j],
                 )
@@ -1126,6 +1131,7 @@ class Detector(object):
                         facepose_df,
                         aus_df,
                         emotions_df,
+                        identity_df,
                         input_df,
                     ],
                     axis=1,
@@ -1139,7 +1145,6 @@ class Detector(object):
 
         out = pd.concat(out)
         out.reset_index(drop=True, inplace=True)
-
         # TODO: Add in support for gaze_columns
         return Fex(
             out,
