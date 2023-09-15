@@ -2385,7 +2385,7 @@ class Fex(DataFrame):
 
         return fig
 
-    def compute_identities(self, threshold=0.8, inplace=True):
+    def compute_identities(self, threshold=0.8, inplace=False):
         """Compute Identities using face embeddings from identity detector using threshold"""
         if inplace:
             self["Identity"] = cluster_identities(
