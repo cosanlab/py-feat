@@ -673,7 +673,7 @@ class Detector(object):
                     "Cannot recognize input emo model! Please try to re-type emotion model"
                 )
 
-    def detect_identity(self, frame, facebox, threshold=0.5, **identity_model_kwargs):
+    def detect_identity(self, frame, facebox, **identity_model_kwargs):
         """Detects identity of faces from image or video frame using face representation embeddings
 
         Args:
@@ -698,20 +698,13 @@ class Detector(object):
             face_embeddings = self.identity_model(
                 extracted_faces, **identity_model_kwargs
             )
-        output = {}
-        identities = cluster_identities(face_embeddings, threshold=threshold)
-        output["identities"] = self._convert_detector_output(
-            facebox, np.array(identities).reshape(-1, 1)
-        )
-        output["embeddings"] = self._convert_detector_output(
-            facebox, face_embeddings.numpy()
-        )
-        return output
+        return self._convert_detector_output(facebox, face_embeddings.numpy())
 
     def _run_detection_waterfall(
         self,
         batch_data,
         face_detection_threshold,
+        face_identity_threshold,
         face_model_kwargs,
         landmark_model_kwargs,
         facepose_model_kwargs,
@@ -728,6 +721,7 @@ class Detector(object):
         Args:
             batch_data (dict): singleton item from iterating over the output of a DataLoader
             face_detection_threshold (float): value between 0-1
+            face_identity_threshold (float): value between 0-1
             face_model_kwargs (dict): face model kwargs
             landmark_model_kwargs (dict): landmark model kwargs
             facepose_model_kwargs (dict): facepose model kwargs
@@ -769,8 +763,11 @@ class Detector(object):
             batch_data["Image"], faces, landmarks, **emotion_model_kwargs
         )
 
-        identities_dict = self.detect_identity(
-            batch_data["Image"], faces, **identity_model_kwargs
+        identities = self.detect_identity(
+            batch_data["Image"],
+            faces,
+            # threshold=face_identity_threshold,
+            **identity_model_kwargs,
         )
 
         faces = _inverse_face_transform(faces, batch_data)
@@ -781,7 +778,7 @@ class Detector(object):
             faces, poses_dict["faces"], poses_dict["poses"]
         )
 
-        return faces, landmarks, poses, aus, emotions, identities_dict
+        return faces, landmarks, poses, aus, emotions, identities
 
     def detect_image(
         self,
@@ -792,6 +789,7 @@ class Detector(object):
         pin_memory=False,
         frame_counter=0,
         face_detection_threshold=0.5,
+        face_identity_threshold=0.8,
         **kwargs,
     ):
         """
@@ -815,6 +813,7 @@ class Detector(object):
             frame_counter (int): starting value to count frames
             face_detection_threshold (float): value between 0-1 to report a detection based on the
                                 confidence of the face detector; Default >= 0.5
+            face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
             **kwargs: you can pass each detector specific kwargs using a dictionary
                                 like: `face_model_kwargs = {...}, au_model_kwargs={...}, ...`
 
@@ -862,6 +861,7 @@ class Detector(object):
                 ) = self._run_detection_waterfall(
                     batch_data,
                     face_detection_threshold,
+                    face_identity_threshold,
                     face_model_kwargs,
                     landmark_model_kwargs,
                     facepose_model_kwargs,
@@ -885,7 +885,9 @@ class Detector(object):
 
             batch_output = pd.concat(batch_output)
             batch_output.reset_index(drop=True, inplace=True)
-
+            batch_output.compute_identities(
+                threshold=face_identity_threshold, inplace=True
+            )
             return batch_output
         except RuntimeError as e:
             raise ValueError(
@@ -901,6 +903,7 @@ class Detector(object):
         num_workers=0,
         pin_memory=False,
         face_detection_threshold=0.5,
+        face_identity_threshold=0.8,
         **kwargs,
     ):
         """Detects FEX from a video file.
@@ -917,6 +920,7 @@ class Detector(object):
                                 are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type
             face_detection_threshold (float): value between 0-1 to report a detection based on the
                                 confidence of the face detector; Default >= 0.5
+            face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
 
         Returns:
             Fex: Prediction results dataframe
@@ -955,6 +959,7 @@ class Detector(object):
             ) = self._run_detection_waterfall(
                 batch_data,
                 face_detection_threshold,
+                face_identity_threshold,
                 face_model_kwargs,
                 landmark_model_kwargs,
                 facepose_model_kwargs,
@@ -983,6 +988,8 @@ class Detector(object):
         batch_output["approx_time"] = [
             dataset.calc_approx_frame_time(x) for x in batch_output["frame"].to_numpy()
         ]
+        batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+
         return batch_output.set_index("frame", drop=False)
 
     def _create_fex(
@@ -1108,12 +1115,7 @@ class Detector(object):
                 )
 
                 identity_df = pd.DataFrame(
-                    np.array(
-                        list(identities["identities"][i][j])
-                        + list(identities["embeddings"][i][j])
-                    )
-                    .reshape(-1, 1)
-                    .T,
+                    np.hstack([np.nan, identities[i][j]]).reshape(-1, 1).T,
                     columns=self.info["identity_model_columns"],
                     index=[j],
                 )
@@ -1145,6 +1147,7 @@ class Detector(object):
 
         out = pd.concat(out)
         out.reset_index(drop=True, inplace=True)
+
         # TODO: Add in support for gaze_columns
         return Fex(
             out,
