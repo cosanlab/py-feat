@@ -648,13 +648,22 @@ class Fex(DataFrame):
         return self[self.facebox_columns]
 
     @property
-    def identity(self):
-        """Returns the identity data
+    def identities(self):
+        """Returns the identity labels
 
         Returns:
             DataFrame: identity data
         """
-        return self[self.identity_columns]
+        return self[self.identity_columns[0]]
+
+    @property
+    def identity_embeddings(self):
+        """Returns the identity embeddings
+
+        Returns:
+            DataFrame: identity data
+        """
+        return self[self.identity_columns[1:]]
 
     @property
     def time(self):
@@ -1877,12 +1886,12 @@ class Fex(DataFrame):
         """Compute Identities using face embeddings from identity detector using threshold"""
         if inplace:
             self["Identity"] = cluster_identities(
-                self.identity.drop(columns="Identity"), threshold=threshold
+                self.identity_embeddings, threshold=threshold
             )
         else:
             out = self.copy()
             out["Identity"] = cluster_identities(
-                out.identity.drop(columns="Identity"), threshold=threshold
+                out.identity_embeddings, threshold=threshold
             )
             return out
 
