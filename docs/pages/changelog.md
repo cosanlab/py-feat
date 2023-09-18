@@ -1,5 +1,16 @@
 # Change Log
 
+# 0.7.0
+
+## New Identity Detector
+
+- Py-feat now includes an **identity detector** via [facenet](https://github.com/timesler/facenet-pytorch). This works by projecting each detected face in an image or video frame into a 512d embedding space and clustering these embeddings using their cosine similarity (default threshold = 0.8).
+- `Fex` objects include an extra column containing the identity label for each face (accessible via `Fex.identities`) as well as additional columns for each of the 512 embeddings dimensions (accessible via `Fex.identity_embeddings`). Embeddings can be useful for downstream model-training tasks.
+- **Note:** identity embeddings are affected by facial expressions to some degree, and while our default threshold of 0.8 works well for many cases, you should adjust this to tailor it to your particular data.
+- To save computation time, we make it possible to recompute identity labels **after** detection has been performed using the `.compute_identities(threshold=new_threshold)` method on `Fex` data objects. By default this returns a new `Fex` object with new labels in the `'Identity'` column, but can also overwrite itself in-place.
+- You can also adjust the threshold at detection time using the `face_identity_threshold` keyword argument to `Detector.detect_image()` or `Detector.detect_video()`.
+- Recomputing identity labels by changing the threshold **does not** change the 512d embeddings, it just adjusts how clustering is performed to get the identity labels.
+
 # 0.6.1
 
 ## Notes

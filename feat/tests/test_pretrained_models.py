@@ -50,32 +50,27 @@ class Test_Face_Models:
     """Test all pretrained face models"""
 
     def test_retinaface(self, default_detector, single_face_img_data):
-
         default_detector.change_model(face_model="RetinaFace")
         out = default_detector.detect_faces(single_face_img_data)
         assert 180 < out[0][0][0] < 200
 
     def test_faceboxes(self, default_detector, single_face_img_data):
-
         default_detector.change_model(face_model="FaceBoxes")
         out = default_detector.detect_faces(single_face_img_data)
         assert 180 < out[0][0][0] < 200
 
     def test_mtcnn(self, default_detector, single_face_img_data):
-
         default_detector.change_model(face_model="MTCNN")
         out = default_detector.detect_faces(single_face_img_data)
         # Mtcnn is a bit less accurate
         assert 180 < out[0][0][0] < 205
 
     def test_img2pose_face(self, default_detector, single_face_img_data):
-
         default_detector.change_model(face_model="img2pose")
         out = default_detector.detect_faces(single_face_img_data)
         assert 180 < out[0][0][0] < 200
 
     def test_img2pose_c_face(self, default_detector, single_face_img_data):
-
         default_detector.change_model(face_model="img2pose-c")
         out = default_detector.detect_faces(single_face_img_data)
         assert 180 < out[0][0][0] < 200
@@ -86,7 +81,6 @@ class Test_Landmark_Models:
     """Test all pretrained face models"""
 
     def test_mobilenet(self, default_detector, single_face_img, single_face_img_data):
-
         _, h, w = read_image(single_face_img).shape
 
         default_detector.change_model(
@@ -106,7 +100,6 @@ class Test_Landmark_Models:
     def test_mobilefacenet(
         self, default_detector, single_face_img, single_face_img_data
     ):
-
         _, h, w = read_image(single_face_img).shape
 
         default_detector.change_model(
@@ -123,7 +116,6 @@ class Test_Landmark_Models:
         )
 
     def test_pfld(self, default_detector, single_face_img, single_face_img_data):
-
         _, h, w = read_image(single_face_img).shape
         default_detector.change_model(face_model="RetinaFace", landmark_model="PFLD")
 
@@ -143,7 +135,6 @@ class Test_AU_Models:
     """Test all pretrained AU models"""
 
     def test_svm_au(self, default_detector, single_face_img_data):
-
         default_detector.change_model(
             face_model="RetinaFace",
             landmark_model="MobileFaceNet",
@@ -160,7 +151,6 @@ class Test_AU_Models:
         assert aus[0].shape[-1] == 20
 
     def test_xgb_au(self, default_detector, single_face_img_data):
-
         default_detector.change_model(
             face_model="RetinaFace",
             landmark_model="MobileFaceNet",
@@ -199,7 +189,6 @@ class Test_Facepose_Models:
     def test_img2pose_facepose(
         self, default_detector, single_face_img, single_face_img_data
     ):
-
         default_detector.change_model(facepose_model="img2pose")
         poses = default_detector.detect_facepose(single_face_img_data)
         assert np.allclose(poses["poses"], [0.86, -3.80, 6.60], atol=0.1)
@@ -218,7 +207,30 @@ class Test_Facepose_Models:
         assert len(poses["poses"][0][0]) == 6
 
     def test_img2pose_c_facepose(self, default_detector, single_face_img_data):
-
         default_detector.change_model(facepose_model="img2pose-c")
         poses = default_detector.detect_facepose(single_face_img_data)
         assert np.allclose(poses["poses"], [0.86, -3.80, 6.60], atol=0.1)
+
+
+@pytest.mark.usefixtures("default_detector", "multi_face_img")
+class Test_Identity_Models:
+    """Test all pretrained identity models"""
+
+    def test_facenet(self, default_detector, multi_face_img):
+        default_detector.change_model(identity_model="facenet")
+        out = default_detector.detect_image(multi_face_img)
+
+        # Recompute identities based on embeddings and a new threshold
+        out2 = out.compute_identities(threshold=0.2)
+
+        # Identities for each face should change
+        assert not out.identities.equals(out2.identities)
+
+        # But embeddings don't as they're simply re-used at the new threshold
+        assert out.identity_embeddings.equals(out2.identity_embeddings)
+
+        # Should be equivalent to setting that threshold when first calling detector
+        out3 = default_detector.detect_image(
+            multi_face_img, face_identity_threshold=0.2
+        )
+        assert out3.identities.equals(out2.identities)
