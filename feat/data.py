@@ -1749,7 +1749,7 @@ class Fex(DataFrame):
             )
 
         # Initialize Image
-        frame_id = 0
+        frame_id = self["frame"].unique()[0]
         frame_fex = self.query("frame==@frame_id")
         frame_img = load_pil_img(frame_fex["input"].unique()[0], frame_id)
         img_width = frame_img.width
