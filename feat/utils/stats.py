@@ -86,7 +86,7 @@ def softmax(x):
     return 1.0 / (1 + 10.0 ** -(x))
 
 
-def cluster_identities(face_embeddings, threshold=0.9):
+def cluster_identities(face_embeddings, threshold=0.8):
     """Function to cluster face identities based on cosine similarity of embeddings
 
     Args:
