@@ -528,15 +528,6 @@ class Fex(DataFrame):
         return self[self.facepose_columns]
 
     @property
-    def poses(self):
-        """Returns the identity data using the columns set in fex.identity_columns
-
-        Returns:
-            DataFrame: facepose data
-        """
-        return self[self.identity_columns]
-
-    @property
     def inputs(self):
         """Returns input column as string
 
