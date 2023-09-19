@@ -6,6 +6,8 @@ import pytest
 import numpy as np
 import warnings
 
+EXPECTED_FEX_WIDTH = 686
+
 
 def test_landmark_with_batches(multiple_images_for_batch_testing):
     """
@@ -111,53 +113,53 @@ def test_nofile(default_detector):
 
 # No Face images
 def test_detect_single_img_no_face(default_detector, no_face_img):
-    """Test detection of a single image with no face. Default detector returns 173 attributes"""
+    """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image(no_face_img)
     assert type(out) == Fex
-    assert out.shape == (1, 173)
+    assert out.shape == (1, EXPECTED_FEX_WIDTH)
     assert np.isnan(out.happiness.values[0])
 
 
 def test_detect_multi_img_no_face(default_detector, no_face_img):
-    """Test detection of a multiple images with no face. Default detector returns 173 attributes"""
+    """Test detection of a multiple images with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image([no_face_img] * 3)
-    assert out.shape == (3, 173)
+    assert out.shape == (3, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_multi_img_no_face_batching(default_detector, no_face_img):
-    """Test detection of a multiple images with no face. Default detector returns 173 attributes"""
+    """Test detection of a multiple images with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image([no_face_img] * 5, batch_size=2)
-    assert out.shape == (5, 173)
+    assert out.shape == (5, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_multi_img_mixed_no_face(
     default_detector, no_face_img, single_face_img, multi_face_img
 ):
-    """Test detection of a single image with no face. Default detector returns 173 attributes"""
+    """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image(
         [single_face_img, no_face_img, multi_face_img] * 2
     )
-    assert out.shape == (14, 173)
+    assert out.shape == (14, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_multi_img_mixed_no_face_batching(
     default_detector, no_face_img, single_face_img, multi_face_img
 ):
-    """Test detection of a single image with no face. Default detector returns 173 attributes"""
+    """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image(
         [single_face_img, no_face_img, multi_face_img] * 2,
         batch_size=4,
         output_size=300,
     )
-    assert out.shape == (14, 173)
+    assert out.shape == (14, EXPECTED_FEX_WIDTH)
 
 
 # Single images
 def test_detect_single_img_single_face(default_detector, single_face_img):
-    """Test detection of single face from single image. Default detector returns 173 attributes"""
+    """Test detection of single face from single image. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image(single_face_img)
     assert type(out) == Fex
-    assert out.shape == (1, 173)
+    assert out.shape == (1, EXPECTED_FEX_WIDTH)
     assert out.happiness.values[0] > 0
 
 
@@ -165,7 +167,7 @@ def test_detect_single_img_multi_face(default_detector, multi_face_img):
     """Test detection of multiple faces from single image"""
     out = default_detector.detect_image(multi_face_img)
     assert type(out) == Fex
-    assert out.shape == (5, 173)
+    assert out.shape == (5, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_with_alpha(default_detector):
@@ -177,32 +179,32 @@ def test_detect_with_alpha(default_detector):
 def test_detect_multi_img_single_face(default_detector, single_face_img):
     """Test detection of single face from multiple images"""
     out = default_detector.detect_image([single_face_img, single_face_img])
-    assert out.shape == (2, 173)
+    assert out.shape == (2, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_multi_img_multi_face(default_detector, multi_face_img):
     """Test detection of multiple faces from multiple images"""
     out = default_detector.detect_image([multi_face_img, multi_face_img])
-    assert out.shape == (10, 173)
+    assert out.shape == (10, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_images_with_batching(default_detector, single_face_img):
     """Test if batching works by passing in more images than the default batch size"""
 
     out = default_detector.detect_image([single_face_img] * 6, batch_size=5)
-    assert out.shape == (6, 173)
+    assert out.shape == (6, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_mismatch_image_sizes(default_detector, single_face_img, multi_face_img):
     """Test detection on multiple images of different sizes with and without batching"""
 
     out = default_detector.detect_image([multi_face_img, single_face_img])
-    assert out.shape == (6, 173)
+    assert out.shape == (6, EXPECTED_FEX_WIDTH)
 
     out = default_detector.detect_image(
         [multi_face_img, single_face_img] * 5, batch_size=5, output_size=512
     )
-    assert out.shape == (30, 173)
+    assert out.shape == (30, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_video(

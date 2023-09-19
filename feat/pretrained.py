@@ -14,6 +14,7 @@ from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
     EmoSVMClassifier,
 )
+from feat.identity_detectors.facenet.facenet_test import Facenet
 from feat.utils.io import get_resource_path, download_url
 import os
 import json
@@ -42,6 +43,7 @@ PRETRAINED_MODELS = {
         {"img2pose": Img2Pose},
         {"img2pose-c": Img2Pose},
     ],
+    "identity_model": [{"facenet": Facenet}],
 }
 
 # Compatibility support for OpenFace which has diff AU names than feat
@@ -91,7 +93,13 @@ AU_LANDMARK_MAP = {
 
 
 def get_pretrained_models(
-    face_model, landmark_model, au_model, emotion_model, facepose_model, verbose
+    face_model,
+    landmark_model,
+    au_model,
+    emotion_model,
+    facepose_model,
+    identity_model,
+    verbose,
 ):
     """Helper function that validates the request model names and downloads them if
     necessary using the URLs in the included JSON file. User by detector init"""
@@ -217,12 +225,28 @@ def get_pretrained_models(
             )
         for url in model_urls["facepose_detectors"][facepose_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
+
+    # Face Identity model
+    if identity_model is None:
+        raise ValueError(
+            f"representation_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['representation_model']]}"
+        )
+    else:
+        identity_model = identity_model.lower()
+        if identity_model not in get_names("identity_model"):
+            raise ValueError(
+                f"Requested representation_model was {identity_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['identity_model']]}"
+            )
+        for url in model_urls["identity_detectors"][identity_model]["urls"]:
+            download_url(url, get_resource_path(), verbose=verbose)
+
     return (
         face_model,
         landmark_model,
         au_model,
         emotion_model,
         facepose_model,
+        identity_model,
     )
 
 
