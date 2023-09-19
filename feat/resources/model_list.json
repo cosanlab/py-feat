@@ -136,6 +136,13 @@
             ]
         }
     },
+    "identity_detectors": {
+        "facenet": {
+            "urls": [
+                "https://github.com/cosanlab/py-feat/releases/download/v0.1/facenet_20180402_114759_vggface2.pth"
+            ]
+        }
+    },
     "viz_models": {
         "pyfeat_aus_to_landmarks": {
             "urls": [

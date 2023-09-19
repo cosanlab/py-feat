@@ -5,12 +5,10 @@ Feat utility and helper functions for performing statistics.
 import numpy as np
 import pandas as pd
 from scipy.integrate import simps
+import torch
+from torch.nn.functional import cosine_similarity
 
-__all__ = [
-    "wavelet",
-    "calc_hist_auc",
-    "softmax",
-]
+__all__ = ["wavelet", "calc_hist_auc", "softmax", "cluster_identities"]
 
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.0):
@@ -86,3 +84,60 @@ def softmax(x):
         x: value to softmax
     """
     return 1.0 / (1 + 10.0 ** -(x))
+
+
+def cluster_identities(face_embeddings, threshold=0.8):
+    """Function to cluster face identities based on cosine similarity of embeddings
+
+    Args:
+        face_embeddings (torch.tensor): an observation by embedding torch tensor
+        threshold (float): a threshold to determine which embeddings are the same person
+
+    Returns:
+        a list of of identities
+    """
+    from feat.data import Fex
+
+    if isinstance(face_embeddings, Fex):
+        face_embeddings = torch.tensor(face_embeddings.astype(float).values)
+    elif isinstance(face_embeddings, np.ndarray):
+        face_embeddings = torch.tensor(face_embeddings)
+
+    similarity_matrix = cosine_similarity(
+        face_embeddings[None, :], face_embeddings[:, None], dim=-1
+    )
+
+    thresholded_matrix = similarity_matrix > threshold
+
+    # Clustering
+    visited = set()
+    clusters = []
+    cluster_indices = [-1 for _ in range(face_embeddings.size(0))]  # Initialize list
+
+    for i in range(thresholded_matrix.size(0)):
+        if i not in visited:
+            # New cluster
+            cluster = {i}
+            stack = [i]
+            visited.add(i)
+            current_cluster_idx = len(
+                clusters
+            )  # This will be the index for the current cluster
+            cluster_indices[i] = current_cluster_idx
+            while stack:
+                current = stack.pop()
+                neighbors = (
+                    thresholded_matrix[current]
+                    & ~torch.tensor(
+                        [idx in visited for idx in range(thresholded_matrix.size(0))]
+                    )
+                ).nonzero(as_tuple=True)[0]
+                for neighbor in neighbors:
+                    stack.append(neighbor.item())
+                    cluster.add(neighbor.item())
+                    visited.add(neighbor.item())
+                    cluster_indices[
+                        neighbor.item()
+                    ] = current_cluster_idx  # Update the cluster index for the item
+            clusters.append(cluster)
+    return [f"Person_{x}" for x in cluster_indices]

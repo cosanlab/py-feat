@@ -15,6 +15,7 @@ from feat.utils import (
     FEAT_FACEPOSE_COLUMNS_3D,
     FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_TIME_COLUMNS,
+    FEAT_IDENTITY_COLUMNS,
     set_torch_device,
     is_list_of_lists_empty,
 )
@@ -25,6 +26,7 @@ from feat.utils.image_operations import (
     convert_image_to_tensor,
     BBox,
 )
+from feat.utils.stats import cluster_identities
 from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
 from feat.data import (
     Fex,
@@ -53,6 +55,7 @@ class Detector(object):
         au_model="xgb",
         emotion_model="resmasknet",
         facepose_model="img2pose",
+        identity_model="facenet",
         device="cpu",
         n_jobs=1,
         verbose=False,
@@ -78,6 +81,7 @@ class Detector(object):
                 au_model (str, default=svm): Name of Action Unit detection model
                 emotion_model (str, default=resmasknet): Path to emotion detection model.
                 facepose_model (str, default=img2pose): Name of headpose detection model.
+                identity_model (str, default=facenet): Name of identity detection model.
                 face_detection_columns (list): Column names for face detection ouput (x, y, w, h)
                 face_landmark_columns (list): Column names for face landmark output (x0, y0, x1, y1, ...)
                 emotion_model_columns (list): Column names for emotion model output
@@ -102,6 +106,7 @@ class Detector(object):
             emotion_model=None,
             facepose_model=None,
             au_model=None,
+            identity_model=None,
             n_jobs=n_jobs,
         )
         self.verbose = verbose
@@ -114,8 +119,14 @@ class Detector(object):
         self.device = set_torch_device(device)
 
         # Verify model names and download if necessary
-        face, landmark, au, emotion, facepose = get_pretrained_models(
-            face_model, landmark_model, au_model, emotion_model, facepose_model, verbose
+        face, landmark, au, emotion, facepose, identity = get_pretrained_models(
+            face_model,
+            landmark_model,
+            au_model,
+            emotion_model,
+            facepose_model,
+            identity_model,
+            verbose,
         )
 
         self._init_detectors(
@@ -124,12 +135,13 @@ class Detector(object):
             au,
             emotion,
             facepose,
+            identity,
             openface_2d_landmark_columns,
             **kwargs,
         )
 
     def __repr__(self):
-        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']})"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']}, identity_model={self.info['identity_model']})"
 
     def __getitem__(self, i):
         return self.info[i]
@@ -141,6 +153,7 @@ class Detector(object):
         au,
         emotion,
         facepose,
+        identity,
         openface_2d_landmark_columns,
         **kwargs,
     ):
@@ -153,6 +166,7 @@ class Detector(object):
         au_model_kwargs = kwargs.pop("au_model_kwargs", dict())
         emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
         facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
+        identity_model_kwargs = kwargs.pop("identity_model_kwargs", dict())
 
         # Initialize model instances and any additional post init setup
         # Only initialize a model if the currently initialized model is diff than the
@@ -302,6 +316,20 @@ class Detector(object):
                 empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
                 self._empty_emotion = empty_emotion
 
+        # IDENTITY MODEL
+        if self.info["identity_model"] != identity:
+            logging.info(f"Loading Identity model: {identity}")
+            self.identity_model = fetch_model("identity_model", identity)
+            self.info["identity_model"] = identity
+            self.info["identity_model_columns"] = FEAT_IDENTITY_COLUMNS
+            predictions = np.full_like(np.atleast_2d(FEAT_IDENTITY_COLUMNS), np.nan)
+            empty_identity = pd.DataFrame(predictions, columns=FEAT_IDENTITY_COLUMNS)
+            self._empty_identity = empty_identity
+            if self.identity_model is not None:
+                self.identity_model = self.identity_model(
+                    device=self.device, **identity_model_kwargs
+                )
+
         self.info["output_columns"] = (
             FEAT_TIME_COLUMNS
             + self.info["face_detection_columns"]
@@ -309,6 +337,7 @@ class Detector(object):
             + self.info["au_presence_columns"]
             + self.info["facepose_model_columns"]
             + self.info["emotion_model_columns"]
+            + self.info["identity_model_columns"]
             + ["input"]
         )
 
@@ -321,24 +350,27 @@ class Detector(object):
         au_model = kwargs.get("au_model", self.info["au_model"])
         emotion_model = kwargs.get("emotion_model", self.info["emotion_model"])
         facepose_model = kwargs.get("facepose_model", self.info["facepose_model"])
+        identity_model = kwargs.get("identity_model", self.info["identity_model"])
 
         # Verify model names and download if necessary
-        face, landmark, au, emotion, facepose = get_pretrained_models(
+        face, landmark, au, emotion, facepose, identity = get_pretrained_models(
             face_model,
             landmark_model,
             au_model,
             emotion_model,
             facepose_model,
+            identity_model,
             self.verbose,
         )
         for requested, current_name in zip(
-            [face, landmark, au, emotion, facepose],
+            [face, landmark, au, emotion, facepose, identity],
             [
                 "face_model",
                 "landmark_model",
                 "au_model",
                 "emotion_model",
                 "facepose_model",
+                "identity_model",
             ],
         ):
             if requested != self.info[current_name]:
@@ -352,6 +384,7 @@ class Detector(object):
             au,
             emotion,
             facepose,
+            identity,
             openface_2d_landmark_columns,
         )
 
@@ -640,15 +673,44 @@ class Detector(object):
                     "Cannot recognize input emo model! Please try to re-type emotion model"
                 )
 
+    def detect_identity(self, frame, facebox, **identity_model_kwargs):
+        """Detects identity of faces from image or video frame using face representation embeddings
+
+        Args:
+            frame (np.ndarray): 3d (single) or 4d (multiple) image array
+            threshold (float): threshold for matching identity (default=0.8)
+
+        Returns:
+            list: list of lists with the same length as the number of frames. Each list
+            item is a list containing the (x1, y1, x2, y2) coordinates of each detected
+            face in that frame.
+
+        """
+
+        logging.info("detecting identity...")
+
+        frame = convert_image_to_tensor(frame, img_type="float32") / 255
+
+        if is_list_of_lists_empty(facebox):
+            return facebox
+        else:
+            extracted_faces, new_bbox = extract_face_from_bbox(frame, facebox)
+            face_embeddings = self.identity_model(
+                extracted_faces, **identity_model_kwargs
+            )
+        return self._convert_detector_output(facebox, face_embeddings.numpy())
+
     def _run_detection_waterfall(
         self,
         batch_data,
         face_detection_threshold,
+        face_identity_threshold,
         face_model_kwargs,
         landmark_model_kwargs,
         facepose_model_kwargs,
         emotion_model_kwargs,
         au_model_kwargs,
+        identity_model_kwargs,
         suppress_torchvision_warnings=True,
     ):
         """
@@ -659,14 +721,16 @@ class Detector(object):
         Args:
             batch_data (dict): singleton item from iterating over the output of a DataLoader
             face_detection_threshold (float): value between 0-1
+            face_identity_threshold (float): value between 0-1
             face_model_kwargs (dict): face model kwargs
             landmark_model_kwargs (dict): landmark model kwargs
             facepose_model_kwargs (dict): facepose model kwargs
             emotion_model_kwargs (dict): emotion model kwargs
             au_model_kwargs (dict): au model kwargs
+            identity_model_kwargs (dict): identity model kwargs
 
         Returns:
-            tuple: faces, landmarks, poses, aus, emotions
+            tuple: faces, landmarks, poses, aus, emotions, identities
         """
 
         # Reset warnings
@@ -688,12 +752,22 @@ class Detector(object):
             detected_faces=faces,
             **landmark_model_kwargs,
         )
+
         poses_dict = self.detect_facepose(
             batch_data["Image"], landmarks, **facepose_model_kwargs
         )
+
         aus = self.detect_aus(batch_data["Image"], landmarks, **au_model_kwargs)
+
         emotions = self.detect_emotions(
             batch_data["Image"], faces, landmarks, **emotion_model_kwargs
+        )
+
+        identities = self.detect_identity(
+            batch_data["Image"],
+            faces,
+            # threshold=face_identity_threshold,
+            **identity_model_kwargs,
         )
 
         faces = _inverse_face_transform(faces, batch_data)
@@ -703,7 +777,8 @@ class Detector(object):
         faces, poses = self._match_faces_to_poses(
             faces, poses_dict["faces"], poses_dict["poses"]
         )
-        return faces, landmarks, poses, aus, emotions
+
+        return faces, landmarks, poses, aus, emotions, identities
 
     def detect_image(
         self,
@@ -714,6 +789,7 @@ class Detector(object):
         pin_memory=False,
         frame_counter=0,
         face_detection_threshold=0.5,
+        face_identity_threshold=0.8,
         **kwargs,
     ):
         """
@@ -737,6 +813,7 @@ class Detector(object):
             frame_counter (int): starting value to count frames
             face_detection_threshold (float): value between 0-1 to report a detection based on the
                                 confidence of the face detector; Default >= 0.5
+            face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
             **kwargs: you can pass each detector specific kwargs using a dictionary
                                 like: `face_model_kwargs = {...}, au_model_kwargs={...}, ...`
 
@@ -750,6 +827,7 @@ class Detector(object):
         au_model_kwargs = kwargs.pop("au_model_kwargs", dict())
         emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
         facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
+        identity_model_kwargs = kwargs.pop("identity_model_kwargs", dict())
 
         data_loader = DataLoader(
             ImageDataset(
@@ -773,14 +851,23 @@ class Detector(object):
             batch_output = []
 
             for batch_id, batch_data in enumerate(tqdm(data_loader)):
-                faces, landmarks, poses, aus, emotions = self._run_detection_waterfall(
+                (
+                    faces,
+                    landmarks,
+                    poses,
+                    aus,
+                    emotions,
+                    identities,
+                ) = self._run_detection_waterfall(
                     batch_data,
                     face_detection_threshold,
+                    face_identity_threshold,
                     face_model_kwargs,
                     landmark_model_kwargs,
                     facepose_model_kwargs,
                     emotion_model_kwargs,
                     au_model_kwargs,
+                    identity_model_kwargs,
                 )
 
                 output = self._create_fex(
@@ -789,6 +876,7 @@ class Detector(object):
                     poses,
                     aus,
                     emotions,
+                    identities,
                     batch_data["FileNames"],
                     frame_counter,
                 )
@@ -797,7 +885,9 @@ class Detector(object):
 
             batch_output = pd.concat(batch_output)
             batch_output.reset_index(drop=True, inplace=True)
-
+            batch_output.compute_identities(
+                threshold=face_identity_threshold, inplace=True
+            )
             return batch_output
         except RuntimeError as e:
             raise ValueError(
@@ -813,6 +903,7 @@ class Detector(object):
         num_workers=0,
         pin_memory=False,
         face_detection_threshold=0.5,
+        face_identity_threshold=0.8,
         **kwargs,
     ):
         """Detects FEX from a video file.
@@ -829,6 +920,7 @@ class Detector(object):
                                 are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type
             face_detection_threshold (float): value between 0-1 to report a detection based on the
                                 confidence of the face detector; Default >= 0.5
+            face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
 
         Returns:
             Fex: Prediction results dataframe
@@ -840,6 +932,7 @@ class Detector(object):
         au_model_kwargs = kwargs.pop("au_model_kwargs", dict())
         emotion_model_kwargs = kwargs.pop("emotion_model_kwargs", dict())
         facepose_model_kwargs = kwargs.pop("facepose_model_kwargs", dict())
+        identity_model_kwargs = kwargs.pop("identity_model_kwargs", dict())
 
         dataset = VideoDataset(
             video_path, skip_frames=skip_frames, output_size=output_size
@@ -856,14 +949,23 @@ class Detector(object):
         batch_output = []
 
         for batch_data in tqdm(data_loader):
-            faces, landmarks, poses, aus, emotions = self._run_detection_waterfall(
+            (
+                faces,
+                landmarks,
+                poses,
+                aus,
+                emotions,
+                identities,
+            ) = self._run_detection_waterfall(
                 batch_data,
                 face_detection_threshold,
+                face_identity_threshold,
                 face_model_kwargs,
                 landmark_model_kwargs,
                 facepose_model_kwargs,
                 emotion_model_kwargs,
                 au_model_kwargs,
+                identity_model_kwargs,
             )
 
             frames = list(batch_data["Frame"].numpy())
@@ -874,6 +976,7 @@ class Detector(object):
                 poses,
                 aus,
                 emotions,
+                identities,
                 batch_data["FileName"],
                 frames,
             )
@@ -885,10 +988,20 @@ class Detector(object):
         batch_output["approx_time"] = [
             dataset.calc_approx_frame_time(x) for x in batch_output["frame"].to_numpy()
         ]
+        batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+
         return batch_output.set_index("frame", drop=False)
 
     def _create_fex(
-        self, faces, landmarks, poses, aus, emotions, file_names, frame_counter
+        self,
+        faces,
+        landmarks,
+        poses,
+        aus,
+        emotions,
+        identities,
+        file_names,
+        frame_counter,
     ):
         """Helper function to create a Fex instance using detector output
 
@@ -898,6 +1011,7 @@ class Detector(object):
             poses: output of dectect_facepose()
             aus: output of detect_aus()
             emotions: output of detect_emotions()
+            identities: output of detect_identities()
             file_names: file name of input image
             frame_counter: starting value for frame counter, useful for integrating batches
 
@@ -935,6 +1049,11 @@ class Detector(object):
                     columns=self.info["emotion_model_columns"],
                     index=[i],
                 )
+                identity_df = pd.DataFrame(
+                    {x: np.nan for x in self.info["identity_model_columns"]},
+                    columns=self.info["identity_model_columns"],
+                    index=[i],
+                )
                 input_df = pd.DataFrame(file_names[i], columns=["input"], index=[i])
                 tmp_df = pd.concat(
                     [
@@ -943,6 +1062,7 @@ class Detector(object):
                         facepose_df,
                         aus_df,
                         emotions_df,
+                        identity_df,
                         input_df,
                     ],
                     axis=1,
@@ -994,6 +1114,12 @@ class Detector(object):
                     index=[j],
                 )
 
+                identity_df = pd.DataFrame(
+                    np.hstack([np.nan, identities[i][j]]).reshape(-1, 1).T,
+                    columns=self.info["identity_model_columns"],
+                    index=[j],
+                )
+
                 input_df = pd.DataFrame(
                     file_names[i],
                     columns=["input"],
@@ -1007,6 +1133,7 @@ class Detector(object):
                         facepose_df,
                         aus_df,
                         emotions_df,
+                        identity_df,
                         input_df,
                     ],
                     axis=1,
@@ -1029,12 +1156,14 @@ class Detector(object):
             facebox_columns=self.info["face_detection_columns"],
             landmark_columns=self.info["face_landmark_columns"],
             facepose_columns=self.info["facepose_model_columns"],
+            identity_columns=self.info["identity_model_columns"],
             detector="Feat",
             face_model=self.info["face_model"],
             landmark_model=self.info["landmark_model"],
             au_model=self.info["au_model"],
             emotion_model=self.info["emotion_model"],
             facepose_model=self.info["facepose_model"],
+            identity_model=self.info["identity_model"],
         )
 
     @staticmethod
