@@ -2579,6 +2579,19 @@ class Fex(DataFrame):
             all_figs.append(f)
         return all_figs
 
+    def compute_identities(self, threshold=0.8, inplace=False):
+        """Compute Identities using face embeddings from identity detector using threshold"""
+        if inplace:
+            self["Identity"] = cluster_identities(
+                self.identity_embeddings, threshold=threshold
+            )
+        else:
+            out = self.copy()
+            out["Identity"] = cluster_identities(
+                out.identity_embeddings, threshold=threshold
+            )
+            return out
+
         # TODO: turn this into a property using a @property and @sessions.settr decorators
         # Tried it but was running into maximum recursion depth errors. Maybe some
         # interaction with how pandas sub-classing works?? - ejolly
