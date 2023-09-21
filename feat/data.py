@@ -2592,43 +2592,43 @@ class Fex(DataFrame):
             )
             return out
 
-        # TODO: turn this into a property using a @property and @sessions.settr decorators
-        # Tried it but was running into maximum recursion depth errors. Maybe some
-        # interaction with how pandas sub-classing works?? - ejolly
-        def update_sessions(self, new_sessions):
-            """
-            Returns a copy of the Fex dataframe with a new sessions attribute after
-            validation. `new_sessions` should be a dictionary mapping old to new names or an iterable with the same number of rows as the Fex dataframe
+    # TODO: turn this into a property using a @property and @sessions.settr decorators
+    # Tried it but was running into maximum recursion depth errors. Maybe some
+    # interaction with how pandas sub-classing works?? - ejolly
+    def update_sessions(self, new_sessions):
+        """
+        Returns a copy of the Fex dataframe with a new sessions attribute after
+        validation. `new_sessions` should be a dictionary mapping old to new names or an iterable with the same number of rows as the Fex dataframe
 
-            Args:
-                new_sessions (dict, Iterable): map or list of new session names
+        Args:
+            new_sessions (dict, Iterable): map or list of new session names
 
-            Returns:
-                Fex: self
-            """
+        Returns:
+            Fex: self
+        """
 
-            out = deepcopy(self)
+        out = deepcopy(self)
 
-            if isinstance(new_sessions, dict):
-                if not isinstance(out.sessions, pd.Series):
-                    out.sessions = pd.Series(out.sessions)
+        if isinstance(new_sessions, dict):
+            if not isinstance(out.sessions, pd.Series):
+                out.sessions = pd.Series(out.sessions)
 
-                out.sessions = out.sessions.map(new_sessions)
+            out.sessions = out.sessions.map(new_sessions)
 
-            elif isinstance(new_sessions, Iterable):
-                if len(new_sessions) != out.shape[0]:
-                    raise ValueError(
-                        f"When new_sessions are not a dictionary then they must but an iterable with length == the number of rows of this Fex dataframe {out.shape[0]}, but they have length {len(new_sessions)}."
-                    )
-
-                out.sessions = new_sessions
-
-            else:
-                raise TypeError(
-                    f"new_sessions must be either be a dictionary mapping between old and new session values or an iterable with the same number of rows as this Fex dataframe {out.shape[0]}, but was type: {type(new_sessions)}"
+        elif isinstance(new_sessions, Iterable):
+            if len(new_sessions) != out.shape[0]:
+                raise ValueError(
+                    f"When new_sessions are not a dictionary then they must but an iterable with length == the number of rows of this Fex dataframe {out.shape[0]}, but they have length {len(new_sessions)}."
                 )
 
-            return out
+            out.sessions = new_sessions
+
+        else:
+            raise TypeError(
+                f"new_sessions must be either be a dictionary mapping between old and new session values or an iterable with the same number of rows as this Fex dataframe {out.shape[0]}, but was type: {type(new_sessions)}"
+            )
+
+        return out
 
 
 class ImageDataset(Dataset):
