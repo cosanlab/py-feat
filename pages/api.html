@@ -429,11 +429,11 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">API Reference</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-detector-module">feat.detector module</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-data-module">feat.data module</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-plotting-module">feat.plotting module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.detector">feat.detector module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.data">feat.data module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.plotting">feat.plotting module</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.utils">feat.utils module</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-pretrained-module">feat.pretrained module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.pretrained">feat.pretrained module</a></li>
 </ul>
 
             </nav>
@@ -450,14 +450,1641 @@ document.write(`
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">#</a></h1>
 <p>This reference provides detailed documentation for all the features in FEAT</p>
 </section>
-<section id="feat-detector-module">
-<h1>feat.detector module<a class="headerlink" href="#feat-detector-module" title="Permalink to this heading">#</a></h1>
+<section id="module-feat.detector">
+<span id="feat-detector-module"></span><h1>feat.detector module<a class="headerlink" href="#module-feat.detector" title="Permalink to this heading">#</a></h1>
+<p>Main Detector class. The Detector class wraps other pre-trained models
+(e.g. face detector, au detector) and provides a high-level API to make it easier to
+perform detection</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="feat.detector.Detector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'retinaface'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mobilefacenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xgb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resmasknet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'img2pose'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identity_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'facenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.change_model">
+<span class="sig-name descname"><span class="pre">change_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.change_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Swap one or more pre-trained detector models for another one. Just pass in
+the the new models to use as kwargs, e.g. emotion_model=’svm’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_aus">
+<span class="sig-name descname"><span class="pre">detect_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">au_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_aus" title="Permalink to this definition">#</a></dt>
+<dd><p>Detect Action Units from image or video frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>np.ndarray</em>) – image loaded in array format (n, m, 3)</p></li>
+<li><p><strong>landmarks</strong> (<em>array</em>) – 68 landmarks used to localize face.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Action Unit predictions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_pictures</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">read_pictures</span><span class="p">([</span><span class="s1">&#39;my_image.jpg&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span><span class="o">.</span><span class="n">detect_aus</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_emotions">
+<span class="sig-name descname"><span class="pre">detect_emotions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">emotion_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_emotions" title="Permalink to this definition">#</a></dt>
+<dd><p>Detect emotions from image or video frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
+<li><p><strong>facebox</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
+<li><p><strong>landmarks</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Action Unit predictions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_pictures</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img_data</span> <span class="o">=</span> <span class="n">read_pictures</span><span class="p">([</span><span class="s1">&#39;my_image.jpg&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detected_faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detected_landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">detected_faces</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span><span class="o">.</span><span class="n">detect_emotions</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">detected_faces</span><span class="p">,</span> <span class="n">detected_landmarks</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_facepose">
+<span class="sig-name descname"><span class="pre">detect_facepose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">facepose_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_facepose" title="Permalink to this definition">#</a></dt>
+<dd><p>Detect facepose from image or video frame.</p>
+<p>When used with img2pose, returns <em>all</em> detected poses, and facebox and landmarks
+are ignored. Use <cite>detect_face</cite> method in order to obtain bounding boxes
+corresponding to the detected poses returned by this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>np.ndarray</em>) – list of images</p></li>
+<li><p><strong>landmarks</strong> (<em>np.ndarray</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – (num_images, num_faces, 68, 2)</p></li>
+<li><p><strong>and</strong> (<em>landmarks for the faces contained in list of images; Default None</em>) – </p></li>
+<li><p><strong>detectors</strong> (<em>ignored for img2pose and img2pose-c</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>poses (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
+degrees) for each face within in each image}</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_faces">
+<span class="sig-name descname"><span class="pre">detect_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">face_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_faces" title="Permalink to this definition">#</a></dt>
+<dd><p>Detect faces from image or video frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – threshold for detectiong faces (default=0.5)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of lists with the same length as the number of frames. Each list
+item is a list containing the (x1, y1, x2, y2) coordinates of each detected
+face in that frame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_identity">
+<span class="sig-name descname"><span class="pre">detect_identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">identity_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_identity" title="Permalink to this definition">#</a></dt>
+<dd><p>Detects identity of faces from image or video frame using face representation embeddings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – threshold for matching identity (default=0.8)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of lists with the same length as the number of frames. Each list
+item is a list containing the (x1, y1, x2, y2) coordinates of each detected
+face in that frame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_image">
+<span class="sig-name descname"><span class="pre">detect_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_identity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_image" title="Permalink to this definition">#</a></dt>
+<dd><p>Detects FEX from one or more image files. If you want to speed up detection you
+can process multiple images in batches by setting <cite>batch_size &gt; 1</cite>. However, all
+images must have <strong>the same dimensions</strong> to be processed in batches. Py-feat can
+automatically adjust image sizes by using the <cite>output_size=int</cite>. Common
+output-sizes include 256 and 512.</p>
+<p><strong>NOTE: Currently batch processing images gives slightly different AU detection results due to the way that py-feat integrates the underlying models. You can examine the degree of tolerance by checking out the results of `test_detection_and_batching_with_diff_img_sizes` in our test-suite</strong></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file_list</strong> (<em>list of str</em>) – Path to a list of paths to image files.</p></li>
+<li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all image preserving aspect ratio.
+Will raise an error if not set and batch_size &gt; 1 but images are not the same size</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – how many batches of images you want to run at one shot.
+Larger gives faster speed but is more memory-consuming. Images must be the</p></li>
+<li><p><strong>batches!</strong> (<em>same size to be run in</em>) – </p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – how many subprocesses to use for data loading. <code class="docutils literal notranslate"><span class="pre">0</span></code> means that the data will be loaded in the main process.</p></li>
+<li><p><strong>pin_memory</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data loader will copy Tensors into CUDA pinned memory before returning them.  If your data elements are a custom type, or your <code class="xref py py-attr docutils literal notranslate"><span class="pre">collate_fn</span></code> returns a batch that is a custom type</p></li>
+<li><p><strong>frame_counter</strong> (<em>int</em>) – starting value to count frames</p></li>
+<li><p><strong>face_detection_threshold</strong> (<em>float</em>) – value between 0-1 to report a detection based on the
+confidence of the face detector; Default &gt;= 0.5</p></li>
+<li><p><strong>face_identity_threshold</strong> (<em>float</em>) – value between 0-1 to determine similarity of person using face identity embeddings; Default &gt;= 0.8</p></li>
+<li><p><strong>**kwargs</strong> – you can pass each detector specific kwargs using a dictionary
+like: <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prediction results dataframe</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_landmarks">
+<span class="sig-name descname"><span class="pre">detect_landmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">landmark_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_landmarks" title="Permalink to this definition">#</a></dt>
+<dd><p>Detect landmarks from image or video frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
+<li><p><strong>detected_faces</strong> (<em>array</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>x and y landmark coordinates (1,68,2)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_pictures</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img_data</span> <span class="o">=</span> <span class="n">read_pictures</span><span class="p">([</span><span class="s1">&#39;my_image.jpg&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detected_faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">detected_faces</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.detector.Detector.detect_video">
+<span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">700</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_identity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">#</a></dt>
+<dd><p>Detects FEX from a video file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Path to a video file.</p></li>
+<li><p><strong>skip_frames</strong> (<em>int</em><em> or </em><em>None</em>) – number of frames to skip (speeds up inference,</p></li>
+<li><p><strong>None</strong> (<em>but less temporal information</em><em>)</em><em>; Default</em>) – </p></li>
+<li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all imagee preserving aspect ratio</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – how many subprocesses to use for data loading. <code class="docutils literal notranslate"><span class="pre">0</span></code> means that the data will be loaded in the main process.</p></li>
+<li><p><strong>pin_memory</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data loader will copy Tensors
+into CUDA pinned memory before returning them.  If your data elements
+are a custom type, or your <code class="xref py py-attr docutils literal notranslate"><span class="pre">collate_fn</span></code> returns a batch that is a custom type</p></li>
+<li><p><strong>face_detection_threshold</strong> (<em>float</em>) – value between 0-1 to report a detection based on the
+confidence of the face detector; Default &gt;= 0.5</p></li>
+<li><p><strong>face_identity_threshold</strong> (<em>float</em>) – value between 0-1 to determine similarity of person using face identity embeddings; Default &gt;= 0.8</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prediction results dataframe</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="feat-data-module">
-<h1>feat.data module<a class="headerlink" href="#feat-data-module" title="Permalink to this heading">#</a></h1>
+<section id="module-feat.data">
+<span id="feat-data-module"></span><h1>feat.data module<a class="headerlink" href="#module-feat.data" title="Permalink to this heading">#</a></h1>
+<p>Py-FEAT Data classes.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="feat.data.Fex">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">Fex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
+<p>Fex is a class to represent facial expression (Fex) data</p>
+<p>Fex class is  an enhanced pandas dataframe, with extra attributes and methods to help with facial expression data analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – (str, optional) path to file</p></li>
+<li><p><strong>detector</strong> – (str, optional) name of software used to extract Fex. Currently only</p></li>
+<li><p><strong>supported</strong> (<em>'Feat' is</em>) – </p></li>
+<li><p><strong>sampling_freq</strong> (<em>float</em><em>, </em><em>optional</em>) – sampling rate of each row in Hz; defaults to None</p></li>
+<li><p><strong>features</strong> (<em>pd.Dataframe</em><em>, </em><em>optional</em>) – features that correspond to each Fex row</p></li>
+<li><p><strong>sessions</strong> – Unique values indicating rows associated with a specific session (e.g., trial, subject, etc).Must be a 1D array of n_samples elements; defaults to None</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.append" title="Permalink to this definition">#</a></dt>
+<dd><p>Append a new Fex object to an existing object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – (Fex) Fex instance to append</p></li>
+<li><p><strong>session_id</strong> – session label</p></li>
+<li><p><strong>axis</strong> – ([0,1]) Axis to append. Rows=0, Cols=1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fex instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.aus">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aus</span></span><a class="headerlink" href="#feat.data.Fex.aus" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the Action Units data</p>
+<p>Returns Action Unit data using the columns set in fex.au_columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action Units data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.baseline">
+<span class="sig-name descname"><span class="pre">baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'median'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.baseline" title="Permalink to this definition">#</a></dt>
+<dd><p>Reference a Fex object to a baseline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> – {‘median’, ‘mean’, ‘begin’, FexSeries instance}. Will subtract baseline from Fex object (e.g., mean, median).  If passing a Fex object, it will treat that as the baseline.</p></li>
+<li><p><strong>normalize</strong> – (str). Can normalize results of baseline. Values can be [None, ‘db’,’pct’]; default None.</p></li>
+<li><p><strong>ignore_sessions</strong> – (bool) If True, will ignore Fex.sessions information. Otherwise, method will be applied separately to each unique session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fex object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.clean">
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detrend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_finite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.clean" title="Permalink to this definition">#</a></dt>
+<dd><p>Clean Time Series signal</p>
+<p>This function wraps nilearn functionality and can filter, denoise,
+detrend, etc.</p>
+<p>See <a class="reference external" href="http://nilearn.github.io/modules/generated/nilearn.signal.clean.html">http://nilearn.github.io/modules/generated/nilearn.signal.clean.html</a></p>
+<p>This function can do several things on the input signals, in
+the following order: detrend, standardize, remove confounds, low and high-pass filter</p>
+<p>If Fex.sessions is not None, sessions will be cleaned separately.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>confounds</strong> – (numpy.ndarray, str or list of Confounds timeseries) Shape must be (instant number, confound number), or just (instant number,). The number of time instants in signals and confounds must be identical (i.e. signals.shape[0] == confounds.shape[0]). If a string is provided, it is assumed to be the name of a csv file containing signals as columns, with an optional one-line header. If a list is provided, all confounds are removed from the input signal, as if all were in the same array.</p></li>
+<li><p><strong>low_pass</strong> – (float) low pass cutoff frequencies in Hz.</p></li>
+<li><p><strong>high_pass</strong> – (float) high pass cutoff frequencies in Hz.</p></li>
+<li><p><strong>detrend</strong> – (bool) If detrending should be applied on timeseries (before confound removal)</p></li>
+<li><p><strong>standardize</strong> – (bool) If True, returned signals are set to unit variance.</p></li>
+<li><p><strong>ensure_finite</strong> – (bool) If True, the non-finite values (NANs and infs) found in the data will be replaced by zeros.</p></li>
+<li><p><strong>ignore_sessions</strong> – (bool) If True, will ignore Fex.sessions information. Otherwise, method will be applied separately to each unique session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>cleaned Fex instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.compute_identities">
+<span class="sig-name descname"><span class="pre">compute_identities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.compute_identities" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute Identities using face embeddings from identity detector using threshold</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.decompose">
+<span class="sig-name descname"><span class="pre">decompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pca'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.decompose" title="Permalink to this definition">#</a></dt>
+<dd><p>Decompose Fex instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>algorithm</strong> – (str) Algorithm to perform decomposition types=[‘pca’,’ica’,’nnmf’,’fa’]</p></li>
+<li><p><strong>axis</strong> – dimension to decompose [0,1]</p></li>
+<li><p><strong>n_components</strong> – (int) number of components. If None then retain as many as possible.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a dictionary of decomposition parameters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.design">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">design</span></span><a class="headerlink" href="#feat.data.Fex.design" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the design data</p>
+<p>Returns the study design information using columns in fex.design_columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>time data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.distance">
+<span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.distance" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate distance between rows within a Fex() instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>method</strong> – type of distance metric (can use any scikit learn or
+sciypy metric)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Outputs a 2D distance matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.downsample">
+<span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.downsample" title="Permalink to this definition">#</a></dt>
+<dd><dl class="simple">
+<dt>Downsample Fex columns. Relies on nltools.stats.downsample,</dt><dd><p>but ensures that returned object is a Fex object.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>float</em>) – downsampling target, typically in samples not seconds</p></li>
+<li><p><strong>kwargs</strong> – additional inputs to nltools.stats.downsample</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.emotions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">emotions</span></span><a class="headerlink" href="#feat.data.Fex.emotions" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the emotion data</p>
+<p>Returns emotions data using the columns set in fex.emotion_columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>emotion data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_boft">
+<span class="sig-name descname"><span class="pre">extract_boft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_boft" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract Bag of Temporal features</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_freq</strong> – maximum frequency of temporal filters</p></li>
+<li><p><strong>max_freq</strong> – minimum frequency of temporal filters</p></li>
+<li><p><strong>bank</strong> – number of temporal filter banks, filters are on exponential scale</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of Morlet wavelets with corresponding freq
+hzs:  list of hzs for each Morlet wavelet</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>wavs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_max">
+<span class="sig-name descname"><span class="pre">extract_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_max" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract maximum of each feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Fex) maximum values for each feature</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_mean">
+<span class="sig-name descname"><span class="pre">extract_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_mean" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract mean of each feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mean values for each feature</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_min">
+<span class="sig-name descname"><span class="pre">extract_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_min" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract minimum of each feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Fex) minimum values for each feature</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_multi_wavelet">
+<span class="sig-name descname"><span class="pre">extract_multi_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.66</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_multi_wavelet" title="Permalink to this definition">#</a></dt>
+<dd><p>Convolve with a bank of morlet wavelets.</p>
+<p>Wavelets are equally spaced from min to max frequency. See extract_wavelet for more information and options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_freq</strong> – (float) minimum frequency to extract</p></li>
+<li><p><strong>max_freq</strong> – (float) maximum frequency to extract</p></li>
+<li><p><strong>bank</strong> – (int) size of wavelet bank</p></li>
+<li><p><strong>num_cyc</strong> – (float) number of cycles for wavelet</p></li>
+<li><p><strong>mode</strong> – (str) feature to extract, e.g., [‘complex’,’filtered’,’phase’,’magnitude’,’power’]</p></li>
+<li><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Fex instance)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>convolved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_sem">
+<span class="sig-name descname"><span class="pre">extract_sem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_sem" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract std of each feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mean values for each feature</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_std">
+<span class="sig-name descname"><span class="pre">extract_std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_std" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract std of each feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mean values for each feature</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_summary">
+<span class="sig-name descname"><span class="pre">extract_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_summary" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract summary of multiple features</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> – (bool) extract mean of features</p></li>
+<li><p><strong>std</strong> – (bool) extract std of features</p></li>
+<li><p><strong>sem</strong> – (bool) extract sem of features</p></li>
+<li><p><strong>max</strong> – (bool) extract max of features</p></li>
+<li><p><strong>min</strong> – (bool) extract min of features</p></li>
+<li><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Fex)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.extract_wavelet">
+<span class="sig-name descname"><span class="pre">extract_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cyc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.extract_wavelet" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform feature extraction by convolving with a complex morlet wavelet</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>freq</strong> – (float) frequency to extract</p></li>
+<li><p><strong>num_cyc</strong> – (float) number of cycles for wavelet</p></li>
+<li><p><strong>mode</strong> – (str) feature to extract, e.g., ‘complex’,’filtered’,’phase’,’magnitude’,’power’]</p></li>
+<li><p><strong>ignore_sessions</strong> – (bool) ignore sessions or extract separately by sessions if available.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Fex instance)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>convolved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.facebox">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.Fex.facebox" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facebox data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facebox data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.faceboxes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faceboxes</span></span><a class="headerlink" href="#feat.data.Fex.faceboxes" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facebox data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facebox data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.facepose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.Fex.facepose" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facepose data using the columns set in fex.facepose_columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facepose data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.identities">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identities</span></span><a class="headerlink" href="#feat.data.Fex.identities" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the identity labels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>identity data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.identity_embeddings">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity_embeddings</span></span><a class="headerlink" href="#feat.data.Fex.identity_embeddings" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the identity embeddings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>identity data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.info">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#feat.data.Fex.info" title="Permalink to this definition">#</a></dt>
+<dd><p>Print all meta data of fex</p>
+<p>Loops through metadata set in self._metadata and prints out the information.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.input">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input</span></span><a class="headerlink" href="#feat.data.Fex.input" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns input column as string</p>
+<p>Returns input data in the “input” column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>path to input image</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#feat.data.Fex.inputs" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns input column as string</p>
+<p>Returns input data in the “input” column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>path to input image</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.isc">
+<span class="sig-name descname"><span class="pre">isc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'input'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.isc" title="Permalink to this definition">#</a></dt>
+<dd><p>[summary]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>col</strong> (<em>str</em><em>]</em>) – Column name to compute the ISC for.</p></li>
+<li><p><strong>index</strong> (<em>str</em><em>, </em><em>optional</em>) – Column to be used in computing ISC. Usually this would be the column identifying the time such as the number of the frame. Defaults to “frame”.</p></li>
+<li><p><strong>columns</strong> (<em>str</em><em>, </em><em>optional</em>) – Column to be used for ISC. Usually this would be the column identifying the video or subject. Defaults to “input”.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Method to use for correlation pearson, kendall, or spearman. Defaults to “pearson”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Correlation matrix with index as colmns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.itersessions">
+<span class="sig-name descname"><span class="pre">itersessions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.itersessions" title="Permalink to this definition">#</a></dt>
+<dd><p>Iterate over Fex sessions as (session, series) pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a generator that iterates over the sessions of the fex instance</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>it</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.landmark">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark</span></span><a class="headerlink" href="#feat.data.Fex.landmark" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the landmark data</p>
+<p>Returns landmark data using the columns set in fex.landmark_columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>landmark data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.landmark_x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.Fex.landmark_x" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the x landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.landmark_y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.Fex.landmark_y" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the y landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>y landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.landmarks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks</span></span><a class="headerlink" href="#feat.data.Fex.landmarks" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the landmark data</p>
+<p>Returns landmark data using the columns set in fex.landmark_columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>landmark data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.landmarks_x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_x</span></span><a class="headerlink" href="#feat.data.Fex.landmarks_x" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the x landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.landmarks_y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_y</span></span><a class="headerlink" href="#feat.data.Fex.landmarks_y" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the y landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>y landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.plot_detections">
+<span class="sig-name descname"><span class="pre">plot_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'landmarks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faceboxes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gazes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_titles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_barplot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_barplot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_original_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.plot_detections" title="Permalink to this definition">#</a></dt>
+<dd><p>Plots detection results by Feat. Can control plotting of face, AU barplot and
+Emotion barplot. The faces kwarg controls whether facial landmarks are draw on
+top of input images or whether faces are visualized using Py-Feat’s AU
+visualization model using detected AUs. If detection was performed on a video an
+faces = ‘landmarks’, only an outline of the face will be draw without loading
+the underlying vidoe frame to save memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>faces</strong> (<em>str</em><em>, </em><em>optional</em>) – ‘landmarks’ to draw detected landmarks or ‘aus’ to</p></li>
+<li><p><strong>model.</strong> (<em>generate a face from AU detections using Py-Feat's AU landmark</em>) – </p></li>
+<li><p><strong>'landmarks'.</strong> (<em>Defaults to</em>) – </p></li>
+<li><p><strong>faceboxes</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to draw the bounding box around detected</p></li>
+<li><p><strong>True.</strong> (<em>the face. Defaults to</em>) – </p></li>
+<li><p><strong>muscles</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to draw muscles from AU activity. Only</p></li>
+<li><p><strong>False.</strong> (<em>faces='landmarks'. Defaults to</em>) – </p></li>
+<li><p><strong>poses</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to draw facial poses. Only applies if</p></li>
+<li><p><strong>False.</strong> – </p></li>
+<li><p><strong>gazes</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to draw gaze vectors. Only applies if faces=’aus’. Defaults to False.</p></li>
+<li><p><strong>add_titles</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to add the file name as a title above</p></li>
+<li><p><strong>True.</strong> – </p></li>
+<li><p><strong>au_barplot</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include a subplot for au detections. Defaults to True.</p></li>
+<li><p><strong>emotion_barplot</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include a subplot for emotion detections. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of matplotlib figures</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.poses">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">poses</span></span><a class="headerlink" href="#feat.data.Fex.poses" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facepose data using the columns set in fex.facepose_columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facepose data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model=&lt;class</span> <span class="pre">'sklearn.linear_model._base.LinearRegression'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cv_kwargs={'cv':</span> <span class="pre">5}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.predict" title="Permalink to this definition">#</a></dt>
+<dd><p>Predicts y from X using a sklearn model.</p>
+<p>Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>list</em><em> or </em><em>DataFrame</em>) – List of column names or dataframe to be used as features for prediction</p></li>
+<li><p><strong>y</strong> (<em>string</em><em> or </em><em>array</em>) – y values to be predicted</p></li>
+<li><p><strong>model</strong> (<em>class</em><em>, </em><em>optional</em>) – Any sklearn model. Defaults to LinearRegression.</p></li>
+<li><p><strong>args</strong> – Model arguments</p></li>
+<li><p><strong>kwargs</strong> – Model arguments</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fit model instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.read_feat">
+<span class="sig-name descname"><span class="pre">read_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_feat" title="Permalink to this definition">#</a></dt>
+<dd><p>Reads facial expression detection results from Feat Detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>string</em><em>, </em><em>optional</em>) – Path to file. Defaults to None.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.read_file">
+<span class="sig-name descname"><span class="pre">read_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_file" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads file into FEX class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Fex class</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.read_openface">
+<span class="sig-name descname"><span class="pre">read_openface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.read_openface" title="Permalink to this definition">#</a></dt>
+<dd><p>Reads facial expression detection results from OpenFace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>string</em><em>, </em><em>optional</em>) – Path to file. Defaults to None.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.rectification">
+<span class="sig-name descname"><span class="pre">rectification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.rectification" title="Permalink to this definition">#</a></dt>
+<dd><p>Removes time points when the face position moved
+more than N standard deviations from the mean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>std</strong> (<em>default 3</em>) – standard deviation from mean to remove outlier face locations</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>cleaned FEX object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.regress">
+<span class="sig-name descname"><span class="pre">regress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_intercept</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.regress" title="Permalink to this definition">#</a></dt>
+<dd><p>Regress using nltools.stats.regress.</p>
+<p>fMRI-like regression to predict Fex activity (y) from set of regressors (X).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>list</em><em> or </em><em>str</em>) – Independent variable to predict.</p></li>
+<li><p><strong>y</strong> (<em>list</em><em> or </em><em>str</em>) – Dependent variable to be predicted.</p></li>
+<li><p><strong>fit_intercept</strong> (<em>bool</em>) – Whether to add intercept before fitting. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe of betas, ses, t-stats, p-values, df, residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.Fex.time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#feat.data.Fex.time" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the time data</p>
+<p>Returns the time information using fex.time_columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>time data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.ttest_1samp">
+<span class="sig-name descname"><span class="pre">ttest_1samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popmean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_1samp" title="Permalink to this definition">#</a></dt>
+<dd><p>Conducts 1 sample ttest.</p>
+<p>Uses scipy.stats.ttest_1samp to conduct 1 sample ttest</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>popmean</strong> (<em>int</em><em>, </em><em>optional</em>) – Population mean to test against. Defaults to 0.</p></li>
+<li><p><strong>threshold_dict</strong> (<em>[</em><em>type</em><em>]</em><em>, </em><em>optional</em>) – Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>t-statistics and p-values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>t, p</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.ttest_ind">
+<span class="sig-name descname"><span class="pre">ttest_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sessions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.ttest_ind" title="Permalink to this definition">#</a></dt>
+<dd><p>Conducts 2 sample ttest.</p>
+<p>Uses scipy.stats.ttest_ind to conduct 2 sample ttest on column col between sessions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>col</strong> (<em>str</em>) – Column names to compare in a t-test between sessions</p></li>
+<li><p><strong>session</strong> (<em>array-like</em>) – session name to query Fex.sessions, otherwise uses the</p></li>
+<li><p><strong>Fex.sessions.</strong> (<em>unique values in</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>t-statistics and p-values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>t, p</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.update_sessions">
+<span class="sig-name descname"><span class="pre">update_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_sessions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.update_sessions" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns a copy of the Fex dataframe with a new sessions attribute after
+validation. <cite>new_sessions</cite> should be a dictionary mapping old to new names or an iterable with the same number of rows as the Fex dataframe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_sessions</strong> (<em>dict</em><em>, </em><em>Iterable</em>) – map or list of new session names</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#feat.data.Fex" title="feat.data.Fex">Fex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.upsample">
+<span class="sig-name descname"><span class="pre">upsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hz'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.upsample" title="Permalink to this definition">#</a></dt>
+<dd><dl class="simple">
+<dt>Upsample Fex columns. Relies on nltools.stats.upsample,</dt><dd><p>but ensures that returned object is a Fex object.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>float</em>) – upsampling target, default ‘hz’ (also ‘samples’, ‘seconds’)</p></li>
+<li><p><strong>kwargs</strong> – additional inputs to nltools.stats.upsample</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="feat.data.FexSeries">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">FexSeries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></p>
+<p>This is a sub-class of pandas series. While not having additional methods
+of it’s own required to retain normal slicing functionality for the
+Fex class, i.e. how slicing is typically handled in pandas.
+All methods should be called on Fex below.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.aus">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aus</span></span><a class="headerlink" href="#feat.data.FexSeries.aus" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the Action Units data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action Units data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.design">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">design</span></span><a class="headerlink" href="#feat.data.FexSeries.design" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the design data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>time data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.emotions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">emotions</span></span><a class="headerlink" href="#feat.data.FexSeries.emotions" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the emotion data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>emotion data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.facebox">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facebox</span></span><a class="headerlink" href="#feat.data.FexSeries.facebox" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facebox data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facebox data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.faceboxes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faceboxes</span></span><a class="headerlink" href="#feat.data.FexSeries.faceboxes" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facebox data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facebox data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.facepose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">facepose</span></span><a class="headerlink" href="#feat.data.FexSeries.facepose" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facepose data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facepose data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.identity">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><a class="headerlink" href="#feat.data.FexSeries.identity" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the identity data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>identity data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.info">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#feat.data.FexSeries.info" title="Permalink to this definition">#</a></dt>
+<dd><p>Print class meta data.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.input">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input</span></span><a class="headerlink" href="#feat.data.FexSeries.input" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns input column as string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>path to input image</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inputs</span></span><a class="headerlink" href="#feat.data.FexSeries.inputs" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns input column as string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>path to input image</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.landmark">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the landmark data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>landmark data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.landmark_x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_x</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_x" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the x landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.landmark_y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmark_y</span></span><a class="headerlink" href="#feat.data.FexSeries.landmark_y" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the y landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>y landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.landmarks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks</span></span><a class="headerlink" href="#feat.data.FexSeries.landmarks" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the landmark data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>landmark data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.landmarks_x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_x</span></span><a class="headerlink" href="#feat.data.FexSeries.landmarks_x" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the x landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.landmarks_y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">landmarks_y</span></span><a class="headerlink" href="#feat.data.FexSeries.landmarks_y" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the y landmarks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>y landmarks.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.FexSeries.plot_detections">
+<span class="sig-name descname"><span class="pre">plot_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.FexSeries.plot_detections" title="Permalink to this definition">#</a></dt>
+<dd><p>Alias for Fex.plot_detections</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.poses">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">poses</span></span><a class="headerlink" href="#feat.data.FexSeries.poses" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the facepose data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>facepose data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="feat.data.FexSeries.time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#feat.data.FexSeries.time" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the time data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>time data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="feat.data.ImageDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">ImageDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_aspect_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.ImageDataset" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Torch Image Dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_size</strong> (<em>tuple</em><em> or </em><em>int</em>) – Desired output size. If tuple, output is matched to</p></li>
+<li><p><strong>int</strong> (<em>aspect ratio by adding padding. If</em>) – </p></li>
+<li><p><strong>is</strong> (<em>will set largest edge to output_size if target size</em>) – </p></li>
+<li><p><strong>bigger</strong> – </p></li>
+<li><p><strong>the</strong> (<em>or smallest edge if target size is smaller to keep aspect ratio</em>) – </p></li>
+<li><p><strong>same.</strong> – </p></li>
+<li><p><strong>preserve_aspect_ratio</strong> (<em>bool</em>) – Output size is matched to preserve aspect ratio. Note that longest edge of output size is preserved, but actual output may differ from intended output_size.</p></li>
+<li><p><strong>padding</strong> (<em>bool</em>) – Transform image to exact output_size. If tuple, will preserve</p></li>
+<li><p><strong>int</strong> – </p></li>
+<li><p><strong>size.</strong> (<em>will set both sides to the same</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dataset of [batch, channels, height, width] that can be passed to DataLoader</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="feat.data.VideoDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.data.</span></span><span class="sig-name descname"><span class="pre">VideoDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Torch Video Dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>skip_frames</strong> (<em>int</em>) – number of frames to skip</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dataset of [batch, channels, height, width] that can be passed to DataLoader</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dataset</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.calc_approx_frame_time">
+<span class="sig-name descname"><span class="pre">calc_approx_frame_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.calc_approx_frame_time" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate the approximate time of a frame in a video</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>frame_idx</strong> (<em>int</em>) – frame number</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>time in seconds</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.convert_sec_to_min_sec">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_sec_to_min_sec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.convert_sec_to_min_sec" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.get_video_metadata">
+<span class="sig-name descname"><span class="pre">get_video_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.get_video_metadata" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.VideoDataset.load_frame">
+<span class="sig-name descname"><span class="pre">load_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.VideoDataset.load_frame" title="Permalink to this definition">#</a></dt>
+<dd><p>Load in a single frame from the video using a lazy generator</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="feat-plotting-module">
-<h1>feat.plotting module<a class="headerlink" href="#feat-plotting-module" title="Permalink to this heading">#</a></h1>
+<section id="module-feat.plotting">
+<span id="feat-plotting-module"></span><h1>feat.plotting module<a class="headerlink" href="#module-feat.plotting" title="Permalink to this heading">#</a></h1>
+<p>Helper functions for plotting</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.animate_face">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">animate_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AU</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.animate_face" title="Permalink to this definition">#</a></dt>
+<dd><p>Create a matplotlib animation interpolating between a starting and ending face. Can
+either work like <cite>plot_face</cite> by taking an array of AU intensities for <cite>start</cite> and
+<cite>end</cite>, or by animating a single AU using the <cite>AU</cite> keyword argument and setting
+<cite>start</cite> and <cite>end</cite> to a scalar value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AU</strong> (<em>str/int</em><em>, </em><em>optional</em>) – action unit id (e.g. 12 or ‘AU12’). Defaults to None.</p></li>
+<li><p><strong>start</strong> (<em>float/np.ndarray</em><em>, </em><em>optional</em>) – AU intensity to start at. Defaults to None</p></li>
+<li><p><strong>0.</strong> (<em>which a neutral face with all AUs =</em>) – </p></li>
+<li><p><strong>end</strong> (<em>float/np.ndarray</em><em>, </em><em>optional</em>) – AU intensity(s) to end at. We don’t recommend</p></li>
+<li><p><strong>None.</strong> (<em>going beyond 3. Defaults to</em>) – </p></li>
+<li><p><strong>save</strong> (<em>str</em><em>, </em><em>optional</em>) – file to save animation to. Defaults to None.</p></li>
+<li><p><strong>include_reverse</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to also reverse the animation, i.e.</p></li>
+<li><p><strong>True.</strong> (<em>start -&gt; end -&gt; start. Defaults to</em>) – </p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – plot title. Defaults to None.</p></li>
+<li><p><strong>fps</strong> (<em>int</em><em>, </em><em>optional</em>) – frame-rate; Defaults to 15fps</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em>, </em><em>optional</em>) – length of animation in seconds. Defaults to 0.5</p></li>
+<li><p><strong>padding</strong> (<em>float</em><em>, </em><em>optional</em>) – additional time to wait in seconds on the first and</p></li>
+<li><p><strong>animation.</strong> (<em>last frame of the animation. Useful when you plan to loop the</em>) – </p></li>
+<li><p><strong>0.25</strong> (<em>Defaults to</em>) – </p></li>
+<li><p><strong>interp_func</strong> (<em>callable</em><em>, </em><em>optional</em>) – interpolation function that takes a start and</p></li>
+<li><p><strong>values</strong> (<em>end keyword argument and returns a function that will be applied to</em>) – </p></li>
+<li><p><strong>np.linspace</strong> (<em>0</em><em>, </em><em>1</em><em>, </em><em>num_frames</em>) – </p></li>
+<li><p><strong>https</strong> – //github.com/semitable/easing-functions for other options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib Animation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.draw_lineface">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_lineface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_lineface" title="Permalink to this definition">#</a></dt>
+<dd><p>Plot Line Face</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>currx</strong> – vector (len(68)) of x coordinates</p></li>
+<li><p><strong>curry</strong> – vector (len(68)) of y coordinates</p></li>
+<li><p><strong>ax</strong> – matplotlib axis to add</p></li>
+<li><p><strong>color</strong> – matplotlib line color</p></li>
+<li><p><strong>linestyle</strong> – matplotlib linestyle</p></li>
+<li><p><strong>linewidth</strong> – matplotlib linewidth</p></li>
+<li><p><strong>gaze</strong> – array (len(4)) of gaze vectors (fifth value is whether to draw vectors)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.draw_muscles">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_muscles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">currx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_muscles" title="Permalink to this definition">#</a></dt>
+<dd><p>Draw Muscles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>currx</strong> – vector (len(68)) of x coordinates</p></li>
+<li><p><strong>curry</strong> – vector (len(68)) of y coordinates</p></li>
+<li><p><strong>ax</strong> – matplotlib axis to add</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.draw_vectorfield">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_vectorfield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.007</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_vectorfield" title="Permalink to this definition">#</a></dt>
+<dd><p>Draw vectorfield from reference to target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference</strong> – reference landmarks (2,68)</p></li>
+<li><p><strong>target</strong> – target landmarks (2,68)</p></li>
+<li><p><strong>ax</strong> – matplotlib axis instance</p></li>
+<li><p><strong>au</strong> – vector of action units (len(17))</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.get_heat">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">get_heat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">muscle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.get_heat" title="Permalink to this definition">#</a></dt>
+<dd><p>Function to create heatmap from au vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>muscle</strong> (<em>string</em>) – string representation of a muscle</p></li>
+<li><p><strong>au</strong> (<em>list</em>) – vector of action units</p></li>
+<li><p><strong>log</strong> (<em>boolean</em>) – whether the action unit values are on a log scale</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>color of muscle according to its au value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.imshow">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">imshow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'equal'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.imshow" title="Permalink to this definition">#</a></dt>
+<dd><p>Convenience wrapper function around matplotlib imshow that creates figure and axis
+boilerplate for single image plotting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> (<em>str/Path/PIL.Imag</em>) – string or Path to image file or pre-loaded PIL.Image instance</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>, </em><em>optional</em>) – matplotlib figure size. Defaults to None.</p></li>
+<li><p><strong>aspect</strong> (<em>str</em><em>, </em><em>optional</em>) – passed to matplotlib imshow. Defaults to “equal”.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.interpolate_aus">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">interpolate_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_padding_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.interpolate_aus" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to interpolate between starting and ending AU values using
+non-linear easing functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>np.ndarray</em>) – array of starting intensities</p></li>
+<li><p><strong>end</strong> (<em>np.ndarray</em>) – array of ending intensities</p></li>
+<li><p><strong>num_frames</strong> (<em>int</em>) – number of frames to interpolate over</p></li>
+<li><p><strong>interp_func</strong> (<em>callable</em><em>, </em><em>optional</em>) – easing function. Defaults to None.</p></li>
+<li><p><strong>num_padding_frames</strong> (<em>int</em><em>, </em><em>optional</em>) – number of additional freeze frames to add</p></li>
+<li><p><strong>None.</strong> (<em>before the first frame and after the last frame. Defaults to</em>) – </p></li>
+<li><p><strong>include_reverse</strong> (<em>bool</em><em>, </em><em>optional</em>) – return the reverse interpolation appended to</p></li>
+<li><p><strong>True.</strong> (<em>the end of the interpolation. Useful for animating start -&gt; end -&gt; start. Defaults to</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>frames x au 2d array</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.plot_face">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorfield</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muscle_scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.plot_face" title="Permalink to this definition">#</a></dt>
+<dd><p>Core face plotting function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>Default's to Py-Feat's 20 AU landmark AU</em>) – (str/PLSRegression instance) Name of AU visualization model to use.</p></li>
+<li><p><strong>model</strong> – </p></li>
+<li><p><strong>au</strong> – vector of action units (same length as model.n_components)</p></li>
+<li><p><strong>vectorfield</strong> – (dict) {‘target’:target_array,’reference’:reference_array}</p></li>
+<li><p><strong>muscles</strong> – (dict) {‘muscle’: color}</p></li>
+<li><p><strong>ax</strong> – matplotlib axis handle</p></li>
+<li><p><strong>(</strong><strong>tuple</strong> (<em>feature_range</em>) – None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.</p></li>
+<li><p><strong>default</strong> – None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.</p></li>
+<li><p><strong>color</strong> – matplotlib color</p></li>
+<li><p><strong>linewidth</strong> – matplotlib linewidth</p></li>
+<li><p><strong>linestyle</strong> – matplotlib linestyle</p></li>
+<li><p><strong>gaze</strong> – array of gaze vectors (len(4))</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>plot handle</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ax</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.predict">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">au</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.predict" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to predict landmarks from au given a sklearn model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>au</strong> – vector of action unit intensities</p></li>
+<li><p><strong>model</strong> – sklearn pls object (uses pretrained model by default)</p></li>
+<li><p><strong>(</strong><strong>tuple</strong> (<em>feature_range</em>) – None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.</p></li>
+<li><p><strong>default</strong> – None): If a tuple with (min, max),  scale input AU intensities to (min, max) before prediction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of landmarks (2,68)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>landmarks</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-feat.utils">
 <span id="feat-utils-module"></span><h1>feat.utils module<a class="headerlink" href="#module-feat.utils" title="Permalink to this heading">#</a></h1>
@@ -475,8 +2102,22 @@ document.write(`
 </dd></dl>
 
 </section>
-<section id="feat-pretrained-module">
-<h1>feat.pretrained module<a class="headerlink" href="#feat-pretrained-module" title="Permalink to this heading">#</a></h1>
+<section id="module-feat.pretrained">
+<span id="feat-pretrained-module"></span><h1>feat.pretrained module<a class="headerlink" href="#module-feat.pretrained" title="Permalink to this heading">#</a></h1>
+<p>Helper functions specifically for working with included pre-trained models</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.pretrained.fetch_model">
+<span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">fetch_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.fetch_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Fetch a pre-trained model class constructor. Used by detector init</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.pretrained.get_pretrained_models">
+<span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">get_pretrained_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identity_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.get_pretrained_models" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function that validates the request model names and downloads them if
+necessary using the URLs in the included JSON file. User by detector init</p>
+</dd></dl>
+
 </section>
 
     <script type="text/x-thebe-config">
@@ -543,11 +2184,11 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">API Reference</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-detector-module">feat.detector module</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-data-module">feat.data module</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-plotting-module">feat.plotting module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.detector">feat.detector module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.data">feat.data module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.plotting">feat.plotting module</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.utils">feat.utils module</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#feat-pretrained-module">feat.pretrained module</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#module-feat.pretrained">feat.pretrained module</a></li>
 </ul>
 
   </nav></div>
