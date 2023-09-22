@@ -704,7 +704,6 @@ class Detector(object):
         self,
         batch_data,
         face_detection_threshold,
-        face_identity_threshold,
         face_model_kwargs,
         landmark_model_kwargs,
         facepose_model_kwargs,
@@ -721,7 +720,6 @@ class Detector(object):
         Args:
             batch_data (dict): singleton item from iterating over the output of a DataLoader
             face_detection_threshold (float): value between 0-1
-            face_identity_threshold (float): value between 0-1
             face_model_kwargs (dict): face model kwargs
             landmark_model_kwargs (dict): landmark model kwargs
             facepose_model_kwargs (dict): facepose model kwargs
@@ -766,7 +764,6 @@ class Detector(object):
         identities = self.detect_identity(
             batch_data["Image"],
             faces,
-            # threshold=face_identity_threshold,
             **identity_model_kwargs,
         )
 
@@ -861,7 +858,6 @@ class Detector(object):
                 ) = self._run_detection_waterfall(
                     batch_data,
                     face_detection_threshold,
-                    face_identity_threshold,
                     face_model_kwargs,
                     landmark_model_kwargs,
                     facepose_model_kwargs,
@@ -959,7 +955,6 @@ class Detector(object):
             ) = self._run_detection_waterfall(
                 batch_data,
                 face_detection_threshold,
-                face_identity_threshold,
                 face_model_kwargs,
                 landmark_model_kwargs,
                 facepose_model_kwargs,
