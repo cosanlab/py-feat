@@ -17,6 +17,14 @@ pip install git+https://github.com/cosanlab/py-feat.git
 Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have **experimental** support for GPUs on macOS which you can try with `device='auto'`. However, we currently advise using the default (`cpu`) on macOS until PyTorch support stabilizes.
 ```
 
+## Installation issues on arm-based macOS (e.g. m1, m2 etc)
+
+If you're running into issues on arm-based macOS (e.g. m1, m2) you should install pytables using one of the methods below *before* installing py-feat:
+
+`pip install git+https://github.com/PyTables/PyTables.git`  
+OR  
+`conda install pytables`
+
 ## Using Google Colab
 On any page in these docs, you can you can simply click on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() badges you see to open that page in [Google Colab](http://colab.research.google.com/).
 ```{note}
