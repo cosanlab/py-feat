@@ -429,6 +429,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-setup">Basic setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-issues-on-arm-based-macos-e-g-m1-m2-etc">Installation issues on arm-based macOS (e.g. m1, m2 etc)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-google-colab">Using Google Colab</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development-setup">Development setup</a></li>
 </ul>
@@ -458,6 +459,13 @@ document.write(`
 <p class="admonition-title">Note</p>
 <p>Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have <strong>experimental</strong> support for GPUs on macOS which you can try with <code class="docutils literal notranslate"><span class="pre">device='auto'</span></code>. However, we currently advise using the default (<code class="docutils literal notranslate"><span class="pre">cpu</span></code>) on macOS until PyTorch support stabilizes.</p>
 </div>
+</section>
+<section id="installation-issues-on-arm-based-macos-e-g-m1-m2-etc">
+<h2>Installation issues on arm-based macOS (e.g. m1, m2 etc)<a class="headerlink" href="#installation-issues-on-arm-based-macos-e-g-m1-m2-etc" title="Permalink to this heading">#</a></h2>
+<p>If you’re running into issues on arm-based macOS (e.g. m1, m2) you should install pytables using one of the methods below <em>before</em> installing py-feat:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+https://github.com/PyTables/PyTables.git</span></code><br />
+OR<br />
+<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">pytables</span></code></p>
 </section>
 <section id="using-google-colab">
 <h2>Using Google Colab<a class="headerlink" href="#using-google-colab" title="Permalink to this heading">#</a></h2>
@@ -543,6 +551,7 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-setup">Basic setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-issues-on-arm-based-macos-e-g-m1-m2-etc">Installation issues on arm-based macOS (e.g. m1, m2 etc)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-google-colab">Using Google Colab</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development-setup">Development setup</a></li>
 </ul>
