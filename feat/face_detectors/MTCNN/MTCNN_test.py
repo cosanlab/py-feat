@@ -90,56 +90,6 @@ class MTCNN(nn.Module):
         if not self.selection_method:
             self.selection_method = "largest" if self.select_largest else "probability"
 
-    def forward(self, img, save_path=None, return_prob=False):
-        """Run MTCNN face detection on a PIL image or numpy array. This method performs both
-        detection and extraction of faces, returning tensors representing detected faces rather
-        than the bounding boxes. To access bounding boxes, see the MTCNN.detect() method below.
-
-        Arguments:
-            img {PIL.Image, np.ndarray, or list} -- A PIL image, np.ndarray, torch.Tensor, or list.
-
-        Keyword Arguments:
-            save_path {str} -- An optional save path for the cropped image. Note that when
-                self.post_process=True, although the returned tensor is post processed, the saved
-                face image is not, so it is a true representation of the face in the input image.
-                If `img` is a list of images, `save_path` should be a list of equal length.
-                (default: {None})
-            return_prob {bool} -- Whether or not to return the detection probability.
-                (default: {False})
-
-        Returns:
-            Union[torch.Tensor, tuple(torch.tensor, float)] -- If detected, cropped image of a face
-                with dimensions 3 x image_size x image_size. Optionally, the probability that a
-                face was detected. If self.keep_all is True, n detected faces are returned in an
-                n x 3 x image_size x image_size tensor with an optional list of detection
-                probabilities. If `img` is a list of images, the item(s) returned have an extra
-                dimension (batch) as the first dimension.
-        Example:
-        >>> from facenet_pytorch import MTCNN
-        >>> mtcnn = MTCNN()
-        >>> face_tensor, prob = mtcnn(img, save_path='face.png', return_prob=True)
-        """
-
-        # Detect faces
-        batch_boxes, batch_probs, batch_points = self.detect(img, landmarks=True)
-
-        # Select faces
-        if not self.keep_all:
-            batch_boxes, batch_probs, batch_points = self.select_boxes(
-                batch_boxes,
-                batch_probs,
-                batch_points,
-                img,
-                method=self.selection_method,
-            )
-        # Extract faces
-        faces = self.extract(img, batch_boxes, save_path)
-
-        if return_prob:
-            return faces, batch_probs
-        else:
-            return faces
-
     def __call__(self, img, landmarks=False):
         """Detect all faces in PIL image and return bounding boxes and optional facial landmarks.
         This method is used by the forward method and is also useful for face detection tasks
@@ -192,8 +142,8 @@ class MTCNN(nn.Module):
         boxes, points = [], []
         for box, point in zip(batch_boxes, batch_points):
             if len(box) == 0:
-                boxes.append(None)
-                points.append(None)
+                boxes.append([])
+                points.append([])
             elif self.select_largest:
                 box_order = np.argsort(
                     (box[:, 2] - box[:, 0]) * (box[:, 3] - box[:, 1])
