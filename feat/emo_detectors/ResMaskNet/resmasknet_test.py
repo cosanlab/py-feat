@@ -1,22 +1,18 @@
 """
 All code & models from https://github.com/phamquiluan/ResidualMaskingNetwork
 """
-from lib2to3.pytree import convert
 import os
 import json
-from typing_extensions import Self
 import numpy as np
 import torch
 from torchvision.transforms import (
     Resize,
     Grayscale,
     Compose,
-    RandomHorizontalFlip,
 )
 import traceback
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import BBox
@@ -742,7 +738,6 @@ class ResMaskNet:
             return proba_np
 
     def _batch_make(self, frame, detected_face, *args, **kwargs):
-
         transform = Compose([Grayscale(3)])
         gray = transform(frame)
 

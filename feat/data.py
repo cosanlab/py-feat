@@ -17,6 +17,7 @@ from functools import reduce
 from nltools.data import Adjacency
 from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
+from nilearn.signal import clean
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
@@ -30,7 +31,6 @@ from feat.utils.io import read_feat, read_openface
 from feat.utils.stats import wavelet, calc_hist_auc, cluster_identities
 from feat.plotting import plot_face, draw_lineface, draw_facepose, load_viz_model
 from feat.pretrained import AU_LANDMARK_MAP
-from nilearn.signal import clean
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
 import matplotlib.pyplot as plt
