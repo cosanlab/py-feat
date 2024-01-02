@@ -1,4 +1,3 @@
-import torch
 from feat.utils import set_torch_device
 from feat.identity_detectors.facenet.facenet_model import InceptionResnetV1
 

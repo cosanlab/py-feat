@@ -8,9 +8,6 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.init as init
-from torchvision.transforms import Compose
-from feat.transforms import Rescale
 
 
 def conv_bn(inp, oup, kernel, stride, padding=1):
@@ -120,7 +117,6 @@ class PFLDInference(nn.Module):
         """
 
     def forward(self, x):  # x: 3, 112, 112
-
         x = self.relu(self.bn1(self.conv1(x)))  # [64, 56, 56]
         # x = self.relu(self.bn2(self.conv2(x)))  # [64, 56, 56]
         x = self.relu(self.conv1_extra(self.dw_bn(self.dw_pool(x))))

@@ -6,9 +6,7 @@ K. Zhang, Z. Zhang, Z. Li and Y. Qiao. Joint Face Detection and Alignment Using 
 """
 import torch
 from torch import nn
-import numpy as np
 import os
-from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
 from feat.utils.io import get_resource_path
 
 
