@@ -38,7 +38,7 @@ class Img2Pose:
 
         Args:
             device (str): device to execute code. can be ['auto', 'cpu', 'cuda', 'mps']
-            contrained (bool): whether to run constrained (default) or unconstrained mode
+            constrained (bool): whether to run constrained (default) or unconstrained mode
 
         Returns:
             Img2Pose object
