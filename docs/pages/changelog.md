@@ -143,7 +143,7 @@ This is a large overhaul and refactor of some of the core testing and API functi
 
 ### Breaking Changes
 
-- `Detector` no longer support unintialized models, e.g. `any_model = None`
+- `Detector` no longer support uninitialized models, e.g. `any_model = None`
   - This is is also true for `Detector.change_model`
 - Columns of interest on `Fex` data classes were previously accessed like class _methods_, i.e. `fex.aus()`. These have now been changed to class _attributes_, i.e. `fex.aus`
 - Remove support for `DRML` AU detector

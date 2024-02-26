@@ -1,4 +1,4 @@
-## Liscense:
+## License:
 # MIT License
 
 # Copyright (c) 2017 Max deGroot, Ellis Brown

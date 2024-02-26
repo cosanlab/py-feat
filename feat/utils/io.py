@@ -71,7 +71,7 @@ def validate_input(inputFname):
 def download_url(*args, **kwargs):
     """By default just call download_url from torch vision, but we pass a verbose =
     False keyword argument, then call download_url with a special context manager than
-    supresses the print messages"""
+    suppresses the print messages"""
     verbose = kwargs.pop("verbose", True)
 
     if verbose:

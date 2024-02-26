@@ -941,7 +941,7 @@ class Fex(DataFrame):
 
         Args:
             popmean (int, optional): Population mean to test against. Defaults to 0.
-            threshold_dict ([type], optional): Dictonary for thresholding. Defaults to None. [NOT IMPLEMENTED]
+            threshold_dict ([type], optional): Dictionary for thresholding. Defaults to None. [NOT IMPLEMENTED]
 
         Returns:
             t, p: t-statistics and p-values
@@ -999,7 +999,7 @@ class Fex(DataFrame):
 
         mX, my = self._parse_features_labels(X, y)
 
-        # user passes an unintialized class, e.g. LogisticRegression
+        # user passes an uninitialized class, e.g. LogisticRegression
         if isinstance(model, type):
             clf = model(*args, **kwargs)
         else:
@@ -1042,7 +1042,7 @@ class Fex(DataFrame):
             method (str, optional): Method to use for correlation pearson, kendall, or spearman. Defaults to "pearson".
 
         Returns:
-            DataFrame: Correlation matrix with index as colmns
+            DataFrame: Correlation matrix with index as columns
         """
         if index is None:
             index = "frame"
