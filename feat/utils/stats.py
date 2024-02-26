@@ -17,7 +17,7 @@ def wavelet(freq, num_cyc=3, sampling_freq=30.0):
     Creates a complex Morlet wavelet by windowing a cosine function by a Gaussian. All formulae taken from Cohen, 2014 Chaps 12 + 13
 
     Args:
-        freq: (float) desired frequence of wavelet
+        freq: (float) desired frequency of wavelet
         num_cyc: (float) number of wavelet cycles/gaussian taper. Note that smaller cycles give greater temporal precision and that larger values give greater frequency precision; (default: 3)
         sampling_freq: (float) sampling frequency of original signal.
 
