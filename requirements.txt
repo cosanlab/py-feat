@@ -2,7 +2,7 @@ pandas>=1.0
 numpy>=1.9
 seaborn>=0.7.0
 matplotlib>=2.1
-nltools>=0.4.7
+nltools>=0.5.1
 numexpr<2.8.5
 scikit-learn>=1.2
 pywavelets>=0.3.0
