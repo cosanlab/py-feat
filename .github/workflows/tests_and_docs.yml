@@ -33,7 +33,7 @@ jobs:
     steps:
       # Step up miniconda
       - name: Download and setup Miniconda
-        uses: conda-incubator/setup-miniconda@059455a698430d8b68fa317268fa2e3da3492a98
+        uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.python-version }}
