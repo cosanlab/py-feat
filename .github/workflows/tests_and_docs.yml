@@ -12,11 +12,10 @@ on:
 jobs:
   # Job (1): Run testing in parallel against multiples OSs and Python versions
   test:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Test
     runs-on: ${{ matrix.os }}
     # Determines whether the entire workflow should pass/fail based on parallel jobs
-    continue-on-error: ${{ matrix.ok-fail }}
+    continue-on-error: ${{ matrix.experimental }}
     defaults:
       # This ensures each step gets properly configured bash shell for conda commands to work
       run:
@@ -101,7 +100,6 @@ jobs:
 
   # Job (2): Send a finish notification to coveralls.io to integrate coverage across parallel tests
   coveralls:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Coveralls.io Upload
     needs: test
     runs-on: ubuntu-latest
@@ -117,7 +115,6 @@ jobs:
 
   # Job (3): Build and deploy docs
   docs:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build & deploy docs
     runs-on: ubuntu-latest
     steps:

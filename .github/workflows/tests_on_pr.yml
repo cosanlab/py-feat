@@ -10,11 +10,10 @@ on:
 jobs:
   # Job (1): Run testing in parallel against multiples OSs and Python versions
   test:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Test
     runs-on: ${{ matrix.os }}
     # Determines whether the entire workflow should pass/fail based on parallel jobs
-    continue-on-error: ${{ matrix.ok-fail }}
+    continue-on-error: ${{ matrix.experimental }}
     defaults:
       # This ensures each step gets properly configured bash shell for conda commands to work
       run:
@@ -88,7 +87,6 @@ jobs:
 
   # Job (3): Just build jupyter book but don't deploy it.
   docs:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build docs only
     runs-on: ubuntu-latest
     steps:
