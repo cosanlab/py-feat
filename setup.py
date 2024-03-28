@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from feat.pretrained import get_pretrained_models
 
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
@@ -8,6 +9,18 @@ with open("feat/version.py") as f:
     exec(f.read(), version)
 
 extra_setuptools_args = dict(tests_require=["pytest"])
+
+
+def download_default_models():
+    face, landmark, au, emotion, facepose, identity = get_pretrained_models(
+        face_model="retinaface",
+        landmark_model="mobilefacenet",
+        au_model="xgb",
+        emotion_model="resmasknet",
+        facepose_model="img2pose",
+        identity_model="facenet",
+    )
+
 
 setup(
     name="py-feat",
@@ -31,6 +44,11 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
+    extras_require={
+        "default_models": [
+            download_default_models,
+        ],
+    },
     test_suite="feat/tests",
     **extra_setuptools_args
 )
