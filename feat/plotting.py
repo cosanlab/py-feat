@@ -1009,6 +1009,12 @@ def predict(au, model=None, feature_range=None):
     if feature_range:
         au = minmax_scale(au, feature_range=feature_range, axis=1)
 
+    # Handle auto-raveling feature added to PLSRegression in sklearn 1.3
+    # because our model was trained in an earlier version where this attribute
+    # did not exist
+    # https://scikit-learn.org/stable/whats_new/v1.3.html#sklearn-cross-decomposition
+    if not hasattr(model, "_predict_1d"):
+        model._predict_1d = True
     landmarks = np.reshape(model.predict(au), (2, 68))
     return landmarks
 
