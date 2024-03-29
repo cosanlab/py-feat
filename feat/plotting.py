@@ -1306,8 +1306,8 @@ def load_viz_model(
                 download_url(url, get_resource_path(), verbose=verbose)
 
     # Check sklearn and python version to see if we can load joblib
-    my_skmajor, my_skminor, my_skpatch = skversion.split(".")
-    my_pymajor, my_pyminor, my_pymicro, *_ = sys.version_info
+    my_skmajor, my_skminor, *my_skpatch = skversion.split(".")
+    my_pymajor, my_pyminor, *my_pymicro = sys.version_info
 
     # Versions viz models were trained with
     pymajor, pyminor, skmajor, skminor = 3, 8, 1, 1
