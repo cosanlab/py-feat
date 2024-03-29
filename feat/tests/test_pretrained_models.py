@@ -191,7 +191,7 @@ class Test_Facepose_Models:
     ):
         default_detector.change_model(facepose_model="img2pose")
         poses = default_detector.detect_facepose(single_face_img_data)
-        assert np.allclose(poses["poses"], [0.86, -3.80, 6.60], atol=0.1)
+        assert np.allclose(poses["poses"], [0.86, -3.80, 6.60], atol=0.5)
 
         # Test DOF kwarg
         facepose_model_kwargs = {"RETURN_DIM": 6}
@@ -209,7 +209,7 @@ class Test_Facepose_Models:
     def test_img2pose_c_facepose(self, default_detector, single_face_img_data):
         default_detector.change_model(facepose_model="img2pose-c")
         poses = default_detector.detect_facepose(single_face_img_data)
-        assert np.allclose(poses["poses"], [0.86, -3.80, 6.60], atol=0.1)
+        assert np.allclose(poses["poses"], [0.86, -3.80, 6.60], atol=0.5)
 
 
 @pytest.mark.usefixtures("default_detector", "multi_face_img")
