@@ -557,7 +557,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=xgb, emotion_model=resmasknet, facepose_model=img2pose)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=xgb, emotion_model=resmasknet, facepose_model=img2pose, identity_model=facenet)
 </pre></div>
 </div>
 </div>
@@ -581,7 +581,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/ceab46f82310ee86df6345105d1d7a9b1af6a5c4c146c4e7968bded70299f9d1.png" src="../_images/ceab46f82310ee86df6345105d1d7a9b1af6a5c4c146c4e7968bded70299f9d1.png" />
+<img alt="../_images/7f07b448c94031829f5753117fd557fb2607055483188829fd92c84deabd67bb.png" src="../_images/7f07b448c94031829f5753117fd557fb2607055483188829fd92c84deabd67bb.png" />
 </div>
 </div>
 <p>Now we use our initialized <code class="docutils literal notranslate"><span class="pre">detector</span></code> instance to make predictions with the <code class="docutils literal notranslate"><span class="pre">detect_image()</span></code> method. This is the main workhorse method that will perform face, landmark, au, and emotion detection using the loaded models. It always returns a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data instance:</p>
@@ -595,7 +595,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:03&lt;00:00,  3.58s/it]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:01&lt;00:00,  1.05s/it]
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -627,14 +627,14 @@ document.write(`
       <th>x_3</th>
       <th>x_4</th>
       <th>...</th>
-      <th>AU43</th>
-      <th>anger</th>
-      <th>disgust</th>
-      <th>fear</th>
-      <th>happiness</th>
-      <th>sadness</th>
-      <th>surprise</th>
-      <th>neutral</th>
+      <th>Identity_505</th>
+      <th>Identity_506</th>
+      <th>Identity_507</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
       <th>input</th>
       <th>frame</th>
     </tr>
@@ -642,31 +642,31 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>192.561653</td>
-      <td>140.51021</td>
-      <td>179.37261</td>
-      <td>259.209973</td>
+      <td>192.507763</td>
+      <td>140.455324</td>
+      <td>179.3527</td>
+      <td>259.257753</td>
       <td>0.999708</td>
-      <td>186.658539</td>
-      <td>187.411811</td>
-      <td>189.165036</td>
-      <td>193.472231</td>
-      <td>202.410419</td>
+      <td>187.430438</td>
+      <td>188.301049</td>
+      <td>190.15731</td>
+      <td>194.596453</td>
+      <td>203.539803</td>
       <td>...</td>
-      <td>0.277524</td>
-      <td>0.000495</td>
-      <td>0.000025</td>
-      <td>0.001946</td>
-      <td>0.990421</td>
-      <td>0.000028</td>
-      <td>0.007057</td>
-      <td>0.000029</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>-0.005776</td>
+      <td>-0.035352</td>
+      <td>-0.001157</td>
+      <td>0.001913</td>
+      <td>0.117051</td>
+      <td>-0.001347</td>
+      <td>-0.012121</td>
+      <td>0.029357</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
     </tr>
   </tbody>
 </table>
-<p>1 rows × 173 columns</p>
+<p>1 rows × 686 columns</p>
 </div></div></div>
 </div>
 </section>
@@ -678,7 +678,7 @@ document.write(`
 <p>Fex data classes make it simple to access various columns of interest (AUs, emotion, faceboxes, etc):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">facebox</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">faceboxes</span>
 </pre></div>
 </div>
 </div>
@@ -711,10 +711,10 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>192.561653</td>
-      <td>140.51021</td>
-      <td>179.37261</td>
-      <td>259.209973</td>
+      <td>192.507763</td>
+      <td>140.455324</td>
+      <td>179.3527</td>
+      <td>259.257753</td>
       <td>0.999708</td>
     </tr>
   </tbody>
@@ -771,26 +771,26 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.360115</td>
-      <td>0.472855</td>
-      <td>0.508774</td>
-      <td>0.290168</td>
-      <td>0.775952</td>
-      <td>0.0</td>
-      <td>0.550643</td>
-      <td>0.982302</td>
-      <td>0.500063</td>
-      <td>0.880451</td>
-      <td>0.597636</td>
-      <td>0.181066</td>
-      <td>0.2801</td>
+      <td>0.607853</td>
+      <td>0.293292</td>
+      <td>0.054883</td>
+      <td>0.285801</td>
+      <td>0.917875</td>
       <td>1.0</td>
-      <td>0.326927</td>
-      <td>0.339884</td>
-      <td>0.996584</td>
-      <td>0.276738</td>
-      <td>0.025107</td>
-      <td>0.277524</td>
+      <td>0.356386</td>
+      <td>0.636989</td>
+      <td>1.0</td>
+      <td>0.953904</td>
+      <td>0.722208</td>
+      <td>0.073059</td>
+      <td>0.154148</td>
+      <td>1.0</td>
+      <td>0.155187</td>
+      <td>0.015028</td>
+      <td>0.999779</td>
+      <td>0.888506</td>
+      <td>0.033452</td>
+      <td>0.116028</td>
     </tr>
   </tbody>
 </table>
@@ -833,12 +833,12 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.000495</td>
-      <td>0.000025</td>
-      <td>0.001946</td>
-      <td>0.990421</td>
+      <td>0.00051</td>
+      <td>0.000026</td>
+      <td>0.002214</td>
+      <td>0.991036</td>
       <td>0.000028</td>
-      <td>0.007057</td>
+      <td>0.006158</td>
       <td>0.000029</td>
     </tr>
   </tbody>
@@ -847,7 +847,7 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">facepose</span> <span class="c1"># (in degrees)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">poses</span> <span class="c1"># (in degrees)</span>
 </pre></div>
 </div>
 </div>
@@ -878,9 +878,9 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.863918</td>
-      <td>-3.837977</td>
-      <td>6.635625</td>
+      <td>0.811819</td>
+      <td>-3.737926</td>
+      <td>6.101121</td>
     </tr>
   </tbody>
 </table>
@@ -996,7 +996,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/c5ee7bec7960dadeb536101c31d79b680c515f7f01a5a9b1561a9e6a02197b11.png" src="../_images/c5ee7bec7960dadeb536101c31d79b680c515f7f01a5a9b1561a9e6a02197b11.png" />
+<img alt="../_images/d4f76915201757c4a26a14a2266211172b674fa98a32503966532b99c69d5cc9.png" src="../_images/d4f76915201757c4a26a14a2266211172b674fa98a32503966532b99c69d5cc9.png" />
 </div>
 </div>
 <p>By default <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will overlay facial lines on top of the input image. However, it’s also possible to visualize a face using Py-Feat’s standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> instead of the default <code class="docutils literal notranslate"><span class="pre">faces='landmarks'</span></code>. For more details about this kind of visualization see the <a class="reference internal" href="04_plotting.html"><span class="doc std std-doc">visualizing facial expressions</span></a> and the <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html"><span class="doc std std-doc">creating an AU visualization model</span></a> tutorials:</p>
@@ -1007,7 +1007,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/7ed98e1dbbf71147aba7d397daa0062d0f118f2eb80ae02dad9c264bb8ee778f.png" src="../_images/7ed98e1dbbf71147aba7d397daa0062d0f118f2eb80ae02dad9c264bb8ee778f.png" />
+<img alt="../_images/55fba7050b7c0a3aada3f0aa6a955755586c1e34d9081685ecc79d36ef11cfb5.png" src="../_images/55fba7050b7c0a3aada3f0aa6a955755586c1e34d9081685ecc79d36ef11cfb5.png" />
 </div>
 </div>
 </section>
@@ -1028,7 +1028,10 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:08&lt;00:00,  8.47s/it]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/1 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:01&lt;00:00,  1.93s/it]
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -1060,14 +1063,14 @@ document.write(`
       <th>x_3</th>
       <th>x_4</th>
       <th>...</th>
-      <th>AU43</th>
-      <th>anger</th>
-      <th>disgust</th>
-      <th>fear</th>
-      <th>happiness</th>
-      <th>sadness</th>
-      <th>surprise</th>
-      <th>neutral</th>
+      <th>Identity_505</th>
+      <th>Identity_506</th>
+      <th>Identity_507</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
       <th>input</th>
       <th>frame</th>
     </tr>
@@ -1075,127 +1078,127 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>683.335838</td>
-      <td>288.563033</td>
-      <td>105.395773</td>
-      <td>134.118132</td>
-      <td>0.999814</td>
-      <td>685.494912</td>
-      <td>683.336467</td>
-      <td>682.095127</td>
-      <td>682.703083</td>
-      <td>686.400650</td>
+      <td>683.340962</td>
+      <td>288.568895</td>
+      <td>105.420755</td>
+      <td>134.124931</td>
+      <td>0.999817</td>
+      <td>685.511870</td>
+      <td>683.331586</td>
+      <td>682.070848</td>
+      <td>682.695525</td>
+      <td>686.402923</td>
       <td>...</td>
-      <td>0.170883</td>
-      <td>0.000317</td>
-      <td>0.003644</td>
-      <td>0.000119</td>
-      <td>0.992836</td>
-      <td>0.000292</td>
-      <td>0.002569</td>
-      <td>0.000223</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.033936</td>
+      <td>-0.041451</td>
+      <td>-0.010431</td>
+      <td>-0.050652</td>
+      <td>0.057576</td>
+      <td>-0.016750</td>
+      <td>0.052456</td>
+      <td>0.071331</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>531.734346</td>
-      <td>309.172962</td>
-      <td>97.299739</td>
-      <td>123.768050</td>
-      <td>0.999358</td>
-      <td>533.901843</td>
-      <td>532.174873</td>
-      <td>531.632657</td>
-      <td>532.337446</td>
-      <td>535.039510</td>
+      <td>531.699620</td>
+      <td>309.095124</td>
+      <td>97.330348</td>
+      <td>123.796507</td>
+      <td>0.999361</td>
+      <td>534.246679</td>
+      <td>532.407478</td>
+      <td>531.774721</td>
+      <td>532.450397</td>
+      <td>535.062077</td>
       <td>...</td>
-      <td>0.529417</td>
-      <td>0.000201</td>
-      <td>0.000161</td>
-      <td>0.000089</td>
-      <td>0.999188</td>
-      <td>0.000092</td>
-      <td>0.000251</td>
-      <td>0.000019</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.074216</td>
+      <td>-0.008548</td>
+      <td>-0.043167</td>
+      <td>0.008296</td>
+      <td>0.081963</td>
+      <td>-0.031615</td>
+      <td>0.053231</td>
+      <td>0.031800</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>316.659267</td>
-      <td>236.801834</td>
-      <td>91.554931</td>
-      <td>120.343772</td>
-      <td>0.998964</td>
-      <td>313.344974</td>
-      <td>314.485803</td>
-      <td>316.831155</td>
-      <td>320.896162</td>
-      <td>327.509244</td>
+      <td>316.664986</td>
+      <td>236.808266</td>
+      <td>91.607044</td>
+      <td>120.287714</td>
+      <td>0.998966</td>
+      <td>313.592762</td>
+      <td>314.633883</td>
+      <td>316.859567</td>
+      <td>320.841335</td>
+      <td>327.401511</td>
       <td>...</td>
-      <td>0.171810</td>
-      <td>0.000062</td>
-      <td>0.000046</td>
-      <td>0.000080</td>
-      <td>0.991157</td>
-      <td>0.000029</td>
-      <td>0.008593</td>
-      <td>0.000033</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.037859</td>
+      <td>-0.039686</td>
+      <td>-0.053666</td>
+      <td>-0.062578</td>
+      <td>-0.022025</td>
+      <td>-0.039633</td>
+      <td>-0.027346</td>
+      <td>0.017940</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>435.008585</td>
-      <td>211.011886</td>
-      <td>82.006314</td>
-      <td>101.065502</td>
-      <td>0.994463</td>
-      <td>436.149135</td>
-      <td>437.005833</td>
-      <td>438.491356</td>
-      <td>440.477046</td>
-      <td>443.712133</td>
+      <td>435.052554</td>
+      <td>211.107515</td>
+      <td>81.976803</td>
+      <td>101.041442</td>
+      <td>0.994319</td>
+      <td>436.121349</td>
+      <td>436.979648</td>
+      <td>438.452164</td>
+      <td>440.423172</td>
+      <td>443.637487</td>
       <td>...</td>
-      <td>0.109600</td>
-      <td>0.013225</td>
-      <td>0.008497</td>
-      <td>0.000090</td>
-      <td>0.039161</td>
-      <td>0.005604</td>
-      <td>0.003555</td>
-      <td>0.929868</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.028489</td>
+      <td>-0.064772</td>
+      <td>-0.014781</td>
+      <td>-0.011815</td>
+      <td>0.037212</td>
+      <td>0.053282</td>
+      <td>0.051709</td>
+      <td>0.041597</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>219.923669</td>
-      <td>64.624866</td>
-      <td>85.467177</td>
-      <td>111.225995</td>
-      <td>0.994245</td>
-      <td>219.396966</td>
-      <td>217.687955</td>
-      <td>216.776542</td>
-      <td>217.055890</td>
-      <td>219.865002</td>
+      <td>220.073854</td>
+      <td>64.653705</td>
+      <td>85.268424</td>
+      <td>110.928977</td>
+      <td>0.994262</td>
+      <td>219.496109</td>
+      <td>217.772578</td>
+      <td>216.813998</td>
+      <td>217.033585</td>
+      <td>219.753727</td>
       <td>...</td>
-      <td>0.067352</td>
-      <td>0.000050</td>
-      <td>0.005056</td>
-      <td>0.000147</td>
-      <td>0.992222</td>
-      <td>0.000013</td>
-      <td>0.002488</td>
-      <td>0.000025</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.042779</td>
+      <td>0.054387</td>
+      <td>0.000781</td>
+      <td>0.039160</td>
+      <td>0.068925</td>
+      <td>-0.011794</td>
+      <td>0.028254</td>
+      <td>-0.062116</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 173 columns</p>
+<p>5 rows × 686 columns</p>
 </div></div></div>
 </div>
 <div class="cell docutils container">
@@ -1205,7 +1208,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/c4fa841344e9aae9a7d979f9cf09798dc982500b15445c45c1fbc4075cac8894.png" src="../_images/c4fa841344e9aae9a7d979f9cf09798dc982500b15445c45c1fbc4075cac8894.png" />
+<img alt="../_images/f9df2eb8e6dfb5637e23a0d75884273ae5176f11e31ca8044c73aacaf3ca7d4a.png" src="../_images/f9df2eb8e6dfb5637e23a0d75884273ae5176f11e31ca8044c73aacaf3ca7d4a.png" />
 </div>
 </div>
 </section>
@@ -1226,7 +1229,10 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 2/2 [00:12&lt;00:00,  6.20s/it]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/2 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 2/2 [00:02&lt;00:00,  1.45s/it]
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -1258,14 +1264,14 @@ document.write(`
       <th>x_3</th>
       <th>x_4</th>
       <th>...</th>
-      <th>AU43</th>
-      <th>anger</th>
-      <th>disgust</th>
-      <th>fear</th>
-      <th>happiness</th>
-      <th>sadness</th>
-      <th>surprise</th>
-      <th>neutral</th>
+      <th>Identity_505</th>
+      <th>Identity_506</th>
+      <th>Identity_507</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
       <th>input</th>
       <th>frame</th>
     </tr>
@@ -1273,151 +1279,151 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>192.561653</td>
-      <td>140.510210</td>
-      <td>179.372610</td>
-      <td>259.209973</td>
+      <td>192.507763</td>
+      <td>140.455324</td>
+      <td>179.352700</td>
+      <td>259.257753</td>
       <td>0.999708</td>
-      <td>186.658539</td>
-      <td>187.411811</td>
-      <td>189.165036</td>
-      <td>193.472231</td>
-      <td>202.410419</td>
+      <td>187.430438</td>
+      <td>188.301049</td>
+      <td>190.157310</td>
+      <td>194.596453</td>
+      <td>203.539803</td>
       <td>...</td>
-      <td>0.277524</td>
-      <td>0.000495</td>
-      <td>0.000025</td>
-      <td>0.001946</td>
-      <td>0.990421</td>
-      <td>0.000028</td>
-      <td>0.007057</td>
-      <td>0.000029</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>-0.005776</td>
+      <td>-0.035352</td>
+      <td>-0.001157</td>
+      <td>0.001913</td>
+      <td>0.117051</td>
+      <td>-0.001347</td>
+      <td>-0.012121</td>
+      <td>0.029357</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>683.335838</td>
-      <td>288.563033</td>
-      <td>105.395773</td>
-      <td>134.118132</td>
-      <td>0.999814</td>
-      <td>685.494912</td>
-      <td>683.336467</td>
-      <td>682.095127</td>
-      <td>682.703083</td>
-      <td>686.400650</td>
+      <td>683.340962</td>
+      <td>288.568895</td>
+      <td>105.420755</td>
+      <td>134.124931</td>
+      <td>0.999817</td>
+      <td>685.511870</td>
+      <td>683.331586</td>
+      <td>682.070848</td>
+      <td>682.695525</td>
+      <td>686.402923</td>
       <td>...</td>
-      <td>0.170883</td>
-      <td>0.000317</td>
-      <td>0.003644</td>
-      <td>0.000119</td>
-      <td>0.992836</td>
-      <td>0.000292</td>
-      <td>0.002569</td>
-      <td>0.000223</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.033936</td>
+      <td>-0.041451</td>
+      <td>-0.010431</td>
+      <td>-0.050652</td>
+      <td>0.057576</td>
+      <td>-0.016750</td>
+      <td>0.052456</td>
+      <td>0.071331</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>1</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>531.734346</td>
-      <td>309.172962</td>
-      <td>97.299739</td>
-      <td>123.768050</td>
-      <td>0.999358</td>
-      <td>533.901843</td>
-      <td>532.174873</td>
-      <td>531.632657</td>
-      <td>532.337446</td>
-      <td>535.039510</td>
+      <td>531.699620</td>
+      <td>309.095124</td>
+      <td>97.330348</td>
+      <td>123.796507</td>
+      <td>0.999361</td>
+      <td>534.246679</td>
+      <td>532.407478</td>
+      <td>531.774721</td>
+      <td>532.450397</td>
+      <td>535.062077</td>
       <td>...</td>
-      <td>0.529417</td>
-      <td>0.000201</td>
-      <td>0.000161</td>
-      <td>0.000089</td>
-      <td>0.999188</td>
-      <td>0.000092</td>
-      <td>0.000251</td>
-      <td>0.000019</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.074216</td>
+      <td>-0.008548</td>
+      <td>-0.043167</td>
+      <td>0.008296</td>
+      <td>0.081963</td>
+      <td>-0.031615</td>
+      <td>0.053231</td>
+      <td>0.031800</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>1</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>316.659267</td>
-      <td>236.801834</td>
-      <td>91.554931</td>
-      <td>120.343772</td>
-      <td>0.998964</td>
-      <td>313.344974</td>
-      <td>314.485803</td>
-      <td>316.831155</td>
-      <td>320.896162</td>
-      <td>327.509244</td>
+      <td>316.664986</td>
+      <td>236.808266</td>
+      <td>91.607044</td>
+      <td>120.287714</td>
+      <td>0.998966</td>
+      <td>313.592762</td>
+      <td>314.633883</td>
+      <td>316.859567</td>
+      <td>320.841335</td>
+      <td>327.401511</td>
       <td>...</td>
-      <td>0.171810</td>
-      <td>0.000062</td>
-      <td>0.000046</td>
-      <td>0.000080</td>
-      <td>0.991157</td>
-      <td>0.000029</td>
-      <td>0.008593</td>
-      <td>0.000033</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.037859</td>
+      <td>-0.039686</td>
+      <td>-0.053666</td>
+      <td>-0.062578</td>
+      <td>-0.022025</td>
+      <td>-0.039633</td>
+      <td>-0.027346</td>
+      <td>0.017940</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>1</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>435.008585</td>
-      <td>211.011886</td>
-      <td>82.006314</td>
-      <td>101.065502</td>
-      <td>0.994463</td>
-      <td>436.149135</td>
-      <td>437.005833</td>
-      <td>438.491356</td>
-      <td>440.477046</td>
-      <td>443.712133</td>
+      <td>435.052554</td>
+      <td>211.107515</td>
+      <td>81.976803</td>
+      <td>101.041442</td>
+      <td>0.994319</td>
+      <td>436.121349</td>
+      <td>436.979648</td>
+      <td>438.452164</td>
+      <td>440.423172</td>
+      <td>443.637487</td>
       <td>...</td>
-      <td>0.109600</td>
-      <td>0.013225</td>
-      <td>0.008497</td>
-      <td>0.000090</td>
-      <td>0.039161</td>
-      <td>0.005604</td>
-      <td>0.003555</td>
-      <td>0.929868</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.028489</td>
+      <td>-0.064772</td>
+      <td>-0.014781</td>
+      <td>-0.011815</td>
+      <td>0.037212</td>
+      <td>0.053282</td>
+      <td>0.051709</td>
+      <td>0.041597</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>1</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>219.923669</td>
-      <td>64.624866</td>
-      <td>85.467177</td>
-      <td>111.225995</td>
-      <td>0.994245</td>
-      <td>219.396966</td>
-      <td>217.687955</td>
-      <td>216.776542</td>
-      <td>217.055890</td>
-      <td>219.865002</td>
+      <td>220.073854</td>
+      <td>64.653705</td>
+      <td>85.268424</td>
+      <td>110.928977</td>
+      <td>0.994262</td>
+      <td>219.496109</td>
+      <td>217.772578</td>
+      <td>216.813998</td>
+      <td>217.033585</td>
+      <td>219.753727</td>
       <td>...</td>
-      <td>0.067352</td>
-      <td>0.000050</td>
-      <td>0.005056</td>
-      <td>0.000147</td>
-      <td>0.992222</td>
-      <td>0.000013</td>
-      <td>0.002488</td>
-      <td>0.000025</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.042779</td>
+      <td>0.054387</td>
+      <td>0.000781</td>
+      <td>0.039160</td>
+      <td>0.068925</td>
+      <td>-0.011794</td>
+      <td>0.028254</td>
+      <td>-0.062116</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>1</td>
     </tr>
   </tbody>
 </table>
-<p>6 rows × 173 columns</p>
+<p>6 rows × 686 columns</p>
 </div></div></div>
 </div>
 <p>Calling <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will now plot detections for all images the detector was passed:</p>

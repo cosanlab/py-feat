@@ -539,7 +539,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=xgb, emotion_model=resmasknet, facepose_model=img2pose)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilefacenet, au_model=xgb, emotion_model=resmasknet, facepose_model=img2pose, identity_model=facenet)
 </pre></div>
 </div>
 </div>
@@ -563,7 +563,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><video src="/Users/Esh/Documents/pypackages/py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4" controls  >
+<div class="output text_html"><video src="/Users/esh/Documents/pypackages/py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4" controls  >
       Your browser does not support the <code>video</code> element.
     </video></div></div>
 </div>
@@ -576,7 +576,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 20/20 [01:25&lt;00:00,  4.28s/it]
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 20/20 [00:26&lt;00:00,  1.31s/it]
 </pre></div>
 </div>
 <div class="output text_html"><div>
@@ -608,16 +608,16 @@ document.write(`
       <th>x_3</th>
       <th>x_4</th>
       <th>...</th>
-      <th>AU43</th>
-      <th>anger</th>
-      <th>disgust</th>
-      <th>fear</th>
-      <th>happiness</th>
-      <th>sadness</th>
-      <th>surprise</th>
-      <th>neutral</th>
+      <th>Identity_506</th>
+      <th>Identity_507</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
       <th>input</th>
       <th>frame</th>
+      <th>approx_time</th>
     </tr>
     <tr>
       <th>frame</th>
@@ -647,127 +647,127 @@ document.write(`
   <tbody>
     <tr>
       <th>0</th>
-      <td>360.794758</td>
-      <td>46.423682</td>
-      <td>242.824230</td>
-      <td>340.237254</td>
-      <td>0.999792</td>
-      <td>330.937885</td>
-      <td>331.950171</td>
-      <td>336.753342</td>
-      <td>345.321682</td>
-      <td>357.413520</td>
+      <td>330.070496</td>
+      <td>41.907721</td>
+      <td>222.043699</td>
+      <td>312.001812</td>
+      <td>0.999788</td>
+      <td>334.606952</td>
+      <td>335.238771</td>
+      <td>339.470413</td>
+      <td>347.475285</td>
+      <td>359.121231</td>
       <td>...</td>
-      <td>0.791296</td>
-      <td>0.016698</td>
-      <td>0.002383</td>
-      <td>0.001483</td>
-      <td>0.037228</td>
-      <td>0.242431</td>
-      <td>0.000445</td>
-      <td>0.699332</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.013548</td>
+      <td>0.025144</td>
+      <td>-0.013464</td>
+      <td>-0.040379</td>
+      <td>0.001958</td>
+      <td>-0.020915</td>
+      <td>-0.061315</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>0</td>
+      <td>00:00</td>
     </tr>
     <tr>
       <th>24</th>
-      <td>379.063714</td>
-      <td>48.109240</td>
-      <td>237.637756</td>
-      <td>331.771822</td>
-      <td>0.999691</td>
-      <td>350.583881</td>
-      <td>349.688437</td>
-      <td>352.349259</td>
-      <td>358.750487</td>
-      <td>369.011402</td>
+      <td>346.699591</td>
+      <td>43.669070</td>
+      <td>217.335426</td>
+      <td>303.963334</td>
+      <td>0.999697</td>
+      <td>351.959290</td>
+      <td>350.905224</td>
+      <td>353.492541</td>
+      <td>359.888538</td>
+      <td>370.324052</td>
       <td>...</td>
-      <td>0.880113</td>
-      <td>0.005219</td>
-      <td>0.047924</td>
-      <td>0.001224</td>
-      <td>0.012430</td>
-      <td>0.912106</td>
-      <td>0.000178</td>
-      <td>0.020918</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.002161</td>
+      <td>0.027122</td>
+      <td>-0.019982</td>
+      <td>-0.023538</td>
+      <td>0.055576</td>
+      <td>-0.008936</td>
+      <td>-0.054490</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>24</td>
+      <td>00:01</td>
     </tr>
     <tr>
       <th>48</th>
-      <td>369.284997</td>
-      <td>45.399081</td>
-      <td>234.262240</td>
-      <td>311.291356</td>
-      <td>0.999788</td>
-      <td>339.965203</td>
-      <td>337.887656</td>
-      <td>338.766776</td>
-      <td>341.886110</td>
-      <td>350.106161</td>
+      <td>337.734648</td>
+      <td>41.616590</td>
+      <td>214.032905</td>
+      <td>283.927078</td>
+      <td>0.999782</td>
+      <td>341.442624</td>
+      <td>339.082590</td>
+      <td>339.590616</td>
+      <td>342.465586</td>
+      <td>350.360024</td>
       <td>...</td>
-      <td>0.536345</td>
-      <td>0.000673</td>
-      <td>0.003900</td>
-      <td>0.000301</td>
-      <td>0.000431</td>
-      <td>0.991942</td>
-      <td>0.000065</td>
-      <td>0.002688</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.003118</td>
+      <td>0.010020</td>
+      <td>0.021353</td>
+      <td>-0.032861</td>
+      <td>0.008472</td>
+      <td>-0.015471</td>
+      <td>-0.006659</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>48</td>
+      <td>00:02</td>
     </tr>
     <tr>
       <th>72</th>
-      <td>341.876725</td>
-      <td>65.666523</td>
-      <td>239.259334</td>
-      <td>330.823833</td>
-      <td>0.999268</td>
-      <td>317.028251</td>
-      <td>316.485715</td>
-      <td>319.996523</td>
-      <td>326.639217</td>
-      <td>336.512378</td>
+      <td>313.084993</td>
+      <td>60.234503</td>
+      <td>218.443315</td>
+      <td>302.880141</td>
+      <td>0.999261</td>
+      <td>319.038867</td>
+      <td>318.742627</td>
+      <td>322.025177</td>
+      <td>328.489190</td>
+      <td>338.237628</td>
       <td>...</td>
-      <td>0.642559</td>
-      <td>0.008556</td>
-      <td>0.002622</td>
-      <td>0.001716</td>
-      <td>0.002989</td>
-      <td>0.963796</td>
-      <td>0.000235</td>
-      <td>0.020085</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>-0.000539</td>
+      <td>0.008751</td>
+      <td>-0.019984</td>
+      <td>-0.040222</td>
+      <td>0.052243</td>
+      <td>0.017060</td>
+      <td>-0.023802</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>72</td>
+      <td>00:03</td>
     </tr>
     <tr>
       <th>96</th>
-      <td>347.486722</td>
-      <td>94.356160</td>
-      <td>253.997776</td>
-      <td>305.068640</td>
-      <td>0.998290</td>
-      <td>332.469232</td>
-      <td>330.426945</td>
-      <td>330.593582</td>
-      <td>335.371205</td>
-      <td>346.365239</td>
+      <td>317.632644</td>
+      <td>85.905809</td>
+      <td>232.158924</td>
+      <td>279.608472</td>
+      <td>0.998265</td>
+      <td>336.531510</td>
+      <td>333.498298</td>
+      <td>332.555208</td>
+      <td>336.279221</td>
+      <td>346.259310</td>
       <td>...</td>
-      <td>0.805766</td>
-      <td>0.029463</td>
-      <td>0.178668</td>
-      <td>0.005473</td>
-      <td>0.000884</td>
-      <td>0.774882</td>
-      <td>0.001347</td>
-      <td>0.009282</td>
-      <td>/Users/Esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0.030832</td>
+      <td>0.037258</td>
+      <td>-0.017512</td>
+      <td>-0.053172</td>
+      <td>0.010600</td>
+      <td>-0.060130</td>
+      <td>-0.051994</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
       <td>96</td>
+      <td>00:04</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 173 columns</p>
+<p>5 rows × 687 columns</p>
 </div></div></div>
 </div>
 <p>We can see that our 20s long video, recorded at 24 frames-per-second, produces 20 predictions because we set <code class="docutils literal notranslate"><span class="pre">skip_frames=24</span></code>:</p>
@@ -801,8 +801,8 @@ document.write(`
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;Figure size 1500x700 with 3 Axes&gt;, &lt;Figure size 1500x700 with 3 Axes&gt;]
 </pre></div>
 </div>
-<img alt="../_images/ecb2f33cbffdaa1cc59207380ee0613cd64465a61ea3c3c8e4f97db24bbdb665.png" src="../_images/ecb2f33cbffdaa1cc59207380ee0613cd64465a61ea3c3c8e4f97db24bbdb665.png" />
-<img alt="../_images/9a29d152ecf6c6c4f9e29737cf080dd754300f3c9206980d1aedc1305e2c08f1.png" src="../_images/9a29d152ecf6c6c4f9e29737cf080dd754300f3c9206980d1aedc1305e2c08f1.png" />
+<img alt="../_images/76142e5161c49953a534ebb83db3e5b4a7bcb1db0023e0c32bf6415806371d33.png" src="../_images/76142e5161c49953a534ebb83db3e5b4a7bcb1db0023e0c32bf6415806371d33.png" />
+<img alt="../_images/0d65378dcc7b58554046c81867097308156d2112a633f38e87ffb889b3fea8d6.png" src="../_images/0d65378dcc7b58554046c81867097308156d2112a633f38e87ffb889b3fea8d6.png" />
 </div>
 </div>
 <p>We can also leverage existing pandas plotting functions to show how emotions unfold over time. We can clearly see how her emotions change from sadness to happiness.</p>
@@ -813,7 +813,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/9851e844d0291342572e106954732efd97ef67d18877f729441df505da6dcf6a.png" src="../_images/9851e844d0291342572e106954732efd97ef67d18877f729441df505da6dcf6a.png" />
+<img alt="../_images/f54e89b4d44189f970d5104e4b06307bcae55d80b6b1d3a2aae8e6337ae70eb0.png" src="../_images/f54e89b4d44189f970d5104e4b06307bcae55d80b6b1d3a2aae8e6337ae70eb0.png" />
 </div>
 </div>
 <p>In situations you want to predict EVERY frame of the video, you can ust leave out the <code class="docutils literal notranslate"><span class="pre">skip_frames</span></code> argument. Speed of processing may vary depending on the detector you use and the length of the video:</p>
