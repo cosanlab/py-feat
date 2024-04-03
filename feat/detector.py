@@ -141,7 +141,7 @@ class Detector(object):
         )
 
     def __repr__(self):
-        return f"{self.__class__.__module__}.{self.__class__.__name__}(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']}, identity_model={self.info['identity_model']})"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}(device={self.device}; face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']}, identity_model={self.info['identity_model']})"
 
     def __getitem__(self, i):
         return self.info[i]
