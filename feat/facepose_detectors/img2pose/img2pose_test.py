@@ -183,6 +183,12 @@ class Img2Pose:
             dict: A dictionary of bboxes and poses
 
         """
+        # For device='mps'
+        # Uncommenting this line at least gets img2pose running but errors with
+        # Error: command buffer exited with error status.
+        # The Metal Performance Shaders operations encoded on it may not have completed.
+
+        # img = img.to(self.device)
 
         # Obtain prediction
         pred = self.model.predict([img])[0]
