@@ -18,7 +18,6 @@ from feat.utils import (
     openface_time_columns,
 )
 import json
-
 from torchvision.datasets.utils import download_url as tv_download_url
 
 __all__ = [
@@ -26,6 +25,7 @@ __all__ = [
     "get_test_data_path",
     "validate_input",
     "download_url",
+    "read_fex",
     "read_openface",
 ]
 
@@ -103,7 +103,7 @@ def read_fex(file_name, file_type='py-feat'):
                 raise ValueError("The file does not contain metadata as expected. Use pd.read_csv to load this file.")
         
         df = pd.read_csv(file_name, comment='#')
-        return Fex(df, **meta_dict)
+        return feat.Fex(df, **meta_dict)
         
     elif file_type == 'openface':
         raise NotImplementedError('Only py-feat files can currently be opened using this function try read_openface for now.')
