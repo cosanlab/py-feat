@@ -26,7 +26,6 @@ from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
 from torch import swapaxes
 from feat.transforms import Rescale
-from feat.utils.io import read_feat, read_openface
 from feat.utils.stats import wavelet, calc_hist_auc, cluster_identities
 from feat.plotting import plot_face, draw_lineface, draw_facepose, load_viz_model
 from feat.pretrained import AU_LANDMARK_MAP
@@ -42,6 +41,7 @@ from PIL import Image
 import logging
 import av
 from itertools import islice
+import json
 
 __all__ = [
     "FexSeries",
@@ -677,17 +677,6 @@ class Fex(DataFrame):
             DataFrame: time data
         """
         return self[self.design_columns]
-
-    def read_file(self):
-        """Loads file into FEX class
-
-        Returns:
-            DataFrame: Fex class
-        """
-        if self.detector == "OpenFace":
-            return self.read_openface(self.filename)
-
-        return self.read_feat(self.filename)
 
     @property
     def info(self):
@@ -1923,7 +1912,25 @@ class Fex(DataFrame):
             )
 
         return out
-
+    
+    def write(self, file_name):
+        '''Write out Fex file to CSV with metadata as JSON in first line
+        
+        Args:
+            file_name: (str) name of file to write out
+        '''
+        
+        meta_dict = {}
+        for name in self._metadata:
+            meta_dict[name] = getattr(self, name, None)
+        
+        del meta_dict['fex_columns'] # we should probably remove this attribute in the future.
+        
+        meta_json = json.dumps(meta_dict)
+        
+        with open(file_name, 'w') as f:
+            f.write(f'# {meta_json}\n')  # Write metadata as a comment at the top of the file
+            self.to_csv(f, index=False)
 
 class ImageDataset(Dataset):
     """Torch Image Dataset
@@ -2309,3 +2316,4 @@ class VideoDataset(Dataset):
         minutes = int(duration // 60)
         seconds = int(duration % 60)
         return f"{minutes:02d}:{seconds:02d}"
+s
