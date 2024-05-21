@@ -31,6 +31,11 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
+    entry_points={
+        "console_scripts": [
+            "feat_get_models=feat.pretrained:download_default_models",
+        ]
+    },
     test_suite="feat/tests",
     **extra_setuptools_args
 )

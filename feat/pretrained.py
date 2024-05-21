@@ -115,6 +115,7 @@ def get_pretrained_models(
         )
     )
 
+    print("Downloading required models...")
     # Face model
     if face_model is None:
         raise ValueError(
@@ -257,3 +258,16 @@ def fetch_model(model_type, model_name):
     model_type = PRETRAINED_MODELS[model_type]
     matches = list(filter(lambda e: model_name in e.keys(), model_type))[0]
     return list(matches.values())[0]
+
+
+def download_default_models():
+    """Used by CLI to download all default models at once."""
+    face, landmark, au, emotion, facepose, identity = get_pretrained_models(
+        face_model="retinaface",
+        landmark_model="mobilefacenet",
+        au_model="xgb",
+        emotion_model="resmasknet",
+        facepose_model="img2pose",
+        identity_model="facenet",
+        verbose=False,
+    )
