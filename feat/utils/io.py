@@ -17,8 +17,7 @@ from feat.utils import (
     openface_gaze_columns,
     openface_time_columns,
 )
-
-
+import json
 from torchvision.datasets.utils import download_url as tv_download_url
 
 __all__ = [
@@ -26,6 +25,7 @@ __all__ = [
     "get_test_data_path",
     "validate_input",
     "download_url",
+    "read_fex",
     "read_openface",
 ]
 
@@ -81,6 +81,45 @@ def download_url(*args, **kwargs):
         return tv_download_url(*args, **kwargs)
 
 
+def read_fex(file_name, file_type="py-feat"):
+    """Load a Fex file with JSON metadata
+
+    Args:
+        file_name: (str) name file to load
+        file_type: (str) type of file to load ['py-feat', 'openface']
+    Returns:
+        fex data instance
+
+    """
+
+    if file_type == "py-feat":
+        with open(file_name, "r") as f:
+            first_line = f.readline().strip()
+            if first_line.startswith("#"):
+                meta_json = first_line[1:].strip()
+                meta_dict = json.loads(meta_json)
+                if "fex_columns" in meta_dict:
+                    del meta_dict["fex_columns"]
+            else:
+                raise ValueError(
+                    "The file does not contain metadata as expected. Use pd.read_csv to load this file."
+                )
+
+        df = pd.read_csv(file_name, comment="#")
+        return feat.Fex(df, **meta_dict)
+
+    elif file_type == "openface":
+        raise NotImplementedError(
+            "Only py-feat files can currently be opened using this function try read_openface for now."
+        )
+
+    else:
+        raise NotImplementedError(
+            "Only py-feat and openface files can currently be opened using this function"
+        )
+
+
+# DEPRECATE
 def read_feat(fexfile):
     """This function reads files extracted using the Detector from the Feat package.
 
@@ -90,6 +129,9 @@ def read_feat(fexfile):
     Returns:
         Fex of processed facial expressions
     """
+    warnings.warn(
+        "This function is deprecated use read_fex instead", DeprecationWarning
+    )
     d = pd.read_csv(fexfile)
     au_columns = [col for col in d.columns if "AU" in col]
     fex = feat.Fex(
@@ -106,6 +148,7 @@ def read_feat(fexfile):
     return fex
 
 
+# TODO add this functionality to read_fex
 def read_openface(openfacefile, features=None):
     """
     This function reads in an OpenFace exported facial expression file.
