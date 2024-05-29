@@ -1912,25 +1912,30 @@ class Fex(DataFrame):
             )
 
         return out
-    
+
     def write(self, file_name):
-        '''Write out Fex file to CSV with metadata as JSON in first line
-        
+        """Write out Fex file to CSV with metadata as JSON in first line
+
         Args:
             file_name: (str) name of file to write out
-        '''
-        
+        """
+
         meta_dict = {}
         for name in self._metadata:
             meta_dict[name] = getattr(self, name, None)
-        
-        del meta_dict['fex_columns'] # we should probably remove this attribute in the future.
-        
+
+        del meta_dict[
+            "fex_columns"
+        ]  # we should probably remove this attribute in the future.
+
         meta_json = json.dumps(meta_dict)
-        
-        with open(file_name, 'w') as f:
-            f.write(f'# {meta_json}\n')  # Write metadata as a comment at the top of the file
+
+        with open(file_name, "w") as f:
+            f.write(
+                f"# {meta_json}\n"
+            )  # Write metadata as a comment at the top of the file
             self.to_csv(f, index=False)
+
 
 class ImageDataset(Dataset):
     """Torch Image Dataset

@@ -260,11 +260,12 @@ def test_feat():
     # test input property
     assert fex.input.values[0] == fex.iloc[0].input
 
+
 def test_feat_io(default_detector, single_face_img):
     fex1 = default_detector.detect_image(single_face_img)
-    fex1.write('Feat_Test_With_Metadata.csv')
-    
-    fex2 = read_fex('Feat_Test_With_Metadata.csv')
+    fex1.write("Feat_Test_With_Metadata.csv")
+
+    fex2 = read_fex("Feat_Test_With_Metadata.csv")
     assert fex1.face_model == fex2.face_model
     assert fex1.landmark_model == fex2.landmark_model
     assert fex1.facepose_model == fex2.facepose_model
@@ -276,9 +277,9 @@ def test_feat_io(default_detector, single_face_img):
     assert len(fex1.au_columns) == len(fex2.au_columns)
     assert len(fex1.landmark_columns) == len(fex2.landmark_columns)
     assert len(fex1.identity_columns) == len(fex2.identity_columns)
-    assert fex1.aus['AU01'].values[0] == fex2.aus['AU01'].values[0]
-    
-    
+    assert fex1.aus["AU01"].values[0] == fex2.aus["AU01"].values[0]
+
+
 def test_stats():
     filename = os.path.join(get_test_data_path(), "OpenFace_Test.csv")
     openface = Fex(filename=filename, sampling_freq=30, detector="OpenFace")
