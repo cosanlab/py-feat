@@ -43,7 +43,7 @@ import warnings
 from tqdm import tqdm
 import torchvision.transforms as transforms
 
-# Supress sklearn warning about pickled estimators and diff sklearn versions
+# Suppress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
 
@@ -77,12 +77,12 @@ class Detector(object):
             info (dict):
                 n_jobs (int): Number of jobs to be used in parallel.
                 face_model (str, default=retinaface): Name of face detection model
-                landmark_model (str, default=mobilenet): Nam eof landmark model
+                landmark_model (str, default=mobilenet): Name eof landmark model
                 au_model (str, default=svm): Name of Action Unit detection model
                 emotion_model (str, default=resmasknet): Path to emotion detection model.
                 facepose_model (str, default=img2pose): Name of headpose detection model.
                 identity_model (str, default=facenet): Name of identity detection model.
-                face_detection_columns (list): Column names for face detection ouput (x, y, w, h)
+                face_detection_columns (list): Column names for face detection output (x, y, w, h)
                 face_landmark_columns (list): Column names for face landmark output (x0, y0, x1, y1, ...)
                 emotion_model_columns (list): Column names for emotion model output
                 emotion_model_columns (list): Column names for emotion model output
@@ -170,7 +170,7 @@ class Detector(object):
 
         # Initialize model instances and any additional post init setup
         # Only initialize a model if the currently initialized model is diff than the
-        # requested one. Lets us re-use this with .change_model
+        # requested one. Lets us reuse this with .change_model
 
         # FACE MODEL
         if self.info["face_model"] != face:
