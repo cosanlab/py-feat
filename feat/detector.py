@@ -745,7 +745,7 @@ class Detector(object):
             face_embeddings = self.identity_model(
                 extracted_faces, **identity_model_kwargs
             )
-        return self._convert_detector_output(facebox, face_embeddings.numpy())
+        return self._convert_detector_output(facebox, face_embeddings.detach().numpy())
 
     def _run_detection_waterfall(
         self,
