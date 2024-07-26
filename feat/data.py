@@ -1710,7 +1710,7 @@ class Fex(DataFrame):
         landmark_width=2,
         emotions_position="right",
         emotions_opacity=0.9,
-        emotions_color="pink",
+        emotions_color="white",
         emotions_size=12,
         au_heatmap_resolution=1000,
         au_opacity=0.9,
@@ -1858,6 +1858,7 @@ class Fex(DataFrame):
                     showarrow=False,
                     align=align,
                     valign=valign,
+                    bgcolor="black",
                     font=dict(color=emotions_color, size=emotions_size),
                 )
             )
@@ -1968,8 +1969,8 @@ class Fex(DataFrame):
         poses=False,
         emotions=False,
         emotions_position="right",
-        emotions_opacity=0.9,
-        emotions_color="pink",
+        emotions_opacity=1.0,
+        emotions_color="white",
         emotions_size=14,
         frame_duration=1000,
         facebox_color="cyan",
@@ -1994,8 +1995,8 @@ class Fex(DataFrame):
             emotions (bool): will add text annotations indicating probability of discrete emotion when plotting detector output for multiple frames.
             image_opacity (float): opacity of image overlay (default=.9)
             emotions_position (str): position around facebox to plot emotion annotations. default='right'
-            emotions_opacity (float): opacity of emotion annotation text (default=.9)
-            emotions_color (str): color of emotion annotation text (default='pink')
+            emotions_opacity (float): opacity of emotion annotation text (default=1.)
+            emotions_color (str): color of emotion annotation text (default='white')
             emotions_size (int): size of emotion annotations (default=14)
             frame_duration (int): duration in milliseconds to play each frame if plotting multiple frames (default=1000)
             facebox_color (str): color of facebox bounding box (default="cyan")
@@ -2154,6 +2155,7 @@ class Fex(DataFrame):
                             showarrow=False,
                             align=align,
                             valign=valign,
+                            bgcolor="black",
                             font=dict(color=emotions_color, size=emotions_size),
                         )
                     )
@@ -2297,8 +2299,8 @@ class Fex(DataFrame):
         poses=False,
         emotions=False,
         emotions_position="right",
-        emotions_opacity=0.9,
-        emotions_color="pink",
+        emotions_opacity=1.0,
+        emotions_color="white",
         emotions_size=14,
         frame_duration=1000,
         facebox_color="cyan",
@@ -2321,8 +2323,8 @@ class Fex(DataFrame):
             aus (bool): will include action unit heatmaps when plotting detector output for multiple frames.
             emotions (bool): will add text annotations indicating probability of discrete emotion when plotting detector output for multiple frames.
             emotions_position (str): position around facebox to plot emotion annotations. default='right'
-            emotions_opacity (float): opacity of emotion annotation text (default=.9)
-            emotions_color (str): color of emotion annotation text (default='pink')
+            emotions_opacity (float): opacity of emotion annotation text (default=1.)
+            emotions_color (str): color of emotion annotation text (default='white')
             emotions_size (int): size of emotion annotations (default=14)
             frame_duration (int): duration in milliseconds to play each frame if plotting multiple frames (default=1000)
             facebox_color (str): color of facebox bounding box (default="cyan")
