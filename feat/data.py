@@ -1963,9 +1963,9 @@ class Fex(DataFrame):
 
     def plot_multipleframes_detections(
         self,
-        faceboxes=True,
+        faceboxes=False,
         landmarks=False,
-        aus=True,
+        aus=False,
         poses=False,
         emotions=False,
         emotions_position="right",
@@ -1981,6 +1981,8 @@ class Fex(DataFrame):
         au_heatmap_resolution=1000,
         au_opacity=0.9,
         au_cmap="Blues",
+        width=800,
+        height=600,
         *args,
         **kwargs,
     ):
@@ -2022,18 +2024,24 @@ class Fex(DataFrame):
         frame_id = 0
         frame_fex = self.query("frame==@frame_id")
         frame_img = load_pil_img(frame_fex["input"].unique()[0], frame_id)
-        img_width = frame_img.width
-        img_height = frame_img.height
 
         # Initialize Figure
+        # Scatter plot from 0 -> img width/height to constrain layhout
         fig = go.Figure(
             go.Scatter(
-                x=[0, img_width], y=[0, img_height], mode="markers", marker_opacity=0
+                x=[0, width],
+                y=[0, height],
+                mode="markers",
+                marker_opacity=1,
             )
         )
+        # SET THE SIZING OF THE FRAME INDEPENDENT OF EACH IMAGE
         fig.update_layout(
-            xaxis_visible=False, yaxis_visible=False, width=img_width, height=img_height
+            xaxis_visible=False, yaxis_visible=False, width=width, height=height
         )
+
+        CENTER_X = width / 2
+        CENTER_Y = height / 2
 
         sliders_dict = {
             "active": 0,
@@ -2062,6 +2070,7 @@ class Fex(DataFrame):
             img_width = frame_img.width
             img_height = frame_img.height
 
+            # TODO: adjust these by the same displacement/scaling factors to resize images
             # Add detector paths
             shapes = []
             if faceboxes:
@@ -2174,27 +2183,30 @@ class Fex(DataFrame):
                     "method": "animate",
                 }
             )
+
             frame = go.Frame(
                 data=[],
                 layout=dict(
                     images=[
                         dict(
-                            source=frame_img,
-                            opacity=0.9,
-                            layer="below",
-                            sizing="stretch",
-                            x=0,
-                            sizex=img_width,
-                            y=img_height,
-                            sizey=img_height,
-                            xref="x",
-                            yref="y",
+                            sizey=img_height,  # img container height
+                            sizex=img_width,  # img container width
+                            source=frame_img,  # img
+                            yref="y",  # use y-axis coordinates
+                            xref="x",  # use x-axis coordinates
+                            y=img_height,  # y-position in yref units
+                            x=max(
+                                (CENTER_X - (img_width / 2)), 0
+                            ),  # x-position in xref units
+                            layer="below",  # render below detections
+                            opacity=0.9,  # img transparency
+                            sizing="stretch",  # how to fill frame TODO: will determine how to translate detections for overlay
                         )
                     ],
                     xaxis_visible=False,
                     yaxis_visible=False,
-                    width=img_width,
-                    height=img_height,
+                    width=width,  # main width,
+                    height=height,  # main height,
                     shapes=shapes,
                     annotations=emotions_annotations,
                     updatemenus=[
