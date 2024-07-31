@@ -17,3 +17,6 @@ tqdm
 kornia
 av>=9.2.0
 xgboost>=1.6.0
+huggingface_hub
+safetensors
+skops

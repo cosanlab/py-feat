@@ -11,3 +11,4 @@ __all__ = ["detector", "data", "utils", "plotting", "transforms", "__version__"]
 from .data import Fex
 from .detector import Detector
 from .version import __version__
+
