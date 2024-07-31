@@ -202,48 +202,54 @@ class Detector(object):
                     self.landmark_detector = self.landmark_detector(
                         136, **landmark_model_kwargs
                     )
-                    checkpoint = torch.load(
-                        os.path.join(
-                            get_resource_path(),
-                            "mobilenet_224_model_best_gdconv_external.pth.tar",
-                        ),
-                        map_location=self.device,
-                    )
-                    ##################################
-                    state_dict = checkpoint["state_dict"]
-                    from collections import OrderedDict
+                    self.landmark_detector.from_pretrained(f'py-feat/{landmark}', cache_dir=get_resource_path())
 
-                    new_state_dict = OrderedDict()
-                    for k, v in state_dict.items():
-                        if "module." in k:
-                            k = k.replace("module.", "")
-                        new_state_dict[k] = v
-                    self.landmark_detector.load_state_dict(new_state_dict)
-                    #####################################
+                    # checkpoint = torch.load(
+                    #     os.path.join(
+                    #         get_resource_path(),
+                    #         "mobilenet_224_model_best_gdconv_external.pth.tar",
+                    #     ),
+                    #     map_location=self.device,
+                    # )
+                    # ##################################
+                    # state_dict = checkpoint["state_dict"]
+                    # from collections import OrderedDict
 
-                    # self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                    # new_state_dict = OrderedDict()
+                    # for k, v in state_dict.items():
+                    #     if "module." in k:
+                    #         k = k.replace("module.", "")
+                    #     new_state_dict[k] = v
+                    # self.landmark_detector.load_state_dict(new_state_dict)
+                    # #####################################
+
                 elif landmark == "pfld":
                     self.landmark_detector = self.landmark_detector(
                         **landmark_model_kwargs
                     )
-                    checkpoint = torch.load(
-                        os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
-                        map_location=self.device,
-                    )
-                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+                    self.landmark_detector.from_pretrained(f'py-feat/{landmark}', cache_dir=get_resource_path())
+
+                    # checkpoint = torch.load(
+                    #     os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
+                    #     map_location=self.device,
+                    # )
+                    # self.landmark_detector.load_state_dict(checkpoint["state_dict"])
                 elif landmark == "mobilefacenet":
                     self.landmark_detector = self.landmark_detector(
                         [112, 112], 136, **landmark_model_kwargs
                     )
-                    checkpoint = torch.load(
-                        os.path.join(
-                            get_resource_path(), "mobilefacenet_model_best.pth.tar"
-                        ),
-                        map_location=self.device,
-                    )
-                    self.landmark_detector.load_state_dict(checkpoint["state_dict"])
-            self.landmark_detector.eval()
+                    self.landmark_detector.from_pretrained(f'py-feat/{landmark}', cache_dir=get_resource_path())
 
+                    # checkpoint = torch.load(
+                    #     os.path.join(
+                    #         get_resource_path(), "mobilefacenet_model_best.pth.tar"
+                    #     ),
+                    #     map_location=self.device,
+                    # )
+                    # self.landmark_detector.load_state_dict(checkpoint["state_dict"])
+            self.landmark_detector.eval()
+            self.landmark_detector.to(self.device)
+            
             self.info["landmark_model"] = landmark
             self.info["mapper"] = openface_2d_landmark_columns
             self.info["face_landmark_columns"] = openface_2d_landmark_columns

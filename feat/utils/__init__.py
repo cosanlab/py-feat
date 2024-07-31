@@ -161,3 +161,5 @@ def set_torch_device(device="cpu"):
 def is_list_of_lists_empty(list_of_lists):
     """Helper function to check if list of lists is empty"""
     return not any(list_of_lists)
+
+

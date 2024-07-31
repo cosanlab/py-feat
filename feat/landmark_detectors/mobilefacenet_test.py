@@ -19,6 +19,7 @@ import torch.nn.functional as F
 import torch
 import torch.nn as nn
 from collections import namedtuple
+from huggingface_hub import PyTorchModelHubMixin
 
 ##################################  Original Arcface Model #############################################################
 
@@ -177,7 +178,7 @@ class GDC(Module):
         return x
 
 
-class MobileFaceNet(Module):
+class MobileFaceNet(Module, PyTorchModelHubMixin):
     def __init__(self, input_size, embedding_size=512, output_name="GDC"):
         super(MobileFaceNet, self).__init__()
         assert output_name in ["GNAP", "GDC"]
