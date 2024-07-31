@@ -274,7 +274,7 @@ def load_model_weights(model_type='au', model='xgb', location='huggingface'):
         if model == 'xgb':
             if location == 'huggingface':
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(repo_id="py-feat/xgb_au", filename="xgb_au_classifier.skops")
+                model_path = hf_hub_download(repo_id="py-feat/xgb_au", filename="xgb_au_classifier.skops", cache_dir=get_resource_path())
                 unknown_types = get_untrusted_types(file=model_path)
                 loaded_model = load(model_path, trusted=unknown_types)
                 return {'scaler_upper':loaded_model.scaler_upper, 
@@ -313,7 +313,7 @@ def load_model_weights(model_type='au', model='xgb', location='huggingface'):
         elif model == 'svm':
             if location == 'huggingface':
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(repo_id="py-feat/svm_au", filename="svm_au_classifier.skops")
+                model_path = hf_hub_download(repo_id="py-feat/svm_au", filename="svm_au_classifier.skops", cache_dir=get_resource_path())
                 unknown_types = get_untrusted_types(file=model_path)
                 loaded_model = load(model_path, trusted=unknown_types)
                 return {'scaler_upper':loaded_model.scaler_upper, 
@@ -345,7 +345,7 @@ def load_model_weights(model_type='au', model='xgb', location='huggingface'):
         if model == 'svm':
             if location == 'huggingface':
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(repo_id="py-feat/svm_emo", filename="svm_emo_classifier.skops")
+                model_path = hf_hub_download(repo_id="py-feat/svm_emo", filename="svm_emo_classifier.skops", cache_dir=get_resource_path())
                 unknown_types = get_untrusted_types(file=model_path)
                 loaded_model = load(model_path, trusted=unknown_types)
                 return {'scaler_full':loaded_model.scaler_full, 
