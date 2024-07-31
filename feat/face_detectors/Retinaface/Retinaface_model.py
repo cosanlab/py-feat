@@ -1,4 +1,6 @@
+# import os
 import torch
+# import json
 from itertools import product as product
 from math import ceil
 import torch
@@ -6,8 +8,12 @@ import torch.nn as nn
 import torchvision.models._utils as _utils
 import torch.nn.functional as F
 import warnings
+from huggingface_hub import PyTorchModelHubMixin
+from feat.utils.io import get_resource_path
 
-
+# with open(os.path.join(get_resource_path(), "model_config.json"), "r") as f:
+    # model_config = json.load(f)
+    
 def conv_bn(inp, oup, stride=1, leaky=0):
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
@@ -196,7 +202,7 @@ class LandmarkHead(nn.Module):
         return out.view(out.shape[0], -1, 10)
 
 
-class RetinaFace(nn.Module):
+class RetinaFace(nn.Module, PyTorchModelHubMixin):
     def __init__(self, cfg=None, phase="train"):
         """
         :param cfg:  Network related settings.
@@ -208,10 +214,7 @@ class RetinaFace(nn.Module):
         if cfg["name"] == "mobilenet0.25":
             backbone = MobileNetV1()
             if cfg["pretrain"]:
-                checkpoint = torch.load(
-                    "./weights/mobilenetV1X0.25_pretrain.tar",
-                    map_location=torch.device("cpu"),
-                )
+                checkpoint = torch.load("./weights/mobilenetV1X0.25_pretrain.tar", map_location=torch.device('cpu'))
                 from collections import OrderedDict
 
                 new_state_dict = OrderedDict()

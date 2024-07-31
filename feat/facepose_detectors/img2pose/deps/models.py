@@ -9,10 +9,10 @@ from torchvision.models.detection.roi_heads import RoIHeads
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 from torchvision.ops import MultiScaleRoIAlign
 from torchvision.ops import boxes as box_ops
-
 from .generalized_rcnn import GeneralizedRCNN
 from .rpn import AnchorGenerator, RegionProposalNetwork, RPNHead
 from .pose_operations import transform_pose_global_project_bbox
+from huggingface_hub import PyTorchModelHubMixin
 
 
 class FastRCNNDoFPredictor(nn.Module):
@@ -66,10 +66,10 @@ class FastRCNNClassPredictor(nn.Module):
         return scores
 
 
-class FasterDoFRCNN(GeneralizedRCNN):
+class FasterDoFRCNN(GeneralizedRCNN, PyTorchModelHubMixin):
     def __init__(
         self,
-        backbone,
+        backbone=None,
         num_classes=None,
         # transform parameters
         min_size=800,
