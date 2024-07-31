@@ -4,6 +4,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
+from huggingface_hub import PyTorchModelHubMixin
 
 
 class ConvBlock(nn.Module):
@@ -28,7 +29,7 @@ class ConvBlock(nn.Module):
 
 
 # USE global depthwise convolution layer. Compatible with MobileNetV2 (224×224), MobileNetV2_ExternalData (224×224)
-class MobileNet_GDConv(nn.Module):
+class MobileNet_GDConv(nn.Module, PyTorchModelHubMixin):
     def __init__(self, num_classes):
         super(MobileNet_GDConv, self).__init__()
         self.pretrain_net = models.mobilenet_v2(pretrained=False)
