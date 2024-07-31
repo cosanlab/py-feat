@@ -8,6 +8,7 @@ from torch import nn
 from torch.nn import functional as F
 from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path
+from huggingface_hub import PyTorchModelHubMixin
 
 # from .utils.download import download_url_to_file
 
@@ -183,7 +184,7 @@ class Mixed_7a(nn.Module):
         return out
 
 
-class InceptionResnetV1(nn.Module):
+class InceptionResnetV1(nn.Module, PyTorchModelHubMixin):
     """Facenet Inception Resnet V1 model with optional loading of pretrained weights.
 
     Model parameters can be loaded based on pretraining on the VGGFace2 or CASIA-Webface
