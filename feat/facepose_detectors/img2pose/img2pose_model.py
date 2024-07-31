@@ -1,16 +1,19 @@
 import torch
-from torch.nn import DataParallel, Module
+import torch.nn as nn
+from torch.nn import DataParallel
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from .deps.models import FasterDoFRCNN
 from feat.utils import set_torch_device
 import warnings
+from huggingface_hub import PyTorchModelHubMixin
+
 
 """
 Model adapted from https://github.com/vitoralbiero/img2pose
 """
 
 
-class WrappedModel(Module):
+class WrappedModel(nn.Module, PyTorchModelHubMixin):
     def __init__(self, module):
         super(WrappedModel, self).__init__()
         self.module = module
@@ -50,7 +53,7 @@ class img2poseModel:
         # create network backbone
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            backbone = resnet_fpn_backbone(f"resnet{self.depth}", pretrained=True)
+            backbone = resnet_fpn_backbone(backbone_name=f"resnet{self.depth}", weights=None)
 
         if pose_mean is not None:
             pose_mean = torch.tensor(pose_mean)
@@ -61,8 +64,8 @@ class img2poseModel:
 
         # create the feature pyramid network
         self.fpn_model = FasterDoFRCNN(
-            backbone,
-            2,
+            backbone=backbone,
+            num_classes=2,
             min_size=self.min_size,
             max_size=self.max_size,
             pose_mean=pose_mean,
@@ -76,7 +79,8 @@ class img2poseModel:
         )
 
         if self.device.type == "cpu":
-            self.fpn_model = WrappedModel(self.fpn_model)
+            # self.fpn_model = WrappedModel(self.fpn_model)
+            self.fpn_model = self.fpn_model
         else:  # GPU
             self.fpn_model = DataParallel(self.fpn_model)
         self.fpn_model = self.fpn_model.to(self.device)
@@ -88,10 +92,14 @@ class img2poseModel:
     # def train(self):
     #     self.fpn_model.train()
 
-    def run_model(self, imgs, targets=None):
-        outputs = self.fpn_model(imgs, targets)
+    # def run_model(self, imgs, targets=None):
+    #     outputs = self.fpn_model(imgs, targets)
+    #     return outputs
+    
+    def run_model(self, imgs):
+        outputs = self.fpn_model(imgs)
         return outputs
-
+    
     def forward(self, imgs, targets):
         losses = self.run_model(imgs, targets)
         return losses
