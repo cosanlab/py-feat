@@ -27,7 +27,7 @@ from feat.utils.image_operations import (
     BBox,
 )
 from feat.utils.stats import cluster_identities
-from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP
+from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP, load_model_weights
 from feat.data import (
     Fex,
     ImageDataset,
@@ -294,6 +294,9 @@ class Detector(object):
                 ]
             if self.au_model is not None:
                 self.au_model = self.au_model(**au_model_kwargs)
+                au_weights = load_model_weights(model_type='au', model=au, location='huggingface')
+                self.au_model.load_weights(au_weights['scaler_upper'], au_weights['pca_model_upper'], au_weights['scaler_lower'], au_weights['pca_model_lower'], au_weights['scaler_full'], au_weights['pca_model_full'], au_weights['au_classifiers'])
+
                 predictions = np.full_like(
                     np.atleast_2d(self.info["au_presence_columns"]), np.nan
                 )
@@ -308,9 +311,15 @@ class Detector(object):
             self.emotion_model = fetch_model("emotion_model", emotion)
             self.info["emotion_model"] = emotion
             if self.emotion_model is not None:
-                self.emotion_model = self.emotion_model(
-                    device=self.device, **emotion_model_kwargs
-                )
+                if emotion == "resmasknet":
+                    self.emotion_model = self.emotion_model(
+                        device=self.device, **emotion_model_kwargs
+                    )
+                elif emotion == "svm":
+                    self.emotion_model = self.emotion_model(**emotion_model_kwargs)
+                    emo_weights = load_model_weights(model_type='emotion', model=emotion, location='huggingface')
+                    self.emotion_model.load_weights(emo_weights['scaler_full'], emo_weights['pca_model_full'], emo_weights['emo_classifiers'])
+
                 self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
                 predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
                 empty_emotion = pd.DataFrame(predictions, columns=FEAT_EMOTION_COLUMNS)
