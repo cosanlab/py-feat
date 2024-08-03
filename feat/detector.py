@@ -38,10 +38,15 @@ from feat.data import (
 import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, Grayscale, ToTensor
+import torchvision.transforms as transforms
+from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
+from feat.facepose_detectors.img2pose.deps.models import postprocess_img2pose
 import logging
 import warnings
 from tqdm import tqdm
-import torchvision.transforms as transforms
+from huggingface_hub import hf_hub_download
+from safetensors.torch import load_file
+import json
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -118,6 +123,9 @@ class Detector(object):
         # Setup device
         self.device = set_torch_device(device)
 
+        # Load Model Configs
+        with open(os.path.join(get_resource_path(), 'model_config.json'), 'r') as file:
+            self.model_configs = json.load(file)
         # Verify model names and download if necessary
         face, landmark, au, emotion, facepose, identity = get_pretrained_models(
             face_model,
@@ -266,11 +274,31 @@ class Detector(object):
             logging.info(f"Loading facepose model: {facepose}")
             self.facepose_detector = fetch_model("facepose_model", facepose)
             if "img2pose" in facepose:
-                self.facepose_detector = self.facepose_detector(
-                    constrained="img2pose-c" == face,
-                    device=self.device,
-                    **facepose_model_kwargs,
-                )
+                backbone = resnet_fpn_backbone(backbone_name=f"resnet{self.model_configs['img2pose']['depth']}", weights=None)
+                self.facepose_detector = self.facepose_detector(backbone=backbone,
+                        num_classes=2,
+                        min_size=self.model_configs['img2pose']['min_size'],
+                        max_size=self.model_configs['img2pose']['max_size'],
+                        pose_mean=torch.tensor(self.model_configs['img2pose']['pose_mean']),
+                        pose_stddev=torch.tensor(self.model_configs['img2pose']['pose_stddev']),
+                        threed_68_points=torch.tensor(self.model_configs['img2pose']['threed_points']),
+                        rpn_pre_nms_top_n_test=self.model_configs['img2pose']['rpn_pre_nms_top_n_test'],
+                        rpn_post_nms_top_n_test=self.model_configs['img2pose']['rpn_post_nms_top_n_test'],
+                        bbox_x_factor=self.model_configs['img2pose']['bbox_x_factor'],
+                        bbox_y_factor=self.model_configs['img2pose']['bbox_y_factor'],
+                        expand_forehead=self.model_configs['img2pose']['expand_forehead'],
+                        **facepose_model_kwargs)
+                
+                # self.facepose_detector = self.facepose_detector(
+                #     constrained="img2pose-c" == face,
+                #     device=self.device,
+                #     **facepose_model_kwargs,
+                # )
+                facepose_model_file = hf_hub_download(repo_id= "py-feat/img2pose", filename="model.safetensors", cache_dir=get_resource_path())
+                facepose_checkpoint = load_file(facepose_model_file)
+                self.facepose_detector.load_state_dict(facepose_checkpoint)
+                self.facepose_detector.eval()
+                self.facepose_detector.to(self.device)
             else:
                 self.facepose_detector = self.facepose_detector(**facepose_model_kwargs)
             self.info["facepose_model"] = facepose
@@ -423,7 +451,10 @@ class Detector(object):
 
         if "img2pose" in self.info["face_model"]:
             frame = frame / 255
-            faces, poses = self.face_detector(frame, **face_model_kwargs)
+            # faces, poses = self.face_detector(frame, **face_model_kwargs)
+            img2pose_output = postprocess_img2pose(self.facepose_detector(frame, **face_model_kwargs))
+            faces = img2pose_output['boxes']
+            poses = img2pose_output['dofs'][:, :3] # Only returning xyz for now not translation
         else:
             faces = self.face_detector(frame, **face_model_kwargs)
 
@@ -537,9 +568,10 @@ class Detector(object):
 
         output = {}
         if "img2pose" in self.info["facepose_model"]:
-            faces, poses = self.facepose_detector(frame, **facepose_model_kwargs)
-            output["faces"] = faces
-            output["poses"] = poses
+            img2pose_output = self.facepose_detector(frame, **facepose_model_kwargs)
+            img2pose_output = postprocess_img2pose(img2pose_output[0])
+            output["faces"] = img2pose_output['boxes']
+            output["poses"] = img2pose_output['dofs'] # Only returning xyz for now not translation
         else:
             output["poses"] = self.facepose_detector(
                 frame, landmarks, **facepose_model_kwargs
@@ -765,7 +797,7 @@ class Detector(object):
             detected_faces=faces,
             **landmark_model_kwargs,
         )
-
+        
         poses_dict = self.detect_facepose(
             batch_data["Image"], landmarks, **facepose_model_kwargs
         )

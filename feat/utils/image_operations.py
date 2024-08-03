@@ -24,6 +24,7 @@ from skimage import draw
 import logging
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
+import kornia
 
 __all__ = [
     "neutral",
@@ -798,6 +799,33 @@ def convert_to_euler(rotvec, is_rotvec=True):
     rot_mat_2 = np.transpose(rotvec)
     angle = Rotation.from_matrix(rot_mat_2).as_euler("xyz", degrees=True)
     return [angle[0], -angle[2], -angle[1]]  # pitch, roll, yaw
+
+def rotvec_to_euler_angles(rotation_vector):
+    """
+    Convert a rotation vector to Euler angles using Kornia in 'xyz'
+
+    Args:
+        rotation_vector (torch.Tensor): Tensor of shape (N, 3) representing the rotation vectors.
+
+    Returns:
+        torch.Tensor: Tensor of shape (N, 3) representing the Euler angles.
+    """
+
+    # Ensure rotation_vector is of shape (N, 3)
+    if rotation_vector.dim() == 1:
+        rotation_vector = rotation_vector.unsqueeze(0)
+
+    # Convert rotation vector to rotation matrix
+    rotation_matrix = kornia.geometry.conversions.axis_angle_to_rotation_matrix(rotation_vector)
+
+    # Convert rotation matrix to quaternion
+    quaternion = kornia.geometry.conversions.rotation_matrix_to_quaternion(rotation_matrix)
+
+    # Convert quaternion to Euler angles
+    euler_angles = kornia.geometry.conversions.euler_from_quaternion(quaternion[..., 0], quaternion[..., 1], quaternion[..., 2], quaternion[..., 3])
+
+    # Stack the results to form a single tensor
+    return torch.stack(euler_angles, dim=-1)
 
 
 def py_cpu_nms(dets, thresh):

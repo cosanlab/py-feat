@@ -10,11 +10,12 @@ from PIL import Image
 from feat.face_detectors.MTCNN.MTCNN_model import PNet, RNet, ONet
 from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
 from feat.utils import set_torch_device
+from huggingface_hub import PyTorchModelHubMixin
 
 import torch.nn as nn
 
 
-class MTCNN(nn.Module):
+class MTCNN(nn.Module, PyTorchModelHubMixin):
     """MTCNN face detection module.
     This class loads pretrained P-, R-, and O-nets and returns images cropped to include the face
     only, given raw input images of one of the following types:

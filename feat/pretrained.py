@@ -15,6 +15,7 @@ from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
     EmoSVMClassifier,
 )
+from feat.facepose_detectors.img2pose.deps.models import FasterDoFRCNN
 from feat.identity_detectors.facenet.facenet_test import Facenet
 from feat.utils.io import get_resource_path, download_url
 import os
@@ -31,8 +32,8 @@ PRETRAINED_MODELS = {
         {"retinaface": Retinaface},
         {"faceboxes": FaceBoxes},
         {"mtcnn": MTCNN},
-        {"img2pose": Img2Pose},
-        {"img2pose-c": Img2Pose},
+        {"img2pose": FasterDoFRCNN},
+        {"img2pose-c": FasterDoFRCNN},
     ],
     "landmark_model": [
         {"mobilenet": MobileNet_GDConv},
@@ -45,8 +46,8 @@ PRETRAINED_MODELS = {
         {"svm": EmoSVMClassifier},
     ],
     "facepose_model": [
-        {"img2pose": Img2Pose},
-        {"img2pose-c": Img2Pose},
+        {"img2pose": FasterDoFRCNN},
+        {"img2pose-c": FasterDoFRCNN},
     ],
     "identity_model": [{"facenet": Facenet}],
 }
