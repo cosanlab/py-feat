@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from math import ceil
 from itertools import product as product
+from huggingface_hub import PyTorchModelHubMixin
 
 
 class BasicConv2d(nn.Module):
@@ -61,7 +62,7 @@ class CRelu(nn.Module):
         return x
 
 
-class FaceBoxesNet(nn.Module):
+class FaceBoxesNet(nn.Module, PyTorchModelHubMixin):
     def __init__(self, phase, size, num_classes):
         super(FaceBoxesNet, self).__init__()
         self.phase = phase
