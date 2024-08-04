@@ -38,8 +38,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
-import kornia
-from kornia.geometry.transform import warp_affine
+from torchvision.utils import draw_keypoints, draw_bounding_boxes, make_grid
 from scipy.spatial import ConvexHull
 from skimage.morphology.convex_hull import grid_points_in_poly
 from torch.utils.data import DataLoader
@@ -102,6 +101,13 @@ def plot_frame(frame, boxes=None, landmarks=None, boxes_width=2, boxes_colors='c
             new_frame = make_grid(frame)
         return transforms.ToPILImage()(new_frame)
 
+def convert_bbox_output(img2pose_output):
+    '''Convert im2pose_output into Fex Format'''
+    
+    widths = img2pose_output['boxes'][:, 2] - img2pose_output['boxes'][:, 0]  # right - left
+    heights = img2pose_output['boxes'][:, 3] - img2pose_output['boxes'][:, 1] # bottom - top
+    
+    return torch.stack((img2pose_output['boxes'][:, 0], img2pose_output['boxes'][:, 1], widths, heights, img2pose_output['scores']), dim=1)
 
 def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bbox=1.2):
     """Extract face from image and resize using pytorch.
@@ -475,11 +481,18 @@ def run_detection():
     )
 
     # Run Detector
+    frame_id = 0
     batch_output = []
     for batch_id, batch_data in enumerate(tqdm(data_loader)):
-        batch_output.append(detector.forward(batch_data['Image']))
+        fex_data = detector.forward(batch_data['Image'])
+        fex_data['input'] = batch_data['FileNames'][0]
+        fex_data['frame'] = frame_id
+        frame_id += 1
+        batch_output.append(fex_data)
+            #     faces = _inverse_face_transform(faces, batch_data)
+            # landmarks = _inverse_landmark_transform(landmarks, batch_data)
     batch_output = pd.concat(batch_output)
-    batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+    batch_output.compute_identities(threshold=0.8, inplace=True)
 
     return batch_output
 
