@@ -59,6 +59,48 @@ from feat.utils.image_operations import (
     BBox,
 )
 
+def plot_frame(frame, boxes=None, landmarks=None, boxes_width=2, boxes_colors='cyan', landmarks_radius=2, landmarks_width=2, landmarks_colors='white'):
+    ''' 
+    Plot Torch Frames and py-feat output. If multiple frames will create a grid of images
+
+    Args:
+        frame (torch.Tensor): Tensor of shape (B, C, H, W) or (C, H, W)
+        boxes (torch.Tensor): Tensor of shape (N, 4) containing bounding boxes
+        landmarks (torch.Tensor): Tensor of shape (N, 136) containing flattened 68 point landmark keystones
+        
+    Returns:
+        PILImage
+    '''
+    
+    if len(frame.shape) == 4:
+        B, C, H, W = frame.shape
+    elif len(frame.shape) == 3:
+        C, H, W = frame.shape
+    else:
+        raise ValueError('Can only plot (B,C,H,W) or (C,H,W)')
+    if B == 1:
+        if boxes is not None:
+            new_frame = draw_bounding_boxes(frame.squeeze(0), boxes, width=boxes_width, colors=boxes_colors)
+            
+            if landmarks is not None:
+                new_frame = draw_keypoints(new_frame, landmarks.reshape(landmarks.shape[0], -1, 2), radius=landmarks_radius, width=landmarks_width, colors=landmarks_colors)
+        else:
+            if landmarks is not None:
+                new_frame = draw_keypoints(frame.squeeze(0), landmarks.reshape(landmarks.shape[0], -1, 2), radius=landmarks_radius, width=landmarks_width, colors=landmarks_colors)        
+            else:
+                new_frame = frame.squeeze(0)
+        return transforms.ToPILImage()(new_frame.squeeze(0))
+    else:
+        if (boxes is not None) & (landmarks is None):
+            new_frame = make_grid(torch.stack([draw_bounding_boxes(f, b.unsqueeze(0), width=boxes_width, colors=boxes_colors) for f,b in zip(frame.unbind(dim=0), boxes.unbind(dim=0))], dim=0))
+        elif (landmarks is not None) & (boxes is None):
+            new_frame = make_grid(torch.stack([draw_keypoints(f, l.unsqueeze(0), radius=landmarks_radius, width=landmarks_width, colors=landmarks_colors) for f,l in zip(frame.unbind(dim=0), landmarks.reshape(landmarks.shape[0], -1, 2).unbind(dim=0))], dim=0))
+        elif (boxes is not None) & (landmarks is not None):
+            new_frame = make_grid(torch.stack([draw_keypoints(fr, l.unsqueeze(0), radius=landmarks_radius, width=landmarks_width, colors=landmarks_colors) for fr,l in zip([draw_bounding_boxes(f, b.unsqueeze(0), width=boxes_width, colors=boxes_colors) for f,b in zip(frame.unbind(dim=0), boxes.unbind(dim=0))], 
+                                                  landmarks.reshape(landmarks.shape[0], -1, 2).unbind(dim=0))]))
+        else:
+            new_frame = make_grid(frame)
+        return transforms.ToPILImage()(new_frame)
 
 
 def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bbox=1.2):
@@ -123,41 +165,36 @@ def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bb
     # The output shape should be (N, C, face_size, face_size)
     return cropped_faces, new_bboxes
 
-def inverse_transform_landmarks_torch(landmarks, new_bbox):
+def inverse_transform_landmarks_torch(landmarks, boxes):
     """
     Transforms landmarks based on new bounding boxes.
 
     Args:
-        landmarks (torch.Tensor): Tensor of shape (N, 68, 2) representing 68 landmarks for N samples.
+        landmarks (torch.Tensor): Tensor of shape (N, 136) representing 68 landmarks for N samples.
         new_bbox (torch.Tensor): Tensor of shape (N, 4) representing bounding boxes [x1, y1, x2, y2] for N samples.
 
     Returns:
-        torch.Tensor: Transformed landmarks of shape (N, 68, 2).
+        torch.Tensor: Transformed landmarks of shape (N, 136).
     """
-    N, num_landmarks, _ = landmarks.shape
-
-    # Extract the bounding box components
-    left = new_bbox[:, 0]
-    top = new_bbox[:, 1]
-    right = new_bbox[:, 2]
-    bottom = new_bbox[:, 3]
+    N = landmarks.shape[0]
+    landmarks = landmarks.reshape(landmarks.shape[0], -1, 2)
+    
+    # Extract bounding box coordinates
+    left = boxes[:, 0]   # (N,)
+    top = boxes[:, 1]    # (N,)
+    right = boxes[:, 2]  # (N,)
+    bottom = boxes[:, 3] # (N,)
 
     # Calculate width and height of the bounding boxes
-    width = right - left
-    height = bottom - top
+    width = right - left  # (N,)
+    height = bottom - top # (N,)
 
-    # Reshape for broadcasting
-    width = width.view(N, 1)  # Shape: (N, 1)
-    height = height.view(N, 1)  # Shape: (N, 1)
-    left = left.view(N, 1)  # Shape: (N, 1)
-    top = top.view(N, 1)  # Shape: (N, 1)
-
-    # Apply transformation
+    # Rescale the landmarks
     transformed_landmarks = torch.zeros_like(landmarks)
-    transformed_landmarks[:, :, 0] = landmarks[:, :, 0] * width + left
-    transformed_landmarks[:, :, 1] = landmarks[:, :, 1] * height + top
+    transformed_landmarks[:, :, 0] = landmarks[:, :, 0] * width.unsqueeze(1) + left.unsqueeze(1)
+    transformed_landmarks[:, :, 1] = landmarks[:, :, 1] * height.unsqueeze(1) + top.unsqueeze(1)
 
-    return transformed_landmarks
+    return transformed_landmarks.reshape(N, 136)
 
 def _batch_hog(frame, landmarks):
     """
@@ -308,7 +345,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         # Initialize resmasknet
         self.emotion_detector = ResMasking("", in_channels=3)
         self.emotion_detector.fc = nn.Sequential(nn.Dropout(0.4), nn.Linear(512, 7))
-        self.emotion_detector.from_pretrained("py-feat/resmasknet")
+        self.emotion_detector.from_pretrained("py-feat/resmasknet", cache_dir=get_resource_path())
         self.emotion_detector.eval()
         self.emotion_detector.to(self.device)
 
@@ -320,7 +357,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             dropout_prob=0.6,
             device=self.device,
         )
-        self.identity_detector.from_pretrained("py-feat/facenet")
+        self.identity_detector.from_pretrained("py-feat/facenet", cache_dir=get_resource_path())
         self.identity_detector.eval()
         self.identity_detector.to(self.device)
 
@@ -386,6 +423,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         feat_aus = pd.DataFrame(aus, columns=AU_LANDMARK_MAP['Feat'])
         feat_emotions = pd.DataFrame(emotion_probabilities.detach().numpy(), columns=FEAT_EMOTION_COLUMNS)
         feat_identities = pd.DataFrame(identity_embeddings.detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:])
+        frame = 0
         
         return Fex(pd.concat([feat_faceboxes, feat_landmarks, feat_aus, feat_emotions, feat_identities], axis=1),
                 au_columns=AU_LANDMARK_MAP['Feat'],
@@ -400,7 +438,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 au_model='xgb_au',
                 emotion_model='resmasknet',
                 facepose_model='img2pose',
-                identity_model='facenet')   
+                identity_model='facenet')    
         
         
 def run_detection():
