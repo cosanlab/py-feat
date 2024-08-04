@@ -339,7 +339,9 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
 
         # Initialize mobilefacenet
         self.landmark_detector = MobileFaceNet([112, 112], 136)
-        self.landmark_detector.from_pretrained('py-feat/mobilefacenet', cache_dir=get_resource_path())
+        # self.landmark_detector.from_pretrained('py-feat/mobilefacenet', cache_dir=get_resource_path())
+        landmark_model_file = hf_hub_download(repo_id='py-feat/mobilefacenet', filename="mobilefacenet_model_best.pth.tar", cache_dir=get_resource_path())
+        self.landmark_detector.load_state_dict(torch.load(landmark_model_file, map_location=self.device)['state_dict'])
         self.landmark_detector.eval()
         self.landmark_detector.to(self.device)
 
@@ -351,7 +353,10 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         # Initialize resmasknet
         self.emotion_detector = ResMasking("", in_channels=3)
         self.emotion_detector.fc = nn.Sequential(nn.Dropout(0.4), nn.Linear(512, 7))
-        self.emotion_detector.from_pretrained("py-feat/resmasknet", cache_dir=get_resource_path())
+        # self.emotion_detector.from_pretrained("py-feat/resmasknet", cache_dir=get_resource_path())
+        emotion_model_file = hf_hub_download(repo_id='py-feat/resmasknet', filename="ResMaskNet_Z_resmasking_dropout1_rot30.pth", cache_dir=get_resource_path())
+        emotion_checkpoint = torch.load(emotion_model_file, map_location=device)["net"]
+        self.emotion_detector.load_state_dict(emotion_checkpoint)
         self.emotion_detector.eval()
         self.emotion_detector.to(self.device)
 
@@ -363,7 +368,10 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             dropout_prob=0.6,
             device=self.device,
         )
-        self.identity_detector.from_pretrained("py-feat/facenet", cache_dir=get_resource_path())
+        self.identity_detector.logits = nn.Linear(512, 8631)
+        identity_model_file = hf_hub_download(repo_id='py-feat/facenet', filename="facenet_20180402_114759_vggface2.pth", cache_dir=get_resource_path())
+        self.identity_detector.load_state_dict(torch.load(identity_model_file, map_location=device))
+        # self.identity_detector.from_pretrained("py-feat/facenet", cache_dir=get_resource_path())
         self.identity_detector.eval()
         self.identity_detector.to(self.device)
 
@@ -372,35 +380,35 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         #########################
         # img2pose
         # Preprocess
-        # frame = convert_image_to_tensor(img, img_type="float32") / 255.0
-        frame = convert_image_to_tensor(img, img_type="float32").to(self.device) / 255.0
+        frame = convert_image_to_tensor(img, img_type="float32") / 255.0
 
         # Forward
         img2pose_output = self.facepose_detector(frame)
         
         # Postprocess
         img2pose_output = postprocess_img2pose(img2pose_output[0])
-        faceboxes = img2pose_output['boxes']
+        bbox = img2pose_output['boxes']
         poses = img2pose_output['dofs']
         facescores = img2pose_output['scores']
         
         #########################
         # mobilefacenet
         # Preprocess
-        extracted_faces, new_bbox = extract_face_from_bbox_torch(frame, faceboxes, face_size=face_size)
+        extracted_faces, new_bbox = extract_face_from_bbox_torch(frame, bbox, face_size=face_size)
 
         # Forward
         landmarks = self.landmark_detector.forward(extracted_faces)[0]
 
         # Postprocess
-        new_landmarks = inverse_transform_landmarks_torch(landmarks.reshape(landmarks.shape[0], -1, 2), new_bbox)
-        
+        new_landmarks = inverse_transform_landmarks_torch(landmarks, new_bbox)
+
         #########################
         # resmasknet
         # Preprocess
-        resmasknet_faces, resmasknet_bbox = extract_face_from_bbox_torch(frame, img2pose_output['boxes'], expand_bbox=1.1, face_size = self.model_configs['Resmasknet']['image_size'])
+        # frame = Compose([Grayscale(3)])(convert_image_to_tensor(img, img_type="float32"))
+        resmasknet_faces, resmasknet_bbox = extract_face_from_bbox_torch(frame, bbox, expand_bbox=1.1, face_size = self.model_configs['Resmasknet']['image_size'])
 
-        # Forward
+        # Forward - [angry, disgust, fear, happy, sad, surprise, neutral]
         emotions = self.emotion_detector.forward(resmasknet_faces)
         
         # Postprocessing
@@ -414,22 +422,18 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         # xgb_au
         # Preprocess
         frame_au = convert_image_to_tensor(img, img_type="float32")
-        hog_features, new_landmarks = _batch_hog(frame=convert_image_to_tensor(frame_au, img_type="float32"), landmarks=landmarks)
+        hog_features, au_new_landmarks = _batch_hog(frame=convert_image_to_tensor(frame_au, img_type="float32"), landmarks=landmarks)
 
         # Forward
-        aus = self.au_detector.detect_au(frame=hog_features, landmarks=[new_landmarks])
-
-        # print(f'img: {frame.shape}, facebox: {faceboxes.shape}, pose: {poses.shape}, facescore: {facescores.shape}, extracted_face: {extracted_faces.shape}, resmasknet_face:{resmasknet_faces.shape}, emotion:{emotions.shape}')
+        aus = self.au_detector.detect_au(frame=hog_features, landmarks=[au_new_landmarks])
 
         # Create Fex Output Representation
-        feat_faceboxes = pd.DataFrame(img2pose_output['boxes'].detach().numpy(), columns=FEAT_FACEBOX_COLUMNS[:-1])
-        feat_faceboxes[FEAT_FACEBOX_COLUMNS[-1]] = img2pose_output['scores'].detach().numpy()
-        feat_poses = pd.DataFrame(img2pose_output['dofs'].detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_3D)
-        feat_landmarks = pd.DataFrame(landmarks.detach().numpy(), columns=openface_2d_landmark_columns)
+        feat_faceboxes = pd.DataFrame(convert_bbox_output(img2pose_output).detach().numpy(), columns=FEAT_FACEBOX_COLUMNS)
+        feat_poses = pd.DataFrame(poses.detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_3D)
+        feat_landmarks = pd.DataFrame(new_landmarks.detach().numpy(), columns=openface_2d_landmark_columns)
         feat_aus = pd.DataFrame(aus, columns=AU_LANDMARK_MAP['Feat'])
         feat_emotions = pd.DataFrame(emotion_probabilities.detach().numpy(), columns=FEAT_EMOTION_COLUMNS)
         feat_identities = pd.DataFrame(identity_embeddings.detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:])
-        frame = 0
         
         return Fex(pd.concat([feat_faceboxes, feat_landmarks, feat_aus, feat_emotions, feat_identities], axis=1),
                 au_columns=AU_LANDMARK_MAP['Feat'],
@@ -444,7 +448,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 au_model='xgb_au',
                 emotion_model='resmasknet',
                 facepose_model='img2pose',
-                identity_model='facenet')    
+                identity_model='facenet')  
         
         
 def run_detection():
