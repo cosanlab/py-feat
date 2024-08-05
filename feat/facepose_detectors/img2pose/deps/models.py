@@ -299,100 +299,6 @@ class DOFRoIHeads(RoIHeads):
         self.bbox_x_factor = bbox_x_factor
         self.bbox_y_factor = bbox_y_factor
         self.expand_forehead = expand_forehead
-
-    # def postprocess_detections(
-    #     self,
-    #     class_logits,  # type: Tensor
-    #     dof_regression,  # type: Tensor
-    #     proposals,  # type: List[Tensor]
-    #     image_shapes,  # type: List[Tuple[int, int]]
-    # ):
-    #     # type: (...) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]
-    #     device = class_logits.device
-    #     num_classes = class_logits.shape[-1]
-    #     boxes_per_image = [boxes_in_image.shape[0] for boxes_in_image in proposals]
-    #     pred_boxes = torch.cat(proposals, dim=0)
-    #     N = dof_regression.shape[0]
-    #     pred_boxes = pred_boxes.reshape(N, -1, 4)
-    #     pred_dofs = dof_regression.reshape(N, -1, 6)
-    #     pred_scores = F.softmax(class_logits, -1)
-
-    #     pred_boxes_list = pred_boxes.split(boxes_per_image, 0)
-    #     pred_scores_list = pred_scores.split(boxes_per_image, 0)
-    #     pred_dofs_list = pred_dofs.split(boxes_per_image, 0)
-
-    #     all_boxes = []
-    #     all_scores = []
-    #     all_labels = []
-    #     all_dofs = []
-    #     for boxes, dofs, scores, image_shape in zip(
-    #         pred_boxes_list, pred_dofs_list, pred_scores_list, image_shapes
-    #     ):
-    #         boxes = box_ops.clip_boxes_to_image(boxes, image_shape)
-
-    #         # create labels for each prediction
-    #         labels = torch.arange(num_classes, device=device)
-    #         labels = labels.view(1, -1).expand_as(scores)
-
-    #         # remove predictions with the background label
-    #         dofs = dofs[:, 1:]
-    #         scores = scores[:, 1:]
-    #         labels = labels[:, 1:]
-    #         # batch everything, by making every class prediction be a separate instance
-    #         boxes = boxes.reshape(-1, 4)
-    #         dofs = dofs.reshape(-1, 6)
-    #         scores = scores.reshape(-1)
-    #         labels = labels.reshape(-1)
-    #         # remove low scoring boxes
-    #         inds = torch.nonzero(scores > self.score_thresh).squeeze(1)
-    #         boxes, dofs, scores, labels = (
-    #             boxes[inds],
-    #             dofs[inds],
-    #             scores[inds],
-    #             labels[inds],
-    #         )
-
-    #         # remove empty boxes
-    #         keep = box_ops.remove_small_boxes(boxes, min_size=1e-2)
-    #         boxes, dofs, scores, labels = (
-    #             boxes[keep],
-    #             dofs[keep],
-    #             scores[keep],
-    #             labels[keep],
-    #         )
-
-    #         # create boxes from the predicted poses
-    #         boxes, dofs = transform_pose_global_project_bbox(
-    #             boxes,
-    #             dofs,
-    #             self.pose_mean,
-    #             self.pose_stddev,
-    #             image_shape,
-    #             self.threed_68_points,
-    #             bbox_x_factor=self.bbox_x_factor,
-    #             bbox_y_factor=self.bbox_y_factor,
-    #             expand_forehead=self.expand_forehead,
-    #         )
-
-    #         # non-maximum suppression, independently done per class
-    #         keep = box_ops.batched_nms(boxes, scores, labels, self.nms_thresh)
-
-    #         boxes, dofs, scores, labels = (
-    #             boxes[keep],
-    #             dofs[keep],
-    #             scores[keep],
-    #             labels[keep],
-    #         )
-
-    #         # keep only topk scoring predictions
-    #         keep = keep[: self.detections_per_img]
-
-    #         all_boxes.append(boxes)
-    #         all_scores.append(scores)
-    #         all_labels.append(labels)
-    #         all_dofs.append(dofs)
-
-    #     return all_boxes, all_dofs, all_scores, all_labels
     
     def postprocess_detections(
         self,
@@ -486,7 +392,6 @@ class DOFRoIHeads(RoIHeads):
             all_dofs.append(dofs)
 
         return all_boxes, all_dofs, all_scores, all_labels
-
     
 
     def forward(
