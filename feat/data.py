@@ -2199,7 +2199,18 @@ def _inverse_landmark_transform(landmarks, batch_data):
         out_frame.append(out_landmark)
     return out_frame
 
+class TensorDataset(Dataset):
+    def __init__(self, tensor):
+        self.tensor = tensor
 
+    def __len__(self):
+        # Return the number of samples in the dataset
+        return self.tensor.size(0)
+
+    def __getitem__(self, idx):
+        # Return the sample at the given index
+        return self.tensor[idx, ...]
+    
 class VideoDataset(Dataset):
     """Torch Video Dataset
 

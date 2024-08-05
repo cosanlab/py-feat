@@ -4,20 +4,19 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 from huggingface_hub import hf_hub_download, PyTorchModelHubMixin
-from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
-from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
-from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
+# from feat.face_detectors.FaceBoxes.FaceBoxes_test import FaceBoxes
+# from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
+# from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMasking, resmasking_dropout1
 from feat.identity_detectors.facenet.facenet_model import InceptionResnetV1
-from feat.facepose_detectors.img2pose.img2pose_model import img2poseModel, WrappedModel
 from feat.facepose_detectors.img2pose.deps.models import FasterDoFRCNN, postprocess_img2pose
 from feat.au_detectors.StatLearning.SL_test import XGBClassifier, SVMClassifier
-from feat.emo_detectors.StatLearning.EmoSL_test import EmoSVMClassifier
+# from feat.emo_detectors.StatLearning.EmoSL_test import EmoSVMClassifier
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
-from feat.landmark_detectors.basenet_test import MobileNet_GDConv
-from feat.landmark_detectors.pfld_compressed_test import PFLDInference
+# from feat.landmark_detectors.basenet_test import MobileNet_GDConv
+# from feat.landmark_detectors.pfld_compressed_test import PFLDInference
 from feat.pretrained import load_model_weights, AU_LANDMARK_MAP
-from feat.utils import (
+from feat.utils import (set_torch_device,
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
@@ -26,37 +25,33 @@ from feat.utils import (
     FEAT_TIME_COLUMNS,
     FEAT_IDENTITY_COLUMNS,
 )
-from feat.utils.io import get_resource_path, get_test_data_path
+from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
                                             extract_face_from_landmarks,
                                             convert_image_to_tensor,
                                             align_face,
                                             mask_image
                                         )
-from safetensors.torch import load_file
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
-from torchvision.utils import draw_keypoints, draw_bounding_boxes, make_grid
-from scipy.spatial import ConvexHull
-from skimage.morphology.convex_hull import grid_points_in_poly
-from torch.utils.data import DataLoader
 from feat.data import (
     Fex,
     ImageDataset,
+    TensorDataset,
     VideoDataset,
     _inverse_face_transform,
     _inverse_landmark_transform,
 )
-from skimage.feature import hog
+from safetensors.torch import load_file
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
+from torchvision.utils import draw_keypoints, draw_bounding_boxes, make_grid
 import torchvision.transforms as transforms
-from feat.utils import set_torch_device
-from feat.utils.image_operations import (
-    extract_face_from_landmarks,
-    convert_image_to_tensor,
-    BBox,
-)
+from scipy.spatial import ConvexHull
+from skimage.morphology.convex_hull import grid_points_in_poly
+from skimage.feature import hog
+
 
 def plot_frame(frame, boxes=None, landmarks=None, boxes_width=2, boxes_colors='cyan', landmarks_radius=2, landmarks_width=2, landmarks_colors='white'):
     ''' 
@@ -439,7 +434,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 identity_model='facenet')  
         
     def detect_image(self,
-                    input_file_list,
+                    inputs,
                     output_size=None,
                     batch_size=1,
                     num_workers=0,
@@ -454,7 +449,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         output-sizes include 256 and 512.
 
         Args:
-            input_file_list (list of str): Path to a list of paths to image files.
+            inputs (list of str, torch.Tensor): Path to a list of paths to image files or torch.Tensor of images (B, C, H, W)
             output_size (int): image size to rescale all image preserving aspect ratio.
                                 Will raise an error if not set and batch_size > 1 but images are not the same size
             batch_size (int): how many batches of images you want to run at one shot.
@@ -470,29 +465,42 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             Fex: Prediction results dataframe
         """
         
-        data_loader = DataLoader(
-            ImageDataset(
-                input_file_list,
-                output_size=output_size,
-                preserve_aspect_ratio=True,
-                padding=True,
-            ),
-            num_workers=num_workers,
-            batch_size=batch_size,
-            pin_memory=pin_memory,
-            shuffle=False,
-        )
+        if isinstance(inputs, (list, str)):
+            data_loader = DataLoader(
+                ImageDataset(
+                    inputs,
+                    output_size=output_size,
+                    preserve_aspect_ratio=True,
+                    padding=True,
+                ),
+                num_workers=num_workers,
+                batch_size=batch_size,
+                pin_memory=pin_memory,
+                shuffle=False,
+            )
         
-        batch_output = []
-        for batch_id, batch_data in enumerate(tqdm(data_loader)):
-            fex_data = self.forward(batch_data['Image'])
-            fex_data['input'] = batch_data['FileNames'][0]
-            fex_data['frame'] = batch_id
-            batch_output.append(fex_data)
-                #     faces = _inverse_face_transform(faces, batch_data)
-                # landmarks = _inverse_landmark_transform(landmarks, batch_data)
-        batch_output = pd.concat(batch_output)
-        batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
-        return batch_output
+            batch_output = []
+            for batch_id, batch_data in enumerate(tqdm(data_loader)):
+                fex_data = self.forward(batch_data['Image'])
+                fex_data['input'] = batch_data['FileNames'][0]
+                fex_data['frame'] = batch_id
+                batch_output.append(fex_data)
+                    #     faces = _inverse_face_transform(faces, batch_data)
+                    # landmarks = _inverse_landmark_transform(landmarks, batch_data)
+            batch_output = pd.concat(batch_output)
+            batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+            return batch_output
         
-   
+        elif isinstance(inputs, torch.Tensor):
+            data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=pin_memory)
+
+            batch_output = []
+            for batch_id, batch_data in enumerate(tqdm(data_loader)):
+                fex_data = self.forward(batch_data)
+                fex_data['frame'] = batch_id
+                batch_output.append(fex_data)
+                    #     faces = _inverse_face_transform(faces, batch_data)
+                    # landmarks = _inverse_landmark_transform(landmarks, batch_data)
+            batch_output = pd.concat(batch_output)
+            batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+            return batch_output   
