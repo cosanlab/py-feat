@@ -1,16 +1,14 @@
 import pytest
+from feat.au_detectors.StatLearning.SL_test import XGBClassifier
 from feat.FastDetector import FastDetector
 from feat.data import Fex
 from huggingface_hub import PyTorchModelHubMixin
-from feat.au_detectors.StatLearning.SL_test import XGBClassifier
-
 
 @pytest.mark.usefixtures(
     "single_face_img", "single_face_img_data", "multi_face_img", "multi_face_img_data"
 )
 class Test_Fast_Detector:
     """Test new single model detector"""
-
     detector = FastDetector(device="cpu")
 
     def test_init(self):
