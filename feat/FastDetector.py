@@ -377,55 +377,42 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         self.identity_detector.to(self.device)
 
     def forward(self, img, face_size=112):
-
-        #########################
-        # img2pose
-        # Preprocess
-        frame = convert_image_to_tensor(img, img_type="float32") / 255.0
-
-        # Forward
-        img2pose_output = self.facepose_detector(frame)
+        """
+        Run Model Inference
         
-        # Postprocess
+        Args:
+            img (torch.Tensor): Tensor of shape (B, C, H, W) representing the image
+            face_size (int): Output size to resize face after cropping.
+        
+        Returns:
+            Fex: Prediction results dataframe
+        """
+        
+        # img2pose
+        frame = convert_image_to_tensor(img, img_type="float32") / 255.0
+        img2pose_output = self.facepose_detector(frame)
         img2pose_output = postprocess_img2pose(img2pose_output[0])
         bbox = img2pose_output['boxes']
         poses = img2pose_output['dofs']
         facescores = img2pose_output['scores']
         
-        #########################
         # mobilefacenet
-        # Preprocess
         extracted_faces, new_bbox = extract_face_from_bbox_torch(frame, bbox, face_size=face_size)
-
-        # Forward
         landmarks = self.landmark_detector.forward(extracted_faces)[0]
-
-        # Postprocess
         new_landmarks = inverse_transform_landmarks_torch(landmarks, new_bbox)
 
-        #########################
-        # resmasknet
-        # Preprocess
+        # resmasknet - [angry, disgust, fear, happy, sad, surprise, neutral]
         # frame = Compose([Grayscale(3)])(convert_image_to_tensor(img, img_type="float32"))
         resmasknet_faces, resmasknet_bbox = extract_face_from_bbox_torch(frame, bbox, expand_bbox=1.1, face_size=224)
-
-        # Forward - [angry, disgust, fear, happy, sad, surprise, neutral]
         emotions = self.emotion_detector.forward(resmasknet_faces)
-        
-        # Postprocessing
         emotion_probabilities = torch.softmax(emotions, 1)
 
-        #########################
         # facenet
         identity_embeddings = self.identity_detector.forward(extracted_faces)
 
-        #########################
         # xgb_au
-        # Preprocess
         frame_au = convert_image_to_tensor(img, img_type="float32")
         hog_features, au_new_landmarks = _batch_hog(frame=convert_image_to_tensor(frame_au, img_type="float32"), landmarks=landmarks)
-
-        # Forward
         aus = self.au_detector.detect_au(frame=hog_features, landmarks=[au_new_landmarks])
 
         # Create Fex Output Representation
