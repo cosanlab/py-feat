@@ -312,25 +312,26 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         self.device = set_torch_device(device)
 
         # Load Model Configurations
-        with open(os.path.join(get_resource_path(), 'model_config.json'), 'r') as file:
-            self.model_configs = json.load(file)
-        
+        facepose_config_file = hf_hub_download(repo_id= "py-feat/img2pose", filename="config.json", cache_dir=get_resource_path())
+        with open(facepose_config_file, "r") as f:
+            facepose_config = json.load(f)
+            
         # Initialize img2pose
-        backbone = resnet_fpn_backbone(backbone_name=f"resnet{self.model_configs['img2pose']['depth']}", weights=None)
+        backbone = resnet_fpn_backbone(backbone_name="resnet18", weights=None)
         backbone.eval()
         backbone.to(self.device)
         self.facepose_detector = FasterDoFRCNN(backbone=backbone,
                                     num_classes=2,
-                                    min_size=self.model_configs['img2pose']['min_size'],
-                                    max_size=self.model_configs['img2pose']['max_size'],
-                                    pose_mean=torch.tensor(self.model_configs['img2pose']['pose_mean']),
-                                    pose_stddev=torch.tensor(self.model_configs['img2pose']['pose_stddev']),
-                                    threed_68_points=torch.tensor(self.model_configs['img2pose']['threed_points']),
-                                    rpn_pre_nms_top_n_test=self.model_configs['img2pose']['rpn_pre_nms_top_n_test'],
-                                    rpn_post_nms_top_n_test=self.model_configs['img2pose']['rpn_post_nms_top_n_test'],
-                                    bbox_x_factor=self.model_configs['img2pose']['bbox_x_factor'],
-                                    bbox_y_factor=self.model_configs['img2pose']['bbox_y_factor'],
-                                    expand_forehead=self.model_configs['img2pose']['expand_forehead'])
+                                    min_size=facepose_config['min_size'],
+                                    max_size=facepose_config['max_size'],
+                                    pose_mean=torch.tensor(facepose_config['pose_mean']),
+                                    pose_stddev=torch.tensor(facepose_config['pose_stddev']),
+                                    threed_68_points=torch.tensor(facepose_config['threed_points']),
+                                    rpn_pre_nms_top_n_test=facepose_config['rpn_pre_nms_top_n_test'],
+                                    rpn_post_nms_top_n_test=facepose_config['rpn_post_nms_top_n_test'],
+                                    bbox_x_factor=facepose_config['bbox_x_factor'],
+                                    bbox_y_factor=facepose_config['bbox_y_factor'],
+                                    expand_forehead=facepose_config['expand_forehead'])
         facepose_model_file = hf_hub_download(repo_id= "py-feat/img2pose", filename="model.safetensors", cache_dir=get_resource_path())
         facepose_checkpoint = load_file(facepose_model_file)
         self.facepose_detector.load_state_dict(facepose_checkpoint)
@@ -339,7 +340,6 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
 
         # Initialize mobilefacenet
         self.landmark_detector = MobileFaceNet([112, 112], 136)
-        # self.landmark_detector.from_pretrained('py-feat/mobilefacenet', cache_dir=get_resource_path())
         landmark_model_file = hf_hub_download(repo_id='py-feat/mobilefacenet', filename="mobilefacenet_model_best.pth.tar", cache_dir=get_resource_path())
         self.landmark_detector.load_state_dict(torch.load(landmark_model_file, map_location=self.device)['state_dict'])
         self.landmark_detector.eval()
@@ -351,9 +351,11 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         self.au_detector.load_weights(au_weights['scaler_upper'], au_weights['pca_model_upper'], au_weights['scaler_lower'], au_weights['pca_model_lower'], au_weights['scaler_full'], au_weights['pca_model_full'], au_weights['au_classifiers'])
 
         # Initialize resmasknet
-        self.emotion_detector = ResMasking("", in_channels=3)
-        self.emotion_detector.fc = nn.Sequential(nn.Dropout(0.4), nn.Linear(512, 7))
-        # self.emotion_detector.from_pretrained("py-feat/resmasknet", cache_dir=get_resource_path())
+        emotion_config_file = hf_hub_download(repo_id= "py-feat/resmasknet", filename="config.json", cache_dir=get_resource_path())
+        with open(emotion_config_file, "r") as f:
+            emotion_config = json.load(f)
+        self.emotion_detector = ResMasking("", in_channels=emotion_config['in_channels'])
+        self.emotion_detector.fc = nn.Sequential(nn.Dropout(0.4), nn.Linear(512, emotion_config['num_classes']))
         emotion_model_file = hf_hub_download(repo_id='py-feat/resmasknet', filename="ResMaskNet_Z_resmasking_dropout1_rot30.pth", cache_dir=get_resource_path())
         emotion_checkpoint = torch.load(emotion_model_file, map_location=device)["net"]
         self.emotion_detector.load_state_dict(emotion_checkpoint)
@@ -371,7 +373,6 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         self.identity_detector.logits = nn.Linear(512, 8631)
         identity_model_file = hf_hub_download(repo_id='py-feat/facenet', filename="facenet_20180402_114759_vggface2.pth", cache_dir=get_resource_path())
         self.identity_detector.load_state_dict(torch.load(identity_model_file, map_location=device))
-        # self.identity_detector.from_pretrained("py-feat/facenet", cache_dir=get_resource_path())
         self.identity_detector.eval()
         self.identity_detector.to(self.device)
 
@@ -406,7 +407,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         # resmasknet
         # Preprocess
         # frame = Compose([Grayscale(3)])(convert_image_to_tensor(img, img_type="float32"))
-        resmasknet_faces, resmasknet_bbox = extract_face_from_bbox_torch(frame, bbox, expand_bbox=1.1, face_size = self.model_configs['Resmasknet']['image_size'])
+        resmasknet_faces, resmasknet_bbox = extract_face_from_bbox_torch(frame, bbox, expand_bbox=1.1, face_size=224)
 
         # Forward - [angry, disgust, fear, happy, sad, surprise, neutral]
         emotions = self.emotion_detector.forward(resmasknet_faces)
@@ -435,7 +436,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         feat_emotions = pd.DataFrame(emotion_probabilities.detach().numpy(), columns=FEAT_EMOTION_COLUMNS)
         feat_identities = pd.DataFrame(identity_embeddings.detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:])
         
-        return Fex(pd.concat([feat_faceboxes, feat_landmarks, feat_aus, feat_emotions, feat_identities], axis=1),
+        return Fex(pd.concat([feat_faceboxes, feat_landmarks, feat_poses, feat_aus, feat_emotions, feat_identities], axis=1),
                 au_columns=AU_LANDMARK_MAP['Feat'],
                 emotion_columns=FEAT_EMOTION_COLUMNS,
                 facebox_columns=FEAT_FACEBOX_COLUMNS,
@@ -450,55 +451,61 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 facepose_model='img2pose',
                 identity_model='facenet')  
         
+    def detect_image(self,
+                    input_file_list,
+                    output_size=None,
+                    batch_size=1,
+                    num_workers=0,
+                    pin_memory=False,
+                    face_identity_threshold=0.8,
+                    **kwargs):
+        """
+        Detects FEX from one or more image files. If you want to speed up detection you
+        can process multiple images in batches by setting `batch_size > 1`. However, all
+        images must have **the same dimensions** to be processed in batches. Py-feat can
+        automatically adjust image sizes by using the `output_size=int`. Common
+        output-sizes include 256 and 512.
+
+        Args:
+            input_file_list (list of str): Path to a list of paths to image files.
+            output_size (int): image size to rescale all image preserving aspect ratio.
+                                Will raise an error if not set and batch_size > 1 but images are not the same size
+            batch_size (int): how many batches of images you want to run at one shot.
+                                Larger gives faster speed but is more memory-consuming. Images must be the
+            same size to be run in batches!
+            num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
+            pin_memory (bool): If ``True``, the data loader will copy Tensors into CUDA pinned memory before returning them.  If your data elements are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type
+            face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
+            **kwargs: you can pass each detector specific kwargs using a dictionary
+                                like: `face_model_kwargs = {...}, au_model_kwargs={...}, ...`
+
+        Returns:
+            Fex: Prediction results dataframe
+        """
         
-def run_detection():
-    
-    # Initialize Detector
-    detector = FastDetector()
-
-    # Define Parameters
-    output_size=500
-    batch_size=1
-    num_workers=0
-    pin_memory=False
-    frame_counter=0
-    face_detection_threshold=0.5
-    face_identity_threshold=0.8
-    
-    # Load Data
-    multi_face = os.path.join(get_test_data_path(), "multi_face.jpg")
-    single_face = os.path.join(get_test_data_path(), "single_face.jpg")
-    input_file_list = [multi_face]*50 + [single_face]*50
-    input_file_list = [multi_face, single_face]
-    
-    data_loader = DataLoader(
-        ImageDataset(
-            input_file_list,
-            output_size=output_size,
-            preserve_aspect_ratio=True,
-            padding=True,
-        ),
-        num_workers=num_workers,
-        batch_size=batch_size,
-        pin_memory=pin_memory,
-        shuffle=False,
-    )
-
-    # Run Detector
-    frame_id = 0
-    batch_output = []
-    for batch_id, batch_data in enumerate(tqdm(data_loader)):
-        fex_data = detector.forward(batch_data['Image'])
-        fex_data['input'] = batch_data['FileNames'][0]
-        fex_data['frame'] = frame_id
-        frame_id += 1
-        batch_output.append(fex_data)
-            #     faces = _inverse_face_transform(faces, batch_data)
-            # landmarks = _inverse_landmark_transform(landmarks, batch_data)
-    batch_output = pd.concat(batch_output)
-    batch_output.compute_identities(threshold=0.8, inplace=True)
-
-    return batch_output
-
-if __name__ == "__main__":
-    output = run_detection()
+        data_loader = DataLoader(
+            ImageDataset(
+                input_file_list,
+                output_size=output_size,
+                preserve_aspect_ratio=True,
+                padding=True,
+            ),
+            num_workers=num_workers,
+            batch_size=batch_size,
+            pin_memory=pin_memory,
+            shuffle=False,
+        )
+        
+        batch_output = []
+        for batch_id, batch_data in enumerate(tqdm(data_loader)):
+            fex_data = self.forward(batch_data['Image'])
+            fex_data['input'] = batch_data['FileNames'][0]
+            fex_data['frame'] = batch_id
+            batch_output.append(fex_data)
+                #     faces = _inverse_face_transform(faces, batch_data)
+                # landmarks = _inverse_landmark_transform(landmarks, batch_data)
+        batch_output = pd.concat(batch_output)
+        batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+        return batch_output
+        
+   
