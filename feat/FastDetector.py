@@ -52,7 +52,9 @@ import torchvision.transforms as transforms
 from scipy.spatial import ConvexHull
 from skimage.morphology.convex_hull import grid_points_in_poly
 from skimage.feature import hog
+import sys
 
+sys.modules['__main__'].__dict__['XGBClassifier'] = XGBClassifier
 
 def plot_frame(frame, boxes=None, landmarks=None, boxes_width=2, boxes_colors='cyan', landmarks_radius=2, landmarks_width=2, landmarks_colors='white'):
     ''' 
@@ -342,7 +344,6 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         self.landmark_detector.to(self.device)
 
         # Initialize xgb_au
-        from feat.au_detectors.StatLearning.SL_test import XGBClassifier
         self.au_detector = XGBClassifier()
         au_model_path = hf_hub_download(repo_id="py-feat/xgb_au", filename="xgb_au_classifier.skops", cache_dir=get_resource_path())
         au_unknown_types = get_untrusted_types(file=au_model_path)
