@@ -2,6 +2,7 @@ import pytest
 from feat.FastDetector import FastDetector
 from feat.data import Fex
 from huggingface_hub import PyTorchModelHubMixin
+from feat.au_detectors.StatLearning.SL_test import XGBClassifier
 
 
 @pytest.mark.usefixtures(

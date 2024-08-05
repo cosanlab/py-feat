@@ -9,7 +9,6 @@ from feat.landmark_detectors.basenet_test import MobileNet_GDConv
 from feat.landmark_detectors.pfld_compressed_test import PFLDInference
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
-# from feat.au_detectors.StatLearning.SL_test import SVMClassifier
 from feat.au_detectors.StatLearning.SL_test import SVMClassifier, XGBClassifier
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
