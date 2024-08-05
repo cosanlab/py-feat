@@ -1,7 +1,7 @@
 """
 All code & models from https://github.com/phamquiluan/ResidualMaskingNetwork
 """
-from lib2to3.pytree import convert
+# from lib2to3.pytree import convert
 import os
 import json
 from typing_extensions import Self
