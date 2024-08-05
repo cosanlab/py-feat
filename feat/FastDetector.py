@@ -10,7 +10,7 @@ from huggingface_hub import hf_hub_download, PyTorchModelHubMixin
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMasking, resmasking_dropout1
 from feat.identity_detectors.facenet.facenet_model import InceptionResnetV1
 from feat.facepose_detectors.img2pose.deps.models import FasterDoFRCNN, postprocess_img2pose
-from feat.au_detectors.StatLearning.SL_test import XGBClassifier, SVMClassifier
+from feat.au_detectors.StatLearning.SL_test import XGBClassifier
 # from feat.emo_detectors.StatLearning.EmoSL_test import EmoSVMClassifier
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 # from feat.landmark_detectors.basenet_test import MobileNet_GDConv
@@ -40,6 +40,7 @@ from feat.data import (
     _inverse_face_transform,
     _inverse_landmark_transform,
 )
+from skops.io import load, get_untrusted_types
 from safetensors.torch import load_file
 import torch
 import torch.nn as nn
@@ -341,10 +342,19 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         self.landmark_detector.to(self.device)
 
         # Initialize xgb_au
+        from feat.au_detectors.StatLearning.SL_test import XGBClassifier
         self.au_detector = XGBClassifier()
-        au_weights = load_model_weights(model_type='au', model='xgb', location='huggingface')
-        self.au_detector.load_weights(au_weights['scaler_upper'], au_weights['pca_model_upper'], au_weights['scaler_lower'], au_weights['pca_model_lower'], au_weights['scaler_full'], au_weights['pca_model_full'], au_weights['au_classifiers'])
-
+        au_model_path = hf_hub_download(repo_id="py-feat/xgb_au", filename="xgb_au_classifier.skops", cache_dir=get_resource_path())
+        au_unknown_types = get_untrusted_types(file=au_model_path)
+        loaded_au_model = load(au_model_path, trusted=au_unknown_types)
+        self.au_detector.load_weights(scaler_upper=loaded_au_model.scaler_upper, 
+                        pca_model_upper=loaded_au_model.pca_model_upper, 
+                        scaler_lower=loaded_au_model.scaler_lower, 
+                        pca_model_lower=loaded_au_model.pca_model_lower, 
+                        scaler_full=loaded_au_model.scaler_full, 
+                        pca_model_full=loaded_au_model.pca_model_full, 
+                        classifiers=loaded_au_model.classifiers)
+        
         # Initialize resmasknet
         emotion_config_file = hf_hub_download(repo_id= "py-feat/resmasknet", filename="config.json", cache_dir=get_resource_path())
         with open(emotion_config_file, "r") as f:
