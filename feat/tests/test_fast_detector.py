@@ -18,4 +18,3 @@ class Test_Fast_Detector:
     def test_detect_image(self, single_face_img):
         fex = self.detector.detect_image(single_face_img)
         assert isinstance(fex, Fex)
-        breakpoint()
