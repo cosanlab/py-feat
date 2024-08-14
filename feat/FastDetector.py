@@ -463,9 +463,10 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             cache_dir=get_resource_path(),
         )
         facepose_checkpoint = load_file(facepose_model_file)
-        self.facepose_detector.load_state_dict(facepose_checkpoint)
+        self.facepose_detector.load_state_dict(facepose_checkpoint, load_model_weights)
         self.facepose_detector.eval()
         self.facepose_detector.to(self.device)
+        # self.facepose_detector = torch.compile(self.facepose_detector)
 
         # Initialize mobilefacenet
         self.landmark_detector = MobileFaceNet([112, 112], 136)
@@ -475,10 +476,13 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             cache_dir=get_resource_path(),
         )
         self.landmark_detector.load_state_dict(
-            torch.load(landmark_model_file, map_location=self.device)["state_dict"]
+            torch.load(
+                landmark_model_file, map_location=self.device, weights_only=True
+            )["state_dict"]
         )
         self.landmark_detector.eval()
         self.landmark_detector.to(self.device)
+        # self.landmark_detector = torch.compile(self.landmark_detector)
 
         # Initialize xgb_au
         self.au_detector = XGBClassifier()
@@ -518,10 +522,13 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             filename="ResMaskNet_Z_resmasking_dropout1_rot30.pth",
             cache_dir=get_resource_path(),
         )
-        emotion_checkpoint = torch.load(emotion_model_file, map_location=device)["net"]
+        emotion_checkpoint = torch.load(
+            emotion_model_file, map_location=device, weights_only=True
+        )["net"]
         self.emotion_detector.load_state_dict(emotion_checkpoint)
         self.emotion_detector.eval()
         self.emotion_detector.to(self.device)
+        # self.emotion_detector = torch.compile(self.emotion_detector)
 
         # Initialize facenet
         self.identity_detector = InceptionResnetV1(
@@ -538,11 +545,13 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             cache_dir=get_resource_path(),
         )
         self.identity_detector.load_state_dict(
-            torch.load(identity_model_file, map_location=device)
+            torch.load(identity_model_file, map_location=device, weights_only=True)
         )
         self.identity_detector.eval()
         self.identity_detector.to(self.device)
+        # self.identity_detector = torch.compile(self.identity_detector)
 
+    @torch.inference_mode()
     def forward(self, img, face_size=112):
         """
         Run Model Inference
@@ -599,9 +608,14 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         feat_poses = pd.DataFrame(
             poses.detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_3D
         )
-        feat_landmarks = pd.DataFrame(
-            new_landmarks.detach().numpy(), columns=openface_2d_landmark_columns
+        reshape_landmarks = new_landmarks.reshape(new_landmarks.shape[0], 68, 2)
+        reordered_landmarks = torch.cat(
+            [reshape_landmarks[:, :, 0], reshape_landmarks[:, :, 1]], dim=1
         )
+        feat_landmarks = pd.DataFrame(
+            reordered_landmarks.detach().numpy(), columns=openface_2d_landmark_columns
+        )
+        # feat_landmarks = pd.DataFrame(new_landmarks.detach().numpy(), columns=openface_2d_landmark_columns)
         feat_aus = pd.DataFrame(aus, columns=AU_LANDMARK_MAP["Feat"])
         feat_emotions = pd.DataFrame(
             emotion_probabilities.detach().numpy(), columns=FEAT_EMOTION_COLUMNS
@@ -720,3 +734,68 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 threshold=face_identity_threshold, inplace=True
             )
             return batch_output
+
+    def detect_image_batch(
+        self,
+        inputs,
+        output_size=None,
+        batch_size=1,
+        num_workers=0,
+        pin_memory=False,
+        face_identity_threshold=0.8,
+        **kwargs,
+    ):
+        """
+        Detects FEX from one or more image files. If you want to speed up detection you
+        can process multiple images in batches by setting `batch_size > 1`. However, all
+        images must have **the same dimensions** to be processed in batches. Py-feat can
+        automatically adjust image sizes by using the `output_size=int`. Common
+        output-sizes include 256 and 512.
+
+        Args:
+            inputs (list of str, torch.Tensor): Path to a list of paths to image files or torch.Tensor of images (B, C, H, W)
+            output_size (int): image size to rescale all image preserving aspect ratio.
+                                Will raise an error if not set and batch_size > 1 but images are not the same size
+            batch_size (int): how many batches of images you want to run at one shot.
+                                Larger gives faster speed but is more memory-consuming. Images must be the
+            same size to be run in batches!
+            num_workers (int): how many subprocesses to use for data loading. ``0`` means that the data will be loaded in the main process.
+            pin_memory (bool): If ``True``, the data loader will copy Tensors into CUDA pinned memory before returning them.  If your data elements are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type
+            face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
+            **kwargs: you can pass each detector specific kwargs using a dictionary
+                                like: `face_model_kwargs = {...}, au_model_kwargs={...}, ...`
+
+        Returns:
+            Fex: Prediction results dataframe
+        """
+
+        data_loader = DataLoader(
+            ImageDataset(
+                inputs,
+                output_size=output_size,
+                preserve_aspect_ratio=True,
+                padding=True,
+            ),
+            num_workers=num_workers,
+            batch_size=batch_size,
+            pin_memory=pin_memory,
+            shuffle=False,
+        )
+
+        batch_output = []
+        for batch_id, batch_data in enumerate(tqdm(data_loader)):
+            frame = (
+                convert_image_to_tensor(batch_data["Image"], img_type="float32") / 255.0
+            )
+            img2pose_output = self.facepose_detector(frame)
+            img2pose_output = postprocess_img2pose(img2pose_output[0])
+
+            fex_data = self.forward(batch_data["Image"])
+            fex_data["input"] = batch_data["FileNames"][0]
+            fex_data["frame"] = batch_id
+            batch_output.append(fex_data)
+            #     faces = _inverse_face_transform(faces, batch_data)
+            # landmarks = _inverse_landmark_transform(landmarks, batch_data)
+        batch_output = pd.concat(batch_output)
+        batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+        return batch_output
