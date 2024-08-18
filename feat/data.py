@@ -1987,7 +1987,7 @@ class ImageDataset(Dataset):
                 "Image": transformed_img["Image"],
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.images[idx],
+                "FileName": self.images[idx],
             }
 
         else:
@@ -2159,7 +2159,7 @@ class imageLoader_DISFAPlus(ImageDataset):
                 "label": torch.from_numpy(label),
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.main_file["image_path"][idx],
+                "FileName": self.main_file["image_path"][idx],
             }
 
         else:

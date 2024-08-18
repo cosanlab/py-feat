@@ -27,7 +27,7 @@ from feat.utils import (
     openface_2d_landmark_columns,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
-    FEAT_FACEPOSE_COLUMNS_3D,
+    # FEAT_FACEPOSE_COLUMNS_3D,
     FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_TIME_COLUMNS,
     FEAT_IDENTITY_COLUMNS,
@@ -775,14 +775,16 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             identity_model=self.info["identity_model"]
         )
         
-    def detect_image(
+    def detect(
         self,
         inputs,
+        data_type="image",
         output_size=None,
         batch_size=1,
         num_workers=0,
         pin_memory=False,
         face_identity_threshold=0.8,
+        skip_frames=None,
         **kwargs,
     ):
         """
@@ -790,18 +792,20 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
 
         Args:
             inputs (list of str, torch.Tensor): Path to a list of paths to image files or torch.Tensor of images (B, C, H, W)
+            data_type (str): type of data to be processed; Default 'image' ['image', 'tensor', 'video']
             output_size (int): image size to rescale all image preserving aspect ratio.
             batch_size (int): how many batches of images you want to run at one shot.
             num_workers (int): how many subprocesses to use for data loading. 
             pin_memory (bool): If ``True``, the data loader will copy Tensors into CUDA pinned memory before returning them.
             face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
+            skip_frames (int or None): number of frames to skip to speed up inference (video only); Default None
             **kwargs: additional detector-specific kwargs
 
         Returns:
             pd.DataFrame: Concatenated results for all images in the batch
         """
 
-        if isinstance(inputs, (list, str)):
+        if data_type.lower() == 'image':
             data_loader = DataLoader(
                 ImageDataset(
                     inputs,
@@ -814,7 +818,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 pin_memory=pin_memory,
                 shuffle=False,
             )
-        elif isinstance(inputs, torch.Tensor):
+        elif data_type.lower() == 'tensor':
             data_loader = DataLoader(
                 TensorDataset(inputs),
                 batch_size=batch_size,
@@ -822,6 +826,19 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 num_workers=num_workers,
                 pin_memory=pin_memory,
             )
+        elif data_type.lower() == 'video':
+            dataset = VideoDataset(
+                    inputs, 
+                    skip_frames=skip_frames, 
+                    output_size=output_size
+            )
+            data_loader = DataLoader(
+                dataset,
+                num_workers=num_workers,
+                batch_size=batch_size,
+                pin_memory=pin_memory,
+                shuffle=False,
+            )        
         
         batch_output = []
         frame_counter = 0
@@ -834,12 +851,15 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             frame_ids = []            
             for i,face in enumerate(faces_data):
                 n_faces = len(face['scores'])
-                current_frame_id = frame_counter + i
+                if data_type.lower() == 'video':
+                    current_frame_id = batch_data['Frame'].detach().numpy()[i]
+                else:
+                    current_frame_id = frame_counter + i
                 frame_ids.append(np.repeat(current_frame_id, n_faces))
-                file_names.append(np.repeat(batch_data['FileNames'][i], n_faces))
+                file_names.append(np.repeat(batch_data['FileName'][i], n_faces))
             batch_results['input'] = np.concatenate(file_names)
             batch_results['frame'] = np.concatenate(frame_ids)
-            
+
             # Invert the face boxes and landmarks based on the padded output size
             for j,frame_idx in enumerate(batch_results['frame'].unique()):
                 batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] - batch_data["Padding"]["Left"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
@@ -855,9 +875,10 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             frame_counter += 1 * batch_size
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
+        if data_type.lower() == 'video':
+            batch_output["approx_time"] = [dataset.calc_approx_frame_time(x) for x in batch_output["frame"].to_numpy()]
         batch_output.compute_identities(
             threshold=face_identity_threshold, inplace=True
         )
         return batch_output
     
- 
