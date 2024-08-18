@@ -2015,9 +2015,9 @@ def _inverse_face_transform(faces, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         faces,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_face = []
         for face in frame:
@@ -2187,9 +2187,9 @@ def _inverse_landmark_transform(landmarks, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         landmarks,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_landmark = []
         for landmark in frame:
