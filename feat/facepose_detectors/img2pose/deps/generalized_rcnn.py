@@ -57,7 +57,8 @@ class GeneralizedRCNN(nn.Module):
             assert len(val) == 2
             original_image_sizes.append((val[0], val[1]))
         images, targets = self.transform(images, targets)
-        features = self.backbone(images.tensors)
+        features = self.backbone(images.tensors) 
+        # features = self.backbone(images.tensors.to('mps')) #debug mps issues
         if isinstance(features, torch.Tensor):
             features = OrderedDict([("0", features)])
         proposals, proposal_losses = self.rpn(images, features, targets)
