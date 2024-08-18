@@ -727,7 +727,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         
         poses = torch.cat([face_output['poses'] for face_output in faces_data], dim=0)
         feat_poses = pd.DataFrame(
-            poses.detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_3D
+            poses.detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
         
         reshape_landmarks = new_landmarks.reshape(new_landmarks.shape[0], 68, 2)
@@ -764,7 +764,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             emotion_columns=FEAT_EMOTION_COLUMNS,
             facebox_columns=FEAT_FACEBOX_COLUMNS,
             landmark_columns=openface_2d_landmark_columns,
-            facepose_columns=FEAT_FACEPOSE_COLUMNS_3D,
+            facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
             identity_columns=FEAT_IDENTITY_COLUMNS[1:],
             detector="Feat",
             face_model=self.info["face_model"],
