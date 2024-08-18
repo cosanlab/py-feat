@@ -299,7 +299,7 @@ class DOFRoIHeads(RoIHeads):
         self.bbox_x_factor = bbox_x_factor
         self.bbox_y_factor = bbox_y_factor
         self.expand_forehead = expand_forehead
-    
+        
     def postprocess_detections(
         self,
         class_logits,  # type: torch.Tensor
@@ -308,6 +308,10 @@ class DOFRoIHeads(RoIHeads):
         image_shapes,  # type: List[Tuple[int, int]]
     ):
         device = class_logits.device
+        
+        # Move proposals to the correct device
+        proposals = [p.to(device) for p in proposals]
+        
         num_classes = class_logits.shape[-1]
         boxes_per_image = [boxes_in_image.shape[0] for boxes_in_image in proposals]
         pred_boxes = torch.cat(proposals, dim=0)
@@ -373,9 +377,17 @@ class DOFRoIHeads(RoIHeads):
                 expand_forehead=self.expand_forehead,
             )
 
+            # Ensure all tensors are on the correct device
+            boxes = boxes.to(device)
+            scores = scores.to(device)
+            labels = labels.to(device)
+                        
             # non-maximum suppression, independently done per class
             keep = box_ops.batched_nms(boxes, scores, labels, self.nms_thresh)
 
+            # keep only topk scoring predictions
+            keep = keep[: self.detections_per_img]
+            
             boxes, dofs, scores, labels = (
                 boxes[keep],
                 dofs[keep],
@@ -383,16 +395,12 @@ class DOFRoIHeads(RoIHeads):
                 labels[keep],
             )
 
-            # keep only topk scoring predictions
-            keep = keep[: self.detections_per_img]
-
             all_boxes.append(boxes)
             all_scores.append(scores)
             all_labels.append(labels)
             all_dofs.append(dofs)
 
-        return all_boxes, all_dofs, all_scores, all_labels
-    
+        return all_boxes, all_dofs, all_scores, all_labels   
 
     def forward(
         self,
