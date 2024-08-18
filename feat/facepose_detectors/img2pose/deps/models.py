@@ -462,12 +462,12 @@ def postprocess_img2pose(img2pose_output, nms_inclusion_threshold=0.05, top_k=50
     
     # Threshold
     boxes = boxes[scores >= detection_threshold]
-    dofs = dofs[scores >= detection_threshold][:, :3] # Only returning xyz for now not translation
+    dofs = dofs[scores >= detection_threshold] # return 6 rotation and translation parameters
+    # dofs = dofs[scores >= detection_threshold][:, :3] # Only returning xyz for now not translation
     scores = scores[scores >= detection_threshold]
     
     # Convert Rotation Vector to Euler (Radians)
-    dofs = rotvec_to_euler_angles(dofs[:, :3])
-    
+    dofs = torch.cat((rotvec_to_euler_angles(dofs[:, :3]), dofs[:,3:]), dim=1)
     return {'boxes':boxes, 'dofs':dofs, 'scores':scores} 
     # return {'boxes':[list(t.detach().cpu().numpy()) for t in list(torch.unbind(boxes, dim=0))], 
     # 'dofs':[list(t.detach().cpu().numpy()) for t in list(torch.unbind(dofs, dim=0))], 

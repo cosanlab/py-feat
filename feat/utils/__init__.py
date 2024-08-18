@@ -40,6 +40,7 @@ FEAT_IDENTITY_COLUMNS = ["Identity"] + [
 
 # OpenFace columns
 landmark_length = 68
+
 openface_2d_landmark_columns = [f"x_{i}" for i in range(landmark_length)] + [
     f"y_{i}" for i in range(landmark_length)
 ]
