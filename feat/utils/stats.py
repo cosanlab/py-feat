@@ -61,7 +61,7 @@ def calc_hist_auc(vals, hist_range=None):
         else:
             cross = vals[crossings[i] : crossings[i + 1]]
         if cross:
-            auc = simps(cross)
+            auc = simpson(cross)
             if auc > 0:
                 pos.append(auc)
             elif auc < 0:
