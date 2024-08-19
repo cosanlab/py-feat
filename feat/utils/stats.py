@@ -4,7 +4,7 @@ Feat utility and helper functions for performing statistics.
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import simps
+from scipy.integrate import simpson
 import torch
 from torch.nn.functional import cosine_similarity
 
