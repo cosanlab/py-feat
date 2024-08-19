@@ -4,7 +4,7 @@ Feat utility and helper functions for performing statistics.
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import simps
+from scipy.integrate import simpson
 import torch
 from torch.nn.functional import cosine_similarity
 
@@ -61,7 +61,7 @@ def calc_hist_auc(vals, hist_range=None):
         else:
             cross = vals[crossings[i] : crossings[i + 1]]
         if cross:
-            auc = simps(cross)
+            auc = simpson(cross)
             if auc > 0:
                 pos.append(auc)
             elif auc < 0:
