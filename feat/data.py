@@ -1995,7 +1995,7 @@ class ImageDataset(Dataset):
                 "Image": img,
                 "Scale": 1.0,
                 "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
-                "FileNames": self.images[idx],
+                "FileName": self.images[idx],
             }
 
 
