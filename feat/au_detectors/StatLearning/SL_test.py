@@ -93,6 +93,7 @@ class XGBClassifier:
         if not self.weights_loaded:
             raise ValueError('Need to load weights before running pca_transform')
         else:
+            # NOTES: can directly do math to avoid sklearn overhead
             transformed_frame = pca_model.transform(scaler.transform(frame))
             return np.concatenate((transformed_frame, landmarks), axis=1)
 

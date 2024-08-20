@@ -1987,7 +1987,7 @@ class ImageDataset(Dataset):
                 "Image": transformed_img["Image"],
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.images[idx],
+                "FileName": self.images[idx],
             }
 
         else:
@@ -2015,9 +2015,9 @@ def _inverse_face_transform(faces, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         faces,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_face = []
         for face in frame:
@@ -2159,7 +2159,7 @@ class imageLoader_DISFAPlus(ImageDataset):
                 "label": torch.from_numpy(label),
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.main_file["image_path"][idx],
+                "FileName": self.main_file["image_path"][idx],
             }
 
         else:
@@ -2187,9 +2187,9 @@ def _inverse_landmark_transform(landmarks, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         landmarks,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_landmark = []
         for landmark in frame:
