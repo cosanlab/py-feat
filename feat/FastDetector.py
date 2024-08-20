@@ -182,21 +182,11 @@ def plot_frame(
 def convert_bbox_output(boxes, scores):
     """Convert im2pose_output into Fex Format"""
 
-    widths = (
-        boxes[:, 2] - boxes[:, 0]
-    )  # right - left
-    heights = (
-        boxes[:, 3] - boxes[:, 1]
-    )  # bottom - top
+    widths = boxes[:, 2] - boxes[:, 0]  # right - left
+    heights = boxes[:, 3] - boxes[:, 1]  # bottom - top
 
     return torch.stack(
-        (
-            boxes[:, 0],
-            boxes[:, 1],
-            widths,
-            heights,
-            scores
-        ),
+        (boxes[:, 0], boxes[:, 1], widths, heights, scores),
         dim=1,
     )
 
@@ -804,16 +794,14 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             aus = torch.full((n_faces, 20), float("nan"))
 
         # Create Fex Output Representation
-<<<<<<< HEAD
-        bboxes = torch.cat([convert_bbox_output(face_output['new_boxes'], face_output['scores']) for face_output in faces_data], dim=0)
-        # bboxes = torch.cat([convert_bbox_output(face_output['boxes'], face_output['scores']) for face_output in faces_data], dim=0)
-=======
-        new_bboxes = torch.cat([face["new_bbox"] for face in faces_data], dim=0)
-
         bboxes = torch.cat(
-            [convert_bbox_output(face_output) for face_output in faces_data], dim=0
+            [
+                convert_bbox_output(face_output["new_boxes"], face_output["scores"])
+                for face_output in faces_data
+            ],
+            dim=0,
         )
->>>>>>> 82bbdb0 (add change_model method and repr to FastDetector)
+        # bboxes = torch.cat([convert_bbox_output(face_output['boxes'], face_output['scores']) for face_output in faces_data], dim=0)
         feat_faceboxes = pd.DataFrame(
             bboxes.detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
