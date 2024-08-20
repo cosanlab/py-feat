@@ -39,12 +39,7 @@ from feat.utils.image_operations import (
     align_face,
     mask_image,
 )
-from feat.data import (
-    Fex,
-    ImageDataset,
-    TensorDataset,
-    VideoDataset
-)
+from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
 from safetensors.torch import load_file
 import torch
@@ -208,7 +203,7 @@ def convert_bbox_output(boxes, scores):
 
 def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bbox=1.2):
     """Extract face from image and resize using pytorch."""
-    
+
     device = frame.device
     B, C, H, W = frame.shape
     N = detected_faces.shape[0]
@@ -241,14 +236,18 @@ def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bb
     yy, xx = torch.meshgrid(
         torch.arange(face_size, device=device),
         torch.arange(face_size, device=device),
-        indexing='ij'
+        indexing="ij",
     )
     yy = yy.float()
     xx = xx.float()
 
     # Calculate the normalized coordinates for the grid sampling
-    grid_x = (xx + 0.5) / face_size * (new_x2 - new_x1).view(N, 1, 1) + new_x1.view(N, 1, 1)
-    grid_y = (yy + 0.5) / face_size * (new_y2 - new_y1).view(N, 1, 1) + new_y1.view(N, 1, 1)
+    grid_x = (xx + 0.5) / face_size * (new_x2 - new_x1).view(N, 1, 1) + new_x1.view(
+        N, 1, 1
+    )
+    grid_y = (yy + 0.5) / face_size * (new_y2 - new_y1).view(N, 1, 1) + new_y1.view(
+        N, 1, 1
+    )
 
     # Normalize grid coordinates to the range [-1, 1]
     grid_x = 2 * grid_x / (W - 1) - 1
@@ -270,6 +269,7 @@ def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bb
 
     # The output shape should be (N, C, face_size, face_size)
     return cropped_faces, new_bboxes
+
 
 def inverse_transform_landmarks_torch(landmarks, boxes):
     """
@@ -306,6 +306,7 @@ def inverse_transform_landmarks_torch(landmarks, boxes):
 
     return transformed_landmarks.reshape(N, 136)
 
+
 def extract_hog_features(extracted_faces, landmarks):
     """
     Helper function used in batch processing hog features
@@ -320,23 +321,31 @@ def extract_hog_features(extracted_faces, landmarks):
     """
     n_faces = landmarks.shape[0]
     face_size = extracted_faces.shape[-1]
-    extracted_faces_bboxes = torch.tensor([0, 0, face_size, face_size]).unsqueeze(0).repeat(n_faces,1)
-    extracted_landmarks = inverse_transform_landmarks_torch(landmarks, extracted_faces_bboxes)
+    extracted_faces_bboxes = (
+        torch.tensor([0, 0, face_size, face_size]).unsqueeze(0).repeat(n_faces, 1)
+    )
+    extracted_landmarks = inverse_transform_landmarks_torch(
+        landmarks, extracted_faces_bboxes
+    )
     hog_features = []
     au_new_landmarks = []
     for j in range(n_faces):
-        convex_hull, new_landmark = extract_face_from_landmarks(extracted_faces[j, ...], extracted_landmarks[j, ...])
-        hog_features.append(hog(
-            transforms.ToPILImage()(convex_hull[0]),
-            orientations=8,
-            pixels_per_cell=(8, 8),
-            cells_per_block=(2, 2),
-            visualize=False,
-            channel_axis=-1,
-        ).reshape(1, -1))
+        convex_hull, new_landmark = extract_face_from_landmarks(
+            extracted_faces[j, ...], extracted_landmarks[j, ...]
+        )
+        hog_features.append(
+            hog(
+                transforms.ToPILImage()(convex_hull[0]),
+                orientations=8,
+                pixels_per_cell=(8, 8),
+                cells_per_block=(2, 2),
+                visualize=False,
+                channel_axis=-1,
+            ).reshape(1, -1)
+        )
         au_new_landmarks.append(new_landmark)
     return np.concatenate(hog_features), au_new_landmarks
-        
+
 
 def extract_face_from_landmarks(frame, landmarks, face_size=112):
     """Extract a face in a frame with a convex hull of landmarks.
@@ -392,24 +401,26 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
 
 
 class FastDetector(nn.Module, PyTorchModelHubMixin):
-    def __init__(self, 
-                landmark_model="mobilefacenet",
-                au_model="xgb",
-                emotion_model="resmasknet",
-                identity_model="facenet",
-                device="cpu"):
+    def __init__(
+        self,
+        landmark_model="mobilefacenet",
+        au_model="xgb",
+        emotion_model="resmasknet",
+        identity_model="facenet",
+        device="cpu",
+    ):
         super(FastDetector, self).__init__()
 
         self.info = dict(
-            face_model='img2pose',
+            face_model="img2pose",
             landmark_model=None,
             emotion_model=None,
-            facepose_model='img2pose',
+            facepose_model="img2pose",
             au_model=None,
             identity_model=None,
         )
         self.device = set_torch_device(device)
-        
+
         # Load Model Configurations
         facepose_config_file = hf_hub_download(
             repo_id="py-feat/img2pose",
@@ -448,20 +459,32 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         self.facepose_detector.to(self.device)
         # self.facepose_detector = torch.compile(self.facepose_detector)
 
+        self._init_detectors(landmark_model, au_model, emotion_model, identity_model)
+
+    # Initialize the rest of the detectors other than face and pose
+    def _init_detectors(self, landmark_model, au_model, emotion_model, identity_model):
+        """Initializes torch models for landmark, AU, emotion, and identity detection. Wrapping this in a separate function from the __init__ allows us to make a .change_model() method"""
+
         # Initialize Landmark Detector
         self.info["landmark_model"] = landmark_model
         if landmark_model is not None:
             if landmark_model == "mobilefacenet":
                 self.face_size = 112
-                self.landmark_detector = MobileFaceNet([self.face_size, self.face_size], 136, device=self.device)
+                self.landmark_detector = MobileFaceNet(
+                    [self.face_size, self.face_size], 136, device=self.device
+                )
                 landmark_model_file = hf_hub_download(
                     repo_id="py-feat/mobilefacenet",
                     filename="mobilefacenet_model_best.pth.tar",
                     cache_dir=get_resource_path(),
                 )
-                landmark_state_dict = torch.load(landmark_model_file, map_location=self.device, weights_only=True)["state_dict"]                # Ensure Model weights are Float32 for MPS
+                landmark_state_dict = torch.load(
+                    landmark_model_file, map_location=self.device, weights_only=True
+                )[
+                    "state_dict"
+                ]  # Ensure Model weights are Float32 for MPS
                 # mobilefacenet_state_dict =  torch.load(landmark_model_file, map_location=self.device, weights_only=True)["state_dict"]
-                # mobilefacenet_state_dict = {k: v.float() for k, v in mobilefacenet_state_dict.items()} 
+                # mobilefacenet_state_dict = {k: v.float() for k, v in mobilefacenet_state_dict.items()}
                 # self.landmark_detector.load_state_dict(mobilefacenet_state_dict)
                 # self.landmark_detector = torch.compile(self.landmark_detector)
             elif landmark_model == "mobilenet":
@@ -472,7 +495,11 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                     filename="mobilenet_224_model_best_gdconv_external.pth.tar",
                     cache_dir=get_resource_path(),
                 )
-                mobilenet_state_dict = torch.load(landmark_model_file, map_location=self.device, weights_only=True)["state_dict"]                # Ensure Model weights are Float32 for MPS
+                mobilenet_state_dict = torch.load(
+                    landmark_model_file, map_location=self.device, weights_only=True
+                )[
+                    "state_dict"
+                ]  # Ensure Model weights are Float32 for MPS
                 landmark_state_dict = OrderedDict()
                 for k, v in mobilenet_state_dict.items():
                     if "module." in k:
@@ -486,7 +513,11 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                     filename="pfld_model_best.pth.tar",
                     cache_dir=get_resource_path(),
                 )
-                landmark_state_dict = torch.load(landmark_model_file, map_location=self.device, weights_only=True)["state_dict"]                # Ensure Model weights are Float32 for MPS
+                landmark_state_dict = torch.load(
+                    landmark_model_file, map_location=self.device, weights_only=True
+                )[
+                    "state_dict"
+                ]  # Ensure Model weights are Float32 for MPS
             else:
                 raise ValueError("{landmark_model} is not currently supported.")
             self.landmark_detector.load_state_dict(landmark_state_dict)
@@ -494,9 +525,9 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             self.landmark_detector.to(self.device)
         else:
             self.landmark_detector = None
-            
+
         # Initialize AU Detector
-        self.info['au_model'] = au_model
+        self.info["au_model"] = au_model
         if au_model is not None:
             if self.landmark_detector is not None:
                 if au_model == "xgb":
@@ -506,7 +537,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                         filename="xgb_au_classifier.skops",
                         cache_dir=get_resource_path(),
                     )
-        
+
                 elif au_model == "svm":
                     self.au_detector = SVMClassifier()
                     au_model_path = hf_hub_download(
@@ -516,7 +547,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                     )
                 else:
                     raise ValueError("{au_model} is not currently supported.")
-                
+
                 au_unknown_types = get_untrusted_types(file=au_model_path)
                 loaded_au_model = load(au_model_path, trusted=au_unknown_types)
                 self.au_detector.load_weights(
@@ -529,10 +560,12 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                     classifiers=loaded_au_model.classifiers,
                 )
             else:
-                raise ValueError("Landmark Detector is required for AU Detection with {au_model}.")
+                raise ValueError(
+                    f"Landmark Detector is required for AU Detection with {au_model}."
+                )
         else:
             self.au_detector = None
-            
+
         # Initialize Emotion Detector
         self.info["emotion_model"] = emotion_model
         if emotion_model is not None:
@@ -557,25 +590,33 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                     cache_dir=get_resource_path(),
                 )
                 emotion_checkpoint = torch.load(
-                    emotion_model_file, map_location=device, weights_only=True
+                    emotion_model_file, map_location=self.device, weights_only=True
                 )["net"]
                 self.emotion_detector.load_state_dict(emotion_checkpoint)
                 self.emotion_detector.eval()
                 self.emotion_detector.to(self.device)
                 # self.emotion_detector = torch.compile(self.emotion_detector)
-            elif emotion_model == 'svm':
+            elif emotion_model == "svm":
                 if self.landmark_detector is not None:
                     self.emotion_detector = EmoSVMClassifier()
-                    emotion_model_path = hf_hub_download(repo_id="py-feat/svm_emo", 
-                                                        filename="svm_emo_classifier.skops", 
-                                                        cache_dir=get_resource_path())
+                    emotion_model_path = hf_hub_download(
+                        repo_id="py-feat/svm_emo",
+                        filename="svm_emo_classifier.skops",
+                        cache_dir=get_resource_path(),
+                    )
                     emotion_unknown_types = get_untrusted_types(file=emotion_model_path)
-                    loaded_emotion_model = load(emotion_model_path, trusted=emotion_unknown_types)
-                    self.emotion_detector.load_weights(scaler_full=loaded_emotion_model.scaler_full, 
-                                            pca_model_full=loaded_emotion_model.pca_model_full, 
-                                            classifiers=loaded_emotion_model.classifiers)
+                    loaded_emotion_model = load(
+                        emotion_model_path, trusted=emotion_unknown_types
+                    )
+                    self.emotion_detector.load_weights(
+                        scaler_full=loaded_emotion_model.scaler_full,
+                        pca_model_full=loaded_emotion_model.pca_model_full,
+                        classifiers=loaded_emotion_model.classifiers,
+                    )
                 else:
-                    raise ValueError("Landmark Detector is required for Emotion Detection with {emotion_model}.")
+                    raise ValueError(
+                        "Landmark Detector is required for Emotion Detection with {emotion_model}."
+                    )
 
             else:
                 raise ValueError("{emotion_model} is not currently supported.")
@@ -600,7 +641,9 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                     cache_dir=get_resource_path(),
                 )
                 self.identity_detector.load_state_dict(
-                    torch.load(identity_model_file, map_location=device, weights_only=True)
+                    torch.load(
+                        identity_model_file, map_location=self.device, weights_only=True
+                    )
                 )
                 self.identity_detector.eval()
                 self.identity_detector.to(self.device)
@@ -609,6 +652,34 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 raise ValueError("{identity_model} is not currently supported.")
         else:
             self.identity_detector = None
+
+    def __repr__(self):
+        return f"{self.__class__.__module__}.{self.__class__.__name__}(\nfacepose_model=img2pose,\nlandmark_model={self.info['landmark_model']},\nau_model={self.info['au_model']},\nemotion_model={self.info['emotion_model']},\nidentity_model={self.info['identity_model']})"
+
+    def change_model(self, **kwargs):
+        """Swap one or more pre-trained detector models for another one. Just pass in
+        the the new models to use as kwargs, e.g. emotion_model='svm'"""
+
+        landmark_model = kwargs.get("landmark_model", self.info["landmark_model"])
+        au_model = kwargs.get("au_model", self.info["au_model"])
+        emotion_model = kwargs.get("emotion_model", self.info["emotion_model"])
+        identity_model = kwargs.get("identity_model", self.info["identity_model"])
+
+        for requested, current_name in zip(
+            [landmark_model, au_model, emotion_model, identity_model],
+            [
+                "landmark_model",
+                "au_model",
+                "emotion_model",
+                "identity_model",
+            ],
+        ):
+            if requested != self.info[current_name]:
+                print(
+                    f"Changing {current_name} from {self.info[current_name]} -> {requested}"
+                )
+
+        self._init_detectors(landmark_model, au_model, emotion_model, identity_model)
 
     @torch.inference_mode()
     def detect_faces(self, images, face_size=112, face_detection_threshold=0.5):
@@ -626,12 +697,16 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         # img2pose
         frames = convert_image_to_tensor(images, img_type="float32") / 255.0
         frames.to(self.device)
-        
+
         batch_results = []
         for i in range(frames.size(0)):
-            single_frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
+            single_frame = frames[i, ...].unsqueeze(
+                0
+            )  # Extract single image from batch
             img2pose_output = self.facepose_detector(single_frame)
-            img2pose_output = postprocess_img2pose(img2pose_output[0], detection_threshold=face_detection_threshold)
+            img2pose_output = postprocess_img2pose(
+                img2pose_output[0], detection_threshold=face_detection_threshold
+            )
             bbox = img2pose_output["boxes"]
             poses = img2pose_output["dofs"]
             facescores = img2pose_output["scores"]
@@ -640,7 +715,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             extracted_faces, new_bbox = extract_face_from_bbox_torch(
                 single_frame, bbox, face_size=face_size
             )
-            
+
             frame_results = {
                 "face_id": i,
                 "faces": extracted_faces,
@@ -649,18 +724,18 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 "poses": poses,
                 "scores": facescores,
             }
-            
+
             # Extract Faces separately for Resmasknet
-            if self.info['emotion_model'] == 'resmasknet':
+            if self.info["emotion_model"] == "resmasknet":
                 resmasknet_faces, _ = extract_face_from_bbox_torch(
                     single_frame, bbox, expand_bbox=1.1, face_size=224
                 )
-                frame_results["resmasknet_faces"] =  resmasknet_faces
+                frame_results["resmasknet_faces"] = resmasknet_faces
 
             batch_results.append(frame_results)
-            
+
         return batch_results
-    
+
     @torch.inference_mode()
     def forward(self, faces_data):
         """
@@ -672,63 +747,83 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         Returns:
             Fex: Prediction results dataframe
         """
-        
+
         extracted_faces = torch.cat([face["faces"] for face in faces_data], dim=0)
         new_bboxes = torch.cat([face["new_boxes"] for face in faces_data], dim=0)
         n_faces = extracted_faces.shape[0]
-        
+
         if self.landmark_detector is not None:
             if self.info["landmark_model"].lower() == "mobilenet":
                 extracted_faces = Compose(
                     [Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
                 )(extracted_faces)
-            
+
             if self.info["landmark_model"].lower() == "mobilefacenet":
-                landmarks = self.landmark_detector.forward(extracted_faces.to(self.device))[0]
+                landmarks = self.landmark_detector.forward(
+                    extracted_faces.to(self.device)
+                )[0]
             else:
-                landmarks = self.landmark_detector.forward(extracted_faces.to(self.device))
-            new_landmarks = inverse_transform_landmarks_torch(landmarks, new_bboxes)            
+                landmarks = self.landmark_detector.forward(
+                    extracted_faces.to(self.device)
+                )
+            new_landmarks = inverse_transform_landmarks_torch(landmarks, new_bboxes)
         else:
-            new_landmarks = torch.full((n_faces, 136), float('nan'))
-            
+            new_landmarks = torch.full((n_faces, 136), float("nan"))
+
         if self.emotion_detector is not None:
-            if self.info['emotion_model'] == 'resmasknet':
-                resmasknet_faces = torch.cat([face["resmasknet_faces"] for face in faces_data], dim=0)
+            if self.info["emotion_model"] == "resmasknet":
+                resmasknet_faces = torch.cat(
+                    [face["resmasknet_faces"] for face in faces_data], dim=0
+                )
                 emotions = self.emotion_detector.forward(resmasknet_faces)
                 emotions = torch.softmax(emotions, 1)
-            elif self.info['emotion_model'] == 'svm':
-                hog_features, emo_new_landmarks = extract_hog_features(extracted_faces, landmarks)
-                emotions = self.emotion_detector.detect_emo(frame=hog_features, landmarks=[emo_new_landmarks])
+            elif self.info["emotion_model"] == "svm":
+                hog_features, emo_new_landmarks = extract_hog_features(
+                    extracted_faces, landmarks
+                )
+                emotions = self.emotion_detector.detect_emo(
+                    frame=hog_features, landmarks=[emo_new_landmarks]
+                )
                 emotions = torch.tensor(emotions)
         else:
-            emotions = torch.full((n_faces, 7), float('nan'))
+            emotions = torch.full((n_faces, 7), float("nan"))
 
         if self.identity_detector is not None:
             identity_embeddings = self.identity_detector.forward(extracted_faces)
         else:
-            identity_embeddings = torch.full((n_faces, 512), float('nan'))
+            identity_embeddings = torch.full((n_faces, 512), float("nan"))
 
-        if self.au_detector is not None:    
-            hog_features, au_new_landmarks = extract_hog_features(extracted_faces, landmarks)
+        if self.au_detector is not None:
+            hog_features, au_new_landmarks = extract_hog_features(
+                extracted_faces, landmarks
+            )
             aus = self.au_detector.detect_au(
                 frame=hog_features, landmarks=[au_new_landmarks]
             )
         else:
-            aus = torch.full((n_faces, 20), float('nan'))
+            aus = torch.full((n_faces, 20), float("nan"))
 
         # Create Fex Output Representation
+<<<<<<< HEAD
         bboxes = torch.cat([convert_bbox_output(face_output['new_boxes'], face_output['scores']) for face_output in faces_data], dim=0)
         # bboxes = torch.cat([convert_bbox_output(face_output['boxes'], face_output['scores']) for face_output in faces_data], dim=0)
+=======
+        new_bboxes = torch.cat([face["new_bbox"] for face in faces_data], dim=0)
+
+        bboxes = torch.cat(
+            [convert_bbox_output(face_output) for face_output in faces_data], dim=0
+        )
+>>>>>>> 82bbdb0 (add change_model method and repr to FastDetector)
         feat_faceboxes = pd.DataFrame(
             bboxes.detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
         )
-        
-        poses = torch.cat([face_output['poses'] for face_output in faces_data], dim=0)
+
+        poses = torch.cat([face_output["poses"] for face_output in faces_data], dim=0)
         feat_poses = pd.DataFrame(
             poses.detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
-        
+
         reshape_landmarks = new_landmarks.reshape(new_landmarks.shape[0], 68, 2)
         reordered_landmarks = torch.cat(
             [reshape_landmarks[:, :, 0], reshape_landmarks[:, :, 1]], dim=1
@@ -736,13 +831,13 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         feat_landmarks = pd.DataFrame(
             reordered_landmarks.detach().numpy(), columns=openface_2d_landmark_columns
         )
-        
+
         feat_aus = pd.DataFrame(aus, columns=AU_LANDMARK_MAP["Feat"])
 
         feat_emotions = pd.DataFrame(
             emotions.detach().numpy(), columns=FEAT_EMOTION_COLUMNS
         )
-        
+
         feat_identities = pd.DataFrame(
             identity_embeddings.detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
         )
@@ -771,9 +866,9 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             au_model=self.info["au_model"],
             emotion_model=self.info["emotion_model"],
             facepose_model=self.info["facepose_model"],
-            identity_model=self.info["identity_model"]
+            identity_model=self.info["identity_model"],
         )
-        
+
     def detect(
         self,
         inputs,
@@ -795,7 +890,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             data_type (str): type of data to be processed; Default 'image' ['image', 'tensor', 'video']
             output_size (int): image size to rescale all image preserving aspect ratio.
             batch_size (int): how many batches of images you want to run at one shot.
-            num_workers (int): how many subprocesses to use for data loading. 
+            num_workers (int): how many subprocesses to use for data loading.
             pin_memory (bool): If ``True``, the data loader will copy Tensors into CUDA pinned memory before returning them.
             face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
             face_detection_threshold (float): value between 0-1 to determine if a face was detected; Default >= 0.5
@@ -806,7 +901,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             pd.DataFrame: Concatenated results for all images in the batch
         """
 
-        if data_type.lower() == 'image':
+        if data_type.lower() == "image":
             data_loader = DataLoader(
                 ImageDataset(
                     inputs,
@@ -819,7 +914,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 pin_memory=pin_memory,
                 shuffle=False,
             )
-        elif data_type.lower() == 'tensor':
+        elif data_type.lower() == "tensor":
             data_loader = DataLoader(
                 TensorDataset(inputs),
                 batch_size=batch_size,
@@ -827,11 +922,9 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 num_workers=num_workers,
                 pin_memory=pin_memory,
             )
-        elif data_type.lower() == 'video':
+        elif data_type.lower() == "video":
             dataset = VideoDataset(
-                    inputs, 
-                    skip_frames=skip_frames, 
-                    output_size=output_size
+                inputs, skip_frames=skip_frames, output_size=output_size
             )
             data_loader = DataLoader(
                 dataset,
@@ -839,47 +932,83 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 batch_size=batch_size,
                 pin_memory=pin_memory,
                 shuffle=False,
-            )        
-        
+            )
+
         batch_output = []
         frame_counter = 0
         for batch_id, batch_data in enumerate(tqdm(data_loader)):
-            faces_data = self.detect_faces(batch_data["Image"], face_size=self.face_size, face_detection_threshold=face_detection_threshold)
+            faces_data = self.detect_faces(
+                batch_data["Image"],
+                face_size=self.face_size,
+                face_detection_threshold=face_detection_threshold,
+            )
             batch_results = self.forward(faces_data)
 
-            # Create metadata for each frame                
+            # Create metadata for each frame
             file_names = []
-            frame_ids = []            
-            for i,face in enumerate(faces_data):
-                n_faces = len(face['scores'])
-                if data_type.lower() == 'video':
-                    current_frame_id = batch_data['Frame'].detach().numpy()[i]
+            frame_ids = []
+            for i, face in enumerate(faces_data):
+                n_faces = len(face["scores"])
+                if data_type.lower() == "video":
+                    current_frame_id = batch_data["Frame"].detach().numpy()[i]
                 else:
                     current_frame_id = frame_counter + i
                 frame_ids.append(np.repeat(current_frame_id, n_faces))
-                file_names.append(np.repeat(batch_data['FileName'][i], n_faces))
-            batch_results['input'] = np.concatenate(file_names)
-            batch_results['frame'] = np.concatenate(frame_ids)
+                file_names.append(np.repeat(batch_data["FileName"][i], n_faces))
+            batch_results["input"] = np.concatenate(file_names)
+            batch_results["frame"] = np.concatenate(frame_ids)
 
             # Invert the face boxes and landmarks based on the padded output size
-            for j,frame_idx in enumerate(batch_results['frame'].unique()):
-                batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] - batch_data["Padding"]["Left"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectY'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectY'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectWidth'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectWidth'])/batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectHeight'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectHeight'])/batch_data["Scale"].detach().numpy()[j]
-            
+            for j, frame_idx in enumerate(batch_results["frame"].unique()):
+                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"] = (
+                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"]
+                    - batch_data["Padding"]["Left"].detach().numpy()[j]
+                ) / batch_data["Scale"].detach().numpy()[j]
+                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"] = (
+                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"]
+                    - batch_data["Padding"]["Top"].detach().numpy()[j]
+                ) / batch_data["Scale"].detach().numpy()[j]
+                batch_results.loc[
+                    batch_results["frame"] == frame_idx, "FaceRectWidth"
+                ] = (
+                    batch_results.loc[
+                        batch_results["frame"] == frame_idx, "FaceRectWidth"
+                    ]
+                ) / batch_data[
+                    "Scale"
+                ].detach().numpy()[
+                    j
+                ]
+                batch_results.loc[
+                    batch_results["frame"] == frame_idx, "FaceRectHeight"
+                ] = (
+                    batch_results.loc[
+                        batch_results["frame"] == frame_idx, "FaceRectHeight"
+                    ]
+                ) / batch_data[
+                    "Scale"
+                ].detach().numpy()[
+                    j
+                ]
+
                 for i in range(68):
-                    batch_results.loc[batch_results['frame']==frame_idx, f'x_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'x_{i}'] - batch_data["Padding"]["Left"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
-                    batch_results.loc[batch_results['frame']==frame_idx, f'y_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'y_{i}'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
-            
+                    batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"] = (
+                        batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"]
+                        - batch_data["Padding"]["Left"].detach().numpy()[j]
+                    ) / batch_data["Scale"].detach().numpy()[j]
+                    batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"] = (
+                        batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"]
+                        - batch_data["Padding"]["Top"].detach().numpy()[j]
+                    ) / batch_data["Scale"].detach().numpy()[j]
+
             batch_output.append(batch_results)
             frame_counter += 1 * batch_size
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
-        if data_type.lower() == 'video':
-            batch_output["approx_time"] = [dataset.calc_approx_frame_time(x) for x in batch_output["frame"].to_numpy()]
-        batch_output.compute_identities(
-            threshold=face_identity_threshold, inplace=True
-        )
+        if data_type.lower() == "video":
+            batch_output["approx_time"] = [
+                dataset.calc_approx_frame_time(x)
+                for x in batch_output["frame"].to_numpy()
+            ]
+        batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
         return batch_output
-    
