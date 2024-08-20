@@ -15,6 +15,7 @@ from torchvision.io import read_image
 import pandas as pd
 from feat.data import Fex
 
+
 # AU constants for plotting
 @fixture(scope="module")
 def au():
@@ -123,6 +124,12 @@ def noface_face_mov(data_path):
 @fixture(scope="module")
 def multi_face_img(data_path):
     return os.path.join(data_path, "multi_face.jpg")
+
+
+@fixture(scope="module")
+def multi_face_img_data(multi_face_img):
+    """The actual numpy array of img data"""
+    return read_image(multi_face_img)
 
 
 @fixture(scope="module")

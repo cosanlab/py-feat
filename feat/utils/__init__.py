@@ -40,6 +40,7 @@ FEAT_IDENTITY_COLUMNS = ["Identity"] + [
 
 # OpenFace columns
 landmark_length = 68
+
 openface_2d_landmark_columns = [f"x_{i}" for i in range(landmark_length)] + [
     f"y_{i}" for i in range(landmark_length)
 ]
@@ -161,3 +162,11 @@ def set_torch_device(device="cpu"):
 def is_list_of_lists_empty(list_of_lists):
     """Helper function to check if list of lists is empty"""
     return not any(list_of_lists)
+
+
+def flatten_list(data):
+    """Helper function to flatten a list of lists"""
+    flat_list = []
+    for row in data:
+        flat_list += row
+    return flat_list

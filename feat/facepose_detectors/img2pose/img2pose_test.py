@@ -2,34 +2,126 @@ import os
 import torch
 import numpy as np
 from torchvision.transforms import Compose, Pad
+from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from feat.transforms import Rescale
-from .img2pose_model import img2poseModel
+from .img2pose_model import img2poseModel, WrappedModel
+from .deps.models import FasterDoFRCNN
 from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import convert_to_euler, py_cpu_nms
 import logging
+from huggingface_hub import hf_hub_download
+from safetensors.torch import load_file
 
+model_config = {}
+model_config['img2pose'] = {'rpn_pre_nms_top_n_test':6000,
+                            'rpn_post_nms_top_n_test':1000,
+                            'bbox_x_factor':1.1,
+                            'bbox_y_factor':1.1,
+                            'expand_forehead':0.3,
+                            'depth':18,
+                            'max_size':1400,
+                            'min_size':400,
+                            'constrained':True,
+                            'pose_mean':torch.tensor([-0.0238,  0.0275, -0.0144,  0.0664,  0.2380,  3.4813]),
+                            'pose_stddev':torch.tensor([0.2353, 0.5395, 0.1767, 0.1320, 0.1358, 0.3663]),
+                            'threed_points':torch.tensor([[-0.7425, -0.3662,  0.4207],
+                            [-0.7400, -0.1836,  0.5642],
+                            [-0.6339,  0.0051,  0.1404],
+                            [-0.5988,  0.1618, -0.0176],
+                            [-0.5455,  0.3358, -0.0198],
+                            [-0.4669,  0.4768, -0.1059],
+                            [-0.3721,  0.5836, -0.1078],
+                            [-0.2199,  0.6593, -0.3520],
+                            [-0.0184,  0.7019, -0.4312],
+                            [ 0.1829,  0.6588, -0.4117],
+                            [ 0.3413,  0.5932, -0.2251],
+                            [ 0.4535,  0.5002, -0.1201],
+                            [ 0.5530,  0.3364, -0.0101],
+                            [ 0.6051,  0.1617,  0.0017],
+                            [ 0.6010,  0.0050,  0.2182],
+                            [ 0.7230, -0.1830,  0.5235],
+                            [ 0.7264, -0.3669,  0.3882],
+                            [-0.5741, -0.5247, -0.1624],
+                            [-0.4902, -0.6011, -0.3335],
+                            [-0.3766, -0.6216, -0.4337],
+                            [-0.2890, -0.6006, -0.4818],
+                            [-0.1981, -0.5750, -0.5065],
+                            [ 0.1583, -0.5989, -0.5168],
+                            [ 0.2487, -0.6201, -0.4938],
+                            [ 0.3631, -0.6215, -0.4385],
+                            [ 0.4734, -0.6011, -0.3499],
+                            [ 0.5571, -0.5475, -0.1870],
+                            [-0.0182, -0.3929, -0.5284],
+                            [ 0.0050, -0.2602, -0.6295],
+                            [-0.0181, -0.1509, -0.7110],
+                            [-0.0181, -0.0620, -0.7463],
+                            [-0.1305,  0.0272, -0.5205],
+                            [-0.0647,  0.0506, -0.5580],
+                            [ 0.0049,  0.0500, -0.5902],
+                            [ 0.0480,  0.0504, -0.5732],
+                            [ 0.1149,  0.0275, -0.5329],
+                            [-0.4233, -0.3598, -0.2748],
+                            [-0.3783, -0.4226, -0.3739],
+                            [-0.2903, -0.4217, -0.3799],
+                            [-0.2001, -0.3991, -0.3561],
+                            [-0.2667, -0.3545, -0.3658],
+                            [-0.3764, -0.3536, -0.3441],
+                            [ 0.1835, -0.3995, -0.3551],
+                            [ 0.2501, -0.4219, -0.3741],
+                            [ 0.3411, -0.4223, -0.3760],
+                            [ 0.4082, -0.3987, -0.3338],
+                            [ 0.3410, -0.3550, -0.3626],
+                            [ 0.2488, -0.3763, -0.3652],
+                            [-0.2374,  0.2695, -0.4086],
+                            [-0.1736,  0.2257, -0.5026],
+                            [-0.0644,  0.1823, -0.5703],
+                            [ 0.0049,  0.2052, -0.5784],
+                            [ 0.0479,  0.1826, -0.5739],
+                            [ 0.1563,  0.2245, -0.5130],
+                            [ 0.2441,  0.2697, -0.4012],
+                            [ 0.1572,  0.3153, -0.4905],
+                            [ 0.0713,  0.3393, -0.5457],
+                            [ 0.0050,  0.3398, -0.5557],
+                            [-0.0846,  0.3391, -0.5393],
+                            [-0.1505,  0.3151, -0.4926],
+                            [-0.2374,  0.2695, -0.4086],
+                            [-0.0845,  0.2493, -0.5288],
+                            [ 0.0050,  0.2489, -0.5514],
+                            [ 0.0711,  0.2489, -0.5354],
+                            [ 0.2245,  0.2698, -0.4106],
+                            [ 0.0711,  0.2489, -0.5354],
+                            [ 0.0050,  0.2489, -0.5514],
+                            [-0.0645,  0.2489, -0.5364]]),
+                            'nms_threshold':0.6,
+                            'nms_inclusion_threshold':0.05,
+                            'top_k':5000,
+                            'keep_top_k':750,
+                            'border_size':100,
+                            'return_dim':3,
+                            'device':'cpu'}
 
 class Img2Pose:
     def __init__(
         self,
+        cfg=model_config['img2pose'],
+        pretrained='huggingface',
         device="auto",
-        constrained=True,
         detection_threshold=0.5,
-        nms_threshold=0.6,
-        nms_inclusion_threshold=0.05,
-        top_k=5000,
-        keep_top_k=750,
-        BORDER_SIZE=100,
-        DEPTH=18,
-        MAX_SIZE=1400,
-        MIN_SIZE=400,
-        RETURN_DIM=3,
-        POSE_MEAN=os.path.join(get_resource_path(), "WIDER_train_pose_mean_v1.npy"),
-        POSE_STDDEV=os.path.join(get_resource_path(), "WIDER_train_pose_stddev_v1.npy"),
-        THREED_FACE_MODEL=os.path.join(
-            get_resource_path(), "reference_3d_68_points_trans.npy"
-        ),
+        # nms_threshold=0.6,
+        # nms_inclusion_threshold=0.05,
+        # top_k=5000,
+        # keep_top_k=750,
+        # BORDER_SIZE=100,
+        # DEPTH=18,
+        # MAX_SIZE=1400,
+        # MIN_SIZE=400,
+        # RETURN_DIM=3,
+        # POSE_MEAN=os.path.join(get_resource_path(), "WIDER_train_pose_mean_v1.npy"),
+        # POSE_STDDEV=os.path.join(get_resource_path(), "WIDER_train_pose_stddev_v1.npy"),
+        # THREED_FACE_MODEL=os.path.join(
+        #     get_resource_path(), "reference_3d_68_points_trans.npy"
+        # ),
         **kwargs,
     ):
         """Creates an img2pose model. Constrained model is optimized for face detection/ pose estimation for
@@ -47,25 +139,47 @@ class Img2Pose:
 
         self.device = set_torch_device(device)
 
-        pose_mean = np.load(POSE_MEAN, allow_pickle=True)
-        pose_stddev = np.load(POSE_STDDEV, allow_pickle=True)
-        threed_points = np.load(THREED_FACE_MODEL, allow_pickle=True)
+        if pretrained == 'huggingface':
+            backbone = resnet_fpn_backbone(backbone_name=f"resnet{cfg['depth']}", weights=None)
+            self.model = FasterDoFRCNN(backbone=backbone,
+                                    num_classes=2,
+                                    min_size=cfg['min_size'],
+                                    max_size=cfg['max_size'],
+                                    pose_mean=cfg['pose_mean'],
+                                    pose_stddev=cfg['pose_stddev'],
+                                    threed_68_points=cfg['threed_points'],
+                                    rpn_pre_nms_top_n_test=cfg['rpn_pre_nms_top_n_test'],
+                                    rpn_post_nms_top_n_test=cfg['rpn_post_nms_top_n_test'],
+                                    bbox_x_factor=cfg['bbox_x_factor'],
+                                    bbox_y_factor=cfg['bbox_y_factor'],
+                                    expand_forehead=cfg['expand_forehead'])
+            # self.model = WrappedModel(self.model)
+            # self.model.from_pretrained('py-feat/img2pose')
+            # Download the model file
+            model_file = hf_hub_download(repo_id= "py-feat/img2pose", filename="model.safetensors")
 
-        self.model = img2poseModel(
-            DEPTH,
-            MIN_SIZE,
-            MAX_SIZE,
-            pose_mean=pose_mean,
-            pose_stddev=pose_stddev,
-            threed_68_points=threed_points,
-            device=self.device,
-            **kwargs,
-        )
+            # Load the model state dict from the SafeTensors file
+            model_state_dict = load_file( model_file)
 
-        # Load the constrained model
-        model_file = "img2pose_v1_ft_300w_lp.pth" if constrained else "img2pose_v1.pth"
-        self.load_model(os.path.join(get_resource_path(), model_file))
-        self.model.evaluate()
+            # Initialize the model
+            self.model.load_state_dict(model_state_dict)
+            self.model.eval()
+        else:
+            self.model = img2poseModel(
+                cfg['depth'],
+                cfg['min_size'],
+                cfg['max_size'],
+                pose_mean=cfg['pose_mean'],
+                pose_stddev=cfg['pose_stddev'],
+                threed_68_points=cfg['threed_points'],
+                device=self.device,
+                **kwargs,
+            )
+
+            # Load the constrained model
+            model_file = "img2pose_v1_ft_300w_lp.pth" if cfg['constrained'] else "img2pose_v1.pth"
+            self.load_model(os.path.join(get_resource_path(), model_file))
+            self.model.evaluate()
 
         # Set threshold score for bounding box detection
         (
@@ -80,14 +194,14 @@ class Img2Pose:
             self.RETURN_DIM,
         ) = (
             detection_threshold,
-            nms_threshold,
-            nms_inclusion_threshold,
-            top_k,
-            keep_top_k,
-            MIN_SIZE,
-            MAX_SIZE,
-            BORDER_SIZE,
-            RETURN_DIM,
+            cfg['nms_threshold'],
+            cfg['nms_inclusion_threshold'],
+            cfg['top_k'],
+            cfg['keep_top_k'],
+            cfg['min_size'],
+            cfg['max_size'],
+            cfg['border_size'],
+            cfg['return_dim'],
         )
 
     def load_model(self, model_path, optimizer=None):
@@ -103,8 +217,8 @@ class Img2Pose:
         """
 
         checkpoint = torch.load(model_path, map_location=self.device)
-
-        self.model.fpn_model.load_state_dict(checkpoint["fpn_model"])
+        state_dict = {k.replace('module.', ''): v for k, v in checkpoint['fpn_model'].items()}
+        self.model.fpn_model.load_state_dict(state_dict)
 
         if "optimizer" in checkpoint and optimizer:
             optimizer.load_state_dict(checkpoint["optimizer"])
@@ -191,7 +305,9 @@ class Img2Pose:
         # img = img.to(self.device)
 
         # Obtain prediction
-        pred = self.model.predict([img])[0]
+        with torch.no_grad():
+            pred = self.model([img])[0]
+            # pred = self.model.predict([img])[0]
         # pred = self.model.predict(img)[0]
         boxes = pred["boxes"].cpu().numpy().astype("float")
         scores = pred["scores"].cpu().numpy().astype("float")

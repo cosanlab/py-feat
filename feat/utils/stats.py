@@ -4,7 +4,7 @@ Feat utility and helper functions for performing statistics.
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import simps
+from scipy.integrate import simpson as simps
 import torch
 from torch.nn.functional import cosine_similarity
 
@@ -136,8 +136,8 @@ def cluster_identities(face_embeddings, threshold=0.8):
                     stack.append(neighbor.item())
                     cluster.add(neighbor.item())
                     visited.add(neighbor.item())
-                    cluster_indices[
-                        neighbor.item()
-                    ] = current_cluster_idx  # Update the cluster index for the item
+                    cluster_indices[neighbor.item()] = (
+                        current_cluster_idx  # Update the cluster index for the item
+                    )
             clusters.append(cluster)
     return [f"Person_{x}" for x in cluster_indices]

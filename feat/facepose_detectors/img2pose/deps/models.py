@@ -9,11 +9,12 @@ from torchvision.models.detection.roi_heads import RoIHeads
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 from torchvision.ops import MultiScaleRoIAlign
 from torchvision.ops import boxes as box_ops
-
 from .generalized_rcnn import GeneralizedRCNN
 from .rpn import AnchorGenerator, RegionProposalNetwork, RPNHead
 from .pose_operations import transform_pose_global_project_bbox
-
+from huggingface_hub import PyTorchModelHubMixin
+from torchvision.ops import nms
+from feat.utils.image_operations import rotvec_to_euler_angles
 
 class FastRCNNDoFPredictor(nn.Module):
     """
@@ -66,10 +67,10 @@ class FastRCNNClassPredictor(nn.Module):
         return scores
 
 
-class FasterDoFRCNN(GeneralizedRCNN):
+class FasterDoFRCNN(GeneralizedRCNN, PyTorchModelHubMixin):
     def __init__(
         self,
-        backbone,
+        backbone=None,
         num_classes=None,
         # transform parameters
         min_size=800,
@@ -106,7 +107,7 @@ class FasterDoFRCNN(GeneralizedRCNN):
         threed_5_points=None,
         bbox_x_factor=1.1,
         bbox_y_factor=1.1,
-        expand_forehead=0.3,
+        expand_forehead=0.3, 
     ):
         if not hasattr(backbone, "out_channels"):
             raise ValueError(
@@ -131,7 +132,7 @@ class FasterDoFRCNN(GeneralizedRCNN):
                 )
 
         out_channels = backbone.out_channels
-
+        
         if rpn_anchor_generator is None:
             anchor_sizes = ((16,), (32,), (64,), (128,), (256,), (512,))
             aspect_ratios = ((0.5, 1.0, 2.0),) * len(anchor_sizes)
@@ -162,7 +163,7 @@ class FasterDoFRCNN(GeneralizedRCNN):
             rpn_post_nms_top_n,
             rpn_nms_thresh,
         )
-
+        
         if box_roi_pool is None:
             box_roi_pool = MultiScaleRoIAlign(
                 featmap_names=["0", "1", "2", "3"], output_size=7, sampling_ratio=2
@@ -197,7 +198,7 @@ class FasterDoFRCNN(GeneralizedRCNN):
             threed_5_points=threed_5_points,
             bbox_x_factor=bbox_x_factor,
             bbox_y_factor=bbox_y_factor,
-            expand_forehead=expand_forehead,
+            expand_forehead=expand_forehead, 
         )
 
         if image_mean is None:
@@ -206,7 +207,7 @@ class FasterDoFRCNN(GeneralizedRCNN):
             image_std = [0.229, 0.224, 0.225]
 
         transform = GeneralizedRCNNTransform(min_size, max_size, image_mean, image_std)
-
+        
         super(FasterDoFRCNN, self).__init__(backbone, rpn, roi_heads, transform)
 
     def set_max_min_size(self, max_size, min_size):
@@ -247,7 +248,7 @@ class DOFRoIHeads(RoIHeads):
         threed_5_points=None,
         bbox_x_factor=1.1,
         bbox_y_factor=1.1,
-        expand_forehead=0.3,
+        expand_forehead=0.3, 
     ):
         super(RoIHeads, self).__init__()
 
@@ -298,16 +299,19 @@ class DOFRoIHeads(RoIHeads):
         self.bbox_x_factor = bbox_x_factor
         self.bbox_y_factor = bbox_y_factor
         self.expand_forehead = expand_forehead
-
+        
     def postprocess_detections(
         self,
-        class_logits,  # type: Tensor
-        dof_regression,  # type: Tensor
-        proposals,  # type: List[Tensor]
+        class_logits,  # type: torch.Tensor
+        dof_regression,  # type: torch.Tensor
+        proposals,  # type: List[torch.Tensor]
         image_shapes,  # type: List[Tuple[int, int]]
     ):
-        # type: (...) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]
         device = class_logits.device
+        
+        # Move proposals to the correct device
+        proposals = [p.to(device) for p in proposals]
+        
         num_classes = class_logits.shape[-1]
         boxes_per_image = [boxes_in_image.shape[0] for boxes_in_image in proposals]
         pred_boxes = torch.cat(proposals, dim=0)
@@ -373,9 +377,17 @@ class DOFRoIHeads(RoIHeads):
                 expand_forehead=self.expand_forehead,
             )
 
+            # Ensure all tensors are on the correct device
+            boxes = boxes.to(device)
+            scores = scores.to(device)
+            labels = labels.to(device)
+                        
             # non-maximum suppression, independently done per class
             keep = box_ops.batched_nms(boxes, scores, labels, self.nms_thresh)
 
+            # keep only topk scoring predictions
+            keep = keep[: self.detections_per_img]
+            
             boxes, dofs, scores, labels = (
                 boxes[keep],
                 dofs[keep],
@@ -383,15 +395,12 @@ class DOFRoIHeads(RoIHeads):
                 labels[keep],
             )
 
-            # keep only topk scoring predictions
-            keep = keep[: self.detections_per_img]
-
             all_boxes.append(boxes)
             all_scores.append(scores)
             all_labels.append(labels)
             all_dofs.append(dofs)
 
-        return all_boxes, all_dofs, all_scores, all_labels
+        return all_boxes, all_dofs, all_scores, all_labels   
 
     def forward(
         self,
@@ -432,3 +441,34 @@ class DOFRoIHeads(RoIHeads):
             )
 
         return result, losses
+
+
+def postprocess_img2pose(img2pose_output, nms_inclusion_threshold=0.05, top_k=5000, nms_threshold=0.3, detection_threshold=0.5):
+    ''' Post-process output from img2pose model to threshold and convert dof to angles'''
+    
+    # Sort boxes by score
+    include = img2pose_output['scores'] > nms_inclusion_threshold
+    boxes = img2pose_output['boxes'][include]
+    scores = img2pose_output['scores'][include]
+    dofs = img2pose_output['dofs'][include]
+    _, order = torch.sort(scores, descending=True)[: top_k]
+    boxes, scores, dofs = boxes[order], scores[order], dofs[order]
+    
+    # Perform Non-Maximum Suppression
+    keep = nms(boxes, scores, nms_threshold)
+    boxes = boxes[keep]
+    scores = scores[keep]
+    dofs = dofs[keep]
+    
+    # Threshold
+    boxes = boxes[scores >= detection_threshold]
+    dofs = dofs[scores >= detection_threshold] # return 6 rotation and translation parameters
+    # dofs = dofs[scores >= detection_threshold][:, :3] # Only returning xyz for now not translation
+    scores = scores[scores >= detection_threshold]
+    
+    # Convert Rotation Vector to Euler (Radians)
+    dofs = torch.cat((rotvec_to_euler_angles(dofs[:, :3]), dofs[:,3:]), dim=1)
+    return {'boxes':boxes, 'dofs':dofs, 'scores':scores} 
+    # return {'boxes':[list(t.detach().cpu().numpy()) for t in list(torch.unbind(boxes, dim=0))], 
+    # 'dofs':[list(t.detach().cpu().numpy()) for t in list(torch.unbind(dofs, dim=0))], 
+    # 'scores':list(img2pose_output['scores'].detach().cpu().numpy())}

@@ -26,10 +26,24 @@ from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
 from torch import swapaxes
 from feat.transforms import Rescale
+from feat.utils import flatten_list
 from feat.utils.io import read_feat, read_openface
 from feat.utils.stats import wavelet, calc_hist_auc, cluster_identities
-from feat.plotting import plot_face, draw_lineface, draw_facepose, load_viz_model
+from feat.plotting import (
+    plot_face,
+    draw_lineface,
+    draw_facepose,
+    load_viz_model,
+    face_part_path,
+    draw_plotly_landmark,
+    face_polygon_svg,
+    draw_plotly_au,
+    draw_plotly_pose,
+    emotion_annotation_position,
+)
 from feat.pretrained import AU_LANDMARK_MAP
+from feat.utils import flatten_list
+from feat.utils.io import load_pil_img
 from nilearn.signal import clean
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
@@ -42,6 +56,7 @@ from PIL import Image
 import logging
 import av
 from itertools import islice
+import plotly.graph_objects as go
 
 __all__ = [
     "FexSeries",
@@ -334,6 +349,10 @@ class FexSeries(Series):
     def plot_detections(self, *args, **kwargs):
         """Alias for Fex.plot_detections"""
         return Fex(self).T.__finalize__(self).plot_detections(*args, **kwargs)
+
+    def iplot_detections(self, *args, **kwargs):
+        """Alias for Fex.iplot_detections"""
+        return Fex(self).T.__finalize__(self).iplot_detections(*args, **kwargs)
 
 
 # TODO: Switch all print statements to respect verbose
@@ -1681,6 +1700,709 @@ class Fex(DataFrame):
         gaze = None if isinstance(gaze, bool) else gaze
         return au, gaze, muscles, model
 
+    def plot_singleframe_detections(
+        self,
+        image_opacity=0.9,
+        facebox_color="cyan",
+        facebox_width=3,
+        pose_width=2,
+        landmark_color="white",
+        landmark_width=2,
+        emotions_position="right",
+        emotions_opacity=0.9,
+        emotions_color="white",
+        emotions_size=12,
+        au_heatmap_resolution=1000,
+        au_opacity=0.9,
+        au_cmap="Blues",
+        *args,
+        **kwargs,
+    ):
+        """
+        Function to generate interactive plotly figure to interactively visualize py-feat detectors on a single image frame.
+
+        Args:
+            image_opacity (float): opacity of image overlay (default=.9)
+            emotions_position (str): position around facebox to plot emotion annotations. default='right'
+            emotions_opacity (float): opacity of emotion annotation text (default=.9)
+            emotions_color (str): color of emotion annotation text (default='pink')
+            emotions_size (int): size of emotion annotations (default=14)
+            frame_duration (int): duration in milliseconds to play each frame if plotting multiple frames (default=1000)
+            facebox_color (str): color of facebox bounding box (default="cyan")
+            facebox_width (int): line width of facebox bounding box (default=3)
+            pose_width (int): line width of pose rotation plot (default=2)
+            landmark_color (str): color of landmark detectors (default="white")
+            landmark_width (int): line width of landmark detectors (default=2)
+            au_cmap (str): colormap to use for AU heatmap (default='Blues')
+            au_heatmap_resolution (int): resolution of heatmap values (default=1000)
+            au_opacity (float): opacity of AU heatmaps (default=0.9)
+
+        Returns:
+            a plotly figure instance
+        """
+
+        n_frames = len(self["frame"].unique())
+
+        if n_frames > 1:
+            raise ValueError(
+                "This function can only plot a single frame. Try using plot_multipleframe_detections() instead."
+            )
+
+        # Initialize Image
+        frame_id = self["frame"].unique()[0]
+        frame_fex = self.query("frame==@frame_id")
+        frame_img = load_pil_img(frame_fex["input"].unique()[0], frame_id)
+        img_width = frame_img.width
+        img_height = frame_img.height
+
+        # Create figure
+        fig = go.Figure()
+
+        # Add invisible scatter trace.
+        # This trace is added to help the autoresize logic work.
+        fig.add_trace(
+            go.Scatter(
+                x=[0, img_width],
+                y=[0, img_height],
+                mode="markers",
+                marker_opacity=0,
+            )
+        )
+
+        # Add image
+        fig.add_layout_image(
+            dict(
+                x=0,
+                sizex=img_width,
+                y=img_height,
+                sizey=img_height,
+                xref="x",
+                yref="y",
+                opacity=image_opacity,
+                layer="below",
+                sizing="stretch",
+                source=frame_img,
+            )
+        )
+
+        # Add Face Bounding Box
+        faceboxes_path = [
+            dict(
+                type="rect",
+                x0=row["FaceRectX"],
+                y0=img_height - row["FaceRectY"],
+                x1=row["FaceRectX"] + row["FaceRectWidth"],
+                y1=img_height - row["FaceRectY"] - row["FaceRectHeight"],
+                line=dict(color=facebox_color, width=facebox_width),
+            )
+            for i, row in frame_fex.iterrows()
+        ]
+
+        # Add Landmarks
+        landmarks_path = [
+            draw_plotly_landmark(
+                row,
+                img_height,
+                fig,
+                line_color=landmark_color,
+                line_width=landmark_width,
+            )
+            for i, row in frame_fex.iterrows()
+        ]
+
+        # Add Pose
+        poses_path = flatten_list(
+            [
+                draw_plotly_pose(row, img_height, fig, line_width=pose_width)
+                for i, row in frame_fex.iterrows()
+            ]
+        )
+
+        # Add Emotions
+        emotions_annotations = []
+        for i, row in frame_fex.iterrows():
+            emotion_dict = (
+                row[
+                    [
+                        "anger",
+                        "disgust",
+                        "fear",
+                        "happiness",
+                        "sadness",
+                        "surprise",
+                        "neutral",
+                    ]
+                ]
+                .sort_values(ascending=False)
+                .to_dict()
+            )
+
+            x_position, y_position, align, valign = emotion_annotation_position(
+                row,
+                img_height,
+                img_width,
+                emotions_size=emotions_size,
+                emotions_position=emotions_position,
+            )
+
+            emotion_text = ""
+            for emotion in emotion_dict:
+                emotion_text += f"{emotion}: <i>{emotion_dict[emotion]:.2f}</i><br>"
+
+            emotions_annotations.append(
+                dict(
+                    text=emotion_text,
+                    x=x_position,
+                    y=y_position,
+                    opacity=emotions_opacity,
+                    showarrow=False,
+                    align=align,
+                    valign=valign,
+                    bgcolor="black",
+                    font=dict(color=emotions_color, size=emotions_size),
+                )
+            )
+
+        # Add AU Heatmaps
+        aus_path = flatten_list(
+            [
+                draw_plotly_au(
+                    row,
+                    img_height,
+                    fig,
+                    cmap=au_cmap,
+                    au_opacity=au_opacity,
+                    heatmap_resolution=au_heatmap_resolution,
+                )
+                for i, row in frame_fex.iterrows()
+            ]
+        )
+
+        # Configure other layout
+        fig.update_layout(
+            width=img_width,
+            height=img_height,
+            margin={"l": 0, "r": 0, "t": 0, "b": 0},
+        )
+
+        # Configure axes
+        fig.update_xaxes(visible=False, range=[0, img_width])
+
+        fig.update_yaxes(
+            visible=False,
+            range=[0, img_height],
+            scaleanchor="x",  # the scaleanchor attribute ensures that the aspect ratio stays constant
+        )
+
+        # Add a button to the figure
+        fig.update_layout(
+            updatemenus=[
+                dict(
+                    type="buttons",
+                    direction="left",
+                    buttons=list(
+                        [
+                            dict(
+                                method="relayout",
+                                label="Bounding Box",
+                                args=["shapes", faceboxes_path],
+                                args2=["shapes", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="Landmarks",
+                                args=["shapes", landmarks_path],
+                                args2=["shapes", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="Poses",
+                                args=["shapes", poses_path],
+                                args2=["shapes", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="Emotion",
+                                args=["annotations", emotions_annotations],
+                                args2=["annotations", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="AU",
+                                args=["shapes", aus_path],
+                                args2=["shapes", []],
+                            ),
+                        ]
+                    ),
+                    pad={"r": 10, "t": 10},
+                    showactive=True,
+                    x=0.1,
+                    xanchor="left",
+                    y=1.12,
+                    yanchor="top",
+                )
+            ]
+        )
+
+        # Add annotation
+        fig.update_layout(
+            annotations=[
+                dict(
+                    text="Detector:",
+                    showarrow=False,
+                    x=0,
+                    y=1.09,
+                    yref="paper",
+                    align="left",
+                )
+            ]
+        )
+
+        # fig.show()
+        return fig
+
+    def plot_multipleframes_detections(
+        self,
+        faceboxes=False,
+        landmarks=False,
+        aus=False,
+        poses=False,
+        emotions=False,
+        emotions_position="right",
+        emotions_opacity=1.0,
+        emotions_color="white",
+        emotions_size=14,
+        frame_duration=1000,
+        facebox_color="cyan",
+        facebox_width=3,
+        pose_width=2,
+        landmark_color="white",
+        landmark_width=2,
+        au_heatmap_resolution=1000,
+        au_opacity=0.9,
+        au_cmap="Blues",
+        width=800,
+        height=600,
+        *args,
+        **kwargs,
+    ):
+        """
+        Function to generate interactive plotly figure to visualize py-feat detectors on a series of image frames (e.g., videos).
+
+        Args:
+            faceboxes (bool): will include faceboxes when plotting detector output for multiple frames.
+            landmarks (bool): will include face landmarks when plotting detector output for multiple frames.
+            poses (bool): will include 3 axis line plot indicating x,y,z rotation information when plotting detector output for multiple frames.
+            aus (bool): will include action unit heatmaps when plotting detector output for multiple frames.
+            emotions (bool): will add text annotations indicating probability of discrete emotion when plotting detector output for multiple frames.
+            image_opacity (float): opacity of image overlay (default=.9)
+            emotions_position (str): position around facebox to plot emotion annotations. default='right'
+            emotions_opacity (float): opacity of emotion annotation text (default=1.)
+            emotions_color (str): color of emotion annotation text (default='white')
+            emotions_size (int): size of emotion annotations (default=14)
+            frame_duration (int): duration in milliseconds to play each frame if plotting multiple frames (default=1000)
+            facebox_color (str): color of facebox bounding box (default="cyan")
+            facebox_width (int): line width of facebox bounding box (default=3)
+            pose_width (int): line width of pose rotation plot (default=2)
+            landmark_color (str): color of landmark detectors (default="white")
+            landmark_width (int): line width of landmark detectors (default=2)
+            au_cmap (str): colormap to use for AU heatmap (default='Blues')
+            au_heatmap_resolution (int): resolution of heatmap values (default=1000)
+            au_opacity (float): opacity of AU heatmaps (default=0.9)
+
+        Returns:
+            a plotly figure instance
+        """
+        n_frames = len(self["frame"].unique())
+
+        if n_frames <= 1:
+            raise ValueError(
+                "This function plots multiple frames. Try using plot_singleframe_detections() instead."
+            )
+
+        # Initialize Image
+        frame_id = 0
+        frame_fex = self.query("frame==@frame_id")
+        frame_img = load_pil_img(frame_fex["input"].unique()[0], frame_id)
+
+        # Initialize Figure
+        # Scatter plot from 0 -> img width/height to constrain layhout
+        fig = go.Figure(
+            go.Scatter(
+                x=[0, width],
+                y=[0, height],
+                mode="markers",
+                marker_opacity=1,
+            )
+        )
+        # SET THE SIZING OF THE FRAME INDEPENDENT OF EACH IMAGE
+        fig.update_layout(
+            xaxis_visible=False, yaxis_visible=False, width=width, height=height
+        )
+
+        CENTER_X = width / 2
+        CENTER_Y = height / 2
+
+        sliders_dict = {
+            "active": 0,
+            "yanchor": "top",
+            "xanchor": "left",
+            "currentvalue": {
+                "font": {"size": 20},
+                "prefix": "Frame:",
+                "visible": True,
+                "xanchor": "right",
+            },
+            "transition": {"duration": 300, "easing": "cubic-in-out"},
+            "pad": {"b": 10, "t": 50},
+            "len": 0.9,
+            "x": 0.1,
+            "y": 0,
+            "steps": [],
+        }
+
+        # Create Frames
+        frames = []
+        for frame_id in self["frame"].unique():
+            # Load new image
+            frame_fex = self.query("frame==@frame_id")
+            frame_img = load_pil_img(frame_fex["input"].unique()[0], frame_id)
+            img_width = frame_img.width
+            img_height = frame_img.height
+
+            # TODO: adjust these by the same displacement/scaling factors to resize images
+            # Add detector paths
+            shapes = []
+            if faceboxes:
+                shapes += [
+                    dict(
+                        type="rect",
+                        x0=row["FaceRectX"],
+                        y0=img_height - row["FaceRectY"],
+                        x1=row["FaceRectX"] + row["FaceRectWidth"],
+                        y1=img_height - row["FaceRectY"] - row["FaceRectHeight"],
+                        line=dict(color=facebox_color, width=facebox_width),
+                    )
+                    for i, row in frame_fex.iterrows()
+                ]
+
+            if poses:
+                shapes += flatten_list(
+                    [
+                        draw_plotly_pose(row, img_height, fig, line_width=pose_width)
+                        for i, row in frame_fex.iterrows()
+                    ]
+                )
+
+            if landmarks:
+                shapes += [
+                    draw_plotly_landmark(
+                        row,
+                        img_height,
+                        fig,
+                        line_color=landmark_color,
+                        line_width=landmark_width,
+                    )
+                    for i, row in frame_fex.iterrows()
+                ]
+
+            if aus:
+                shapes += flatten_list(
+                    [
+                        draw_plotly_au(
+                            row,
+                            img_height,
+                            fig,
+                            cmap=au_cmap,
+                            au_opacity=au_opacity,
+                            heatmap_resolution=au_heatmap_resolution,
+                        )
+                        for i, row in frame_fex.iterrows()
+                    ]
+                )
+
+            # Add emotion annotations
+            emotions_annotations = []
+            if emotions:
+                for i, row in frame_fex.iterrows():
+                    emotion_dict = (
+                        row[
+                            [
+                                "anger",
+                                "disgust",
+                                "fear",
+                                "happiness",
+                                "sadness",
+                                "surprise",
+                                "neutral",
+                            ]
+                        ]
+                        .sort_values(ascending=False)
+                        .to_dict()
+                    )
+
+                    x_position, y_position, align, valign = emotion_annotation_position(
+                        row,
+                        img_height,
+                        img_width,
+                        emotions_size=emotions_size,
+                        emotions_position=emotions_position,
+                    )
+
+                    emotion_text = ""
+                    for emotion in emotion_dict:
+                        emotion_text += (
+                            f"{emotion}: <i>{emotion_dict[emotion]:.2f}</i><br>"
+                        )
+
+                    emotions_annotations.append(
+                        dict(
+                            text=emotion_text,
+                            x=x_position,
+                            y=y_position,
+                            opacity=emotions_opacity,
+                            showarrow=False,
+                            align=align,
+                            valign=valign,
+                            bgcolor="black",
+                            font=dict(color=emotions_color, size=emotions_size),
+                        )
+                    )
+
+            sliders_dict["steps"].append(
+                {
+                    "args": [
+                        [frame_id],
+                        {
+                            "frame": {"duration": frame_duration, "redraw": True},
+                            "mode": "immediate",
+                            "transition": {"duration": frame_duration},
+                        },
+                    ],
+                    "label": str(frame_id),
+                    "method": "animate",
+                }
+            )
+
+            frame = go.Frame(
+                data=[],
+                layout=dict(
+                    images=[
+                        dict(
+                            sizey=img_height,  # img container height
+                            sizex=img_width,  # img container width
+                            source=frame_img,  # img
+                            yref="y",  # use y-axis coordinates
+                            xref="x",  # use x-axis coordinates
+                            y=img_height,  # y-position in yref units
+                            x=max(
+                                (CENTER_X - (img_width / 2)), 0
+                            ),  # x-position in xref units
+                            layer="below",  # render below detections
+                            opacity=0.9,  # img transparency
+                            sizing="stretch",  # how to fill frame TODO: will determine how to translate detections for overlay
+                        )
+                    ],
+                    xaxis_visible=False,
+                    yaxis_visible=False,
+                    width=width,  # main width,
+                    height=height,  # main height,
+                    shapes=shapes,
+                    annotations=emotions_annotations,
+                    updatemenus=[
+                        dict(
+                            buttons=[
+                                dict(
+                                    args=[
+                                        None,
+                                        {
+                                            "frame": {
+                                                "duration": frame_duration,
+                                                "redraw": True,
+                                            },
+                                            "fromcurrent": True,
+                                        },
+                                    ],
+                                    label="Play",
+                                    method="animate",
+                                ),
+                                dict(
+                                    args=[
+                                        [None],
+                                        {
+                                            "frame": {"duration": 0, "redraw": False},
+                                            "mode": "immediate",
+                                            "transition": {"duration": 0},
+                                        },
+                                    ],
+                                    label="Pause",
+                                    method="animate",
+                                ),
+                            ],
+                            direction="left",
+                            pad={"r": 10, "t": 87},
+                            showactive=True,
+                            type="buttons",
+                            x=0.1,
+                            xanchor="right",
+                            y=0,
+                            yanchor="top",
+                        )
+                    ],
+                ),
+                name=str(frame_id),
+            )
+
+            frames.append(frame)
+
+        fig.update(frames=frames)
+        fig.update_layout(
+            updatemenus=[
+                dict(
+                    buttons=[
+                        dict(
+                            args=[
+                                None,
+                                {
+                                    "frame": {
+                                        "duration": frame_duration,
+                                        "redraw": True,
+                                    },
+                                    "fromcurrent": True,
+                                },
+                            ],
+                            label="Play",
+                            method="animate",
+                        ),
+                        dict(
+                            args=[
+                                [None],
+                                {
+                                    "frame": {"duration": 0, "redraw": True},
+                                    "mode": "immediate",
+                                    "transition": {"duration": 0},
+                                },
+                            ],
+                            label="Pause",
+                            method="animate",
+                        ),
+                    ],
+                    direction="left",
+                    pad={"r": 10, "t": 87},
+                    showactive=False,
+                    type="buttons",
+                    x=0.1,
+                    xanchor="right",
+                    y=0,
+                    yanchor="top",
+                )
+            ],
+            sliders=[sliders_dict],
+        )
+        # fig.show()
+
+        return fig
+
+    def iplot_detections(
+        self,
+        faceboxes=True,
+        landmarks=True,
+        aus=False,
+        poses=False,
+        emotions=False,
+        emotions_position="right",
+        emotions_opacity=1.0,
+        emotions_color="white",
+        emotions_size=14,
+        frame_duration=1000,
+        facebox_color="cyan",
+        facebox_width=3,
+        pose_width=2,
+        landmark_color="white",
+        landmark_width=2,
+        au_cmap="Blues",
+        au_heatmap_resolution=1000,
+        au_opacity=0.9,
+        *args,
+        **kwargs,
+    ):
+        """Plot Py-FEAT detection results using plotly backend. There are currently two different types of plots implemented. For single Frames, uses plot_singleframe_detections() to create an interactive plot where different detector outputs can be toggled on or off.  For multiple frames, uses plot_multipleframes_detections() to create a plotly animation to scroll through multiple frames. However, we currently are unable to interactively toggle on and off the detectors, so the detector output must be prespecified when generating the plot.
+
+        Args:
+            faceboxes (bool): will include faceboxes when plotting detector output for multiple frames.
+            landmarks (bool): will include face landmarks when plotting detector output for multiple frames.
+            poses (bool): will include 3 axis line plot indicating x,y,z rotation information when plotting detector output for multiple frames.
+            aus (bool): will include action unit heatmaps when plotting detector output for multiple frames.
+            emotions (bool): will add text annotations indicating probability of discrete emotion when plotting detector output for multiple frames.
+            emotions_position (str): position around facebox to plot emotion annotations. default='right'
+            emotions_opacity (float): opacity of emotion annotation text (default=1.)
+            emotions_color (str): color of emotion annotation text (default='white')
+            emotions_size (int): size of emotion annotations (default=14)
+            frame_duration (int): duration in milliseconds to play each frame if plotting multiple frames (default=1000)
+            facebox_color (str): color of facebox bounding box (default="cyan")
+            facebox_width (int): line width of facebox bounding box (default=3)
+            pose_width (int): line width of pose rotation plot (default=2)
+            landmark_color (str): color of landmark detectors (default="white")
+            landmark_width (int): line width of landmark detectors (default=2)
+            au_cmap (str): colormap to use for AU heatmap (default='Blues')
+            au_heatmap_resolution (int): resolution of heatmap values (default=1000)
+            au_opacity (float): opacity of AU heatmaps (default=0.9)
+
+        Returns:
+            a plotly figure instance
+        """
+
+        n_frames = len(self["frame"].unique())
+
+        if n_frames > 1:
+            plot_single_frame = False
+        else:
+            plot_single_frame = True
+
+        if plot_single_frame:
+            fig = self.plot_singleframe_detections(
+                facebox_color=facebox_color,
+                facebox_width=facebox_width,
+                pose_width=pose_width,
+                landmark_color=landmark_color,
+                landmark_width=landmark_width,
+                emotions_position=emotions_position,
+                emotions_opacity=emotions_opacity,
+                emotions_color=emotions_color,
+                emotions_size=emotions_size,
+                au_cmap=au_cmap,
+                au_heatmap_resolution=au_heatmap_resolution,
+                au_opacity=au_opacity,
+                *args,
+                **kwargs,
+            )
+
+        else:
+            fig = self.plot_multipleframes_detections(
+                faceboxes=faceboxes,
+                landmarks=landmarks,
+                aus=aus,
+                pose=poses,
+                emotions=emotions,
+                emotions_position=emotions_position,
+                emotions_opacity=emotions_opacity,
+                emotions_color=emotions_color,
+                emotions_size=emotions_size,
+                frame_duration=frame_duration,
+                facebox_color=facebox_color,
+                facebox_width=facebox_width,
+                pose_width=pose_width,
+                landmark_color=landmark_color,
+                landmark_width=landmark_width,
+                au_cmap=au_cmap,
+                au_heatmap_resolution=au_heatmap_resolution,
+                au_opacity=au_opacity,
+                *args,
+                **kwargs,
+            )
+
+        return fig
+
     def plot_detections(
         self,
         faces="landmarks",
@@ -1701,7 +2423,6 @@ class Fex(DataFrame):
         faces = 'landmarks', only an outline of the face will be draw without loading
         the underlying vidoe frame to save memory.
 
-
         Args:
             faces (str, optional): 'landmarks' to draw detected landmarks or 'aus' to
             generate a face from AU detections using Py-Feat's AU landmark model.
@@ -1717,7 +2438,6 @@ class Fex(DataFrame):
             the face. Defaults to True.
             au_barplot (bool, optional): Whether to include a subplot for au detections. Defaults to True.
             emotion_barplot (bool, optional): Whether to include a subplot for emotion detections. Defaults to True.
-
 
         Returns:
             list: list of matplotlib figures
@@ -1987,7 +2707,7 @@ class ImageDataset(Dataset):
                 "Image": transformed_img["Image"],
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.images[idx],
+                "FileName": self.images[idx],
             }
 
         else:
@@ -1995,7 +2715,7 @@ class ImageDataset(Dataset):
                 "Image": img,
                 "Scale": 1.0,
                 "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
-                "FileNames": self.images[idx],
+                "FileName": self.images[idx],
             }
 
 
@@ -2015,9 +2735,9 @@ def _inverse_face_transform(faces, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         faces,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_face = []
         for face in frame:
@@ -2159,7 +2879,7 @@ class imageLoader_DISFAPlus(ImageDataset):
                 "label": torch.from_numpy(label),
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.main_file["image_path"][idx],
+                "FileName": self.main_file["image_path"][idx],
             }
 
         else:
@@ -2187,9 +2907,9 @@ def _inverse_landmark_transform(landmarks, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         landmarks,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_landmark = []
         for landmark in frame:
@@ -2199,7 +2919,18 @@ def _inverse_landmark_transform(landmarks, batch_data):
         out_frame.append(out_landmark)
     return out_frame
 
+class TensorDataset(Dataset):
+    def __init__(self, tensor):
+        self.tensor = tensor
 
+    def __len__(self):
+        # Return the number of samples in the dataset
+        return self.tensor.size(0)
+
+    def __getitem__(self, idx):
+        # Return the sample at the given index
+        return self.tensor[idx, ...]
+    
 class VideoDataset(Dataset):
     """Torch Video Dataset
 
