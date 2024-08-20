@@ -611,7 +611,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             self.identity_detector = None
 
     @torch.inference_mode()
-    def detect_faces(self, images, face_size=112):
+    def detect_faces(self, images, face_size=112, face_detection_threshold=0.5):
         """
         detect faces and poses in a batch of images using img2pose
 
@@ -631,7 +631,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         for i in range(frames.size(0)):
             single_frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
             img2pose_output = self.facepose_detector(single_frame)
-            img2pose_output = postprocess_img2pose(img2pose_output[0])
+            img2pose_output = postprocess_img2pose(img2pose_output[0], detection_threshold=face_detection_threshold)
             bbox = img2pose_output["boxes"]
             poses = img2pose_output["dofs"]
             facescores = img2pose_output["scores"]
@@ -784,6 +784,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         num_workers=0,
         pin_memory=False,
         face_identity_threshold=0.8,
+        face_detection_threshold=0.5,
         skip_frames=None,
         **kwargs,
     ):
@@ -798,6 +799,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             num_workers (int): how many subprocesses to use for data loading. 
             pin_memory (bool): If ``True``, the data loader will copy Tensors into CUDA pinned memory before returning them.
             face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
+            face_detection_threshold (float): value between 0-1 to determine if a face was detected; Default >= 0.5
             skip_frames (int or None): number of frames to skip to speed up inference (video only); Default None
             **kwargs: additional detector-specific kwargs
 
@@ -843,7 +845,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         batch_output = []
         frame_counter = 0
         for batch_id, batch_data in enumerate(tqdm(data_loader)):
-            faces_data = self.detect_faces(batch_data["Image"], face_size=self.face_size)
+            faces_data = self.detect_faces(batch_data["Image"], face_size=self.face_size, face_detection_threshold=face_detection_threshold)
             batch_results = self.forward(faces_data)
 
             # Create metadata for each frame                
