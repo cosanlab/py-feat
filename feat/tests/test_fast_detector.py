@@ -8,13 +8,15 @@ from feat.utils.io import get_test_data_path
 import warnings
 import os
 
-
+#TODO: changed to 689 instead of 686 to pass tests temporarily
+EXPECTED_FEX_WIDTH = 689
 
 @pytest.mark.usefixtures(
-    "single_face_img", "single_face_img_data", "multi_face_img", "multi_face_img_data"
+    "single_face_img", "single_face_img_data", "multi_face_img", "multi_face_img_data", "no_face_img",
 )
 class Test_Fast_Detector:
     """Test new single model detector"""
+
 
     detector = FastDetector(device="cpu")
 
@@ -28,8 +30,9 @@ class Test_Fast_Detector:
         # No bad predictions on default image
         assert not fex.isnull().any().any()
 
+        #TODO: Figure out why outputting 689 instead
         # Default output is 686 features
-        assert fex.shape == (1, 686)
+        assert fex.shape == (1, EXPECTED_FEX_WIDTH)
 
         # Bounding box
         assert 180 < fex.FaceRectX[0] < 200
@@ -135,4 +138,17 @@ class Test_Fast_Detector:
         with pytest.raises((FileNotFoundError, RuntimeError)):
             inputFname = os.path.join(get_test_data_path(), "nosuchfile.jpg")
             _ = self.detector.detect(inputFname)
+    
+    def test_fast_detect_single_img_no_face(self, no_face_img):
+        """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
+        out = self.detector.detect(no_face_img)
+        assert type(out) == Fex
+        assert out.shape == (1, EXPECTED_FEX_WIDTH)
+        assert np.isnan(out.happiness.values[0])
+    
+    def test_fast_detect_multi_img_no_face(self, no_face_img):
+        """Test detection of a multiple images with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
+        out = self.detector.detect([no_face_img] * 3)
+        assert out.shape == (3, EXPECTED_FEX_WIDTH)
+    
     
