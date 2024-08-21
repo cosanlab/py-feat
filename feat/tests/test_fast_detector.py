@@ -151,9 +151,16 @@ class Test_Fast_Detector:
         out = self.detector.detect([no_face_img] * 3)
         assert out.shape == (3, EXPECTED_FEX_WIDTH)
     
-    def test_detect_multi_img_no_face_batching(self, no_face_img):
+    def test_fast_detect_multi_img_no_face_batching(self, no_face_img):
         """Test detection of a multiple images with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
         out = self.detector.detect([no_face_img] * 5, batch_size=2)
         assert out.shape == (5, EXPECTED_FEX_WIDTH)
         
-    
+    def test_fast_detect_multi_img_mixed_no_face(
+        self, no_face_img, single_face_img, multi_face_img
+    ):
+        """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
+        out = self.detector.detect(
+            [single_face_img, no_face_img, multi_face_img] * 2
+        )
+        assert out.shape == (14, EXPECTED_FEX_WIDTH)
