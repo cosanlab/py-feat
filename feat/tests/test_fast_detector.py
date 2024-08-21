@@ -188,6 +188,15 @@ class Test_Fast_Detector:
         assert out.shape == (1, EXPECTED_FEX_WIDTH)
         assert out.happiness.values[0] > 0
     
-    
+    def test_fast_detect_single_img_multi_face(self, multi_face_img):
+        """Test detection of multiple faces from single image"""
+        out = self.detector.detect(multi_face_img)
+        assert type(out) == Fex
+        assert out.shape == (5, EXPECTED_FEX_WIDTH)
+        
+    def test_fast_detect_with_alpha(self):
+        image = os.path.join(get_test_data_path(), "Image_with_alpha.png")
+        out = self.detector.detect(image)
+
     
     
