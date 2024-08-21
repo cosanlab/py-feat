@@ -6,6 +6,7 @@ from huggingface_hub import PyTorchModelHubMixin
 import numpy as np
 from feat.utils.io import get_test_data_path
 import warnings
+import os
 
 
 
@@ -128,3 +129,10 @@ class Test_Fast_Detector:
         """Should fail with unsupported model name"""
         with pytest.raises(ValueError):
             _ = FastDetector(emotion_model="badmodelname")
+    
+    def test_fast_nofile(self):
+        """Should fail with missing data"""
+        with pytest.raises((FileNotFoundError, RuntimeError)):
+            inputFname = os.path.join(get_test_data_path(), "nosuchfile.jpg")
+            _ = self.detector.detect(inputFname)
+    
