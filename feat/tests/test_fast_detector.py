@@ -113,13 +113,18 @@ class Test_Fast_Detector:
             print(
                 f"Max AU deviation (batched - nonbatched): {au_diffs.idxmax()}: {au_diffs.max()}"
             )
+            
     def test_fast_empty_init():
         """Should fail if not models provided"""
         with pytest.raises(ValueError):
             _ = FastDetector(
-                face_model=None,
                 emotion_model=None,
                 au_model=None,
-                facepose_model=None,
                 landmark_model=None,
+                identity_model=None,
             )
+    
+    def test_fast_init_with_wrongmodelname():
+        """Should fail with unsupported model name"""
+        with pytest.raises(ValueError):
+            _ = FastDetector(emotion_model="badmodelname")
