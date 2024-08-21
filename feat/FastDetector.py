@@ -184,23 +184,23 @@ def plot_frame(
         return transforms.ToPILImage()(new_frame)
 
 
-def convert_bbox_output(img2pose_output):
+def convert_bbox_output(boxes, scores):
     """Convert im2pose_output into Fex Format"""
 
     widths = (
-        img2pose_output["boxes"][:, 2] - img2pose_output["boxes"][:, 0]
+        boxes[:, 2] - boxes[:, 0]
     )  # right - left
     heights = (
-        img2pose_output["boxes"][:, 3] - img2pose_output["boxes"][:, 1]
+        boxes[:, 3] - boxes[:, 1]
     )  # bottom - top
 
     return torch.stack(
         (
-            img2pose_output["boxes"][:, 0],
-            img2pose_output["boxes"][:, 1],
+            boxes[:, 0],
+            boxes[:, 1],
             widths,
             heights,
-            img2pose_output["scores"],
+            scores
         ),
         dim=1,
     )
@@ -645,7 +645,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 "face_id": i,
                 "faces": extracted_faces,
                 "boxes": bbox,
-                "new_bbox": new_bbox,
+                "new_boxes": new_bbox,
                 "poses": poses,
                 "scores": facescores,
             }
@@ -674,7 +674,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         """
         
         extracted_faces = torch.cat([face["faces"] for face in faces_data], dim=0)
-        new_bboxes = torch.cat([face["new_bbox"] for face in faces_data], dim=0)
+        new_bboxes = torch.cat([face["new_boxes"] for face in faces_data], dim=0)
         n_faces = extracted_faces.shape[0]
         
         if self.landmark_detector is not None:
@@ -717,9 +717,8 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             aus = torch.full((n_faces, 20), float('nan'))
 
         # Create Fex Output Representation
-        new_bboxes = torch.cat([face["new_bbox"] for face in faces_data], dim=0)
-
-        bboxes = torch.cat([convert_bbox_output(face_output) for face_output in faces_data], dim=0)
+        bboxes = torch.cat([convert_bbox_output(face_output['new_boxes'], face_output['scores']) for face_output in faces_data], dim=0)
+        # bboxes = torch.cat([convert_bbox_output(face_output['boxes'], face_output['scores']) for face_output in faces_data], dim=0)
         feat_faceboxes = pd.DataFrame(
             bboxes.detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,

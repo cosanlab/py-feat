@@ -443,7 +443,7 @@ class DOFRoIHeads(RoIHeads):
         return result, losses
 
 
-def postprocess_img2pose(img2pose_output, nms_inclusion_threshold=0.05, top_k=5000, nms_threshold=0.6, detection_threshold=0.5):
+def postprocess_img2pose(img2pose_output, nms_inclusion_threshold=0.05, top_k=5000, nms_threshold=0.3, detection_threshold=0.5):
     ''' Post-process output from img2pose model to threshold and convert dof to angles'''
     
     # Sort boxes by score
