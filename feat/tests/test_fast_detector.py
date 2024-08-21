@@ -19,8 +19,8 @@ class Test_Fast_Detector:
     def test_init(self):
         assert isinstance(self.detector, PyTorchModelHubMixin)
 
-    def test_detect_image(self, single_face_img):
-        fex = self.detector.detect_image(single_face_img)
+    def test_fast_detect(self, single_face_img):
+        fex = self.detector.detect(single_face_img)
         assert isinstance(fex, Fex)
 
         # No bad predictions on default image
@@ -45,12 +45,12 @@ class Test_Fast_Detector:
         Make sure that when the same images are passed in with and without batch
         processing, the detected landmarks and poses come out to be the same
         """
-        det_result_batch = self.detector.detect_image(
+        det_result_batch = self.detector.detect(
             inputs=multiple_images_for_batch_testing,
             batch_size=5,
         )
 
-        det_result_no_batch = self.detector.detect_image(
+        det_result_no_batch = self.detector.detect(
             inputs=multiple_images_for_batch_testing,
             batch_size=1,
         )
