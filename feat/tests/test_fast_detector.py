@@ -12,7 +12,8 @@ import os
 EXPECTED_FEX_WIDTH = 689
 
 @pytest.mark.usefixtures(
-    "single_face_img", "single_face_img_data", "multi_face_img", "multi_face_img_data", "no_face_img",
+    "single_face_img", "single_face_img_data", "multi_face_img", "multi_face_img_data", "no_face_img","single_face_mov", 
+    "no_face_mov", "face_noface_mov", "noface_face_mov"
 )
 class Test_Fast_Detector:
     """Test new single model detector"""
@@ -197,6 +198,71 @@ class Test_Fast_Detector:
     def test_fast_detect_with_alpha(self):
         image = os.path.join(get_test_data_path(), "Image_with_alpha.png")
         out = self.detector.detect(image)
+        
+    # Multiple images
+    def test_fast_detect_multi_img_single_face(self, single_face_img):
+        """Test detection of single face from multiple images"""
+        out = self.detector.detect([single_face_img, single_face_img])
+        assert out.shape == (2, EXPECTED_FEX_WIDTH)
+
+
+    def test_fast_detect_multi_img_multi_face(self, multi_face_img):
+        """Test detection of multiple faces from multiple images"""
+        out = self.detector.detect([multi_face_img, multi_face_img])
+        assert out.shape == (10, EXPECTED_FEX_WIDTH)
+
+
+    def test_fast_detect_images_with_batching(self, single_face_img):
+        """Test if batching works by passing in more images than the default batch size"""
+
+        out = self.detector.detect([single_face_img] * 6, batch_size=5)
+        assert out.shape == (6, EXPECTED_FEX_WIDTH)
+
+
+    def test_fast_detect_mismatch_image_sizes(self, single_face_img, multi_face_img):
+        """Test detection on multiple images of different sizes with and without batching"""
+
+        out = self.detector.detect([multi_face_img, single_face_img])
+        assert out.shape == (6, EXPECTED_FEX_WIDTH)
+
+        out = self.detector.detect(
+            [multi_face_img, single_face_img] * 5, batch_size=5, output_size=512
+        )
+        assert out.shape == (30, EXPECTED_FEX_WIDTH)
+
+
+    def test_fast_detect_video(
+        self, single_face_mov, no_face_mov, face_noface_mov, noface_face_mov
+    ):
+        """Test detection on video file"""
+        out = self.detector.detect(single_face_mov, skip_frames=24, data_type="video")
+        assert len(out) == 3
+        assert out.happiness.values.max() > 0
+
+        # Test no face movie
+        out = self.detector.detect(no_face_mov, skip_frames=24, data_type="video")
+        assert len(out) == 4
+        # Empty detections are filled with NaNs
+        assert out.aus.isnull().all().all()
+
+        # Test mixed movie, i.e. spliced vids of face -> noface and noface -> face
+        out = self.detector.detect(face_noface_mov, skip_frames=24, data_type="video")
+        assert len(out) == 3 + 4 + 1
+        # first few frames have a face
+        assert not out.aus.iloc[:3].isnull().all().all()
+        # But the rest are from a diff video that doesn't
+        assert out.aus.iloc[3:].isnull().all().all()
+
+        out = self.detector.detect(noface_face_mov, skip_frames=24, data_type="video")
+        assert len(out) == 3 + 4 + 1
+        # beginning no face
+        assert out.aus.iloc[:4].isnull().all().all()
+        # middle frames have face
+        assert not out.aus.iloc[4:7].isnull().all().all()
+        # ending doesn't
+        assert out.aus.iloc[7:].isnull().all().all()
+        
+    
 
     
     
