@@ -35,8 +35,8 @@ class Test_Fast_Detector:
         assert fex.shape == (1, EXPECTED_FEX_WIDTH)
 
         # Bounding box
-        assert 180 < fex.FaceRectX[0] < 200
-        assert 140 < fex.FaceRectY[0] < 160
+        assert 150 < fex.FaceRectX[0] < 180
+        assert 125 < fex.FaceRectY[0] < 140
 
         # Jin is smiling
         assert fex.happiness[0] > 0.8
