@@ -31,8 +31,7 @@ class Test_Fast_Detector:
         # No bad predictions on default image
         assert not fex.isnull().any().any()
 
-        #TODO: Figure out why outputting 689 instead
-        # Default output is 686 features
+        # Default output is 689 features
         assert fex.shape == (1, EXPECTED_FEX_WIDTH)
 
         # Bounding box
