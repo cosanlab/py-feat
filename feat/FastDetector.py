@@ -637,10 +637,17 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             facescores = img2pose_output["scores"]
 
             # Extract faces from bbox
-            extracted_faces, new_bbox = extract_face_from_bbox_torch(
-                single_frame, bbox, face_size=face_size
-            )
-            
+            if bbox.numel() != 0:
+                extracted_faces, new_bbox = extract_face_from_bbox_torch(
+                    single_frame, bbox, face_size=face_size
+                )
+            else: # No Face Detected
+                extracted_faces = torch.zeros((1, 3, face_size, face_size))
+                bbox = torch.zeros((1,4))
+                new_bbox = torch.zeros((1,4))
+                facescores = torch.zeros((1))
+                poses = torch.zeros((1,6))
+
             frame_results = {
                 "face_id": i,
                 "faces": extracted_faces,
@@ -652,10 +659,13 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             
             # Extract Faces separately for Resmasknet
             if self.info['emotion_model'] == 'resmasknet':
-                resmasknet_faces, _ = extract_face_from_bbox_torch(
-                    single_frame, bbox, expand_bbox=1.1, face_size=224
-                )
-                frame_results["resmasknet_faces"] =  resmasknet_faces
+                if frame_results["scores"] == 0: # No Face Detected
+                    frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
+                else:
+                    resmasknet_faces, _ = extract_face_from_bbox_torch(
+                        single_frame, bbox, expand_bbox=1.1, face_size=224
+                    )
+                    frame_results["resmasknet_faces"] =  resmasknet_faces
 
             batch_results.append(frame_results)
             
