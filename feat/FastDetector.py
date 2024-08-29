@@ -659,7 +659,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             
             # Extract Faces separately for Resmasknet
             if self.info['emotion_model'] == 'resmasknet':
-                if frame_results["scores"] == torch.zeros((1)): # No Face Detected
+                if torch.equal(frame_results["scores"], torch.zeros((1))): # No Face Detected
                     frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
                 else:
                     resmasknet_faces, _ = extract_face_from_bbox_torch(
