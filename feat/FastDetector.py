@@ -875,7 +875,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         if self.emotion_detector is not None:
             if self.info['emotion_model'] == 'resmasknet':
                 resmasknet_faces = torch.cat([face["resmasknet_faces"] for face in faces_data], dim=0)
-                emotions = self.emotion_detector.forward(resmasknet_faces)
+                emotions = self.emotion_detector.forward(resmasknet_faces.to(self.device))
                 emotions = torch.softmax(emotions, 1)
             elif self.info['emotion_model'] == 'svm':
                 hog_features, emo_new_landmarks = extract_hog_features(extracted_faces, landmarks)
@@ -885,7 +885,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             emotions = torch.full((n_faces, 7), float('nan'))
 
         if self.identity_detector is not None:
-            identity_embeddings = self.identity_detector.forward(extracted_faces)
+            identity_embeddings = self.identity_detector.forward(extracted_faces.to(self.device))
         else:
             identity_embeddings = torch.full((n_faces, 512), float('nan'))
 
@@ -898,16 +898,16 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             aus = torch.full((n_faces, 20), float('nan'))
 
         # Create Fex Output Representation
-        bboxes = torch.cat([convert_bbox_output(face_output['new_boxes'], face_output['scores']) for face_output in faces_data], dim=0)
+        bboxes = torch.cat([convert_bbox_output(face_output['new_boxes'].to(self.device), face_output['scores'].to(self.device)) for face_output in faces_data], dim=0)
         # bboxes = torch.cat([convert_bbox_output(face_output['boxes'], face_output['scores']) for face_output in faces_data], dim=0)
         feat_faceboxes = pd.DataFrame(
-            bboxes.detach().numpy(),
+            bboxes.cpu().detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
         )
         
         poses = torch.cat([face_output['poses'] for face_output in faces_data], dim=0)
         feat_poses = pd.DataFrame(
-            poses.detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
+            poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
         
         reshape_landmarks = new_landmarks.reshape(new_landmarks.shape[0], 68, 2)
@@ -915,17 +915,17 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             [reshape_landmarks[:, :, 0], reshape_landmarks[:, :, 1]], dim=1
         )
         feat_landmarks = pd.DataFrame(
-            reordered_landmarks.detach().numpy(), columns=openface_2d_landmark_columns
+            reordered_landmarks.cpu().detach().numpy(), columns=openface_2d_landmark_columns
         )
         
         feat_aus = pd.DataFrame(aus, columns=AU_LANDMARK_MAP["Feat"])
 
         feat_emotions = pd.DataFrame(
-            emotions.detach().numpy(), columns=FEAT_EMOTION_COLUMNS
+            emotions.cpu().detach().numpy(), columns=FEAT_EMOTION_COLUMNS
         )
         
         feat_identities = pd.DataFrame(
-            identity_embeddings.detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
+            identity_embeddings.cpu().detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
         )
 
         return Fex(
