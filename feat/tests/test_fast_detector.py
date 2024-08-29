@@ -84,14 +84,13 @@ class Test_Fast_Detector:
         # Detections will be done in each image's native resolution
         det_output_default = self.detector.detect(inputs=all_images, batch_size=1)
 
-        # TODO: fast_detector does not currently raise ValueError
         # If batch_size > 1 then output_size must be set otherwise we can't stack to make a
         # tensor
-        # with pytest.raises(ValueError):
-        #     _ = self.detector.detect(
-        #         inputs=all_images,
-        #         batch_size=5,
-        #     )
+        with pytest.raises(ValueError):
+            _ = self.detector.detect(
+                inputs=all_images,
+                batch_size=5,
+            )
 
         # Here we batch by resizing each image to 256xpadding
         batched = self.detector.detect(
