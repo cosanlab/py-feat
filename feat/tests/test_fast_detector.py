@@ -115,9 +115,10 @@ class Test_Fast_Detector:
             print(
                 f"Max AU deviation (batched - nonbatched): {au_diffs.idxmax()}: {au_diffs.max()}"
             )
-            
+     
+    # TODO: Consider removing/changing test because the FastDetector can run using only the img2pose model
     def test_fast_empty_init(self):
-        """Should fail if not models provided"""
+        """Should fail if no models provided"""
         with pytest.raises(ValueError):
             _ = FastDetector(
                 emotion_model=None,
