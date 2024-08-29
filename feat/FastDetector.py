@@ -853,6 +853,12 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         
         batch_output = []
         frame_counter = 0
+        
+        try:
+                _ = next(enumerate(tqdm(data_loader)))
+        except RuntimeError as e:
+            raise ValueError(f"When using `batch_size > 1`, all images must either have the same dimension or `output_size` should be something other than `None` to pad images prior to processing\n{e}")
+        
         for batch_id, batch_data in enumerate(tqdm(data_loader)):
             faces_data = self.detect_faces(batch_data["Image"], face_size=self.face_size, face_detection_threshold=face_detection_threshold)
             batch_results = self.forward(faces_data)
