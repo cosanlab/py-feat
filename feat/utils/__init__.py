@@ -103,6 +103,25 @@ MP_BLENDSHAPE_NAMES = [
     "noseSneerLeft",
     "noseSneerRight"]
 
+# Mediapipe FaceMesh Coordinates
+def generate_coordinate_names(num_points=478):
+    """
+    Generates a list of names for x, y, z coordinates for a given number of points.
+
+    Args:
+        num_points (int): Number of points (478 in this case).
+
+    Returns:
+        list: List of coordinate names like ['x_1', 'y_1', 'z_1', ..., 'x_n', 'y_n', 'z_n'].
+    """
+    coordinate_names = []
+    for i in range(0, num_points):
+        coordinate_names.extend([f'x_{i}', f'y_{i}', f'z_{i}'])
+    
+    return coordinate_names
+
+MP_LANDMARK_COLUMNS = generate_coordinate_names(num_points=478)
+
 # OpenFace columns
 landmark_length = 68
 
