@@ -166,7 +166,7 @@ class Test_Fast_Detector:
         )
         assert out.shape == (14, EXPECTED_FEX_WIDTH)
         
-    def test_detect_multi_img_mixed_no_face_batching(
+    def test_fast_detect_multi_img_mixed_no_face_batching(
     self, no_face_img, single_face_img, multi_face_img
     ):
         """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
