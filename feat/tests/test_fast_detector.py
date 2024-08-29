@@ -8,7 +8,6 @@ from feat.utils.io import get_test_data_path
 import warnings
 import os
 
-#TODO: changed to 689 instead of 686 to pass tests temporarily
 EXPECTED_FEX_WIDTH = 689
 
 @pytest.mark.usefixtures(
@@ -117,7 +116,7 @@ class Test_Fast_Detector:
                 f"Max AU deviation (batched - nonbatched): {au_diffs.idxmax()}: {au_diffs.max()}"
             )
             
-    def test_fast_empty_init():
+    def test_fast_empty_init(self):
         """Should fail if not models provided"""
         with pytest.raises(ValueError):
             _ = FastDetector(
@@ -127,7 +126,7 @@ class Test_Fast_Detector:
                 identity_model=None,
             )
     
-    def test_fast_init_with_wrongmodelname():
+    def test_fast_init_with_wrongmodelname(self):
         """Should fail with unsupported model name"""
         with pytest.raises(ValueError):
             _ = FastDetector(emotion_model="badmodelname")
@@ -140,7 +139,6 @@ class Test_Fast_Detector:
     
     
     # no face images
-    #TODO: figure out why all failing
     
     def test_fast_detect_single_img_no_face(self, no_face_img):
         """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
