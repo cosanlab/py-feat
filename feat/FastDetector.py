@@ -1246,10 +1246,10 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         
         batch_results = []
         for i in range(frames.size(0)):
-            single_frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
+            frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
 
             if self.info['face_model'] == 'retinaface':
-                single_frame = torch.sub(single_frame, convert_color_vector_to_tensor(np.array([123, 117, 104])))
+                single_frame = torch.sub(frame, convert_color_vector_to_tensor(np.array([123, 117, 104])))
 
                 predicted_locations, predicted_scores, predicted_landmarks = self.face_detector.forward(single_frame.to(self.device))
                 face_output = postprocess_retinaface(predicted_locations, predicted_scores, predicted_landmarks, self.face_config, single_frame, device=self.device)
@@ -1261,7 +1261,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             # Extract faces from bbox
             if bbox.numel() != 0:
                 extracted_faces, new_bbox = extract_face_from_bbox_torch(
-                    single_frame, bbox, face_size=face_size
+                    frame / 255.0, bbox, face_size=face_size, expand_bbox=1.25
                 )
             else: # No Face Detected
                 extracted_faces = torch.zeros((1, 3, face_size, face_size))
@@ -1286,12 +1286,12 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                     resmasknet_faces, _ = extract_face_from_bbox_torch(
                         single_frame, bbox, expand_bbox=1.1, face_size=224
                     )
-                    frame_results["resmasknet_faces"] =  resmasknet_faces.to(self.device) / 255.0
+                    frame_results["resmasknet_faces"] =  resmasknet_faces / 255.0
 
             batch_results.append(frame_results)
             
         return batch_results
-    
+
     @torch.inference_mode()
     def forward(self, faces_data):
         """
@@ -1310,7 +1310,14 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         
         if self.landmark_detector is not None:
             landmarks = self.landmark_detector.forward(extracted_faces.to(self.device))[0]
-            new_landmarks = inverse_transform_landmarks_torch(landmarks.squeeze(1).squeeze(1), new_bboxes)            
+            
+            # Project landmarks back onto original image. # only rescale X/Y Coordinates, leave Z in original scale
+            landmarks_3d = landmarks.reshape(n_faces, 478, 3)
+            img_size = torch.tensor((1/self.face_size, 1/self.face_size)).unsqueeze(0).unsqueeze(0).to(self.device) 
+            landmarks_2d = landmarks_3d[:,:,:2] * img_size # Scale X/Y Coordinates to [0,1]
+            rescaled_landmarks_2d = inverse_transform_landmarks_torch(landmarks_2d.reshape(n_faces, 478*2), new_bboxes.to(self.device))
+            new_landmarks = torch.cat((rescaled_landmarks_2d.reshape(n_faces, 478, 2), landmarks_3d[:, :, 2].unsqueeze(2)), dim=2) # leave Z in original scale
+
         else:
             # new_landmarks = torch.full((n_faces, 136), float('nan'))
             new_landmarks = torch.full((n_faces, 1434), float('nan'))
@@ -1318,7 +1325,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         if self.emotion_detector is not None:
             if self.info['emotion_model'] == 'resmasknet':
                 resmasknet_faces = torch.cat([face["resmasknet_faces"] for face in faces_data], dim=0)
-                emotions = self.emotion_detector.forward(resmasknet_faces)
+                emotions = self.emotion_detector.forward(resmasknet_faces.to(self.device))
                 emotions = torch.softmax(emotions, 1)
             elif self.info['emotion_model'] == 'svm':
                 hog_features, emo_new_landmarks = extract_hog_features(extracted_faces, landmarks)
@@ -1333,12 +1340,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             identity_embeddings = torch.full((n_faces, 512), float('nan'))
 
         if self.au_detector is not None:
-            reshaped_landmarks = landmarks.view(landmarks.shape[0], 478, 3)
-            reshaped_landmarks = reshaped_landmarks[:, :, :2].to(self.device)
-            img_size = torch.tensor((self.face_size, self.face_size)).unsqueeze(0).unsqueeze(0).to(self.device)
-            scaled_lmks_tensor = reshaped_landmarks * img_size
-            scaled_lmks_tensor = scaled_lmks_tensor[:, MP_BLENDSHAPE_MODEL_LANDMARKS_SUBSET, :]
-            aus = self.au_detector(scaled_lmks_tensor).squeeze(2).squeeze(2)
+            aus = self.au_detector(landmarks.reshape(n_faces, 478, 3)[:, MP_BLENDSHAPE_MODEL_LANDMARKS_SUBSET, :2].to(self.device)).squeeze(2).squeeze(2)
         else:
             aus = torch.full((n_faces, 52), float('nan'))
             
@@ -1348,14 +1350,16 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             bboxes.cpu().detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
         )
-        
+
+        # For now, we are running PnP outside of the forward call because pytorch inference_mode doesn't allow us to backprop
         poses = torch.full((n_faces, 6), float('nan'))
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
-        
+
         feat_landmarks = pd.DataFrame(
-            new_landmarks.cpu().detach().numpy(), columns=MP_LANDMARK_COLUMNS
+            
+            new_landmarks.reshape(n_faces, 478*3).cpu().detach().numpy(), columns=MP_LANDMARK_COLUMNS
         )        
         feat_aus = pd.DataFrame(aus.cpu().detach().numpy(), columns=MP_BLENDSHAPE_NAMES)
 
@@ -1393,7 +1397,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             facepose_model=self.info["facepose_model"],
             identity_model=self.info["identity_model"]
         )
-        
+    
     def detect(
         self,
         inputs,
@@ -1491,7 +1495,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 for i in range(478):
                     batch_results.loc[batch_results['frame']==frame_idx, f'x_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'x_{i}'] - batch_data["Padding"]["Left"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
                     batch_results.loc[batch_results['frame']==frame_idx, f'y_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'y_{i}'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
-                    batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
+                    # batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
             
             batch_output.append(batch_results)
             frame_counter += 1 * batch_size
@@ -1512,7 +1516,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         landmarks_3d = convert_landmarks_3d(batch_output)[:, :468, :] # Drop Irises - could also use restricted set (min 6) to speed up computation
         K = torch.eye(3)  # Camera intrinsic matrix
         with torch.enable_grad():  # Enable gradient tracking for pose estimation
-             R, t = estimate_face_pose(landmarks_3d, K, return_euler_angles=True)
+            R, t = estimate_face_pose(landmarks_3d, K, return_euler_angles=True)
         batch_output.loc[:, FEAT_FACEPOSE_COLUMNS_6D] = torch.cat((R,t), dim=1).detach().numpy()
 
         return batch_output
