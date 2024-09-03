@@ -502,6 +502,33 @@ def rotation_matrix_to_euler_angles(R):
 
     return torch.stack([pitch, roll, yaw], dim=1)
 
+def compute_original_image_size(batch_data):
+    """
+    Computes the original image size before padding and scaling for a batch of images.
+
+    Args:
+        batch_data (dict): batch_data from data loader containing 'Image', 'Padding', and 'Scale' tensors.
+        
+    Returns:
+        original_height_width (torch.Tensor): A tensor of shape [batch_size, 2] representing the original heights and widths of the images.
+    """
+
+    # Extract the batch size and dimensions from the input tensors
+    batch_size, _, scaled_height, scaled_width = batch_data['Image'].shape
+
+    # Calculate the height and width after scaling but before padding
+    height_after_scaling = scaled_height - batch_data['Padding']['Top'] - batch_data['Padding']['Bottom']
+    width_after_scaling = scaled_width - batch_data['Padding']['Left'] - batch_data['Padding']['Right']
+
+    # Reverse scaling to get the original height and width before scaling
+    original_height = height_after_scaling / batch_data['Scale']
+    original_width = width_after_scaling / batch_data['Scale']
+
+    # Stack the original height and width into a single tensor of shape [B, 2]
+    original_height_width = torch.stack((original_height, original_width), dim=1)
+
+    return original_height_width
+
 
 def estimate_face_pose(pts_3d, K, max_iter=100, lr=1e-3, return_euler_angles=True):
     """
@@ -1048,6 +1075,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
 
             # Invert the face boxes and landmarks based on the padded output size
             for j,frame_idx in enumerate(batch_results['frame'].unique()):
+                batch_results.loc[batch_results['frame']==frame_idx, ['FrameHeight','FrameWidth']] = compute_original_image_size(batch_data)[j, :].repeat(len(batch_results.loc[batch_results['frame']==frame_idx, 'frame']),1).numpy()
                 batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] - batch_data["Padding"]["Left"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
                 batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectY'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectY'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
                 batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectWidth'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectWidth'])/batch_data["Scale"].detach().numpy()[j]
@@ -1495,6 +1523,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
 
             # Invert the face boxes and landmarks based on the padded output size
             for j,frame_idx in enumerate(batch_results['frame'].unique()):
+                batch_results.loc[batch_results['frame']==frame_idx, ['FrameHeight','FrameWidth']] = compute_original_image_size(batch_data)[j, :].repeat(len(batch_results.loc[batch_results['frame']==frame_idx, 'frame']),1).numpy()
                 batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectX'] - batch_data["Padding"]["Left"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
                 batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectY'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectY'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
                 batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectWidth'] = (batch_results.loc[batch_results['frame']==frame_idx, 'FaceRectWidth'])/batch_data["Scale"].detach().numpy()[j]
