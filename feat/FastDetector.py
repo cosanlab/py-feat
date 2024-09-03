@@ -700,10 +700,6 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                     cache_dir=get_resource_path(),
                 )
                 landmark_state_dict = torch.load(landmark_model_file, map_location=self.device, weights_only=True)["state_dict"]                # Ensure Model weights are Float32 for MPS
-                # mobilefacenet_state_dict =  torch.load(landmark_model_file, map_location=self.device, weights_only=True)["state_dict"]
-                # mobilefacenet_state_dict = {k: v.float() for k, v in mobilefacenet_state_dict.items()} 
-                # self.landmark_detector.load_state_dict(mobilefacenet_state_dict)
-                # self.landmark_detector = torch.compile(self.landmark_detector)
             elif landmark_model == "mobilenet":
                 self.face_size = 224
                 self.landmark_detector = MobileNet_GDConv(136)
@@ -732,6 +728,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             self.landmark_detector.load_state_dict(landmark_state_dict)
             self.landmark_detector.eval()
             self.landmark_detector.to(self.device)
+            # self.landmark_detector = torch.compile(self.landmark_detector)
         else:
             self.landmark_detector = None
             
@@ -899,7 +896,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             
             # Extract Faces separately for Resmasknet
             if self.info['emotion_model'] == 'resmasknet':
-                if frame_results["scores"] == 0: # No Face Detected
+                if bbox.numel() != 0: # No Face Detected
                     frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
                 else:
                     resmasknet_faces, _ = extract_face_from_bbox_torch(
@@ -1185,6 +1182,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             self.face_detector.load_state_dict(face_checkpoint)
             self.face_detector.eval()
             self.face_detector.to(self.device)
+            # self.face_detector = torch.compile(self.face_detector)
         else:
             self.face_detector = None
         
@@ -1199,6 +1197,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 self.landmark_detector = torch.load(landmark_model_file, map_location=self.device, weights_only=False)
                 self.landmark_detector.eval()
                 self.landmark_detector.to(self.device)
+                # self.landmark_detector = torch.compile(self.landmark_detector)
             else:
                 raise ValueError("{landmark_model} is not currently supported.")
 
