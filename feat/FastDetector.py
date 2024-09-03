@@ -966,6 +966,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         face_identity_threshold=0.8,
         face_detection_threshold=0.5,
         skip_frames=None,
+        progress_bar=True,
         **kwargs,
     ):
         """
@@ -981,6 +982,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
             face_detection_threshold (float): value between 0-1 to determine if a face was detected; Default >= 0.5
             skip_frames (int or None): number of frames to skip to speed up inference (video only); Default None
+            progress_bar (bool): Whether to show the tqdm progress bar. Default is True.
             **kwargs: additional detector-specific kwargs
 
         Returns:
@@ -1020,11 +1022,13 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 batch_size=batch_size,
                 pin_memory=pin_memory,
                 shuffle=False,
-            )        
+            )
+                    
+        data_iterator = tqdm(data_loader) if progress_bar else data_loader
         
         batch_output = []
         frame_counter = 0
-        for batch_id, batch_data in enumerate(tqdm(data_loader)):
+        for batch_id, batch_data in enumerate(data_iterator):
             faces_data = self.detect_faces(batch_data["Image"], face_size=self.face_size, face_detection_threshold=face_detection_threshold)
             batch_results = self.forward(faces_data)
 
@@ -1409,6 +1413,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         face_identity_threshold=0.8,
         face_detection_threshold=0.5,
         skip_frames=None,
+        progress_bar=True,
         **kwargs,
     ):
         """
@@ -1424,6 +1429,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             face_identity_threshold (float): value between 0-1 to determine similarity of person using face identity embeddings; Default >= 0.8
             face_detection_threshold (float): value between 0-1 to determine if a face was detected; Default >= 0.5
             skip_frames (int or None): number of frames to skip to speed up inference (video only); Default None
+            progress_bar (bool): Whether to show the tqdm progress bar. Default is True.
             **kwargs: additional detector-specific kwargs
 
         Returns:
@@ -1465,9 +1471,11 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 shuffle=False,
             )        
         
+        data_iterator = tqdm(data_loader) if progress_bar else data_loader
+
         batch_output = []
         frame_counter = 0
-        for batch_id, batch_data in enumerate(tqdm(data_loader)):
+        for batch_id, batch_data in enumerate(data_iterator):
             faces_data = self.detect_faces(batch_data["Image"], face_size=self.face_size, face_detection_threshold=face_detection_threshold)
             batch_results = self.forward(faces_data)
 
