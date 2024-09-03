@@ -530,13 +530,50 @@ def compute_original_image_size(batch_data):
     return original_height_width
 
 
+def get_camera_intrinsics(batch_hw_tensor, focal_length=None):
+    """
+    Computes the camera intrinsic matrix for a batch of images.
+
+    Args:
+        batch_hw_tensor (torch.Tensor): A tensor of shape [B, 2] where B is the batch size, 
+                                        and each entry contains [H, W] for the height and width of the images.
+        focal_length (torch.Tensor, optional): A tensor of shape [B] representing the focal length for each image in the batch.
+                                               If None, the focal length will default to the image width for each image.
+    
+    Returns:
+        K (torch.Tensor): A tensor of shape [B, 3, 3] containing the camera intrinsic matrices for each image in the batch.
+    """
+    # Extract the batch size
+    batch_size = batch_hw_tensor.shape[0]
+
+    # Extract heights and widths
+    heights = batch_hw_tensor[:, 0]
+    widths = batch_hw_tensor[:, 1]
+
+    # If focal_length is not provided, default to image width for each image
+    if focal_length is None:
+        focal_length = widths  # [B]
+
+    # Initialize the camera intrinsic matrices
+    K = torch.zeros((batch_size, 3, 3), dtype=torch.float32)
+
+    # Populate the intrinsic matrices
+    K[:, 0, 0] = focal_length  # fx
+    K[:, 1, 1] = focal_length  # fy
+    K[:, 0, 2] = widths / 2    # cx
+    K[:, 1, 2] = heights / 2   # cy
+    K[:, 2, 2] = 1.0           # The homogeneous coordinate
+
+    return K
+
+
 def estimate_face_pose(pts_3d, K, max_iter=100, lr=1e-3, return_euler_angles=True):
     """
     Estimate the face pose for a batch of 3D points using an iterative optimization approach.
     
     Args:
         pts_3d (torch.Tensor): A tensor of shape [batch_size, n_points, 3] representing the batch of 3D facial landmarks.
-        K (torch.Tensor): A tensor of shape [3, 3] representing the camera intrinsic matrix.
+        K (torch.Tensor): A tensor of shape [batch_size, 3, 3] representing the camera intrinsic matrix for each image, or [3, 3] for a single shared intrinsic matrix.
         max_iter (int): The maximum number of iterations for the optimization loop. (default=100)
         lr (float): The learning rate for the Adam optimizer (default=1e-3)
         return_euler_angles (bool): If True, return 6 DOF (i.e., pitch, roll, and yaw angles) instead of the rotation matrix. (default=True)
@@ -552,6 +589,11 @@ def estimate_face_pose(pts_3d, K, max_iter=100, lr=1e-3, return_euler_angles=Tru
     
     batch_size = pts_3d.size(0)
 
+    # Check if K is a single matrix or a batch of matrices
+    if K.dim() == 2:
+        # If K is not batched, repeat it for each batch element
+        K = K.unsqueeze(0).repeat(batch_size, 1, 1)  # [batch_size, 3, 3]
+
     # Initial estimates for R and t (use identity and zeros for each batch)
     R = torch.eye(3, dtype=torch.float32).unsqueeze(0).repeat(batch_size, 1, 1).requires_grad_(True)  # [batch_size, 3, 3]
     t = torch.zeros(batch_size, 3, dtype=torch.float32).requires_grad_(True)  # [batch_size, 3]
@@ -563,7 +605,7 @@ def estimate_face_pose(pts_3d, K, max_iter=100, lr=1e-3, return_euler_angles=Tru
 
         # Rebuild the computation graph in every iteration
         pts_3d_proj = torch.bmm(pts_3d, R.transpose(1, 2)) + t.unsqueeze(1)  # [batch_size, n_points, 3]
-        pts_2d_proj = torch.bmm(K.unsqueeze(0).repeat(batch_size, 1, 1), pts_3d_proj.transpose(1, 2)).transpose(1, 2)  # [batch_size, n_points, 3]
+        pts_2d_proj = torch.bmm(K, pts_3d_proj.transpose(1, 2)).transpose(1, 2)  # [batch_size, n_points, 3]
         
         # Normalize by the third coordinate
         pts_2d_proj = pts_2d_proj[:, :, :2] / pts_2d_proj[:, :, 2:].clamp(min=1e-7)  # [batch_size, n_points, 2]
@@ -585,7 +627,7 @@ def estimate_face_pose(pts_3d, K, max_iter=100, lr=1e-3, return_euler_angles=Tru
         euler_angles = rotation_matrix_to_euler_angles(R)
         return euler_angles, t
     else:
-        return R, t           
+        return R, t         
 
     
     
@@ -1551,7 +1593,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
 
         # Add Pose
         landmarks_3d = convert_landmarks_3d(batch_output)[:, :468, :] # Drop Irises - could also use restricted set (min 6) to speed up computation
-        K = torch.eye(3)  # Camera intrinsic matrix
+        K = get_camera_intrinsics(torch.tensor(batch_output[['FrameHeight','FrameWidth']].values)) # Camera intrinsic matrix
         with torch.enable_grad():  # Enable gradient tracking for pose estimation
             R, t = estimate_face_pose(landmarks_3d, K, return_euler_angles=True)
         batch_output.loc[:, FEAT_FACEPOSE_COLUMNS_6D] = torch.cat((R,t), dim=1).detach().numpy()
