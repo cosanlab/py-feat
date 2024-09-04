@@ -32,8 +32,9 @@ from feat.utils import (
     FEAT_IDENTITY_COLUMNS,
     MP_LANDMARK_COLUMNS,
     MP_BLENDSHAPE_NAMES,
-    MP_BLENDSHAPE_MODEL_LANDMARKS_SUBSET,
+    MP_BLENDSHAPE_MODEL_LANDMARKS_SUBSET
     )
+from feat.utils.mp_plotting import FaceLandmarksConnections
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
     convert_image_to_tensor,
@@ -62,6 +63,8 @@ from scipy.spatial import ConvexHull
 from skimage.morphology.convex_hull import grid_points_in_poly
 from skimage.feature import hog
 import sys
+from PIL import Image
+import matplotlib.pyplot as plt
 
 sys.modules["__main__"].__dict__["XGBClassifier"] = XGBClassifier
 sys.modules["__main__"].__dict__["SVMClassifier"] = SVMClassifier
@@ -629,7 +632,89 @@ def estimate_face_pose(pts_3d, K, max_iter=100, lr=1e-3, return_euler_angles=Tru
     else:
         return R, t         
 
+def plot_face_landmarks(
+    fex, frame_idx, ax=None,
+    oval_color='white', oval_linestyle='-', oval_linewidth=3,
+    tesselation_color='gray', tesselation_linestyle='-', tesselation_linewidth=1,
+    mouth_color='white', mouth_linestyle='-', mouth_linewidth=3,
+    eye_color='navy', eye_linestyle='-', eye_linewidth=2,
+    iris_color='skyblue', iris_linestyle='-', iris_linewidth=2,
+):
+    """Plots face landmarks on the given frame using specified styles for each part.
     
+    Args:
+        fex: DataFrame containing face landmarks (x, y coordinates).
+        frame_idx: Index of the frame to plot.
+        ax: Matplotlib axis to draw on. If None, a new axis is created.
+        oval_color, tesselation_color, mouth_color, eye_color, iris_color: Colors for each face part.
+        oval_linestyle, tesselation_linestyle, mouth_linestyle, eye_linestyle, iris_linestyle: Linestyle for each face part.
+        oval_linewidth, tesselation_linewidth, mouth_linewidth, eye_linewidth, iris_linewidth: Linewidth for each face part.
+        n_faces: Number of faces in the frame. If None, will be determined from fex.
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # Get frame data
+    fex_frame = fex.query('frame == @frame_idx')
+    n_faces_frame = fex_frame.shape[0]
+
+    # Add the frame image
+    ax.imshow(Image.open(fex_frame['input'].unique()[0]))
+    
+    # Helper function to draw lines for a set of connections
+    def draw_connections(face_idx, connections, color, linestyle, linewidth):
+        for connection in connections:
+            start = connection.start
+            end = connection.end
+            line = plt.Line2D(
+                [fex.loc[face_idx, f'x_{start}'], fex.loc[face_idx, f'x_{end}']],
+                [fex.loc[face_idx, f'y_{start}'], fex.loc[face_idx, f'y_{end}']],
+                color=color,
+                linestyle=linestyle,
+                linewidth=linewidth,
+            )
+            ax.add_line(line)
+
+    # Face tessellation
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION, tesselation_color, tesselation_linestyle, tesselation_linewidth)
+
+    # Mouth
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_LIPS, mouth_color, mouth_linestyle, mouth_linewidth)
+
+    # Left iris
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_LEFT_IRIS, iris_color, iris_linestyle, iris_linewidth)
+
+    # Left eye
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_LEFT_EYE, eye_color, eye_linestyle, eye_linewidth)
+
+    # Left eyebrow
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_LEFT_EYEBROW, eye_color, eye_linestyle, eye_linewidth)
+
+    # Right iris
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_IRIS, iris_color, iris_linestyle, iris_linewidth)
+
+    # Right eye
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_EYE, eye_color, eye_linestyle, eye_linewidth)
+
+    # Right eyebrow
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_EYEBROW, eye_color, eye_linestyle, eye_linewidth)
+
+    # Face oval
+    for face in range(n_faces_frame):
+        draw_connections(face, FaceLandmarksConnections.FACE_LANDMARKS_FACE_OVAL, oval_color, oval_linestyle, oval_linewidth)
+
+    # Optionally turn off axis for a clean plot
+    ax.axis('off')
+
+    return ax    
     
 class FastDetector(nn.Module, PyTorchModelHubMixin):
     def __init__(self, 
