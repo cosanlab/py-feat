@@ -368,7 +368,7 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
     if len(frame.shape) != 4:
         frame = frame.unsqueeze(0)
 
-    landmarks = landmarks.detach().numpy()
+    landmarks = landmarks.cpu().detach().numpy()
 
     aligned_img, new_landmarks = align_face(
         frame,
@@ -952,7 +952,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         batch_results = []
         for i in range(frames.size(0)):
             single_frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
-            img2pose_output = self.facepose_detector(single_frame)
+            img2pose_output = self.facepose_detector(single_frame.to(self.device))
             img2pose_output = postprocess_img2pose(img2pose_output[0], detection_threshold=face_detection_threshold)
             bbox = img2pose_output["boxes"]
             poses = img2pose_output["dofs"]
@@ -1056,7 +1056,7 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             columns=FEAT_FACEBOX_COLUMNS,
         )
         
-        poses = torch.cat([face_output['poses'] for face_output in faces_data], dim=0)
+        poses = torch.cat([face_output['poses'].to(self.device) for face_output in faces_data], dim=0)
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
