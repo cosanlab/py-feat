@@ -1180,7 +1180,9 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
         batch_output = []
         frame_counter = 0
         for batch_id, batch_data in enumerate(data_iterator):
-            faces_data = self.detect_faces(batch_data["Image"], face_size=self.face_size, face_detection_threshold=face_detection_threshold)
+            faces_data = self.detect_faces(batch_data["Image"],
+                                           face_size=self.face_size if hasattr(self, "face_size") else 112,
+                                           face_detection_threshold=face_detection_threshold)
             batch_results = self.forward(faces_data)
 
             # Create metadata for each frame                
