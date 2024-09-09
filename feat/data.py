@@ -1885,7 +1885,7 @@ class Fex(DataFrame):
                 out.identity_embeddings, threshold=threshold
             )
             return out
-
+        
     # TODO: turn this into a property using a @property and @sessions.settr decorators
     # Tried it but was running into maximum recursion depth errors. Maybe some
     # interaction with how pandas sub-classing works?? - ejolly
