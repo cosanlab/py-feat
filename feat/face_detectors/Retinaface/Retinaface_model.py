@@ -1,15 +1,14 @@
 # import os
 import torch
 # import json
+import numpy as np
 from itertools import product as product
 from math import ceil
-import torch
 import torch.nn as nn
 import torchvision.models._utils as _utils
 import torch.nn.functional as F
 import warnings
 from huggingface_hub import PyTorchModelHubMixin
-from feat.utils.io import get_resource_path
 
 # with open(os.path.join(get_resource_path(), "model_config.json"), "r") as f:
     # model_config = json.load(f)
@@ -311,8 +310,193 @@ class RetinaFace(nn.Module, PyTorchModelHubMixin):
                 ldm_regressions,
             )
         return output
+    
+
+def generate_prior_boxes(min_sizes, steps, clip, image_size, device='cpu'):
+    """
+    Generates prior boxes (anchors) based on the configuration and image size.
+
+    Args:
+        min_sizes (list): List of minimum sizes for anchors at each feature map level.
+        steps (list): List of step sizes corresponding to feature map levels.
+        clip (bool): Whether to clip the anchor values between 0 and 1.
+        image_size (tuple): Image size in the format (height, width).
+        device (str): Device to store the prior boxes (e.g., 'cuda' or 'cpu').
+
+    Returns:
+        torch.Tensor: A tensor containing the prior boxes, shape: [num_priors, 4].
+    """
+    feature_maps = [
+        [int(torch.ceil(torch.tensor(image_size[0] / step))),
+         int(torch.ceil(torch.tensor(image_size[1] / step)))]
+        for step in steps
+    ]
+
+    anchors = []
+    for k, f in enumerate(feature_maps):
+        min_sizes_k = min_sizes[k]
+        for i, j in product(range(f[0]), range(f[1])):
+            for min_size in min_sizes_k:
+                s_kx = min_size / image_size[1]
+                s_ky = min_size / image_size[0]
+                cx = (j + 0.5) * steps[k] / image_size[1]
+                cy = (i + 0.5) * steps[k] / image_size[0]
+                anchors.append([cx, cy, s_kx, s_ky])
+
+    anchors = torch.tensor(anchors, dtype=torch.float32, device=device)
+
+    if clip:
+        anchors.clamp_(max=1, min=0)
+
+    return anchors
 
 
+def decode_boxes(loc, priors, variances):
+    """
+    Decodes bounding box predictions using priors and variances.
+
+    Args:
+        loc (torch.Tensor): Location predictions with shape [batch_size, num_priors, 4].
+        priors (torch.Tensor): Prior boxes with shape [num_priors, 4].
+        variances (list): List of variances for bounding box regression.
+
+    Returns:
+        torch.Tensor: Decoded bounding boxes with shape [batch_size, num_priors, 4].
+    """
+    boxes = torch.cat((
+        priors[:, :2].unsqueeze(0) + loc[:, :, :2] * variances[0] * priors[:, 2:].unsqueeze(0),
+        priors[:, 2:].unsqueeze(0) * torch.exp(loc[:, :, 2:] * variances[1])
+    ), dim=2)
+    boxes[:, :, :2] -= boxes[:, :, 2:] / 2
+    boxes[:, :, 2:] += boxes[:, :, :2]
+    return boxes
+
+
+def decode_landmarks(pre, priors, variances):
+    """
+    Decodes landmark predictions using priors and variances.
+
+    Args:
+        pre (torch.Tensor): Landmark predictions with shape [batch_size, num_priors, 10].
+        priors (torch.Tensor): Prior boxes with shape [num_priors, 4].
+        variances (list): List of variances for landmark regression.
+
+    Returns:
+        torch.Tensor: Decoded landmarks with shape [batch_size, num_priors, 10].
+    """
+    priors_cxcy = priors[:, :2].unsqueeze(0).unsqueeze(2)  # shape: [1, num_priors, 1, 2]
+    landm_deltas = pre.view(pre.size(0), -1, 5, 2)  # shape: [batch_size, num_priors, 5, 2]
+    landms = priors_cxcy + landm_deltas * variances[0] * priors[:, 2:].unsqueeze(0).unsqueeze(2)
+    return landms.view(pre.size(0), -1, 10)
+
+
+def batched_nms(boxes, scores, landmarks, batch_size, nms_threshold, keep_top_k):
+    """
+    Applies Non-Maximum Suppression (NMS) in a batched manner to the bounding boxes.
+
+    Args:
+        boxes (torch.Tensor): Bounding boxes with shape [batch_size, num_boxes, 4].
+        scores (torch.Tensor): Confidence scores with shape [batch_size, num_boxes].
+        landmarks (torch.Tensor): Landmarks with shape [batch_size, num_boxes, 10].
+        batch_size (int): Number of batches.
+        nms_threshold (float): NMS IoU threshold.
+        keep_top_k (int): Maximum number of boxes to keep after NMS.
+
+    Returns:
+        tuple: (final_boxes, final_scores, final_landmarks) after NMS.
+    """
+    final_boxes, final_scores, final_landmarks = [], [], []
+    
+    for i in range(batch_size):
+        dets = torch.cat([boxes[i], scores[i].unsqueeze(1)], dim=1)
+        keep = torch.ops.torchvision.nms(dets[:, :4], dets[:, 4], nms_threshold)
+        keep = keep[:keep_top_k]
+        
+        final_boxes.append(dets[keep, :5])
+        final_scores.append(dets[keep, 4])
+        final_landmarks.append(landmarks[i][keep])
+
+    return final_boxes, final_scores, final_landmarks
+
+
+def rescale_boxes_to_image_size(boxes, im_width, im_height):
+    """
+    Rescales the bounding boxes to match the original image size.
+
+    Args:
+        boxes (torch.Tensor): Bounding boxes with shape [num_boxes, 5].
+        im_width (int): Width of the original image.
+        im_height (int): Height of the original image.
+
+    Returns:
+        torch.Tensor: Rescaled bounding boxes with shape [num_boxes, 5].
+    """
+    scale_factors = torch.tensor([im_width / im_height, im_height / im_width, im_width / im_height, im_height / im_width], device=boxes.device)
+    boxes[:, :4] *= scale_factors
+    return boxes
+
+
+def postprocess_retinaface(predicted_locations, predicted_scores, predicted_landmarks, face_config, img, device='cpu'):
+    """
+    Postprocesses the RetinaFace model outputs by decoding the predictions, applying NMS, and rescaling boxes.
+
+    Args:
+        predicted_locations (torch.Tensor): Predicted location (bbox) outputs from the model.
+        predicted_scores (torch.Tensor): Predicted confidence scores from the model.
+        predicted_landmarks (torch.Tensor): Predicted landmarks from the model.
+        face_config (dict): Configuration settings for face detection (e.g., thresholds, variances).
+        img (torch.Tensor): The input image tensor.
+        device (str): Device for computation (e.g., 'cuda', 'cpu', 'mps').
+
+    Returns:
+        dict: Dictionary containing 'boxes', 'scores', and 'landmarks' after postprocessing.
+    """
+    im_height, im_width = img.shape[-2:]
+    
+    # Move scale tensor to the specified device
+    scale = torch.Tensor([im_height, im_width, im_height, im_width]).to(device)
+    
+    batch_size = predicted_locations.size(0)
+    
+    # Generate prior boxes
+    priors = generate_prior_boxes(face_config['min_sizes'], face_config['steps'], face_config['clip'], image_size=(im_height, im_width), device=device)
+
+    # Decode boxes and landmarks
+    boxes = decode_boxes(predicted_locations, priors, face_config["variance"]).to(device)
+    boxes = boxes * scale / face_config['resize']
+    
+    scores = predicted_scores[:, :, 1]  # Positive class scores
+    landmarks = decode_landmarks(predicted_landmarks, priors, face_config["variance"]).to(device)
+    
+    # Move scale1 tensor to the specified device
+    scale1 = torch.tensor([img.shape[3], img.shape[2]] * 5, device=device)
+    landmarks = (landmarks * scale1 / face_config['resize'])
+    
+    # Filter by confidence threshold
+    mask = scores > face_config['confidence_threshold']
+    boxes = boxes[mask].view(batch_size, -1, 4)
+    scores = scores[mask].view(batch_size, -1)
+    landmarks = landmarks[mask].view(batch_size, -1, 10)
+    
+    # Keep top-K before NMS
+    top_k_inds = torch.argsort(scores, dim=1, descending=True)[:, :face_config['top_k']]
+    boxes = torch.gather(boxes, 1, top_k_inds.unsqueeze(-1).expand(-1, -1, 4))
+    scores = torch.gather(scores, 1, top_k_inds)
+    landmarks = torch.gather(landmarks, 1, top_k_inds.unsqueeze(-1).expand(-1, -1, 10))
+    
+    # Apply NMS
+    final_boxes, final_scores, final_landmarks = batched_nms(boxes, scores, landmarks, batch_size, face_config['nms_threshold'], face_config['keep_top_k'])
+
+    # Rescale boxes
+    final_boxes_tensor = torch.cat(final_boxes, dim=0)
+    final_rescaled_boxes = rescale_boxes_to_image_size(final_boxes_tensor, im_width, im_height)
+
+    return {
+        "boxes": final_rescaled_boxes,
+        "scores": torch.cat(final_scores, dim=0),
+        "landmarks": torch.cat(final_landmarks, dim=0)
+    }
+    
 class PriorBox(object):
     def __init__(self, cfg, image_size=None, phase="train"):
         super(PriorBox, self).__init__()
