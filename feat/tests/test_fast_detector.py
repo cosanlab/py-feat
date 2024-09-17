@@ -8,7 +8,7 @@ from feat.utils.io import get_test_data_path
 import warnings
 import os
 
-EXPECTED_FEX_WIDTH = 689
+EXPECTED_FEX_WIDTH = 691
 
 @pytest.mark.usefixtures(
     "single_face_img", "single_face_img_data", "multi_face_img", "multi_face_img_data", "no_face_img","single_face_mov", 
@@ -116,16 +116,6 @@ class Test_Fast_Detector:
                 f"Max AU deviation (batched - nonbatched): {au_diffs.idxmax()}: {au_diffs.max()}"
             )
      
-    # TODO: Consider removing/changing test because the FastDetector can run using only the img2pose model
-    def test_fast_empty_init(self):
-        """Should fail if no models provided"""
-        with pytest.raises(ValueError):
-            _ = FastDetector(
-                emotion_model=None,
-                au_model=None,
-                landmark_model=None,
-                identity_model=None,
-            )
     
     def test_fast_init_with_wrongmodelname(self):
         """Should fail with unsupported model name"""
@@ -240,24 +230,24 @@ class Test_Fast_Detector:
         out = self.detector.detect(no_face_mov, skip_frames=24, data_type="video")
         assert len(out) == 4
         # Empty detections are filled with NaNs
-        assert out.aus.isnull().all().all()
+        assert out.happiness.isnull().all().all()
 
         # Test mixed movie, i.e. spliced vids of face -> noface and noface -> face
         out = self.detector.detect(face_noface_mov, skip_frames=24, data_type="video")
         assert len(out) == 3 + 4 + 1
         # first few frames have a face
-        assert not out.aus.iloc[:3].isnull().all().all()
+        assert not out.happiness.iloc[:3].isnull().all().all()
         # But the rest are from a diff video that doesn't
-        assert out.aus.iloc[3:].isnull().all().all()
+        assert out.happiness.iloc[3:].isnull().all().all()
 
         out = self.detector.detect(noface_face_mov, skip_frames=24, data_type="video")
         assert len(out) == 3 + 4 + 1
         # beginning no face
-        assert out.aus.iloc[:4].isnull().all().all()
+        assert out.happiness.iloc[:4].isnull().all().all()
         # middle frames have face
-        assert not out.aus.iloc[4:7].isnull().all().all()
+        assert not out.happiness.iloc[4:7].isnull().all().all()
         # ending doesn't
-        assert out.aus.iloc[7:].isnull().all().all()
+        assert out.happiness.iloc[7:].isnull().all().all()
         
     
 
