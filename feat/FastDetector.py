@@ -963,12 +963,18 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
                 extracted_faces, new_bbox = extract_face_from_bbox_torch(
                     single_frame, bbox, face_size=face_size
                 )
-            else: # No Face Detected
+            else: # No Face Detected - let's test of nans will work
                 extracted_faces = torch.zeros((1, 3, face_size, face_size))
-                bbox = torch.zeros((1,4))
-                new_bbox = torch.zeros((1,4))
+                # bbox = torch.zeros((1,4))
+                # new_bbox = torch.zeros((1,4))
+                # facescores = torch.zeros((1))
+                # poses = torch.zeros((1,6))
+                # extracted_faces = torch.full((1, 3, face_size, face_size), float('nan'))
+                bbox = torch.full((1, 4), float('nan'))
+                new_bbox = torch.full((1, 4), float('nan'))
                 facescores = torch.zeros((1))
-                poses = torch.zeros((1,6))
+                poses = torch.full((1, 6), float('nan'))
+
 
             frame_results = {
                 "face_id": i,
@@ -981,8 +987,9 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
             
             # Extract Faces separately for Resmasknet
             if self.info['emotion_model'] == 'resmasknet':
-                if bbox.numel() != 0: # No Face Detected
-                    frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
+                if torch.all(torch.isnan(bbox)): # No Face Detected
+                    frame_results["resmasknet_faces"] = torch.full((1, 3, 224, 224), float('nan'))
+                    # frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
                 else:
                     resmasknet_faces, _ = extract_face_from_bbox_torch(
                         single_frame, bbox, expand_bbox=1.1, face_size=224
@@ -1050,7 +1057,6 @@ class FastDetector(nn.Module, PyTorchModelHubMixin):
 
         # Create Fex Output Representation
         bboxes = torch.cat([convert_bbox_output(face_output['new_boxes'].to(self.device), face_output['scores'].to(self.device)) for face_output in faces_data], dim=0)
-        # bboxes = torch.cat([convert_bbox_output(face_output['boxes'], face_output['scores']) for face_output in faces_data], dim=0)
         feat_faceboxes = pd.DataFrame(
             bboxes.cpu().detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
