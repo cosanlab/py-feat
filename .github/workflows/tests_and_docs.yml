@@ -84,7 +84,7 @@ jobs:
         run: |
           conda activate test
           conda env list
-          black --check --verbose .
+          ruff check --ignore=W292,E402,E501,E731,E741 feat
           pytest --cov=feat -rs
 
       # Send coverage to coveralls.io but waiting on parallelization to finish

@@ -2,7 +2,6 @@
 # Cunjian Chen (cunjian@msu.edu)
 
 import torch.nn as nn
-import torch.nn.functional as F
 import torchvision.models as models
 from huggingface_hub import PyTorchModelHubMixin
 

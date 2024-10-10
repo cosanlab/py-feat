@@ -1,1 +1,1 @@
-from .basenet_test import *
+from .basenet_test import *  # noqa: F403

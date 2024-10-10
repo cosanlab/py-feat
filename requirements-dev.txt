@@ -1,9 +1,8 @@
 -r requirements.txt
+ruff==0.6.6
 pytest
 pytest-cov
 coveralls
-pycodestyle
-black==24.4.2
 sphinx<6
 sphinx-rtd-theme
 sphinxcontrib-napoleon

@@ -2,11 +2,6 @@ from __future__ import print_function
 import os
 import torch
 import numpy as np
-from huggingface_hub import hf_hub_download
-from safetensors.torch import load_file
-import json
-# import time
-# import feat
 from feat.face_detectors.Retinaface.Retinaface_model import PriorBox, RetinaFace
 from feat.face_detectors.Retinaface.Retinaface_utils import decode_landm
 from feat.utils import set_torch_device
@@ -17,35 +12,12 @@ from feat.utils.image_operations import (
     decode,
 )
 
-# with open(os.path.join(get_resource_path(), "model_config.json"), "r") as f:
-#     model_config = json.load(f)
-
 model_config = {
     "Retinaface": {
         "name": "mobilenet0.25",
-        "min_sizes": [
-            [
-                16,
-                32
-            ],
-            [
-                64,
-                128
-            ],
-            [
-                256,
-                512
-            ]
-        ],
-        "steps": [
-            8,
-            16,
-            32
-        ],
-        "variance": [
-            0.1,
-            0.2
-        ],
+        "min_sizes": [[16, 32], [64, 128], [256, 512]],
+        "steps": [8, 16, 32],
+        "variance": [0.1, 0.2],
         "clip": False,
         "loc_weight": 2.0,
         "gpu_train": True,
@@ -56,15 +28,12 @@ model_config = {
         "decay2": 220,
         "image_size": 640,
         "pretrain": False,
-        "return_layers": {
-            "stage1": 1,
-            "stage2": 2,
-            "stage3": 3
-        },
+        "return_layers": {"stage1": 1, "stage2": 2, "stage3": 3},
         "in_channel": 32,
-        "out_channel": 64
+        "out_channel": 64,
     }
 }
+
 
 class Retinaface:
     def __init__(
@@ -77,7 +46,7 @@ class Retinaface:
         keep_top_k=750,
         top_k=5000,
         confidence_threshold=0.02,
-        pretrained='local'
+        pretrained="local",
     ):
         """
         Function to perform inference with RetinaFace
@@ -98,22 +67,22 @@ class Retinaface:
 
         self.device = set_torch_device(device=device)
         self.cfg = cfg
-              
+
         # Initialize the model
-        if pretrained == 'huggingface':
+        if pretrained == "huggingface":
             # model_file = hf_hub_download(repo_id="py-feat/retinaface", filename="model.safetensors")
             # model_state_dict = load_file(model_file)
             self.net = RetinaFace(cfg=self.cfg, phase="test")
             self.net = self.net.eval()
-            self.net.from_pretrained('py-feat/retinaface')
-        elif pretrained == 'local':
+            self.net.from_pretrained("py-feat/retinaface")
+        elif pretrained == "local":
             # net.load_state_dict(model_state_dict)
             # net = net.to(self.device)
             # self.net = net.eval()
-        
+
             self.net = RetinaFace(cfg=self.cfg, phase="test")
             pretrained_dict = torch.load(
-                os.path.join(get_resource_path(), f"mobilenet0.25_Final.pth"),
+                os.path.join(get_resource_path(), "mobilenet0.25_Final.pth"),
                 map_location=self.device,
             )
             self.net.load_state_dict(pretrained_dict, strict=False)

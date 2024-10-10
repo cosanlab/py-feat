@@ -26,8 +26,12 @@ from feat.utils.image_operations import (
     convert_image_to_tensor,
     BBox,
 )
-from feat.utils.stats import cluster_identities
-from feat.pretrained import get_pretrained_models, fetch_model, AU_LANDMARK_MAP, load_model_weights
+from feat.pretrained import (
+    get_pretrained_models,
+    fetch_model,
+    AU_LANDMARK_MAP,
+    load_model_weights,
+)
 from feat.data import (
     Fex,
     ImageDataset,
@@ -37,7 +41,7 @@ from feat.data import (
 )
 import torch
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, Normalize, Grayscale, ToTensor
+from torchvision.transforms import Compose, Normalize
 import torchvision.transforms as transforms
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from feat.facepose_detectors.img2pose.deps.models import postprocess_img2pose
@@ -124,7 +128,7 @@ class Detector(object):
         self.device = set_torch_device(device)
 
         # Load Model Configs
-        with open(os.path.join(get_resource_path(), 'model_config.json'), 'r') as file:
+        with open(os.path.join(get_resource_path(), "model_config.json"), "r") as file:
             self.model_configs = json.load(file)
         # Verify model names and download if necessary
         face, landmark, au, emotion, facepose, identity = get_pretrained_models(
@@ -210,7 +214,9 @@ class Detector(object):
                     self.landmark_detector = self.landmark_detector(
                         136, **landmark_model_kwargs
                     )
-                    self.landmark_detector.from_pretrained(f'py-feat/{landmark}', cache_dir=get_resource_path())
+                    self.landmark_detector.from_pretrained(
+                        f"py-feat/{landmark}", cache_dir=get_resource_path()
+                    )
 
                     # checkpoint = torch.load(
                     #     os.path.join(
@@ -235,7 +241,9 @@ class Detector(object):
                     self.landmark_detector = self.landmark_detector(
                         **landmark_model_kwargs
                     )
-                    self.landmark_detector.from_pretrained(f'py-feat/{landmark}', cache_dir=get_resource_path())
+                    self.landmark_detector.from_pretrained(
+                        f"py-feat/{landmark}", cache_dir=get_resource_path()
+                    )
 
                     # checkpoint = torch.load(
                     #     os.path.join(get_resource_path(), "pfld_model_best.pth.tar"),
@@ -246,7 +254,9 @@ class Detector(object):
                     self.landmark_detector = self.landmark_detector(
                         [112, 112], 136, **landmark_model_kwargs
                     )
-                    self.landmark_detector.from_pretrained(f'py-feat/{landmark}', cache_dir=get_resource_path())
+                    self.landmark_detector.from_pretrained(
+                        f"py-feat/{landmark}", cache_dir=get_resource_path()
+                    )
 
                     # checkpoint = torch.load(
                     #     os.path.join(
@@ -257,7 +267,7 @@ class Detector(object):
                     # self.landmark_detector.load_state_dict(checkpoint["state_dict"])
             self.landmark_detector.eval()
             self.landmark_detector.to(self.device)
-            
+
             self.info["landmark_model"] = landmark
             self.info["mapper"] = openface_2d_landmark_columns
             self.info["face_landmark_columns"] = openface_2d_landmark_columns
@@ -274,27 +284,44 @@ class Detector(object):
             logging.info(f"Loading facepose model: {facepose}")
             self.facepose_detector = fetch_model("facepose_model", facepose)
             if "img2pose" in facepose:
-                backbone = resnet_fpn_backbone(backbone_name=f"resnet{self.model_configs['img2pose']['depth']}", weights=None)
-                self.facepose_detector = self.facepose_detector(backbone=backbone,
-                        num_classes=2,
-                        min_size=self.model_configs['img2pose']['min_size'],
-                        max_size=self.model_configs['img2pose']['max_size'],
-                        pose_mean=torch.tensor(self.model_configs['img2pose']['pose_mean']),
-                        pose_stddev=torch.tensor(self.model_configs['img2pose']['pose_stddev']),
-                        threed_68_points=torch.tensor(self.model_configs['img2pose']['threed_points']),
-                        rpn_pre_nms_top_n_test=self.model_configs['img2pose']['rpn_pre_nms_top_n_test'],
-                        rpn_post_nms_top_n_test=self.model_configs['img2pose']['rpn_post_nms_top_n_test'],
-                        bbox_x_factor=self.model_configs['img2pose']['bbox_x_factor'],
-                        bbox_y_factor=self.model_configs['img2pose']['bbox_y_factor'],
-                        expand_forehead=self.model_configs['img2pose']['expand_forehead'],
-                        **facepose_model_kwargs)
-                
+                backbone = resnet_fpn_backbone(
+                    backbone_name=f"resnet{self.model_configs['img2pose']['depth']}",
+                    weights=None,
+                )
+                self.facepose_detector = self.facepose_detector(
+                    backbone=backbone,
+                    num_classes=2,
+                    min_size=self.model_configs["img2pose"]["min_size"],
+                    max_size=self.model_configs["img2pose"]["max_size"],
+                    pose_mean=torch.tensor(self.model_configs["img2pose"]["pose_mean"]),
+                    pose_stddev=torch.tensor(
+                        self.model_configs["img2pose"]["pose_stddev"]
+                    ),
+                    threed_68_points=torch.tensor(
+                        self.model_configs["img2pose"]["threed_points"]
+                    ),
+                    rpn_pre_nms_top_n_test=self.model_configs["img2pose"][
+                        "rpn_pre_nms_top_n_test"
+                    ],
+                    rpn_post_nms_top_n_test=self.model_configs["img2pose"][
+                        "rpn_post_nms_top_n_test"
+                    ],
+                    bbox_x_factor=self.model_configs["img2pose"]["bbox_x_factor"],
+                    bbox_y_factor=self.model_configs["img2pose"]["bbox_y_factor"],
+                    expand_forehead=self.model_configs["img2pose"]["expand_forehead"],
+                    **facepose_model_kwargs,
+                )
+
                 # self.facepose_detector = self.facepose_detector(
                 #     constrained="img2pose-c" == face,
                 #     device=self.device,
                 #     **facepose_model_kwargs,
                 # )
-                facepose_model_file = hf_hub_download(repo_id= "py-feat/img2pose", filename="model.safetensors", cache_dir=get_resource_path())
+                facepose_model_file = hf_hub_download(
+                    repo_id="py-feat/img2pose",
+                    filename="model.safetensors",
+                    cache_dir=get_resource_path(),
+                )
                 facepose_checkpoint = load_file(facepose_model_file)
                 self.facepose_detector.load_state_dict(facepose_checkpoint)
                 self.facepose_detector.eval()
@@ -323,13 +350,21 @@ class Detector(object):
             if self.info["au_model"] in ["svm", "xgb"]:
                 self.info["au_presence_columns"] = AU_LANDMARK_MAP["Feat"]
             else:
-                self.info["au_presence_columns"] = AU_LANDMARK_MAP[
-                    self.info["au_model"]
-                ]
+                self.info["au_presence_columns"] = AU_LANDMARK_MAP[self.info["au_model"]]
             if self.au_model is not None:
                 self.au_model = self.au_model(**au_model_kwargs)
-                au_weights = load_model_weights(model_type='au', model=au, location='huggingface')
-                self.au_model.load_weights(au_weights['scaler_upper'], au_weights['pca_model_upper'], au_weights['scaler_lower'], au_weights['pca_model_lower'], au_weights['scaler_full'], au_weights['pca_model_full'], au_weights['au_classifiers'])
+                au_weights = load_model_weights(
+                    model_type="au", model=au, location="huggingface"
+                )
+                self.au_model.load_weights(
+                    au_weights["scaler_upper"],
+                    au_weights["pca_model_upper"],
+                    au_weights["scaler_lower"],
+                    au_weights["pca_model_lower"],
+                    au_weights["scaler_full"],
+                    au_weights["pca_model_full"],
+                    au_weights["au_classifiers"],
+                )
 
                 predictions = np.full_like(
                     np.atleast_2d(self.info["au_presence_columns"]), np.nan
@@ -351,8 +386,14 @@ class Detector(object):
                     )
                 elif emotion == "svm":
                     self.emotion_model = self.emotion_model(**emotion_model_kwargs)
-                    emo_weights = load_model_weights(model_type='emotion', model=emotion, location='huggingface')
-                    self.emotion_model.load_weights(emo_weights['scaler_full'], emo_weights['pca_model_full'], emo_weights['emo_classifiers'])
+                    emo_weights = load_model_weights(
+                        model_type="emotion", model=emotion, location="huggingface"
+                    )
+                    self.emotion_model.load_weights(
+                        emo_weights["scaler_full"],
+                        emo_weights["pca_model_full"],
+                        emo_weights["emo_classifiers"],
+                    )
 
                 self.info["emotion_model_columns"] = FEAT_EMOTION_COLUMNS
                 predictions = np.full_like(np.atleast_2d(FEAT_EMOTION_COLUMNS), np.nan)
@@ -452,9 +493,13 @@ class Detector(object):
         if "img2pose" in self.info["face_model"]:
             frame = frame / 255
             # faces, poses = self.face_detector(frame, **face_model_kwargs)
-            img2pose_output = postprocess_img2pose(self.facepose_detector(frame, **face_model_kwargs))
-            faces = img2pose_output['boxes']
-            poses = img2pose_output['dofs'][:, :3] # Only returning xyz for now not translation
+            img2pose_output = postprocess_img2pose(
+                self.facepose_detector(frame, **face_model_kwargs)
+            )
+            faces = img2pose_output["boxes"]
+            _ = img2pose_output["dofs"][
+                :, :3
+            ]  # Only returning xyz for now not translation
         else:
             faces = self.face_detector(frame, **face_model_kwargs)
 
@@ -570,8 +615,10 @@ class Detector(object):
         if "img2pose" in self.info["facepose_model"]:
             img2pose_output = self.facepose_detector(frame, **facepose_model_kwargs)
             img2pose_output = postprocess_img2pose(img2pose_output[0])
-            output["faces"] = img2pose_output['boxes']
-            output["poses"] = img2pose_output['dofs'] # Only returning xyz for now not translation
+            output["faces"] = img2pose_output["boxes"]
+            output["poses"] = img2pose_output[
+                "dofs"
+            ]  # Only returning xyz for now not translation
         else:
             output["poses"] = self.facepose_detector(
                 frame, landmarks, **facepose_model_kwargs
@@ -697,9 +744,7 @@ class Detector(object):
             if self.info["emotion_model"].lower() == "resmasknet":
                 return self._convert_detector_output(
                     facebox,
-                    self.emotion_model.detect_emo(
-                        frame, facebox, **emotion_model_kwargs
-                    ),
+                    self.emotion_model.detect_emo(frame, facebox, **emotion_model_kwargs),
                 )
 
             elif self.info["emotion_model"].lower() == "svm":
@@ -782,9 +827,7 @@ class Detector(object):
         warnings.filterwarnings("default", category=UserWarning, module="torchvision")
 
         if suppress_torchvision_warnings:
-            warnings.filterwarnings(
-                "ignore", category=UserWarning, module="torchvision"
-            )
+            warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
 
         faces = self.detect_faces(
             batch_data["Image"],
@@ -797,7 +840,7 @@ class Detector(object):
             detected_faces=faces,
             **landmark_model_kwargs,
         )
-        
+
         poses_dict = self.detect_facepose(
             batch_data["Image"], landmarks, **facepose_model_kwargs
         )
@@ -1149,9 +1192,7 @@ class Detector(object):
                 )
 
                 emotions_df = pd.DataFrame(
-                    emotions[i][j, :].reshape(
-                        1, len(self.info["emotion_model_columns"])
-                    ),
+                    emotions[i][j, :].reshape(1, len(self.info["emotion_model_columns"])),
                     columns=self.info["emotion_model_columns"],
                     index=[j],
                 )
@@ -1264,9 +1305,7 @@ class Detector(object):
         else:
             overlap_faces = []
             overlap_poses = []
-            for frame_face, frame_face_pose, frame_pose in zip(
-                faces, faces_pose, poses
-            ):
+            for frame_face, frame_face_pose, frame_pose in zip(faces, faces_pose, poses):
                 if not frame_face:
                     n_faces = 0
                 elif isinstance(frame_face[0], list):

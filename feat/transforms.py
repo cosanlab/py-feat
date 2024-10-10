@@ -28,18 +28,14 @@ class Rescale(object):
     """
 
     def __init__(self, output_size, preserve_aspect_ratio=True, padding=False):
-
         if not isinstance(output_size, (int, tuple)):
-            raise ValueError(
-                f"output_size must be (int, tuple) not {type(output_size)}."
-            )
+            raise ValueError(f"output_size must be (int, tuple) not {type(output_size)}.")
 
         self.output_size = output_size
         self.preserve_aspect_ratio = preserve_aspect_ratio
         self.padding = padding
 
     def __call__(self, image):
-
         height, width = image.shape[-2:]
 
         if isinstance(self.output_size, int):
@@ -50,7 +46,6 @@ class Rescale(object):
             new_height, new_width = np.array(self.output_size).astype(int)
 
         if self.preserve_aspect_ratio or self.padding:
-
             # Calculate Scaling Value
             if isinstance(self.output_size, int):
                 scale = self.output_size / max(height, width)

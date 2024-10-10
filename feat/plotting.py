@@ -8,7 +8,6 @@ import h5py
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn import __version__ as skversion
-from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
 from feat.utils.io import get_resource_path
@@ -21,7 +20,7 @@ from pathlib import Path
 from PIL import Image
 from textwrap import wrap
 from joblib import load
-from feat.utils.io import get_resource_path, download_url
+from feat.utils.io import download_url
 import json
 
 __all__ = [
@@ -675,7 +674,6 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
         "orb_oc_r_inner": orb_oc_r_inner,
         "orb_oris_l": orb_oris_l,
         "orb_oris_u": orb_oris_u,
-        "orb_oc_l": orb_oc_l,
         "cor_sup_l": cor_sup_l,
         "pars_palp_l": orb_oc_l_inner,
         "pars_palp_r": orb_oc_r_inner,
@@ -941,15 +939,12 @@ def plot_face(
 
     if gaze is not None and len((gaze)) != 4:
         warnings.warn(
-            "Don't forget to pass a 'gaze' vector of len(4), "
-            "using neutral as default"
+            "Don't forget to pass a 'gaze' vector of len(4), " "using neutral as default"
         )
         gaze = None
 
     title = kwargs.pop("title", None)
-    title_kwargs = kwargs.pop(
-        "title_kwargs", dict(wrap=True, fontsize=14, loc="center")
-    )
+    title_kwargs = kwargs.pop("title_kwargs", dict(wrap=True, fontsize=14, loc="center"))
     ax = draw_lineface(
         currx,
         curry,
@@ -1128,12 +1123,12 @@ def interpolate_aus(
 
     from easing_functions import CubicEaseInOut
 
-    func = CubicEaseInOut if interp_func is None else func
+    interp_func = CubicEaseInOut if interp_func is None else interp_func
     # Loop over each AU and generate a cubic bezier style interpolation from its
     # starting intensity to its ending intensity
     au_interpolations = []
     for au_start, au_end in zip(start, end):
-        interp_func = func(au_start, au_end)
+        interp_func = interp_func(au_start, au_end)
         intensities = [*map(interp_func, np.linspace(0, 1, num_frames))]
         au_interpolations.append(intensities)
 

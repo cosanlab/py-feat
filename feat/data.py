@@ -12,8 +12,6 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
-from copy import deepcopy
-from functools import reduce
 from nltools.data import Adjacency
 from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
@@ -209,9 +207,7 @@ class FexSeries(Series):
         Returns:
             string: path to input image
         """
-        warnings.warn(
-            "Fex.input has now been renamed to Fex.inputs", DeprecationWarning
-        )
+        warnings.warn("Fex.input has now been renamed to Fex.inputs", DeprecationWarning)
         return self["input"]
 
     @property
@@ -751,9 +747,7 @@ class Fex(DataFrame):
         ]
 
         # String attribute access
-        if isinstance(X, str) and any(
-            map(lambda feature: feature in X, feature_groups)
-        ):
+        if isinstance(X, str) and any(map(lambda feature: feature in X, feature_groups)):
             X = X.split(",") if "," in X else [X]
             mX = []
             for x in X:
@@ -768,9 +762,7 @@ class Fex(DataFrame):
         else:
             mX = X
 
-        if isinstance(y, str) and any(
-            map(lambda feature: feature in y, feature_groups)
-        ):
+        if isinstance(y, str) and any(map(lambda feature: feature in y, feature_groups)):
             y = y.split(",") if "," in y else [y]
             my = []
             for yy in y:
@@ -823,7 +815,7 @@ class Fex(DataFrame):
         result = read_openface(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
-            if attr_value and getattr(result, name, None) == None:
+            if attr_value and getattr(result, name, None) is None:
                 setattr(result, name, attr_value)
         return result
 
@@ -980,9 +972,7 @@ class Fex(DataFrame):
 
         return ttest_ind(a, b)
 
-    def predict(
-        self, X, y, model=LinearRegression, cv_kwargs={"cv": 5}, *args, **kwargs
-    ):
+    def predict(self, X, y, model=LinearRegression, cv_kwargs={"cv": 5}, *args, **kwargs):
         """Predicts y from X using a sklearn model.
 
         Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.
@@ -1141,7 +1131,7 @@ class Fex(DataFrame):
         """
         if self.sessions is None or ignore_sessions:
             out = self.copy()
-            if type(baseline) == str:
+            if isinstance(baseline, str):
                 if baseline == "median":
                     baseline_values = out.median()
                 elif baseline == "mean":
@@ -1150,8 +1140,7 @@ class Fex(DataFrame):
                     baseline_values = out.iloc[0, :]
                 else:
                     raise ValueError(
-                        "%s is not implemented please use {mean, median, Fex}"
-                        % baseline
+                        "%s is not implemented please use {mean, median, Fex}" % baseline
                     )
             elif isinstance(baseline, (Series, FexSeries)):
                 baseline_values = baseline
@@ -1167,7 +1156,7 @@ class Fex(DataFrame):
         else:
             out = self.__class__(sampling_freq=self.sampling_freq)
             for k, v in self.itersessions():
-                if type(baseline) == str:
+                if isinstance(baseline, str):
                     if baseline == "median":
                         baseline_values = v.median()
                     elif baseline == "mean":
@@ -1182,9 +1171,7 @@ class Fex(DataFrame):
                 elif isinstance(baseline, (Series, FexSeries)):
                     baseline_values = baseline
                 elif isinstance(baseline, (Fex, DataFrame)):
-                    raise ValueError(
-                        "Must pass in a FexSeries not a FexSeries Instance."
-                    )
+                    raise ValueError("Must pass in a FexSeries not a FexSeries Instance.")
 
                 if normalize == "db":
                     out = out.append(
@@ -1560,9 +1547,7 @@ class Fex(DataFrame):
             features=self.features,
             sessions=self.sessions,
         )
-        convolved.columns = (
-            "f" + "%s" % round(freq, 2) + "_" + mode + "_" + self.columns
-        )
+        convolved.columns = "f" + "%s" % round(freq, 2) + "_" + mode + "_" + self.columns
         return convolved
 
     def extract_multi_wavelet(
@@ -1830,7 +1815,7 @@ class Fex(DataFrame):
                         aus, gaze, muscles, model = self._prepare_plot_aus(
                             row, muscles=muscles, gaze=gazes
                         )
-                        title = row["input"] if add_titles else None
+                        _ = row["input"] if add_titles else None
                         face_ax = plot_face(
                             model=model,
                             au=aus,
@@ -1885,7 +1870,7 @@ class Fex(DataFrame):
                 out.identity_embeddings, threshold=threshold
             )
             return out
-        
+
     # TODO: turn this into a property using a @property and @sessions.settr decorators
     # Tried it but was running into maximum recursion depth errors. Maybe some
     # interaction with how pandas sub-classing works?? - ejolly
@@ -2199,6 +2184,7 @@ def _inverse_landmark_transform(landmarks, batch_data):
         out_frame.append(out_landmark)
     return out_frame
 
+
 class TensorDataset(Dataset):
     def __init__(self, tensor):
         self.tensor = tensor
@@ -2210,7 +2196,8 @@ class TensorDataset(Dataset):
     def __getitem__(self, idx):
         # Return the sample at the given index
         return self.tensor[idx, ...]
-    
+
+
 class VideoDataset(Dataset):
     """Torch Video Dataset
 

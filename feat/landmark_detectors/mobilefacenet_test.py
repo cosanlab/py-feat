@@ -4,21 +4,11 @@ from torch.nn import (
     BatchNorm1d,
     BatchNorm2d,
     PReLU,
-    ReLU,
-    Sigmoid,
-    Dropout2d,
-    Dropout,
-    AvgPool2d,
-    MaxPool2d,
-    AdaptiveAvgPool2d,
     Sequential,
     Module,
-    Parameter,
 )
-import torch.nn.functional as F
 import torch
 import torch.nn as nn
-from collections import namedtuple
 from huggingface_hub import PyTorchModelHubMixin
 
 ##################################  Original Arcface Model #############################################################
@@ -46,21 +36,23 @@ class Conv_block(Module):
             padding=padding,
             bias=False,
         )
-        self.bn = BatchNorm2d(out_c) # Here is another MPS issue where data is not float32
+        self.bn = BatchNorm2d(
+            out_c
+        )  # Here is another MPS issue where data is not float32
         self.prelu = PReLU(out_c)
-         
+
         # Ensure BatchNorm parameters are float32
         self.bn.weight.data = self.bn.weight.data.float()
         self.bn.bias.data = self.bn.bias.data.float()
         self.bn.running_mean.data = self.bn.running_mean.data.float()
         self.bn.running_var.data = self.bn.running_var.data.float()
-        
+
     def forward(self, x):
         x = self.conv(x)
         x = self.bn(x)
         x = self.prelu(x)
         return x
-    
+
     @property
     def weight(self):
         return self.conv.weight
@@ -193,13 +185,13 @@ class GDC(Module):
 
 
 class MobileFaceNet(Module, PyTorchModelHubMixin):
-    def __init__(self, input_size, embedding_size=512, output_name="GDC", device='cpu'):
+    def __init__(self, input_size, embedding_size=512, output_name="GDC", device="cpu"):
         super(MobileFaceNet, self).__init__()
         # Make sure this module is compatible with mps
         self.device = device
         self.to(device)
         # torch.set_default_dtype(torch.float32) # Ensure default dtype is float32 for MPS compatibility
-        
+
         assert output_name in ["GNAP", "GDC"]
         assert input_size[0] in [112]
         self.conv1 = Conv_block(3, 64, kernel=(3, 3), stride=(2, 2), padding=(1, 1))
@@ -252,7 +244,7 @@ class MobileFaceNet(Module, PyTorchModelHubMixin):
         # Ensure this module is compatible with mps
         x = x.to(self.device)
         x = x.to(self.device).float()
-    
+
         out = self.conv1(x)
 
         out = self.conv2_dw(out)
