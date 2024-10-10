@@ -1,9 +1,8 @@
 """
-py-feat utility and helper functions for performing operations on images. 
+py-feat utility and helper functions for performing operations on images.
 """
 
 import os
-from re import X
 from .io import get_resource_path
 import math
 import numpy as np
@@ -28,15 +27,13 @@ import kornia
 
 __all__ = [
     "neutral",
-    "face_rect_to_coords",
     "registration",
     "convert68to49",
-    "extract_face_from_landmark",
+    "extract_face_from_landmarks",
     "extract_face_from_bbox",
     "convert68to49",
     "align_face",
     "BBox",
-    "round_vals",
     "reverse_color_order",
     "expand_img_dimensions",
     "convert_image_to_tensor",
@@ -66,7 +63,7 @@ def registration(face_lms, neutral=neutral, method="fullface"):
     Return:
         registered_lms: registered landmarks in shape (n,136)
     """
-    assert type(face_lms) == np.ndarray, TypeError("face_lms must be type np.ndarray")
+    assert isinstance(face_lms, np.ndarray), TypeError("face_lms must be type np.ndarray")
     assert face_lms.ndim == 2, ValueError("face_lms must be shape (n, 136)")
     assert face_lms.shape[1] == 136, ValueError("Must have 136 landmarks")
     registered_lms = []
@@ -76,23 +73,21 @@ def registration(face_lms, neutral=neutral, method="fullface"):
         #   Rotate face
         primary = np.array(face)
         secondary = np.array(neutral)
-        n = primary.shape[0]
+        _ = primary.shape[0]
         pad = lambda x: np.hstack([x, np.ones((x.shape[0], 1))])
         unpad = lambda x: x[:, :-1]
         X1, Y1 = pad(primary), pad(secondary)
-        if type(method) == str:
+        if isinstance(method, str):
             if method == "fullface":
                 A, res, rank, s = np.linalg.lstsq(X1, Y1, rcond=None)
             elif method == "inner":
                 A, res, rank, s = np.linalg.lstsq(X1[17:, :], Y1[17:, :], rcond=None)
             else:
                 raise ValueError("method is either 'fullface' or 'inner'")
-        elif type(method) == list:
+        elif isinstance(method, list):
             A, res, rank, s = np.linalg.lstsq(X1[method], Y1[method], rcond=None)
         else:
-            raise TypeError(
-                "method is string ('fullface','inner') or list of landmarks"
-            )
+            raise TypeError("method is string ('fullface','inner') or list of landmarks")
         transform = lambda x: unpad(np.dot(pad(x), A))
         registered_lms.append(transform(primary).T.reshape(1, 136).ravel())
     return np.array(registered_lms)
@@ -376,13 +371,9 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     center_y = (max(mat2[:, 1]).item() + min(mat2[:, 1]).item()) / 2.0
 
     if (max(mat2[:, 0]) - min(mat2[:, 0])) > (max(mat2[:, 1]) - min(mat2[:, 1])):
-        half_size = (
-            0.5 * box_enlarge * (max(mat2[:, 0]).item() - min(mat2[:, 0]).item())
-        )
+        half_size = 0.5 * box_enlarge * (max(mat2[:, 0]).item() - min(mat2[:, 0]).item())
     else:
-        half_size = (
-            0.5 * box_enlarge * (max(mat2[:, 1]).item() - min(mat2[:, 1]).item())
-        )
+        half_size = 0.5 * box_enlarge * (max(mat2[:, 1]).item() - min(mat2[:, 1]).item())
 
     scale = (img_size - 1) / 2.0 / half_size
 
@@ -415,9 +406,9 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     land_3d[:, 0:2] = np.reshape(np.array(landmarks), (len(landmarks) // 2, 2))
     mat_land_3d = np.mat(land_3d)
     new_landmarks = np.array((mat * mat_land_3d.T).T)
-    new_landmarks = np.array(
-        list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))
-    ).astype(int)
+    new_landmarks = np.array(list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))).astype(
+        int
+    )
 
     return (aligned_img, new_landmarks)
 
@@ -598,9 +589,7 @@ class BBox(object):
             raise ValueError("images must be (np.array, torch.tensor)")
 
         if len(img.shape) == 2:
-            return img[
-                int(self.top) : int(self.bottom), int(self.left) : int(self.right)
-            ]
+            return img[int(self.top) : int(self.bottom), int(self.left) : int(self.right)]
         elif len(img.shape) == 3:
             return img[
                 :, int(self.top) : int(self.bottom), int(self.left) : int(self.right)
@@ -777,9 +766,7 @@ def mask_image(img, mask):
     #     raise ValueError(
     #         f"img must be pytorch tensor, not {type(img)} and mask must be np array not {type(mask)}"
     #     )
-    return (
-        torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
-    )
+    return torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
 
 
 def convert_to_euler(rotvec, is_rotvec=True):
@@ -800,6 +787,7 @@ def convert_to_euler(rotvec, is_rotvec=True):
     angle = Rotation.from_matrix(rot_mat_2).as_euler("xyz", degrees=True)
     return [angle[0], -angle[2], -angle[1]]  # pitch, roll, yaw
 
+
 def rotvec_to_euler_angles(rotation_vector):
     """
     Convert a rotation vector to Euler angles using Kornia in 'xyz'
@@ -816,13 +804,19 @@ def rotvec_to_euler_angles(rotation_vector):
         rotation_vector = rotation_vector.unsqueeze(0)
 
     # Convert rotation vector to rotation matrix
-    rotation_matrix = kornia.geometry.conversions.axis_angle_to_rotation_matrix(rotation_vector)
+    rotation_matrix = kornia.geometry.conversions.axis_angle_to_rotation_matrix(
+        rotation_vector
+    )
 
     # Convert rotation matrix to quaternion
-    quaternion = kornia.geometry.conversions.rotation_matrix_to_quaternion(rotation_matrix)
+    quaternion = kornia.geometry.conversions.rotation_matrix_to_quaternion(
+        rotation_matrix
+    )
 
     # Convert quaternion to Euler angles
-    euler_angles = kornia.geometry.conversions.euler_from_quaternion(quaternion[..., 0], quaternion[..., 1], quaternion[..., 2], quaternion[..., 3])
+    euler_angles = kornia.geometry.conversions.euler_from_quaternion(
+        quaternion[..., 0], quaternion[..., 1], quaternion[..., 2], quaternion[..., 3]
+    )
 
     # Stack the results to form a single tensor
     return torch.stack(euler_angles, dim=-1)
@@ -970,7 +964,6 @@ class HOGLayer(torch.nn.Module):
 
     def forward(self, img):
         with torch.no_grad():
-
             img = img.to(self.device)
 
             # 1. Global Normalization. The first stage applies an optional global
@@ -1054,7 +1047,7 @@ class HOGLayer(torch.nn.Module):
                     ).sqrt()
                 elif self.block_normalization == "l2":
                     out = out.divide(
-                        ((out.sum(axis=5).sum(axis=4) ** 2 + eps**2))
+                        (out.sum(axis=5).sum(axis=4) ** 2 + eps**2)
                         .sqrt()
                         .unsqueeze(-1)
                         .unsqueeze(-1)

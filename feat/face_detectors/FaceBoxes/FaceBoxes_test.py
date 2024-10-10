@@ -122,7 +122,6 @@ class FaceBoxes:
         return total_boxes
 
     def _calculate_boxinfo(self, im_height, im_width, loc, conf, scale):
-
         priorbox = PriorBox(self.cfg, image_size=(im_height, im_width))
         priors = priorbox.forward()
         boxes = decode(loc.data.squeeze(0), priors.data, self.cfg["variance"])

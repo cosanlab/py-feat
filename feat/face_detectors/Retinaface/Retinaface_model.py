@@ -1,7 +1,7 @@
 # import os
 import torch
+
 # import json
-import numpy as np
 from itertools import product as product
 from math import ceil
 import torch.nn as nn
@@ -11,8 +11,9 @@ import warnings
 from huggingface_hub import PyTorchModelHubMixin
 
 # with open(os.path.join(get_resource_path(), "model_config.json"), "r") as f:
-    # model_config = json.load(f)
-    
+# model_config = json.load(f)
+
+
 def conv_bn(inp, oup, stride=1, leaky=0):
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
@@ -213,7 +214,10 @@ class RetinaFace(nn.Module, PyTorchModelHubMixin):
         if cfg["name"] == "mobilenet0.25":
             backbone = MobileNetV1()
             if cfg["pretrain"]:
-                checkpoint = torch.load("./weights/mobilenetV1X0.25_pretrain.tar", map_location=torch.device('cpu'))
+                checkpoint = torch.load(
+                    "./weights/mobilenetV1X0.25_pretrain.tar",
+                    map_location=torch.device("cpu"),
+                )
                 from collections import OrderedDict
 
                 new_state_dict = OrderedDict()
@@ -310,9 +314,9 @@ class RetinaFace(nn.Module, PyTorchModelHubMixin):
                 ldm_regressions,
             )
         return output
-    
 
-def generate_prior_boxes(min_sizes, steps, clip, image_size, device='cpu'):
+
+def generate_prior_boxes(min_sizes, steps, clip, image_size, device="cpu"):
     """
     Generates prior boxes (anchors) based on the configuration and image size.
 
@@ -327,8 +331,10 @@ def generate_prior_boxes(min_sizes, steps, clip, image_size, device='cpu'):
         torch.Tensor: A tensor containing the prior boxes, shape: [num_priors, 4].
     """
     feature_maps = [
-        [int(torch.ceil(torch.tensor(image_size[0] / step))),
-         int(torch.ceil(torch.tensor(image_size[1] / step)))]
+        [
+            int(torch.ceil(torch.tensor(image_size[0] / step))),
+            int(torch.ceil(torch.tensor(image_size[1] / step))),
+        ]
         for step in steps
     ]
 
@@ -363,10 +369,14 @@ def decode_boxes(loc, priors, variances):
     Returns:
         torch.Tensor: Decoded bounding boxes with shape [batch_size, num_priors, 4].
     """
-    boxes = torch.cat((
-        priors[:, :2].unsqueeze(0) + loc[:, :, :2] * variances[0] * priors[:, 2:].unsqueeze(0),
-        priors[:, 2:].unsqueeze(0) * torch.exp(loc[:, :, 2:] * variances[1])
-    ), dim=2)
+    boxes = torch.cat(
+        (
+            priors[:, :2].unsqueeze(0)
+            + loc[:, :, :2] * variances[0] * priors[:, 2:].unsqueeze(0),
+            priors[:, 2:].unsqueeze(0) * torch.exp(loc[:, :, 2:] * variances[1]),
+        ),
+        dim=2,
+    )
     boxes[:, :, :2] -= boxes[:, :, 2:] / 2
     boxes[:, :, 2:] += boxes[:, :, :2]
     return boxes
@@ -385,8 +395,12 @@ def decode_landmarks(pre, priors, variances):
         torch.Tensor: Decoded landmarks with shape [batch_size, num_priors, 10].
     """
     priors_cxcy = priors[:, :2].unsqueeze(0).unsqueeze(2)  # shape: [1, num_priors, 1, 2]
-    landm_deltas = pre.view(pre.size(0), -1, 5, 2)  # shape: [batch_size, num_priors, 5, 2]
-    landms = priors_cxcy + landm_deltas * variances[0] * priors[:, 2:].unsqueeze(0).unsqueeze(2)
+    landm_deltas = pre.view(
+        pre.size(0), -1, 5, 2
+    )  # shape: [batch_size, num_priors, 5, 2]
+    landms = priors_cxcy + landm_deltas * variances[0] * priors[:, 2:].unsqueeze(
+        0
+    ).unsqueeze(2)
     return landms.view(pre.size(0), -1, 10)
 
 
@@ -406,12 +420,12 @@ def batched_nms(boxes, scores, landmarks, batch_size, nms_threshold, keep_top_k)
         tuple: (final_boxes, final_scores, final_landmarks) after NMS.
     """
     final_boxes, final_scores, final_landmarks = [], [], []
-    
+
     for i in range(batch_size):
         dets = torch.cat([boxes[i], scores[i].unsqueeze(1)], dim=1)
         keep = torch.ops.torchvision.nms(dets[:, :4], dets[:, 4], nms_threshold)
         keep = keep[:keep_top_k]
-        
+
         final_boxes.append(dets[keep, :5])
         final_scores.append(dets[keep, 4])
         final_landmarks.append(landmarks[i][keep])
@@ -431,12 +445,27 @@ def rescale_boxes_to_image_size(boxes, im_width, im_height):
     Returns:
         torch.Tensor: Rescaled bounding boxes with shape [num_boxes, 5].
     """
-    scale_factors = torch.tensor([im_width / im_height, im_height / im_width, im_width / im_height, im_height / im_width], device=boxes.device)
+    scale_factors = torch.tensor(
+        [
+            im_width / im_height,
+            im_height / im_width,
+            im_width / im_height,
+            im_height / im_width,
+        ],
+        device=boxes.device,
+    )
     boxes[:, :4] *= scale_factors
     return boxes
 
 
-def postprocess_retinaface(predicted_locations, predicted_scores, predicted_landmarks, face_config, img, device='cpu'):
+def postprocess_retinaface(
+    predicted_locations,
+    predicted_scores,
+    predicted_landmarks,
+    face_config,
+    img,
+    device="cpu",
+):
     """
     Postprocesses the RetinaFace model outputs by decoding the predictions, applying NMS, and rescaling boxes.
 
@@ -452,51 +481,69 @@ def postprocess_retinaface(predicted_locations, predicted_scores, predicted_land
         dict: Dictionary containing 'boxes', 'scores', and 'landmarks' after postprocessing.
     """
     im_height, im_width = img.shape[-2:]
-    
+
     # Move scale tensor to the specified device
     scale = torch.Tensor([im_height, im_width, im_height, im_width]).to(device)
-    
+
     batch_size = predicted_locations.size(0)
-    
+
     # Generate prior boxes
-    priors = generate_prior_boxes(face_config['min_sizes'], face_config['steps'], face_config['clip'], image_size=(im_height, im_width), device=device)
+    priors = generate_prior_boxes(
+        face_config["min_sizes"],
+        face_config["steps"],
+        face_config["clip"],
+        image_size=(im_height, im_width),
+        device=device,
+    )
 
     # Decode boxes and landmarks
     boxes = decode_boxes(predicted_locations, priors, face_config["variance"]).to(device)
-    boxes = boxes * scale / face_config['resize']
-    
+    boxes = boxes * scale / face_config["resize"]
+
     scores = predicted_scores[:, :, 1]  # Positive class scores
-    landmarks = decode_landmarks(predicted_landmarks, priors, face_config["variance"]).to(device)
-    
+    landmarks = decode_landmarks(predicted_landmarks, priors, face_config["variance"]).to(
+        device
+    )
+
     # Move scale1 tensor to the specified device
     scale1 = torch.tensor([img.shape[3], img.shape[2]] * 5, device=device)
-    landmarks = (landmarks * scale1 / face_config['resize'])
-    
+    landmarks = landmarks * scale1 / face_config["resize"]
+
     # Filter by confidence threshold
-    mask = scores > face_config['confidence_threshold']
+    mask = scores > face_config["confidence_threshold"]
     boxes = boxes[mask].view(batch_size, -1, 4)
     scores = scores[mask].view(batch_size, -1)
     landmarks = landmarks[mask].view(batch_size, -1, 10)
-    
+
     # Keep top-K before NMS
-    top_k_inds = torch.argsort(scores, dim=1, descending=True)[:, :face_config['top_k']]
+    top_k_inds = torch.argsort(scores, dim=1, descending=True)[:, : face_config["top_k"]]
     boxes = torch.gather(boxes, 1, top_k_inds.unsqueeze(-1).expand(-1, -1, 4))
     scores = torch.gather(scores, 1, top_k_inds)
     landmarks = torch.gather(landmarks, 1, top_k_inds.unsqueeze(-1).expand(-1, -1, 10))
-    
+
     # Apply NMS
-    final_boxes, final_scores, final_landmarks = batched_nms(boxes, scores, landmarks, batch_size, face_config['nms_threshold'], face_config['keep_top_k'])
+    final_boxes, final_scores, final_landmarks = batched_nms(
+        boxes,
+        scores,
+        landmarks,
+        batch_size,
+        face_config["nms_threshold"],
+        face_config["keep_top_k"],
+    )
 
     # Rescale boxes
     final_boxes_tensor = torch.cat(final_boxes, dim=0)
-    final_rescaled_boxes = rescale_boxes_to_image_size(final_boxes_tensor, im_width, im_height)
+    final_rescaled_boxes = rescale_boxes_to_image_size(
+        final_boxes_tensor, im_width, im_height
+    )
 
     return {
         "boxes": final_rescaled_boxes,
         "scores": torch.cat(final_scores, dim=0),
-        "landmarks": torch.cat(final_landmarks, dim=0)
+        "landmarks": torch.cat(final_landmarks, dim=0),
     }
-    
+
+
 class PriorBox(object):
     def __init__(self, cfg, image_size=None, phase="train"):
         super(PriorBox, self).__init__()
@@ -517,12 +564,8 @@ class PriorBox(object):
                 for min_size in min_sizes:
                     s_kx = min_size / self.image_size[1]
                     s_ky = min_size / self.image_size[0]
-                    dense_cx = [
-                        x * self.steps[k] / self.image_size[1] for x in [j + 0.5]
-                    ]
-                    dense_cy = [
-                        y * self.steps[k] / self.image_size[0] for y in [i + 0.5]
-                    ]
+                    dense_cx = [x * self.steps[k] / self.image_size[1] for x in [j + 0.5]]
+                    dense_cy = [y * self.steps[k] / self.image_size[0] for y in [i + 0.5]]
                     for cy, cx in product(dense_cy, dense_cx):
                         anchors += [cx, cy, s_kx, s_ky]
 

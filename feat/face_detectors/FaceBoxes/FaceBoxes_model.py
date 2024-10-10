@@ -111,7 +111,6 @@ class FaceBoxesNet(nn.Module, PyTorchModelHubMixin):
         return nn.Sequential(*loc_layers), nn.Sequential(*conf_layers)
 
     def forward(self, x):
-
         detection_sources = list()
         loc = list()
         conf = list()
@@ -133,7 +132,7 @@ class FaceBoxesNet(nn.Module, PyTorchModelHubMixin):
         x = self.conv4_2(x)
         detection_sources.append(x)
 
-        for (x, l, c) in zip(detection_sources, self.loc, self.conf):
+        for x, l, c in zip(detection_sources, self.loc, self.conf):
             loc.append(l(x).permute(0, 2, 3, 1).contiguous())
             conf.append(c(x).permute(0, 2, 3, 1).contiguous())
 

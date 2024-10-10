@@ -77,7 +77,9 @@ class MediaPipeBlendshapesMLPMixer(nn.Module):
         x = self.conv1(x)
         x = x.permute(0, 3, 2, 1)
         x = self.conv2(x)
-        extra_token_expanded = self.extra_token.expand(x.size(0), -1, -1, -1) # Ensure self.extra_token has the same batch size as x
+        extra_token_expanded = self.extra_token.expand(
+            x.size(0), -1, -1, -1
+        )  # Ensure self.extra_token has the same batch size as x
 
         x = torch.cat([extra_token_expanded, x], dim=3)
         # x = torch.cat([self.extra_token, x], dim=3)

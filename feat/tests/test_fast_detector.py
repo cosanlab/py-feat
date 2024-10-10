@@ -1,5 +1,4 @@
 import pytest
-from feat.au_detectors.StatLearning.SL_test import XGBClassifier
 from feat.FastDetector import FastDetector
 from feat.data import Fex
 from huggingface_hub import PyTorchModelHubMixin
@@ -10,13 +9,20 @@ import os
 
 EXPECTED_FEX_WIDTH = 691
 
+
 @pytest.mark.usefixtures(
-    "single_face_img", "single_face_img_data", "multi_face_img", "multi_face_img_data", "no_face_img","single_face_mov", 
-    "no_face_mov", "face_noface_mov", "noface_face_mov"
+    "single_face_img",
+    "single_face_img_data",
+    "multi_face_img",
+    "multi_face_img_data",
+    "no_face_img",
+    "single_face_mov",
+    "no_face_mov",
+    "face_noface_mov",
+    "noface_face_mov",
 )
 class Test_Fast_Detector:
     """Test new single model detector"""
-
 
     detector = FastDetector(device="cpu")
 
@@ -43,7 +49,6 @@ class Test_Fast_Detector:
         # AU checks; TODO: Add more
         assert fex.aus.AU20[0] > 0.8
 
-        
     def test_fast_landmark_with_batches(self, multiple_images_for_batch_testing):
         """
         Make sure that when the same images are passed in with and without batch
@@ -63,7 +68,7 @@ class Test_Fast_Detector:
             det_result_batch.loc[:, "x_0":"y_67"].to_numpy(),
             det_result_no_batch.loc[:, "x_0":"y_67"].to_numpy(),
         )
-            
+
     # TODO: Currently making this test always pass even if batching gives slightly diff
     # results until @tiankang can debug whether we're in tolerance
     # Track progress updates in this issue: https://github.com/cosanlab/py-feat/issues/128
@@ -81,7 +86,7 @@ class Test_Fast_Detector:
 
         # Multiple images with different sizes are ok as long as batch_size == 1
         # Detections will be done in each image's native resolution
-        det_output_default = self.detector.detect(inputs=all_images, batch_size=1)
+        _ = self.detector.detect(inputs=all_images, batch_size=1)
 
         # If batch_size > 1 then output_size must be set otherwise we can't stack to make a
         # tensor
@@ -92,9 +97,7 @@ class Test_Fast_Detector:
             )
 
         # Here we batch by resizing each image to 256xpadding
-        batched = self.detector.detect(
-            inputs=all_images, batch_size=5, output_size=256
-        )
+        batched = self.detector.detect(inputs=all_images, batch_size=5, output_size=256)
 
         # We can also forcibly resize images even if we don't batch process them
         nonbatched = self.detector.detect(
@@ -115,50 +118,46 @@ class Test_Fast_Detector:
             print(
                 f"Max AU deviation (batched - nonbatched): {au_diffs.idxmax()}: {au_diffs.max()}"
             )
-     
-    
+
     def test_fast_init_with_wrongmodelname(self):
         """Should fail with unsupported model name"""
         with pytest.raises(ValueError):
             _ = FastDetector(emotion_model="badmodelname")
-    
+
     def test_fast_nofile(self):
         """Should fail with missing data"""
         with pytest.raises((FileNotFoundError, RuntimeError)):
             inputFname = os.path.join(get_test_data_path(), "nosuchfile.jpg")
             _ = self.detector.detect(inputFname)
-    
-    
+
     # no face images
-    
+
     def test_fast_detect_single_img_no_face(self, no_face_img):
         """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
         out = self.detector.detect(no_face_img)
-        assert type(out) == Fex
+        assert isinstance(out, Fex)
         assert out.shape == (1, EXPECTED_FEX_WIDTH)
         assert np.isnan(out.happiness.values[0])
-    
+
     def test_fast_detect_multi_img_no_face(self, no_face_img):
         """Test detection of a multiple images with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
         out = self.detector.detect([no_face_img] * 3)
         assert out.shape == (3, EXPECTED_FEX_WIDTH)
-    
+
     def test_fast_detect_multi_img_no_face_batching(self, no_face_img):
         """Test detection of a multiple images with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
         out = self.detector.detect([no_face_img] * 5, batch_size=2)
         assert out.shape == (5, EXPECTED_FEX_WIDTH)
-        
+
     def test_fast_detect_multi_img_mixed_no_face(
         self, no_face_img, single_face_img, multi_face_img
     ):
         """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
-        out = self.detector.detect(
-            [single_face_img, no_face_img, multi_face_img] * 2
-        )
+        out = self.detector.detect([single_face_img, no_face_img, multi_face_img] * 2)
         assert out.shape == (14, EXPECTED_FEX_WIDTH)
-        
+
     def test_fast_detect_multi_img_mixed_no_face_batching(
-    self, no_face_img, single_face_img, multi_face_img
+        self, no_face_img, single_face_img, multi_face_img
     ):
         """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
         out = self.detector.detect(
@@ -167,44 +166,41 @@ class Test_Fast_Detector:
             output_size=300,
         )
         assert out.shape == (14, EXPECTED_FEX_WIDTH)
-       
-    # Single images    
+
+    # Single images
     def test_fast_detect_single_img_single_face(self, single_face_img):
         """Test detection of single face from single image. Default detector returns EXPECTED_FEX_WIDTH attributes"""
         out = self.detector.detect(single_face_img)
-        assert type(out) == Fex
+        assert isinstance(out, Fex)
         assert out.shape == (1, EXPECTED_FEX_WIDTH)
         assert out.happiness.values[0] > 0
-    
+
     def test_fast_detect_single_img_multi_face(self, multi_face_img):
         """Test detection of multiple faces from single image"""
         out = self.detector.detect(multi_face_img)
-        assert type(out) == Fex
+        assert isinstance(out, Fex)
         assert out.shape == (5, EXPECTED_FEX_WIDTH)
-        
+
     def test_fast_detect_with_alpha(self):
         image = os.path.join(get_test_data_path(), "Image_with_alpha.png")
-        out = self.detector.detect(image)
-        
+        _ = self.detector.detect(image)
+
     # Multiple images
     def test_fast_detect_multi_img_single_face(self, single_face_img):
         """Test detection of single face from multiple images"""
         out = self.detector.detect([single_face_img, single_face_img])
         assert out.shape == (2, EXPECTED_FEX_WIDTH)
 
-
     def test_fast_detect_multi_img_multi_face(self, multi_face_img):
         """Test detection of multiple faces from multiple images"""
         out = self.detector.detect([multi_face_img, multi_face_img])
         assert out.shape == (10, EXPECTED_FEX_WIDTH)
-
 
     def test_fast_detect_images_with_batching(self, single_face_img):
         """Test if batching works by passing in more images than the default batch size"""
 
         out = self.detector.detect([single_face_img] * 6, batch_size=5)
         assert out.shape == (6, EXPECTED_FEX_WIDTH)
-
 
     def test_fast_detect_mismatch_image_sizes(self, single_face_img, multi_face_img):
         """Test detection on multiple images of different sizes with and without batching"""
@@ -216,7 +212,6 @@ class Test_Fast_Detector:
             [multi_face_img, single_face_img] * 5, batch_size=5, output_size=512
         )
         assert out.shape == (30, EXPECTED_FEX_WIDTH)
-
 
     def test_fast_detect_video(
         self, single_face_mov, no_face_mov, face_noface_mov, noface_face_mov
@@ -248,8 +243,3 @@ class Test_Fast_Detector:
         assert not out.happiness.iloc[4:7].isnull().all().all()
         # ending doesn't
         assert out.happiness.iloc[7:].isnull().all().all()
-        
-    
-
-    
-    

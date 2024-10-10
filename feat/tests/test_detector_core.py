@@ -42,15 +42,13 @@ def test_detection_and_batching_with_diff_img_sizes(
     processing, the detected landmarks and poses come out to be the same
     """
     # Each sublist of images contains different sizes
-    all_images = (
-        [single_face_img] + [multi_face_img] + multiple_images_for_batch_testing
-    )
+    all_images = [single_face_img] + [multi_face_img] + multiple_images_for_batch_testing
 
     detector = Detector()
 
     # Multiple images with different sizes are ok as long as batch_size == 1
     # Detections will be done in each image's native resolution
-    det_output_default = detector.detect_image(input_file_list=all_images, batch_size=1)
+    _ = detector.detect_image(input_file_list=all_images, batch_size=1)
 
     # If batch_size > 1 then output_size must be set otherwise we can't stack to make a
     # tensor
@@ -115,7 +113,7 @@ def test_nofile(default_detector):
 def test_detect_single_img_no_face(default_detector, no_face_img):
     """Test detection of a single image with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image(no_face_img)
-    assert type(out) == Fex
+    assert isinstance(out, Fex)
     assert out.shape == (1, EXPECTED_FEX_WIDTH)
     assert np.isnan(out.happiness.values[0])
 
@@ -158,7 +156,7 @@ def test_detect_multi_img_mixed_no_face_batching(
 def test_detect_single_img_single_face(default_detector, single_face_img):
     """Test detection of single face from single image. Default detector returns EXPECTED_FEX_WIDTH attributes"""
     out = default_detector.detect_image(single_face_img)
-    assert type(out) == Fex
+    assert isinstance(out, Fex)
     assert out.shape == (1, EXPECTED_FEX_WIDTH)
     assert out.happiness.values[0] > 0
 
@@ -166,13 +164,13 @@ def test_detect_single_img_single_face(default_detector, single_face_img):
 def test_detect_single_img_multi_face(default_detector, multi_face_img):
     """Test detection of multiple faces from single image"""
     out = default_detector.detect_image(multi_face_img)
-    assert type(out) == Fex
+    assert isinstance(out, Fex)
     assert out.shape == (5, EXPECTED_FEX_WIDTH)
 
 
 def test_detect_with_alpha(default_detector):
     image = os.path.join(get_test_data_path(), "Image_with_alpha.png")
-    out = default_detector.detect_image(image)
+    _ = default_detector.detect_image(image)
 
 
 # Multiple images

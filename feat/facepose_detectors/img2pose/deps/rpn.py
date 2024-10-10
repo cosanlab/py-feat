@@ -1,10 +1,9 @@
 import torch
 import torchvision
-from torch import Tensor, nn
-from torch.jit.annotations import Dict, List, Optional, Tuple
+from torch import nn
+from torch.jit.annotations import Dict, List, Optional
 from torch.nn import functional as F
 from torchvision.models.detection import _utils as det_utils
-from torchvision.models.detection.image_list import ImageList
 from torchvision.ops import boxes as box_ops
 
 
@@ -76,9 +75,7 @@ class AnchorGenerator(nn.Module):
     # (scales, aspect_ratios) are usually an element of
     #   zip(self.scales, self.aspect_ratios)
     # This method assumes aspect ratio = height / width for an anchor.
-    def generate_anchors(
-        self, scales, aspect_ratios, dtype=torch.float32, device="cpu"
-    ):
+    def generate_anchors(self, scales, aspect_ratios, dtype=torch.float32, device="cpu"):
         # type: (List[int], List[float], int, Device) -> Tensor  # noqa: F821
         scales = torch.as_tensor(scales, dtype=dtype, device=device)
         aspect_ratios = torch.as_tensor(aspect_ratios, dtype=dtype, device=device)
@@ -202,9 +199,7 @@ class RPNHead(nn.Module):
             in_channels, in_channels, kernel_size=3, stride=1, padding=1
         )
         self.cls_logits = nn.Conv2d(in_channels, num_anchors, kernel_size=1, stride=1)
-        self.bbox_pred = nn.Conv2d(
-            in_channels, num_anchors * 4, kernel_size=1, stride=1
-        )
+        self.bbox_pred = nn.Conv2d(in_channels, num_anchors * 4, kernel_size=1, stride=1)
 
         for layer in self.children():
             torch.nn.init.normal_(layer.weight, std=0.01)

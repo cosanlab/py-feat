@@ -1,4 +1,3 @@
-import torch
 from feat.utils import set_torch_device
 from feat.identity_detectors.facenet.facenet_model import InceptionResnetV1
 
@@ -34,21 +33,21 @@ class Facenet:
 
         if pretrained == "huggingface":
             self.model = InceptionResnetV1(
-            pretrained=None,
-            classify=classify,
-            num_classes=num_classes,
-            dropout_prob=dropout_prob,
-            device=device,
+                pretrained=None,
+                classify=classify,
+                num_classes=num_classes,
+                dropout_prob=dropout_prob,
+                device=device,
             )
-            self.model.from_pretrained("py-feat/facenet")      
+            self.model.from_pretrained("py-feat/facenet")
         else:
             pretrained = "vggface2"
             self.model = InceptionResnetV1(
-            pretrained=pretrained,
-            classify=classify,
-            num_classes=num_classes,
-            dropout_prob=dropout_prob,
-            device=device,
+                pretrained=pretrained,
+                classify=classify,
+                num_classes=num_classes,
+                dropout_prob=dropout_prob,
+                device=device,
             )
 
         self.device = set_torch_device(device)

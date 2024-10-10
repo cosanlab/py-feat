@@ -1,7 +1,6 @@
-import numpy as np
 import torch
 from scipy.spatial.transform import Rotation
-from .image_operations import bbox_is_dict, expand_bbox_rectangle
+from .image_operations import expand_bbox_rectangle
 import kornia
 
 # def get_bbox_intrinsics(image_intrinsics, bbox):
@@ -16,6 +15,7 @@ import kornia
 
 #     return bbox_intrinsics
 
+
 def get_bbox_intrinsics(image_intrinsics, bbox):
     # crop principle point of view
     bbox_center_x = (bbox[0] + bbox[2]) / 2
@@ -28,50 +28,148 @@ def get_bbox_intrinsics(image_intrinsics, bbox):
 
     return bbox_intrinsics
 
-# def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
-#     # check if bbox is np or dict
-#     bbox = bbox_is_dict(bbox)
+    # def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
+    #     # check if bbox is np or dict
+    #     bbox = bbox_is_dict(bbox)
 
-#     # rotation vector
-#     rvec = pose[:3].copy()
+    #     # rotation vector
+    #     rvec = pose[:3].copy()
 
-#     # translation and scale vector
-#     tvec = pose[3:].copy()
+    #     # translation and scale vector
+    #     tvec = pose[3:].copy()
 
-#     # get camera intrinsics using bbox
-#     bbox_intrinsics = get_bbox_intrinsics(image_intrinsics, bbox)
+    #     # get camera intrinsics using bbox
+    #     bbox_intrinsics = get_bbox_intrinsics(image_intrinsics, bbox)
 
-#     # focal length
-#     focal_length = image_intrinsics[0, 0]
+    #     # focal length
+    #     focal_length = image_intrinsics[0, 0]
 
-#     # bbox_size
-#     bbox_width = bbox["right"] - bbox["left"]
-#     bbox_height = bbox["bottom"] - bbox["top"]
-#     bbox_size = bbox_width + bbox_height
+    #     # bbox_size
+    #     bbox_width = bbox["right"] - bbox["left"]
+    #     bbox_height = bbox["bottom"] - bbox["top"]
+    #     bbox_size = bbox_width + bbox_height
 
-#     # adjust scale
-#     tvec[2] *= focal_length / bbox_size
+    #     # adjust scale
+    #     tvec[2] *= focal_length / bbox_size
 
-#     # project crop points using the crop camera intrinsics
-#     projected_point = bbox_intrinsics.dot(tvec.T)
+    #     # project crop points using the crop camera intrinsics
+    #     projected_point = bbox_intrinsics.dot(tvec.T)
 
-#     # reverse the projected points using the full image camera intrinsics
-#     tvec = projected_point.dot(np.linalg.inv(image_intrinsics.T))
+    #     # reverse the projected points using the full image camera intrinsics
+    #     tvec = projected_point.dot(np.linalg.inv(image_intrinsics.T))
 
-#     # same for rotation
-#     rmat = Rotation.from_rotvec(rvec).as_matrix()
-#     # project crop points using the crop camera intrinsics
-#     projected_point = bbox_intrinsics.dot(rmat)
-#     # reverse the projected points using the full image camera intrinsics
-#     rmat = np.linalg.inv(image_intrinsics).dot(projected_point)
-#     rvec = Rotation.from_matrix(rmat).as_rotvec()
+    #     # same for rotation
+    #     rmat = Rotation.from_rotvec(rvec).as_matrix()
+    #     # project crop points using the crop camera intrinsics
+    #     projected_point = bbox_intrinsics.dot(rmat)
+    #     # reverse the projected points using the full image camera intrinsics
+    #     rmat = np.linalg.inv(image_intrinsics).dot(projected_point)
+    #     rvec = Rotation.from_matrix(rmat).as_rotvec()
 
-#     return np.concatenate([rvec, tvec])
+    #     return np.concatenate([rvec, tvec])
+
+    # def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
+    #     # check if bbox is a tensor or dict
+    #     if isinstance(bbox, dict):
+    #         bbox = torch.tensor([bbox["left"], bbox["top"], bbox["right"], bbox["bottom"]], dtype=torch.float32)
+
+    #     # rotation vector
+    #     rvec = pose[:3]
+
+    #     # translation and scale vector
+    #     tvec = pose[3:]
+
+    #     # get camera intrinsics using bbox
+    #     bbox_intrinsics = get_bbox_intrinsics(image_intrinsics, bbox)
+
+    #     # focal length
+    #     focal_length = image_intrinsics[0, 0]
+
+    #     # bbox_size
+    #     bbox_width = bbox[2] - bbox[0]
+    #     bbox_height = bbox[3] - bbox[1]
+    #     bbox_size = bbox_width + bbox_height
+
+    #     # adjust scale
+    #     tvec[2] *= focal_length / bbox_size
+
+    #     # project crop points using the crop camera intrinsics
+    #     projected_point = bbox_intrinsics @ tvec.unsqueeze(-1)
+
+    #     # reverse the projected points using the full image camera intrinsics
+    #     tvec = (projected_point.squeeze() @ torch.inverse(image_intrinsics.T))
+
+    #     # same for rotation
+    #     rmat = Rotation.from_rotvec(rvec.cpu().numpy()).as_matrix()
+    #     rmat = torch.tensor(rmat, device=pose.device)
+
+    #     # project crop points using the crop camera intrinsics
+    #     projected_point = bbox_intrinsics @ rmat
+
+    #     # reverse the projected points using the full image camera intrinsics
+    #     rmat = torch.inverse(image_intrinsics) @ projected_point
+    #     rvec = torch.tensor(Rotation.from_matrix(rmat.cpu().numpy()).as_rotvec(), device=pose.device)
+
+    #     return torch.cat([rvec, tvec])
+
+    def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
+        # check if bbox is a tensor or dict
+        if isinstance(bbox, dict):
+            bbox = torch.tensor(
+                [bbox["left"], bbox["top"], bbox["right"], bbox["bottom"]],
+                dtype=torch.float32,
+            )
+
+        # rotation vector
+        rvec = pose[:3]
+
+        # translation and scale vector
+        tvec = pose[3:]
+
+        # get camera intrinsics using bbox
+        bbox_intrinsics = get_bbox_intrinsics(image_intrinsics, bbox)
+
+        # focal length
+        focal_length = image_intrinsics[0, 0]
+
+        # bbox_size
+        bbox_width = bbox[2] - bbox[0]
+        bbox_height = bbox[3] - bbox[1]
+        bbox_size = bbox_width + bbox_height
+
+        # adjust scale
+        tvec[2] *= focal_length / bbox_size
+
+        # project crop points using the crop camera intrinsics
+        projected_point = bbox_intrinsics @ tvec.unsqueeze(-1)
+
+        # reverse the projected points using the full image camera intrinsics
+        tvec = projected_point.squeeze() @ torch.inverse(image_intrinsics.T)
+
+        # same for rotation
+        # Detach from computation graph and convert to NumPy array
+        rmat = Rotation.from_rotvec(rvec.detach().cpu().numpy()).as_matrix()
+        rmat = torch.tensor(rmat, device=pose.device)
+
+        # project crop points using the crop camera intrinsics
+        projected_point = bbox_intrinsics @ rmat
+        # reverse the projected points using the full image camera intrinsics
+        rmat = torch.inverse(image_intrinsics) @ projected_point
+        rvec = torch.tensor(
+            Rotation.from_matrix(rmat.cpu().numpy()).as_rotvec(), device=pose.device
+        )
+
+        return torch.cat([rvec, tvec])
+
 
 # def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
 #     # check if bbox is a tensor or dict
 #     if isinstance(bbox, dict):
 #         bbox = torch.tensor([bbox["left"], bbox["top"], bbox["right"], bbox["bottom"]], dtype=torch.float32)
+
+#     # Ensure pose and image_intrinsics are float32
+#     pose = pose.to(torch.float32)
+#     image_intrinsics = image_intrinsics.to(torch.float32)
 
 #     # rotation vector
 #     rvec = pose[:3]
@@ -100,61 +198,17 @@ def get_bbox_intrinsics(image_intrinsics, bbox):
 #     tvec = (projected_point.squeeze() @ torch.inverse(image_intrinsics.T))
 
 #     # same for rotation
-#     rmat = Rotation.from_rotvec(rvec.cpu().numpy()).as_matrix()
-#     rmat = torch.tensor(rmat, device=pose.device)
-    
+#     # Detach from computation graph and convert to NumPy array
+#     rmat = Rotation.from_rotvec(rvec.detach().cpu().numpy()).as_matrix()
+#     rmat = torch.tensor(rmat, device=pose.device, dtype=torch.float32)
+
 #     # project crop points using the crop camera intrinsics
 #     projected_point = bbox_intrinsics @ rmat
-    
 #     # reverse the projected points using the full image camera intrinsics
 #     rmat = torch.inverse(image_intrinsics) @ projected_point
-#     rvec = torch.tensor(Rotation.from_matrix(rmat.cpu().numpy()).as_rotvec(), device=pose.device)
+#     rvec = torch.tensor(Rotation.from_matrix(rmat.cpu().numpy()).as_rotvec(), device=pose.device, dtype=torch.float32)
 
 #     return torch.cat([rvec, tvec])
-
-# def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
-    # check if bbox is a tensor or dict
-    if isinstance(bbox, dict):
-        bbox = torch.tensor([bbox["left"], bbox["top"], bbox["right"], bbox["bottom"]], dtype=torch.float32)
-
-    # rotation vector
-    rvec = pose[:3]
-
-    # translation and scale vector
-    tvec = pose[3:]
-
-    # get camera intrinsics using bbox
-    bbox_intrinsics = get_bbox_intrinsics(image_intrinsics, bbox)
-
-    # focal length
-    focal_length = image_intrinsics[0, 0]
-
-    # bbox_size
-    bbox_width = bbox[2] - bbox[0]
-    bbox_height = bbox[3] - bbox[1]
-    bbox_size = bbox_width + bbox_height
-
-    # adjust scale
-    tvec[2] *= focal_length / bbox_size
-
-    # project crop points using the crop camera intrinsics
-    projected_point = bbox_intrinsics @ tvec.unsqueeze(-1)
-
-    # reverse the projected points using the full image camera intrinsics
-    tvec = (projected_point.squeeze() @ torch.inverse(image_intrinsics.T))
-
-    # same for rotation
-    # Detach from computation graph and convert to NumPy array
-    rmat = Rotation.from_rotvec(rvec.detach().cpu().numpy()).as_matrix()
-    rmat = torch.tensor(rmat, device=pose.device)
-
-    # project crop points using the crop camera intrinsics
-    projected_point = bbox_intrinsics @ rmat
-    # reverse the projected points using the full image camera intrinsics
-    rmat = torch.inverse(image_intrinsics) @ projected_point
-    rvec = torch.tensor(Rotation.from_matrix(rmat.cpu().numpy()).as_rotvec(), device=pose.device)
-
-    return torch.cat([rvec, tvec])
 
 # def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
 #     # check if bbox is a tensor or dict
@@ -204,58 +258,14 @@ def get_bbox_intrinsics(image_intrinsics, bbox):
 
 #     return torch.cat([rvec, tvec])
 
-# def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
-#     # check if bbox is a tensor or dict
-#     if isinstance(bbox, dict):
-#         bbox = torch.tensor([bbox["left"], bbox["top"], bbox["right"], bbox["bottom"]], dtype=torch.float32)
-
-#     # Ensure pose and image_intrinsics are float32
-#     pose = pose.to(torch.float32)
-#     image_intrinsics = image_intrinsics.to(torch.float32)
-
-#     # rotation vector
-#     rvec = pose[:3]
-
-#     # translation and scale vector
-#     tvec = pose[3:]
-
-#     # get camera intrinsics using bbox
-#     bbox_intrinsics = get_bbox_intrinsics(image_intrinsics, bbox)
-
-#     # focal length
-#     focal_length = image_intrinsics[0, 0]
-
-#     # bbox_size
-#     bbox_width = bbox[2] - bbox[0]
-#     bbox_height = bbox[3] - bbox[1]
-#     bbox_size = bbox_width + bbox_height
-
-#     # adjust scale
-#     tvec[2] *= focal_length / bbox_size
-
-#     # project crop points using the crop camera intrinsics
-#     projected_point = bbox_intrinsics @ tvec.unsqueeze(-1)
-
-#     # reverse the projected points using the full image camera intrinsics
-#     tvec = (projected_point.squeeze() @ torch.inverse(image_intrinsics.T))
-
-#     # same for rotation
-#     # Detach from computation graph and convert to NumPy array
-#     rmat = Rotation.from_rotvec(rvec.detach().cpu().numpy()).as_matrix()
-#     rmat = torch.tensor(rmat, device=pose.device, dtype=torch.float32)
-
-#     # project crop points using the crop camera intrinsics
-#     projected_point = bbox_intrinsics @ rmat
-#     # reverse the projected points using the full image camera intrinsics
-#     rmat = torch.inverse(image_intrinsics) @ projected_point
-#     rvec = torch.tensor(Rotation.from_matrix(rmat.cpu().numpy()).as_rotvec(), device=pose.device, dtype=torch.float32)
-
-#     return torch.cat([rvec, tvec])
 
 def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
     # check if bbox is a tensor or dict
     if isinstance(bbox, dict):
-        bbox = torch.tensor([bbox["left"], bbox["top"], bbox["right"], bbox["bottom"]], dtype=torch.float32)
+        bbox = torch.tensor(
+            [bbox["left"], bbox["top"], bbox["right"], bbox["bottom"]],
+            dtype=torch.float32,
+        )
 
     # Ensure pose and image_intrinsics are float32
     pose = pose.to(torch.float32)
@@ -285,7 +295,7 @@ def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
     projected_point = bbox_intrinsics @ tvec.unsqueeze(-1)
 
     # reverse the projected points using the full image camera intrinsics
-    tvec = (projected_point.squeeze() @ torch.inverse(image_intrinsics.T))
+    tvec = projected_point.squeeze() @ torch.inverse(image_intrinsics.T)
 
     # Convert rotation vector to rotation matrix using Kornia
     rmat = kornia.geometry.conversions.axis_angle_to_rotation_matrix(rvec).squeeze(0)
@@ -294,9 +304,12 @@ def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
     projected_point = bbox_intrinsics @ rmat
     # reverse the projected points using the full image camera intrinsics
     rmat = torch.inverse(image_intrinsics) @ projected_point
-    rvec = kornia.geometry.conversions.rotation_matrix_to_axis_angle(rmat.unsqueeze(0)).squeeze(0)
+    rvec = kornia.geometry.conversions.rotation_matrix_to_axis_angle(
+        rmat.unsqueeze(0)
+    ).squeeze(0)
 
     return torch.cat([rvec, tvec])
+
 
 # def plot_3d_landmark(verts, campose, intrinsics):
 #     lm_3d_trans = transform_points(verts, campose)
@@ -309,6 +322,7 @@ def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
 
 #     return lms_projected, lms_3d_trans_proj
 
+
 def plot_3d_landmark(verts, campose, intrinsics):
     lm_3d_trans = transform_points(verts, campose)
 
@@ -317,6 +331,7 @@ def plot_3d_landmark(verts, campose, intrinsics):
     lms_projected = lms_3d_trans_proj[:, :2] / lms_3d_trans_proj[:, 2].unsqueeze(1)
 
     return lms_projected, lms_3d_trans_proj
+
 
 # def transform_points(points, pose):
 #     return points.dot(Rotation.from_rotvec(pose[:3]).as_matrix().T) + pose[3:]
@@ -330,12 +345,13 @@ def plot_3d_landmark(verts, campose, intrinsics):
 #     # Ensure pose and points are float32
 #     points = points.to(torch.float32)
 #     pose = pose.to(torch.float32)
-    
+
 #     # Detach from computation graph and convert to NumPy array
 #     rmat = Rotation.from_rotvec(pose[:3].detach().cpu().numpy()).as_matrix()
 #     rmat = torch.tensor(rmat, device=pose.device, dtype=torch.float32)
 
 #     return points @ rmat.T + pose[3:]
+
 
 def transform_points(points, pose):
     # Ensure pose and points are float32
@@ -343,7 +359,9 @@ def transform_points(points, pose):
     pose = pose.to(torch.float32)
 
     # Convert rotation vector to rotation matrix using Kornia
-    rmat = kornia.geometry.conversions.axis_angle_to_rotation_matrix(pose[:3].unsqueeze(0)).squeeze(0)
+    rmat = kornia.geometry.conversions.axis_angle_to_rotation_matrix(
+        pose[:3].unsqueeze(0)
+    ).squeeze(0)
 
     return points @ rmat.T + pose[3:]
 
@@ -413,6 +431,7 @@ def transform_points(points, pose):
 
 #     return projected_boxes.to(device), global_dofs.to(device)
 
+
 def transform_pose_global_project_bbox(
     boxes,
     dofs,
@@ -430,7 +449,11 @@ def transform_pose_global_project_bbox(
     device = dofs.device
 
     (h, w) = image_shape
-    global_intrinsics = torch.tensor([[w + h, 0, w // 2], [0, w + h, h // 2], [0, 0, 1]], device=device, dtype=torch.float32)
+    global_intrinsics = torch.tensor(
+        [[w + h, 0, w // 2], [0, w + h, h // 2], [0, 0, 1]],
+        device=device,
+        dtype=torch.float32,
+    )
 
     if threed_68_points is not None:
         threed_68_points = threed_68_points.to(device)

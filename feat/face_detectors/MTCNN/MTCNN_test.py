@@ -4,9 +4,9 @@ The codes in this file comes from the original codes at:
 The original paper on MTCNN is:
 K. Zhang, Z. Zhang, Z. Li and Y. Qiao. Joint Face Detection and Alignment Using Multitask Cascaded Convolutional Networks, IEEE Signal Processing Letters, 2016
 """
+
 import numpy as np
 import torch
-from PIL import Image
 from feat.face_detectors.MTCNN.MTCNN_model import PNet, RNet, ONet
 from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
 from feat.utils import set_torch_device
@@ -146,9 +146,9 @@ class MTCNN(nn.Module, PyTorchModelHubMixin):
                 boxes.append([])
                 points.append([])
             elif self.select_largest:
-                box_order = np.argsort(
-                    (box[:, 2] - box[:, 0]) * (box[:, 3] - box[:, 1])
-                )[::-1]
+                box_order = np.argsort((box[:, 2] - box[:, 0]) * (box[:, 3] - box[:, 1]))[
+                    ::-1
+                ]
                 box = box[box_order]
                 point = point[box_order]
                 boxes.append(box.tolist())

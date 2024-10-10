@@ -1,6 +1,3 @@
-import numpy as np
-
-
 # def expand_bbox_rectangle(
 #     w, h, bbox_x_factor=2.0, bbox_y_factor=2.0, lms=None, expand_forehead=0.3, roll=0
 # ):
@@ -65,6 +62,7 @@ import numpy as np
 
 import torch
 
+
 def expand_bbox_rectangle(
     w, h, bbox_x_factor=2.0, bbox_y_factor=2.0, lms=None, expand_forehead=0.3, roll=0
 ):
@@ -102,8 +100,14 @@ def expand_bbox_rectangle(
     center_pt_y = 0.5 * (min_pt_y + max_pt_y)
 
     # Determine the bounding box coordinates
-    bbox_min_x, bbox_max_x = center_pt_x - bbox_size_x * 0.5, center_pt_x + bbox_size_x * 0.5
-    bbox_min_y, bbox_max_y = center_pt_y - bbox_size_y * 0.5, center_pt_y + bbox_size_y * 0.5
+    bbox_min_x, bbox_max_x = (
+        center_pt_x - bbox_size_x * 0.5,
+        center_pt_x + bbox_size_x * 0.5,
+    )
+    bbox_min_y, bbox_max_y = (
+        center_pt_y - bbox_size_y * 0.5,
+        center_pt_y + bbox_size_y * 0.5,
+    )
 
     # Adjust for forehead expansion based on roll angle
     if abs(roll) > 2.5:
@@ -126,10 +130,10 @@ def expand_bbox_rectangle(
     bbox_max_y = int(bbox_max_y.item())
 
     # Compute necessary padding
-    padding_left = max(0, -bbox_min_x)
-    padding_top = max(0, -bbox_min_y)
-    padding_right = max(0, bbox_max_x - w)
-    padding_bottom = max(0, bbox_max_y - h)
+    # padding_left = max(0, -bbox_min_x)
+    # padding_top = max(0, -bbox_min_y)
+    # padding_right = max(0, bbox_max_x - w)
+    # padding_bottom = max(0, bbox_max_y - h)
 
     # Compute proper crop bounds
     crop_left = max(0, bbox_min_x)
@@ -137,9 +141,9 @@ def expand_bbox_rectangle(
     crop_right = min(w, bbox_max_x)
     crop_bottom = min(h, bbox_max_y)
 
-    return torch.tensor([crop_left, crop_top, crop_right, crop_bottom], dtype=torch.float32)
-
-
+    return torch.tensor(
+        [crop_left, crop_top, crop_right, crop_bottom], dtype=torch.float32
+    )
 
 
 def bbox_is_dict(bbox):

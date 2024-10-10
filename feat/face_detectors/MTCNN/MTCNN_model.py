@@ -4,11 +4,10 @@ The codes in this file comes from the original codes at:
 The original paper on MTCNN is:
 K. Zhang, Z. Zhang, Z. Li and Y. Qiao. Joint Face Detection and Alignment Using Multitask Cascaded Convolutional Networks, IEEE Signal Processing Letters, 2016
 """
+
 import torch
 from torch import nn
-import numpy as np
 import os
-from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
 from feat.utils.io import get_resource_path
 
 

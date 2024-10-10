@@ -53,7 +53,9 @@ class img2poseModel:
         # create network backbone
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            backbone = resnet_fpn_backbone(backbone_name=f"resnet{self.depth}", weights=None)
+            backbone = resnet_fpn_backbone(
+                backbone_name=f"resnet{self.depth}", weights=None
+            )
 
         if pose_mean is not None:
             pose_mean = torch.tensor(pose_mean)
@@ -95,11 +97,11 @@ class img2poseModel:
     # def run_model(self, imgs, targets=None):
     #     outputs = self.fpn_model(imgs, targets)
     #     return outputs
-    
+
     def run_model(self, imgs):
         outputs = self.fpn_model(imgs)
         return outputs
-    
+
     def forward(self, imgs, targets):
         losses = self.run_model(imgs, targets)
         return losses

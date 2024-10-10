@@ -1,6 +1,5 @@
 import pytest
 import pandas as pd
-from pandas import DataFrame
 import numpy as np
 import os
 from feat.data import Fex

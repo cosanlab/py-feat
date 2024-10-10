@@ -8,7 +8,6 @@ from feat.face_detectors.MTCNN.MTCNN_test import MTCNN
 from feat.landmark_detectors.basenet_test import MobileNet_GDConv
 from feat.landmark_detectors.pfld_compressed_test import PFLDInference
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
-from feat.facepose_detectors.img2pose.img2pose_test import Img2Pose
 from feat.au_detectors.StatLearning.SL_test import SVMClassifier, XGBClassifier
 from feat.emo_detectors.ResMaskNet.resmasknet_test import ResMaskNet
 from feat.emo_detectors.StatLearning.EmoSL_test import (
@@ -159,7 +158,7 @@ def get_pretrained_models(
             raise ValueError(
                 f"Requested au_model was {au_model}. Must be one of {[list(e.keys())[0]for e in PRETRAINED_MODELS['au_model']]}"
             )
-        
+
         for url in model_urls["au_detectors"][au_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
             if au_model in ["xgb", "svm"]:
@@ -264,102 +263,179 @@ def fetch_model(model_type, model_name):
     matches = list(filter(lambda e: model_name in e.keys(), model_type))[0]
     return list(matches.values())[0]
 
+
 def load_classifier_pkl(cf_path):
     clf = pickle.load(open(cf_path, "rb"))
     return clf
 
-def load_model_weights(model_type='au', model='xgb', location='huggingface'):
+
+def load_model_weights(model_type="au", model="xgb", location="huggingface"):
     """Load weights for the AU models"""
-    if model_type == 'au':
-        if model == 'xgb':
-            if location == 'huggingface':
+    if model_type == "au":
+        if model == "xgb":
+            if location == "huggingface":
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(repo_id="py-feat/xgb_au", filename="xgb_au_classifier.skops", cache_dir=get_resource_path())
+                model_path = hf_hub_download(
+                    repo_id="py-feat/xgb_au",
+                    filename="xgb_au_classifier.skops",
+                    cache_dir=get_resource_path(),
+                )
                 unknown_types = get_untrusted_types(file=model_path)
                 loaded_model = load(model_path, trusted=unknown_types)
-                return {'scaler_upper':loaded_model.scaler_upper, 
-                        'pca_model_upper':loaded_model.pca_model_upper, 
-                        'scaler_lower':loaded_model.scaler_lower, 
-                        'pca_model_lower':loaded_model.pca_model_lower, 
-                        'scaler_full':loaded_model.scaler_full, 
-                        'pca_model_full':loaded_model.pca_model_full, 
-                        'au_classifiers':loaded_model.classifiers}
-            elif location == 'local':
-                # Load weights from local Resources folder 
-                scaler_upper = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Upperscalar_June30.pkl"))
-                pca_model_upper = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Upperpca_June30.pkl"))
-                scaler_lower = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Lowerscalar_June30.pkl"))
-                pca_model_lower = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Lowerpca_June30.pkl"))
-                scaler_full = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Fullscalar_June30.pkl"))
-                pca_model_full = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Fullpca_June30.pkl"))
+                return {
+                    "scaler_upper": loaded_model.scaler_upper,
+                    "pca_model_upper": loaded_model.pca_model_upper,
+                    "scaler_lower": loaded_model.scaler_lower,
+                    "pca_model_lower": loaded_model.pca_model_lower,
+                    "scaler_full": loaded_model.scaler_full,
+                    "pca_model_full": loaded_model.pca_model_full,
+                    "au_classifiers": loaded_model.classifiers,
+                }
+            elif location == "local":
+                # Load weights from local Resources folder
+                scaler_upper = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Upperscalar_June30.pkl")
+                )
+                pca_model_upper = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Upperpca_June30.pkl")
+                )
+                scaler_lower = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Lowerscalar_June30.pkl")
+                )
+                pca_model_lower = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Lowerpca_June30.pkl")
+                )
+                scaler_full = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Fullscalar_June30.pkl")
+                )
+                pca_model_full = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Fullpca_June30.pkl")
+                )
 
                 au_keys = [
-                    "AU1", "AU2", "AU4", "AU5", "AU6", "AU7", "AU9", "AU10", "AU11", "AU12",
-                    "AU14", "AU15", "AU17", "AU20", "AU23", "AU24", "AU25", "AU26", "AU28", "AU43"
+                    "AU1",
+                    "AU2",
+                    "AU4",
+                    "AU5",
+                    "AU6",
+                    "AU7",
+                    "AU9",
+                    "AU10",
+                    "AU11",
+                    "AU12",
+                    "AU14",
+                    "AU15",
+                    "AU17",
+                    "AU20",
+                    "AU23",
+                    "AU24",
+                    "AU25",
+                    "AU26",
+                    "AU28",
+                    "AU43",
                 ]
                 classifiers = {}
                 for key in au_keys:
                     classifier = xgb.XGBClassifier()
-                    classifier.load_model(os.path.join(get_resource_path(), f"July4_{key}_XGB.ubj"))
+                    classifier.load_model(
+                        os.path.join(get_resource_path(), f"July4_{key}_XGB.ubj")
+                    )
                     classifiers[key] = classifier
-                return {'scaler_upper':scaler_upper, 
-                        'pca_model_upper':pca_model_upper, 
-                        'scaler_lower':scaler_lower, 
-                        'pca_model_lower':pca_model_lower, 
-                        'scaler_full':scaler_full, 
-                        'pca_model_full':pca_model_full, 
-                        'au_classifiers':classifiers}     
-                
-        elif model == 'svm':
-            if location == 'huggingface':
+                return {
+                    "scaler_upper": scaler_upper,
+                    "pca_model_upper": pca_model_upper,
+                    "scaler_lower": scaler_lower,
+                    "pca_model_lower": pca_model_lower,
+                    "scaler_full": scaler_full,
+                    "pca_model_full": pca_model_full,
+                    "au_classifiers": classifiers,
+                }
+
+        elif model == "svm":
+            if location == "huggingface":
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(repo_id="py-feat/svm_au", filename="svm_au_classifier.skops", cache_dir=get_resource_path())
+                model_path = hf_hub_download(
+                    repo_id="py-feat/svm_au",
+                    filename="svm_au_classifier.skops",
+                    cache_dir=get_resource_path(),
+                )
                 unknown_types = get_untrusted_types(file=model_path)
                 loaded_model = load(model_path, trusted=unknown_types)
-                return {'scaler_upper':loaded_model.scaler_upper, 
-                        'pca_model_upper':loaded_model.pca_model_upper, 
-                        'scaler_lower':loaded_model.scaler_lower, 
-                        'pca_model_lower':loaded_model.pca_model_lower, 
-                        'scaler_full':loaded_model.scaler_full, 
-                        'pca_model_full':loaded_model.pca_model_full, 
-                        'au_classifiers':loaded_model.classifiers}
-            elif location == 'local':
-                # Load weights from local Resources folder 
-                scaler_upper = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Upperscalar_June30.pkl"))
-                pca_model_upper = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Upperpca_June30.pkl"))
-                scaler_lower = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Lowerscalar_June30.pkl"))
-                pca_model_lower = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Lowerpca_June30.pkl"))
-                scaler_full = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Fullscalar_June30.pkl"))
-                pca_model_full = load_classifier_pkl(os.path.join(get_resource_path(), "all_data_Fullpca_June30.pkl"))
-                classifiers = load_classifier_pkl(os.path.join(get_resource_path(), "svm_60_July2023.pkl"))
-                return {'scaler_upper':scaler_upper, 
-                        'pca_model_upper':pca_model_upper, 
-                        'scaler_lower':scaler_lower, 
-                        'pca_model_lower':pca_model_lower, 
-                        'scaler_full':scaler_full, 
-                        'pca_model_full':pca_model_full, 
-                        'au_classifiers':classifiers}
+                return {
+                    "scaler_upper": loaded_model.scaler_upper,
+                    "pca_model_upper": loaded_model.pca_model_upper,
+                    "scaler_lower": loaded_model.scaler_lower,
+                    "pca_model_lower": loaded_model.pca_model_lower,
+                    "scaler_full": loaded_model.scaler_full,
+                    "pca_model_full": loaded_model.pca_model_full,
+                    "au_classifiers": loaded_model.classifiers,
+                }
+            elif location == "local":
+                # Load weights from local Resources folder
+                scaler_upper = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Upperscalar_June30.pkl")
+                )
+                pca_model_upper = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Upperpca_June30.pkl")
+                )
+                scaler_lower = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Lowerscalar_June30.pkl")
+                )
+                pca_model_lower = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Lowerpca_June30.pkl")
+                )
+                scaler_full = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Fullscalar_June30.pkl")
+                )
+                pca_model_full = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "all_data_Fullpca_June30.pkl")
+                )
+                classifiers = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "svm_60_July2023.pkl")
+                )
+                return {
+                    "scaler_upper": scaler_upper,
+                    "pca_model_upper": pca_model_upper,
+                    "scaler_lower": scaler_lower,
+                    "pca_model_lower": pca_model_lower,
+                    "scaler_full": scaler_full,
+                    "pca_model_full": pca_model_full,
+                    "au_classifiers": classifiers,
+                }
             else:
                 raise ValueError(f"This function does not support {model_type} {model}")
-    elif model_type == 'emotion':
-        if model == 'svm':
-            if location == 'huggingface':
+    elif model_type == "emotion":
+        if model == "svm":
+            if location == "huggingface":
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(repo_id="py-feat/svm_emo", filename="svm_emo_classifier.skops", cache_dir=get_resource_path())
+                model_path = hf_hub_download(
+                    repo_id="py-feat/svm_emo",
+                    filename="svm_emo_classifier.skops",
+                    cache_dir=get_resource_path(),
+                )
                 unknown_types = get_untrusted_types(file=model_path)
                 loaded_model = load(model_path, trusted=unknown_types)
-                return {'scaler_full':loaded_model.scaler_full, 
-                        'pca_model_full':loaded_model.pca_model_full, 
-                        'emo_classifiers':loaded_model.classifiers}
-            elif location == 'local':
-                # Load weights from local Resources folder 
-                scaler_full = load_classifier_pkl(os.path.join(get_resource_path(), "emo_data_Fullscalar_Jun30.pkl"))
-                pca_model_full = load_classifier_pkl(os.path.join(get_resource_path(), "emo_data_Fullpca_Jun30.pkl"))
-                classifiers = load_classifier_pkl(os.path.join(get_resource_path(), "July4_emo_SVM.pkl"))
                 return {
-                        'scaler_full':scaler_full, 
-                        'pca_model_full':pca_model_full, 
-                        'emo_classifiers':classifiers}
+                    "scaler_full": loaded_model.scaler_full,
+                    "pca_model_full": loaded_model.pca_model_full,
+                    "emo_classifiers": loaded_model.classifiers,
+                }
+            elif location == "local":
+                # Load weights from local Resources folder
+                scaler_full = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "emo_data_Fullscalar_Jun30.pkl")
+                )
+                pca_model_full = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "emo_data_Fullpca_Jun30.pkl")
+                )
+                classifiers = load_classifier_pkl(
+                    os.path.join(get_resource_path(), "July4_emo_SVM.pkl")
+                )
+                return {
+                    "scaler_full": scaler_full,
+                    "pca_model_full": pca_model_full,
+                    "emo_classifiers": classifiers,
+                }
         else:
             raise ValueError(f"This function does not support {model_type} {model}")
     else:

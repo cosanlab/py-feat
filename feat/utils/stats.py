@@ -1,5 +1,5 @@
 """
-Feat utility and helper functions for performing statistics. 
+Feat utility and helper functions for performing statistics.
 """
 
 import numpy as np
@@ -83,7 +83,7 @@ def softmax(x):
     Args:
         x: value to softmax
     """
-    return 1.0 / (1 + 10.0 ** -(x))
+    return 1.0 / (1 + 10.0**-(x))
 
 
 def cluster_identities(face_embeddings, threshold=0.8):
