@@ -6,10 +6,8 @@
     "editor.insertSpaces": true,
   },
   "ruff.lineLength": 90,
-  "ruff.format.args": ["--line-length=90"],
-  "ruff.lint.args": [
-    "--ignore=W292,E402,E501,E731,E741"
-  ],
+  "ruff.nativeServer": true,
+  "ruff.importStrategy": "fromEnvironment",
   "ruff.lint.ignore": [
     "W292",
     "E402",
