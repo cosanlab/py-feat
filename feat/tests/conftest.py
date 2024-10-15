@@ -9,7 +9,6 @@ def test_detect_single_face(default_detector, single_face_img):
 
 from pytest import fixture
 import os
-from feat.detector import Detector
 import numpy as np
 from torchvision.io import read_image
 import pandas as pd
@@ -77,12 +76,6 @@ def facepose_model(request):
 @fixture(scope="module")
 def data_path():
     return os.path.join(os.path.dirname(__file__), "data")
-
-
-@fixture()
-def default_detector():
-    """This detector instance is shared across all test in the same file"""
-    return Detector()
 
 
 @fixture(scope="module")
