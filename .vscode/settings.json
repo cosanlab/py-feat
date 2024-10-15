@@ -15,4 +15,9 @@
     "E731",
     "E741",
   ],
+  "python.testing.pytestArgs": [
+    "feat"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
 }

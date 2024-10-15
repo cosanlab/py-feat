@@ -54,14 +54,14 @@ def test_fex_old(imotions_data):
     # Test slicing functions
     assert df.aus.shape == (519, 20)
     assert df.emotions.shape == (519, 12)
-    assert df.facebox.shape == (519, 4)
+    assert df.faceboxes.shape == (519, 4)
     assert df.time.shape[-1] == 4
     assert df.design.shape[-1] == 4
 
     # Test metadata propagation to sliced series
     assert df.iloc[0].aus.shape == (20,)
     assert df.iloc[0].emotions.shape == (12,)
-    assert df.iloc[0].facebox.shape == (4,)
+    assert df.iloc[0].faceboxes.shape == (4,)
     assert df.iloc[0].time.shape == (4,)
     assert df.iloc[0].design.shape == (4,)
 
@@ -246,10 +246,10 @@ def test_openface():
     assert len(openface) == 100
 
     # Test landmark methods
-    assert openface.landmark.shape[1] == 136
-    assert openface.iloc[0].landmark.shape[0] == 136
-    assert openface.landmark_x.shape[1] == openface.landmark_y.shape[1]
-    assert openface.iloc[0].landmark_x.shape[0] == openface.iloc[0].landmark_y.shape[0]
+    assert openface.landmarks.shape[1] == 136
+    assert openface.iloc[0].landmarks.shape[0] == 136
+    assert openface.landmarks_x.shape[1] == openface.landmarks_y.shape[1]
+    assert openface.iloc[0].landmarks_x.shape[0] == openface.iloc[0].landmarks_y.shape[0]
 
 
 def test_feat():
@@ -257,7 +257,7 @@ def test_feat():
     fex = Fex(filename=filename, detector="Feat")
     fex = fex.read_file()
     # test input property
-    assert fex.input.values[0] == fex.iloc[0].input
+    assert fex.inputs.values[0] == fex.iloc[0].inputs
 
 
 def test_stats():
