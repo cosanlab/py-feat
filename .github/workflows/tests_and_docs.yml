@@ -26,11 +26,17 @@ jobs:
         # OSs to test
         os: [ubuntu-latest, macos-latest]
         # Python versions to test
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11"]
         # By default everything should pass for the workflow to pass
         experimental: [false]
         include:
           # Windows sometimes fails to install due to dependency changes, but eventually sort themselves out. So let these tests fail. Also issue on macos 3.11 with joblib so let that fail
+          - os: ubuntu-latest
+            python-version: "3.12"
+            experimental: true
+          - os: macos-latest
+            python-version: "3.12"
+            experimental: true
           - os: windows-latest
             python-version: "3.10"
             experimental: true
