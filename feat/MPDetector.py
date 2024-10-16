@@ -5,12 +5,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from torch.optim import Adam
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
 from huggingface_hub import hf_hub_download, PyTorchModelHubMixin
 from feat.pretrained import AU_LANDMARK_MAP
 from torch.utils.data import DataLoader
+from PIL import Image
 from feat.face_detectors.Retinaface.Retinaface_model import (
     RetinaFace,
     postprocess_retinaface,
@@ -43,6 +45,7 @@ from feat.utils.image_operations import (
     compute_original_image_size,
 )
 from feat.utils.io import get_resource_path
+from feat.utils.mp_plotting import FaceLandmarksConnections
 
 
 def get_camera_intrinsics(batch_hw_tensor, focal_length=None):
