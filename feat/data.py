@@ -641,7 +641,7 @@ class Fex(DataFrame):
         Returns:
             DataFrame: identity data
         """
-        return self[self.identity_columns[0]]
+        return self.Identity
 
     @property
     def identity_embeddings(self):
@@ -1785,7 +1785,7 @@ class Fex(DataFrame):
 
                     if poses:
                         face_ax = draw_facepose(
-                            pose=row[self.facepose_columns].values,
+                            pose=row[self.facepose_columns[:3]].values,
                             facebox=facebox,
                             ax=face_ax,
                         )

@@ -2,6 +2,9 @@ import torch
 from scipy.spatial.transform import Rotation
 from .image_operations import expand_bbox_rectangle
 import kornia
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning, module="kornia")
 
 # def get_bbox_intrinsics(image_intrinsics, bbox):
 #     # crop principle point of view
