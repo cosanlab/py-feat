@@ -54,6 +54,8 @@ sys.modules["__main__"].__dict__["EmoSVMClassifier"] = EmoSVMClassifier
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
+warnings.filterwarnings("ignore", category=FutureWarning, module="torch")
+warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 
 
 class Detector(nn.Module, PyTorchModelHubMixin):
@@ -293,6 +295,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 raise ValueError("{identity_model} is not currently supported.")
         else:
             self.identity_detector = None
+
+    def __repr__(self):
+        return f"Detector(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']}, identity_model={self.info['identity_model']})"
 
     @torch.inference_mode()
     def detect_faces(self, images, face_size=112, face_detection_threshold=0.5):

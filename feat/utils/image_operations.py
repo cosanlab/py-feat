@@ -26,6 +26,9 @@ import logging
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 import kornia
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning, module="kornia")
 
 __all__ = [
     "neutral",
