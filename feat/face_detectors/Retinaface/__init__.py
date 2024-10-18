@@ -1,1 +1,1 @@
-from .Retinaface_test import RetinaFace
+from .Retinaface_test import RetinaFace  # noqa: F401

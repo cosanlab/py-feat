@@ -8,9 +8,11 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.init as init
-from torchvision.transforms import Compose
-from feat.transforms import Rescale
+
+# import torch.nn.init as init
+# from torchvision.transforms import Compose
+# from feat.transforms import Rescale
+from huggingface_hub import PyTorchModelHubMixin
 
 
 def conv_bn(inp, oup, kernel, stride, padding=1):
@@ -63,7 +65,7 @@ class InvertedResidual(nn.Module):
             return self.conv(x)
 
 
-class PFLDInference(nn.Module):
+class PFLDInference(nn.Module, PyTorchModelHubMixin):
     def __init__(self):
         super(PFLDInference, self).__init__()
 
@@ -120,7 +122,6 @@ class PFLDInference(nn.Module):
         """
 
     def forward(self, x):  # x: 3, 112, 112
-
         x = self.relu(self.bn1(self.conv1(x)))  # [64, 56, 56]
         # x = self.relu(self.bn2(self.conv2(x)))  # [64, 56, 56]
         x = self.relu(self.conv1_extra(self.dw_bn(self.dw_pool(x))))
@@ -165,13 +166,3 @@ class PFLDInference(nn.Module):
         return pose, landmarks
         """
         return landmarks
-
-
-# if __name__ == "__main__":
-#     input = torch.randn(1, 3, 112, 112)
-#     plfd_backbone = PFLDInference()
-#     angle, landmarks = plfd_backbone(input)
-#     print(plfd_backbone)
-#     print(
-#         "angle.shape:{0:}, landmarks.shape: {1:}".format(angle.shape, landmarks.shape)
-#     )

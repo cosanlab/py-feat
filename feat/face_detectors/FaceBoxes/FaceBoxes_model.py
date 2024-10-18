@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from math import ceil
 from itertools import product as product
+from huggingface_hub import PyTorchModelHubMixin
 
 
 class BasicConv2d(nn.Module):
@@ -61,7 +62,7 @@ class CRelu(nn.Module):
         return x
 
 
-class FaceBoxesNet(nn.Module):
+class FaceBoxesNet(nn.Module, PyTorchModelHubMixin):
     def __init__(self, phase, size, num_classes):
         super(FaceBoxesNet, self).__init__()
         self.phase = phase
@@ -110,7 +111,6 @@ class FaceBoxesNet(nn.Module):
         return nn.Sequential(*loc_layers), nn.Sequential(*conf_layers)
 
     def forward(self, x):
-
         detection_sources = list()
         loc = list()
         conf = list()
@@ -132,7 +132,7 @@ class FaceBoxesNet(nn.Module):
         x = self.conv4_2(x)
         detection_sources.append(x)
 
-        for (x, l, c) in zip(detection_sources, self.loc, self.conf):
+        for x, l, c in zip(detection_sources, self.loc, self.conf):
             loc.append(l(x).permute(0, 2, 3, 1).contiguous())
             conf.append(c(x).permute(0, 2, 3, 1).contiguous())
 

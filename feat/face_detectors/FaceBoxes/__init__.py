@@ -1,1 +1,1 @@
-from .FaceBoxes_test import FaceBoxes
+from .FaceBoxes_test import FaceBoxes  # noqa: F401

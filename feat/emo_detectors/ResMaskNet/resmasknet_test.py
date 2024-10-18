@@ -1,25 +1,23 @@
 """
 All code & models from https://github.com/phamquiluan/ResidualMaskingNetwork
 """
-from lib2to3.pytree import convert
+
+# from lib2to3.pytree import convert
 import os
 import json
-from typing_extensions import Self
 import numpy as np
 import torch
 from torchvision.transforms import (
     Resize,
     Grayscale,
     Compose,
-    RandomHorizontalFlip,
 )
 import traceback
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from feat.utils import set_torch_device
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import BBox
+from huggingface_hub import PyTorchModelHubMixin
 
 model_urls = {
     "resnet18": "https://download.pytorch.org/models/resnet18-5c106cde.pth",
@@ -610,7 +608,7 @@ def masking(in_channels, out_channels, depth, block=BasicBlock):
 # from .resnet import conv1x1, conv3x3, BasicBlock, Bottleneck
 
 
-class ResMasking(ResNet):
+class ResMasking(ResNet, PyTorchModelHubMixin):
     def __init__(self, weight_path, in_channels=3):
         super(ResMasking, self).__init__(
             block=BasicBlock,
@@ -682,7 +680,7 @@ def resmasking_dropout1(in_channels=3, num_classes=7, weight_path=""):
 
 
 class ResMaskNet:
-    def __init__(self, device="auto"):
+    def __init__(self, device="auto", pretrained="huggingface"):
         """Initialize ResMaskNet
 
         @misc{luanresmaskingnet2020,
@@ -714,16 +712,18 @@ class ResMaskNet:
 
         self.model = resmasking_dropout1(in_channels=3, num_classes=7)
 
-        self.model.load_state_dict(
-            torch.load(
-                os.path.join(
-                    get_resource_path(),
-                    "ResMaskNet_Z_resmasking_dropout1_rot30.pth",
-                ),
-                map_location=self.device,
-            )["net"]
-        )
-
+        if pretrained == "huggingface":
+            self.model.from_pretrained("py-feat/resmasknet")
+        elif pretrained == "local":
+            self.model.load_state_dict(
+                torch.load(
+                    os.path.join(
+                        get_resource_path(),
+                        "ResMaskNet_Z_resmasking_dropout1_rot30.pth",
+                    ),
+                    map_location=self.device,
+                )["net"]
+            )
         self.model.eval()
 
     def detect_emo(self, frame, detected_face, *args, **kwargs):
@@ -742,7 +742,6 @@ class ResMaskNet:
             return proba_np
 
     def _batch_make(self, frame, detected_face, *args, **kwargs):
-
         transform = Compose([Grayscale(3)])
         gray = transform(frame)
 

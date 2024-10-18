@@ -32,5 +32,5 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     test_suite="feat/tests",
-    **extra_setuptools_args
+    **extra_setuptools_args,
 )

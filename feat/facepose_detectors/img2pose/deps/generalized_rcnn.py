@@ -2,8 +2,8 @@ import warnings
 from collections import OrderedDict
 
 import torch
-from torch import Tensor, nn
-from torch.jit.annotations import Dict, List, Optional, Tuple
+from torch import nn
+from torch.jit.annotations import List, Tuple
 
 
 class GeneralizedRCNN(nn.Module):
@@ -58,6 +58,7 @@ class GeneralizedRCNN(nn.Module):
             original_image_sizes.append((val[0], val[1]))
         images, targets = self.transform(images, targets)
         features = self.backbone(images.tensors)
+        # features = self.backbone(images.tensors.to('mps')) #debug mps issues
         if isinstance(features, torch.Tensor):
             features = OrderedDict([("0", features)])
         proposals, proposal_losses = self.rpn(images, features, targets)

@@ -5,13 +5,14 @@ Helper functions for plotting
 import os
 import sys
 import h5py
+import torch
 import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn import __version__ as skversion
-from sklearn.preprocessing import PolynomialFeatures, scale
 import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
-from feat.utils.io import get_resource_path
+from feat.utils.io import get_resource_path, download_url
+from feat.utils.image_operations import align_face, mask_image
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -21,8 +22,11 @@ from pathlib import Path
 from PIL import Image
 from textwrap import wrap
 from joblib import load
-from feat.utils.io import get_resource_path, download_url
 import json
+from skimage.morphology.convex_hull import grid_points_in_poly
+from scipy.spatial import ConvexHull
+import torchvision.transforms as transforms
+from torchvision.utils import draw_keypoints, draw_bounding_boxes, make_grid
 
 __all__ = [
     "draw_lineface",
@@ -675,7 +679,6 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
         "orb_oc_r_inner": orb_oc_r_inner,
         "orb_oris_l": orb_oris_l,
         "orb_oris_u": orb_oris_u,
-        "orb_oc_l": orb_oc_l,
         "cor_sup_l": cor_sup_l,
         "pars_palp_l": orb_oc_l_inner,
         "pars_palp_r": orb_oc_r_inner,
@@ -941,15 +944,12 @@ def plot_face(
 
     if gaze is not None and len((gaze)) != 4:
         warnings.warn(
-            "Don't forget to pass a 'gaze' vector of len(4), "
-            "using neutral as default"
+            "Don't forget to pass a 'gaze' vector of len(4), " "using neutral as default"
         )
         gaze = None
 
     title = kwargs.pop("title", None)
-    title_kwargs = kwargs.pop(
-        "title_kwargs", dict(wrap=True, fontsize=14, loc="center")
-    )
+    title_kwargs = kwargs.pop("title_kwargs", dict(wrap=True, fontsize=14, loc="center"))
     ax = draw_lineface(
         currx,
         curry,
@@ -1128,12 +1128,12 @@ def interpolate_aus(
 
     from easing_functions import CubicEaseInOut
 
-    func = CubicEaseInOut if interp_func is None else func
+    interp_func = CubicEaseInOut if interp_func is None else interp_func
     # Loop over each AU and generate a cubic bezier style interpolation from its
     # starting intensity to its ending intensity
     au_interpolations = []
     for au_start, au_end in zip(start, end):
-        interp_func = func(au_start, au_end)
+        interp_func = interp_func(au_start, au_end)
         intensities = [*map(interp_func, np.linspace(0, 1, num_frames))]
         au_interpolations.append(intensities)
 
@@ -1389,3 +1389,173 @@ def load_viz_model(
     except Exception as e:
         raise IOError(f"Unable to load data: {e}")
     return model
+
+
+def plot_frame(
+    frame,
+    boxes=None,
+    landmarks=None,
+    boxes_width=2,
+    boxes_colors="cyan",
+    landmarks_radius=2,
+    landmarks_width=2,
+    landmarks_colors="white",
+):
+    """
+    Plot Torch Frames and py-feat output. If multiple frames will create a grid of images
+
+    Args:
+        frame (torch.Tensor): Tensor of shape (B, C, H, W) or (C, H, W)
+        boxes (torch.Tensor): Tensor of shape (N, 4) containing bounding boxes
+        landmarks (torch.Tensor): Tensor of shape (N, 136) containing flattened 68 point landmark keystones
+
+    Returns:
+        PILImage
+    """
+
+    if len(frame.shape) == 4:
+        B, C, H, W = frame.shape
+    elif len(frame.shape) == 3:
+        C, H, W = frame.shape
+    else:
+        raise ValueError("Can only plot (B,C,H,W) or (C,H,W)")
+    if B == 1:
+        if boxes is not None:
+            new_frame = draw_bounding_boxes(
+                frame.squeeze(0), boxes, width=boxes_width, colors=boxes_colors
+            )
+
+            if landmarks is not None:
+                new_frame = draw_keypoints(
+                    new_frame,
+                    landmarks.reshape(landmarks.shape[0], -1, 2),
+                    radius=landmarks_radius,
+                    width=landmarks_width,
+                    colors=landmarks_colors,
+                )
+        else:
+            if landmarks is not None:
+                new_frame = draw_keypoints(
+                    frame.squeeze(0),
+                    landmarks.reshape(landmarks.shape[0], -1, 2),
+                    radius=landmarks_radius,
+                    width=landmarks_width,
+                    colors=landmarks_colors,
+                )
+            else:
+                new_frame = frame.squeeze(0)
+        return transforms.ToPILImage()(new_frame.squeeze(0))
+    else:
+        if (boxes is not None) & (landmarks is None):
+            new_frame = make_grid(
+                torch.stack(
+                    [
+                        draw_bounding_boxes(
+                            f, b.unsqueeze(0), width=boxes_width, colors=boxes_colors
+                        )
+                        for f, b in zip(frame.unbind(dim=0), boxes.unbind(dim=0))
+                    ],
+                    dim=0,
+                )
+            )
+        elif (landmarks is not None) & (boxes is None):
+            new_frame = make_grid(
+                torch.stack(
+                    [
+                        draw_keypoints(
+                            f,
+                            l.unsqueeze(0),
+                            radius=landmarks_radius,
+                            width=landmarks_width,
+                            colors=landmarks_colors,
+                        )
+                        for f, l in zip(
+                            frame.unbind(dim=0),
+                            landmarks.reshape(landmarks.shape[0], -1, 2).unbind(dim=0),
+                        )
+                    ],
+                    dim=0,
+                )
+            )
+        elif (boxes is not None) & (landmarks is not None):
+            new_frame = make_grid(
+                torch.stack(
+                    [
+                        draw_keypoints(
+                            fr,
+                            l.unsqueeze(0),
+                            radius=landmarks_radius,
+                            width=landmarks_width,
+                            colors=landmarks_colors,
+                        )
+                        for fr, l in zip(
+                            [
+                                draw_bounding_boxes(
+                                    f,
+                                    b.unsqueeze(0),
+                                    width=boxes_width,
+                                    colors=boxes_colors,
+                                )
+                                for f, b in zip(frame.unbind(dim=0), boxes.unbind(dim=0))
+                            ],
+                            landmarks.reshape(landmarks.shape[0], -1, 2).unbind(dim=0),
+                        )
+                    ]
+                )
+            )
+        else:
+            new_frame = make_grid(frame)
+        return transforms.ToPILImage()(new_frame)
+
+
+def extract_face_from_landmarks(frame, landmarks, face_size=112):
+    """Extract a face in a frame with a convex hull of landmarks.
+
+    This function extracts the faces of the frame with convex hulls and masks out the rest.
+
+    Args:
+        frame (array): The original image]
+        detected_faces (list): face bounding box
+        landmarks (list): the landmark information]
+        align (bool): align face to standard position
+        size_output (int, optional): [description]. Defaults to 112.
+
+    Returns:
+        resized_face_np: resized face as a numpy array
+        new_landmarks: landmarks of aligned face
+    """
+
+    if not isinstance(frame, torch.Tensor):
+        raise ValueError(f"image must be a tensor not {type(frame)}")
+
+    if len(frame.shape) != 4:
+        frame = frame.unsqueeze(0)
+
+    landmarks = landmarks.cpu().detach().numpy()
+
+    aligned_img, new_landmarks = align_face(
+        frame,
+        landmarks.flatten(),
+        landmark_type=68,
+        box_enlarge=2.5,
+        img_size=face_size,
+    )
+
+    hull = ConvexHull(new_landmarks)
+    mask = grid_points_in_poly(
+        shape=aligned_img.shape[-2:],
+        # for some reason verts need to be flipped
+        verts=list(
+            zip(
+                new_landmarks[hull.vertices][:, 1],
+                new_landmarks[hull.vertices][:, 0],
+            )
+        ),
+    )
+    mask[
+        0 : np.min([new_landmarks[0][1], new_landmarks[16][1]]),
+        new_landmarks[0][0] : new_landmarks[16][0],
+    ] = True
+    masked_image = mask_image(aligned_img, mask)
+
+    return (masked_image, new_landmarks)

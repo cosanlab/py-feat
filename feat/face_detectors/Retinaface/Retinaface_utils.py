@@ -1,5 +1,4 @@
 import torch
-import numpy as np
 
 
 def decode_landm(pre, priors, variances):

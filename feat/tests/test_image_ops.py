@@ -4,6 +4,7 @@ from feat.transforms import Rescale
 from torchvision.transforms import Compose
 from feat.data import ImageDataset
 
+
 # TODO: write me
 def test_rescale_single_image(single_face_img):
     img = read_image(single_face_img)
@@ -46,8 +47,7 @@ def test_rescale_single_image(single_face_img):
             "Bottom"
         ] == (output_size - img.shape[-2] * scale)
         assert (
-            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"]
-            == 0
+            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"] == 0
         )
 
     # Test Tuple
@@ -88,8 +88,7 @@ def test_rescale_single_image(single_face_img):
             "Bottom"
         ] == (600 * scale - img.shape[1] * scale)
         assert (
-            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"]
-            == 0
+            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"] == 0
         )
 
 
@@ -151,8 +150,7 @@ def test_imagedataset(single_face_img):
             "Bottom"
         ] == (output_size - img.shape[-2] * scale)
         assert (
-            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"]
-            == 0
+            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"] == 0
         )
 
     # Test Tuple
@@ -203,8 +201,7 @@ def test_imagedataset(single_face_img):
             "Bottom"
         ] == (600 * scale - img.shape[1] * scale)
         assert (
-            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"]
-            == 0
+            transformed_img["Padding"]["Left"] + transformed_img["Padding"]["Right"] == 0
         )
 
 
