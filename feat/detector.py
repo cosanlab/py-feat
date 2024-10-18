@@ -46,6 +46,7 @@ from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from torchvision.transforms import Compose, Normalize
 import sys
 import warnings
+from pathlib import Path
 
 sys.modules["__main__"].__dict__["XGBClassifier"] = XGBClassifier
 sys.modules["__main__"].__dict__["SVMClassifier"] = SVMClassifier
@@ -516,10 +517,11 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         face_detection_threshold=0.5,
         skip_frames=None,
         progress_bar=True,
+        save=None,
         **kwargs,
     ):
         """
-        Detects FEX from one or more image files.
+        Detects FEX from one or more imagathe files.
 
         Args:
             inputs (list of str, torch.Tensor): Path to a list of paths to image files or torch.Tensor of images (B, C, H, W)
@@ -533,10 +535,13 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             skip_frames (int or None): number of frames to skip to speed up inference (video only); Default None
             progress_bar (bool): Whether to show the tqdm progress bar. Default is True.
             **kwargs: additional detector-specific kwargs
+            save (None or str or Path): if immediately append detections to a csv file at with the given name after processing each batch, which can be useful to interrupted/resuming jobs and saving memory/RAM
 
         Returns:
             pd.DataFrame: Concatenated results for all images in the batch
         """
+
+        save = Path(save) if save else None
 
         if data_type.lower() == "image":
             data_loader = DataLoader(
@@ -660,14 +665,39 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                         - batch_data["Padding"]["Top"].detach().numpy()[j]
                     ) / batch_data["Scale"].detach().numpy()[j]
 
-            batch_output.append(batch_results)
+            if save:
+                batch_results.to_csv(save, mode="a", index=False, header=batch_id == 0)
+            else:
+                batch_output.append(batch_results)
             frame_counter += 1 * batch_size
-        batch_output = pd.concat(batch_output)
-        batch_output.reset_index(drop=True, inplace=True)
+
+        batch_output = (
+            Fex(
+                pd.read_csv(save),
+                au_columns=AU_LANDMARK_MAP["Feat"],
+                emotion_columns=FEAT_EMOTION_COLUMNS,
+                facebox_columns=FEAT_FACEBOX_COLUMNS,
+                landmark_columns=openface_2d_landmark_columns,
+                facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
+                identity_columns=FEAT_IDENTITY_COLUMNS[1:],
+                detector="Feat",
+                face_model=self.info["face_model"],
+                landmark_model=self.info["landmark_model"],
+                au_model=self.info["au_model"],
+                emotion_model=self.info["emotion_model"],
+                facepose_model=self.info["facepose_model"],
+                identity_model=self.info["identity_model"],
+            )
+            if save
+            else pd.concat(batch_output).reset_index(drop=True)
+        )
         if data_type.lower() == "video":
             batch_output["approx_time"] = [
                 dataset.calc_approx_frame_time(x)
                 for x in batch_output["frame"].to_numpy()
             ]
         batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
+        # Overwrite with approx_time and identity columns
+        if save:
+            batch_output.to_csv(save, mode="w", index=False)
         return batch_output

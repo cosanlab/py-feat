@@ -6,6 +6,7 @@ import numpy as np
 from feat.utils.io import get_test_data_path
 import warnings
 import os
+from feat.utils.io import read_feat
 
 EXPECTED_FEX_WIDTH = 691
 
@@ -243,3 +244,24 @@ class Test_Detector:
         assert not out.happiness.iloc[4:7].isnull().all().all()
         # ending doesn't
         assert out.happiness.iloc[7:].isnull().all().all()
+
+    def test_save_detect(self, single_face_mov, tmp_path):
+        """Test appending to file during detection"""
+
+        out = self.detector.detect(
+            single_face_mov, skip_frames=12, data_type="video", save=tmp_path / "test.csv"
+        )
+        assert (tmp_path / "test.csv").exists()
+        df = read_feat(tmp_path / "test.csv")
+        assert df.equals(out)
+        out_nosave = self.detector.detect(
+            single_face_mov, skip_frames=12, data_type="video"
+        )
+        # We're not enforcing dtypes so the output Fex from .detect()
+        # uses Float32, but read_feat() uses Float64
+        # So instead we check the numeric values are close, columns match,
+        #  and shapes, match
+        np.allclose(out._get_numeric_data(), out_nosave._get_numeric_data())
+        np.allclose(df._get_numeric_data(), out_nosave._get_numeric_data())
+        assert all(df.columns == out_nosave.columns) and all(df.columns == out.columns)
+        assert df.shape == out_nosave.shape == out.shape
