@@ -123,7 +123,7 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
     if len(frame.shape) != 4:
         frame = frame.unsqueeze(0)
 
-    landmarks = np.array(landmarks).copy()
+    landmarks = np.array(landmarks.cpu()).copy()
 
     aligned_img, new_landmarks = align_face(
         frame,
