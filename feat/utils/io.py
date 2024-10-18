@@ -16,6 +16,8 @@ from feat.utils import (
     openface_facepose_columns,
     openface_gaze_columns,
     openface_time_columns,
+    FEAT_FACEPOSE_COLUMNS_6D,
+    FEAT_IDENTITY_COLUMNS,
 )
 
 
@@ -97,11 +99,12 @@ def read_feat(fexfile):
         filename=fexfile,
         au_columns=au_columns,
         emotion_columns=FEAT_EMOTION_COLUMNS,
-        landmark_columns=openface_2d_landmark_columns,
         facebox_columns=FEAT_FACEBOX_COLUMNS,
-        time_columns=FEAT_TIME_COLUMNS,
-        facepose_columns=["Pitch", "Roll", "Yaw"],
+        landmark_columns=openface_2d_landmark_columns,
+        facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
+        identity_columns=FEAT_IDENTITY_COLUMNS[1:],
         detector="Feat",
+        time_columns=FEAT_TIME_COLUMNS,
     )
     return fex
 
