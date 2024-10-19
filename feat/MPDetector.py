@@ -1,3 +1,10 @@
+"""
+This is an experimental module written primarily by @ljchang porting over
+Tensorflow's MediaPipe face mesh model to PyTorch for better real-time
+performance. It is not currently recommended for use. See this (closed) PR
+for more discussion: https://github.com/cosanlab/py-feat/pull/228
+"""
+
 import json
 from tqdm import tqdm
 import torch
