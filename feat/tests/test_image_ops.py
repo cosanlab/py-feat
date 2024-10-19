@@ -5,7 +5,6 @@ from torchvision.transforms import Compose
 from feat.data import ImageDataset
 
 
-# TODO: write me
 def test_rescale_single_image(single_face_img):
     img = read_image(single_face_img)
 
@@ -92,7 +91,6 @@ def test_rescale_single_image(single_face_img):
         )
 
 
-# TODO: write me
 def test_imagedataset(single_face_img):
     n_img = 10
     image_file_list = [single_face_img] * n_img

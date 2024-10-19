@@ -70,8 +70,6 @@ class Test_Detector:
             det_result_no_batch.loc[:, "x_0":"y_67"].to_numpy(),
         )
 
-    # TODO: Currently making this test always pass even if batching gives slightly diff
-    # results until @tiankang can debug whether we're in tolerance
     # Track progress updates in this issue: https://github.com/cosanlab/py-feat/issues/128
     def test_fast_detection_and_batching_with_diff_img_sizes(
         self, single_face_img, multi_face_img, multiple_images_for_batch_testing

@@ -65,7 +65,6 @@ def test_plot_face(au, au2):
     plt.close("all")
 
 
-# TODO: update test with new fast detector or move to test_fast_detector
 @pytest.mark.skip
 def test_plot_detections(default_detector, single_face_img, multi_face_img):
     single_image_single_face_prediction = default_detector.detect_image(single_face_img)
@@ -105,8 +104,6 @@ def test_plot_detections(default_detector, single_face_img, multi_face_img):
         multi_image_mix_prediction.plot_detections(faces="aus")
 
 
-# TODO: Something seems to have changed in easing_functions package, causing line 1131 of plotting.py to fail
-@pytest.mark.skip
 def test_animate_face():
     # Start with neutral face
     starting_aus = np.zeros(20)
@@ -114,18 +111,14 @@ def test_animate_face():
     # Just animate the intensity of the first AU
     ending_aus[0] = 3
 
-    animation = animate_face(start=starting_aus, end=ending_aus, save="test.gif")
-
-    assert animation is not None
+    animate_face(start=starting_aus, end=ending_aus, save="test.gif")
     assert exists("test.gif")
 
     # # Clean up
     remove("test.gif")
 
     # Test different init style
-    animation = animate_face(AU=1, start=0, end=3, save="test.gif")
-
-    assert animation is not None
+    animate_face(AU=1, start=0, end=3, save="test.gif")
     assert exists("test.gif")
 
     # Clean up
