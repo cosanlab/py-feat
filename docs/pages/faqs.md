@@ -25,4 +25,4 @@ This was a deliberate design-tradeoff to ensure a seamless experience when proce
 
 This means that you don't need to worry about your computer crashing if you're trying to process a video that doesn't fit into memory! However, it also means that theres a small latency overhead that increases with the length of the video, i.e. later frames take longer to load than earlier frames as the video needs to be "seeked" to the correct time-point.
 
-If you already know that you have enough system memory to load the entire video at once, you can instead manually call `video_to_tensor('videofile.mp4)` from `feat.utils.io`. Then you can process the tensor by passing `data_type='tensor'` to `Detector.detect()` and proceed with batching as usual.
+If you already know that you have enough system memory to load the entire video at once, you can instead manually call `video_to_tensor('videofile.mp4')` from `feat.utils.io`. Then you can process the tensor by passing `data_type='tensor'` to `Detector.detect()` and proceed with batching as usual.
