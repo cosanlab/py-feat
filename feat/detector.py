@@ -571,7 +571,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             )
         elif data_type.lower() == "video":
             dataset = VideoDataset(
-                inputs, skip_frames=skip_frames, output_size=output_size
+                inputs,
+                skip_frames=skip_frames,
+                output_size=output_size,
             )
             data_loader = DataLoader(
                 dataset,
