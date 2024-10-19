@@ -7,6 +7,7 @@ from feat.utils.io import get_test_data_path
 import warnings
 import os
 from feat.utils.io import read_feat
+import torch
 
 EXPECTED_FEX_WIDTH = 691
 
@@ -263,3 +264,9 @@ class Test_Detector:
         np.allclose(df._get_numeric_data(), out_nosave._get_numeric_data())
         assert all(df.columns == out_nosave.columns) and all(df.columns == out.columns)
         assert df.shape == out_nosave.shape == out.shape
+
+    def test_detect_tensor(self, single_face_img_data):
+        tensor = torch.stack([single_face_img_data] * 3)
+        tensor.shape
+        fex = self.detector.detect(tensor, data_type="tensor")
+        assert fex.shape == (3, EXPECTED_FEX_WIDTH)
