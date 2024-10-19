@@ -1849,414 +1849,414 @@ def draw_plotly_au(
         "AU43",
     ]
 
-    masseter_l = face_polygon_svg(
-        [
-            (row["x_2"], row["y_2"]),
-            (row["x_3"], row["y_3"]),
-            (row["x_4"], row["y_4"]),
-            (row["x_5"], row["y_5"]),
-            (row["x_6"], row["y_6"]),
-            (row["x_5"], row["y_33"]),
-        ],
-        img_height,
-    )
+    # masseter_l = face_polygon_svg(
+    #     [
+    #         (row["x_2"], row["y_2"]),
+    #         (row["x_3"], row["y_3"]),
+    #         (row["x_4"], row["y_4"]),
+    #         (row["x_5"], row["y_5"]),
+    #         (row["x_6"], row["y_6"]),
+    #         (row["x_5"], row["y_33"]),
+    #     ],
+    #     img_height,
+    # )
 
-    masseter_r = face_polygon_svg(
-        [
-            (row["x_14"], row["y_14"]),
-            (row["x_13"], row["y_13"]),
-            (row["x_12"], row["y_12"]),
-            (row["x_11"], row["y_11"]),
-            (row["x_10"], row["y_10"]),
-            (row["x_11"], row["y_33"]),
-        ],
-        img_height,
-    )
+    # masseter_r = face_polygon_svg(
+    #     [
+    #         (row["x_14"], row["y_14"]),
+    #         (row["x_13"], row["y_13"]),
+    #         (row["x_12"], row["y_12"]),
+    #         (row["x_11"], row["y_11"]),
+    #         (row["x_10"], row["y_10"]),
+    #         (row["x_11"], row["y_33"]),
+    #     ],
+    #     img_height,
+    # )
 
-    temporalis_l = face_polygon_svg(
-        [
-            (row["x_2"], row["y_2"]),
-            (row["x_1"], row["y_1"]),
-            (row["x_0"], row["y_0"]),
-            (row["x_17"], row["y_17"]),
-            (row["x_36"], row["y_36"]),
-        ],
-        img_height,
-    )
+    # temporalis_l = face_polygon_svg(
+    #     [
+    #         (row["x_2"], row["y_2"]),
+    #         (row["x_1"], row["y_1"]),
+    #         (row["x_0"], row["y_0"]),
+    #         (row["x_17"], row["y_17"]),
+    #         (row["x_36"], row["y_36"]),
+    #     ],
+    #     img_height,
+    # )
 
-    temporalis_r = face_polygon_svg(
-        [
-            (row["x_14"], row["y_14"]),
-            (row["x_15"], row["y_15"]),
-            (row["x_16"], row["y_16"]),
-            (row["x_26"], row["y_26"]),
-            (row["x_45"], row["y_45"]),
-        ],
-        img_height,
-    )
+    # temporalis_r = face_polygon_svg(
+    #     [
+    #         (row["x_14"], row["y_14"]),
+    #         (row["x_15"], row["y_15"]),
+    #         (row["x_16"], row["y_16"]),
+    #         (row["x_26"], row["y_26"]),
+    #         (row["x_45"], row["y_45"]),
+    #     ],
+    #     img_height,
+    # )
 
-    dep_lab_inf_l = face_polygon_svg(
-        [
-            (row["x_57"], row["y_57"]),
-            (row["x_58"], row["y_58"]),
-            (row["x_59"], row["y_59"]),
-            (row["x_6"], row["y_6"]),
-            (row["x_7"], row["y_7"]),
-        ],
-        img_height,
-    )
+    # dep_lab_inf_l = face_polygon_svg(
+    #     [
+    #         (row["x_57"], row["y_57"]),
+    #         (row["x_58"], row["y_58"]),
+    #         (row["x_59"], row["y_59"]),
+    #         (row["x_6"], row["y_6"]),
+    #         (row["x_7"], row["y_7"]),
+    #     ],
+    #     img_height,
+    # )
 
-    dep_lab_inf_r = face_polygon_svg(
-        [
-            (row["x_57"], row["y_57"]),
-            (row["x_56"], row["y_56"]),
-            (row["x_55"], row["y_55"]),
-            (row["x_10"], row["y_10"]),
-            (row["x_9"], row["y_9"]),
-        ],
-        img_height,
-    )
+    # dep_lab_inf_r = face_polygon_svg(
+    #     [
+    #         (row["x_57"], row["y_57"]),
+    #         (row["x_56"], row["y_56"]),
+    #         (row["x_55"], row["y_55"]),
+    #         (row["x_10"], row["y_10"]),
+    #         (row["x_9"], row["y_9"]),
+    #     ],
+    #     img_height,
+    # )
 
-    dep_ang_or_l = face_polygon_svg(
-        [
-            (row["x_48"], row["y_48"]),
-            (row["x_7"], row["y_7"]),
-            (row["x_6"], row["y_6"]),
-        ],
-        img_height,
-    )
+    # dep_ang_or_l = face_polygon_svg(
+    #     [
+    #         (row["x_48"], row["y_48"]),
+    #         (row["x_7"], row["y_7"]),
+    #         (row["x_6"], row["y_6"]),
+    #     ],
+    #     img_height,
+    # )
 
-    dep_ang_or_r = face_polygon_svg(
-        [
-            (row["x_54"], row["y_54"]),
-            (row["x_9"], row["y_9"]),
-            (row["x_10"], row["y_10"]),
-        ],
-        img_height,
-    )
+    # dep_ang_or_r = face_polygon_svg(
+    #     [
+    #         (row["x_54"], row["y_54"]),
+    #         (row["x_9"], row["y_9"]),
+    #         (row["x_10"], row["y_10"]),
+    #     ],
+    #     img_height,
+    # )
 
-    mentalis_l = face_polygon_svg(
-        [
-            (row["x_58"], row["y_58"]),
-            (row["x_7"], row["y_7"]),
-            (row["x_8"], row["y_8"]),
-        ],
-        img_height,
-    )
+    # mentalis_l = face_polygon_svg(
+    #     [
+    #         (row["x_58"], row["y_58"]),
+    #         (row["x_7"], row["y_7"]),
+    #         (row["x_8"], row["y_8"]),
+    #     ],
+    #     img_height,
+    # )
 
-    mentalis_r = face_polygon_svg(
-        [
-            (row["x_56"], row["y_56"]),
-            (row["x_9"], row["y_9"]),
-            (row["x_8"], row["y_8"]),
-        ],
-        img_height,
-    )
+    # mentalis_r = face_polygon_svg(
+    #     [
+    #         (row["x_56"], row["y_56"]),
+    #         (row["x_9"], row["y_9"]),
+    #         (row["x_8"], row["y_8"]),
+    #     ],
+    #     img_height,
+    # )
 
-    risorius_l = face_polygon_svg(
-        [
-            (row["x_4"], row["y_4"]),
-            (row["x_5"], row["y_5"]),
-            (row["x_48"], row["y_48"]),
-        ],
-        img_height,
-    )
+    # risorius_l = face_polygon_svg(
+    #     [
+    #         (row["x_4"], row["y_4"]),
+    #         (row["x_5"], row["y_5"]),
+    #         (row["x_48"], row["y_48"]),
+    #     ],
+    #     img_height,
+    # )
 
-    risorius_r = face_polygon_svg(
-        [
-            (row["x_11"], row["y_11"]),
-            (row["x_12"], row["y_12"]),
-            (row["x_54"], row["y_54"]),
-        ],
-        img_height,
-    )
+    # risorius_r = face_polygon_svg(
+    #     [
+    #         (row["x_11"], row["y_11"]),
+    #         (row["x_12"], row["y_12"]),
+    #         (row["x_54"], row["y_54"]),
+    #     ],
+    #     img_height,
+    # )
 
-    bottom = (row["y_8"] - row["y_57"]) / 2
+    # bottom = (row["y_8"] - row["y_57"]) / 2
 
-    orb_oris_l = face_polygon_svg(
-        [
-            (row["x_48"], row["y_48"]),
-            (row["x_59"], row["y_59"]),
-            (row["x_58"], row["y_58"]),
-            (row["x_57"], row["y_57"]),
-            (row["x_56"], row["y_56"]),
-            (row["x_55"], row["y_55"] + bottom),
-            (row["x_54"], row["y_54"] + bottom),
-            (row["x_55"], row["y_55"] + bottom),
-            (row["x_56"], row["y_56"] + bottom),
-            (row["x_57"], row["y_57"] + bottom),
-            (row["x_58"], row["y_58"] + bottom),
-            (row["x_59"], row["y_59"] + bottom),
-        ],
-        img_height,
-    )
+    # orb_oris_l = face_polygon_svg(
+    #     [
+    #         (row["x_48"], row["y_48"]),
+    #         (row["x_59"], row["y_59"]),
+    #         (row["x_58"], row["y_58"]),
+    #         (row["x_57"], row["y_57"]),
+    #         (row["x_56"], row["y_56"]),
+    #         (row["x_55"], row["y_55"] + bottom),
+    #         (row["x_54"], row["y_54"] + bottom),
+    #         (row["x_55"], row["y_55"] + bottom),
+    #         (row["x_56"], row["y_56"] + bottom),
+    #         (row["x_57"], row["y_57"] + bottom),
+    #         (row["x_58"], row["y_58"] + bottom),
+    #         (row["x_59"], row["y_59"] + bottom),
+    #     ],
+    #     img_height,
+    # )
 
-    orb_oris_u = face_polygon_svg(
-        [
-            (row["x_48"], row["y_48"]),
-            (row["x_49"], row["y_49"]),
-            (row["x_50"], row["y_50"]),
-            (row["x_51"], row["y_51"]),
-            (row["x_52"], row["y_52"]),
-            (row["x_53"], row["y_53"]),
-            (row["x_54"], row["y_54"]),
-            (row["x_33"], row["y_33"]),
-        ],
-        img_height,
-    )
+    # orb_oris_u = face_polygon_svg(
+    #     [
+    #         (row["x_48"], row["y_48"]),
+    #         (row["x_49"], row["y_49"]),
+    #         (row["x_50"], row["y_50"]),
+    #         (row["x_51"], row["y_51"]),
+    #         (row["x_52"], row["y_52"]),
+    #         (row["x_53"], row["y_53"]),
+    #         (row["x_54"], row["y_54"]),
+    #         (row["x_33"], row["y_33"]),
+    #     ],
+    #     img_height,
+    # )
 
-    frontalis_l = face_polygon_svg(
-        [
-            (row["x_27"], row["y_27"]),
-            (row["x_39"], row["y_39"]),
-            (row["x_38"], row["y_38"]),
-            (row["x_37"], row["y_37"]),
-            (row["x_36"], row["y_36"]),
-            (row["x_17"], row["y_17"]),
-            (row["x_18"], row["y_18"]),
-            (row["x_19"], row["y_19"]),
-            (row["x_20"], row["y_20"]),
-            (row["x_21"], row["y_21"]),
-        ],
-        img_height,
-    )
+    # frontalis_l = face_polygon_svg(
+    #     [
+    #         (row["x_27"], row["y_27"]),
+    #         (row["x_39"], row["y_39"]),
+    #         (row["x_38"], row["y_38"]),
+    #         (row["x_37"], row["y_37"]),
+    #         (row["x_36"], row["y_36"]),
+    #         (row["x_17"], row["y_17"]),
+    #         (row["x_18"], row["y_18"]),
+    #         (row["x_19"], row["y_19"]),
+    #         (row["x_20"], row["y_20"]),
+    #         (row["x_21"], row["y_21"]),
+    #     ],
+    #     img_height,
+    # )
 
-    frontalis_r = face_polygon_svg(
-        [
-            (row["x_27"], row["y_27"]),
-            (row["x_22"], row["y_22"]),
-            (row["x_23"], row["y_23"]),
-            (row["x_24"], row["y_24"]),
-            (row["x_25"], row["y_25"]),
-            (row["x_26"], row["y_26"]),
-            (row["x_45"], row["y_45"]),
-            (row["x_44"], row["y_44"]),
-            (row["x_43"], row["y_43"]),
-            (row["x_42"], row["y_42"]),
-        ],
-        img_height,
-    )
+    # frontalis_r = face_polygon_svg(
+    #     [
+    #         (row["x_27"], row["y_27"]),
+    #         (row["x_22"], row["y_22"]),
+    #         (row["x_23"], row["y_23"]),
+    #         (row["x_24"], row["y_24"]),
+    #         (row["x_25"], row["y_25"]),
+    #         (row["x_26"], row["y_26"]),
+    #         (row["x_45"], row["y_45"]),
+    #         (row["x_44"], row["y_44"]),
+    #         (row["x_43"], row["y_43"]),
+    #         (row["x_42"], row["y_42"]),
+    #     ],
+    #     img_height,
+    # )
 
-    frontalis_inner_l = face_polygon_svg(
-        [
-            (row["x_27"], row["y_27"]),
-            (row["x_39"], row["y_39"]),
-            (row["x_21"], row["y_21"]),
-        ],
-        img_height,
-    )
+    # frontalis_inner_l = face_polygon_svg(
+    #     [
+    #         (row["x_27"], row["y_27"]),
+    #         (row["x_39"], row["y_39"]),
+    #         (row["x_21"], row["y_21"]),
+    #     ],
+    #     img_height,
+    # )
 
-    frontalis_inner_r = face_polygon_svg(
-        [
-            (row["x_27"], row["y_27"]),
-            (row["x_42"], row["y_42"]),
-            (row["x_22"], row["y_22"]),
-        ],
-        img_height,
-    )
+    # frontalis_inner_r = face_polygon_svg(
+    #     [
+    #         (row["x_27"], row["y_27"]),
+    #         (row["x_42"], row["y_42"]),
+    #         (row["x_22"], row["y_22"]),
+    #     ],
+    #     img_height,
+    # )
 
-    cor_sup_l = face_polygon_svg(
-        [
-            (row["x_28"], row["y_28"]),
-            (row["x_19"], row["y_19"]),
-            (row["x_20"], row["y_20"]),
-        ],
-        img_height,
-    )
+    # cor_sup_l = face_polygon_svg(
+    #     [
+    #         (row["x_28"], row["y_28"]),
+    #         (row["x_19"], row["y_19"]),
+    #         (row["x_20"], row["y_20"]),
+    #     ],
+    #     img_height,
+    # )
 
-    cor_sup_r = face_polygon_svg(
-        [
-            (row["x_28"], row["y_28"]),
-            (row["x_23"], row["y_23"]),
-            (row["x_24"], row["y_24"]),
-        ],
-        img_height,
-    )
+    # cor_sup_r = face_polygon_svg(
+    #     [
+    #         (row["x_28"], row["y_28"]),
+    #         (row["x_23"], row["y_23"]),
+    #         (row["x_24"], row["y_24"]),
+    #     ],
+    #     img_height,
+    # )
 
-    lev_lab_sup_l = face_polygon_svg(
-        [
-            (row["x_41"], row["y_41"]),
-            (row["x_40"], row["y_40"]),
-            (row["x_49"], row["y_49"]),
-        ],
-        img_height,
-    )
+    # lev_lab_sup_l = face_polygon_svg(
+    #     [
+    #         (row["x_41"], row["y_41"]),
+    #         (row["x_40"], row["y_40"]),
+    #         (row["x_49"], row["y_49"]),
+    #     ],
+    #     img_height,
+    # )
 
-    lev_lab_sup_r = face_polygon_svg(
-        [
-            (row["x_47"], row["y_47"]),
-            (row["x_46"], row["y_46"]),
-            (row["x_53"], row["y_53"]),
-        ],
-        img_height,
-    )
+    # lev_lab_sup_r = face_polygon_svg(
+    #     [
+    #         (row["x_47"], row["y_47"]),
+    #         (row["x_46"], row["y_46"]),
+    #         (row["x_53"], row["y_53"]),
+    #     ],
+    #     img_height,
+    # )
 
-    lev_lab_sup_an_l = face_polygon_svg(
-        [
-            (row["x_39"], row["y_39"]),
-            (row["x_49"], row["y_49"]),
-            (row["x_31"], row["y_31"]),
-        ],
-        img_height,
-    )
+    # lev_lab_sup_an_l = face_polygon_svg(
+    #     [
+    #         (row["x_39"], row["y_39"]),
+    #         (row["x_49"], row["y_49"]),
+    #         (row["x_31"], row["y_31"]),
+    #     ],
+    #     img_height,
+    # )
 
-    lev_lab_sup_an_r = face_polygon_svg(
-        [
-            (row["x_35"], row["y_35"]),
-            (row["x_42"], row["y_42"]),
-            (row["x_53"], row["y_53"]),
-        ],
-        img_height,
-    )
+    # lev_lab_sup_an_r = face_polygon_svg(
+    #     [
+    #         (row["x_35"], row["y_35"]),
+    #         (row["x_42"], row["y_42"]),
+    #         (row["x_53"], row["y_53"]),
+    #     ],
+    #     img_height,
+    # )
 
-    zyg_maj_l = face_polygon_svg(
-        [
-            (row["x_48"], row["y_48"]),
-            (row["x_3"], row["y_3"]),
-            (row["x_2"], row["y_2"]),
-        ],
-        img_height,
-    )
+    # zyg_maj_l = face_polygon_svg(
+    #     [
+    #         (row["x_48"], row["y_48"]),
+    #         (row["x_3"], row["y_3"]),
+    #         (row["x_2"], row["y_2"]),
+    #     ],
+    #     img_height,
+    # )
 
-    zyg_maj_r = face_polygon_svg(
-        [
-            (row["x_54"], row["y_54"]),
-            (row["x_13"], row["y_13"]),
-            (row["x_14"], row["y_14"]),
-        ],
-        img_height,
-    )
+    # zyg_maj_r = face_polygon_svg(
+    #     [
+    #         (row["x_54"], row["y_54"]),
+    #         (row["x_13"], row["y_13"]),
+    #         (row["x_14"], row["y_14"]),
+    #     ],
+    #     img_height,
+    # )
 
-    bucc_l = face_polygon_svg(
-        [
-            (row["x_48"], row["y_48"]),
-            (row["x_5"], row["y_50"]),
-            (row["x_5"], row["y_57"]),
-        ],
-        img_height,
-    )
+    # bucc_l = face_polygon_svg(
+    #     [
+    #         (row["x_48"], row["y_48"]),
+    #         (row["x_5"], row["y_50"]),
+    #         (row["x_5"], row["y_57"]),
+    #     ],
+    #     img_height,
+    # )
 
-    bucc_r = face_polygon_svg(
-        [
-            (row["x_54"], row["y_54"]),
-            (row["x_11"], row["y_52"]),
-            (row["x_11"], row["y_57"]),
-        ],
-        img_height,
-    )
+    # bucc_r = face_polygon_svg(
+    #     [
+    #         (row["x_54"], row["y_54"]),
+    #         (row["x_11"], row["y_52"]),
+    #         (row["x_11"], row["y_57"]),
+    #     ],
+    #     img_height,
+    # )
 
-    width_l = (row["y_21"] - row["y_39"]) / 2
+    # width_l = (row["y_21"] - row["y_39"]) / 2
 
-    orb_oc_l = face_polygon_svg(
-        [
-            (row["x_36"] - width_l / 3, row["y_36"] + width_l / 2),
-            (row["x_36"], row["y_36"] + width_l),
-            (row["x_37"], row["y_37"] + width_l),
-            (row["x_38"], row["y_38"] + width_l),
-            (row["x_39"], row["y_39"] + width_l),
-            (row["x_39"] + width_l / 3, row["y_39"] + width_l / 2),
-            (row["x_39"] + width_l / 2, row["y_39"]),
-            (row["x_39"] + width_l / 3, row["y_39"] - width_l / 2),
-            (row["x_39"], row["y_39"] - width_l),
-            (row["x_40"], row["y_40"] - width_l),
-            (row["x_41"], row["y_41"] - width_l),
-            (row["x_36"], row["y_36"] - width_l),
-            (row["x_36"] - width_l / 3, row["y_36"] - width_l / 2),
-            (row["x_36"] - width_l / 2, row["y_36"]),
-        ],
-        img_height,
-    )
+    # orb_oc_l = face_polygon_svg(
+    #     [
+    #         (row["x_36"] - width_l / 3, row["y_36"] + width_l / 2),
+    #         (row["x_36"], row["y_36"] + width_l),
+    #         (row["x_37"], row["y_37"] + width_l),
+    #         (row["x_38"], row["y_38"] + width_l),
+    #         (row["x_39"], row["y_39"] + width_l),
+    #         (row["x_39"] + width_l / 3, row["y_39"] + width_l / 2),
+    #         (row["x_39"] + width_l / 2, row["y_39"]),
+    #         (row["x_39"] + width_l / 3, row["y_39"] - width_l / 2),
+    #         (row["x_39"], row["y_39"] - width_l),
+    #         (row["x_40"], row["y_40"] - width_l),
+    #         (row["x_41"], row["y_41"] - width_l),
+    #         (row["x_36"], row["y_36"] - width_l),
+    #         (row["x_36"] - width_l / 3, row["y_36"] - width_l / 2),
+    #         (row["x_36"] - width_l / 2, row["y_36"]),
+    #     ],
+    #     img_height,
+    # )
 
-    orb_oc_l_inner = face_polygon_svg(
-        [
-            (row["x_36"] - width_l / 6, row["y_36"] + width_l / 5),
-            (row["x_36"], row["y_36"] + width_l / 2),
-            (row["x_37"], row["y_37"] + width_l / 2),
-            (row["x_38"], row["y_38"] + width_l / 2),
-            (row["x_39"], row["y_39"] + width_l / 2),
-            (row["x_39"] + width_l / 6, row["y_39"] + width_l / 5),
-            (row["x_39"] + width_l / 5, row["y_39"]),
-            (row["x_39"] + width_l / 6, row["y_39"] - width_l / 5),
-            (row["x_39"], row["y_39"] - width_l),
-            (row["x_40"], row["y_40"] - width_l),
-            (row["x_41"], row["y_41"] - width_l),
-            (row["x_36"], row["y_36"] - width_l),
-            (row["x_36"] - width_l / 6, row["y_36"] - width_l / 5),
-            (row["x_36"] - width_l / 5, row["y_36"]),
-        ],
-        img_height,
-    )
+    # orb_oc_l_inner = face_polygon_svg(
+    #     [
+    #         (row["x_36"] - width_l / 6, row["y_36"] + width_l / 5),
+    #         (row["x_36"], row["y_36"] + width_l / 2),
+    #         (row["x_37"], row["y_37"] + width_l / 2),
+    #         (row["x_38"], row["y_38"] + width_l / 2),
+    #         (row["x_39"], row["y_39"] + width_l / 2),
+    #         (row["x_39"] + width_l / 6, row["y_39"] + width_l / 5),
+    #         (row["x_39"] + width_l / 5, row["y_39"]),
+    #         (row["x_39"] + width_l / 6, row["y_39"] - width_l / 5),
+    #         (row["x_39"], row["y_39"] - width_l),
+    #         (row["x_40"], row["y_40"] - width_l),
+    #         (row["x_41"], row["y_41"] - width_l),
+    #         (row["x_36"], row["y_36"] - width_l),
+    #         (row["x_36"] - width_l / 6, row["y_36"] - width_l / 5),
+    #         (row["x_36"] - width_l / 5, row["y_36"]),
+    #     ],
+    #     img_height,
+    # )
 
-    width_l2 = (row["y_38"] - row["y_2"]) / 1.5
+    # width_l2 = (row["y_38"] - row["y_2"]) / 1.5
 
-    orb_oc_l_outer = face_polygon_svg(
-        [
-            (row["x_39"] + width_l / 2, row["y_39"] + width_l / 2),
-            (row["x_39"], row["y_39"] - width_l),
-            (row["x_40"], row["y_40"] - width_l2),
-            (row["x_41"], row["y_41"] - width_l2),
-            (row["x_36"], row["y_36"] - width_l2),
-            (row["x_36"] - width_l2 / 3, row["y_36"] - width_l2 / 2),
-            (row["x_36"] - width_l / 2, row["y_36"]),
-        ],
-        img_height,
-    )
+    # orb_oc_l_outer = face_polygon_svg(
+    #     [
+    #         (row["x_39"] + width_l / 2, row["y_39"] + width_l / 2),
+    #         (row["x_39"], row["y_39"] - width_l),
+    #         (row["x_40"], row["y_40"] - width_l2),
+    #         (row["x_41"], row["y_41"] - width_l2),
+    #         (row["x_36"], row["y_36"] - width_l2),
+    #         (row["x_36"] - width_l2 / 3, row["y_36"] - width_l2 / 2),
+    #         (row["x_36"] - width_l / 2, row["y_36"]),
+    #     ],
+    #     img_height,
+    # )
 
-    width_r = (row["y_23"] - row["y_43"]) / 2
+    # width_r = (row["y_23"] - row["y_43"]) / 2
 
-    orb_oc_r = face_polygon_svg(
-        [
-            (row["x_42"] - width_r / 3, row["y_42"] + width_r / 2),
-            (row["x_42"], row["y_42"] + width_r),
-            (row["x_43"], row["y_43"] + width_r),
-            (row["x_44"], row["y_44"] + width_r),
-            (row["x_45"], row["y_45"] + width_r),
-            (row["x_45"] + width_r / 3, row["y_45"] + width_r / 2),
-            (row["x_45"] + width_r / 2, row["y_45"]),
-            (row["x_45"] + width_r / 3, row["y_45"] - width_r / 2),
-            (row["x_45"], row["y_45"] - width_r),
-            (row["x_46"], row["y_46"] - width_r),
-            (row["x_47"], row["y_47"] - width_r),
-            (row["x_42"], row["y_42"] - width_r),
-            (row["x_42"] - width_l / 3, row["y_42"] - width_r / 2),
-            (row["x_42"] - width_r / 2, row["y_42"]),
-        ],
-        img_height,
-    )
+    # orb_oc_r = face_polygon_svg(
+    #     [
+    #         (row["x_42"] - width_r / 3, row["y_42"] + width_r / 2),
+    #         (row["x_42"], row["y_42"] + width_r),
+    #         (row["x_43"], row["y_43"] + width_r),
+    #         (row["x_44"], row["y_44"] + width_r),
+    #         (row["x_45"], row["y_45"] + width_r),
+    #         (row["x_45"] + width_r / 3, row["y_45"] + width_r / 2),
+    #         (row["x_45"] + width_r / 2, row["y_45"]),
+    #         (row["x_45"] + width_r / 3, row["y_45"] - width_r / 2),
+    #         (row["x_45"], row["y_45"] - width_r),
+    #         (row["x_46"], row["y_46"] - width_r),
+    #         (row["x_47"], row["y_47"] - width_r),
+    #         (row["x_42"], row["y_42"] - width_r),
+    #         (row["x_42"] - width_l / 3, row["y_42"] - width_r / 2),
+    #         (row["x_42"] - width_r / 2, row["y_42"]),
+    #     ],
+    #     img_height,
+    # )
 
-    orb_oc_r_inner = face_polygon_svg(
-        [
-            (row["x_42"] - width_r / 6, row["y_42"] + width_r / 5),
-            (row["x_42"], row["y_42"] + width_r / 2),
-            (row["x_43"], row["y_43"] + width_r / 2),
-            (row["x_44"], row["y_44"] + width_r / 2),
-            (row["x_45"], row["y_45"] + width_r / 2),
-            (row["x_45"] + width_r / 6, row["y_45"] + width_r / 5),
-            (row["x_45"] + width_r / 5, row["y_45"]),
-            (row["x_45"] + width_r / 6, row["y_45"] - width_r / 5),
-            (row["x_45"], row["y_45"] - width_r / 2),
-            (row["x_46"], row["y_46"] - width_r / 2),
-            (row["x_47"], row["y_47"] - width_r / 2),
-            (row["x_42"], row["y_42"] - width_r / 2),
-            (row["x_42"] - width_l / 6, row["y_42"] - width_r / 5),
-            (row["x_42"] - width_r / 5, row["y_42"]),
-        ],
-        img_height,
-    )
+    # orb_oc_r_inner = face_polygon_svg(
+    #     [
+    #         (row["x_42"] - width_r / 6, row["y_42"] + width_r / 5),
+    #         (row["x_42"], row["y_42"] + width_r / 2),
+    #         (row["x_43"], row["y_43"] + width_r / 2),
+    #         (row["x_44"], row["y_44"] + width_r / 2),
+    #         (row["x_45"], row["y_45"] + width_r / 2),
+    #         (row["x_45"] + width_r / 6, row["y_45"] + width_r / 5),
+    #         (row["x_45"] + width_r / 5, row["y_45"]),
+    #         (row["x_45"] + width_r / 6, row["y_45"] - width_r / 5),
+    #         (row["x_45"], row["y_45"] - width_r / 2),
+    #         (row["x_46"], row["y_46"] - width_r / 2),
+    #         (row["x_47"], row["y_47"] - width_r / 2),
+    #         (row["x_42"], row["y_42"] - width_r / 2),
+    #         (row["x_42"] - width_l / 6, row["y_42"] - width_r / 5),
+    #         (row["x_42"] - width_r / 5, row["y_42"]),
+    #     ],
+    #     img_height,
+    # )
 
-    width_r2 = (row["y_44"] - row["y_14"]) / 1.5
+    # width_r2 = (row["y_44"] - row["y_14"]) / 1.5
 
-    orb_oc_r_outer = face_polygon_svg(
-        [
-            (row["x_42"] - width_r / 2, row["y_42"]),
-            (row["x_47"], row["y_47"] - width_r2),
-            (row["x_46"], row["y_46"] - width_r2),
-            (row["x_45"], row["y_45"] - width_r2),
-            (row["x_45"] + width_r2 / 3, row["y_45"] - width_r2 / 2),
-            (row["x_45"] + width_r / 2, row["y_45"]),
-        ],
-        img_height,
-    )
+    # orb_oc_r_outer = face_polygon_svg(
+    #     [
+    #         (row["x_42"] - width_r / 2, row["y_42"]),
+    #         (row["x_47"], row["y_47"] - width_r2),
+    #         (row["x_46"], row["y_46"] - width_r2),
+    #         (row["x_45"], row["y_45"] - width_r2),
+    #         (row["x_45"] + width_r2 / 3, row["y_45"] - width_r2 / 2),
+    #         (row["x_45"] + width_r / 2, row["y_45"]),
+    #     ],
+    #     img_height,
+    # )
 
     eye_l = face_polygon_svg(
         [
