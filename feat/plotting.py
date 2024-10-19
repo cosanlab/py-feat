@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
 from feat.utils.io import get_resource_path, download_url
 from feat.utils.image_operations import align_face, mask_image
+from feat.utils import flatten_list
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -38,6 +39,12 @@ __all__ = [
     "imshow",
     "interpolate_aus",
     "animate_face",
+    "face_part_path",
+    "draw_plotly_landmark",
+    "face_polygon_svg",
+    "draw_plotly_au",
+    "draw_plotly_pose",
+    "emotion_annotation_position",
 ]
 
 
@@ -1559,3 +1566,1035 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
     masked_image = mask_image(aligned_img, mask)
 
     return (masked_image, new_landmarks)
+
+
+def face_part_path(row, img_height, line_points):
+    """Helper function to draw SVG path for a specific face part. Requires list of landmark point positions (i.e., [0,1,2]). Last coordinate is end point
+
+    Args:
+        row: (FexSeries) a row of a Fex object
+        img_height (int): the height of the image
+        line_points (list): a list of points on a landmark (i.e., [0:68])
+
+    Returns:
+        fig (str): an SVG string
+    """
+
+    path = ""
+    counter = 0
+    for i in line_points:
+        x = row[f"x_{i}"]
+        y = img_height - row[f"y_{i}"]
+        if counter == 0:
+            path += f"M {x},{y}"
+            counter += 1
+        else:
+            path += f"L {x},{y}"
+    path += " Z"
+    return path
+
+
+def draw_plotly_landmark(
+    row, img_height, fig, line_width=3, line_color="white", output="dictionary"
+):
+    """Helper function to draw an SVG path for a plotly figure object
+
+    Args:
+        row: (FexSeries) a row of a Fex object
+        img_height (int): height of the image to flip the y-coordinates
+        fig: a plotly figure instance
+        output (str): type of output "figure" for plotly figure object or "dictionary"
+        line_width (int): (optional) line width if outputting a plotly figure instance
+        line_color (int): (optional) line color if outputting a plotly figure instance
+
+    Returns:
+        fig (str): an SVG string
+    """
+
+    path = ""
+
+    # Face outline
+    path += face_part_path(
+        row,
+        img_height,
+        [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            9,
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            0,
+        ],
+    )
+
+    # Left Eye
+    path += face_part_path(row, img_height, [36, 37, 38, 39, 40, 41])
+
+    # Right Eye
+    path += face_part_path(row, img_height, [42, 43, 44, 45, 46, 47])
+
+    # Left Eyebrow
+    path += face_part_path(row, img_height, [17, 18, 19, 20, 21, 20, 19, 18, 17])
+
+    # Right Eyebrow
+    path += face_part_path(row, img_height, [22, 23, 24, 25, 26, 25, 24, 23, 22])
+
+    # Lips1
+    path += face_part_path(
+        row, img_height, [48, 49, 50, 51, 52, 53, 54, 64, 63, 62, 61, 60, 48]
+    )
+
+    # Lips2
+    path += face_part_path(
+        row, img_height, [48, 60, 67, 66, 65, 64, 54, 55, 56, 57, 58, 59, 48]
+    )
+
+    # Nose 1
+    path += face_part_path(row, img_height, [27, 28, 29, 30, 29, 28, 27])
+
+    # Nose 2
+    path += face_part_path(row, img_height, [31, 32, 33, 34, 35, 34, 33, 32, 31])
+
+    if output == "figure":
+        # Draw figure
+        fig.add_shape(
+            type="path", path=path, line_color=line_color, line_width=line_width
+        )
+
+        return fig
+
+    elif output == "dictionary":
+        return dict(type="path", path=path, line=dict(color=line_color, width=line_width))
+
+    else:
+        raise ValueError('output can only be ["figure","dictionary"]')
+
+
+def face_polygon_svg(line_points, img_height):
+    """Helper function to draw SVG path for a polygon of a specific face part. Requires list of landmark x,y coordinate tuples (i.e., [(2,2),(5,33)]).
+
+    Args:
+        line_points (list): a list of tuples of landmark coordinates
+        img_height (int): height of the image to flip the y-coordinates
+
+    Returns:
+        fig (str): an SVG string
+    """
+
+    path = ""
+    counter = 0
+    for x, y in line_points:
+        y = img_height - y
+        if counter == 0:
+            path += f"M {x},{y}"
+            counter += 1
+        else:
+            path += f"L {x},{y}"
+    path += " Z"
+    return path
+
+
+def draw_plotly_au(
+    row,
+    img_height,
+    fig,
+    heatmap_resolution=1000,
+    au_opacity=0.9,
+    cmap="Blues",
+    output="dictionary",
+):
+    """Helper function to draw an SVG path for a plotly figure object
+
+        NOTES:
+            Need to clean up muscle ids after looking at face anatomy action units
+
+    Args:
+        row (FexSeries): FexSeries instance
+        img_height (int): height of image overlay. used to adjust coordinates
+        fig: plotly figure handle
+        heatmap_resolution (int): precision of cmap
+        au_opacity (float): amount of opacity for face muscles
+        cmap (str): colormap
+        output (str): type of output "figure" for plotly figure object or "dictionary"
+
+    Returns:
+        fig: plotly figure handle
+    """
+
+    muscle_au_dict = {
+        "masseter_l": 15,
+        "masseter_r": 15,
+        "temporalis_l": 15,
+        "temporalis_r": 15,
+        "dep_lab_inf_l": 14,
+        "dep_lab_inf_r": 14,
+        "dep_ang_or_l": 10,
+        "dep_ang_or_r": 10,
+        "mentalis_l": 11,
+        "mentalis_r": 11,
+        "risorius_l": 12,
+        "risorius_r": 12,
+        "frontalis_l": 1,
+        "frontalis_r": 1,
+        "frontalis_inner_l": 0,
+        "frontalis_inner_r": 0,
+        "cor_sup_l": 2,
+        "cor_sup_r": 2,
+        "lev_lab_sup_l": 7,
+        "lev_lab_sup_r": 7,
+        "lev_lab_sup_an_l": 6,
+        "lev_lab_sup_an_r": 6,
+        "zyg_maj_l": 8,
+        "zyg_maj_r": 8,
+        "bucc_l": 9,
+        "bucc_r": 9,
+        "orb_oc_l_outer": 4,
+        "orb_oc_r_outer": 4,
+        "orb_oc_l": 5,
+        "orb_oc_r": 5,
+        "orb_oc_l_inner": 16,
+        "orb_oc_r_inner": 16,
+        "orb_oris_l": 13,
+        "orb_oris_u": 13,
+    }
+
+    #     muscle_au_dict = {"masseter_l": 15,
+    #                         "masseter_r": 15,
+    #                         "temporalis_l": 15,
+    #                         "temporalis_r": 15,
+    #                         "dep_lab_inf_l": 14,
+    #                         "dep_lab_inf_r": 14,
+    #                         "dep_ang_or_l": 10,
+    #                         "dep_ang_or_r": 10,
+    #                         "mentalis_l": 11,
+    #                         "mentalis_r": 11,
+    #                         "risorius_l": 12,
+    #                         "risorius_r": 12,
+    #                         "frontalis_l": 1,
+    #                         "frontalis_r": 1,
+    #                         "frontalis_inner_l": 0,
+    #                         "frontalis_inner_r": 0,
+    #                         "cor_sup_l": 2,
+    #                         "cor_sup_r": 2,
+    #                         "lev_lab_sup_l": 7,
+    #                         "lev_lab_sup_r": 7,
+    #                         "lev_lab_sup_an_l": 6,
+    #                         "lev_lab_sup_an_r": 6,
+    #                         "zyg_maj_l": 8,
+    #                         "zyg_maj_r": 8,
+    #                         "bucc_l": 9,
+    #                         "bucc_r": 9,
+    #                         "orb_oc_l_outer": 4,
+    #                         "orb_oc_r_outer": 4,
+    #                         "orb_oc_l": 5,
+    #                         "orb_oc_r": 5,
+    #                         "orb_oc_l_inner": 16,
+    #                         "orb_oc_r_inner": 16,
+    #                         "orb_oris_l": 13,
+    #                         "orb_oris_u": 13}
+    # #                         "pars_palp_l": 19,
+    # #                         "pars_palp_r": 19,
+    # #                         "masseter_l_rel": 17,
+    # #                         "masseter_r_rel": 17,
+    # #                         "temporalis_l_rel": 17,
+    # #                         "temporalis_r_rel": 17}
+
+    aus = [
+        "AU01",
+        "AU02",
+        "AU04",
+        "AU05",
+        "AU06",
+        "AU07",
+        "AU09",
+        "AU10",
+        "AU11",
+        "AU12",
+        "AU14",
+        "AU15",
+        "AU17",
+        "AU20",
+        "AU23",
+        "AU24",
+        "AU25",
+        "AU26",
+        "AU28",
+        "AU43",
+    ]
+
+    masseter_l = face_polygon_svg(
+        [
+            (row["x_2"], row["y_2"]),
+            (row["x_3"], row["y_3"]),
+            (row["x_4"], row["y_4"]),
+            (row["x_5"], row["y_5"]),
+            (row["x_6"], row["y_6"]),
+            (row["x_5"], row["y_33"]),
+        ],
+        img_height,
+    )
+
+    masseter_r = face_polygon_svg(
+        [
+            (row["x_14"], row["y_14"]),
+            (row["x_13"], row["y_13"]),
+            (row["x_12"], row["y_12"]),
+            (row["x_11"], row["y_11"]),
+            (row["x_10"], row["y_10"]),
+            (row["x_11"], row["y_33"]),
+        ],
+        img_height,
+    )
+
+    temporalis_l = face_polygon_svg(
+        [
+            (row["x_2"], row["y_2"]),
+            (row["x_1"], row["y_1"]),
+            (row["x_0"], row["y_0"]),
+            (row["x_17"], row["y_17"]),
+            (row["x_36"], row["y_36"]),
+        ],
+        img_height,
+    )
+
+    temporalis_r = face_polygon_svg(
+        [
+            (row["x_14"], row["y_14"]),
+            (row["x_15"], row["y_15"]),
+            (row["x_16"], row["y_16"]),
+            (row["x_26"], row["y_26"]),
+            (row["x_45"], row["y_45"]),
+        ],
+        img_height,
+    )
+
+    dep_lab_inf_l = face_polygon_svg(
+        [
+            (row["x_57"], row["y_57"]),
+            (row["x_58"], row["y_58"]),
+            (row["x_59"], row["y_59"]),
+            (row["x_6"], row["y_6"]),
+            (row["x_7"], row["y_7"]),
+        ],
+        img_height,
+    )
+
+    dep_lab_inf_r = face_polygon_svg(
+        [
+            (row["x_57"], row["y_57"]),
+            (row["x_56"], row["y_56"]),
+            (row["x_55"], row["y_55"]),
+            (row["x_10"], row["y_10"]),
+            (row["x_9"], row["y_9"]),
+        ],
+        img_height,
+    )
+
+    dep_ang_or_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_7"], row["y_7"]),
+            (row["x_6"], row["y_6"]),
+        ],
+        img_height,
+    )
+
+    dep_ang_or_r = face_polygon_svg(
+        [
+            (row["x_54"], row["y_54"]),
+            (row["x_9"], row["y_9"]),
+            (row["x_10"], row["y_10"]),
+        ],
+        img_height,
+    )
+
+    mentalis_l = face_polygon_svg(
+        [
+            (row["x_58"], row["y_58"]),
+            (row["x_7"], row["y_7"]),
+            (row["x_8"], row["y_8"]),
+        ],
+        img_height,
+    )
+
+    mentalis_r = face_polygon_svg(
+        [
+            (row["x_56"], row["y_56"]),
+            (row["x_9"], row["y_9"]),
+            (row["x_8"], row["y_8"]),
+        ],
+        img_height,
+    )
+
+    risorius_l = face_polygon_svg(
+        [
+            (row["x_4"], row["y_4"]),
+            (row["x_5"], row["y_5"]),
+            (row["x_48"], row["y_48"]),
+        ],
+        img_height,
+    )
+
+    risorius_r = face_polygon_svg(
+        [
+            (row["x_11"], row["y_11"]),
+            (row["x_12"], row["y_12"]),
+            (row["x_54"], row["y_54"]),
+        ],
+        img_height,
+    )
+
+    bottom = (row["y_8"] - row["y_57"]) / 2
+
+    orb_oris_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_59"], row["y_59"]),
+            (row["x_58"], row["y_58"]),
+            (row["x_57"], row["y_57"]),
+            (row["x_56"], row["y_56"]),
+            (row["x_55"], row["y_55"] + bottom),
+            (row["x_54"], row["y_54"] + bottom),
+            (row["x_55"], row["y_55"] + bottom),
+            (row["x_56"], row["y_56"] + bottom),
+            (row["x_57"], row["y_57"] + bottom),
+            (row["x_58"], row["y_58"] + bottom),
+            (row["x_59"], row["y_59"] + bottom),
+        ],
+        img_height,
+    )
+
+    orb_oris_u = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_49"], row["y_49"]),
+            (row["x_50"], row["y_50"]),
+            (row["x_51"], row["y_51"]),
+            (row["x_52"], row["y_52"]),
+            (row["x_53"], row["y_53"]),
+            (row["x_54"], row["y_54"]),
+            (row["x_33"], row["y_33"]),
+        ],
+        img_height,
+    )
+
+    frontalis_l = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_39"], row["y_39"]),
+            (row["x_38"], row["y_38"]),
+            (row["x_37"], row["y_37"]),
+            (row["x_36"], row["y_36"]),
+            (row["x_17"], row["y_17"]),
+            (row["x_18"], row["y_18"]),
+            (row["x_19"], row["y_19"]),
+            (row["x_20"], row["y_20"]),
+            (row["x_21"], row["y_21"]),
+        ],
+        img_height,
+    )
+
+    frontalis_r = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_22"], row["y_22"]),
+            (row["x_23"], row["y_23"]),
+            (row["x_24"], row["y_24"]),
+            (row["x_25"], row["y_25"]),
+            (row["x_26"], row["y_26"]),
+            (row["x_45"], row["y_45"]),
+            (row["x_44"], row["y_44"]),
+            (row["x_43"], row["y_43"]),
+            (row["x_42"], row["y_42"]),
+        ],
+        img_height,
+    )
+
+    frontalis_inner_l = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_39"], row["y_39"]),
+            (row["x_21"], row["y_21"]),
+        ],
+        img_height,
+    )
+
+    frontalis_inner_r = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_42"], row["y_42"]),
+            (row["x_22"], row["y_22"]),
+        ],
+        img_height,
+    )
+
+    cor_sup_l = face_polygon_svg(
+        [
+            (row["x_28"], row["y_28"]),
+            (row["x_19"], row["y_19"]),
+            (row["x_20"], row["y_20"]),
+        ],
+        img_height,
+    )
+
+    cor_sup_r = face_polygon_svg(
+        [
+            (row["x_28"], row["y_28"]),
+            (row["x_23"], row["y_23"]),
+            (row["x_24"], row["y_24"]),
+        ],
+        img_height,
+    )
+
+    lev_lab_sup_l = face_polygon_svg(
+        [
+            (row["x_41"], row["y_41"]),
+            (row["x_40"], row["y_40"]),
+            (row["x_49"], row["y_49"]),
+        ],
+        img_height,
+    )
+
+    lev_lab_sup_r = face_polygon_svg(
+        [
+            (row["x_47"], row["y_47"]),
+            (row["x_46"], row["y_46"]),
+            (row["x_53"], row["y_53"]),
+        ],
+        img_height,
+    )
+
+    lev_lab_sup_an_l = face_polygon_svg(
+        [
+            (row["x_39"], row["y_39"]),
+            (row["x_49"], row["y_49"]),
+            (row["x_31"], row["y_31"]),
+        ],
+        img_height,
+    )
+
+    lev_lab_sup_an_r = face_polygon_svg(
+        [
+            (row["x_35"], row["y_35"]),
+            (row["x_42"], row["y_42"]),
+            (row["x_53"], row["y_53"]),
+        ],
+        img_height,
+    )
+
+    zyg_maj_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_3"], row["y_3"]),
+            (row["x_2"], row["y_2"]),
+        ],
+        img_height,
+    )
+
+    zyg_maj_r = face_polygon_svg(
+        [
+            (row["x_54"], row["y_54"]),
+            (row["x_13"], row["y_13"]),
+            (row["x_14"], row["y_14"]),
+        ],
+        img_height,
+    )
+
+    bucc_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_5"], row["y_50"]),
+            (row["x_5"], row["y_57"]),
+        ],
+        img_height,
+    )
+
+    bucc_r = face_polygon_svg(
+        [
+            (row["x_54"], row["y_54"]),
+            (row["x_11"], row["y_52"]),
+            (row["x_11"], row["y_57"]),
+        ],
+        img_height,
+    )
+
+    width_l = (row["y_21"] - row["y_39"]) / 2
+
+    orb_oc_l = face_polygon_svg(
+        [
+            (row["x_36"] - width_l / 3, row["y_36"] + width_l / 2),
+            (row["x_36"], row["y_36"] + width_l),
+            (row["x_37"], row["y_37"] + width_l),
+            (row["x_38"], row["y_38"] + width_l),
+            (row["x_39"], row["y_39"] + width_l),
+            (row["x_39"] + width_l / 3, row["y_39"] + width_l / 2),
+            (row["x_39"] + width_l / 2, row["y_39"]),
+            (row["x_39"] + width_l / 3, row["y_39"] - width_l / 2),
+            (row["x_39"], row["y_39"] - width_l),
+            (row["x_40"], row["y_40"] - width_l),
+            (row["x_41"], row["y_41"] - width_l),
+            (row["x_36"], row["y_36"] - width_l),
+            (row["x_36"] - width_l / 3, row["y_36"] - width_l / 2),
+            (row["x_36"] - width_l / 2, row["y_36"]),
+        ],
+        img_height,
+    )
+
+    orb_oc_l_inner = face_polygon_svg(
+        [
+            (row["x_36"] - width_l / 6, row["y_36"] + width_l / 5),
+            (row["x_36"], row["y_36"] + width_l / 2),
+            (row["x_37"], row["y_37"] + width_l / 2),
+            (row["x_38"], row["y_38"] + width_l / 2),
+            (row["x_39"], row["y_39"] + width_l / 2),
+            (row["x_39"] + width_l / 6, row["y_39"] + width_l / 5),
+            (row["x_39"] + width_l / 5, row["y_39"]),
+            (row["x_39"] + width_l / 6, row["y_39"] - width_l / 5),
+            (row["x_39"], row["y_39"] - width_l),
+            (row["x_40"], row["y_40"] - width_l),
+            (row["x_41"], row["y_41"] - width_l),
+            (row["x_36"], row["y_36"] - width_l),
+            (row["x_36"] - width_l / 6, row["y_36"] - width_l / 5),
+            (row["x_36"] - width_l / 5, row["y_36"]),
+        ],
+        img_height,
+    )
+
+    width_l2 = (row["y_38"] - row["y_2"]) / 1.5
+
+    orb_oc_l_outer = face_polygon_svg(
+        [
+            (row["x_39"] + width_l / 2, row["y_39"] + width_l / 2),
+            (row["x_39"], row["y_39"] - width_l),
+            (row["x_40"], row["y_40"] - width_l2),
+            (row["x_41"], row["y_41"] - width_l2),
+            (row["x_36"], row["y_36"] - width_l2),
+            (row["x_36"] - width_l2 / 3, row["y_36"] - width_l2 / 2),
+            (row["x_36"] - width_l / 2, row["y_36"]),
+        ],
+        img_height,
+    )
+
+    width_r = (row["y_23"] - row["y_43"]) / 2
+
+    orb_oc_r = face_polygon_svg(
+        [
+            (row["x_42"] - width_r / 3, row["y_42"] + width_r / 2),
+            (row["x_42"], row["y_42"] + width_r),
+            (row["x_43"], row["y_43"] + width_r),
+            (row["x_44"], row["y_44"] + width_r),
+            (row["x_45"], row["y_45"] + width_r),
+            (row["x_45"] + width_r / 3, row["y_45"] + width_r / 2),
+            (row["x_45"] + width_r / 2, row["y_45"]),
+            (row["x_45"] + width_r / 3, row["y_45"] - width_r / 2),
+            (row["x_45"], row["y_45"] - width_r),
+            (row["x_46"], row["y_46"] - width_r),
+            (row["x_47"], row["y_47"] - width_r),
+            (row["x_42"], row["y_42"] - width_r),
+            (row["x_42"] - width_l / 3, row["y_42"] - width_r / 2),
+            (row["x_42"] - width_r / 2, row["y_42"]),
+        ],
+        img_height,
+    )
+
+    orb_oc_r_inner = face_polygon_svg(
+        [
+            (row["x_42"] - width_r / 6, row["y_42"] + width_r / 5),
+            (row["x_42"], row["y_42"] + width_r / 2),
+            (row["x_43"], row["y_43"] + width_r / 2),
+            (row["x_44"], row["y_44"] + width_r / 2),
+            (row["x_45"], row["y_45"] + width_r / 2),
+            (row["x_45"] + width_r / 6, row["y_45"] + width_r / 5),
+            (row["x_45"] + width_r / 5, row["y_45"]),
+            (row["x_45"] + width_r / 6, row["y_45"] - width_r / 5),
+            (row["x_45"], row["y_45"] - width_r / 2),
+            (row["x_46"], row["y_46"] - width_r / 2),
+            (row["x_47"], row["y_47"] - width_r / 2),
+            (row["x_42"], row["y_42"] - width_r / 2),
+            (row["x_42"] - width_l / 6, row["y_42"] - width_r / 5),
+            (row["x_42"] - width_r / 5, row["y_42"]),
+        ],
+        img_height,
+    )
+
+    width_r2 = (row["y_44"] - row["y_14"]) / 1.5
+
+    orb_oc_r_outer = face_polygon_svg(
+        [
+            (row["x_42"] - width_r / 2, row["y_42"]),
+            (row["x_47"], row["y_47"] - width_r2),
+            (row["x_46"], row["y_46"] - width_r2),
+            (row["x_45"], row["y_45"] - width_r2),
+            (row["x_45"] + width_r2 / 3, row["y_45"] - width_r2 / 2),
+            (row["x_45"] + width_r / 2, row["y_45"]),
+        ],
+        img_height,
+    )
+
+    eye_l = face_polygon_svg(
+        [
+            (row["x_36"], row["y_36"]),
+            (row["x_37"], row["y_37"]),
+            (row["x_38"], row["y_38"]),
+            (row["x_39"], row["y_39"]),
+            (row["x_40"], row["y_40"]),
+            (row["x_41"], row["y_41"]),
+        ],
+        img_height,
+    )
+
+    eye_r = face_polygon_svg(
+        [
+            (row["x_42"], row["y_42"]),
+            (row["x_43"], row["y_43"]),
+            (row["x_44"], row["y_44"]),
+            (row["x_45"], row["y_45"]),
+            (row["x_46"], row["y_46"]),
+            (row["x_47"], row["y_47"]),
+        ],
+        img_height,
+    )
+
+    # Outside Mouth
+    #     mouth = face_polygon_path([(row['x_48'],row['y_48']),
+    #                                (row['x_49'],row['y_49']),
+    #                                (row['x_50'],row['y_50']),
+    #                                (row['x_51'],row['y_51']),
+    #                                (row['x_52'],row['y_52']),
+    #                                (row['x_53'],row['y_53']),
+    #                                (row['x_54'],row['y_54']),
+    #                                (row['x_55'],row['y_55']),
+    #                                (row['x_56'],row['y_56']),
+    #                                (row['x_57'],row['y_57']),
+    #                                (row['x_58'],row['y_58']),
+    #                                (row['x_59'],row['y_59'])], img_height)
+    # Inside Mouth
+    mouth = face_polygon_svg(
+        [
+            (row["x_60"], row["y_60"]),
+            (row["x_61"], row["y_61"]),
+            (row["x_62"], row["y_62"]),
+            (row["x_63"], row["y_63"]),
+            (row["x_64"], row["y_64"]),
+            (row["x_65"], row["y_65"]),
+            (row["x_66"], row["y_66"]),
+            (row["x_67"], row["y_67"]),
+        ],
+        img_height,
+    )
+
+    pupil_l = [
+        (
+            (
+                row["x_36"]
+                + row["x_37"]
+                + row["x_38"]
+                + row["x_40"]
+                + row["x_41"]
+                + row["x_39"]
+            )
+            / 6,
+            (
+                img_height
+                - (
+                    row["y_36"]
+                    + row["y_37"]
+                    + row["y_38"]
+                    + row["y_40"]
+                    + row["y_41"]
+                    + row["y_39"]
+                )
+                / 6
+            ),
+        ),
+        (
+            (row["x_38"] + row["x_40"]) / 2,
+            (img_height - (row["y_37"] + row["y_38"]) / 2),
+        ),
+    ]
+    pupil_r = [
+        (
+            (row["x_43"] + row["x_44"] + row["x_46"] + row["x_47"]) / 4,
+            (img_height - (row["y_43"] + row["y_44"] + row["y_46"] + row["y_47"]) / 4),
+        ),
+        (
+            (row["x_44"] + row["x_46"]) / 2,
+            (img_height - (row["y_43"] + row["y_44"]) / 2),
+        ),
+    ]
+
+    # Build AU heatmap
+    cmap = sns.color_palette(cmap, heatmap_resolution + 1)
+
+    if output == "figure":
+        for muscle in list(muscle_au_dict.keys()):
+            color = cmap.as_hex()[
+                int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
+            ]
+            fig.add_shape(
+                type="path",
+                path=eval(muscle),
+                line_color=color,
+                fillcolor=color,
+                opacity=au_opacity,
+            )
+
+            for region in [eye_l, eye_r, mouth]:
+                fig.add_shape(
+                    type="path",
+                    path=region,
+                    line_color="black",
+                    line_width=2,
+                    fillcolor="white",
+                )
+
+            for pupil in [pupil_l, pupil_r]:
+                fig.add_shape(
+                    type="circle",
+                    xref="x",
+                    yref="y",
+                    fillcolor="black",
+                    x0=pupil[0][0],
+                    y0=pupil[0][1],
+                    x1=pupil[1][0],
+                    y1=pupil[1][1],
+                    line_color="black",
+                    line_width=3,
+                )
+
+        return fig
+
+    elif output == "dictionary":
+        muscles = []
+        for muscle in list(muscle_au_dict.keys()):
+            color = cmap.as_hex()[
+                int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
+            ]
+            muscles.append(
+                dict(
+                    type="path",
+                    path=eval(muscle),
+                    fillcolor=color,
+                    opacity=au_opacity,
+                    line=dict(color=color),
+                )
+            )
+
+        regions = []
+        for region in [eye_l, eye_r, mouth]:
+            regions.append(
+                dict(
+                    type="path",
+                    path=region,
+                    line_width=2,
+                    fillcolor="white",
+                    line=dict(color="black"),
+                )
+            )
+
+        pupils = []
+        for pupil in [pupil_l, pupil_r]:
+            pupils.append(
+                dict(
+                    type="circle",
+                    xref="x",
+                    yref="y",
+                    fillcolor="black",
+                    x0=pupil[0][0],
+                    y0=pupil[0][1],
+                    x1=pupil[1][0],
+                    y1=pupil[1][1],
+                    line_width=3,
+                    line=dict(color="black"),
+                )
+            )
+        return flatten_list([muscles, regions, pupils])
+
+    else:
+        raise ValueError('output can only be ["figure","dictionary"]')
+
+
+def draw_plotly_pose(row, img_height, fig, line_width=2, output="dictionary"):
+    """
+    Helper function to draw a path indicating the x,y,z pose position.
+
+    Args:
+        row (FexSeries): FexSeries instance
+        img_height (int): height of image overlay. used to adjust coordinates
+        fig: plotly figure handle
+        line_width (int): (optional) width of line if outputing a plotly figure instance
+        output (str): type of output "figure" for plotly figure object or "dictionary"
+
+    Returns:
+        fig: plotly figure handle
+    """
+
+    # Center axis on facebox
+    x1, y1, w, h = row[["FaceRectX", "FaceRectY", "FaceRectWidth", "FaceRectHeight"]]
+    x2, y2 = x1 + w, y1 + h
+    tdx = (x1 + x2) / 2
+    tdy = (y1 + y2) / 2
+
+    # Make rotation axis lines proportional to facebox size
+    size = min(x2 - x1, y2 - y1) // 2
+
+    # Get pose axes
+    pitch, roll, yaw = row[["Pitch", "Roll", "Yaw"]]
+    pitch = pitch * np.pi / 180
+    yaw = -(yaw * np.pi / 180)
+    roll = roll * np.pi / 180
+
+    # X-Axis pointing to right. drawn in red
+    x1 = size * (np.cos(yaw) * np.cos(roll)) + tdx
+    y1 = (
+        size * (np.cos(pitch) * np.sin(roll) + np.cos(roll) * np.sin(pitch) * np.sin(yaw))
+        + tdy
+    )
+
+    # Y-Axis | drawn in green
+    x2 = size * (-np.cos(yaw) * np.sin(roll)) + tdx
+    y2 = (
+        size * (np.cos(pitch) * np.cos(roll) - np.sin(pitch) * np.sin(yaw) * np.sin(roll))
+        + tdy
+    )
+
+    # Z-Axis (out of the screen) drawn in blue
+    x3 = size * (np.sin(yaw)) + tdx
+    y3 = size * (-np.cos(yaw) * np.sin(pitch)) + tdy
+
+    # Flip y coordinates
+    tdy, y1, y2, y3 = [img_height - c for c in [tdy, y1, y2, y3]]
+
+    if output == "figure":
+        # Draw face and pose axes
+        fig.add_shape(
+            type="line",
+            x0=tdx,
+            y0=tdy,
+            x1=x1,
+            y1=y1,
+            line=dict(color="red", width=line_width),
+        )
+        fig.add_shape(
+            type="line",
+            x0=tdx,
+            y0=tdy,
+            x1=x2,
+            y1=y2,
+            line=dict(color="green", width=line_width),
+        )
+        fig.add_shape(
+            type="line",
+            x0=tdx,
+            y0=tdy,
+            x1=x3,
+            y1=y3,
+            line=dict(color="blue", width=line_width),
+        )
+        return fig
+
+    elif output == "dictionary":
+        return [
+            dict(type="line", x0=tdx, y0=tdy, x1=x1, y1=y1, line=dict(color="red")),
+            dict(type="line", x0=tdx, y0=tdy, x1=x2, y1=y2, line=dict(color="green")),
+            dict(type="line", x0=tdx, y0=tdy, x1=x3, y1=y3, line=dict(color="blue")),
+        ]
+    #     return [dict(type='line', x0=tdx, y0=tdy, x1=x1, y1=y1, line_color="red", width=line_width),
+    #                 dict(type='line', x0=tdx, y0=tdy, x1=x2, y1=y2, line_color="green", width=line_width),
+    #                 dict(type='line', x0=tdx, y0=tdy, x1=x3, y1=y3, line_color="blue", width=line_width)]
+
+    else:
+        raise ValueError('output can only be ["figure","dictionary"]')
+
+
+def emotion_annotation_position(
+    row, img_height, img_width, emotions_size=12, emotions_position="bottom"
+):
+    """Helper function to adjust position of emotion annotations
+
+    Args:
+        row (FexSeries): FexSeries instance
+        img_height (int): height of image overlay. used to adjust coordinates
+        img_width (int): width of image overlay. used to adjust coordinates
+        emotions_size (int): size of text used to adjust positions
+        emotions_position (str): position to place emotion annotations ['left', 'right', 'top', 'bottom']
+
+    Returns:
+        x_position (int):
+        y_position (int):
+        align (str): plotly annotation text alignment ['top','bottom', 'left', 'right ]
+        valign (str): plotly annotation vertical alignment ['middle', 'top', 'bottom']
+    """
+
+    y_spacing = img_height * 0.01 * emotions_size * 0.5
+    x_spacing = img_width * 0.02 * emotions_size * 0.18
+
+    if emotions_position.lower() == "bottom":
+        x_position = row["FaceRectX"] + row["FaceRectWidth"] / 2
+        y_position = (
+            img_height
+            - row["FaceRectY"]
+            - row["FaceRectHeight"]
+            - img_height * 0.04
+            - y_spacing
+        )
+        align = "left"
+        valign = "bottom"
+    elif emotions_position.lower() == "top":
+        x_position = row["FaceRectX"] + row["FaceRectWidth"] / 2
+        y_position = (
+            img_height
+            - row["FaceRectY"]
+            + row["FaceRectHeight"] / 2
+            + y_spacing
+            - img_height * 0.04
+        )
+        align = "left"
+        valign = "bottom"
+    elif emotions_position.lower() == "right":
+        x_position = (
+            row["FaceRectX"] + row["FaceRectWidth"] + img_width * 0.025 + x_spacing
+        )
+        y_position = img_height - row["FaceRectY"] - row["FaceRectHeight"] / 2
+        align = "left"
+        valign = "middle"
+    elif emotions_position.lower() == "left":
+        x_position = (
+            row["FaceRectX"] - row["FaceRectWidth"] / 2 - x_spacing + img_width * 0.01
+        )
+        y_position = img_height - row["FaceRectY"] - row["FaceRectHeight"] / 2
+        align = "right"
+        valign = "middle"
+    else:
+        raise ValueError(
+            '"emotions_position" must be one of ["bottom","top","left","right"]'
+        )
+
+    return (x_position, y_position, align, valign)
