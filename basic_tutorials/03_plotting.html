@@ -1,0 +1,939 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>3. Visualizing Facial Expressions &#8212; Py-Feat</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'basic_tutorials/03_plotting';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. Running a full analysis" href="04_fex_analysis.html" />
+    <link rel="prev" title="2. Detecting facial expressions from videos" href="02_detector_vids.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../pages/intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/pyfeat_logo_small.png" class="logo__image only-light" alt="Py-Feat - Home"/>
+    <script>document.write(`<img src="../_static/pyfeat_logo_small.png" class="logo__image only-dark" alt="Py-Feat - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../pages/intro.html">
+                    Py-Feat: Python Facial Expression Analysis Toolbox
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">How to install Py-Feat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/models.html">Included pre-trained detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/au_reference.html">Action Unit Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/usage_guide.html">Tips, Community, and Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/faqs.html">FAQS</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="01_basics.html">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_fex_analysis.html">4. Running a full analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">6. Training an AU visualization model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">7. Example labels and landmark dataset loading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/08_train_hogs.html">8. Training HOG-based AU detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/09_test_bbox.html">9. Benchmarking Bounding Box using data</a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/10_test_lands.html">10. Benchmarking Landmark models using data</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/11_test_Poseinfo.html">11. Benchmarking Pose detectors using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/12_test_aus.html">12. Benchmarking Action Unit detector using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/13_test_emos.html">13. Benchmarking pyfeat Emotion detection algorithms using data</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../pages/api.html">API Reference</a></li>
+
+
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../pages/contribute.html">General contributions guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/modelContribution.html">Contributing new detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/changelog.html">Change Log</a></li>
+
+
+
+
+
+
+
+
+
+<li class="toctree-l1"><a class="reference external" href="https://github.com/cosanlab/py-feat">GitHub Repository</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/basic_tutorials/03_plotting.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onBinder"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../_static/images/logo_binder.svg">
+  </span>
+<span class="btn__text-container">Binder</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://jhub.dartmouth.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/basic_tutorials/03_plotting.ipynb&branch=master" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onJupyterHub"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../_static/images/logo_jupyterhub.svg">
+  </span>
+<span class="btn__text-container">JupyterHub</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/basic_tutorials/03_plotting.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/cosanlab/py-feat" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fbasic_tutorials/03_plotting.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/basic_tutorials/03_plotting.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>3. Visualizing Facial Expressions</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-a-neutral-default-face">3.1 Plotting a neutral (default) face</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-au-activations">3.2 Plotting AU activations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-muscle-heatmaps-to-the-plot">Adding muscle heatmaps to the plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-gaze-vectors-to-the-plot">Adding gaze vectors to the plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-vectorfield-arrows-to-highlight-facial-movement">Adding vectorfield arrows to highlight facial movement</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animating-facial-expressions">3.3 Animating facial expressions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-complex-animations">More complex animations</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="visualizing-facial-expressions">
+<h1>3. Visualizing Facial Expressions<a class="headerlink" href="#visualizing-facial-expressions" title="Permalink to this heading">#</a></h1>
+<p><em>written by Eshin Jolly</em></p>
+<p>In this tutorial we’ll explore plotting in Py-Feat using functions from the <code class="docutils literal notranslate"><span class="pre">feat.plotting</span></code> module along with plotting methods using the Fex data class. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/04_plotting.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
+<p>To help visualize facial expressions in a standardized way, Py-Feat includes a pre-trained partial-least-squares (PLS) model that can map between an array of AU intensities (between 0-N) and facial landmark coordinates. Just pass in a numpy array of AU intensities to the <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> function to visualize the resulting facial expression. In general we find that a 4 by 5 aspect ratio seems to work best when plotting faces (default in <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>).</p>
+<p>For more details on how this visualization model was trained and how to train your own see <a class="reference external" href="https://py-feat.org/extra_tutorials/trainAUvisModel.html">this advanced tutorial</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
+<span class="c1"># !pip install -q py-feat</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="plotting-a-neutral-default-face">
+<h2>3.1 Plotting a neutral (default) face<a class="headerlink" href="#plotting-a-neutral-default-face" title="Permalink to this heading">#</a></h2>
+<p>To plot a neutral facial expression just pass in an array of 0s to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> which always returns a matplotlib axis handle:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">plot_face</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># 20 dimensional vector of AU intensities</span>
+<span class="c1"># AUs ordered as:</span>
+<span class="c1"># 1, 2, 4, 5, 6, 7, 9, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43</span>
+<span class="n">neutral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Neutral&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/7d8fa451e00601e89eec0c4697490ef6da3c4be467c97d314edf11e47603d62e.png" src="../_images/7d8fa451e00601e89eec0c4697490ef6da3c4be467c97d314edf11e47603d62e.png" />
+</div>
+</div>
+</section>
+<section id="plotting-au-activations">
+<h2>3.2 Plotting AU activations<a class="headerlink" href="#plotting-au-activations" title="Permalink to this heading">#</a></h2>
+<p>Plotting facial expressions from AU activity is just as a simple. Below we increase the intensity of AU1 (inner brow raiser) to 3 before passing it to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>.</p>
+<p>In general based on how our visualization model works, we don’t recommend AU intensities greater than 3 as more exaggerated intensities can produce distorted facial expressions</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">raised_inner_brow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="c1"># Increase AU1 intensity: Inner brow raiser</span>
+<span class="n">raised_inner_brow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">raised_inner_brow</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/d57d6204afd3976aecd7b6342e5293527279325d608a07f84461f02af833499c.png" src="../_images/d57d6204afd3976aecd7b6342e5293527279325d608a07f84461f02af833499c.png" />
+</div>
+</div>
+<section id="adding-muscle-heatmaps-to-the-plot">
+<h3>Adding muscle heatmaps to the plot<a class="headerlink" href="#adding-muscle-heatmaps-to-the-plot" title="Permalink to this heading">#</a></h3>
+<p>We can also visualize how AU intensity affects the underyling facial muscle movement by passing in a dictionary of facial muscle names and colors (or the value <code class="docutils literal notranslate"><span class="pre">'heatmap'</span></code>) to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>.</p>
+<p>Below we activate 2 AUs and use the key <code class="docutils literal notranslate"><span class="pre">'all'</span></code> with the value <code class="docutils literal notranslate"><span class="pre">'heatmap'</span></code> to overlay muscle movement intensities affected by these specific AUs:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Activate AUs</span>
+<span class="n">smiling</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># Overlay muscles </span>
+<span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">}</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span> <span class="o">=</span> <span class="n">smiling</span><span class="p">,</span> <span class="n">muscles</span> <span class="o">=</span> <span class="n">muscles</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Smiling&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/0e57b2512e1b13abaea9c0797a6a0a881d7eb286fd213a9e41931c32aa99a0b9.png" src="../_images/0e57b2512e1b13abaea9c0797a6a0a881d7eb286fd213a9e41931c32aa99a0b9.png" />
+</div>
+</div>
+<p>But it’s also possibile to arbitrarily highlight any facial muscle by setting it to a color instead. This ignores the AU intensity and useful for highlighting specific facial muscles. Below we higlight two different muscles on a neutral face:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;temporalis_r_rel&#39;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s1">&#39;pars_palp_l&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">}</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">muscles</span><span class="o">=</span><span class="n">muscles</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/2faa2f712f4ebba684ef9facdd095700d40fe5d500b41114b7f43842901852e8.png" src="../_images/2faa2f712f4ebba684ef9facdd095700d40fe5d500b41114b7f43842901852e8.png" />
+</div>
+</div>
+</section>
+<section id="adding-gaze-vectors-to-the-plot">
+<h3>Adding gaze vectors to the plot<a class="headerlink" href="#adding-gaze-vectors-to-the-plot" title="Permalink to this heading">#</a></h3>
+<p>Py-Feat also supports overlaying gaze vectors to indicate where the eyes are looking. By default the eyes are always in a neutral position pointing forward. But it’s possible to pass an array to the <code class="docutils literal notranslate"><span class="pre">gaze</span></code> argument of <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> to move the eyes.<br />
+Gaze vectors are length 4 <code class="docutils literal notranslate"><span class="pre">(lefteye_x,</span> <span class="pre">lefteye_y,</span> <span class="pre">righteye_x,</span> <span class="pre">righteye_y)</span></code> where the y orientation is positive for looking upwards.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add some gaze vectors: (lefteye_x, lefteye_y, righteye_x, righteye_y)</span>
+<span class="n">gaze</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">gaze</span><span class="o">=</span><span class="n">gaze</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Looking up&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/669af2e3e79a2d2e1144e699b2ba8be533e14cb8e69bebcb088ef7578d96c3c6.png" src="../_images/669af2e3e79a2d2e1144e699b2ba8be533e14cb8e69bebcb088ef7578d96c3c6.png" />
+</div>
+</div>
+</section>
+<section id="adding-vectorfield-arrows-to-highlight-facial-movement">
+<h3>Adding vectorfield arrows to highlight facial movement<a class="headerlink" href="#adding-vectorfield-arrows-to-highlight-facial-movement" title="Permalink to this heading">#</a></h3>
+<p>One way we can highlight how a faces change between two expressions is by overlaying a vectorfield of arrows for each facial landmark pointing in the direction of movement from one face to another. To do so, we use the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> function to get landmark data for each array of AU intensities we want to plot and generate a <code class="docutils literal notranslate"><span class="pre">vectors</span></code> dictionary with keys for the <code class="docutils literal notranslate"><span class="pre">'target'</span></code> and <code class="docutils literal notranslate"><span class="pre">'reference'</span></code> faces. Then we can pass this dictionary to the <code class="docutils literal notranslate"><span class="pre">vectorfield</span></code> argument of <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">predict</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># Get landmarks</span>
+<span class="n">neutral_landmarks</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">neutral</span><span class="p">)</span>
+<span class="n">raised_inner_brow_landmarks</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">raised_inner_brow</span><span class="p">)</span>
+
+<span class="c1"># Provide target landmarks and other vector specifications</span>
+<span class="n">netural_to_target</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">raised_inner_brow_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">neutral_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">target_to_neutral</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">raised_inner_brow_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">neutral_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Vectorfield goes from neutral -&gt; target on neutral face</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Neutral&quot;</span><span class="p">,</span> <span class="n">vectorfield</span><span class="o">=</span><span class="n">netural_to_target</span><span class="p">)</span>
+<span class="c1"># Vectorfield goes target -&gt; neutral on target face</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="n">au</span><span class="o">=</span><span class="n">raised_inner_brow</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">,</span>
+    <span class="n">vectorfield</span><span class="o">=</span><span class="n">target_to_neutral</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/ca5fcc2f45e37a16a7593627e9512fb9e93c0d82d404262094d799d06fceb62f.png" src="../_images/ca5fcc2f45e37a16a7593627e9512fb9e93c0d82d404262094d799d06fceb62f.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="animating-facial-expressions">
+<h2>3.3 Animating facial expressions<a class="headerlink" href="#animating-facial-expressions" title="Permalink to this heading">#</a></h2>
+<p>Py-Feat includes an <code class="docutils literal notranslate"><span class="pre">animate_face()</span></code> function which makes it easy to “morph” one facial expression into another by interpolating between AU intensities. This function generates a GIF specified by the <code class="docutils literal notranslate"><span class="pre">save</span></code> argument. You can use this function in two ways:</p>
+<ol class="arabic simple">
+<li><p>Using the <code class="docutils literal notranslate"><span class="pre">AU</span></code> keyword argument and a single scalar value for <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code></p></li>
+<li><p>Passing in 2 arrays of AU intensities for <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code></p></li>
+</ol>
+<p>The first style is mostly just a convenient way to visualize changes for a single AU. Below we use this style to animate raising of the inner brow:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">animate_face</span>
+
+<span class="c1"># Just pass in a FACS AU id, in this case we pass in 1 which is the inner brow raiser</span>
+<span class="n">animate_face</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">AU</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="s2">&quot;AU1.gif&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we can load the GIF and see the animation:</p>
+<p><img alt="" src="../_images/AU1.gif" /></p>
+<p>The second style is more flexible and behaves like <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>. It’s generally more useful when multiple AUs change together. Below we use this style to visualize 2 AUs changing with different intensities. We also overlay muscle activations which change dynamically in the animation:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># We reuse the AU arrays from above to morph between a neutral and smiling face</span>
+<span class="n">animate_face</span><span class="p">(</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="n">smiling</span><span class="p">,</span>
+    <span class="n">muscles</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;all&quot;</span><span class="p">:</span> <span class="s2">&quot;heatmap&quot;</span><span class="p">},</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Smiling&quot;</span><span class="p">,</span>
+    <span class="n">save</span><span class="o">=</span><span class="s2">&quot;smiling.gif&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p><img alt="" src="../_images/smiling.gif" /></p>
+<p>It’s also possible to animate gaze directions using the <code class="docutils literal notranslate"><span class="pre">gaze_start</span></code> and <code class="docutils literal notranslate"><span class="pre">gaze_end</span></code> arguments to <code class="docutils literal notranslate"><span class="pre">animate_face()</span></code>. Here we pass the same neutral expression to <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> so the only thing being animates is gaze direction:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">animate_face</span><span class="p">(</span>
+    <span class="n">start</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span>
+    <span class="n">end</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span>
+    <span class="n">gaze_start</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="n">gaze_end</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Looking Up&quot;</span><span class="p">,</span>
+    <span class="n">save</span><span class="o">=</span><span class="s2">&quot;looking_up.gif&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p><img alt="" src="../_images/looking_up.gif" /></p>
+<section id="more-complex-animations">
+<h3>More complex animations<a class="headerlink" href="#more-complex-animations" title="Permalink to this heading">#</a></h3>
+<p>While <code class="docutils literal notranslate"><span class="pre">animate_face()</span></code> is useful for animating a single facial expression, sometimes you might want to make more complex multi-face animations. We can do that using <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> along with the <code class="docutils literal notranslate"><span class="pre">interpolate_aus()</span></code> helper function which will generate intermediate AU intensity values between two arrays in a manner that creates graceful animations (<a class="reference external" href="https://easings.net/">cubic bezier easing function</a>).</p>
+<p>We can easily make a grid of all 20 AUs and animate their intensity changes one at a time from a netural facial expression. To generate the animation from matplotlib plots, we use the <a class="reference external" href="https://github.com/jwkvam/celluloid"><code class="docutils literal notranslate"><span class="pre">celluloid</span></code></a> library that makes it a bit easier to work with matplotlib animations. It’s also what <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> uses under the hood:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">RF_AU_presence</span>  <span class="c1"># AU ids</span>
+<span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">interpolate_aus</span>  <span class="c1"># cubic easing interpolation</span>
+<span class="kn">from</span> <span class="nn">celluloid</span> <span class="kn">import</span> <span class="n">Camera</span>
+
+<span class="c1"># Link AU ids to their descriptions; might be wrong? see:</span>
+<span class="n">au_name_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+    <span class="nb">zip</span><span class="p">(</span>
+        <span class="n">RF_AU_presence</span><span class="p">,</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;inner brow raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;outer brow raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;brow lowerer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upper lid raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cheek raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lid tightener&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;nose wrinkler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upper lip raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip corner puller&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dimpler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip corner depressor&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;chin raiser&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip puckerer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip stretcher&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip tightener&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip pressor&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lips part&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;jaw drop&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lip suck&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;eyes closed&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Start all AUs at neutral</span>
+<span class="n">starting_intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+
+<span class="c1"># And eventually get to 3</span>
+<span class="n">ending_intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+
+<span class="c1"># Define some animation settings</span>
+<span class="n">fps</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">duration</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">padding</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="n">num_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">fps</span> <span class="o">*</span> <span class="n">duration</span><span class="p">))</span>
+
+<span class="c1"># Add some padding frames so when the animation loops it pauses on the endpoints</span>
+<span class="n">num_padding_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">fps</span> <span class="o">*</span> <span class="n">padding</span><span class="p">))</span>
+<span class="n">total_frames</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_frames</span> <span class="o">+</span> <span class="n">num_padding_frames</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop over each frame of the animation, plot a 4 x 5 grid of faces</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">))</span>
+<span class="n">camera</span> <span class="o">=</span> <span class="n">Camera</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">frame_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_frames</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axs</span><span class="o">.</span><span class="n">flat</span><span class="p">):</span>
+        <span class="n">au_interpolations</span> <span class="o">=</span> <span class="n">interpolate_aus</span><span class="p">(</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">starting_intensities</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">ending_intensities</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+            <span class="n">num_frames</span><span class="o">=</span><span class="n">num_frames</span><span class="p">,</span>
+            <span class="n">num_padding_frames</span><span class="o">=</span><span class="n">num_padding_frames</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+            <span class="n">au</span><span class="o">=</span><span class="n">au_interpolations</span><span class="p">[</span><span class="n">frame_num</span><span class="p">],</span>
+            <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">au_name_map</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">au_name_map</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">snap</span><span class="p">()</span>
+
+<span class="c1"># Create the animation</span>
+<span class="n">animation</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">animate</span><span class="p">()</span>
+<span class="n">animation</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;all.gif&quot;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p><img alt="" src="../_images/all.gif" /></p>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./basic_tutorials"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="02_detector_vids.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">2. Detecting facial expressions from videos</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="04_fex_analysis.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">4. Running a full analysis</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-a-neutral-default-face">3.1 Plotting a neutral (default) face</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-au-activations">3.2 Plotting AU activations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-muscle-heatmaps-to-the-plot">Adding muscle heatmaps to the plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-gaze-vectors-to-the-plot">Adding gaze vectors to the plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-vectorfield-arrows-to-highlight-facial-movement">Adding vectorfield arrows to highlight facial movement</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animating-facial-expressions">3.3 Animating facial expressions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-complex-animations">More complex animations</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>1. Py-Feat basics &#8212; Py-Feat</title>
+    <title>1. Detecting facial expressions from images &#8212; Py-Feat</title>
   
   
   
@@ -65,8 +65,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_tutorials/01_basics';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="2. Detecting facial expressions from images" href="02_detector_imgs.html" />
-    <link rel="prev" title="Tips, Community, and Known Issues" href="../pages/usage_guide.html" />
+    <link rel="next" title="2. Detecting facial expressions from videos" href="02_detector_vids.html" />
+    <link rel="prev" title="FAQS" href="../pages/faqs.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -174,20 +174,14 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="../pages/models.html">Included pre-trained detectors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/au_reference.html">Action Unit Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/usage_guide.html">Tips, Community, and Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/faqs.html">FAQS</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">1. Py-Feat basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="02_detector_imgs.html">2. Detecting facial expressions from images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="03_detector_vids.html">3. Detecting facial expressions from videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="04_plotting.html">4. Visualizing Facial Expressions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="05_fex_analysis.html">5. Running a full analysis</a></li>
-
-
-
-
-
-
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_plotting.html">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_fex_analysis.html">4. Running a full analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -489,7 +483,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>1. Py-Feat basics</h1>
+    <h1>1. Detecting facial expressions from images</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -499,11 +493,19 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detectors">Detectors</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#default-detectors">Default detectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-models-from-huggingface-and-setting-up-a-detector">1.1 Downloading models from HuggingFace and setting up a <code class="docutils literal notranslate"><span class="pre">Detector</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#processing-a-single-image">1.2 Processing a single image</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-fex-outputs">1.3 Working with <code class="docutils literal notranslate"><span class="pre">Fex</span></code> outputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-detections-from-a-file">1.4 Saving and Loading detections from a file</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#real-time-saving-during-detection-low-memory-mode">Real-time saving during detection (low-memory mode)</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fex-data-classes">Fex data classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-detection-results">1.5 Visualizing detection results.</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-plotting">Interactive Plotting</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detecting-multiple-faces-from-a-single-image">1.6 Detecting multiple faces from a single image</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-multiple-images">1.7 Working with multiple images</a></li>
 </ul>
             </nav>
         </div>
@@ -515,11 +517,10 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="py-feat-basics">
-<h1>1. Py-Feat basics<a class="headerlink" href="#py-feat-basics" title="Permalink to this heading">#</a></h1>
-<p><em>Written by Eshin Jolly</em></p>
-<p>This tutorial goes over the basics of using Py-Feat’s API. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/01_basics.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
-<p>At a broad level you will be working with 2 main objects in Py-Feat:</p>
+  <section id="detecting-facial-expressions-from-images">
+<h1>1. Detecting facial expressions from images<a class="headerlink" href="#detecting-facial-expressions-from-images" title="Permalink to this heading">#</a></h1>
+<p><em>Written by Jin Hyun Cheong and Eshin Jolly</em></p>
+<p>In this tutorial we’ll explore the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/02_detector_imgs.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
@@ -528,111 +529,1147 @@ document.write(`
 </div>
 </div>
 </div>
-<section id="detectors">
-<h2>Detectors<a class="headerlink" href="#detectors" title="Permalink to this heading">#</a></h2>
-<p>A detector is a swiss-army-knife class that “glues” together a particular combination of a Face, Landmark, Action Unit, and Emotion detection model into a single object. This allows us to provide a very easy-to-use high-level API, e.g. <code class="docutils literal notranslate"><span class="pre">detector.detect_image('my_image.jpg')</span></code>, which will automatically make use of the correct underlying model to solve the sub-tasks of identifying face locations, getting landmarks, extracting action units, etc.</p>
-<p>The first time you initialize a <code class="docutils literal notranslate"><span class="pre">Detector</span></code> instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you and save them to disk. Everytime after that it will use existing model weights:</p>
+<section id="downloading-models-from-huggingface-and-setting-up-a-detector">
+<h2>1.1 Downloading models from HuggingFace and setting up a <code class="docutils literal notranslate"><span class="pre">Detector</span></code><a class="headerlink" href="#downloading-models-from-huggingface-and-setting-up-a-detector" title="Permalink to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">Detector</span></code> is a swiss-army-knife class that “glues” together a combination of <em>pre-trained</em> Face, Emotion, Pose, etc detection models into a single Python object. This allows us to provide a very easy-to-use high-level API, e.g. <code class="docutils literal notranslate"><span class="pre">detector.detect('my_image.jpg',data_type='image')</span></code>, which will automatically make use of the correct underlying model to solve the sub-tasks of identifying face locations, getting landmarks, extracting action units, etc.</p>
+<p>The first time you initialize a <code class="docutils literal notranslate"><span class="pre">Detector</span></code> instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you from <a class="reference external" href="https://huggingface.co/py-feat">our HuggingFace Repository</a> and save them to disk. Everytime after that it will use existing model weights.</p>
+<p>You can find a list of default models <span class="xref myst">on this page</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.detector</span> <span class="kn">import</span> <span class="n">Detector</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
 
-<span class="c1"># The verbose flag will print out messages indicating whether a pre-trained model</span>
-<span class="c1"># is being downloaded for the first time, or being loaded from disk.</span>
-<span class="c1"># In this case I already have all the models downloaded, but if you run this notebook on</span>
-<span class="c1"># your personal computer or Google Collab, these will be downloaded the first time you</span>
-<span class="c1"># use a Detector.</span>
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
+<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
 <span class="n">detector</span>
+
+<span class="c1"># You can change which models you want during initialization, e.g.</span>
+<span class="c1"># detector = Detector(emotion_model=&#39;svm&#39;)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet0.25_Final.pth
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_60_Nov22022.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/upper_face_pcaSet.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/lower_face_pcaSet.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/full_face_pcaSet.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_fer2013_config.json
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/reference_3d_68_points_trans.npy
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/img2pose_v1.pth
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_mean_v1.npy
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_stddev_v1.npy
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/esh/miniconda3/envs/py-feat/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+/Users/esh/miniconda3/envs/py-feat/lib/python3.11/site-packages/kornia/feature/lightglue.py:44: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type=&#39;cuda&#39;)` instead.
+  @torch.cuda.amp.custom_fwd(cast_inputs=torch.float32)
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=retinaface, landmark_model=mobilenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Detector(face_model=img2pose, landmark_model=mobilefacenet, au_model=xgb, emotion_model=resmasknet, facepose_model=img2pose, identity_model=facenet)
 </pre></div>
 </div>
 </div>
 </div>
-<section id="default-detectors">
-<h3>Default detectors<a class="headerlink" href="#default-detectors" title="Permalink to this heading">#</a></h3>
-<p>The default models loaded by Py-Feat are the currently recommended ones for each detection task. You see a full list of supported models <a class="reference internal" href="../pages/models.html"><span class="doc std std-doc">here</span></a> and instructions for contributing a new detector <a class="reference internal" href="../pages/modelContribution.html"><span class="doc std std-doc">here</span></a>. The current defaults include:</p>
-<ul class="simple">
-<li><p>Face Model: <code class="docutils literal notranslate"><span class="pre">retinaface</span></code></p></li>
-<li><p>Landmark Model: <code class="docutils literal notranslate"><span class="pre">mobilefacenet</span></code></p></li>
-<li><p>AU Model: <code class="docutils literal notranslate"><span class="pre">svm</span></code></p></li>
-<li><p>Emotion Model: <code class="docutils literal notranslate"><span class="pre">resmasknet</span></code></p></li>
-<li><p>Face Pose Model:<code class="docutils literal notranslate"><span class="pre">img2pose</span></code></p></li>
-</ul>
-<p>After initializing a detector you can easily swap one or more underlying models using the <code class="docutils literal notranslate"><span class="pre">.change_model</span></code> method. All models names should be provided as strings and are case-insensitive:</p>
+</section>
+<section id="processing-a-single-image">
+<h2>1.2 Processing a single image<a class="headerlink" href="#processing-a-single-image" title="Permalink to this heading">#</a></h2>
+<p>Let’s process a single image with a single face. Py-feat includes a demo image for this purpose called <code class="docutils literal notranslate"><span class="pre">single_face.jpg</span></code> so lets use that. You can also use the convenient <code class="docutils literal notranslate"><span class="pre">imshow</span></code> function which will automatically load an image into a numpy array if provided a path unlike matplotlib:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">detector</span><span class="o">.</span><span class="n">change_model</span><span class="p">(</span><span class="n">face_model</span><span class="o">=</span><span class="s2">&quot;MTCNN&quot;</span><span class="p">)</span>
-<span class="n">detector</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils.io</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
+<span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">imshow</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># Helper to point to the test data folder</span>
+<span class="n">test_data_dir</span> <span class="o">=</span> <span class="n">get_test_data_path</span><span class="p">()</span>
+
+<span class="c1"># Get the full path</span>
+<span class="n">single_face_img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;single_face.jpg&quot;</span><span class="p">)</span>
+
+<span class="c1"># Plot it</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/onet.pt
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/pnet.pt
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/rnet.pt
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/mobilenet_224_model_best_gdconv_external.pth.tar
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/svm_60_Nov22022.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/upper_face_pcaSet.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/lower_face_pcaSet.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/full_face_pcaSet.pkl
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_Z_resmasking_dropout1_rot30.pth
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/ResMaskNet_fer2013_config.json
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/reference_3d_68_points_trans.npy
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/img2pose_v1.pth
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_mean_v1.npy
-Using downloaded and verified file: /Users/Esh/Documents/pypackages/py-feat/feat/resources/WIDER_train_pose_stddev_v1.npy
-Changing face_model from retinaface -&gt; mtcnn
-</pre></div>
+<img alt="../_images/cd2590afb69dbcfd5174d9c00c359a19891c3beb2e2cc52e3f1aaec23dc0f92b.png" src="../_images/cd2590afb69dbcfd5174d9c00c359a19891c3beb2e2cc52e3f1aaec23dc0f92b.png" />
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.detector.Detector(face_model=mtcnn, landmark_model=mobilenet, au_model=svm, emotion_model=resmasknet, facepose_model=img2pose)
+</div>
+<p>Now we use our initialized <code class="docutils literal notranslate"><span class="pre">detector</span></code> instance to make predictions with the <code class="docutils literal notranslate"><span class="pre">detect_image()</span></code> method. This is the main workhorse method that will perform face, landmark, au, and emotion detection using the loaded models. It always returns a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data instance:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">single_face_img_path</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">single_face_prediction</span><span class="p">)</span>  <span class="c1"># instace of a Fex class</span>
+
+<span class="c1"># Show results</span>
+<span class="n">single_face_prediction</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/1 [00:00&lt;?, ?it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  1.65it/s]
+</pre></div>
 </div>
-<p>You’ll primarily use a detector instance by calling its <code class="docutils literal notranslate"><span class="pre">.detect_image()</span></code> or <code class="docutils literal notranslate"><span class="pre">.detect_video()</span></code> methods. Both methods take as input a filename (or list of filenames) and return a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data class instance. Detectors also have lower-level detection methods like <code class="docutils literal notranslate"><span class="pre">.detect_face()</span></code> and <code class="docutils literal notranslate"><span class="pre">.detect_landmarks()</span></code> which operate on and return numpy arrays directly.</p>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feat.data.Fex
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+      <th>x_0</th>
+      <th>x_1</th>
+      <th>x_2</th>
+      <th>x_3</th>
+      <th>x_4</th>
+      <th>...</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
+      <th>input</th>
+      <th>frame</th>
+      <th>FrameHeight</th>
+      <th>FrameWidth</th>
+      <th>Identity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>163.0</td>
+      <td>131.0</td>
+      <td>246.0</td>
+      <td>307.0</td>
+      <td>0.999693</td>
+      <td>188.409531</td>
+      <td>190.76413</td>
+      <td>193.926575</td>
+      <td>197.980225</td>
+      <td>206.38916</td>
+      <td>...</td>
+      <td>0.0302</td>
+      <td>0.10436</td>
+      <td>-0.00073</td>
+      <td>-0.014038</td>
+      <td>0.044818</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>562.0</td>
+      <td>572.0</td>
+      <td>Person_0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 691 columns</p>
+</div></div></div>
+</div>
+</section>
+<section id="working-with-fex-outputs">
+<h2>1.3 Working with <code class="docutils literal notranslate"><span class="pre">Fex</span></code> outputs<a class="headerlink" href="#working-with-fex-outputs" title="Permalink to this heading">#</a></h2>
+<p>The output of any detection always returns a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data class instance. This class is a lightweight wrapper around a pandas dataframe that contains columns with values for detection type.</p>
+<p>So you can use any pandas methods you’re already familiar with:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># We always return a dataframe even if there&#39;s just a single row,</span>
+<span class="c1"># i.e. no Series</span>
+<span class="n">single_face_prediction</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+      <th>x_0</th>
+      <th>x_1</th>
+      <th>x_2</th>
+      <th>x_3</th>
+      <th>x_4</th>
+      <th>...</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
+      <th>input</th>
+      <th>frame</th>
+      <th>FrameHeight</th>
+      <th>FrameWidth</th>
+      <th>Identity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>163.0</td>
+      <td>131.0</td>
+      <td>246.0</td>
+      <td>307.0</td>
+      <td>0.999693</td>
+      <td>188.409531</td>
+      <td>190.76413</td>
+      <td>193.926575</td>
+      <td>197.980225</td>
+      <td>206.38916</td>
+      <td>...</td>
+      <td>0.0302</td>
+      <td>0.10436</td>
+      <td>-0.00073</td>
+      <td>-0.014038</td>
+      <td>0.044818</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>562.0</td>
+      <td>572.0</td>
+      <td>Person_0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 691 columns</p>
+</div></div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Fex</span></code> provides convenient attributes to access specific groups of columns so you don’t have to write a bunch of pandas code to get the data you need:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">faceboxes</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>163.0</td>
+      <td>131.0</td>
+      <td>246.0</td>
+      <td>307.0</td>
+      <td>0.999693</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">aus</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>AU01</th>
+      <th>AU02</th>
+      <th>AU04</th>
+      <th>AU05</th>
+      <th>AU06</th>
+      <th>AU07</th>
+      <th>AU09</th>
+      <th>AU10</th>
+      <th>AU11</th>
+      <th>AU12</th>
+      <th>AU14</th>
+      <th>AU15</th>
+      <th>AU17</th>
+      <th>AU20</th>
+      <th>AU23</th>
+      <th>AU24</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>AU28</th>
+      <th>AU43</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.292286</td>
+      <td>0.352024</td>
+      <td>0.092464</td>
+      <td>0.323836</td>
+      <td>0.859788</td>
+      <td>1.0</td>
+      <td>0.375797</td>
+      <td>0.009637</td>
+      <td>1.0</td>
+      <td>0.920121</td>
+      <td>0.643604</td>
+      <td>0.056617</td>
+      <td>0.371272</td>
+      <td>1.0</td>
+      <td>0.113789</td>
+      <td>0.207406</td>
+      <td>0.996272</td>
+      <td>0.243547</td>
+      <td>0.029547</td>
+      <td>0.645135</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">emotions</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>anger</th>
+      <th>disgust</th>
+      <th>fear</th>
+      <th>happiness</th>
+      <th>sadness</th>
+      <th>surprise</th>
+      <th>neutral</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.000315</td>
+      <td>0.00002</td>
+      <td>0.000017</td>
+      <td>0.992122</td>
+      <td>0.006474</td>
+      <td>0.000746</td>
+      <td>0.000306</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">poses</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Pitch</th>
+      <th>Roll</th>
+      <th>Yaw</th>
+      <th>X</th>
+      <th>Y</th>
+      <th>Z</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.153656</td>
+      <td>0.146084</td>
+      <td>-0.032639</td>
+      <td>-0.025715</td>
+      <td>0.136259</td>
+      <td>8.532812</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">identities</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0    Person_0
+Name: Identity, dtype: object
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="saving-and-loading-detections-from-a-file">
+<h2>1.4 Saving and Loading detections from a file<a class="headerlink" href="#saving-and-loading-detections-from-a-file" title="Permalink to this heading">#</a></h2>
+<p>Since a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> object is just a sub-classed <code class="docutils literal notranslate"><span class="pre">DataFrames</span></code> we can use the <code class="docutils literal notranslate"><span class="pre">.to_csv</span></code> method to save our detections toa file:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;output.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To create a new <code class="docutils literal notranslate"><span class="pre">Fex</span></code> instance from a csv file use our custom <code class="docutils literal notranslate"><span class="pre">read_feat()</span></code> function instead pf <code class="docutils literal notranslate"><span class="pre">pd.read_csv</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils.io</span> <span class="kn">import</span> <span class="n">read_feat</span>
+
+<span class="n">input_prediction</span> <span class="o">=</span> <span class="n">read_feat</span><span class="p">(</span><span class="s2">&quot;output.csv&quot;</span><span class="p">)</span>
+
+<span class="c1"># We we can quick access features like beofre</span>
+<span class="n">input_prediction</span><span class="o">.</span><span class="n">aus</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>AU01</th>
+      <th>AU02</th>
+      <th>AU04</th>
+      <th>AU05</th>
+      <th>AU06</th>
+      <th>AU07</th>
+      <th>AU09</th>
+      <th>AU10</th>
+      <th>AU11</th>
+      <th>AU12</th>
+      <th>AU14</th>
+      <th>AU15</th>
+      <th>AU17</th>
+      <th>AU20</th>
+      <th>AU23</th>
+      <th>AU24</th>
+      <th>AU25</th>
+      <th>AU26</th>
+      <th>AU28</th>
+      <th>AU43</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.292286</td>
+      <td>0.352024</td>
+      <td>0.092464</td>
+      <td>0.323836</td>
+      <td>0.859788</td>
+      <td>1.0</td>
+      <td>0.375797</td>
+      <td>0.009637</td>
+      <td>1.0</td>
+      <td>0.920121</td>
+      <td>0.643604</td>
+      <td>0.056617</td>
+      <td>0.371272</td>
+      <td>1.0</td>
+      <td>0.113789</td>
+      <td>0.207406</td>
+      <td>0.996272</td>
+      <td>0.243547</td>
+      <td>0.029547</td>
+      <td>0.645135</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<section id="real-time-saving-during-detection-low-memory-mode">
+<h3>Real-time saving during detection (low-memory mode)<a class="headerlink" href="#real-time-saving-during-detection-low-memory-mode" title="Permalink to this heading">#</a></h3>
+<p>You can also write <code class="docutils literal notranslate"><span class="pre">Fex</span></code> outputs to a file during detection by passing a <code class="docutils literal notranslate"><span class="pre">save</span></code> argument to <code class="docutils literal notranslate"><span class="pre">detect</span></code>. This will save the <code class="docutils literal notranslate"><span class="pre">Fex</span></code> output to a csv file every time a face is detected.</p>
+<p>This can be useful when processing multiple images or videos (as we’ll see later).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fex</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">single_face_img_path</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="s1">&#39;detections.csv&#39;</span><span class="p">)</span>
+
+<span class="n">fex</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/1 [00:00&lt;?, ?it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  1.80it/s]
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+      <th>x_0</th>
+      <th>x_1</th>
+      <th>x_2</th>
+      <th>x_3</th>
+      <th>x_4</th>
+      <th>...</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
+      <th>input</th>
+      <th>frame</th>
+      <th>FrameHeight</th>
+      <th>FrameWidth</th>
+      <th>Identity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>163.0</td>
+      <td>131.0</td>
+      <td>246.0</td>
+      <td>307.0</td>
+      <td>0.999693</td>
+      <td>188.40953</td>
+      <td>190.76413</td>
+      <td>193.92657</td>
+      <td>197.98022</td>
+      <td>206.38916</td>
+      <td>...</td>
+      <td>0.0302</td>
+      <td>0.10436</td>
+      <td>-0.00073</td>
+      <td>-0.014038</td>
+      <td>0.044818</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>562.0</td>
+      <td>572.0</td>
+      <td>Person_0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1 rows × 691 columns</p>
+</div></div></div>
+</div>
+<p>We can use our terminal to see that <code class="docutils literal notranslate"><span class="pre">detections.csv</span></code> exists and contains the same content as <code class="docutils literal notranslate"><span class="pre">fex</span></code></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">bash</span> 
+head detections.csv
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FaceRectX,FaceRectY,FaceRectWidth,FaceRectHeight,FaceScore,x_0,x_1,x_2,x_3,x_4,x_5,x_6,x_7,x_8,x_9,x_10,x_11,x_12,x_13,x_14,x_15,x_16,x_17,x_18,x_19,x_20,x_21,x_22,x_23,x_24,x_25,x_26,x_27,x_28,x_29,x_30,x_31,x_32,x_33,x_34,x_35,x_36,x_37,x_38,x_39,x_40,x_41,x_42,x_43,x_44,x_45,x_46,x_47,x_48,x_49,x_50,x_51,x_52,x_53,x_54,x_55,x_56,x_57,x_58,x_59,x_60,x_61,x_62,x_63,x_64,x_65,x_66,x_67,y_0,y_1,y_2,y_3,y_4,y_5,y_6,y_7,y_8,y_9,y_10,y_11,y_12,y_13,y_14,y_15,y_16,y_17,y_18,y_19,y_20,y_21,y_22,y_23,y_24,y_25,y_26,y_27,y_28,y_29,y_30,y_31,y_32,y_33,y_34,y_35,y_36,y_37,y_38,y_39,y_40,y_41,y_42,y_43,y_44,y_45,y_46,y_47,y_48,y_49,y_50,y_51,y_52,y_53,y_54,y_55,y_56,y_57,y_58,y_59,y_60,y_61,y_62,y_63,y_64,y_65,y_66,y_67,Pitch,Roll,Yaw,X,Y,Z,AU01,AU02,AU04,AU05,AU06,AU07,AU09,AU10,AU11,AU12,AU14,AU15,AU17,AU20,AU23,AU24,AU25,AU26,AU28,AU43,anger,disgust,fear,happiness,sadness,surprise,neutral,Identity_1,Identity_2,Identity_3,Identity_4,Identity_5,Identity_6,Identity_7,Identity_8,Identity_9,Identity_10,Identity_11,Identity_12,Identity_13,Identity_14,Identity_15,Identity_16,Identity_17,Identity_18,Identity_19,Identity_20,Identity_21,Identity_22,Identity_23,Identity_24,Identity_25,Identity_26,Identity_27,Identity_28,Identity_29,Identity_30,Identity_31,Identity_32,Identity_33,Identity_34,Identity_35,Identity_36,Identity_37,Identity_38,Identity_39,Identity_40,Identity_41,Identity_42,Identity_43,Identity_44,Identity_45,Identity_46,Identity_47,Identity_48,Identity_49,Identity_50,Identity_51,Identity_52,Identity_53,Identity_54,Identity_55,Identity_56,Identity_57,Identity_58,Identity_59,Identity_60,Identity_61,Identity_62,Identity_63,Identity_64,Identity_65,Identity_66,Identity_67,Identity_68,Identity_69,Identity_70,Identity_71,Identity_72,Identity_73,Identity_74,Identity_75,Identity_76,Identity_77,Identity_78,Identity_79,Identity_80,Identity_81,Identity_82,Identity_83,Identity_84,Identity_85,Identity_86,Identity_87,Identity_88,Identity_89,Identity_90,Identity_91,Identity_92,Identity_93,Identity_94,Identity_95,Identity_96,Identity_97,Identity_98,Identity_99,Identity_100,Identity_101,Identity_102,Identity_103,Identity_104,Identity_105,Identity_106,Identity_107,Identity_108,Identity_109,Identity_110,Identity_111,Identity_112,Identity_113,Identity_114,Identity_115,Identity_116,Identity_117,Identity_118,Identity_119,Identity_120,Identity_121,Identity_122,Identity_123,Identity_124,Identity_125,Identity_126,Identity_127,Identity_128,Identity_129,Identity_130,Identity_131,Identity_132,Identity_133,Identity_134,Identity_135,Identity_136,Identity_137,Identity_138,Identity_139,Identity_140,Identity_141,Identity_142,Identity_143,Identity_144,Identity_145,Identity_146,Identity_147,Identity_148,Identity_149,Identity_150,Identity_151,Identity_152,Identity_153,Identity_154,Identity_155,Identity_156,Identity_157,Identity_158,Identity_159,Identity_160,Identity_161,Identity_162,Identity_163,Identity_164,Identity_165,Identity_166,Identity_167,Identity_168,Identity_169,Identity_170,Identity_171,Identity_172,Identity_173,Identity_174,Identity_175,Identity_176,Identity_177,Identity_178,Identity_179,Identity_180,Identity_181,Identity_182,Identity_183,Identity_184,Identity_185,Identity_186,Identity_187,Identity_188,Identity_189,Identity_190,Identity_191,Identity_192,Identity_193,Identity_194,Identity_195,Identity_196,Identity_197,Identity_198,Identity_199,Identity_200,Identity_201,Identity_202,Identity_203,Identity_204,Identity_205,Identity_206,Identity_207,Identity_208,Identity_209,Identity_210,Identity_211,Identity_212,Identity_213,Identity_214,Identity_215,Identity_216,Identity_217,Identity_218,Identity_219,Identity_220,Identity_221,Identity_222,Identity_223,Identity_224,Identity_225,Identity_226,Identity_227,Identity_228,Identity_229,Identity_230,Identity_231,Identity_232,Identity_233,Identity_234,Identity_235,Identity_236,Identity_237,Identity_238,Identity_239,Identity_240,Identity_241,Identity_242,Identity_243,Identity_244,Identity_245,Identity_246,Identity_247,Identity_248,Identity_249,Identity_250,Identity_251,Identity_252,Identity_253,Identity_254,Identity_255,Identity_256,Identity_257,Identity_258,Identity_259,Identity_260,Identity_261,Identity_262,Identity_263,Identity_264,Identity_265,Identity_266,Identity_267,Identity_268,Identity_269,Identity_270,Identity_271,Identity_272,Identity_273,Identity_274,Identity_275,Identity_276,Identity_277,Identity_278,Identity_279,Identity_280,Identity_281,Identity_282,Identity_283,Identity_284,Identity_285,Identity_286,Identity_287,Identity_288,Identity_289,Identity_290,Identity_291,Identity_292,Identity_293,Identity_294,Identity_295,Identity_296,Identity_297,Identity_298,Identity_299,Identity_300,Identity_301,Identity_302,Identity_303,Identity_304,Identity_305,Identity_306,Identity_307,Identity_308,Identity_309,Identity_310,Identity_311,Identity_312,Identity_313,Identity_314,Identity_315,Identity_316,Identity_317,Identity_318,Identity_319,Identity_320,Identity_321,Identity_322,Identity_323,Identity_324,Identity_325,Identity_326,Identity_327,Identity_328,Identity_329,Identity_330,Identity_331,Identity_332,Identity_333,Identity_334,Identity_335,Identity_336,Identity_337,Identity_338,Identity_339,Identity_340,Identity_341,Identity_342,Identity_343,Identity_344,Identity_345,Identity_346,Identity_347,Identity_348,Identity_349,Identity_350,Identity_351,Identity_352,Identity_353,Identity_354,Identity_355,Identity_356,Identity_357,Identity_358,Identity_359,Identity_360,Identity_361,Identity_362,Identity_363,Identity_364,Identity_365,Identity_366,Identity_367,Identity_368,Identity_369,Identity_370,Identity_371,Identity_372,Identity_373,Identity_374,Identity_375,Identity_376,Identity_377,Identity_378,Identity_379,Identity_380,Identity_381,Identity_382,Identity_383,Identity_384,Identity_385,Identity_386,Identity_387,Identity_388,Identity_389,Identity_390,Identity_391,Identity_392,Identity_393,Identity_394,Identity_395,Identity_396,Identity_397,Identity_398,Identity_399,Identity_400,Identity_401,Identity_402,Identity_403,Identity_404,Identity_405,Identity_406,Identity_407,Identity_408,Identity_409,Identity_410,Identity_411,Identity_412,Identity_413,Identity_414,Identity_415,Identity_416,Identity_417,Identity_418,Identity_419,Identity_420,Identity_421,Identity_422,Identity_423,Identity_424,Identity_425,Identity_426,Identity_427,Identity_428,Identity_429,Identity_430,Identity_431,Identity_432,Identity_433,Identity_434,Identity_435,Identity_436,Identity_437,Identity_438,Identity_439,Identity_440,Identity_441,Identity_442,Identity_443,Identity_444,Identity_445,Identity_446,Identity_447,Identity_448,Identity_449,Identity_450,Identity_451,Identity_452,Identity_453,Identity_454,Identity_455,Identity_456,Identity_457,Identity_458,Identity_459,Identity_460,Identity_461,Identity_462,Identity_463,Identity_464,Identity_465,Identity_466,Identity_467,Identity_468,Identity_469,Identity_470,Identity_471,Identity_472,Identity_473,Identity_474,Identity_475,Identity_476,Identity_477,Identity_478,Identity_479,Identity_480,Identity_481,Identity_482,Identity_483,Identity_484,Identity_485,Identity_486,Identity_487,Identity_488,Identity_489,Identity_490,Identity_491,Identity_492,Identity_493,Identity_494,Identity_495,Identity_496,Identity_497,Identity_498,Identity_499,Identity_500,Identity_501,Identity_502,Identity_503,Identity_504,Identity_505,Identity_506,Identity_507,Identity_508,Identity_509,Identity_510,Identity_511,Identity_512,input,frame,FrameHeight,FrameWidth,Identity
+163.0,131.0,246.0,307.0,0.99969316,188.40953,190.76413,193.92657,197.98022,206.38916,220.74722,238.36206,256.7828,277.77484,299.8479,320.87454,340.44565,356.25153,365.82883,370.70142,374.08484,376.37054,198.10739,208.38081,222.62196,237.8277,252.49493,283.76196,299.9295,317.01276,333.90036,347.87152,268.09308,267.61554,267.14215,266.80994,249.79395,258.9277,269.23865,280.417,290.94995,217.13168,228.21112,238.38293,248.04413,238.11713,227.94595,295.2691,305.27124,315.88086,327.75458,316.5935,306.00256,236.0275,248.95493,262.61887,272.71973,283.52176,300.15088,317.08646,302.72534,287.20755,274.6589,263.326,249.24263,239.99454,262.97412,273.33585,284.6719,312.88202,285.63177,273.77365,262.81494,244.48196,271.12164,297.76517,324.81076,349.48724,369.27686,384.58582,397.36432,401.75122,397.47537,384.9442,369.73724,349.34174,323.66803,294.62152,265.1725,234.83054,228.96255,217.83733,214.79831,216.87204,222.80917,219.8603,213.42084,210.87857,214.08641,224.20898,242.13986,259.63266,276.0241,292.73285,304.05994,307.85236,310.3473,306.73895,302.58554,247.69589,244.60455,244.59006,249.1573,250.52448,250.23914,247.66129,241.98993,241.72916,244.24142,247.71545,248.65668,329.82343,323.80548,320.6712,322.44998,319.64227,321.34018,326.36212,344.4939,353.8432,355.6458,354.35446,346.15283,330.8362,327.64688,328.63474,326.63684,327.54425,341.89948,343.5869,342.58093,0.15365556,0.14608352,-0.032639463,-0.025714636,0.13625932,8.532812,0.29228646,0.35202417,0.09246446,0.32383558,0.85978776,1.0,0.3757974,0.009636733,1.0,0.92012084,0.6436043,0.056616515,0.37127218,1.0,0.113789074,0.20740561,0.9962717,0.24354655,0.029546617,0.6451348,0.00031503502,1.9805473e-05,1.7192644e-05,0.9921218,0.0064744055,0.00074597733,0.00030572907,-0.016474469,0.010943476,0.012540879,0.061851922,0.06325073,0.058608383,0.012735683,0.0540565,0.032421444,0.0015979311,0.04613706,-0.006903793,0.0038118148,0.023735968,0.004080121,-0.012981681,0.0337065,0.008941093,-0.05526206,-0.039800156,0.0071719647,0.02831355,0.021601634,0.04859631,0.002851353,0.015315047,0.040310893,0.023462288,0.03462724,0.03606105,0.08480601,0.057251737,0.046283107,0.012111813,0.047561545,-0.0094048865,-0.02754141,-0.031991947,-0.011458619,0.018665064,0.01556529,-0.065480635,0.004626003,-0.030373467,-0.004519181,-0.017916244,0.03153709,-0.049230248,0.06470094,-0.013663913,0.015287711,-0.040042996,0.0666054,0.012419964,0.046224996,0.015763229,-0.015650913,-0.07325408,0.03179464,-0.0028809924,-0.03580707,-0.059437275,-0.022919977,0.025374556,0.0077693854,-0.026475063,-0.058671918,-0.0073748976,0.056421097,-0.041895557,-0.015118455,-0.01033595,-0.05796223,-0.008164366,0.046331655,0.08366611,0.03835752,-0.029137922,-0.020086711,0.03285807,0.035578735,-0.035176333,0.013614702,-0.0015192938,0.0782625,0.027681528,0.0036929313,-0.015595403,0.10054135,-0.060929168,-0.0755995,0.013845961,0.020853406,0.054866325,0.04245884,0.013306801,-0.08756025,-0.020370075,0.055481575,0.038704667,0.019288072,0.089725,0.08656697,-0.015778074,0.09101207,0.043920107,-0.0842179,-0.099626884,0.06906759,-0.032333776,-0.010098594,0.08876104,-0.044136576,-0.09358857,-0.05558949,0.041495293,-0.038613446,-0.0069723646,-0.032528315,0.011450543,0.04809019,0.023181824,-0.06674482,-0.019130373,-0.021480557,-0.03243822,0.0348112,-0.08310943,0.09773221,-0.017829346,0.08284359,0.048468348,0.0027276294,0.0290145,0.060102314,0.011632918,-0.026982026,-0.1008148,0.024199096,-0.0042365934,0.0048722434,0.0864499,-0.04040647,-0.03523084,0.018121079,0.05306914,-0.053193655,0.022634692,0.0033886011,-0.013326134,0.005064548,0.0017047133,0.06331552,0.06566757,-0.038076326,0.03195145,-0.048999943,0.0106899515,0.017866557,-0.12617467,-0.050418362,0.058052786,-0.009631532,0.00012795448,0.02645571,-0.04117754,0.0074591585,0.050559368,-0.0069889217,0.0024439734,0.001988363,-0.018898856,-0.029962912,0.051569525,0.0053519863,0.06056651,-0.10390544,-0.008586667,-0.017949691,-0.012180359,0.02515761,0.004157437,0.0015484826,0.00983071,0.040038187,-0.02233528,0.039246295,-0.008055949,-0.03440307,-0.0021564579,-0.020128747,0.07841201,0.005596402,-0.057157826,0.010939164,-0.007827504,-0.011385286,-0.026888747,0.08232488,-0.040208872,0.0024427436,0.011348812,0.14148815,-0.02625484,0.027033517,-0.0023209052,0.01527474,-0.011697312,0.026363559,-0.0062077465,-0.036329407,-0.020469788,-0.010870001,0.0347202,0.0013760913,0.044760562,0.008481366,-0.029125271,-0.029768351,-0.079282984,0.022972738,0.03150368,0.043720573,0.084690206,-0.005296119,-0.056885645,-0.025185969,0.0037654531,0.06344974,-0.011020636,-0.034753397,-0.032403383,-0.031377256,0.028057525,0.0079797525,-0.047590017,-0.023367867,0.041245505,-0.0010293467,0.03879553,-0.023595622,0.02350205,0.022298783,-0.030793274,0.028135605,0.014540241,-0.043063167,-0.05994549,-0.015393493,0.017467773,0.032540184,0.023489978,0.040859394,-0.0051623643,-0.011757172,-0.06055373,0.010123902,-0.005549315,0.020812064,-0.07180071,0.024123961,-0.023309479,0.098254316,-0.010716494,-0.00036670777,-0.0956777,0.012872121,0.055756707,-0.014370248,-0.08852961,0.017256279,0.02115862,0.016682258,0.016904736,0.0079356795,0.020504186,-0.039974067,0.027630247,-0.10302861,0.04460026,0.006781399,0.019196106,-0.038910743,0.053562753,-0.0096376855,0.0062805144,0.035093267,-0.02422915,-0.030092334,-0.016760916,-0.023927176,0.011593526,-0.012128632,-0.037911292,0.018440636,0.053659018,-0.017276218,-0.07988894,0.028071795,0.002199007,0.05566276,0.031877093,-0.017943004,-0.029590223,-0.04005937,-0.047892902,0.0076719034,0.05113467,-0.031574633,-0.018796364,-0.065027684,-0.047453213,0.025294432,-0.030823957,0.0108426185,0.06826333,0.070935816,0.08386498,0.082460284,-0.05328346,-0.031425606,-0.037453767,0.061049074,-0.07401244,0.004260008,0.010612197,-0.021415485,0.03814527,0.07026425,-0.0049082446,0.037441403,0.042973157,0.02151262,-0.0016125245,-0.029215878,0.04819301,-0.006861154,0.03469235,-0.038977176,0.000118440825,0.028943023,-0.06541923,-0.035814043,0.0037717433,0.07885256,-0.027044889,-0.008189959,0.053966045,-0.042787325,-0.074711636,0.047062967,-0.044712834,-0.037927344,-0.062896706,0.10181799,0.021692965,-0.031322412,-0.044074703,-0.08002175,-0.010946418,-0.055637382,-0.022079134,-0.0034495236,0.011248665,0.071475975,0.0016958246,-0.03511956,0.047209047,0.0012538122,0.06414943,0.025804395,-0.014669827,0.01078396,-0.03986344,-0.044051714,-0.033094324,0.0026801242,0.018369086,0.020549607,-0.0324384,-0.10296722,-0.016977975,-0.045358263,-0.027866682,-0.054452155,0.011969174,-0.0018866227,0.019150715,-0.0069170143,-0.016927373,-0.041106798,0.027885774,-0.022949317,-0.0026528083,0.028312925,-0.016724017,0.012679714,0.03601688,0.0632668,-0.06499284,-0.032440215,0.0069198227,0.0577251,0.013945847,0.03925503,0.029305262,-0.004364309,0.011462728,-0.003820251,-0.020037653,0.049300272,-0.06020724,0.019289704,-0.08574553,-0.05210954,0.031652175,0.010210739,-0.09178338,0.018035267,0.03628524,0.10640851,-0.04334012,0.005544706,0.02268188,-0.05876999,0.0028819183,-0.07320293,0.02434673,0.02245895,-0.036380097,-0.017511662,-0.004926708,-0.043883733,0.063587464,0.06745111,-0.09274271,-0.013561763,-0.037861142,-0.025485018,-0.0039560045,-0.07044285,-0.050808974,-0.018857388,-0.020162962,0.028050808,0.014899055,-0.04271194,0.004874084,0.02145925,0.006671764,0.014245377,-0.05625012,0.05317801,0.029268542,0.017990593,0.056550417,-0.10348506,0.010293681,-0.014824742,0.0677875,0.0017507968,0.06665173,0.013286108,0.018289786,-0.019141184,-0.08051572,0.019336367,-0.11074136,-0.034244426,-0.059206635,-0.087763324,-0.067176566,-0.0812001,0.04516663,-0.0016717674,0.06846575,-0.012567481,-0.0412458,0.03348754,-0.030951915,0.08707724,0.026903199,-0.12602216,-0.09201268,-0.040029086,-0.07625816,-0.00866734,0.04635235,-0.062105294,-0.023305481,0.030798053,-0.03810373,0.07282535,0.034783028,0.00664993,0.0023046574,-0.0024633678,-0.012003522,0.025509495,0.006630562,0.06307238,-0.044841655,0.08773387,-0.07649113,0.021024698,-0.021915453,0.029820804,0.030200006,0.104360245,-0.0007303208,-0.014037524,0.04481796,/Users/esh/Documents/pypackages/py-feat/feat/tests/data/single_face.jpg,0,562.0,572.0,Person_0
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 </section>
-<section id="fex-data-classes">
-<h2>Fex data classes<a class="headerlink" href="#fex-data-classes" title="Permalink to this heading">#</a></h2>
-<p>A Fex data class is just a special type of pandas dataframe then makes it easier to work with the results returned by a detector. Each row contains information about a detected face and each column contains the output of that detection (e.g. x, y location; emotion) or some meta-data about the input file (e.g. the filename).</p>
-<p>Fex data instances have helper methods on them to quickly retrieve the appropriate data you want without having to search through column names yourself, e.g.  <code class="docutils literal notranslate"><span class="pre">fex.emotions()</span></code>. They also have methods for plotting e.g. <code class="docutils literal notranslate"><span class="pre">fex.plot_detections()</span></code>, signal-processing e.g. <code class="docutils literal notranslate"><span class="pre">fex.downsample()</span></code>, and statistical analysis e.g. <code class="docutils literal notranslate"><span class="pre">fex.regress()</span></code>.</p>
+<section id="visualizing-detection-results">
+<h2>1.5 Visualizing detection results.<a class="headerlink" href="#visualizing-detection-results" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">Fex</span></code> objects have a method called <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> to generate a summary figure of detected faces, action units and emotions. It always returns a list of matplotlib figures:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.data</span> <span class="kn">import</span> <span class="n">Fex</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
-<span class="n">fex</span> <span class="o">=</span> <span class="n">Fex</span><span class="p">()</span>
-
-<span class="nb">isinstance</span><span class="p">(</span><span class="n">fex</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">poses</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+<img alt="../_images/9100cbae53835792ea511c94d509fe635f3e2e6f5c74b49a1a8c7e9bb5555eec.png" src="../_images/9100cbae53835792ea511c94d509fe635f3e2e6f5c74b49a1a8c7e9bb5555eec.png" />
+</div>
+</div>
+<p>By default <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will overlay facial lines on top of the input image. However, it’s also possible to visualize a face using Py-Feat’s standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> instead of the default <code class="docutils literal notranslate"><span class="pre">faces='landmarks'</span></code>. For more details about this kind of visualization see the <span class="xref myst">visualizing facial expressions</span> and the <a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html"><span class="doc std std-doc">creating an AU visualization model</span></a> tutorials:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">single_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span><span class="s2">&quot;aus&quot;</span><span class="p">,</span> <span class="n">muscles</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<img alt="../_images/f3dd64267a9921ecb7d193db73bc79cf3d187d205067ed2d50c6e5b9557713bd.png" src="../_images/f3dd64267a9921ecb7d193db73bc79cf3d187d205067ed2d50c6e5b9557713bd.png" />
 </div>
-<p>More often than not, you’ll be using <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data classes that are return by <code class="docutils literal notranslate"><span class="pre">Detector</span></code> rather than creating them from scratch. Check out the next tutorial for more details on how this works!</p>
+</div>
+<section id="interactive-plotting">
+<h3>Interactive Plotting<a class="headerlink" href="#interactive-plotting" title="Permalink to this heading">#</a></h3>
+<p>You can also use the <code class="docutils literal notranslate"><span class="pre">.iplot_detections()</span></code> method to generate an interactive plotly figure that lets you interactively enable/disable various detector outputs:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_face_prediction</span><span class="o">.</span><span class="n">iplot_detections</span><span class="p">(</span><span class="n">bounding_boxes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">emotions</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+</section>
+</section>
+<section id="detecting-multiple-faces-from-a-single-image">
+<h2>1.6 Detecting multiple faces from a single image<a class="headerlink" href="#detecting-multiple-faces-from-a-single-image" title="Permalink to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">Detector</span></code> will automatically find multiple faces in a single image and will create 1 row per detected face in the <code class="docutils literal notranslate"><span class="pre">Fex</span></code> object it outputs.</p>
+<p>Notice how <code class="docutils literal notranslate"><span class="pre">image_prediction</span></code> is now a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> instance with 5 rows, one for each detected face. We can confirm this by plotting our detection results like before:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">multi_face_image_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s2">&quot;multi_face.jpg&quot;</span><span class="p">)</span>
+<span class="n">multi_face_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">multi_face_image_path</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+
+<span class="c1"># Show results</span>
+<span class="n">multi_face_prediction</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/1 [00:00&lt;?, ?it/s]
+100%|██████████| 1/1 [00:01&lt;00:00,  1.44s/it]
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+      <th>x_0</th>
+      <th>x_1</th>
+      <th>x_2</th>
+      <th>x_3</th>
+      <th>x_4</th>
+      <th>...</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
+      <th>input</th>
+      <th>frame</th>
+      <th>FrameHeight</th>
+      <th>FrameWidth</th>
+      <th>Identity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>663.0</td>
+      <td>263.0</td>
+      <td>150.0</td>
+      <td>180.0</td>
+      <td>0.998755</td>
+      <td>683.637024</td>
+      <td>682.256287</td>
+      <td>681.580444</td>
+      <td>682.637024</td>
+      <td>686.754944</td>
+      <td>...</td>
+      <td>-0.030578</td>
+      <td>0.057009</td>
+      <td>-0.027664</td>
+      <td>0.055146</td>
+      <td>0.074115</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>512.0</td>
+      <td>284.0</td>
+      <td>140.0</td>
+      <td>172.0</td>
+      <td>0.997860</td>
+      <td>532.246399</td>
+      <td>530.987976</td>
+      <td>530.478943</td>
+      <td>531.346313</td>
+      <td>534.563416</td>
+      <td>...</td>
+      <td>0.020770</td>
+      <td>0.074040</td>
+      <td>-0.061894</td>
+      <td>0.024235</td>
+      <td>0.058015</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>290.0</td>
+      <td>215.0</td>
+      <td>135.0</td>
+      <td>160.0</td>
+      <td>0.991971</td>
+      <td>311.675385</td>
+      <td>313.203674</td>
+      <td>315.590179</td>
+      <td>319.633240</td>
+      <td>326.428802</td>
+      <td>...</td>
+      <td>-0.065147</td>
+      <td>-0.021230</td>
+      <td>-0.057268</td>
+      <td>-0.008089</td>
+      <td>0.035251</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>192.0</td>
+      <td>35.0</td>
+      <td>131.0</td>
+      <td>154.0</td>
+      <td>0.963654</td>
+      <td>216.397369</td>
+      <td>214.710068</td>
+      <td>213.856934</td>
+      <td>214.397079</td>
+      <td>217.525269</td>
+      <td>...</td>
+      <td>0.040147</td>
+      <td>0.028400</td>
+      <td>-0.029841</td>
+      <td>0.040843</td>
+      <td>-0.055877</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>413.0</td>
+      <td>193.0</td>
+      <td>112.0</td>
+      <td>134.0</td>
+      <td>0.903046</td>
+      <td>435.238007</td>
+      <td>435.729736</td>
+      <td>436.857910</td>
+      <td>439.002228</td>
+      <td>442.800690</td>
+      <td>...</td>
+      <td>0.042136</td>
+      <td>0.047004</td>
+      <td>-0.001307</td>
+      <td>0.041147</td>
+      <td>0.046738</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_4</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 691 columns</p>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">multi_face_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">add_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/fa4f4b76c1ebabe8cef46fd030959294d65ae53b5706286dbe1bc21cbf1a849a.png" src="../_images/fa4f4b76c1ebabe8cef46fd030959294d65ae53b5706286dbe1bc21cbf1a849a.png" />
+</div>
+</div>
+</section>
+<section id="working-with-multiple-images">
+<h2>1.7 Working with multiple images<a class="headerlink" href="#working-with-multiple-images" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">Detector</span></code> is also flexible enough to process multiple image files if <code class="docutils literal notranslate"><span class="pre">.detect()</span></code> is passed a list of images. By default images will be processed serially, but you can set <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> to process multiple images in a <em>batch</em> and speed up processing. <strong>NOTE: All images in a batch must have the same dimensions for batch processing.</strong> This is because behind the scenes, <code class="docutils literal notranslate"><span class="pre">Detector</span></code> is assembling a <em>tensor</em> by stacking images together. You can ask <code class="docutils literal notranslate"><span class="pre">Detector</span></code> to rescale images by padding and preserving proportions using the <code class="docutils literal notranslate"><span class="pre">output_size</span></code> in conjunction with <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>. For example, the following would process a list of images in batches of 5 images at a time resizing each so one axis is 512:</p>
+<p><code class="docutils literal notranslate"><span class="pre">detector.detect(img_list,</span> <span class="pre">batch_size=5,</span> <span class="pre">output_size=512)</span> <span class="pre">#</span> <span class="pre">without</span> <span class="pre">output_size</span> <span class="pre">this</span> <span class="pre">would</span> <span class="pre">raise</span> <span class="pre">an</span> <span class="pre">error</span> <span class="pre">if</span> <span class="pre">image</span> <span class="pre">sizes</span> <span class="pre">differ!</span></code></p>
+<p>In the example below we keep things simple, by process both our single and multi-face example serislly by setting <code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p>
+<p>Notice how the returned Fex data class instance has 6 rows: 1 for the first face in the first image, and 5 for the faces in the second image:</p>
+<p><strong>NOTE: Currently batch processing images gives slightly different AU detection results due to the way that py-feat integrates the underlying models. You can examine the degree of tolerance by checking out the results of <code class="docutils literal notranslate"><span class="pre">test_detection_and_batching_with_diff_img_sizes</span></code> in our test-suite</strong></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">single_face_img_path</span><span class="p">,</span> <span class="n">multi_face_image_path</span><span class="p">]</span>
+
+<span class="n">mixed_prediction</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">img_list</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+<span class="n">mixed_prediction</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/2 [00:00&lt;?, ?it/s]
+100%|██████████| 2/2 [00:02&lt;00:00,  1.02s/it]
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>FaceRectX</th>
+      <th>FaceRectY</th>
+      <th>FaceRectWidth</th>
+      <th>FaceRectHeight</th>
+      <th>FaceScore</th>
+      <th>x_0</th>
+      <th>x_1</th>
+      <th>x_2</th>
+      <th>x_3</th>
+      <th>x_4</th>
+      <th>...</th>
+      <th>Identity_508</th>
+      <th>Identity_509</th>
+      <th>Identity_510</th>
+      <th>Identity_511</th>
+      <th>Identity_512</th>
+      <th>input</th>
+      <th>frame</th>
+      <th>FrameHeight</th>
+      <th>FrameWidth</th>
+      <th>Identity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>163.0</td>
+      <td>131.0</td>
+      <td>246.0</td>
+      <td>307.0</td>
+      <td>0.999693</td>
+      <td>188.409531</td>
+      <td>190.764130</td>
+      <td>193.926575</td>
+      <td>197.980225</td>
+      <td>206.389160</td>
+      <td>...</td>
+      <td>0.030200</td>
+      <td>0.104360</td>
+      <td>-0.000730</td>
+      <td>-0.014038</td>
+      <td>0.044818</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>0</td>
+      <td>562.0</td>
+      <td>572.0</td>
+      <td>Person_0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>663.0</td>
+      <td>263.0</td>
+      <td>150.0</td>
+      <td>180.0</td>
+      <td>0.998755</td>
+      <td>683.637024</td>
+      <td>682.256287</td>
+      <td>681.580444</td>
+      <td>682.637024</td>
+      <td>686.754944</td>
+      <td>...</td>
+      <td>-0.030578</td>
+      <td>0.057009</td>
+      <td>-0.027664</td>
+      <td>0.055146</td>
+      <td>0.074115</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>512.0</td>
+      <td>284.0</td>
+      <td>140.0</td>
+      <td>172.0</td>
+      <td>0.997860</td>
+      <td>532.246399</td>
+      <td>530.987976</td>
+      <td>530.478943</td>
+      <td>531.346313</td>
+      <td>534.563416</td>
+      <td>...</td>
+      <td>0.020770</td>
+      <td>0.074040</td>
+      <td>-0.061894</td>
+      <td>0.024235</td>
+      <td>0.058015</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>290.0</td>
+      <td>215.0</td>
+      <td>135.0</td>
+      <td>160.0</td>
+      <td>0.991971</td>
+      <td>311.675385</td>
+      <td>313.203674</td>
+      <td>315.590179</td>
+      <td>319.633240</td>
+      <td>326.428802</td>
+      <td>...</td>
+      <td>-0.065147</td>
+      <td>-0.021230</td>
+      <td>-0.057268</td>
+      <td>-0.008089</td>
+      <td>0.035251</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>192.0</td>
+      <td>35.0</td>
+      <td>131.0</td>
+      <td>154.0</td>
+      <td>0.963654</td>
+      <td>216.397369</td>
+      <td>214.710068</td>
+      <td>213.856934</td>
+      <td>214.397079</td>
+      <td>217.525269</td>
+      <td>...</td>
+      <td>0.040147</td>
+      <td>0.028400</td>
+      <td>-0.029841</td>
+      <td>0.040843</td>
+      <td>-0.055877</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_4</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>413.0</td>
+      <td>193.0</td>
+      <td>112.0</td>
+      <td>134.0</td>
+      <td>0.903046</td>
+      <td>435.238007</td>
+      <td>435.729736</td>
+      <td>436.857910</td>
+      <td>439.002228</td>
+      <td>442.800690</td>
+      <td>...</td>
+      <td>0.042136</td>
+      <td>0.047004</td>
+      <td>-0.001307</td>
+      <td>0.041147</td>
+      <td>0.046738</td>
+      <td>/Users/esh/Documents/pypackages/py-feat/feat/t...</td>
+      <td>1</td>
+      <td>667.0</td>
+      <td>1000.0</td>
+      <td>Person_5</td>
+    </tr>
+  </tbody>
+</table>
+<p>6 rows × 691 columns</p>
+</div></div></div>
+</div>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> will now plot detections for all images the detector was passed:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/7ee709416c355f656571e4e1cebd0eecda8246ef158b3b86e1840226342bde18.png" src="../_images/7ee709416c355f656571e4e1cebd0eecda8246ef158b3b86e1840226342bde18.png" />
+<img alt="../_images/7e8ada11ad3242bec4058483e62af0f5bbef8c1632fc671736c1189e4d72a2a9.png" src="../_images/7e8ada11ad3242bec4058483e62af0f5bbef8c1632fc671736c1189e4d72a2a9.png" />
+</div>
+</div>
+<p>However, it’s easy to use pandas slicing sytax to just grab predictions for the image you want. For example you can use <code class="docutils literal notranslate"><span class="pre">.loc</span></code> and chain it to <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Just plot the detection corresponding to the first row in the Fex data</span>
+<span class="n">figs</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/7ee709416c355f656571e4e1cebd0eecda8246ef158b3b86e1840226342bde18.png" src="../_images/7ee709416c355f656571e4e1cebd0eecda8246ef158b3b86e1840226342bde18.png" />
+</div>
+</div>
+<p>Likewise you can use <code class="docutils literal notranslate"><span class="pre">.query()</span></code> and chain it to <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code>. <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data classes store each file path in the <code class="docutils literal notranslate"><span class="pre">'input'</span></code> column. So we can use regular pandas methods like <code class="docutils literal notranslate"><span class="pre">.unique()</span></code> to get all the unique images (2 in our case) and pick the second one.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Choose plot based on image file name</span>
+<span class="n">img_name</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="n">mixed_prediction</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;input == @img_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/7e8ada11ad3242bec4058483e62af0f5bbef8c1632fc671736c1189e4d72a2a9.png" src="../_images/7e8ada11ad3242bec4058483e62af0f5bbef8c1632fc671736c1189e4d72a2a9.png" />
+</div>
+</div>
 </section>
 </section>
 
@@ -645,16 +1682,16 @@ Changing face_model from retinaface -&gt; mtcnn
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "py-feat"
+            mode: "python"
         },
         kernelOptions: {
-            name: "py-feat",
+            name: "python3",
             path: "./basic_tutorials"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'py-feat'</script>
+    <script>kernelName = 'python3'</script>
 
                 </article>
               
@@ -667,20 +1704,20 @@ Changing face_model from retinaface -&gt; mtcnn
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../pages/usage_guide.html"
+       href="../pages/faqs.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Tips, Community, and Known Issues</p>
+        <p class="prev-next-title">FAQS</p>
       </div>
     </a>
     <a class="right-next"
-       href="02_detector_imgs.html"
+       href="02_detector_vids.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">2. Detecting facial expressions from images</p>
+        <p class="prev-next-title">2. Detecting facial expressions from videos</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -699,11 +1736,19 @@ Changing face_model from retinaface -&gt; mtcnn
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detectors">Detectors</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#default-detectors">Default detectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-models-from-huggingface-and-setting-up-a-detector">1.1 Downloading models from HuggingFace and setting up a <code class="docutils literal notranslate"><span class="pre">Detector</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#processing-a-single-image">1.2 Processing a single image</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-fex-outputs">1.3 Working with <code class="docutils literal notranslate"><span class="pre">Fex</span></code> outputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-detections-from-a-file">1.4 Saving and Loading detections from a file</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#real-time-saving-during-detection-low-memory-mode">Real-time saving during detection (low-memory mode)</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fex-data-classes">Fex data classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-detection-results">1.5 Visualizing detection results.</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-plotting">Interactive Plotting</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detecting-multiple-faces-from-a-single-image">1.6 Detecting multiple faces from a single image</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-multiple-images">1.7 Working with multiple images</a></li>
 </ul>
   </nav></div>
 

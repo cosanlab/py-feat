@@ -174,20 +174,14 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="models.html">Included pre-trained detectors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="au_reference.html">Action Unit Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage_guide.html">Tips, Community, and Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Py-Feat basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">2. Detecting facial expressions from images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_detector_vids.html">3. Detecting facial expressions from videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_plotting.html">4. Visualizing Facial Expressions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">5. Running a full analysis</a></li>
-
-
-
-
-
-
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_plotting.html">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_fex_analysis.html">4. Running a full analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -446,14 +440,13 @@ document.write(`
                   
   <section id="general-contributions-guidelines">
 <h1>General contributions guidelines<a class="headerlink" href="#general-contributions-guidelines" title="Permalink to this heading">#</a></h1>
-<p>We always welcome contributions to Py-Feat and recommend you follow these basic steps to do:</p>
+<p>We always welcome contributions to Py-Feat and recommend you follow these basic steps to do. We highly recommend using <a class="reference external" href="https://code.visualstudio.com/">Visual Studio Code</a> as we include recommended editor extensions and settings in this repo. We use <code class="docutils literal notranslate"><span class="pre">pytest</span></code> for testing and <code class="docutils literal notranslate"><span class="pre">ruff</span></code> for linting and formatting:</p>
 <ol class="arabic simple">
 <li><p>Fork the repository on <a class="reference external" href="https://github.com/cosanlab/feat">GitHub</a>.</p></li>
 <li><p>Install Feat on your machine, by <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span></code> your fork</p></li>
 <li><p>Install the development dependencies which will <em>also</em> install the package dependencies: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements-dev.txt</span></code></p></li>
 <li><p>Install Py-Feat in development mode so that any changes you make to source files are <em>automatically</em> reflected in scripts/notebooks: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
 <li><p>Add you code contributions and/or changes</p></li>
-<li><p>Check or format your code using <a class="reference external" href="https://black.readthedocs.io/en/stable/">black</a></p></li>
 <li><p>Create or update the appropriate tests in <code class="docutils literal notranslate"><span class="pre">feat/tests/</span></code>.</p></li>
 <li><p>Run a single test to make sure your new functionality works: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">-k</span> <span class="pre">'name_of_your_test'</span></code></p></li>
 <li><p>Alternatively (or additionally) run the full Py-Feat test suite: <code class="docutils literal notranslate"><span class="pre">pytest</span></code></p></li>

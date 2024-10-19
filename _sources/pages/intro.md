@@ -36,6 +36,8 @@ pip install py-feat
 
 For other installation methods (e.g. Google Collab, development) see the [how to install page](./installation.md)
 
+Check out our [FAQS](./faqs.md) for common issues and solutions.
+
 ## Available models
 Py-feat includes several **pre-trained** models for Action Unit detection, Emotion detection, Face detection, Facial Landmark detection, and Face/Head post estimation. 
 

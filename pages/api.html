@@ -174,20 +174,14 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="models.html">Included pre-trained detectors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="au_reference.html">Action Unit Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage_guide.html">Tips, Community, and Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Py-Feat basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">2. Detecting facial expressions from images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_detector_vids.html">3. Detecting facial expressions from videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_plotting.html">4. Visualizing Facial Expressions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">5. Running a full analysis</a></li>
-
-
-
-
-
-
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_plotting.html">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_fex_analysis.html">4. Running a full analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -456,175 +450,49 @@ document.write(`
 </section>
 <section id="module-feat.detector">
 <span id="feat-detector-module"></span><h1>feat.detector module<a class="headerlink" href="#module-feat.detector" title="Permalink to this heading">#</a></h1>
-<p>Main Detector class. The Detector class wraps other pre-trained models
-(e.g. face detector, au detector) and provides a high-level API to make it easier to
-perform detection</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="feat.detector.Detector">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'retinaface'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mobilefacenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xgb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resmasknet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'img2pose'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identity_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'facenet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">feat.detector.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PyTorchModelHubMixin</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.change_model">
-<span class="sig-name descname"><span class="pre">change_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.change_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Swap one or more pre-trained detector models for another one. Just pass in
-the the new models to use as kwargs, e.g. emotion_model=’svm’</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.detect_aus">
-<span class="sig-name descname"><span class="pre">detect_aus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">au_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_aus" title="Permalink to this definition">#</a></dt>
-<dd><p>Detect Action Units from image or video frame</p>
+<dt class="sig sig-object py" id="feat.detector.Detector.detect">
+<span class="sig-name descname"><span class="pre">detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'image'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_identity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect" title="Permalink to this definition">#</a></dt>
+<dd><p>Detects FEX from one or more imagathe files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>frame</strong> (<em>np.ndarray</em>) – image loaded in array format (n, m, 3)</p></li>
-<li><p><strong>landmarks</strong> (<em>array</em>) – 68 landmarks used to localize face.</p></li>
+<li><p><strong>inputs</strong> (<em>list of str</em><em>, </em><em>torch.Tensor</em>) – Path to a list of paths to image files or torch.Tensor of images (B, C, H, W)</p></li>
+<li><p><strong>data_type</strong> (<em>str</em>) – type of data to be processed; Default ‘image’ [‘image’, ‘tensor’, ‘video’]</p></li>
+<li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all image preserving aspect ratio.</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – how many batches of images you want to run at one shot.</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – how many subprocesses to use for data loading.</p></li>
+<li><p><strong>pin_memory</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data loader will copy Tensors into CUDA pinned memory before returning them.</p></li>
+<li><p><strong>face_identity_threshold</strong> (<em>float</em>) – value between 0-1 to determine similarity of person using face identity embeddings; Default &gt;= 0.8</p></li>
+<li><p><strong>face_detection_threshold</strong> (<em>float</em>) – value between 0-1 to determine if a face was detected; Default &gt;= 0.5</p></li>
+<li><p><strong>skip_frames</strong> (<em>int</em><em> or </em><em>None</em>) – number of frames to skip to speed up inference (video only); Default None</p></li>
+<li><p><strong>progress_bar</strong> (<em>bool</em>) – Whether to show the tqdm progress bar. Default is True.</p></li>
+<li><p><strong>**kwargs</strong> – additional detector-specific kwargs</p></li>
+<li><p><strong>save</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>Path</em>) – if immediately append detections to a csv file at with the given name after processing each batch, which can be useful to interrupted/resuming jobs and saving memory/RAM</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Action Unit predictions</p>
+<dd class="field-even"><p>Concatenated results for all images in the batch</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_pictures</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">read_pictures</span><span class="p">([</span><span class="s1">&#39;my_image.jpg&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span><span class="o">.</span><span class="n">detect_aus</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.detect_emotions">
-<span class="sig-name descname"><span class="pre">detect_emotions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">emotion_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_emotions" title="Permalink to this definition">#</a></dt>
-<dd><p>Detect emotions from image or video frame</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frame</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
-<li><p><strong>facebox</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
-<li><p><strong>landmarks</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Action Unit predictions</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_pictures</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img_data</span> <span class="o">=</span> <span class="n">read_pictures</span><span class="p">([</span><span class="s1">&#39;my_image.jpg&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detected_faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detected_landmarks</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">detected_faces</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span><span class="o">.</span><span class="n">detect_emotions</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">detected_faces</span><span class="p">,</span> <span class="n">detected_landmarks</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.detect_facepose">
-<span class="sig-name descname"><span class="pre">detect_facepose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">facepose_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_facepose" title="Permalink to this definition">#</a></dt>
-<dd><p>Detect facepose from image or video frame.</p>
-<p>When used with img2pose, returns <em>all</em> detected poses, and facebox and landmarks
-are ignored. Use <cite>detect_face</cite> method in order to obtain bounding boxes
-corresponding to the detected poses returned by this method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frame</strong> (<em>np.ndarray</em>) – list of images</p></li>
-<li><p><strong>landmarks</strong> (<em>np.ndarray</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – (num_images, num_faces, 68, 2)</p></li>
-<li><p><strong>and</strong> (<em>landmarks for the faces contained in list of images; Default None</em>) – </p></li>
-<li><p><strong>detectors</strong> (<em>ignored for img2pose and img2pose-c</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>poses (num_images, num_faces, [pitch, roll, yaw]) - Euler angles (in
-degrees) for each face within in each image}</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="feat.detector.Detector.detect_faces">
-<span class="sig-name descname"><span class="pre">detect_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">face_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_faces" title="Permalink to this definition">#</a></dt>
-<dd><p>Detect faces from image or video frame</p>
+<span class="sig-name descname"><span class="pre">detect_faces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">112</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_faces" title="Permalink to this definition">#</a></dt>
+<dd><p>detect faces and poses in a batch of images using img2pose</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
-<li><p><strong>threshold</strong> (<em>float</em>) – threshold for detectiong faces (default=0.5)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>list of lists with the same length as the number of frames. Each list
-item is a list containing the (x1, y1, x2, y2) coordinates of each detected
-face in that frame.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.detect_identity">
-<span class="sig-name descname"><span class="pre">detect_identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">identity_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_identity" title="Permalink to this definition">#</a></dt>
-<dd><p>Detects identity of faces from image or video frame using face representation embeddings</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
-<li><p><strong>threshold</strong> (<em>float</em>) – threshold for matching identity (default=0.8)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>list of lists with the same length as the number of frames. Each list
-item is a list containing the (x1, y1, x2, y2) coordinates of each detected
-face in that frame.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.detect_image">
-<span class="sig-name descname"><span class="pre">detect_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_counter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_identity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_image" title="Permalink to this definition">#</a></dt>
-<dd><p>Detects FEX from one or more image files. If you want to speed up detection you
-can process multiple images in batches by setting <cite>batch_size &gt; 1</cite>. However, all
-images must have <strong>the same dimensions</strong> to be processed in batches. Py-feat can
-automatically adjust image sizes by using the <cite>output_size=int</cite>. Common
-output-sizes include 256 and 512.</p>
-<p><strong>NOTE: Currently batch processing images gives slightly different AU detection results due to the way that py-feat integrates the underlying models. You can examine the degree of tolerance by checking out the results of `test_detection_and_batching_with_diff_img_sizes` in our test-suite</strong></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>input_file_list</strong> (<em>list of str</em>) – Path to a list of paths to image files.</p></li>
-<li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all image preserving aspect ratio.
-Will raise an error if not set and batch_size &gt; 1 but images are not the same size</p></li>
-<li><p><strong>batch_size</strong> (<em>int</em>) – how many batches of images you want to run at one shot.
-Larger gives faster speed but is more memory-consuming. Images must be the</p></li>
-<li><p><strong>batches!</strong> (<em>same size to be run in</em>) – </p></li>
-<li><p><strong>num_workers</strong> (<em>int</em>) – how many subprocesses to use for data loading. <code class="docutils literal notranslate"><span class="pre">0</span></code> means that the data will be loaded in the main process.</p></li>
-<li><p><strong>pin_memory</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data loader will copy Tensors into CUDA pinned memory before returning them.  If your data elements are a custom type, or your <code class="xref py py-attr docutils literal notranslate"><span class="pre">collate_fn</span></code> returns a batch that is a custom type</p></li>
-<li><p><strong>frame_counter</strong> (<em>int</em>) – starting value to count frames</p></li>
-<li><p><strong>face_detection_threshold</strong> (<em>float</em>) – value between 0-1 to report a detection based on the
-confidence of the face detector; Default &gt;= 0.5</p></li>
-<li><p><strong>face_identity_threshold</strong> (<em>float</em>) – value between 0-1 to determine similarity of person using face identity embeddings; Default &gt;= 0.8</p></li>
-<li><p><strong>**kwargs</strong> – you can pass each detector specific kwargs using a dictionary
-like: <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li>
+<li><p><strong>img</strong> (<em>torch.Tensor</em>) – Tensor of shape (B, C, H, W) representing the images</p></li>
+<li><p><strong>face_size</strong> (<em>int</em>) – Output size to resize face after cropping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -637,54 +505,12 @@ like: <cite>face_model_kwargs = {…}, au_model_kwargs={…}, …</cite></p></li
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.detect_landmarks">
-<span class="sig-name descname"><span class="pre">detect_landmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detected_faces</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">landmark_model_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_landmarks" title="Permalink to this definition">#</a></dt>
-<dd><p>Detect landmarks from image or video frame</p>
+<dt class="sig sig-object py" id="feat.detector.Detector.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">faces_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Run Model Inference on detected faces.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 3d (single) or 4d (multiple) image array</p></li>
-<li><p><strong>detected_faces</strong> (<em>array</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>x and y landmark coordinates (1,68,2)</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">read_pictures</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">img_data</span> <span class="o">=</span> <span class="n">read_pictures</span><span class="p">([</span><span class="s1">&#39;my_image.jpg&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detected_faces</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_faces</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span><span class="o">.</span><span class="n">detect_landmarks</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">detected_faces</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="feat.detector.Detector.detect_video">
-<span class="sig-name descname"><span class="pre">detect_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">700</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_detection_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">face_identity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.detector.Detector.detect_video" title="Permalink to this definition">#</a></dt>
-<dd><p>Detects FEX from a video file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>video_path</strong> (<em>str</em>) – Path to a video file.</p></li>
-<li><p><strong>skip_frames</strong> (<em>int</em><em> or </em><em>None</em>) – number of frames to skip (speeds up inference,</p></li>
-<li><p><strong>None</strong> (<em>but less temporal information</em><em>)</em><em>; Default</em>) – </p></li>
-<li><p><strong>output_size</strong> (<em>int</em>) – image size to rescale all imagee preserving aspect ratio</p></li>
-<li><p><strong>batch_size</strong> (<em>int</em>) – how many batches of images you want to run at one shot. Larger gives faster speed but is more memory-consuming</p></li>
-<li><p><strong>num_workers</strong> (<em>int</em>) – how many subprocesses to use for data loading. <code class="docutils literal notranslate"><span class="pre">0</span></code> means that the data will be loaded in the main process.</p></li>
-<li><p><strong>pin_memory</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data loader will copy Tensors
-into CUDA pinned memory before returning them.  If your data elements
-are a custom type, or your <code class="xref py py-attr docutils literal notranslate"><span class="pre">collate_fn</span></code> returns a batch that is a custom type</p></li>
-<li><p><strong>face_detection_threshold</strong> (<em>float</em>) – value between 0-1 to report a detection based on the
-confidence of the face detector; Default &gt;= 0.5</p></li>
-<li><p><strong>face_identity_threshold</strong> (<em>float</em>) – value between 0-1 to determine similarity of person using face identity embeddings; Default &gt;= 0.8</p></li>
-</ul>
+<dd class="field-odd"><p><strong>faces_data</strong> (<em>list of dict</em>) – Detected faces and associated data from <cite>detect_faces</cite>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Prediction results dataframe</p>
@@ -694,6 +520,11 @@ confidence of the face detector; Default &gt;= 0.5</p></li>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="feat.detector.Detector.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#feat.detector.Detector.training" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -1176,6 +1007,39 @@ hzs:  list of hzs for each Morlet wavelet</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.iplot_detections">
+<span class="sig-name descname"><span class="pre">iplot_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding_boxes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'right'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">14</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cyan'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pose_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Blues'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_heatmap_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.iplot_detections" title="Permalink to this definition">#</a></dt>
+<dd><p>Plot Py-FEAT detection results using plotly backend. There are currently two different types of plots implemented. For single Frames, uses plot_singleframe_detections() to create an interactive plot where different detector outputs can be toggled on or off.  For multiple frames, uses plot_multipleframes_detections() to create a plotly animation to scroll through multiple frames. However, we currently are unable to interactively toggle on and off the detectors, so the detector output must be prespecified when generating the plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bounding_boxes</strong> (<em>bool</em>) – will include faceboxes when plotting detector output for multiple frames.</p></li>
+<li><p><strong>landmarks</strong> (<em>bool</em>) – will include face landmarks when plotting detector output for multiple frames.</p></li>
+<li><p><strong>poses</strong> (<em>bool</em>) – will include 3 axis line plot indicating x,y,z rotation information when plotting detector output for multiple frames.</p></li>
+<li><p><strong>aus</strong> (<em>bool</em>) – will include action unit heatmaps when plotting detector output for multiple frames.</p></li>
+<li><p><strong>emotions</strong> (<em>bool</em>) – will add text annotations indicating probability of discrete emotion when plotting detector output for multiple frames.</p></li>
+<li><p><strong>emotions_position</strong> (<em>str</em>) – position around facebox to plot emotion annotations. default=’right’</p></li>
+<li><p><strong>emotions_opacity</strong> (<em>float</em>) – opacity of emotion annotation text (default=1.)</p></li>
+<li><p><strong>emotions_color</strong> (<em>str</em>) – color of emotion annotation text (default=’white’)</p></li>
+<li><p><strong>emotions_size</strong> (<em>int</em>) – size of emotion annotations (default=14)</p></li>
+<li><p><strong>frame_duration</strong> (<em>int</em>) – duration in milliseconds to play each frame if plotting multiple frames (default=1000)</p></li>
+<li><p><strong>facebox_color</strong> (<em>str</em>) – color of facebox bounding box (default=”cyan”)</p></li>
+<li><p><strong>facebox_width</strong> (<em>int</em>) – line width of facebox bounding box (default=3)</p></li>
+<li><p><strong>pose_width</strong> (<em>int</em>) – line width of pose rotation plot (default=2)</p></li>
+<li><p><strong>landmark_color</strong> (<em>str</em>) – color of landmark detectors (default=”white”)</p></li>
+<li><p><strong>landmark_width</strong> (<em>int</em>) – line width of landmark detectors (default=2)</p></li>
+<li><p><strong>au_cmap</strong> (<em>str</em>) – colormap to use for AU heatmap (default=’Blues’)</p></li>
+<li><p><strong>au_heatmap_resolution</strong> (<em>int</em>) – resolution of heatmap values (default=1000)</p></li>
+<li><p><strong>au_opacity</strong> (<em>float</em>) – opacity of AU heatmaps (default=0.9)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a plotly figure instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="feat.data.Fex.isc">
 <span class="sig-name descname"><span class="pre">isc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'input'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.isc" title="Permalink to this definition">#</a></dt>
 <dd><p>[summary]</p>
@@ -1330,6 +1194,35 @@ the underlying vidoe frame to save memory.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="feat.data.Fex.plot_singleframe_detections">
+<span class="sig-name descname"><span class="pre">plot_singleframe_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding_boxes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmarks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cyan'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facebox_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pose_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'right'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_heatmap_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Blues'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.data.Fex.plot_singleframe_detections" title="Permalink to this definition">#</a></dt>
+<dd><p>Function to generate interactive plotly figure to interactively visualize py-feat detectors on a single image frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_opacity</strong> (<em>float</em>) – opacity of image overlay (default=.9)</p></li>
+<li><p><strong>emotions_position</strong> (<em>str</em>) – position around facebox to plot emotion annotations. default=’right’</p></li>
+<li><p><strong>emotions_opacity</strong> (<em>float</em>) – opacity of emotion annotation text (default=1.)</p></li>
+<li><p><strong>emotions_color</strong> (<em>str</em>) – color of emotion annotation text (default=’white’)</p></li>
+<li><p><strong>emotions_size</strong> (<em>int</em>) – size of emotion annotations (default=14)</p></li>
+<li><p><strong>frame_duration</strong> (<em>int</em>) – duration in milliseconds to play each frame if plotting multiple frames (default=1000)</p></li>
+<li><p><strong>facebox_color</strong> (<em>str</em>) – color of facebox bounding box (default=”cyan”)</p></li>
+<li><p><strong>facebox_width</strong> (<em>int</em>) – line width of facebox bounding box (default=3)</p></li>
+<li><p><strong>pose_width</strong> (<em>int</em>) – line width of pose rotation plot (default=2)</p></li>
+<li><p><strong>landmark_color</strong> (<em>str</em>) – color of landmark detectors (default=”white”)</p></li>
+<li><p><strong>landmark_width</strong> (<em>int</em>) – line width of landmark detectors (default=2)</p></li>
+<li><p><strong>au_cmap</strong> (<em>str</em>) – colormap to use for AU heatmap (default=’Blues’)</p></li>
+<li><p><strong>au_heatmap_resolution</strong> (<em>int</em>) – resolution of heatmap values (default=1000)</p></li>
+<li><p><strong>au_opacity</strong> (<em>float</em>) – opacity of AU heatmaps (default=0.9)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a plotly figure instance</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1892,7 +1785,7 @@ All methods should be called on Fex below.</p>
 <p>Helper functions for plotting</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.animate_face">
-<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">animate_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AU</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.animate_face" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">animate_face</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">AU</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.animate_face" title="Permalink to this definition">#</a></dt>
 <dd><p>Create a matplotlib animation interpolating between a starting and ending face. Can
 either work like <cite>plot_face</cite> by taking an array of AU intensities for <cite>start</cite> and
 <cite>end</cite>, or by animating a single AU using the <cite>AU</cite> keyword argument and setting
@@ -1961,6 +1854,84 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.draw_plotly_au">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_plotly_au</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heatmap_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Blues'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dictionary'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_plotly_au" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to draw an SVG path for a plotly figure object</p>
+<blockquote>
+<div><dl class="simple">
+<dt>NOTES:</dt><dd><p>Need to clean up muscle ids after looking at face anatomy action units</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> (<a class="reference internal" href="#feat.data.FexSeries" title="feat.data.FexSeries"><em>FexSeries</em></a>) – FexSeries instance</p></li>
+<li><p><strong>img_height</strong> (<em>int</em>) – height of image overlay. used to adjust coordinates</p></li>
+<li><p><strong>fig</strong> – plotly figure handle</p></li>
+<li><p><strong>heatmap_resolution</strong> (<em>int</em>) – precision of cmap</p></li>
+<li><p><strong>au_opacity</strong> (<em>float</em>) – amount of opacity for face muscles</p></li>
+<li><p><strong>cmap</strong> (<em>str</em>) – colormap</p></li>
+<li><p><strong>output</strong> (<em>str</em>) – type of output “figure” for plotly figure object or “dictionary”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotly figure handle</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.draw_plotly_landmark">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_plotly_landmark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dictionary'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_plotly_landmark" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to draw an SVG path for a plotly figure object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> – (FexSeries) a row of a Fex object</p></li>
+<li><p><strong>img_height</strong> (<em>int</em>) – height of the image to flip the y-coordinates</p></li>
+<li><p><strong>fig</strong> – a plotly figure instance</p></li>
+<li><p><strong>output</strong> (<em>str</em>) – type of output “figure” for plotly figure object or “dictionary”</p></li>
+<li><p><strong>line_width</strong> (<em>int</em>) – (optional) line width if outputting a plotly figure instance</p></li>
+<li><p><strong>line_color</strong> (<em>int</em>) – (optional) line color if outputting a plotly figure instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>an SVG string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig (str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.draw_plotly_pose">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_plotly_pose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dictionary'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_plotly_pose" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to draw a path indicating the x,y,z pose position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> (<a class="reference internal" href="#feat.data.FexSeries" title="feat.data.FexSeries"><em>FexSeries</em></a>) – FexSeries instance</p></li>
+<li><p><strong>img_height</strong> (<em>int</em>) – height of image overlay. used to adjust coordinates</p></li>
+<li><p><strong>fig</strong> – plotly figure handle</p></li>
+<li><p><strong>line_width</strong> (<em>int</em>) – (optional) width of line if outputing a plotly figure instance</p></li>
+<li><p><strong>output</strong> (<em>str</em>) – type of output “figure” for plotly figure object or “dictionary”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotly figure handle</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="feat.plotting.draw_vectorfield">
 <span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">draw_vectorfield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.007</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.draw_vectorfield" title="Permalink to this definition">#</a></dt>
 <dd><p>Draw vectorfield from reference to target</p>
@@ -1972,6 +1943,72 @@ either work like <cite>plot_face</cite> by taking an array of AU intensities for
 <li><p><strong>ax</strong> – matplotlib axis instance</p></li>
 <li><p><strong>au</strong> – vector of action units (len(17))</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.emotion_annotation_position">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">emotion_annotation_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotions_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bottom'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.emotion_annotation_position" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to adjust position of emotion annotations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> (<a class="reference internal" href="#feat.data.FexSeries" title="feat.data.FexSeries"><em>FexSeries</em></a>) – FexSeries instance</p></li>
+<li><p><strong>img_height</strong> (<em>int</em>) – height of image overlay. used to adjust coordinates</p></li>
+<li><p><strong>img_width</strong> (<em>int</em>) – width of image overlay. used to adjust coordinates</p></li>
+<li><p><strong>emotions_size</strong> (<em>int</em>) – size of text used to adjust positions</p></li>
+<li><p><strong>emotions_position</strong> (<em>str</em>) – position to place emotion annotations [‘left’, ‘right’, ‘top’, ‘bottom’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>y_position (int):
+align (str): plotly annotation text alignment [‘top’,’bottom’, ‘left’, ‘right ]
+valign (str): plotly annotation vertical alignment [‘middle’, ‘top’, ‘bottom’]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x_position (int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.face_part_path">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">face_part_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_points</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.face_part_path" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to draw SVG path for a specific face part. Requires list of landmark point positions (i.e., [0,1,2]). Last coordinate is end point</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> – (FexSeries) a row of a Fex object</p></li>
+<li><p><strong>img_height</strong> (<em>int</em>) – the height of the image</p></li>
+<li><p><strong>line_points</strong> (<em>list</em>) – a list of points on a landmark (i.e., [0:68])</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>an SVG string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig (str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.plotting.face_polygon_svg">
+<span class="sig-prename descclassname"><span class="pre">feat.plotting.</span></span><span class="sig-name descname"><span class="pre">face_polygon_svg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_height</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.plotting.face_polygon_svg" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to draw SVG path for a polygon of a specific face part. Requires list of landmark x,y coordinate tuples (i.e., [(2,2),(5,33)]).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line_points</strong> (<em>list</em>) – a list of tuples of landmark coordinates</p></li>
+<li><p><strong>img_height</strong> (<em>int</em>) – height of the image to flip the y-coordinates</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>an SVG string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig (str)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2094,6 +2131,29 @@ non-linear easing functions</p>
 <span id="feat-utils-module"></span><h1>feat.utils module<a class="headerlink" href="#module-feat.utils" title="Permalink to this heading">#</a></h1>
 <p>py-feat helper functions and variables</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="feat.utils.flatten_list">
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">flatten_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.flatten_list" title="Permalink to this definition">#</a></dt>
+<dd><p>Helper function to flatten a list of lists</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.utils.generate_coordinate_names">
+<span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">generate_coordinate_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">478</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.generate_coordinate_names" title="Permalink to this definition">#</a></dt>
+<dd><p>Generates a list of names for x, y, z coordinates for a given number of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_points</strong> (<em>int</em>) – Number of points (478 in this case).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of coordinate names like [‘x_1’, ‘y_1’, ‘z_1’, …, ‘x_n’, ‘y_n’, ‘z_n’].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="feat.utils.is_list_of_lists_empty">
 <span class="sig-prename descclassname"><span class="pre">feat.utils.</span></span><span class="sig-name descname"><span class="pre">is_list_of_lists_empty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_lists</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.utils.is_list_of_lists_empty" title="Permalink to this definition">#</a></dt>
 <dd><p>Helper function to check if list of lists is empty</p>
@@ -2120,6 +2180,12 @@ non-linear easing functions</p>
 <span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">get_pretrained_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">face_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landmark_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">au_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emotion_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facepose_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identity_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.get_pretrained_models" title="Permalink to this definition">#</a></dt>
 <dd><p>Helper function that validates the request model names and downloads them if
 necessary using the URLs in the included JSON file. User by detector init</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="feat.pretrained.load_model_weights">
+<span class="sig-prename descclassname"><span class="pre">feat.pretrained.</span></span><span class="sig-name descname"><span class="pre">load_model_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'au'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xgb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'huggingface'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feat.pretrained.load_model_weights" title="Permalink to this definition">#</a></dt>
+<dd><p>Load weights for the AU models</p>
 </dd></dl>
 
 </section>

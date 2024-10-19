@@ -171,20 +171,14 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="pages/models.html">Included pre-trained detectors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/au_reference.html">Action Unit Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/usage_guide.html">Tips, Community, and Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/faqs.html">FAQS</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/01_basics.html">1. Py-Feat basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/02_detector_imgs.html">2. Detecting facial expressions from images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/03_detector_vids.html">3. Detecting facial expressions from videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/04_plotting.html">4. Visualizing Facial Expressions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/05_fex_analysis.html">5. Running a full analysis</a></li>
-
-
-
-
-
-
+<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/01_basics.html">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/03_plotting.html">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_tutorials/04_fex_analysis.html">4. Running a full analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -436,12 +430,10 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.VideoDataset.calc_approx_frame_time">calc_approx_frame_time() (feat.data.VideoDataset method)</a>
 </li>
-      <li><a href="pages/api.html#feat.detector.Detector.change_model">change_model() (feat.detector.Detector method)</a>
+      <li><a href="pages/api.html#feat.data.Fex.clean">clean() (feat.data.Fex method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.data.Fex.clean">clean() (feat.data.Fex method)</a>
-</li>
       <li><a href="pages/api.html#feat.data.Fex.compute_identities">compute_identities() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.data.VideoDataset.convert_sec_to_min_sec">convert_sec_to_min_sec() (feat.data.VideoDataset static method)</a>
@@ -460,33 +452,27 @@ document.write(`
         <li><a href="pages/api.html#feat.data.FexSeries.design">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
-      <li><a href="pages/api.html#feat.detector.Detector.detect_aus">detect_aus() (feat.detector.Detector method)</a>
-</li>
-      <li><a href="pages/api.html#feat.detector.Detector.detect_emotions">detect_emotions() (feat.detector.Detector method)</a>
-</li>
-      <li><a href="pages/api.html#feat.detector.Detector.detect_facepose">detect_facepose() (feat.detector.Detector method)</a>
+      <li><a href="pages/api.html#feat.detector.Detector.detect">detect() (feat.detector.Detector method)</a>
 </li>
       <li><a href="pages/api.html#feat.detector.Detector.detect_faces">detect_faces() (feat.detector.Detector method)</a>
-</li>
-      <li><a href="pages/api.html#feat.detector.Detector.detect_identity">detect_identity() (feat.detector.Detector method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.detector.Detector.detect_image">detect_image() (feat.detector.Detector method)</a>
-</li>
-      <li><a href="pages/api.html#feat.detector.Detector.detect_landmarks">detect_landmarks() (feat.detector.Detector method)</a>
-</li>
-      <li><a href="pages/api.html#feat.detector.Detector.detect_video">detect_video() (feat.detector.Detector method)</a>
 </li>
       <li><a href="pages/api.html#feat.detector.Detector">Detector (class in feat.detector)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.distance">distance() (feat.data.Fex method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.downsample">downsample() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.plotting.draw_lineface">draw_lineface() (in module feat.plotting)</a>
 </li>
       <li><a href="pages/api.html#feat.plotting.draw_muscles">draw_muscles() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_plotly_au">draw_plotly_au() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_plotly_landmark">draw_plotly_landmark() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_plotly_pose">draw_plotly_pose() (in module feat.plotting)</a>
 </li>
       <li><a href="pages/api.html#feat.plotting.draw_vectorfield">draw_vectorfield() (in module feat.plotting)</a>
 </li>
@@ -496,6 +482,8 @@ document.write(`
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.plotting.emotion_annotation_position">emotion_annotation_position() (in module feat.plotting)</a>
+</li>
       <li><a href="pages/api.html#feat.data.Fex.emotions">emotions (feat.data.Fex property)</a>
 
       <ul>
@@ -528,6 +516,10 @@ document.write(`
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.plotting.face_part_path">face_part_path() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.face_polygon_svg">face_polygon_svg() (in module feat.plotting)</a>
+</li>
       <li><a href="pages/api.html#feat.data.Fex.facebox">facebox (feat.data.Fex property)</a>
 
       <ul>
@@ -589,12 +581,18 @@ document.write(`
 </li>
       <li><a href="pages/api.html#feat.data.FexSeries">FexSeries (class in feat.data)</a>
 </li>
+      <li><a href="pages/api.html#feat.utils.flatten_list">flatten_list() (in module feat.utils)</a>
+</li>
+      <li><a href="pages/api.html#feat.detector.Detector.forward">forward() (feat.detector.Detector method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.utils.generate_coordinate_names">generate_coordinate_names() (in module feat.utils)</a>
+</li>
       <li><a href="pages/api.html#feat.plotting.get_heat">get_heat() (in module feat.plotting)</a>
 </li>
   </ul></td>
@@ -625,14 +623,14 @@ document.write(`
         <li><a href="pages/api.html#feat.data.FexSeries.info">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.input">input (feat.data.Fex property)</a>
 
       <ul>
         <li><a href="pages/api.html#feat.data.FexSeries.input">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.inputs">inputs (feat.data.Fex property)</a>
 
       <ul>
@@ -640,6 +638,8 @@ document.write(`
 </li>
       </ul></li>
       <li><a href="pages/api.html#feat.plotting.interpolate_aus">interpolate_aus() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.iplot_detections">iplot_detections() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.utils.is_list_of_lists_empty">is_list_of_lists_empty() (in module feat.utils)</a>
 </li>
@@ -671,14 +671,14 @@ document.write(`
         <li><a href="pages/api.html#feat.data.FexSeries.landmark_y">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.landmarks">landmarks (feat.data.Fex property)</a>
 
       <ul>
         <li><a href="pages/api.html#feat.data.FexSeries.landmarks">(feat.data.FexSeries property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.data.Fex.landmarks_x">landmarks_x (feat.data.Fex property)</a>
 
       <ul>
@@ -692,6 +692,8 @@ document.write(`
 </li>
       </ul></li>
       <li><a href="pages/api.html#feat.data.VideoDataset.load_frame">load_frame() (feat.data.VideoDataset method)</a>
+</li>
+      <li><a href="pages/api.html#feat.pretrained.load_model_weights">load_model_weights() (in module feat.pretrained)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -727,6 +729,8 @@ document.write(`
 </li>
       </ul></li>
       <li><a href="pages/api.html#feat.plotting.plot_face">plot_face() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.plot_singleframe_detections">plot_singleframe_detections() (feat.data.Fex method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -782,6 +786,8 @@ document.write(`
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.detector.Detector.training">training (feat.detector.Detector attribute)</a>
+</li>
       <li><a href="pages/api.html#feat.data.Fex.ttest_1samp">ttest_1samp() (feat.data.Fex method)</a>
 </li>
       <li><a href="pages/api.html#feat.data.Fex.ttest_ind">ttest_ind() (feat.data.Fex method)</a>

@@ -174,20 +174,14 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Included pre-trained detectors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="au_reference.html">Action Unit Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage_guide.html">Tips, Community, and Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Py-Feat basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_imgs.html">2. Detecting facial expressions from images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_detector_vids.html">3. Detecting facial expressions from videos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_plotting.html">4. Visualizing Facial Expressions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/05_fex_analysis.html">5. Running a full analysis</a></li>
-
-
-
-
-
-
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_plotting.html">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_fex_analysis.html">4. Running a full analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -432,9 +426,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#face-detection">Face detection</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#face-and-facial-pose-detection">Face and Facial Pose detection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#facial-landmark-detection">Facial landmark detection</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#facial-pose-estimation">Facial Pose estimation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-unit-detection">Action Unit detection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#emotion-detection">Emotion detection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#identity-detection">Identity detection</a></li>
@@ -462,14 +455,10 @@ document.write(`
 <p class="admonition-title">Note</p>
 <p>Models names are case-insensitive: <code class="docutils literal notranslate"><span class="pre">'resmasknet'</span> <span class="pre">==</span> <span class="pre">'ResMaskNet'</span></code></p>
 </div>
-<section id="face-detection">
-<h2>Face detection<a class="headerlink" href="#face-detection" title="Permalink to this heading">#</a></h2>
+<section id="face-and-facial-pose-detection">
+<h2>Face and Facial Pose detection<a class="headerlink" href="#face-and-facial-pose-detection" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
-<li><p><strong><code class="docutils literal notranslate"><span class="pre">retinaface</span></code>: Single-stage dense face localisation</strong> in the wild by (<a class="reference external" href="https://arxiv.org/pdf/1905.00641v2.pdf">Deng et al., 2019</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">mtcnn</span></code>: Multi-task cascaded convolutional networks by (<a class="reference external" href="https://arxiv.org/pdf/1604.02878.pdf">Zhang et al., 2016</a>; <a class="reference external" href="https://ieeexplore.ieee.org/document/9239720">Zhang et al., 2020</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">faceboxes</span></code>: A CPU real-time face detector with high accuracy by (<a class="reference external" href="https://arxiv.org/pdf/1708.05234v4.pdf">Zhang et al., 2018</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">img2pose-c</span></code>: A ‘constrained’ version of the above model, fine-tuned on images of frontal faces with pitch, roll, yaw measures in the range of (-90, 90) degrees. Shows lesser performance on difficult face detection tasks, but state-of-the-art performance on face pose estimation for frontal faces</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation</strong> (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
 </ul>
 </section>
 <section id="facial-landmark-detection">
@@ -478,13 +467,6 @@ document.write(`
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">mobilefacenet</span></code>: Efficient CNNs for accurate real time face verification on mobile devices</strong> (<a class="reference external" href="https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf">Chen et al, 2018</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mobilenet</span></code>: Efficient convolutional neural networks for mobile vision applications (<a class="reference external" href="https://arxiv.org/pdf/1704.04861v1.pdf">Howard et al, 2017</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pfld</span></code>: Practical Facial Landmark Detector by (<a class="reference external" href="https://arxiv.org/pdf/1902.10859.pdf">Guo et al, 2019</a>)</p></li>
-</ul>
-</section>
-<section id="facial-pose-estimation">
-<h2>Facial Pose estimation<a class="headerlink" href="#facial-pose-estimation" title="Permalink to this heading">#</a></h2>
-<ul class="simple">
-<li><p><strong><code class="docutils literal notranslate"><span class="pre">img2pose</span></code>: Face Alignment and Detection via 6DoF, Face Pose Estimation</strong> (<a class="reference external" href="https://arxiv.org/pdf/2012.07791v2.pdf">Albiero et al., 2020</a>). Performs simultaneous (one-shot) face detection and head pose estimation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">img2pose-c</span></code>: A ‘constrained’ version of the above model, fine-tuned on images of frontal faces with pitch, roll, yaw measures in the range of (-90, 90) degrees. Shows lesser performance on hard face detection tasks, but state-of-the-art performance on head pose estimation for frontal faces.</p></li>
 </ul>
 </section>
 <section id="action-unit-detection">
@@ -580,9 +562,8 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#face-detection">Face detection</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#face-and-facial-pose-detection">Face and Facial Pose detection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#facial-landmark-detection">Facial landmark detection</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#facial-pose-estimation">Facial Pose estimation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-unit-detection">Action Unit detection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#emotion-detection">Emotion detection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#identity-detection">Identity detection</a></li>
