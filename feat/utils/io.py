@@ -16,10 +16,18 @@ from feat.utils import (
     openface_facepose_columns,
     openface_gaze_columns,
     openface_time_columns,
+    FEAT_FACEPOSE_COLUMNS_6D,
+    FEAT_IDENTITY_COLUMNS,
 )
 
 
 from torchvision.datasets.utils import download_url as tv_download_url
+from torchvision.io import read_image, read_video
+from torchvision.transforms.functional import to_pil_image
+import warnings
+import av
+import torch
+from torch import swapaxes
 
 __all__ = [
     "get_resource_path",
@@ -27,6 +35,7 @@ __all__ = [
     "validate_input",
     "download_url",
     "read_openface",
+    "load_pil_img",
 ]
 
 
@@ -97,11 +106,12 @@ def read_feat(fexfile):
         filename=fexfile,
         au_columns=au_columns,
         emotion_columns=FEAT_EMOTION_COLUMNS,
-        landmark_columns=openface_2d_landmark_columns,
         facebox_columns=FEAT_FACEBOX_COLUMNS,
-        time_columns=FEAT_TIME_COLUMNS,
-        facepose_columns=["Pitch", "Roll", "Yaw"],
+        landmark_columns=openface_2d_landmark_columns,
+        facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
+        identity_columns=FEAT_IDENTITY_COLUMNS[1:],
         detector="Feat",
+        time_columns=FEAT_TIME_COLUMNS,
     )
     return fex
 
@@ -199,3 +209,40 @@ def read_openface(openfacefile, features=None):
     )
     fex["input"] = openfacefile
     return fex
+
+
+def load_pil_img(file_name, frame_id):
+    """Helper function to load a PIL image from a picture or video
+
+    Args:
+        file_name (str): path to file. Can be image or video
+        frame_id (int): if video, load frame
+
+    Returns:
+        image: pil image instance
+    """
+
+    file_extension = os.path.basename(file_name).split(".")[-1]
+    if file_extension.lower() in ["jpg", "jpeg", "png", "bmp", "tiff", "pdf"]:
+        frame_img = read_image(file_name)  # image path
+    else:
+        # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
+        # pts_unit 'sec'. See why it's ok in this issue:
+        # https://github.com/pytorch/vision/issues/1931
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            video, audio, info = read_video(file_name, output_format="TCHW")
+        frame_img = video[frame_id, :, :]
+    return to_pil_image(frame_img)
+
+
+def video_to_tensor(file_name):
+    container = av.open(file_name)
+    stream = container.streams.video[0]
+    tensor = []
+    for frame in container.decode(stream):
+        frame_data = torch.from_numpy(frame.to_ndarray(format="rgb24"))
+        frame_data = swapaxes(swapaxes(frame_data, 0, -1), 1, 2)
+        tensor.append(frame_data)
+    container.close()
+    return torch.stack(tensor, dim=0)

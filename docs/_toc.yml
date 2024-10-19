@@ -7,13 +7,13 @@ parts:
       - file: pages/models
       - file: pages/au_reference
       - file: pages/usage_guide
+      - file: pages/faqs
   - caption: Basic Tutorials
     chapters:
       - file: basic_tutorials/01_basics
-      - file: basic_tutorials/02_detector_imgs
-      - file: basic_tutorials/03_detector_vids
-      - file: basic_tutorials/04_plotting
-      - file: basic_tutorials/05_fex_analysis
+      - file: basic_tutorials/02_detector_vids
+      - file: basic_tutorials/03_plotting
+      - file: basic_tutorials/04_fex_analysis
   - caption: Advanced Tutorials
     chapters:
       - file: extra_tutorials/06_trainAUvisModel

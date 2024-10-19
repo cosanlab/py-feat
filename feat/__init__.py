@@ -8,6 +8,6 @@ __author__ = """Jin Hyun Cheong, Tiankang Xie, Sophie Byrne, Eshin Jolly, Luke C
 __email__ = "jcheong0428@gmail.com, eshin.jolly@gmail.com, luke.j.chang@dartmouth.edu"
 __all__ = ["detector", "data", "utils", "plotting", "transforms", "__version__"]
 
-from .data import Fex
-from .detector import Detector
+from .data import Fex  # noqa: F401
+from .detector import Detector  # noqa: F401
 from .version import __version__

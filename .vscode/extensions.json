@@ -1,8 +1,8 @@
 {
     "recommendations": [
-        "njpwerner.autodocstring",
+        "charliermarsh.ruff",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "KevinRose.vsc-python-indent",
+        "njpwerner.autodocstring",
     ]
 }

@@ -14,7 +14,7 @@ from feat import Fex
 
 def test_read_feat():
     fex = read_feat(join(get_test_data_path(), "Feat_Test.csv"))
-    assert type(fex) == Fex
+    assert isinstance(fex, Fex)
 
 
 def test_utils():

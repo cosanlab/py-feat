@@ -1,18 +1,23 @@
 {
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "editor.formatOnSaveMode": "file",
     "editor.insertSpaces": true,
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/CVS": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        "docs/**/*.csv": true,
-        "docs/**/*.mp4": true
-    },
-    "python.formatting.provider": "black"
+  },
+  "ruff.lineLength": 90,
+  "ruff.nativeServer": true,
+  "ruff.importStrategy": "fromEnvironment",
+  "ruff.lint.ignore": [
+    "W292",
+    "E402",
+    "E501",
+    "E731",
+    "E741",
+  ],
+  "python.testing.pytestArgs": [
+    "feat"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
 }

@@ -4,17 +4,18 @@ The codes in this file comes from the original codes at:
 The original paper on MTCNN is:
 K. Zhang, Z. Zhang, Z. Li and Y. Qiao. Joint Face Detection and Alignment Using Multitask Cascaded Convolutional Networks, IEEE Signal Processing Letters, 2016
 """
+
 import numpy as np
 import torch
-from PIL import Image
 from feat.face_detectors.MTCNN.MTCNN_model import PNet, RNet, ONet
 from feat.face_detectors.MTCNN.MTCNN_utils import detect_face
 from feat.utils import set_torch_device
+from huggingface_hub import PyTorchModelHubMixin
 
 import torch.nn as nn
 
 
-class MTCNN(nn.Module):
+class MTCNN(nn.Module, PyTorchModelHubMixin):
     """MTCNN face detection module.
     This class loads pretrained P-, R-, and O-nets and returns images cropped to include the face
     only, given raw input images of one of the following types:
@@ -145,9 +146,9 @@ class MTCNN(nn.Module):
                 boxes.append([])
                 points.append([])
             elif self.select_largest:
-                box_order = np.argsort(
-                    (box[:, 2] - box[:, 0]) * (box[:, 3] - box[:, 1])
-                )[::-1]
+                box_order = np.argsort((box[:, 2] - box[:, 0]) * (box[:, 3] - box[:, 1]))[
+                    ::-1
+                ]
                 box = box[box_order]
                 point = point[box_order]
                 boxes.append(box.tolist())

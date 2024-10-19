@@ -9,11 +9,11 @@ def test_detect_single_face(default_detector, single_face_img):
 
 from pytest import fixture
 import os
-from feat.detector import Detector
 import numpy as np
 from torchvision.io import read_image
 import pandas as pd
 from feat.data import Fex
+
 
 # AU constants for plotting
 @fixture(scope="module")
@@ -78,12 +78,6 @@ def data_path():
     return os.path.join(os.path.dirname(__file__), "data")
 
 
-@fixture()
-def default_detector():
-    """This detector instance is shared across all test in the same file"""
-    return Detector()
-
-
 @fixture(scope="module")
 def no_face_img(data_path):
     return os.path.join(data_path, "free-mountain-vector-01.jpg")
@@ -123,6 +117,12 @@ def noface_face_mov(data_path):
 @fixture(scope="module")
 def multi_face_img(data_path):
     return os.path.join(data_path, "multi_face.jpg")
+
+
+@fixture(scope="module")
+def multi_face_img_data(multi_face_img):
+    """The actual numpy array of img data"""
+    return read_image(multi_face_img)
 
 
 @fixture(scope="module")

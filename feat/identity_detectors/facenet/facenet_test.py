@@ -1,4 +1,3 @@
-import torch
 from feat.utils import set_torch_device
 from feat.identity_detectors.facenet.facenet_model import InceptionResnetV1
 
@@ -12,7 +11,7 @@ class Facenet:
     redownloading.
 
     Keyword Arguments:
-        pretrained {str} -- Optional pretraining dataset. Either 'vggface2' or 'casia-webface'.
+        pretrained {str} -- Optional pretraining dataset. Either 'huggingface', 'vggface2' or 'casia-webface'.
             (default: {None})
         classify {bool} -- Whether the model should output classification probabilities or feature
             embeddings. (default: {False})
@@ -24,7 +23,7 @@ class Facenet:
 
     def __init__(
         self,
-        pretrained="vggface2",
+        pretrained="huggingface",
         classify=False,
         num_classes=None,
         dropout_prob=0.6,
@@ -32,16 +31,26 @@ class Facenet:
     ):
         super().__init__()
 
-        self.model = InceptionResnetV1(
-            pretrained=pretrained,
-            classify=classify,
-            num_classes=num_classes,
-            dropout_prob=dropout_prob,
-            device=device,
-        )
+        if pretrained == "huggingface":
+            self.model = InceptionResnetV1(
+                pretrained=None,
+                classify=classify,
+                num_classes=num_classes,
+                dropout_prob=dropout_prob,
+                device=device,
+            )
+            self.model.from_pretrained("py-feat/facenet")
+        else:
+            pretrained = "vggface2"
+            self.model = InceptionResnetV1(
+                pretrained=pretrained,
+                classify=classify,
+                num_classes=num_classes,
+                dropout_prob=dropout_prob,
+                device=device,
+            )
 
         self.device = set_torch_device(device)
-
         self.model.eval()
 
     def __call__(self, img):

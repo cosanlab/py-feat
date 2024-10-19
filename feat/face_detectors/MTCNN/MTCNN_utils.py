@@ -4,10 +4,9 @@ The codes in this file comes from the original codes at:
 The original paper on MTCNN is:
 K. Zhang, Z. Zhang, Z. Li and Y. Qiao. Joint Face Detection and Alignment Using Multitask Cascaded Convolutional Networks, IEEE Signal Processing Letters, 2016
 """
+
 import torch
-from torch import nn
 import numpy as np
-import os
 from torch.nn.functional import interpolate
 from torchvision.ops.boxes import batched_nms
 from feat.utils.image_operations import convert_image_to_tensor
@@ -145,7 +144,6 @@ def imresample(img, sz):
 
 
 def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
-
     imgs = convert_image_to_tensor(imgs)
 
     # if isinstance(imgs, (np.ndarray, torch.Tensor)):
@@ -168,7 +166,7 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
     #     imgs = torch.as_tensor(imgs.copy(), device=device)
     # imgs = imgs.permute(0, 3, 1, 2).type(model_dtype)
 
-    model_dtype = next(pnet.parameters()).dtype
+    _ = next(pnet.parameters()).dtype
 
     batch_size = len(imgs)
     h, w = imgs.shape[2:4]

@@ -26,40 +26,25 @@ jobs:
         # OSs to test
         os: [ubuntu-latest, macos-latest]
         # Python versions to test
-        python-version: [3.8, 3.9, "3.10"]
+        python-version: ["3.10", "3.11"]
         # By default everything should pass for the workflow to pass
         experimental: [false]
         include:
           # Windows sometimes fails to install due to dependency changes, but eventually sort themselves out. So let these tests fail. Also issue on macos 3.11 with joblib so let that fail
-          - os: windows-latest
-            python-version: 3.8
-            experimental: true
-          - os: windows-latest
-            python-version: 3.9
-            experimental: true
-          - os: windows-latest
-            python-version: "3.10"
-            experimental: true
-          - os: windows-latest
-            python-version: 3.11
+          - os: ubuntu-latest
+            python-version: "3.12"
             experimental: true
           - os: macos-latest
-            python-version: 3.11
+            python-version: "3.12"
             experimental: true
-          - os: ubuntu-latest
-            python-version: 3.11
-            experimental: false
-          - os: macos-14
-            python-version: 3.8
-            experimental: true
-          - os: macos-14
-            python-version: 3.9
-            experimental: true
-          - os: macos-14
+          - os: windows-latest
             python-version: "3.10"
             experimental: true
-          - os: macos-14
-            python-version: 3.11
+          - os: windows-latest
+            python-version: "3.11"
+            experimental: true
+          - os: windows-latest
+            python-version: "3.12"
             experimental: true
     steps:
       # Step up miniconda
@@ -84,7 +69,7 @@ jobs:
         run: |
           conda activate test
           conda env list
-          black --check --verbose .
+          ruff check --ignore=W292,E402,E501,E731,E741 feat
           pytest --cov=feat -rs
 
       # Send coverage to coveralls.io but waiting on parallelization to finish
