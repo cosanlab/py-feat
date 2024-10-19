@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 from feat.data import Fex
-from feat.utils.io import read_openface, get_test_data_path, read_feat
+from feat.utils.io import read_openface, get_test_data_path, read_feat, video_to_tensor
 from nltools.data import Adjacency
 
 
@@ -293,3 +293,8 @@ def test_stats():
         [np.array(range(int(len(doubled) / 2))), np.array(range(int(len(doubled) / 2)))]
     )
     assert doubled.assign(frame=frame).isc(col="AU04_r").iloc[0, 0] == 1
+
+
+def test_video_to_tensor(single_face_mov):
+    tensor = video_to_tensor(single_face_mov)
+    assert tensor.shape == (72, 3, 360, 640)

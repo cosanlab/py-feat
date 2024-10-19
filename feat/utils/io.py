@@ -25,6 +25,9 @@ from torchvision.datasets.utils import download_url as tv_download_url
 from torchvision.io import read_image, read_video
 from torchvision.transforms.functional import to_pil_image
 import warnings
+import av
+import torch
+from torch import swapaxes
 
 __all__ = [
     "get_resource_path",
@@ -231,3 +234,15 @@ def load_pil_img(file_name, frame_id):
             video, audio, info = read_video(file_name, output_format="TCHW")
         frame_img = video[frame_id, :, :]
     return to_pil_image(frame_img)
+
+
+def video_to_tensor(file_name):
+    container = av.open(file_name)
+    stream = container.streams.video[0]
+    tensor = []
+    for frame in container.decode(stream):
+        frame_data = torch.from_numpy(frame.to_ndarray(format="rgb24"))
+        frame_data = swapaxes(swapaxes(frame_data, 0, -1), 1, 2)
+        tensor.append(frame_data)
+    container.close()
+    return torch.stack(tensor, dim=0)
