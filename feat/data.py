@@ -2547,7 +2547,13 @@ class TensorDataset(Dataset):
 
     def __getitem__(self, idx):
         # Return the sample at the given index
-        return self.tensor[idx, ...]
+        return {
+            "Image": self.tensor[idx, ...],
+            "Frame": idx,
+            "FileName": "tensor",
+            "Scale": 1.0,
+            "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
+        }
 
 
 class VideoDataset(Dataset):
@@ -2560,7 +2566,8 @@ class VideoDataset(Dataset):
         Dataset: dataset of [batch, channels, height, width] that can be passed to DataLoader
     """
 
-    def __init__(self, video_file, skip_frames=None, output_size=None):
+    def __init__(self, video_file, skip_frames=None, output_size=None, low_memory=True):
+        self.low_memory = low_memory
         self.file_name = video_file
         self.skip_frames = skip_frames
         self.output_size = output_size
@@ -2569,6 +2576,10 @@ class VideoDataset(Dataset):
         self.video_frames = np.arange(
             0, self.metadata["num_frames"], 1 if skip_frames is None else skip_frames
         )
+        if not self.low_memory:
+            self._container = av.open(self.file_name)
+            self._stream = self._container.streams.video[0]
+            self._frame_generator = self._container.decode(self._stream)
 
     def __len__(self):
         # Number of frames respective skip_frames
@@ -2576,7 +2587,12 @@ class VideoDataset(Dataset):
 
     def __getitem__(self, idx):
         # Get the frame data and frame number respective skip_frames
-        frame_data, frame_idx = self.load_frame(idx)
+        if self.low_memory:
+            frame_data, frame_idx = self.load_frame(idx)
+        else:
+            frame = next(self._frame_generator)
+            frame_data = torch.from_numpy(frame.to_ndarray(format="rgb24"))
+            frame_idx = int(self.video_frames[idx])
 
         # Swap frame dims to match output of read_image: [time, channels, height, width]
         # Otherwise detectors face on tensor dimension mismatch
