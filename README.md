@@ -35,7 +35,8 @@ Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have 
 
 ## Testing
 
-The test have been relocated to `feat/tests/`.
+All tests should be added to `feat/tests/`.  
+We use `pytest` for testing and `ruff` for linting and formatting.  
 Please ensure all tests pass before creating any pull request or larger change to the code base.
 
 ## Continuous Integration
@@ -48,7 +49,11 @@ Automated testing is handled by Github Actions according to the following rules:
 *Note*: Each of these workflows can also be run manually. They can also be skipped by adding 'skip ci' anywhere inside your commit message.
 
 ## Model Weights
-Model weights are stored as assets in release tag v0.1. They will automatically download as needed.
+Py-feat will automatically download model weights as needed without any additional setup from the user.
+
+As of version 0.7.0, all model weights are hosted on the [Py-feat HuggingFace Hub](https://huggingface.co/py-feat).
+
+For prior versions, model weights are stored on Github static assets in release tagged `v0.1`. They will automatically download as needed.
 
 ## Licenses
 Py-FEAT is provided under the MIT license. You also need to respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 

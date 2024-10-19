@@ -57,7 +57,6 @@ class AnchorGenerator(nn.Module):
         super(AnchorGenerator, self).__init__()
 
         if not isinstance(sizes[0], (list, tuple)):
-            # TODO change this
             sizes = tuple((s,) for s in sizes)
         if not isinstance(aspect_ratios[0], (list, tuple)):
             aspect_ratios = (aspect_ratios,) * len(sizes)

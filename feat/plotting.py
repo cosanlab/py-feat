@@ -1140,8 +1140,8 @@ def interpolate_aus(
     # starting intensity to its ending intensity
     au_interpolations = []
     for au_start, au_end in zip(start, end):
-        interp_func = interp_func(au_start, au_end)
-        intensities = [*map(interp_func, np.linspace(0, 1, num_frames))]
+        interpolator = interp_func(au_start, au_end)
+        intensities = [*map(interpolator, np.linspace(0, 1, num_frames))]
         au_interpolations.append(intensities)
 
     au_interpolations = np.column_stack(au_interpolations)
@@ -1157,10 +1157,10 @@ def interpolate_aus(
 
 
 def animate_face(
+    start,
+    end,
+    save,
     AU=None,
-    start=None,
-    end=None,
-    save=None,
     include_reverse=True,
     feature_range=None,
     **kwargs,
@@ -1278,9 +1278,8 @@ def animate_face(
         #     _ = ax.set(title=title)
         _ = camera.snap()
     animation = camera.animate()
-    if save is not None:
-        animation.save(save, fps=fps)
-    return animation
+    animation.save(save, fps=fps)
+    plt.close("all")
 
 
 def load_viz_model(

@@ -1,18 +1,17 @@
 # General contributions guidelines
 
-We always welcome contributions to Py-Feat and recommend you follow these basic steps to do:
+We always welcome contributions to Py-Feat and recommend you follow these basic steps to do. We highly recommend using [Visual Studio Code](https://code.visualstudio.com/) as we include recommended editor extensions and settings in this repo. We use `pytest` for testing and `ruff` for linting and formatting:
 
 1. Fork the repository on [GitHub](https://github.com/cosanlab/feat). 
 2. Install Feat on your machine, by `git clone` your fork
 3. Install the development dependencies which will *also* install the package dependencies: `pip install -r requirements-dev.txt`
 4. Install Py-Feat in development mode so that any changes you make to source files are *automatically* reflected in scripts/notebooks: `pip install -e .`
 5. Add you code contributions and/or changes
-6. Check or format your code using [black](https://black.readthedocs.io/en/stable/)
-7. Create or update the appropriate tests in `feat/tests/`.
-8. Run a single test to make sure your new functionality works: `pytest -k 'name_of_your_test'`
-9. Alternatively (or additionally) run the full Py-Feat test suite: `pytest`
-10. Add any applicable licenses to `LICENSE.txt`
-11. When your tests pass create a pull-request against the `master`/`main` branch on github!
+6. Create or update the appropriate tests in `feat/tests/`.
+7. Run a single test to make sure your new functionality works: `pytest -k 'name_of_your_test'`
+8. Alternatively (or additionally) run the full Py-Feat test suite: `pytest`
+9. Add any applicable licenses to `LICENSE.txt`
+10. When your tests pass create a pull-request against the `master`/`main` branch on github!
 
 ## Tutorial contribution guidelines
 
