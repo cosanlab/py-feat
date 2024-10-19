@@ -12,8 +12,6 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
-from copy import deepcopy
-from functools import reduce
 from nltools.data import Adjacency
 from nltools.stats import downsample, upsample, regress
 from nltools.utils import set_decomposition_algorithm
@@ -26,9 +24,19 @@ from torchvision.io import read_image, read_video
 from torch.utils.data import Dataset
 from torch import swapaxes
 from feat.transforms import Rescale
-from feat.utils.io import read_feat, read_openface
+from feat.utils import flatten_list
+from feat.utils.io import read_feat, read_openface, load_pil_img
 from feat.utils.stats import wavelet, calc_hist_auc, cluster_identities
-from feat.plotting import plot_face, draw_lineface, draw_facepose, load_viz_model
+from feat.plotting import (
+    plot_face,
+    draw_lineface,
+    draw_facepose,
+    load_viz_model,
+    draw_plotly_landmark,
+    draw_plotly_au,
+    draw_plotly_pose,
+    emotion_annotation_position,
+)
 from feat.pretrained import AU_LANDMARK_MAP
 from nilearn.signal import clean
 from scipy.signal import convolve
@@ -42,6 +50,7 @@ from PIL import Image
 import logging
 import av
 from itertools import islice
+import plotly.graph_objects as go
 
 __all__ = [
     "FexSeries",
@@ -209,9 +218,7 @@ class FexSeries(Series):
         Returns:
             string: path to input image
         """
-        warnings.warn(
-            "Fex.input has now been renamed to Fex.inputs", DeprecationWarning
-        )
+        warnings.warn("Fex.input has now been renamed to Fex.inputs", DeprecationWarning)
         return self["input"]
 
     @property
@@ -645,7 +652,7 @@ class Fex(DataFrame):
         Returns:
             DataFrame: identity data
         """
-        return self[self.identity_columns[0]]
+        return self.Identity
 
     @property
     def identity_embeddings(self):
@@ -751,9 +758,7 @@ class Fex(DataFrame):
         ]
 
         # String attribute access
-        if isinstance(X, str) and any(
-            map(lambda feature: feature in X, feature_groups)
-        ):
+        if isinstance(X, str) and any(map(lambda feature: feature in X, feature_groups)):
             X = X.split(",") if "," in X else [X]
             mX = []
             for x in X:
@@ -768,9 +773,7 @@ class Fex(DataFrame):
         else:
             mX = X
 
-        if isinstance(y, str) and any(
-            map(lambda feature: feature in y, feature_groups)
-        ):
+        if isinstance(y, str) and any(map(lambda feature: feature in y, feature_groups)):
             y = y.split(",") if "," in y else [y]
             my = []
             for yy in y:
@@ -823,7 +826,7 @@ class Fex(DataFrame):
         result = read_openface(filename, *args, **kwargs)
         for name in self._metadata:
             attr_value = getattr(self, name, None)
-            if attr_value and getattr(result, name, None) == None:
+            if attr_value and getattr(result, name, None) is None:
                 setattr(result, name, attr_value)
         return result
 
@@ -980,9 +983,7 @@ class Fex(DataFrame):
 
         return ttest_ind(a, b)
 
-    def predict(
-        self, X, y, model=LinearRegression, cv_kwargs={"cv": 5}, *args, **kwargs
-    ):
+    def predict(self, X, y, model=LinearRegression, cv_kwargs={"cv": 5}, *args, **kwargs):
         """Predicts y from X using a sklearn model.
 
         Predict a variable of interest y using your model of choice from X, which can be a list of columns of the Fex instance or a dataframe.
@@ -1141,7 +1142,7 @@ class Fex(DataFrame):
         """
         if self.sessions is None or ignore_sessions:
             out = self.copy()
-            if type(baseline) == str:
+            if isinstance(baseline, str):
                 if baseline == "median":
                     baseline_values = out.median()
                 elif baseline == "mean":
@@ -1150,8 +1151,7 @@ class Fex(DataFrame):
                     baseline_values = out.iloc[0, :]
                 else:
                     raise ValueError(
-                        "%s is not implemented please use {mean, median, Fex}"
-                        % baseline
+                        "%s is not implemented please use {mean, median, Fex}" % baseline
                     )
             elif isinstance(baseline, (Series, FexSeries)):
                 baseline_values = baseline
@@ -1167,7 +1167,7 @@ class Fex(DataFrame):
         else:
             out = self.__class__(sampling_freq=self.sampling_freq)
             for k, v in self.itersessions():
-                if type(baseline) == str:
+                if isinstance(baseline, str):
                     if baseline == "median":
                         baseline_values = v.median()
                     elif baseline == "mean":
@@ -1182,9 +1182,7 @@ class Fex(DataFrame):
                 elif isinstance(baseline, (Series, FexSeries)):
                     baseline_values = baseline
                 elif isinstance(baseline, (Fex, DataFrame)):
-                    raise ValueError(
-                        "Must pass in a FexSeries not a FexSeries Instance."
-                    )
+                    raise ValueError("Must pass in a FexSeries not a FexSeries Instance.")
 
                 if normalize == "db":
                     out = out.append(
@@ -1560,9 +1558,7 @@ class Fex(DataFrame):
             features=self.features,
             sessions=self.sessions,
         )
-        convolved.columns = (
-            "f" + "%s" % round(freq, 2) + "_" + mode + "_" + self.columns
-        )
+        convolved.columns = "f" + "%s" % round(freq, 2) + "_" + mode + "_" + self.columns
         return convolved
 
     def extract_multi_wavelet(
@@ -1800,7 +1796,7 @@ class Fex(DataFrame):
 
                     if poses:
                         face_ax = draw_facepose(
-                            pose=row[self.facepose_columns].values,
+                            pose=row[self.facepose_columns[:3]].values,
                             facebox=facebox,
                             ax=face_ax,
                         )
@@ -1830,7 +1826,7 @@ class Fex(DataFrame):
                         aus, gaze, muscles, model = self._prepare_plot_aus(
                             row, muscles=muscles, gaze=gazes
                         )
-                        title = row["input"] if add_titles else None
+                        _ = row["input"] if add_titles else None
                         face_ax = plot_face(
                             model=model,
                             au=aus,
@@ -1924,6 +1920,347 @@ class Fex(DataFrame):
 
         return out
 
+    def plot_singleframe_detections(
+        self,
+        bounding_boxes=False,
+        landmarks=False,
+        poses=False,
+        emotions=False,
+        aus=False,
+        image_opacity=0.9,
+        facebox_color="cyan",
+        facebox_width=3,
+        pose_width=2,
+        landmark_color="white",
+        landmark_width=2,
+        emotions_position="right",
+        emotions_opacity=1.0,
+        emotions_color="white",
+        emotions_size=12,
+        au_heatmap_resolution=1000,
+        au_opacity=0.9,
+        au_cmap="Blues",
+        *args,
+        **kwargs,
+    ):
+        """
+        Function to generate interactive plotly figure to interactively visualize py-feat detectors on a single image frame.
+
+        Args:
+            image_opacity (float): opacity of image overlay (default=.9)
+            emotions_position (str): position around facebox to plot emotion annotations. default='right'
+            emotions_opacity (float): opacity of emotion annotation text (default=1.)
+            emotions_color (str): color of emotion annotation text (default='white')
+            emotions_size (int): size of emotion annotations (default=14)
+            frame_duration (int): duration in milliseconds to play each frame if plotting multiple frames (default=1000)
+            facebox_color (str): color of facebox bounding box (default="cyan")
+            facebox_width (int): line width of facebox bounding box (default=3)
+            pose_width (int): line width of pose rotation plot (default=2)
+            landmark_color (str): color of landmark detectors (default="white")
+            landmark_width (int): line width of landmark detectors (default=2)
+            au_cmap (str): colormap to use for AU heatmap (default='Blues')
+            au_heatmap_resolution (int): resolution of heatmap values (default=1000)
+            au_opacity (float): opacity of AU heatmaps (default=0.9)
+
+        Returns:
+            a plotly figure instance
+        """
+
+        n_frames = len(self["frame"].unique())
+
+        if n_frames > 1:
+            raise ValueError(
+                "This function can only plot a single frame. Try using plot_multipleframe_detections() instead."
+            )
+
+        # Initialize Image
+        frame_id = self["frame"].unique()[0]
+        frame_fex = self.query("frame==@frame_id")
+        frame_img = load_pil_img(frame_fex["input"].unique()[0], frame_id)
+        img_width = frame_img.width
+        img_height = frame_img.height
+
+        # Create figure
+        fig = go.Figure()
+
+        # Add invisible scatter trace.
+        # This trace is added to help the autoresize logic work.
+        fig.add_trace(
+            go.Scatter(
+                x=[0, img_width],
+                y=[0, img_height],
+                mode="markers",
+                marker_opacity=0,
+            )
+        )
+
+        # Add image
+        fig.add_layout_image(
+            dict(
+                x=0,
+                sizex=img_width,
+                y=img_height,
+                sizey=img_height,
+                xref="x",
+                yref="y",
+                opacity=image_opacity,
+                layer="below",
+                sizing="stretch",
+                source=frame_img,
+            )
+        )
+
+        # Add Face Bounding Box
+        faceboxes_path = [
+            dict(
+                type="rect",
+                x0=row["FaceRectX"],
+                y0=img_height - row["FaceRectY"],
+                x1=row["FaceRectX"] + row["FaceRectWidth"],
+                y1=img_height - row["FaceRectY"] - row["FaceRectHeight"],
+                line=dict(color=facebox_color, width=facebox_width),
+            )
+            for i, row in frame_fex.iterrows()
+        ]
+
+        # Add Landmarks
+        landmarks_path = [
+            draw_plotly_landmark(
+                row,
+                img_height,
+                fig,
+                line_color=landmark_color,
+                line_width=landmark_width,
+            )
+            for i, row in frame_fex.iterrows()
+        ]
+
+        # Add Pose
+        poses_path = flatten_list(
+            [
+                draw_plotly_pose(row, img_height, fig, line_width=pose_width)
+                for i, row in frame_fex.iterrows()
+            ]
+        )
+
+        # Add Emotions
+        emotions_annotations = []
+        for i, row in frame_fex.iterrows():
+            emotion_dict = (
+                row[
+                    [
+                        "anger",
+                        "disgust",
+                        "fear",
+                        "happiness",
+                        "sadness",
+                        "surprise",
+                        "neutral",
+                    ]
+                ]
+                .sort_values(ascending=False)
+                .to_dict()
+            )
+
+            x_position, y_position, align, valign = emotion_annotation_position(
+                row,
+                img_height,
+                img_width,
+                emotions_size=emotions_size,
+                emotions_position=emotions_position,
+            )
+
+            emotion_text = ""
+            for emotion in emotion_dict:
+                emotion_text += f"{emotion}: <i>{emotion_dict[emotion]:.2f}</i><br>"
+
+            emotions_annotations.append(
+                dict(
+                    text=emotion_text,
+                    x=x_position,
+                    y=y_position,
+                    opacity=emotions_opacity,
+                    showarrow=False,
+                    align=align,
+                    valign=valign,
+                    bgcolor="black",
+                    font=dict(color=emotions_color, size=emotions_size),
+                )
+            )
+
+        # Add AU Heatmaps
+        aus_path = flatten_list(
+            [
+                draw_plotly_au(
+                    row,
+                    img_height,
+                    fig,
+                    cmap=au_cmap,
+                    au_opacity=au_opacity,
+                    heatmap_resolution=au_heatmap_resolution,
+                )
+                for i, row in frame_fex.iterrows()
+            ]
+        )
+
+        # Configure other layout
+        fig.update_layout(
+            width=img_width,
+            height=img_height,
+            margin={"l": 0, "r": 0, "t": 0, "b": 0},
+        )
+
+        # Configure axes
+        fig.update_xaxes(visible=False, range=[0, img_width])
+
+        fig.update_yaxes(
+            visible=False,
+            range=[0, img_height],
+            scaleanchor="x",  # the scaleanchor attribute ensures that the aspect ratio stays constant
+        )
+
+        if bounding_boxes:
+            _ = [fig.add_shape(face) for face in faceboxes_path]
+        if landmarks:
+            _ = [fig.add_shape(landmark) for landmark in landmarks_path]
+        if poses:
+            _ = [fig.add_shape(pose) for pose in poses_path]
+        if aus:
+            _ = [fig.add_shape(aus) for aus in aus_path]
+        if emotions:
+            _ = [fig.add_annotation(emotion) for emotion in emotions_annotations]
+
+        fig.update_shapes()
+        # Add a button to the figure
+        fig.update_layout(
+            updatemenus=[
+                dict(
+                    type="buttons",
+                    direction="left",
+                    buttons=list(
+                        [
+                            dict(
+                                method="relayout",
+                                label="Bounding Box",
+                                args=["shapes", faceboxes_path],
+                                args2=["shapes", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="Landmarks",
+                                args=["shapes", landmarks_path],
+                                args2=["shapes", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="Poses",
+                                args=["shapes", poses_path],
+                                args2=["shapes", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="Emotion",
+                                args=["annotations", emotions_annotations],
+                                args2=["annotations", []],
+                            ),
+                            dict(
+                                method="relayout",
+                                label="AU",
+                                args=["shapes", aus_path],
+                                args2=["shapes", []],
+                            ),
+                        ]
+                    ),
+                    pad={"r": 10, "t": 10},
+                    showactive=False,
+                    x=0.1,
+                    xanchor="left",
+                    y=1.12,
+                    yanchor="top",
+                )
+            ]
+        )
+
+        return fig
+
+    def iplot_detections(
+        self,
+        bounding_boxes=False,
+        landmarks=False,
+        aus=False,
+        poses=False,
+        emotions=False,
+        emotions_position="right",
+        emotions_opacity=1.0,
+        emotions_color="white",
+        emotions_size=14,
+        frame_duration=1000,
+        facebox_color="cyan",
+        facebox_width=3,
+        pose_width=2,
+        landmark_color="white",
+        landmark_width=2,
+        au_cmap="Blues",
+        au_heatmap_resolution=1000,
+        au_opacity=0.9,
+        *args,
+        **kwargs,
+    ):
+        """Plot Py-FEAT detection results using plotly backend. There are currently two different types of plots implemented. For single Frames, uses plot_singleframe_detections() to create an interactive plot where different detector outputs can be toggled on or off.  For multiple frames, uses plot_multipleframes_detections() to create a plotly animation to scroll through multiple frames. However, we currently are unable to interactively toggle on and off the detectors, so the detector output must be prespecified when generating the plot.
+
+        Args:
+            bounding_boxes (bool): will include faceboxes when plotting detector output for multiple frames.
+            landmarks (bool): will include face landmarks when plotting detector output for multiple frames.
+            poses (bool): will include 3 axis line plot indicating x,y,z rotation information when plotting detector output for multiple frames.
+            aus (bool): will include action unit heatmaps when plotting detector output for multiple frames.
+            emotions (bool): will add text annotations indicating probability of discrete emotion when plotting detector output for multiple frames.
+            emotions_position (str): position around facebox to plot emotion annotations. default='right'
+            emotions_opacity (float): opacity of emotion annotation text (default=1.)
+            emotions_color (str): color of emotion annotation text (default='white')
+            emotions_size (int): size of emotion annotations (default=14)
+            frame_duration (int): duration in milliseconds to play each frame if plotting multiple frames (default=1000)
+            facebox_color (str): color of facebox bounding box (default="cyan")
+            facebox_width (int): line width of facebox bounding box (default=3)
+            pose_width (int): line width of pose rotation plot (default=2)
+            landmark_color (str): color of landmark detectors (default="white")
+            landmark_width (int): line width of landmark detectors (default=2)
+            au_cmap (str): colormap to use for AU heatmap (default='Blues')
+            au_heatmap_resolution (int): resolution of heatmap values (default=1000)
+            au_opacity (float): opacity of AU heatmaps (default=0.9)
+
+        Returns:
+            a plotly figure instance
+        """
+
+        n_frames = len(self["frame"].unique())
+
+        if n_frames == 1:
+            fig = self.plot_singleframe_detections(
+                bounding_boxes=bounding_boxes,
+                landmarks=landmarks,
+                poses=poses,
+                emotions=emotions,
+                aus=aus,
+                facebox_color=facebox_color,
+                facebox_width=facebox_width,
+                pose_width=pose_width,
+                landmark_color=landmark_color,
+                landmark_width=landmark_width,
+                emotions_position=emotions_position,
+                emotions_opacity=emotions_opacity,
+                emotions_color=emotions_color,
+                emotions_size=emotions_size,
+                au_cmap=au_cmap,
+                au_heatmap_resolution=au_heatmap_resolution,
+                au_opacity=au_opacity,
+                *args,
+                **kwargs,
+            )
+            return fig
+        raise NotImplementedError(
+            "iplot_detections only works for a single frame. Try slicing your Fex object to a single frame and then calling iplot_detections on that frame."
+        )
+
 
 class ImageDataset(Dataset):
     """Torch Image Dataset
@@ -1987,7 +2324,7 @@ class ImageDataset(Dataset):
                 "Image": transformed_img["Image"],
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.images[idx],
+                "FileName": self.images[idx],
             }
 
         else:
@@ -1995,7 +2332,7 @@ class ImageDataset(Dataset):
                 "Image": img,
                 "Scale": 1.0,
                 "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
-                "FileNames": self.images[idx],
+                "FileName": self.images[idx],
             }
 
 
@@ -2015,9 +2352,9 @@ def _inverse_face_transform(faces, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         faces,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_face = []
         for face in frame:
@@ -2159,7 +2496,7 @@ class imageLoader_DISFAPlus(ImageDataset):
                 "label": torch.from_numpy(label),
                 "Scale": transformed_img["Scale"],
                 "Padding": transformed_img["Padding"],
-                "FileNames": self.main_file["image_path"][idx],
+                "FileName": self.main_file["image_path"][idx],
             }
 
         else:
@@ -2187,9 +2524,9 @@ def _inverse_landmark_transform(landmarks, batch_data):
     out_frame = []
     for frame, left, top, scale in zip(
         landmarks,
-        batch_data["Padding"]["Left"].numpy(),
-        batch_data["Padding"]["Top"].numpy(),
-        batch_data["Scale"].numpy(),
+        batch_data["Padding"]["Left"].detach().numpy(),
+        batch_data["Padding"]["Top"].detach().numpy(),
+        batch_data["Scale"].detach().numpy(),
     ):
         out_landmark = []
         for landmark in frame:
@@ -2198,6 +2535,25 @@ def _inverse_landmark_transform(landmarks, batch_data):
             )
         out_frame.append(out_landmark)
     return out_frame
+
+
+class TensorDataset(Dataset):
+    def __init__(self, tensor):
+        self.tensor = tensor
+
+    def __len__(self):
+        # Return the number of samples in the dataset
+        return self.tensor.size(0)
+
+    def __getitem__(self, idx):
+        # Return the sample at the given index
+        return {
+            "Image": self.tensor[idx, ...],
+            "Frame": idx,
+            "FileName": "tensor",
+            "Scale": 1.0,
+            "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
+        }
 
 
 class VideoDataset(Dataset):

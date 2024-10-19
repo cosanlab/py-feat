@@ -1,9 +1,8 @@
 """
-py-feat utility and helper functions for performing operations on images. 
+py-feat utility and helper functions for performing operations on images.
 """
 
 import os
-from re import X
 from .io import get_resource_path
 import math
 import numpy as np
@@ -21,21 +20,25 @@ from feat.transforms import Rescale
 from feat.utils import set_torch_device
 from copy import deepcopy
 from skimage import draw
+from skimage.feature import hog
+import torchvision.transforms as transforms
 import logging
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
+import kornia
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning, module="kornia")
 
 __all__ = [
     "neutral",
-    "face_rect_to_coords",
     "registration",
     "convert68to49",
-    "extract_face_from_landmark",
+    "extract_face_from_landmarks",
     "extract_face_from_bbox",
     "convert68to49",
     "align_face",
     "BBox",
-    "round_vals",
     "reverse_color_order",
     "expand_img_dimensions",
     "convert_image_to_tensor",
@@ -44,6 +47,11 @@ __all__ = [
     "convert_to_euler",
     "py_cpu_nms",
     "decode",
+    "extract_face_from_bbox_torch",
+    "inverse_transform_landmarks_torch",
+    "extract_hog_features",
+    "convert_bbox_output",
+    "compute_original_image_size",
 ]
 
 # Neutral face coordinates
@@ -65,7 +73,7 @@ def registration(face_lms, neutral=neutral, method="fullface"):
     Return:
         registered_lms: registered landmarks in shape (n,136)
     """
-    assert type(face_lms) == np.ndarray, TypeError("face_lms must be type np.ndarray")
+    assert isinstance(face_lms, np.ndarray), TypeError("face_lms must be type np.ndarray")
     assert face_lms.ndim == 2, ValueError("face_lms must be shape (n, 136)")
     assert face_lms.shape[1] == 136, ValueError("Must have 136 landmarks")
     registered_lms = []
@@ -75,23 +83,21 @@ def registration(face_lms, neutral=neutral, method="fullface"):
         #   Rotate face
         primary = np.array(face)
         secondary = np.array(neutral)
-        n = primary.shape[0]
+        _ = primary.shape[0]
         pad = lambda x: np.hstack([x, np.ones((x.shape[0], 1))])
         unpad = lambda x: x[:, :-1]
         X1, Y1 = pad(primary), pad(secondary)
-        if type(method) == str:
+        if isinstance(method, str):
             if method == "fullface":
                 A, res, rank, s = np.linalg.lstsq(X1, Y1, rcond=None)
             elif method == "inner":
                 A, res, rank, s = np.linalg.lstsq(X1[17:, :], Y1[17:, :], rcond=None)
             else:
                 raise ValueError("method is either 'fullface' or 'inner'")
-        elif type(method) == list:
+        elif isinstance(method, list):
             A, res, rank, s = np.linalg.lstsq(X1[method], Y1[method], rcond=None)
         else:
-            raise TypeError(
-                "method is string ('fullface','inner') or list of landmarks"
-            )
+            raise TypeError("method is string ('fullface','inner') or list of landmarks")
         transform = lambda x: unpad(np.dot(pad(x), A))
         registered_lms.append(transform(primary).T.reshape(1, 136).ravel())
     return np.array(registered_lms)
@@ -120,7 +126,7 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
     if len(frame.shape) != 4:
         frame = frame.unsqueeze(0)
 
-    landmarks = np.array(landmarks).copy()
+    landmarks = np.array(landmarks.cpu()).copy()
 
     aligned_img, new_landmarks = align_face(
         frame,
@@ -375,13 +381,9 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     center_y = (max(mat2[:, 1]).item() + min(mat2[:, 1]).item()) / 2.0
 
     if (max(mat2[:, 0]) - min(mat2[:, 0])) > (max(mat2[:, 1]) - min(mat2[:, 1])):
-        half_size = (
-            0.5 * box_enlarge * (max(mat2[:, 0]).item() - min(mat2[:, 0]).item())
-        )
+        half_size = 0.5 * box_enlarge * (max(mat2[:, 0]).item() - min(mat2[:, 0]).item())
     else:
-        half_size = (
-            0.5 * box_enlarge * (max(mat2[:, 1]).item() - min(mat2[:, 1]).item())
-        )
+        half_size = 0.5 * box_enlarge * (max(mat2[:, 1]).item() - min(mat2[:, 1]).item())
 
     scale = (img_size - 1) / 2.0 / half_size
 
@@ -414,9 +416,9 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     land_3d[:, 0:2] = np.reshape(np.array(landmarks), (len(landmarks) // 2, 2))
     mat_land_3d = np.mat(land_3d)
     new_landmarks = np.array((mat * mat_land_3d.T).T)
-    new_landmarks = np.array(
-        list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))
-    ).astype(int)
+    new_landmarks = np.array(list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))).astype(
+        int
+    )
 
     return (aligned_img, new_landmarks)
 
@@ -597,9 +599,7 @@ class BBox(object):
             raise ValueError("images must be (np.array, torch.tensor)")
 
         if len(img.shape) == 2:
-            return img[
-                int(self.top) : int(self.bottom), int(self.left) : int(self.right)
-            ]
+            return img[int(self.top) : int(self.bottom), int(self.left) : int(self.right)]
         elif len(img.shape) == 3:
             return img[
                 :, int(self.top) : int(self.bottom), int(self.left) : int(self.right)
@@ -776,9 +776,7 @@ def mask_image(img, mask):
     #     raise ValueError(
     #         f"img must be pytorch tensor, not {type(img)} and mask must be np array not {type(mask)}"
     #     )
-    return (
-        torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
-    )
+    return torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
 
 
 def convert_to_euler(rotvec, is_rotvec=True):
@@ -798,6 +796,40 @@ def convert_to_euler(rotvec, is_rotvec=True):
     rot_mat_2 = np.transpose(rotvec)
     angle = Rotation.from_matrix(rot_mat_2).as_euler("xyz", degrees=True)
     return [angle[0], -angle[2], -angle[1]]  # pitch, roll, yaw
+
+
+def rotvec_to_euler_angles(rotation_vector):
+    """
+    Convert a rotation vector to Euler angles using Kornia in 'xyz'
+
+    Args:
+        rotation_vector (torch.Tensor): Tensor of shape (N, 3) representing the rotation vectors.
+
+    Returns:
+        torch.Tensor: Tensor of shape (N, 3) representing the Euler angles.
+    """
+
+    # Ensure rotation_vector is of shape (N, 3)
+    if rotation_vector.dim() == 1:
+        rotation_vector = rotation_vector.unsqueeze(0)
+
+    # Convert rotation vector to rotation matrix
+    rotation_matrix = kornia.geometry.conversions.axis_angle_to_rotation_matrix(
+        rotation_vector
+    )
+
+    # Convert rotation matrix to quaternion
+    quaternion = kornia.geometry.conversions.rotation_matrix_to_quaternion(
+        rotation_matrix
+    )
+
+    # Convert quaternion to Euler angles
+    euler_angles = kornia.geometry.conversions.euler_from_quaternion(
+        quaternion[..., 0], quaternion[..., 1], quaternion[..., 2], quaternion[..., 3]
+    )
+
+    # Stack the results to form a single tensor
+    return torch.stack(euler_angles, dim=-1)
 
 
 def py_cpu_nms(dets, thresh):
@@ -942,7 +974,6 @@ class HOGLayer(torch.nn.Module):
 
     def forward(self, img):
         with torch.no_grad():
-
             img = img.to(self.device)
 
             # 1. Global Normalization. The first stage applies an optional global
@@ -1026,7 +1057,7 @@ class HOGLayer(torch.nn.Module):
                     ).sqrt()
                 elif self.block_normalization == "l2":
                     out = out.divide(
-                        ((out.sum(axis=5).sum(axis=4) ** 2 + eps**2))
+                        (out.sum(axis=5).sum(axis=4) ** 2 + eps**2)
                         .sqrt()
                         .unsqueeze(-1)
                         .unsqueeze(-1)
@@ -1079,3 +1110,198 @@ class HOGLayer(torch.nn.Module):
                             i, o, r, c
                         ].numpy()
         return hog_image
+
+
+def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bbox=1.2):
+    """Extract face from image and resize using pytorch."""
+
+    device = frame.device
+    B, C, H, W = frame.shape
+    N = detected_faces.shape[0]
+
+    # Move detected_faces to the same device as frame
+    detected_faces = detected_faces.to(device)
+
+    # Extract the bounding box coordinates
+    x1, y1, x2, y2 = (
+        detected_faces[:, 0],
+        detected_faces[:, 1],
+        detected_faces[:, 2],
+        detected_faces[:, 3],
+    )
+    center_x = (x1 + x2) / 2
+    center_y = (y1 + y2) / 2
+    width = (x2 - x1) * expand_bbox
+    height = (y2 - y1) * expand_bbox
+
+    # Calculate expanded bounding box coordinates
+    new_x1 = (center_x - width / 2).clamp(min=0)
+    new_y1 = (center_y - height / 2).clamp(min=0)
+    new_x2 = (center_x + width / 2).clamp(max=W)
+    new_y2 = (center_y + height / 2).clamp(max=H)
+
+    # Cast the bounding box coordinates to long for indexing
+    new_bboxes = torch.stack([new_x1, new_y1, new_x2, new_y2], dim=-1).long()
+
+    # Create a mesh grid for the face size
+    yy, xx = torch.meshgrid(
+        torch.arange(face_size, device=device),
+        torch.arange(face_size, device=device),
+        indexing="ij",
+    )
+    yy = yy.float()
+    xx = xx.float()
+
+    # Calculate the normalized coordinates for the grid sampling
+    grid_x = (xx + 0.5) / face_size * (new_x2 - new_x1).view(N, 1, 1) + new_x1.view(
+        N, 1, 1
+    )
+    grid_y = (yy + 0.5) / face_size * (new_y2 - new_y1).view(N, 1, 1) + new_y1.view(
+        N, 1, 1
+    )
+
+    # Normalize grid coordinates to the range [-1, 1]
+    grid_x = 2 * grid_x / (W - 1) - 1
+    grid_y = 2 * grid_y / (H - 1) - 1
+
+    # Stack grid coordinates and reshape
+    grid = torch.stack((grid_x, grid_y), dim=-1)  # Shape: (N, face_size, face_size, 2)
+
+    # Ensure frame and grid are float32 for grid_sample
+    frame = frame.float()
+    grid = grid.float()
+
+    # Calculate frame indices for each face, assuming faces are sequentially ordered
+    face_indices = torch.arange(N, device=device) % B  # Repeat for each batch element
+    frame_expanded = frame[face_indices]  # Select corresponding frame for each face
+
+    # Use grid_sample to extract and resize faces
+    cropped_faces = F.grid_sample(frame_expanded, grid, align_corners=False)
+
+    # The output shape should be (N, C, face_size, face_size)
+    return cropped_faces, new_bboxes
+
+
+def inverse_transform_landmarks_torch(landmarks, boxes):
+    """
+    Transforms landmarks based on new bounding boxes.
+
+    Args:
+        landmarks (torch.Tensor): Tensor of shape (N, 136) representing 68 landmarks for N samples.
+        boxes (torch.Tensor): Tensor of shape (N, 4) representing bounding boxes [x1, y1, x2, y2] for N samples.
+
+    Returns:
+        torch.Tensor: Transformed landmarks of shape (N, 136).
+    """
+    # Ensure both tensors are on the same device
+    device = landmarks.device
+    boxes = boxes.to(device)
+
+    N, N_landmarks = landmarks.shape
+
+    landmarks = landmarks.reshape(landmarks.shape[0], -1, 2)
+
+    # Extract bounding box coordinates
+    left = boxes[:, 0]  # (N,)
+    top = boxes[:, 1]  # (N,)
+    right = boxes[:, 2]  # (N,)
+    bottom = boxes[:, 3]  # (N,)
+
+    # Calculate width and height of the bounding boxes
+    width = right - left  # (N,)
+    height = bottom - top  # (N,)
+
+    # Rescale the landmarks
+    transformed_landmarks = torch.zeros_like(landmarks)
+    transformed_landmarks[:, :, 0] = landmarks[:, :, 0] * width.unsqueeze(
+        1
+    ) + left.unsqueeze(1)
+    transformed_landmarks[:, :, 1] = landmarks[:, :, 1] * height.unsqueeze(
+        1
+    ) + top.unsqueeze(1)
+
+    return transformed_landmarks.reshape(N, N_landmarks)
+
+
+def extract_hog_features(extracted_faces, landmarks):
+    """
+    Helper function used in batch processing hog features
+
+    Args:
+        frames: a batch of extracted faces
+        landmarks: a list of list of detected landmarks
+
+    Returns:
+        hog_features: a numpy array of hog features for each detected landmark
+        landmarks: updated landmarks
+    """
+    n_faces = landmarks.shape[0]
+    face_size = extracted_faces.shape[-1]
+    extracted_faces_bboxes = (
+        torch.tensor([0, 0, face_size, face_size]).unsqueeze(0).repeat(n_faces, 1)
+    )
+    extracted_landmarks = inverse_transform_landmarks_torch(
+        landmarks, extracted_faces_bboxes
+    )
+    hog_features = []
+    au_new_landmarks = []
+    for j in range(n_faces):
+        convex_hull, new_landmark = extract_face_from_landmarks(
+            extracted_faces[j, ...], extracted_landmarks[j, ...]
+        )
+        hog_features.append(
+            hog(
+                transforms.ToPILImage()(convex_hull[0]),
+                orientations=8,
+                pixels_per_cell=(8, 8),
+                cells_per_block=(2, 2),
+                visualize=False,
+                channel_axis=-1,
+            ).reshape(1, -1)
+        )
+        au_new_landmarks.append(new_landmark)
+    return np.concatenate(hog_features), au_new_landmarks
+
+
+def convert_bbox_output(boxes, scores):
+    """Convert im2pose_output into Fex Format"""
+
+    widths = boxes[:, 2] - boxes[:, 0]  # right - left
+    heights = boxes[:, 3] - boxes[:, 1]  # bottom - top
+
+    return torch.stack(
+        (boxes[:, 0], boxes[:, 1], widths, heights, scores),
+        dim=1,
+    )
+
+
+def compute_original_image_size(batch_data):
+    """
+    Computes the original image size before padding and scaling for a batch of images.
+
+    Args:
+        batch_data (dict): batch_data from data loader containing 'Image', 'Padding', and 'Scale' tensors.
+
+    Returns:
+        original_height_width (torch.Tensor): A tensor of shape [batch_size, 2] representing the original heights and widths of the images.
+    """
+
+    # Extract the batch size and dimensions from the input tensors
+    batch_size, _, scaled_height, scaled_width = batch_data["Image"].shape
+
+    # Calculate the height and width after scaling but before padding
+    height_after_scaling = (
+        scaled_height - batch_data["Padding"]["Top"] - batch_data["Padding"]["Bottom"]
+    )
+    width_after_scaling = (
+        scaled_width - batch_data["Padding"]["Left"] - batch_data["Padding"]["Right"]
+    )
+
+    # Reverse scaling to get the original height and width before scaling
+    original_height = height_after_scaling / batch_data["Scale"]
+    original_width = width_after_scaling / batch_data["Scale"]
+
+    # Stack the original height and width into a single tensor of shape [B, 2]
+    original_height_width = torch.stack((original_height, original_width), dim=1)
+
+    return original_height_width

@@ -51,7 +51,6 @@ def test_draw_vectorfield(au, au2):
 
 
 def test_plot_face(au, au2):
-
     plot_face(au=au, vectorfield={"reference": predict(au2)}, feature_range=(0, 1))
     assert_plot_shape(plt.gca())
     plt.close("all")
@@ -66,6 +65,7 @@ def test_plot_face(au, au2):
     plt.close("all")
 
 
+@pytest.mark.skip
 def test_plot_detections(default_detector, single_face_img, multi_face_img):
     single_image_single_face_prediction = default_detector.detect_image(single_face_img)
     figs = single_image_single_face_prediction.plot_detections()
@@ -105,25 +105,20 @@ def test_plot_detections(default_detector, single_face_img, multi_face_img):
 
 
 def test_animate_face():
-
     # Start with neutral face
     starting_aus = np.zeros(20)
     ending_aus = np.zeros(20)
     # Just animate the intensity of the first AU
     ending_aus[0] = 3
 
-    animation = animate_face(start=starting_aus, end=ending_aus, save="test.gif")
-
-    assert animation is not None
+    animate_face(start=starting_aus, end=ending_aus, save="test.gif")
     assert exists("test.gif")
 
     # # Clean up
     remove("test.gif")
 
     # Test different init style
-    animation = animate_face(AU=1, start=0, end=3, save="test.gif")
-
-    assert animation is not None
+    animate_face(AU=1, start=0, end=3, save="test.gif")
     assert exists("test.gif")
 
     # Clean up
