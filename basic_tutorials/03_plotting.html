@@ -534,8 +534,8 @@ document.write(`
 <p>To plot a neutral facial expression just pass in an array of 0s to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> which always returns a matplotlib axis handle:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">plot_face</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_face</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="c1"># 20 dimensional vector of AU intensities</span>
 <span class="c1"># AUs ordered as:</span>
@@ -625,8 +625,8 @@ Gaze vectors are length 4 <code class="docutils literal notranslate"><span class
 <p>One way we can highlight how a faces change between two expressions is by overlaying a vectorfield of arrows for each facial landmark pointing in the direction of movement from one face to another. To do so, we use the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> function to get landmark data for each array of AU intensities we want to plot and generate a <code class="docutils literal notranslate"><span class="pre">vectors</span></code> dictionary with keys for the <code class="docutils literal notranslate"><span class="pre">'target'</span></code> and <code class="docutils literal notranslate"><span class="pre">'reference'</span></code> faces. Then we can pass this dictionary to the <code class="docutils literal notranslate"><span class="pre">vectorfield</span></code> argument of <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">predict</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">predict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="c1"># Get landmarks</span>
 <span class="n">neutral_landmarks</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">neutral</span><span class="p">)</span>
@@ -673,7 +673,7 @@ Gaze vectors are length 4 <code class="docutils literal notranslate"><span class
 <p>The first style is mostly just a convenient way to visualize changes for a single AU. Below we use this style to animate raising of the inner brow:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">animate_face</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">animate_face</span>
 
 <span class="c1"># Just pass in a FACS AU id, in this case we pass in 1 which is the inner brow raiser</span>
 <span class="n">animate_face</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">AU</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="s2">&quot;AU1.gif&quot;</span><span class="p">)</span>
@@ -721,9 +721,9 @@ Gaze vectors are length 4 <code class="docutils literal notranslate"><span class
 <p>We can easily make a grid of all 20 AUs and animate their intensity changes one at a time from a netural facial expression. To generate the animation from matplotlib plots, we use the <a class="reference external" href="https://github.com/jwkvam/celluloid"><code class="docutils literal notranslate"><span class="pre">celluloid</span></code></a> library that makes it a bit easier to work with matplotlib animations. It’s also what <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> uses under the hood:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils</span> <span class="kn">import</span> <span class="n">RF_AU_presence</span>  <span class="c1"># AU ids</span>
-<span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">interpolate_aus</span>  <span class="c1"># cubic easing interpolation</span>
-<span class="kn">from</span> <span class="nn">celluloid</span> <span class="kn">import</span> <span class="n">Camera</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">RF_AU_presence</span>  <span class="c1"># AU ids</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate_aus</span>  <span class="c1"># cubic easing interpolation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">celluloid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
 
 <span class="c1"># Link AU ids to their descriptions; might be wrong? see:</span>
 <span class="n">au_name_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>

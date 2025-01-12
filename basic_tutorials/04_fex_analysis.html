@@ -544,14 +544,14 @@ document.write(`
 <p>Here’s we’ll download and save the first 20 video files and their corresponding attributes from OSF. The next cell should run quickly on Google Collab, but will depend on your own internet conection if you’re executing this notebook locally. You can rerun this cell in case the download fails for any reason, as it should skip downloading existing files:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">glob</span><span class="w"> </span><span class="kn">import</span> <span class="n">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;talk&quot;</span><span class="p">)</span>
 
 <span class="n">files_to_download</span> <span class="o">=</span> <span class="p">{</span>
@@ -615,7 +615,7 @@ Downloaded attributes files with 20 rows
 <p>Now we’ll initialize a new <code class="docutils literal notranslate"><span class="pre">Detector</span></code>, process each frame of each video using <code class="docutils literal notranslate"><span class="pre">.detect_video()</span></code>, and save the results to csv files named after the video.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
 
 <span class="c1"># Initialize the default detector</span>
 <span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
@@ -639,7 +639,7 @@ Downloaded attributes files with 20 rows
 <p>Then we can use <code class="docutils literal notranslate"><span class="pre">read_feat</span></code> to load each CSV file and concatenate them together:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.utils.io</span> <span class="kn">import</span> <span class="n">read_feat</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_feat</span>
 
 <span class="n">fex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">video</span><span class="p">:</span> <span class="n">read_feat</span><span class="p">(</span><span class="n">video</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)),</span> <span class="n">videos</span><span class="p">))</span>
 
@@ -1526,11 +1526,11 @@ Avg frames per video: 47.35
 <p>To do this we can use the <code class="docutils literal notranslate"><span class="pre">.predict()</span></code> which behaves just like <code class="docutils literal notranslate"><span class="pre">.regress()</span></code> but also requires a <code class="docutils literal notranslate"><span class="pre">sklearn</span></code> <code class="docutils literal notranslate"><span class="pre">Estimator</span></code>. We can use keyword arguments to perform 10-fold cross-validation to test the accuracy of each decoder:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.discriminant_analysis</span> <span class="kn">import</span> <span class="n">LinearDiscriminantAnalysis</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.discriminant_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDiscriminantAnalysis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">StandardScaler</span><span class="p">,</span>
 <span class="p">)</span>  <span class="c1"># always a good idea to normalize your features!</span>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
 
 <span class="c1"># List of different models we&#39;ll train</span>
 <span class="n">feature_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;emotions&quot;</span><span class="p">,</span> <span class="s2">&quot;aus&quot;</span><span class="p">,</span> <span class="s2">&quot;poses&quot;</span><span class="p">,</span> <span class="s2">&quot;emotions,poses&quot;</span><span class="p">,</span> <span class="s2">&quot;aus,poses&quot;</span><span class="p">]</span>
@@ -1614,7 +1614,7 @@ aus,poses model accuracy: 95% +/- 15%
 <p>Using what we learned in the previous tutorial, we can visualize the coefficients for any models that used AU features. This allows us to “see” the underlying facial expression that the classifier learned!</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">plot_face</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_face</span>
 
 <span class="n">plot_face</span><span class="p">(</span>
     <span class="n">au</span><span class="o">=</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;aus&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="c1"># the LDA coefs from the AUs pipeline model</span>
@@ -1636,7 +1636,7 @@ aus,poses model accuracy: 95% +/- 15%
 <p>Even cooler we can <em>animate</em> that face expression to <strong>emphasize what’s changing.</strong> Here we start from a neutral face:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">animate_face</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">animate_face</span>
 
 <span class="n">animation</span> <span class="o">=</span> <span class="n">animate_face</span><span class="p">(</span>
     <span class="n">end</span><span class="o">=</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;aus&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="c1"># same as before</span>
@@ -1666,10 +1666,10 @@ aus,poses model accuracy: 95% +/- 15%
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cluster_corrs</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cluster_corrs</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to reorder rows and cols of correlation matrix based on clustering&quot;&quot;&quot;</span>
 
-    <span class="kn">import</span> <span class="nn">scipy.cluster.hierarchy</span> <span class="k">as</span> <span class="nn">sch</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.cluster.hierarchy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sch</span>
 
     <span class="n">pairwise_distances</span> <span class="o">=</span> <span class="n">sch</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">pdist</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
     <span class="n">linkage</span> <span class="o">=</span> <span class="n">sch</span><span class="o">.</span><span class="n">linkage</span><span class="p">(</span><span class="n">pairwise_distances</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">)</span>
@@ -1680,7 +1680,7 @@ aus,poses model accuracy: 95% +/- 15%
     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">idx_to_cluster_array</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
 
-<span class="k">def</span> <span class="nf">add_cond_to_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_cond_to_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to add condition info to each tick label&quot;&quot;&quot;</span>
     <span class="n">xlabels</span><span class="p">,</span> <span class="n">ylabels</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">()):</span>

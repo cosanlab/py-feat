@@ -520,24 +520,24 @@ document.write(`
 <p>In the tutorial we will demonstrate how to evaluate pyfeat bounding box algorithms with evaluation data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">loadmat</span>
-<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">loadmat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span> <span class="kn">import</span> <span class="n">Img2Pose</span>
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
-<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span><span class="w"> </span><span class="kn">import</span> <span class="n">Img2Pose</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">transforms</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-<span class="kn">from</span> <span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span> <span class="kn">import</span> <span class="n">Img2Pose</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span><span class="w"> </span><span class="kn">import</span> <span class="n">Img2Pose</span>
 </pre></div>
 </div>
 </div>
@@ -546,7 +546,7 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright (c) OpenMMLab. All rights reserved.</span>
-<span class="k">def</span> <span class="nf">voc_ap</span><span class="p">(</span><span class="n">rec</span><span class="p">,</span> <span class="n">prec</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">voc_ap</span><span class="p">(</span><span class="n">rec</span><span class="p">,</span> <span class="n">prec</span><span class="p">):</span>
 
     <span class="c1"># correct AP calculation</span>
     <span class="c1"># first append sentinel values at the end</span>
@@ -565,14 +565,14 @@ document.write(`
     <span class="n">ap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">mrec</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">mrec</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">mpre</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">ap</span>
     
-<span class="k">def</span> <span class="nf">dataset_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pr_curve</span><span class="p">,</span> <span class="n">count_face</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dataset_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pr_curve</span><span class="p">,</span> <span class="n">count_face</span><span class="p">):</span>
     <span class="n">_pr_curve</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">thresh_num</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">):</span>
         <span class="n">_pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">_pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pr_curve</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">count_face</span>
     <span class="k">return</span> <span class="n">_pr_curve</span>
 
-<span class="k">def</span> <span class="nf">img_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pred_info</span><span class="p">,</span> <span class="n">proposal_list</span><span class="p">,</span> <span class="n">pred_recall</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">img_pr_info</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">,</span> <span class="n">pred_info</span><span class="p">,</span> <span class="n">proposal_list</span><span class="p">,</span> <span class="n">pred_recall</span><span class="p">):</span>
     <span class="n">pr_info</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">thresh_num</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">thresh_num</span><span class="p">):</span>
 
@@ -588,7 +588,7 @@ document.write(`
             <span class="n">pr_info</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_recall</span><span class="p">[</span><span class="n">r_index</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">pr_info</span>
 
-<span class="k">def</span> <span class="nf">bbox_overlaps</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bbox_overlaps</span><span class="p">(</span><span class="n">bboxes1</span><span class="p">,</span>
                   <span class="n">bboxes2</span><span class="p">,</span>
                   <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;iou&#39;</span><span class="p">,</span>
                   <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
@@ -653,7 +653,7 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">image_eval</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">gt</span><span class="p">,</span> <span class="n">ignore</span><span class="p">,</span> <span class="n">iou_thresh</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">image_eval</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">gt</span><span class="p">,</span> <span class="n">ignore</span><span class="p">,</span> <span class="n">iou_thresh</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; single image evaluation</span>
 <span class="sd">    pred: Nx5</span>
 <span class="sd">    gt: Nx4</span>
@@ -687,7 +687,7 @@ document.write(`
         <span class="n">pred_recall</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_keep_index</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pred_recall</span><span class="p">,</span> <span class="n">proposal_list</span>
     
-<span class="k">def</span> <span class="nf">get_gt_boxes</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gt_boxes</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; gt dir: (wider_face_val.mat, wider_easy_val.mat, wider_medium_val.mat, wider_hard_val.mat)&quot;&quot;&quot;</span>
 
     <span class="n">gt_mat</span> <span class="o">=</span> <span class="n">loadmat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gt_dir</span><span class="p">,</span> <span class="s1">&#39;wider_face_val.mat&#39;</span><span class="p">))</span>
@@ -705,7 +705,7 @@ document.write(`
 
     <span class="k">return</span> <span class="n">facebox_list</span><span class="p">,</span> <span class="n">event_list</span><span class="p">,</span> <span class="n">file_list</span><span class="p">,</span> <span class="n">hard_gt_list</span><span class="p">,</span> <span class="n">medium_gt_list</span><span class="p">,</span> <span class="n">easy_gt_list</span>
     
-<span class="k">def</span> <span class="nf">load_preds</span><span class="p">(</span><span class="n">pred_dir</span><span class="o">=</span><span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data/WIDER_BBOX_IMG2POSE/preds.pkl&#39;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_preds</span><span class="p">(</span><span class="n">pred_dir</span><span class="o">=</span><span class="s1">&#39;/Storage/Projects/pyfeat_testing/Data/WIDER_BBOX_IMG2POSE/preds.pkl&#39;</span><span class="p">):</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pred_dir</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
         <span class="n">all_imgs</span><span class="p">,</span> <span class="n">all_pred_vals</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
     <span class="n">boxes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -718,7 +718,7 @@ document.write(`
         <span class="n">boxes</span><span class="p">[</span><span class="n">event_name</span><span class="p">][</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">img_name</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;.jpg&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">pred_box</span>
     <span class="k">return</span> <span class="n">boxes</span>
 
-<span class="k">def</span> <span class="nf">norm_score</span><span class="p">(</span><span class="n">pred</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">norm_score</span><span class="p">(</span><span class="n">pred</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; norm score</span>
 <span class="sd">    pred {key: [[x1,y1,x2,y2,s]]}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -747,7 +747,7 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">print_ap_scores</span><span class="p">(</span><span class="n">result_fp</span><span class="p">):</span>
     <span class="n">iou_thresh</span><span class="o">=</span><span class="mf">0.5</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">load_preds</span><span class="p">(</span><span class="n">pred_dir</span><span class="o">=</span><span class="n">result_fp</span><span class="p">)</span> <span class="c1"># Where you save the result in the extract_bbox_img2Pose.py script</span>
     <span class="n">norm_score</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
@@ -962,18 +962,18 @@ Hard   Val AP: 0.47326227608164284
 <h2>Img2Pose models are heavy both in architecture and in number of hyperparameters. We advise to use different parameter combinations for different settings, especially for constrained vs unconstrained<a class="headerlink" href="#img2pose-models-are-heavy-both-in-architecture-and-in-number-of-hyperparameters-we-advise-to-use-different-parameter-combinations-for-different-settings-especially-for-constrained-vs-unconstrained" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span> <span class="kn">import</span> <span class="n">Img2Pose</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.facepose_detectors.img2pose.img2pose_test</span><span class="w"> </span><span class="kn">import</span> <span class="n">Img2Pose</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GenericImageDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GenericImageDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Face Landmarks dataset.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_paths</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_paths</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
 <span class="sd">            csv_file (string): Path to the csv file with annotations.</span>
@@ -984,10 +984,10 @@ Hard   Val AP: 0.47326227608164284
         <span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span> <span class="o">=</span> <span class="n">file_paths</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePaths</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">:</span>
             <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>

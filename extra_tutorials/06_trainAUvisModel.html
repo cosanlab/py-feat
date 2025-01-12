@@ -522,22 +522,22 @@ document.write(`
 <h2>Imports and Paths<a class="headerlink" href="#imports-and-paths" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">h5py</span>
-<span class="kn">from</span> <span class="nn">feat.utils.io</span> <span class="kn">import</span> <span class="n">get_resource_path</span>
-<span class="kn">from</span> <span class="nn">feat.plotting</span> <span class="kn">import</span> <span class="n">load_viz_model</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
-<span class="kn">from</span> <span class="nn">sklearn.cross_decomposition</span> <span class="kn">import</span> <span class="n">PLSRegression</span>
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">skversion</span>
-<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">dump</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">feat.pretrained</span> <span class="kn">import</span> <span class="n">AU_LANDMARK_MAP</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_resource_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_viz_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cross_decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PLSRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">skversion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">dump</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.pretrained</span><span class="w"> </span><span class="kn">import</span> <span class="n">AU_LANDMARK_MAP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
 
@@ -564,7 +564,7 @@ document.write(`
 <p>First we load up the 3 datasets containing AU labels and facial landmarks and concatenate them into 2 dataframes. All AU values are also rescaled to 0-1 indicating the <em>presence</em> of an AU for that sample.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">load_landmark_au_data</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">load_landmark_au_data</span><span class="p">(</span>
     <span class="n">au_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">concat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">]]:</span>
 
@@ -657,7 +657,7 @@ Aggregated labels: (226206, 20)
 <p>Because datasets differ in which AUs they contain and because AUs differ greatly in their occurence across samples, we sub-sample the aggregated data to generate a new dataset that contains at least 650 occurences of each AU. This number was chosen because it is the largest number of positive samples (samples where the AU was present) for the AU with the fewest positive samples (AU43). This helps balance the features out a bit:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pseudo_balance_au_occurences</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">pseudo_balance_au_occurences</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span> <span class="n">au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sub-sample the labels dataframe so for each AU at least min_pos_sample rows</span>
@@ -731,12 +731,12 @@ Resampled dataset shape: (13000, 20)
 <p>Finally we can train a partial-least-squares regression model to map between AUs and facial landmarks. We first align facial landmarks to a template <em>neutral expression</em> face. This will allow us to use the regression weights to “warp” this face to display various expressions. To validate our model, we test predictive performance out-of-sample using 3-fold cross-validation. We also return the overall-fit across the full (resampled) data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">preprocess_features</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">preprocess_features</span><span class="p">(</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">align_landmarks_to_neutral</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale_across_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">poly_degree</span><span class="o">=</span><span class="mi">1</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Take dataframes of labels and landmarks and prepare them for PLSRegression estimator&quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">feat.utils.image_operations</span> <span class="kn">import</span> <span class="n">registration</span><span class="p">,</span> <span class="n">neutral</span>
-    <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">scale</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">feat.utils.image_operations</span><span class="w"> </span><span class="kn">import</span> <span class="n">registration</span><span class="p">,</span> <span class="n">neutral</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">scale</span>
 
     <span class="n">_X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 
@@ -746,7 +746,7 @@ Resampled dataset shape: (13000, 20)
     <span class="c1"># play around with this. </span>
     <span class="c1"># We don&#39;t include any polynomial terms by default</span>
     <span class="k">if</span> <span class="n">poly_degree</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">PolynomialFeatures</span>
 
         <span class="n">poly</span> <span class="o">=</span> <span class="n">PolynomialFeatures</span><span class="p">(</span>
             <span class="n">degree</span><span class="o">=</span><span class="n">poly_degree</span><span class="p">,</span> <span class="n">interaction_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_bias</span><span class="o">=</span><span class="kc">False</span>
@@ -769,7 +769,7 @@ Resampled dataset shape: (13000, 20)
     <span class="k">return</span> <span class="n">_X</span><span class="p">,</span> <span class="n">_Y</span>
 
 
-<span class="k">def</span> <span class="nf">fit_pls</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit_pls</span><span class="p">(</span>
     <span class="n">X</span><span class="p">,</span>
     <span class="n">Y</span><span class="p">,</span>
     <span class="n">n_splits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
@@ -833,7 +833,7 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">save_viz_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">clf</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">save_viz_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">clf</span><span class="p">):</span>
 
     <span class="c1"># Add some extra attributes to the model instance and dump it</span>
     <span class="n">clf</span><span class="o">.</span><span class="n">X_train</span> <span class="o">=</span> <span class="n">X</span>
@@ -928,8 +928,8 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 <p>Now you can visualize AU detections by passing setting <code class="docutils literal notranslate"><span class="pre">faces='aus'</span></code> to the <code class="docutils literal notranslate"><span class="pre">.plot_detections()</span></code> method of a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> dataclass:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">feat</span> <span class="kn">import</span> <span class="n">Detector</span>
-<span class="kn">from</span> <span class="nn">feat.utils.io</span> <span class="kn">import</span> <span class="n">get_test_data_path</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_test_data_path</span>
 
 <span class="n">single_face_img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span> <span class="s2">&quot;single_face.jpg&quot;</span><span class="p">)</span>
 

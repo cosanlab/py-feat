@@ -492,7 +492,7 @@ document.write(`
 </ul>
 </li>
 <li><p>Your model should be a class that has the appropriate method that a <code class="docutils literal notranslate"><span class="pre">Detector</span></code> can call. For example, Emotion detectors should have the method <code class="docutils literal notranslate"><span class="pre">mynewmodel.detect_emotions()</span></code> that can be called:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">myNewModel</span><span class="p">():</span> 
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">myNewModel</span><span class="p">():</span> 
     <span class="c1">## code to init and load model</span>
     
     <span class="n">detect_emotions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
