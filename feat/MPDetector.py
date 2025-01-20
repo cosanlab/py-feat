@@ -668,8 +668,9 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         detect faces and poses in a batch of images using img2pose
 
         Args:
-            img (torch.Tensor): Tensor of shape (B, C, H, W) representing the images
+            images (torch.Tensor): Tensor of shape (B, C, H, W) representing the images
             face_size (int): Output size to resize face after cropping.
+            face_detection_threshold (float): Threshold for face detection confidence
 
         Returns:
             Fex: Prediction results dataframe
@@ -701,6 +702,14 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 bbox = face_output["boxes"]
                 facescores = face_output["scores"]
                 _ = face_output["landmarks"]
+            else:  # to modify once more face detectors are implemented
+                raise NotImplementedError(
+                    f"Face Detector '{self.info['face_model']} not implemented. Use 'retinaface'.")
+
+            # Face detection threshold filtering
+            valid_indexes = facescores > face_detection_threshold
+            bbox = bbox[valid_indexes]
+            facescores = facescores[valid_indexes]
 
             # Extract faces from bbox
             if bbox.numel() != 0:
