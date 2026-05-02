@@ -3,24 +3,25 @@ Py-FEAT Data classes.
 """
 
 import warnings
-
-# Suppress nilearn warnings that come from importing nltools
-warnings.filterwarnings("ignore", category=FutureWarning, module="nilearn")
 import os
 from typing import Iterable
 from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
-from nltools.data import Adjacency
-from nltools.stats import downsample, upsample, regress
-from nltools.utils import set_decomposition_algorithm
+from feat.utils.stats import (
+    downsample,
+    upsample,
+    regress,
+    set_decomposition_algorithm,
+)
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 from torchvision.transforms import Compose
 from torchvision import transforms
-from torchvision.io import read_image, read_video
+from torchvision.io import read_image
+from feat.utils.io import video_to_tensor
 from torch.utils.data import Dataset
 from torch import swapaxes
 from feat.transforms import Rescale
@@ -910,9 +911,7 @@ class Fex(DataFrame):
         return out
 
     def regress(self, X, y, fit_intercept=True, *args, **kwargs):
-        """Regress using nltools.stats.regress.
-
-        fMRI-like regression to predict Fex activity (y) from set of regressors (X).
+        """Multiple OLS regression to predict Fex activity (y) from regressors (X).
 
         Args:
             X (list or str): Independent variable to predict.
@@ -1011,13 +1010,11 @@ class Fex(DataFrame):
         return clf, scores
 
     def downsample(self, target, **kwargs):
-        """Downsample Fex columns. Relies on nltools.stats.downsample,
-           but ensures that returned object is a Fex object.
+        """Downsample Fex columns and return a Fex object.
 
         Args:
-            target(float): downsampling target, typically in samples not seconds
-            kwargs: additional inputs to nltools.stats.downsample
-
+            target(float): target sampling frequency in Hz.
+            kwargs: forwarded to feat.utils.stats.downsample.
         """
         df_ds = downsample(
             self, sampling_freq=self.sampling_freq, target=target, **kwargs
@@ -1055,13 +1052,12 @@ class Fex(DataFrame):
         return mat
 
     def upsample(self, target, target_type="hz", **kwargs):
-        """Upsample Fex columns. Relies on nltools.stats.upsample,
-            but ensures that returned object is a Fex object.
+        """Upsample Fex columns and return a Fex object.
 
         Args:
-            target(float): upsampling target, default 'hz' (also 'samples', 'seconds')
-            kwargs: additional inputs to nltools.stats.upsample
-
+            target(float): upsampling target.
+            target_type: 'hz' (default), 'samples', or 'seconds'.
+            kwargs: forwarded to feat.utils.stats.upsample.
         """
         df_us = upsample(
             self,
@@ -1093,9 +1089,7 @@ class Fex(DataFrame):
             dist: Outputs a 2D distance matrix.
 
         """
-        return Adjacency(
-            pairwise_distances(self, metric=method, **kwargs), matrix_type="Distance"
-        )
+        return pd.DataFrame(pairwise_distances(self, metric=method, **kwargs))
 
     def rectification(self, std=3):
         """Removes time points when the face position moved
@@ -1769,14 +1763,7 @@ class Fex(DataFrame):
                         ]:
                             img = read_image(row["input"])
                         else:
-                            # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
-                            # pts_unit 'sec'. See why it's ok in this issue:
-                            # https://github.com/pytorch/vision/issues/1931
-                            with warnings.catch_warnings():
-                                warnings.simplefilter("ignore", UserWarning)
-                                video, audio, info = read_video(
-                                    row["input"], output_format="TCHW"
-                                )
+                            video = video_to_tensor(row["input"])
                             img = video[row["frame"], :, :]
                         color = "w"
                         face_ax.imshow(img.permute([1, 2, 0]))
