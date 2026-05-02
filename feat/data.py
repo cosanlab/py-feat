@@ -39,7 +39,7 @@ from feat.plotting import (
     emotion_annotation_position,
 )
 from feat.pretrained import AU_LANDMARK_MAP
-from nilearn.signal import clean
+# nilearn is a heavyweight dependency only needed for Fex.clean(); imported lazily.
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
 import matplotlib.pyplot as plt
@@ -1227,6 +1227,12 @@ class Fex(DataFrame):
         Returns:
             cleaned Fex instance
         """
+        try:
+            from nilearn.signal import clean
+        except ImportError as e:
+            raise ImportError(
+                "Fex.clean() requires nilearn. Install it with `pip install nilearn`."
+            ) from e
         if self.sessions is not None:
             if ignore_sessions:
                 sessions = None

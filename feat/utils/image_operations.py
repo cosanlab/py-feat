@@ -300,7 +300,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             / 6.0
         )
 
-        mat2 = np.mat(
+        mat2 = np.asmatrix(
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
@@ -355,7 +355,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             / 6.0
         )
 
-        mat2 = np.mat(
+        mat2 = np.asmatrix(
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
@@ -373,7 +373,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     l = math.sqrt(delta_x**2 + delta_y**2)
     sin_val = delta_y / l
     cos_val = delta_x / l
-    mat1 = np.mat([[cos_val, sin_val, 0.0], [-sin_val, cos_val, 0.0], [0.0, 0.0, 1.0]])
+    mat1 = np.asmatrix([[cos_val, sin_val, 0.0], [-sin_val, cos_val, 0.0], [0.0, 0.0, 1.0]])
 
     mat2 = (mat1 * mat2.T).T
 
@@ -387,7 +387,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
 
     scale = (img_size - 1) / 2.0 / half_size
 
-    mat3 = np.mat(
+    mat3 = np.asmatrix(
         [
             [scale, 0.0, scale * (half_size - center_x)],
             [0.0, scale, scale * (half_size - center_y)],
@@ -414,7 +414,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
 
     land_3d = np.ones((len(landmarks) // 2, 3))
     land_3d[:, 0:2] = np.reshape(np.array(landmarks), (len(landmarks) // 2, 2))
-    mat_land_3d = np.mat(land_3d)
+    mat_land_3d = np.asmatrix(land_3d)
     new_landmarks = np.array((mat * mat_land_3d.T).T)
     new_landmarks = np.array(list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))).astype(
         int
@@ -1243,18 +1243,28 @@ def inverse_transform_landmarks_torch(landmarks, boxes):
 
 
 def extract_hog_features(extracted_faces, landmarks):
-    """
-    Helper function used in batch processing hog features
+    """Extract HOG features for AU classification using torch-native HOGLayer.
+
+    Replaces the prior per-face skimage call which round-tripped each face
+    through tensor -> PIL -> numpy -> CPU HOG -> numpy. HOGLayer keeps the
+    whole batch on the input device and matches skimage.feature.hog to ~5e-8
+    absolute tolerance (verified by test_HOGLayer_matches_skimage); the
+    trained AU classifier needs no retraining.
 
     Args:
-        frames: a batch of extracted faces
-        landmarks: a list of list of detected landmarks
+        extracted_faces: [N, C, H, W] face crops, float32 in [0, 1].
+        landmarks: [N, n_landmarks*2] flattened (x, y) landmark coordinates
+            in image space.
 
     Returns:
-        hog_features: a numpy array of hog features for each detected landmark
-        landmarks: updated landmarks
+        hog_features: numpy array of shape [N, n_features].
+        au_new_landmarks: list of per-face landmark arrays in the
+            face-aligned crop's coordinates.
     """
     n_faces = landmarks.shape[0]
+    if n_faces == 0:
+        return np.zeros((0, 0), dtype=np.float32), []
+
     face_size = extracted_faces.shape[-1]
     extracted_faces_bboxes = (
         torch.tensor([0, 0, face_size, face_size]).unsqueeze(0).repeat(n_faces, 1)
@@ -1262,24 +1272,31 @@ def extract_hog_features(extracted_faces, landmarks):
     extracted_landmarks = inverse_transform_landmarks_torch(
         landmarks, extracted_faces_bboxes
     )
-    hog_features = []
+
+    convex_hulls = []
     au_new_landmarks = []
     for j in range(n_faces):
         convex_hull, new_landmark = extract_face_from_landmarks(
             extracted_faces[j, ...], extracted_landmarks[j, ...]
         )
-        hog_features.append(
-            hog(
-                transforms.ToPILImage()(convex_hull[0]),
-                orientations=8,
-                pixels_per_cell=(8, 8),
-                cells_per_block=(2, 2),
-                visualize=False,
-                channel_axis=-1,
-            ).reshape(1, -1)
-        )
+        convex_hulls.append(convex_hull[0])  # [C, H, W]
         au_new_landmarks.append(new_landmark)
-    return np.concatenate(hog_features), au_new_landmarks
+
+    if not convex_hulls:
+        return np.zeros((0, 0), dtype=np.float32), au_new_landmarks
+
+    batch = torch.stack(convex_hulls, dim=0)  # [N, C, H, W]
+    layer = HOGLayer(
+        orientations=8,
+        pixels_per_cell=8,
+        cells_per_block=2,
+        block_normalization="L2-Hys",
+        feature_vector=True,
+        device=batch.device,
+    ).to(batch.device)
+    with torch.inference_mode():
+        features = layer(batch).cpu().numpy()
+    return features, au_new_landmarks
 
 
 def convert_bbox_output(boxes, scores):
