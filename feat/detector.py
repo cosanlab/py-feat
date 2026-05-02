@@ -354,33 +354,33 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             Fex: Prediction results dataframe
         """
 
-        # img2pose
+        # img2pose accepts a batched [B, C, H, W] tensor and returns a list
+        # of length B with per-image detections. Calling it once amortizes
+        # the ResNet18-FPN forward pass across the whole batch instead of
+        # paying the per-frame cost B times - the largest single Phase 1
+        # speedup item in the spec.
         frames = convert_image_to_tensor(images, img_type="float32") / 255.0
         frames = frames.to(self.device)
 
+        img2pose_outputs = self.facepose_detector(frames)
+
         batch_results = []
-        for i in range(frames.size(0)):
-            single_frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
-            img2pose_output = self.facepose_detector(single_frame.to(self.device))
-            img2pose_output = postprocess_img2pose(
-                img2pose_output[0], detection_threshold=face_detection_threshold
+        for i, img2pose_output in enumerate(img2pose_outputs):
+            single_frame = frames[i, ...].unsqueeze(0)
+            processed = postprocess_img2pose(
+                img2pose_output, detection_threshold=face_detection_threshold
             )
-            bbox = img2pose_output["boxes"]
-            poses = img2pose_output["dofs"]
-            facescores = img2pose_output["scores"]
+            bbox = processed["boxes"]
+            poses = processed["dofs"]
+            facescores = processed["scores"]
 
             # Extract faces from bbox
             if bbox.numel() != 0:
                 extracted_faces, new_bbox = extract_face_from_bbox_torch(
                     single_frame, bbox, face_size=face_size
                 )
-            else:  # No Face Detected - let's test of nans will work
+            else:  # No Face Detected - propagate NaN-padded outputs
                 extracted_faces = torch.zeros((1, 3, face_size, face_size))
-                # bbox = torch.zeros((1,4))
-                # new_bbox = torch.zeros((1,4))
-                # facescores = torch.zeros((1))
-                # poses = torch.zeros((1,6))
-                # extracted_faces = torch.full((1, 3, face_size, face_size), float('nan'))
                 bbox = torch.full((1, 4), float("nan"))
                 new_bbox = torch.full((1, 4), float("nan"))
                 facescores = torch.zeros((1))
@@ -401,7 +401,6 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     frame_results["resmasknet_faces"] = torch.full(
                         (1, 3, 224, 224), float("nan")
                     )
-                    # frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
                 else:
                     resmasknet_faces, _ = extract_face_from_bbox_torch(
                         single_frame, bbox, expand_bbox=1.1, face_size=224
