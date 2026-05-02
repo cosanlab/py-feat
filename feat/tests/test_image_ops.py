@@ -370,7 +370,8 @@ def test_HOGLayer_matches_skimage_grayscale():
 
 def test_HOGLayer_feature_vector_false_returns_block_grid():
     """With feature_vector=False the layer should return the unflattened
-    block grid, shape [N, orientations, n_blocks_row, n_blocks_col, b, b]."""
+    block grid in skimage's layout:
+    [N, n_blocks_row, n_blocks_col, b_row, b_col, orientations]."""
     torch.manual_seed(0)
     batch = torch.rand(1, 3, 112, 112)
     layer = HOGLayer(
@@ -383,5 +384,7 @@ def test_HOGLayer_feature_vector_false_returns_block_grid():
     )
     out = layer(batch)
     # 112 / 8 = 14 cells per side; 14 - 2 + 1 = 13 blocks per side.
-    assert out.shape == (1, 8, 13, 13, 2, 2)
+    # skimage's `normalized_blocks` shape:
+    # (n_blocks_row, n_blocks_col, b_row, b_col, orientations).
+    assert out.shape == (1, 13, 13, 2, 2, 8)
     assert torch.isfinite(out).all()
