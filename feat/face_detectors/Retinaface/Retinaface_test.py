@@ -1,208 +1,221 @@
-from __future__ import print_function
-import os
-import torch
-import numpy as np
-from feat.face_detectors.Retinaface.Retinaface_model import PriorBox, RetinaFace
-from feat.face_detectors.Retinaface.Retinaface_utils import decode_landm
-from feat.utils import set_torch_device
-from feat.utils.io import get_resource_path
-from feat.utils.image_operations import (
-    convert_color_vector_to_tensor,
-    py_cpu_nms,
-    decode,
-)
+"""RetinaFace face-detector wrapper for py-feat.
 
-model_config = {
-    "Retinaface": {
-        "name": "mobilenet0.25",
-        "min_sizes": [[16, 32], [64, 128], [256, 512]],
-        "steps": [8, 16, 32],
-        "variance": [0.1, 0.2],
-        "clip": False,
-        "loc_weight": 2.0,
-        "gpu_train": True,
-        "batch_size": 32,
-        "ngpu": 1,
-        "epoch": 250,
-        "decay1": 190,
-        "decay2": 220,
-        "image_size": 640,
-        "pretrain": False,
-        "return_layers": {"stage1": 1, "stage2": 2, "stage3": 3},
-        "in_channel": 32,
-        "out_channel": 64,
-    }
-}
+Replaces the previous mobilenet0.25-based wrapper. The old wrapper had
+two problems: (a) the HuggingFace download path was broken and (b) it ran
+postprocess in a per-image Python for loop with CPU/numpy round-trips
+inside the inner loop, defeating any batched throughput gains. This
+wrapper:
+
+- ships only the resnet34 backbone (88.9% WIDERFACE Hard AP per yakhyo)
+- accepts a batched [B, C, H, W] uint8 or float32 tensor
+- does mean-subtract, model forward, anchor decode, NMS, and threshold
+  all on-device with no .cpu() / .numpy() trips until the very end
+- caches priors per (image_height, image_width, device) so the Python
+  anchor-generation loop runs once per image-shape, not once per call
+- uses torchvision.ops.batched_nms which natively groups boxes by image
+  index — single batched-NMS call across the whole batch
+
+Output contract (matches the legacy wrapper for drop-in compatibility):
+    list of length B, where each entry is a list of [xmin, ymin, xmax,
+    ymax, score] entries (in pixel coords) for the detected faces in
+    that image. Empty list for images with no detections.
+"""
+
+from __future__ import annotations
+
+from typing import List
+
+import torch
+from torchvision.ops import batched_nms
+
+from feat.face_detectors.Retinaface.Retinaface_model import (
+    RETINAFACE_R34_CFG,
+    RetinaFace,
+    decode_boxes,
+    decode_landmarks,
+    generate_priors,
+)
+from feat.utils import set_torch_device
+
+
+# Pixel-mean from upstream training preprocessing.
+#
+# Yakhyo trained on BGR input (cv2.imread) and subtracted (104, 117, 123).
+# That's literally B=104, G=117, R=123. py-feat's pipeline tensor is RGB
+# (PILToTensor / torchvision.io.read_image). To get bit-equivalent
+# preprocessing without flipping channels, we apply the per-channel mean
+# in RGB order: R=123, G=117, B=104. Equivalent math, one fewer op.
+_RGB_MEAN = torch.tensor([123.0, 117.0, 104.0]).view(1, 3, 1, 1)
 
 
 class Retinaface:
+    """Batched RetinaFace face detector.
+
+    Parameters
+    ----------
+    device : str | torch.device
+        ``'cpu'``, ``'cuda'``, ``'mps'``, ``'auto'``, or a ``torch.device``.
+    detection_threshold : float
+        Final score threshold (after NMS) below which detections are
+        dropped. Default 0.5.
+    nms_threshold : float
+        IoU threshold for non-max suppression. Default 0.4.
+    confidence_threshold : float
+        Pre-NMS score threshold. Default 0.02.
+    top_k : int
+        Pre-NMS top-K detections kept per image. Default 5000.
+    keep_top_k : int
+        Post-NMS top-K detections kept per image. Default 750.
+    pretrained : str
+        ``'huggingface'`` to download from ``py-feat/retinaface_r34`` (the
+        default). Anything else suppresses weight loading; the caller is
+        expected to load weights manually (mostly for tests).
+    """
+
     def __init__(
         self,
-        cfg=model_config["Retinaface"],
         device="auto",
-        resize=1,
-        detection_threshold=0.5,
-        nms_threshold=0.4,
-        keep_top_k=750,
-        top_k=5000,
-        confidence_threshold=0.02,
-        pretrained="local",
-    ):
-        """
-        Function to perform inference with RetinaFace
-
-        Args:
-            device: (str)
-            timer_flag: (bool)
-            resize: (int)
-            detection_threshold: (float)
-            nms_threshold: (float)
-            keep_top_k: (float)
-            top_k: (float)
-            confidence_threshold: (float)
-
-        """
-
+        detection_threshold: float = 0.5,
+        nms_threshold: float = 0.4,
+        confidence_threshold: float = 0.02,
+        top_k: int = 5000,
+        keep_top_k: int = 750,
+        pretrained: str = "huggingface",
+    ) -> None:
         torch.set_grad_enabled(False)
-
         self.device = set_torch_device(device=device)
-        self.cfg = cfg
+        self.cfg = RETINAFACE_R34_CFG
 
-        # Initialize the model
+        self.detection_threshold = detection_threshold
+        self.nms_threshold = nms_threshold
+        self.confidence_threshold = confidence_threshold
+        self.top_k = top_k
+        self.keep_top_k = keep_top_k
+
+        self.net = RetinaFace(self.cfg)
         if pretrained == "huggingface":
-            # model_file = hf_hub_download(repo_id="py-feat/retinaface", filename="model.safetensors")
-            # model_state_dict = load_file(model_file)
-            self.net = RetinaFace(cfg=self.cfg, phase="test")
-            self.net = self.net.eval()
-            self.net.from_pretrained("py-feat/retinaface")
-        elif pretrained == "local":
-            # net.load_state_dict(model_state_dict)
-            # net = net.to(self.device)
-            # self.net = net.eval()
+            from feat.utils import hf_hub_download_with_fallback
 
-            self.net = RetinaFace(cfg=self.cfg, phase="test")
-            pretrained_dict = torch.load(
-                os.path.join(get_resource_path(), "mobilenet0.25_Final.pth"),
-                map_location=self.device,
+            # PyTorchModelHubMixin's `from_pretrained` would ignore our
+            # pre-constructed `self.net`. Use the fallback helper to grab
+            # the safetensors file, then load it explicitly. v1 fallback
+            # mirrors the AU classifier rollout pattern (PR #273).
+            from safetensors.torch import load_file
+            from feat.utils.io import get_resource_path
+
+            weights_path = hf_hub_download_with_fallback(
+                repo_id="py-feat/retinaface_r34",
+                filename="model.safetensors",
+                fallback_filename="retinaface_r34.safetensors",
+                cache_dir=get_resource_path(),
             )
-            self.net.load_state_dict(pretrained_dict, strict=False)
-        self.net = self.net.to(self.device)
-        self.net = self.net.eval()
+            state_dict = load_file(weights_path)
+            self.net.load_state_dict(state_dict, strict=True)
 
-        # Set cutoff parameters
-        (
-            self.resize,
-            self.detection_threshold,
-            self.nms_threshold,
-            self.keep_top_k,
-            self.top_k,
-            self.confidence_threshold,
-        ) = (
-            resize,
-            detection_threshold,
-            nms_threshold,
-            keep_top_k,
-            top_k,
-            confidence_threshold,
-        )
+        self.net = self.net.to(self.device).eval()
 
-    def __call__(self, img):
-        """
-        forward function
+        # Per-(H, W, device) prior cache. The Python prior-generation
+        # loop is non-trivial (~hundreds of µs at 640²) and the priors
+        # don't depend on input pixel values, so we memoize them.
+        self._prior_cache: dict[tuple[int, int, torch.device], torch.Tensor] = {}
+
+        # Mean tensor materialized on the right device once.
+        self._mean = _RGB_MEAN.to(self.device)
+
+    def _get_priors(self, height: int, width: int) -> torch.Tensor:
+        key = (height, width, self.device)
+        priors = self._prior_cache.get(key)
+        if priors is None:
+            priors = generate_priors(
+                self.cfg["min_sizes"],
+                self.cfg["steps"],
+                (height, width),
+                clip=self.cfg["clip"],
+                device=self.device,
+            )
+            self._prior_cache[key] = priors
+        return priors
+
+    @torch.inference_mode()
+    def __call__(self, img: torch.Tensor) -> List[List[List[float]]]:
+        """Detect faces in a batch of images.
 
         Args:
-            img: (B,C,H,W), B is batch number, C is channel, H is image height, and W is width
+            img: ``[B, 3, H, W]`` tensor of pixel values in [0, 255]
+                (float or uint8 — coerced to float internally).
+
+        Returns:
+            list of length B; each entry is a list of detections, where
+            each detection is ``[xmin, ymin, xmax, ymax, score]`` in
+            pixel coordinates of the input image's resolution.
         """
-
-        img = torch.sub(img, convert_color_vector_to_tensor(np.array([123, 117, 104])))
-
-        im_height, im_width = img.shape[-2:]
-        scale = torch.Tensor([im_height, im_width, im_height, im_width])
-        img = img.to(self.device)
-        scale = scale.to(self.device)
-
-        loc, conf, landms = self.net(img)  # forward pass
-        total_boxes = []
-        for i in range(loc.shape[0]):
-            tmp_box = self._calculate_boxinfo(
-                im_height=im_height,
-                im_width=im_width,
-                loc=loc[i],
-                conf=conf[i],
-                landms=landms[i],
-                scale=scale,
-                img=img,
+        if img.ndim != 4 or img.shape[1] != 3:
+            raise ValueError(
+                f"img must be [B, 3, H, W]; got shape {tuple(img.shape)}"
             )
-            total_boxes.append(tmp_box)
 
-        return total_boxes
+        img = img.to(self.device, dtype=torch.float32)
+        img = img - self._mean
 
-    def _calculate_boxinfo(self, im_height, im_width, loc, conf, landms, scale, img):
-        """
-        helper function to calculate deep learning results
-        """
+        B, _, H, W = img.shape
 
-        priorbox = PriorBox(self.cfg, image_size=(im_height, im_width))
-        priors = priorbox.forward()
-        priors = priors.to(self.device)
-        boxes = decode(loc.data.squeeze(0), priors.data, self.cfg["variance"])
-        boxes = boxes * scale / self.resize
-        boxes = boxes.cpu().numpy()
-        scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
-        landms = decode_landm(landms.data.squeeze(0), priors.data, self.cfg["variance"])
-        scale1 = torch.Tensor(
-            [
-                img.shape[3],
-                img.shape[2],
-                img.shape[3],
-                img.shape[2],
-                img.shape[3],
-                img.shape[2],
-                img.shape[3],
-                img.shape[2],
-                img.shape[3],
-                img.shape[2],
-            ]
-        )
-        scale1 = scale1.to(self.device)
-        landms = landms * scale1 / self.resize
-        landms = landms.cpu().numpy()
+        # Single batched forward.
+        loc, conf, landms = self.net(img)  # [B, A, 4], [B, A, 2], [B, A, 10]
 
-        # ignore low scores
-        inds = np.where(scores > self.confidence_threshold)[0]
-        boxes = boxes[inds]
-        landms = landms[inds]
-        scores = scores[inds]
+        priors = self._get_priors(H, W)
+        boxes = decode_boxes(loc, priors, self.cfg["variance"])  # [B, A, 4] normalized
+        # landmarks decoded but unused in the legacy output contract; computed
+        # so the cost is paid on-device in one shot if we expose them later.
+        _ = decode_landmarks(landms, priors, self.cfg["variance"])
+        scores = conf[..., 1]  # [B, A] face probabilities
 
-        # keep top-K before NMS
-        order = scores.argsort()[::-1][: self.top_k]
-        boxes = boxes[order]
-        landms = landms[order]
-        scores = scores[order]
+        # Scale to pixel coords.
+        scale = torch.tensor([W, H, W, H], dtype=torch.float32, device=self.device)
+        boxes = boxes * scale  # [B, A, 4]
 
-        # do NMS
-        dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
-        keep = py_cpu_nms(dets, self.nms_threshold)
-        dets = dets[keep, :]
-        landms = landms[keep]
+        # Flatten to [B*A, ...] with image-index, filter pre-NMS by confidence,
+        # then run a single batched_nms across the whole flattened batch.
+        A = boxes.shape[1]
+        batch_idx = torch.arange(B, device=self.device).repeat_interleave(A)
+        flat_boxes = boxes.view(B * A, 4)
+        flat_scores = scores.reshape(B * A)
 
-        # keep top-K faster NMS
-        dets = dets[: self.keep_top_k, :]
+        keep_mask = flat_scores > self.confidence_threshold
+        flat_boxes = flat_boxes[keep_mask]
+        flat_scores = flat_scores[keep_mask]
+        batch_idx = batch_idx[keep_mask]
 
-        # filter using detection_threshold - rescale box size to be proportional to image size
-        scale_x, scale_y = (im_width / im_height, im_height / im_width)
-        det_bboxes = []
-        for b in dets:
-            if b[4] > self.detection_threshold:
-                xmin, ymin, xmax, ymax, score = b
-                det_bboxes.append(
-                    [
-                        xmin * scale_x,
-                        ymin * scale_y,
-                        xmax * scale_x,
-                        ymax * scale_y,
-                        score,
-                    ]
-                )
+        # Per-image pre-NMS top_k. We keep this simple: sort globally by score
+        # and let batched_nms's per-group NMS handle the rest. For very dense
+        # detections the per-image top_k truncation can be reintroduced.
+        if flat_scores.numel() > self.top_k * B:
+            order = torch.argsort(flat_scores, descending=True)[: self.top_k * B]
+            flat_boxes = flat_boxes[order]
+            flat_scores = flat_scores[order]
+            batch_idx = batch_idx[order]
 
-        return det_bboxes
+        keep = batched_nms(flat_boxes, flat_scores, batch_idx, self.nms_threshold)
+        flat_boxes = flat_boxes[keep]
+        flat_scores = flat_scores[keep]
+        batch_idx = batch_idx[keep]
+
+        # Final detection-threshold filter.
+        final_mask = flat_scores >= self.detection_threshold
+        flat_boxes = flat_boxes[final_mask]
+        flat_scores = flat_scores[final_mask]
+        batch_idx = batch_idx[final_mask]
+
+        # Group detections back per-image. Single CPU trip at the end.
+        flat_boxes_cpu = flat_boxes.cpu()
+        flat_scores_cpu = flat_scores.cpu()
+        batch_idx_cpu = batch_idx.cpu()
+
+        result: List[List[List[float]]] = [[] for _ in range(B)]
+        for i in range(flat_scores_cpu.numel()):
+            b = int(batch_idx_cpu[i].item())
+            xmin, ymin, xmax, ymax = flat_boxes_cpu[i].tolist()
+            score = float(flat_scores_cpu[i].item())
+            # keep_top_k per image
+            if len(result[b]) < self.keep_top_k:
+                result[b].append([xmin, ymin, xmax, ymax, score])
+        return result
