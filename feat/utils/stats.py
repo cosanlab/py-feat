@@ -150,44 +150,62 @@ def regress(X, y, mode="ols", **kwargs):
     return beta, se, t_stats, p_vals, df, res
 
 
-def downsample(data, sampling_freq, target, **kwargs):
-    """Block-mean downsample a DataFrame's rows from ``sampling_freq`` to ``target``.
+def downsample(data, sampling_freq, target, target_type="samples", method="mean"):
+    """Block-aggregate downsample a DataFrame's rows.
 
-    Drop-in replacement for nltools.stats.downsample for the typical
-    fixed-Hz use case in py-feat.
+    Drop-in replacement for ``nltools.stats.downsample``. ``target`` is
+    interpreted by ``target_type``:
+
+    - ``'samples'`` (default, matches nltools): ``target`` is the number
+      of consecutive rows aggregated per output row.
+    - ``'seconds'``: ``target`` is the duration of each output bin in
+      seconds; bin size in samples = ``round(target * sampling_freq)``.
+    - ``'hz'``: ``target`` is the desired output sampling rate in Hz;
+      bin size in samples = ``round(sampling_freq / target)``.
+
+    Output row count is ``ceil(n_input / bin_size)``; the final bin can
+    contain fewer than ``bin_size`` rows (matches nltools).
 
     Args:
         data: pandas.DataFrame (or 2-D array-like) where rows are time samples.
         sampling_freq: original sampling frequency in Hz.
-        target: target sampling frequency in Hz; must be <= sampling_freq.
-
-    Returns:
-        Same type as input, with row count = floor(n / factor) where
-        factor = round(sampling_freq / target).
+        target: see ``target_type``.
+        target_type: ``'samples'`` (default), ``'seconds'``, or ``'hz'``.
+        method: ``'mean'`` (default) or ``'median'``.
     """
-    if kwargs:
-        raise TypeError(f"unexpected keyword args: {sorted(kwargs)}")
-    if target > sampling_freq:
+    if target_type == "samples":
+        n_samples = int(target)
+    elif target_type == "seconds":
+        n_samples = int(round(float(target) * float(sampling_freq)))
+    elif target_type == "hz":
+        if target > sampling_freq:
+            raise ValueError(
+                f"target ({target}) must be <= sampling_freq ({sampling_freq}) "
+                f"when target_type='hz'"
+            )
+        n_samples = int(round(float(sampling_freq) / float(target)))
+    else:
         raise ValueError(
-            f"target ({target}) must be <= sampling_freq ({sampling_freq})"
+            f"target_type must be 'samples', 'seconds', or 'hz', not {target_type!r}"
         )
-    factor = int(round(sampling_freq / target))
-    if factor <= 1:
+
+    if n_samples <= 0:
+        raise ValueError(f"computed bin size must be > 0, got {n_samples}")
+
+    if method not in ("mean", "median"):
+        raise ValueError(f"method must be 'mean' or 'median', not {method!r}")
+
+    if n_samples == 1:
         return data.copy() if hasattr(data, "copy") else np.array(data, copy=True)
 
-    if isinstance(data, pd.DataFrame):
-        n = len(data)
-        n_out = n // factor
-        truncated = data.iloc[: n_out * factor]
-        group_idx = np.repeat(np.arange(n_out), factor)
-        out = truncated.groupby(group_idx).mean()
-        out.reset_index(drop=True, inplace=True)
-        return out
-    arr = np.asarray(data)
-    n = arr.shape[0]
-    n_out = n // factor
-    truncated = arr[: n_out * factor]
-    return truncated.reshape(n_out, factor, *arr.shape[1:]).mean(axis=1)
+    is_df = isinstance(data, pd.DataFrame)
+    arr = data if is_df else pd.DataFrame(np.asarray(data))
+    n = len(arr)
+    group_idx = np.arange(n) // n_samples
+    grouped = arr.groupby(group_idx)
+    out = grouped.mean() if method == "mean" else grouped.median()
+    out.reset_index(drop=True, inplace=True)
+    return out if is_df else out.values
 
 
 def upsample(data, sampling_freq, target, target_type="hz", **kwargs):
