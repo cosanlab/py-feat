@@ -292,9 +292,14 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 # False)` does, and it doesn't require onnx2torch importable
                 # at runtime (the legacy file was a torch.fx.GraphModule produced
                 # by onnx2torch, which can only be unpickled if that package is
-                # importable). Falls back to the legacy pickle file for
-                # compatibility with older pinned HF revisions, but emits a
-                # warning so users know to upgrade.
+                # importable).
+                #
+                # If only the legacy pickle file is available on the hub
+                # (e.g., a pinned older revision), fall back to the
+                # weights_only=False path - but only if onnx2torch is
+                # actually installed. v0.7 dropped it from requirements,
+                # so this fallback only triggers for users who explicitly
+                # reinstall it for backwards-compat work.
                 from feat.utils import hf_hub_download_with_fallback
 
                 landmark_model_file = hf_hub_download_with_fallback(
@@ -303,11 +308,36 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                     fallback_filename="face_landmarks_detector_Nx3x256x256_onnx.pth",
                     cache_dir=get_resource_path(),
                 )
-                if landmark_model_file.endswith(".pt"):
+                # Distinguish TorchScript from legacy pickle by file extension.
+                # Suffix `.pt` is TorchScript (torch.jit.save); `.pth` is the
+                # legacy pickle (torch.save). Use os.path.splitext rather than
+                # endswith() so a file at any path basename is handled correctly.
+                import os as _os
+                _ext = _os.path.splitext(landmark_model_file)[1].lower()
+                _is_torchscript = _ext == ".pt"
+                if _is_torchscript:
+                    # torch.jit.load(map_location=...) places parameters on
+                    # the requested device. The .to(self.device) below is a
+                    # no-op for the TorchScript path but kept for symmetry
+                    # with the legacy path.
                     self.landmark_detector = torch.jit.load(
                         landmark_model_file, map_location=self.device
                     )
                 else:
+                    try:
+                        import onnx2torch  # noqa: F401
+                    except ImportError as e:
+                        raise ImportError(
+                            "MPDetector got the legacy mp_facemesh_v2 pickle "
+                            "file (face_landmarks_detector_Nx3x256x256_onnx.pth) "
+                            "from HuggingFace, which is a torch.fx.GraphModule "
+                            "produced by onnx2torch. py-feat 0.7 dropped "
+                            "onnx2torch from its dependencies in favor of the "
+                            "TorchScript file (face_landmarks_detector.pt). "
+                            "Either upgrade your py-feat to a version whose HF "
+                            "revision pins the .pt file, or `pip install "
+                            "onnx2torch` to use the legacy file."
+                        ) from e
                     warnings.warn(
                         "mp_facemesh_v2: loading legacy pickled FX GraphModule via "
                         "weights_only=False; this requires onnx2torch importable and "
