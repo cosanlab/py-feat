@@ -212,6 +212,9 @@ def read_openface(openfacefile, features=None):
     return fex
 
 
+_MPS_VIDEO_DECODE_WARNED = False
+
+
 def decode_video(file_name):
     """Open a video for sliced or streamed decoding via torchcodec.
 
@@ -225,8 +228,29 @@ def decode_video(file_name):
     Decoding is on CPU on macOS (Apple Silicon) and Linux without an NVIDIA
     GPU; CUDA NVDEC is used automatically when available. There is no MPS
     hardware-decode path in torchcodec today; transfer decoded tensors to
-    MPS via `.to('mps')` for inference.
+    MPS via `.to('mps')` for inference. The warning is emitted once per
+    process the first time `decode_video` is called on a system with MPS
+    available, so users on Apple Silicon understand that the decode itself
+    is happening on the CPU.
     """
+    global _MPS_VIDEO_DECODE_WARNED
+    if not _MPS_VIDEO_DECODE_WARNED:
+        try:
+            import torch as _torch
+
+            mps_available = (
+                hasattr(_torch.backends, "mps") and _torch.backends.mps.is_available()
+            )
+        except Exception:
+            mps_available = False
+        if mps_available:
+            warnings.warn(
+                "decode_video: torchcodec does not support MPS hardware video "
+                "decoding. Decoding will run on CPU; transfer decoded tensors "
+                "to MPS via `.to('mps')` for inference.",
+                stacklevel=2,
+            )
+        _MPS_VIDEO_DECODE_WARNED = True
     return VideoDecoder(file_name)
 
 
