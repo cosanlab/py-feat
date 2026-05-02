@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - master
+      - v0.8-dev
 
 jobs:
   # Job (1): Run testing in parallel against multiples OSs and Python versions
