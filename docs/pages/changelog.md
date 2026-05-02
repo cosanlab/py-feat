@@ -20,6 +20,7 @@ Highlights:
 - The default face detector is `img2pose`, which also provides 6-DoF head-pose estimation.
 - **Python 3.11+ required.** Drops support for 3.8 / 3.9 / 3.10. CI tests 3.11 / 3.12 / 3.13. *(PR #262)*
 - **`nltools` removed as a dependency.** Functions previously sourced from nltools are now in `feat.utils.stats`: `regress`, `downsample`, `upsample`, `set_decomposition_algorithm`. `Fex.distance()` now returns a `pandas.DataFrame` instead of an `nltools.data.Adjacency`. *(PR #262)*
+- **`nilearn` removed as a dependency.** `Fex.clean()` now uses an in-house `feat.utils.stats.clean_signal` (scipy/numpy-based) for detrending, confound regression, Butterworth filtering, and standardization. Same arguments as before; `*args, **kwargs` no longer forwarded.
 - *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
 
 ## New features
