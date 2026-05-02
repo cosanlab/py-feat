@@ -510,6 +510,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         """
 
         frames = convert_image_to_tensor(images, img_type="float32")
+        B = frames.size(0)
 
         # Run the face detector once on the whole batch. The Retinaface
         # wrapper handles its own mean-subtraction and on-device NMS;
@@ -519,58 +520,90 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         if is_retinaface:
             rf_outputs = self.face_detector(frames.to(self.device))
         else:
-            rf_outputs = [None] * frames.size(0)
+            rf_outputs = [None] * B
 
-        batch_results = []
-        for i in range(frames.size(0)):
-            frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
-
-            if is_retinaface:
-                image_dets = rf_outputs[i]
-                if image_dets:
-                    arr = torch.tensor(
-                        image_dets, dtype=torch.float32, device=self.device
-                    )
-                    bbox = arr[:, :4]
-                    facescores = arr[:, 4]
-                else:
-                    bbox = torch.empty((0, 4), device=self.device)
-                    facescores = torch.empty((0,), device=self.device)
-
-            # Extract faces from bbox
-            if bbox.numel() != 0:
-                extracted_faces, new_bbox = extract_face_from_bbox_torch(
-                    frame / 255.0, bbox, face_size=face_size, expand_bbox=1.25
+        # Gather bboxes across the batch so face cropping runs as one
+        # batched grid_sample instead of one per frame. Per-frame Python
+        # loops over GPU ops were measured at ~1ms/frame of pure kernel-
+        # launch overhead.
+        bbox_chunks = []
+        score_chunks = []
+        n_per_frame = []
+        wants_resmasknet = self.info["emotion_model"] == "resmasknet"
+        for i in range(B):
+            image_dets = rf_outputs[i] if is_retinaface else None
+            if image_dets:
+                arr = torch.tensor(
+                    image_dets, dtype=torch.float32, device=self.device
                 )
-            else:  # No Face Detected
-                extracted_faces = torch.zeros((1, 3, face_size, face_size))
-                bbox = torch.zeros((1, 4))
-                new_bbox = torch.zeros((1, 4))
-                facescores = torch.zeros((1))
-                # poses = torch.zeros((1,6))
+                bbox_chunks.append(arr[:, :4])
+                score_chunks.append(arr[:, 4])
+                n_per_frame.append(arr.shape[0])
+            else:
+                # No detection: contribute one zero-bbox placeholder so
+                # downstream forward() always has >= 1 row per frame.
+                bbox_chunks.append(torch.zeros((1, 4), device=self.device))
+                score_chunks.append(torch.zeros((1,), device=self.device))
+                n_per_frame.append(1)
 
+        all_bboxes = torch.cat(bbox_chunks, dim=0)
+        all_scores = torch.cat(score_chunks, dim=0)
+        n_per_frame_t = torch.tensor(n_per_frame, device=self.device)
+        all_frame_idx = torch.repeat_interleave(
+            torch.arange(B, device=self.device), n_per_frame_t
+        )
+
+        frames_dev = frames.to(self.device)
+        all_extracted, all_new_bboxes = extract_face_from_bbox_torch(
+            frames_dev / 255.0,
+            all_bboxes,
+            face_size=face_size,
+            expand_bbox=1.25,
+            frame_idx=all_frame_idx,
+        )
+
+        # Zero out crops for placeholder (no-detection) entries so the
+        # downstream models see the same input the per-frame loop produced.
+        no_det_mask = all_scores == 0
+        if no_det_mask.any():
+            all_extracted = all_extracted.clone()
+            all_extracted[no_det_mask] = 0
+            # Original code wrote zero bboxes/new_bboxes for no-detection.
+            all_new_bboxes = all_new_bboxes.clone()
+            all_new_bboxes[no_det_mask] = 0
+
+        if wants_resmasknet:
+            resmasknet_all, _ = extract_face_from_bbox_torch(
+                frames_dev,
+                all_bboxes,
+                face_size=224,
+                expand_bbox=1.1,
+                frame_idx=all_frame_idx,
+            )
+            resmasknet_all = resmasknet_all / 255.0
+            if no_det_mask.any():
+                resmasknet_all = resmasknet_all.clone()
+                resmasknet_all[no_det_mask] = 0
+
+        # Redistribute into per-frame dicts (preserves the public return
+        # signature of detect_faces). This second pass is cheap — just
+        # tensor slicing — and lets forward() stay unchanged.
+        batch_results = []
+        cursor = 0
+        for i in range(B):
+            n = n_per_frame[i]
+            sl = slice(cursor, cursor + n)
             frame_results = {
                 "face_id": i,
-                "faces": extracted_faces,
-                "boxes": bbox,
-                "new_boxes": new_bbox,
-                "scores": facescores,
+                "faces": all_extracted[sl],
+                "boxes": all_bboxes[sl],
+                "new_boxes": all_new_bboxes[sl],
+                "scores": all_scores[sl],
             }
-
-            # Extract Faces separately for Resmasknet
-            if self.info["emotion_model"] == "resmasknet":
-                if torch.all(frame_results["scores"] == 0):  # No Face Detected
-                    frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
-                else:
-                    # `frame` is the single-image tensor for index `i`; the
-                    # earlier code referenced `single_frame` which only
-                    # existed inside the deleted retinaface preprocess block.
-                    resmasknet_faces, _ = extract_face_from_bbox_torch(
-                        frame, bbox, expand_bbox=1.1, face_size=224
-                    )
-                    frame_results["resmasknet_faces"] = resmasknet_faces / 255.0
-
+            if wants_resmasknet:
+                frame_results["resmasknet_faces"] = resmasknet_all[sl]
             batch_results.append(frame_results)
+            cursor += n
 
         return batch_results
 

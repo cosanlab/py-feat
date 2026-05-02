@@ -1120,8 +1120,30 @@ class HOGLayer(torch.nn.Module):
         return hog_image
 
 
-def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bbox=1.2):
-    """Extract face from image and resize using pytorch."""
+def extract_face_from_bbox_torch(
+    frame, detected_faces, face_size=112, expand_bbox=1.2, frame_idx=None
+):
+    """Extract face from image and resize using pytorch.
+
+    Args:
+        frame: ``[B, C, H, W]`` tensor of source frames.
+        detected_faces: ``[N, 4]`` tensor of bboxes in ``[x1, y1, x2, y2]``
+            format. ``N`` need not equal ``B`` — multiple faces per frame
+            are supported via ``frame_idx``.
+        face_size: output spatial size; crops are returned at
+            ``[N, C, face_size, face_size]``.
+        expand_bbox: multiplier on bbox width/height before clipping to
+            the source frame; lets the crop carry context around the face.
+        frame_idx: optional ``[N]`` long tensor mapping each face to the
+            frame it came from. Required whenever ``B > 1`` and faces
+            aren't striped one-per-frame across the batch. When ``None``,
+            falls back to ``arange(N) % B`` for backwards compatibility
+            with the legacy single-frame call sites (``B == 1``).
+
+    Returns:
+        cropped_faces: ``[N, C, face_size, face_size]`` tensor.
+        new_bboxes: ``[N, 4]`` clipped/expanded bboxes (long).
+    """
 
     device = frame.device
     B, C, H, W = frame.shape
@@ -1179,8 +1201,13 @@ def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bb
     frame = frame.float()
     grid = grid.float()
 
-    # Calculate frame indices for each face, assuming faces are sequentially ordered
-    face_indices = torch.arange(N, device=device) % B  # Repeat for each batch element
+    # Map each face to its source frame. Callers with multi-frame batches
+    # and variable face counts pass an explicit `frame_idx`; legacy
+    # single-frame callers (B == 1) use the default `arange(N) % B`.
+    if frame_idx is None:
+        face_indices = torch.arange(N, device=device) % B
+    else:
+        face_indices = frame_idx.to(device=device, dtype=torch.long)
     frame_expanded = frame[face_indices]  # Select corresponding frame for each face
 
     # Use grid_sample to extract and resize faces
