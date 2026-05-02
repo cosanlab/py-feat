@@ -402,6 +402,11 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     if img.ndim == 3:
         img = img[None, :]
 
+    # warp_affine internally builds a sampling grid that must live on
+    # the same device as the input. When img is on mps/cuda this raises
+    # grid_sampler device mismatch unless the matrix is moved too.
+    affine_matrix = affine_matrix.to(img.device)
+
     aligned_img = warp_affine(
         img,
         affine_matrix,
@@ -776,7 +781,8 @@ def mask_image(img, mask):
     #     raise ValueError(
     #         f"img must be pytorch tensor, not {type(img)} and mask must be np array not {type(mask)}"
     #     )
-    return torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
+    mask_t = torch.tensor(mask).to(torch.float32).to(img.device)
+    return torch.sgn(mask_t).unsqueeze(0).unsqueeze(0) * img
 
 
 def convert_to_euler(rotvec, is_rotvec=True):
@@ -908,48 +914,33 @@ class HOGLayer(torch.nn.Module):
         orientations=10,
         pixels_per_cell=8,
         cells_per_block=2,
-        max_angle=math.pi,
-        stride=1,
-        padding=1,
-        dilation=1,
         transform_sqrt=False,
         block_normalization="L2",
         feature_vector=True,
         device="auto",
     ):
-        """Pytorch Model to extract HOG features. Designed to be similar to skimage.feature.hog.
-
-        Based on https://gist.github.com/etienne87/b79c6b4aa0ceb2cff554c32a7079fa5a
+        """PyTorch HOG feature extractor matching skimage.feature.hog output.
 
         Args:
             orientations (int): Number of orientation bins.
-            pixels_per_cell (int, int): Size (in pixels) of a cell.
-            transform_sqrt (bool): Apply power law compression to normalize the image before processing.
-                                    DO NOT use this if the image contains negative values.
-            block_normalization (str): Block normalization method:
-                                    ``L1``
-                                       Normalization using L1-norm.
-                                    ``L1-sqrt``
-                                       Normalization using L1-norm, followed by square root.
-                                    ``L2``
-                                       Normalization using L2-norm.
-                                    ``L2-Hys``
-                                       Normalization using L2-norm, followed by limiting the
-                                       maximum values to 0.2 (`Hys` stands for `hysteresis`) and
-                                       renormalization using L2-norm. (default)
-            feature_vector (bool): Return as a feature vector
-            device (str): device to execute code. can be ['auto', 'cpu', 'cuda', 'mps']
-
+            pixels_per_cell (int): Size in pixels of a square cell. skimage's
+                ``pixels_per_cell`` tuple is collapsed to a scalar here since
+                we only support square cells.
+            cells_per_block (int): Block side length in cells (square blocks).
+            transform_sqrt (bool): Apply power-law compression (per-channel
+                ``sqrt``) before computing gradients. Image values must be
+                non-negative if enabled.
+            block_normalization (str): One of ``"L1"``, ``"L1-sqrt"``, ``"L2"``,
+                ``"L2-Hys"``. Matches the skimage option of the same name.
+            feature_vector (bool): If True, flatten the output in skimage's
+                ``(blocks_row, blocks_col, b_row, b_col, orientations)`` order;
+                if False, return the unflattened array in the same layout.
+            device (str): one of ``"auto"``, ``"cpu"``, ``"cuda"``, ``"mps"``.
         """
-
         super(HOGLayer, self).__init__()
         self.orientations = orientations
-        self.stride = stride
-        self.padding = padding
-        self.dilation = dilation
         self.pixels_per_cell = pixels_per_cell
         self.cells_per_block = cells_per_block
-        self.max_angle = max_angle
         self.transform_sqrt = transform_sqrt
         self.device = set_torch_device(device)
         self.feature_vector = feature_vector
@@ -1000,9 +991,9 @@ class HOGLayer(torch.nn.Module):
                 img_flat,
                 self.weight,
                 bias=None,
-                stride=self.stride,
-                padding=self.padding,
-                dilation=self.dilation,
+                stride=1,
+                padding=1,
+                dilation=1,
                 groups=1,
             )
             _, _, hp, wp = gxy_flat.shape
@@ -1083,13 +1074,16 @@ class HOGLayer(torch.nn.Module):
                         'Use ["l1", "l1-sqrt", "l2", "l2-hys"].'
                     )
 
+            # Permute to skimage's layout regardless of `feature_vector`:
+            # (batch, blocks_row, blocks_col, b_row, b_col, orientations).
+            # The flat output (`feature_vector=True`) is then a row-major
+            # flatten of skimage's `normalized_blocks`. The unflattened
+            # output preserves the same axis order so callers see the same
+            # tensor shape skimage's `feature_vector=False` mode produces.
+            out = out.permute(0, 2, 3, 4, 5, 1).contiguous()
             if self.feature_vector:
-                # skimage flatten order: (n_blocks_row, n_blocks_col, b_row, b_col, orientations).
-                # Current: (orientations, n_blocks_row, n_blocks_col, b_row, b_col).
-                out = out.permute(0, 2, 3, 4, 5, 1).contiguous()
                 return out.flatten(start_dim=1)
-            else:
-                return out
+            return out
 
     def plot(self):
         """Visualize the hog feature representation. Creates numpy matrix for each image.
