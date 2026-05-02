@@ -431,11 +431,6 @@ class Fex(DataFrame):
                 raise ValueError("Make sure sessions is same length as data.")
             self.sessions = np.array(self.sessions)
 
-        # Set _metadata attributes on series: Kludgy solution
-        for k in self:
-            self[k].sampling_freq = self.sampling_freq
-            self[k].sessions = self.sessions
-
     @property
     def _constructor(self):
         return Fex
