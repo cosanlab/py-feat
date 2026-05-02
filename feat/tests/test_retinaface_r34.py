@@ -93,6 +93,15 @@ def test_retinaface_model_rejects_non_resnet34_cfg():
 
 @pytest.mark.skipif(not _have_weights(), reason="local R34 safetensors not present")
 def test_wrapper_detects_single_face():
+    """Single face detected with high confidence at expected bbox location.
+
+    The bbox-center bracket guards against channel-order regressions: the
+    model was trained on BGR (cv2.imread) but py-feat tensors are RGB
+    (PILToTensor). The wrapper applies mean-subtraction in RGB order
+    (123, 117, 104). Flipping those constants to BGR (104, 117, 123) will
+    still produce a face detection because BatchNorm absorbs some bias,
+    but bbox center and score will drift noticeably. The bracket below is
+    tight enough to catch that class of bug."""
     rf = _make_wrapper()
     path = os.path.join(get_test_data_path(), "single_face.jpg")
     if not os.path.exists(path):
@@ -104,8 +113,15 @@ def test_wrapper_detects_single_face():
     assert len(out) == 1
     assert len(out[0]) == 1, f"expected 1 face, got {len(out[0])}"
     x1, y1, x2, y2, score = out[0][0]
-    assert score > 0.9
+    # With correctly-calibrated RGB-order mean, score is ~1.0 on this image.
+    assert score > 0.95, f"score {score:.4f} below 0.95 - check channel order"
     assert x2 > x1 and y2 > y1
+    # Empirical face center on single_face.jpg with RGB-order mean: (280, 269).
+    # 25-pixel bracket catches the channel-order class of bug, which shifts
+    # the bbox by ~10-50 pixels in our manual A/B testing.
+    cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+    assert 255 < cx < 305, f"face center x={cx:.0f} out of (255, 305)"
+    assert 244 < cy < 294, f"face center y={cy:.0f} out of (244, 294)"
 
 
 @pytest.mark.skipif(not _have_weights(), reason="local R34 safetensors not present")
