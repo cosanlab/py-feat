@@ -1,6 +1,6 @@
 # Change Log
 
-# 0.7.0 (in development on `v0.7-dev`)
+# 0.7.0
 
 ## Notes
 
@@ -12,7 +12,8 @@ Highlights:
 - Pure-PyTorch head-pose and gaze for the MediaPipe Face Mesh detector. No OpenCV dependency.
 - Modern video decoding via torchcodec (CPU + CUDA; CPU on Apple Silicon, transfer to MPS for inference).
 - Fixed `HOGLayer` (previously broken; now matches `skimage.feature.hog` to ~5e-8 absolute tolerance).
-- Removed `nltools` as a runtime dependency.
+- New `face_model='retinaface_r34'` opt-in: 88.9% WIDERFACE Hard AP (vs img2pose's 55.5%), batched-by-default with on-device NMS, ~210 detections/sec on Apple Silicon at batch 32.
+- Removed `nltools`, `nilearn`, `av`, `kornia`, and `onnx2torch` as runtime dependencies.
 
 ## Breaking API changes
 
@@ -27,13 +28,6 @@ Highlights:
 - **`mp_facemesh_v2` migrated from pickled FX GraphModule to TorchScript** (closes #249). The previous landmark file (`face_landmarks_detector_Nx3x256x256_onnx.pth`) was an `onnx2torch`-converted FX graph, which can only be deserialized via `torch.load(weights_only=False)` — a documented arbitrary-code-execution path — and required `onnx2torch` to be importable at load time. The new file (`face_landmarks_detector.pt`, distributed alongside the legacy file at `py-feat/mp_facemesh_v2`) is a TorchScript module loaded via `torch.jit.load`: no pickle execution, no `onnx2torch` import. Bit-identical outputs across batch sizes 1, 2, 4, 8 verified at conversion time. py-feat 0.7+ tries the new file first and falls back to the legacy file (with a warning) for older HF revisions.
 - **`onnx2torch` removed as a runtime dependency.** Was only needed to deserialize the legacy `mp_facemesh_v2` FX GraphModule; with TorchScript loading the package is no longer touched at runtime. Drops one transitive dep + one piece of the security surface.
 
-## Bug fixes
-
-- **`MPDetector(face_model='retinaface')` works again.** The v0.7 RetinaFace rebuild deleted the MobileNet0.25 path that MPDetector's face detector relied on; the prior workaround was a `NotImplementedError` pointing users to `Detector(face_model='retinaface_r34')`. MPDetector now uses the same ResNet34 wrapper as `Detector`, so `MPDetector(face_model='retinaface')` and `MPDetector(face_model='retinaface_r34')` both build and detect end-to-end.
-- **MPDetector pose dtype mismatch fixed.** A pre-existing bug in `convert_landmarks_3d` produced `np.float64` landmarks (via `astype(float)`) while MediaPipe's canonical face model is `float32`. Once the retinaface path was reachable, `estimate_face_pose_from_mesh`'s matmul would have raised `expected m1 and m2 to have the same dtype`. Forced `astype("float32")` to fix.
-- **MPDetector pose Y/Z-axis convention mismatch fixed.** MediaPipe Face Mesh outputs landmarks in image-pixel space (Y down, Z into screen); the canonical face model lives in head-centric space (Y up, Z out of face). The Umeyama alignment was absorbing the convention difference into a 180° rotation about X, which surfaced as `Pitch` clustering near ±π for every forward-facing portrait. `convert_landmarks_3d` now flips Y and Z at the conversion boundary so the alignment recovers the actual head pose. After the fix, forward-facing portraits return `|Pitch| < 30°` instead of ~180°.
-- *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
-
 ## New features
 
 - **Identity detector** via [facenet](https://github.com/timesler/facenet-pytorch). Each detected face is projected into a 512-d embedding space and clustered by cosine similarity; the resulting label is stored in `Fex.identities` and the embeddings in `Fex.identity_embeddings`. The clustering threshold defaults to 0.8 and can be tuned at detection time via `face_identity_threshold` or recomputed on an existing `Fex` via `.compute_identities(threshold=new_threshold)`.
@@ -41,19 +35,20 @@ Highlights:
 - **Pure-PyTorch head-pose and gaze for MediaPipe Face Mesh.** Closed-form Umeyama similarity alignment replaces the iterative Adam-loop pose estimator; head-pose-compensated gaze in head-centric frame. No OpenCV dependency. *(PR #261)*
 - **`feat.utils.io.decode_video`** for sliced or streamed video decoding via torchcodec; replaces the prior PyAV path and fixes the regression where loading a single frame for plotting decoded the entire video into memory. *(PR #263)*
 - **`HOGLayer`** now produces feature vectors that match `skimage.feature.hog` to ~5e-8 absolute tolerance for L1, L1-sqrt, L2, and L2-Hys block normalizations. Wiring it into `extract_hog_features` is a follow-up. *(PR #259)*
-- *(More features to be added as PRs land on `v0.7-dev`.)*
 
 ## Bug fixes
 
 - **MPS device handoff.** Three places in the inference path created tensors on CPU while model weights were on MPS or CUDA, causing `Detector(device='mps')` to crash partway through. End-to-end MPS detection now runs cleanly on Apple Silicon. *(PR #258)*
-- *(More bug fixes to be added as PRs land on `v0.7-dev`.)*
+- **`MPDetector(face_model='retinaface')` works again.** The v0.7 RetinaFace rebuild deleted the MobileNet0.25 path that MPDetector's face detector relied on; the prior workaround was a `NotImplementedError`. MPDetector now uses the same ResNet34 wrapper as `Detector`, so `MPDetector(face_model='retinaface')` and `MPDetector(face_model='retinaface_r34')` both build and detect end-to-end. *(PR #278)*
+- **MPDetector pose dtype mismatch fixed.** A pre-existing bug in `convert_landmarks_3d` produced `np.float64` landmarks (via `astype(float)`) while MediaPipe's canonical face model is `float32`. `estimate_face_pose_from_mesh`'s matmul would have raised `expected m1 and m2 to have the same dtype`. Forced `astype("float32")` to fix. *(PR #278)*
+- **MPDetector pose Y/Z-axis convention mismatch fixed.** MediaPipe Face Mesh outputs landmarks in image-pixel space (Y down, Z into screen); the canonical face model lives in head-centric space (Y up, Z out of face). The Umeyama alignment was absorbing the convention difference into a 180° rotation about X, which surfaced as `Pitch` clustering near ±π for every forward-facing portrait. `convert_landmarks_3d` now flips Y and Z at the conversion boundary so the alignment recovers the actual head pose. After the fix, forward-facing portraits return `|Pitch| < 30°` instead of ~180°. *(PR #279)*
 
 ## Documentation updates
 
 - Tutorials updated for the new `Detector.detect()` API.
 - New [FAQ](https://py-feat.org/pages/faq.html).
 
-## Migration guide (in progress)
+## Migration guide
 
 If you used:
 - `Detector.detect_image()` or `Detector.detect_video()` -> change to `Detector.detect(..., data_type='image')` or `data_type='video'`.
@@ -64,8 +59,6 @@ If you used:
 ### MPDetector pose / gaze numerics changed
 
 If you compared `Pitch / Roll / Yaw / X / Y / Z` outputs from `MPDetector` between 0.6.x and 0.7.0, the values will differ. The prior estimator minimized the wrong objective (`mean(z_proj²)` instead of a true reprojection error) and produced effectively meaningless head-pose values; the new closed-form Umeyama alignment produces the actual head pose. Treat the prior values as noise.
-
-**Note on intermediate v0.7-dev builds:** a Y/Z-axis convention bug introduced alongside the new alignment (the canonical face model uses head-centric `Y up, Z out`; MediaPipe Face Mesh outputs `Y down, Z into screen`) made `Pitch` cluster at ±π for forward-facing portraits. Fixed in PR #279 before the 0.7.0 release. Only releases at or after this fix produce correct head pose; earlier 0.7-dev snapshots should be re-run.
 
 `MPDetector` also now emits `gaze_pitch` and `gaze_yaw` columns (radians, head-centric frame) in addition to the existing `gaze_angle`. The `gaze_angle` column is preserved for backward compatibility but its semantic shifted from "angle from camera-forward" to "angle from head-forward in head frame" - so a turned head no longer registers as averted gaze even when the eyes are looking along the head's forward axis.
 
