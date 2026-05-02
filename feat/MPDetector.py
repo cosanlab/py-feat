@@ -693,32 +693,21 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             identity_embeddings.cpu().detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
         )
 
-        return Fex(
-            pd.concat(
-                [
-                    feat_faceboxes,
-                    feat_landmarks,
-                    feat_poses,
-                    feat_aus,
-                    feat_emotions,
-                    feat_identities,
-                ],
-                axis=1,
-            ),
-            au_columns=AU_LANDMARK_MAP["Feat"],
-            emotion_columns=FEAT_EMOTION_COLUMNS,
-            facebox_columns=FEAT_FACEBOX_COLUMNS,
-            landmark_columns=MP_LANDMARK_COLUMNS,
-            facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
-            gaze_columns=FEAT_GAZE_COLUMNS,
-            identity_columns=FEAT_IDENTITY_COLUMNS[1:],
-            detector="Feat",
-            face_model=self.info["face_model"],
-            landmark_model=self.info["landmark_model"],
-            au_model=self.info["au_model"],
-            emotion_model=self.info["emotion_model"],
-            facepose_model=self.info["facepose_model"],
-            identity_model=self.info["identity_model"],
+        # Return a plain pd.DataFrame, not a Fex. The Fex constructor's
+        # per-column attribute-setting loop (data.py:435 "Kludgy solution")
+        # is O(n_columns) and dominated this method's wall-time when called
+        # 30+ times per detect() with 1434 landmark columns. detect()
+        # collects these per-batch DataFrames and builds one Fex at the end.
+        return pd.concat(
+            [
+                feat_faceboxes,
+                feat_landmarks,
+                feat_poses,
+                feat_aus,
+                feat_emotions,
+                feat_identities,
+            ],
+            axis=1,
         )
 
     def detect(
@@ -821,8 +810,28 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             # Use the actual batch size (may be smaller than `batch_size` for the
             # last batch when len(dataset) is not divisible by batch_size).
             frame_counter += batch_data["Image"].shape[0]
+        # Concatenate all batch DataFrames (cheap), then wrap in Fex once.
+        # Per-batch Fex construction was the dominant cost on long videos;
+        # see forward() docstring + data.py:435 for the underlying issue.
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
+        batch_output = Fex(
+            batch_output,
+            au_columns=AU_LANDMARK_MAP["Feat"],
+            emotion_columns=FEAT_EMOTION_COLUMNS,
+            facebox_columns=FEAT_FACEBOX_COLUMNS,
+            landmark_columns=MP_LANDMARK_COLUMNS,
+            facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
+            gaze_columns=FEAT_GAZE_COLUMNS,
+            identity_columns=FEAT_IDENTITY_COLUMNS[1:],
+            detector="Feat",
+            face_model=self.info["face_model"],
+            landmark_model=self.info["landmark_model"],
+            au_model=self.info["au_model"],
+            emotion_model=self.info["emotion_model"],
+            facepose_model=self.info["facepose_model"],
+            identity_model=self.info["identity_model"],
+        )
         if data_type.lower() == "video":
             batch_output["approx_time"] = [
                 dataset.calc_approx_frame_time(x)
