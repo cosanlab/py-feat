@@ -960,10 +960,20 @@ class HOGLayer(torch.nn.Module):
         else:
             self.block_normalization = block_normalization
 
-        # Construct a Sobel Filter
-        mat = torch.FloatTensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-        mat = torch.cat((mat[None], mat.t()[None]), dim=0)
-        self.register_buffer("weight", mat[:, None, :, :])
+        # Centered finite-difference kernels matching skimage._hog._hog_channel_gradient:
+        #   g_col[r, c] = I[r, c+1] - I[r, c-1]   (gx)
+        #   g_row[r, c] = I[r+1, c] - I[r-1, c]   (gy)
+        # F.conv2d implements cross-correlation, so for output[r, c] = sum_k k*input[r+offset_k]
+        # we need kernel weights [-1, 0, 1] to produce input[+1] - input[-1].
+        gx_kernel = torch.tensor(
+            [[0.0, 0.0, 0.0], [-1.0, 0.0, 1.0], [0.0, 0.0, 0.0]]
+        )
+        gy_kernel = torch.tensor(
+            [[0.0, -1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+        )
+        weight = torch.stack((gx_kernel, gy_kernel), dim=0).unsqueeze(1)  # [2, 1, 3, 3]
+        self.register_buffer("weight", weight)
+        # skimage averages magnitudes over the cell (cell_hog returns total / (cell_rows*cell_columns)).
         self.cell_pooler = nn.AvgPool2d(
             pixels_per_cell,
             stride=pixels_per_cell,
@@ -976,21 +986,18 @@ class HOGLayer(torch.nn.Module):
         with torch.no_grad():
             img = img.to(self.device)
 
-            # 1. Global Normalization. The first stage applies an optional global
-            # image normalization equalisation that is designed to reduce the influence
-            # of illuminationeffects. In practice we use gamma (power law) compression,
-            # either computing the square root or the log of each color channel.
-            # Image texture strength is typically proportional to the local surface
-            # illumination so this compression helps to reduce the effects of local
-            # shadowing and illumination variations.
             if self.transform_sqrt:
                 img = img.sqrt()
 
-            # 2. Compute Gradients. The second stage computes first order image gradients.
-            # These capture contour, silhouette and some texture information,
-            # while providing further resistance to illumination variations.
-            gxy = F.conv2d(
-                img,
+            n, c, h, w = img.shape
+
+            # Per-channel gradients with per-pixel max-magnitude channel selection.
+            # Mirrors skimage._hog with channel_axis=-1: compute (gx, gy) for each
+            # channel, then for each pixel pick the channel whose gradient magnitude
+            # is largest and use its (gx, gy).
+            img_flat = img.reshape(n * c, 1, h, w)
+            gxy_flat = F.conv2d(
+                img_flat,
                 self.weight,
                 bias=None,
                 stride=self.stride,
@@ -998,76 +1005,88 @@ class HOGLayer(torch.nn.Module):
                 dilation=self.dilation,
                 groups=1,
             )
+            _, _, hp, wp = gxy_flat.shape
+            gxy = gxy_flat.reshape(n, c, 2, hp, wp)
 
-            # 3. Binning Mag with linear interpolation. The third stage aims to produce
-            # an encoding that is sensitive to local image content while remaining
-            # resistant to small changes in pose or appearance. The adopted method pools
-            # gradient orientation information locally in the same way as the SIFT
-            # [Lowe 2004] feature. The image window is divided into small spatial regions,
-            # called "cells". For each cell we accumulate a local 1-D histogram of gradient
-            # or edge orientations over all the pixels in the cell. This combined
-            # cell-level 1-D histogram forms the basic "orientation histogram" representation.
-            # Each orientation histogram divides the gradient angle range into a fixed
-            # number of predetermined bins. The gradient magnitudes of the pixels in the
-            # cell are used to vote into the orientation histogram.
-            mag = gxy.norm(dim=1)
-            norm = mag[:, None, :, :]
-            phase = torch.atan2(gxy[:, 0, :, :], gxy[:, 1, :, :])
-            phase_int = phase / self.max_angle * self.orientations
-            phase_int = phase_int[:, None, :, :]
-            n, c, h, w = gxy.shape
+            # Zero out gradient at edges to match skimage:
+            #   g_row[0, :] = g_row[-1, :] = 0  (gy zero in top/bottom rows)
+            #   g_col[:, 0] = g_col[:, -1] = 0  (gx zero in left/right cols)
+            gxy[:, :, 0, :, 0] = 0  # gx, leftmost col
+            gxy[:, :, 0, :, -1] = 0  # gx, rightmost col
+            gxy[:, :, 1, 0, :] = 0  # gy, top row
+            gxy[:, :, 1, -1, :] = 0  # gy, bottom row
+
+            if c == 1:
+                gx = gxy[:, 0, 0, :, :]
+                gy = gxy[:, 0, 1, :, :]
+            else:
+                # Per-pixel: pick the channel with the largest gradient magnitude.
+                mag_per_chan = (gxy[:, :, 0] ** 2 + gxy[:, :, 1] ** 2).sqrt()
+                best_chan = mag_per_chan.argmax(dim=1, keepdim=True)  # [N, 1, H, W]
+                # Gather (gx, gy) at the chosen channel for each pixel.
+                idx = best_chan.unsqueeze(2).expand(-1, -1, 2, -1, -1)
+                gxy = gxy.gather(1, idx).squeeze(1)  # [N, 2, H, W]
+                gx = gxy[:, 0]
+                gy = gxy[:, 1]
+
+            mag = (gx ** 2 + gy ** 2).sqrt()  # [N, H, W]
+
+            # Orientation in degrees, wrapped to [0, 180).
+            # skimage: rad2deg(arctan2(g_rows, g_cols)) % 180
+            phase_deg = torch.rad2deg(torch.atan2(gy, gx)) % 180.0
+
+            # Hard binning (skimage uses a half-open interval per bin, no linear interp).
+            # bin_idx = floor(phase_deg / (180 / orientations)), clamped to [0, orientations-1].
+            bin_width_deg = 180.0 / self.orientations
+            bin_idx = (phase_deg / bin_width_deg).long().clamp(0, self.orientations - 1)
+
+            # Per-pixel orientation histogram: scatter magnitude into the chosen bin.
             out = torch.zeros(
-                (n, self.orientations, h, w), dtype=torch.float, device=self.device
+                (n, self.orientations, hp, wp), dtype=mag.dtype, device=mag.device
             )
-            out.scatter_(1, phase_int.floor().long() % self.orientations, norm)
-            out.scatter_add_(1, phase_int.ceil().long() % self.orientations, 1 - norm)
+            out.scatter_add_(1, bin_idx.unsqueeze(1), mag.unsqueeze(1))
+
+            # Cell aggregation. skimage's cell_hog returns total / (cell_rows*cell_cols),
+            # which is exactly what AvgPool2d computes.
             out = self.cell_pooler(out)
-            self.orientation_histogram = deepcopy(out)  # save for visualization
+            self.orientation_histogram = deepcopy(out)
             self.isfit = True
             self.img_shape = img.shape
 
-            # 4. Compute Normalization. The fourth stage computes normalization,
-            # which takes local groups of cells and contrast normalizes their overall
-            # responses before passing to next stage. Normalization introduces better
-            # invariance to illumination, shadowing, and edge contrast. It is performed
-            # by accumulating a measure of local histogram "energy" over local groups
-            # of cells that we call "blocks". The result is used to normalize each cell
-            # in the block. Typically each individual cell is shared between several
-            # blocks, but its normalizations are block dependent and thus different.
-            # The cell thus appears several times in the final output vector with
-            # different normalizations. This may seem redundant but it improves the
-            # performance. We refer to the normalized block descriptors as Histogram
-            # of Oriented Gradient (HOG) descriptors.
+            # Block normalization. Block shape after unfold is
+            # (cells_per_block, cells_per_block) along dims 4 and 5; orientation is dim 1.
+            # The norm sums over (orientation, block_row, block_col) per block.
             if self.block_normalization is not None:
-                eps = torch.tensor(1e-5)
+                eps = 1e-5
                 out = out.unfold(2, self.cells_per_block, 1).unfold(
                     3, self.cells_per_block, 1
                 )
+                # out shape: [N, orientations, n_blocks_row, n_blocks_col, b_row, b_col]
                 if self.block_normalization == "l1":
-                    out = out.divide(
-                        (out.abs().sum(axis=5).sum(axis=4) + eps)
-                        .unsqueeze(-1)
-                        .unsqueeze(-1)
-                    )
+                    norm = out.abs().sum(dim=(1, 4, 5), keepdim=True) + eps
+                    out = out / norm
                 elif self.block_normalization == "l1-sqrt":
-                    out = out.divide(
-                        (out.abs().sum(axis=5).sum(axis=4) + eps)
-                        .unsqueeze(-1)
-                        .unsqueeze(-1)
-                    ).sqrt()
+                    norm = out.abs().sum(dim=(1, 4, 5), keepdim=True) + eps
+                    out = (out / norm).sqrt()
                 elif self.block_normalization == "l2":
-                    out = out.divide(
-                        (out.sum(axis=5).sum(axis=4) ** 2 + eps**2)
-                        .sqrt()
-                        .unsqueeze(-1)
-                        .unsqueeze(-1)
-                    )
+                    norm = (out.pow(2).sum(dim=(1, 4, 5), keepdim=True) + eps ** 2).sqrt()
+                    out = out / norm
+                elif self.block_normalization == "l2-hys":
+                    norm = (out.pow(2).sum(dim=(1, 4, 5), keepdim=True) + eps ** 2).sqrt()
+                    out = out / norm
+                    out = out.clamp(max=0.2)
+                    norm = (out.pow(2).sum(dim=(1, 4, 5), keepdim=True) + eps ** 2).sqrt()
+                    out = out / norm
                 else:
                     raise ValueError(
-                        'Selected block normalization method is invalid. Use ["l1","l1-sqrt","l2"]'
+                        'Selected block normalization method is invalid. '
+                        'Use ["l1", "l1-sqrt", "l2", "l2-hys"].'
                     )
 
             if self.feature_vector:
+                # skimage flatten order: (n_blocks_row, n_blocks_col, b_row, b_col, orientations).
+                # Current: (orientations, n_blocks_row, n_blocks_col, b_row, b_col).
+                out = out.permute(0, 2, 3, 4, 5, 1).contiguous()
                 return out.flatten(start_dim=1)
             else:
                 return out
