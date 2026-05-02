@@ -20,6 +20,7 @@ Highlights:
 - The default face detector is `img2pose`, which also provides 6-DoF head-pose estimation.
 - **Python 3.11+ required.** Drops support for 3.8 / 3.9 / 3.10. CI tests 3.11 / 3.12 / 3.13. *(PR #262)*
 - **`nltools` removed as a dependency.** Functions previously sourced from nltools are now in `feat.utils.stats`: `regress`, `downsample`, `upsample`, `set_decomposition_algorithm`. `Fex.distance()` now returns a `pandas.DataFrame` instead of an `nltools.data.Adjacency`. *(PR #262)*
+- **`nilearn` removed as a dependency.** `Fex.clean()` now uses an in-house `feat.utils.stats.clean_signal` (scipy/numpy-based) for detrending, confound regression, Butterworth filtering, and standardization. Same arguments as before; `*args, **kwargs` no longer forwarded.
 - *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
 
 ## New features
@@ -48,6 +49,12 @@ If you used:
 - `from nltools.stats import regress, downsample, upsample` -> change to `from feat.utils.stats import regress, downsample, upsample`.
 - `from nltools.data import Adjacency` for the result of `Fex.distance()` -> the result is now a plain `pandas.DataFrame`. Drop the import; use `.shape` instead of `.square_shape()`.
 - Python 3.10 or earlier -> upgrade to 3.11+. macOS users may also need `brew install libomp` for xgboost on Python 3.13.
+
+### MPDetector pose / gaze numerics changed
+
+If you compared `Pitch / Roll / Yaw / X / Y / Z` outputs from `MPDetector` between 0.6.x and 0.7.0, the values will differ. The prior estimator minimized the wrong objective (`mean(z_proj²)` instead of a true reprojection error) and produced effectively meaningless head-pose values; the new closed-form Umeyama alignment produces the actual head pose. Treat the prior values as noise.
+
+`MPDetector` also now emits `gaze_pitch` and `gaze_yaw` columns (radians, head-centric frame) in addition to the existing `gaze_angle`. The `gaze_angle` column is preserved for backward compatibility but its semantic shifted from "angle from camera-forward" to "angle from head-forward in head frame" - so a turned head no longer registers as averted gaze even when the eyes are looking along the head's forward axis.
 
 # 0.6.1
 
