@@ -158,12 +158,17 @@ def rotation_matrix_to_euler_angles(R):
 
 
 def estimate_face_pose_from_mesh(observed_landmarks_3d, canonical=None, return_euler_angles=True):
-    """Estimate head pose from MediaPipe Face Mesh landmarks via mesh alignment.
+    """Estimate head pose from face-mesh landmarks via rigid alignment.
 
     Args:
         observed_landmarks_3d: Tensor of shape [B, 468, 3] (or [B, 478, 3], in
-            which case the last 10 iris landmarks are dropped). Coordinates in
-            image / screen-relative space as produced by MediaPipe Face Mesh.
+            which case the last 10 iris landmarks are dropped). Coordinates
+            must be in the **canonical face-model convention** (X right, Y
+            UP, Z OUT of the face toward the camera). Raw MediaPipe Face
+            Mesh outputs use image-pixel space (Y down, Z into screen) and
+            must be flipped before being passed in - see
+            ``feat.MPDetector.convert_landmarks_3d`` for the canonical
+            translation step.
         canonical: Optional [468, 3] canonical face model. If None, loaded
             from py-feat resources.
         return_euler_angles: If True (default) return Euler angles

@@ -27,6 +27,14 @@ from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 # canonical name in feat.detector.Detector. Accepting both keeps existing
 # MPDetector callers working while the canonical name is the documented one.
 _RETINAFACE_ALIASES = ("retinaface", "retinaface_r34")
+
+
+# Per-axis sign flip applied to MediaPipe Face Mesh landmarks to translate
+# them into the canonical face-model coordinate convention used downstream.
+# See `convert_landmarks_3d` for the full rationale.
+_MEDIAPIPE_TO_CANONICAL_AXIS_FLIP = torch.tensor(
+    [1.0, -1.0, -1.0], dtype=torch.float32
+)
 from feat.au_detectors.MP_Blendshapes.MP_Blendshapes_test import (
     MediaPipeBlendshapesMLPMixer,
 )
@@ -68,21 +76,41 @@ def convert_landmarks_3d(fex):
     """
     Converts facial landmarks from a feature extraction object into a 3D tensor.
 
+    MediaPipe Face Mesh outputs landmarks in image-pixel space: ``x``
+    increases to the right, ``y`` increases DOWN, ``z`` is relative depth
+    where positive ``z`` is INTO the screen. The canonical face model used
+    downstream (``feat.utils.face_pose.load_canonical_face_model``) lives
+    in head-centric coordinates with ``y`` UP and ``z`` OUT of the face
+    (toward the camera). Without normalizing those, the rigid-alignment
+    step would absorb the convention difference into a 180-degree rotation
+    about the x-axis - which surfaced as Pitch values clustered near +/- pi
+    for every forward-facing portrait in v0.7.
+
+    Flipping ``y`` and ``z`` once at this conversion boundary keeps the
+    ``estimate_face_pose_from_mesh`` API generic (it accepts any landmarks
+    that share the canonical's convention) while putting the MediaPipe-
+    specific axis knowledge in the MediaPipe-specific code path.
+
     Args:
         fex (Fex): Fex DataFrame containing 478 3D landmark coordinates
 
     Returns:
-        landmarks (torch.Tensor): A tensor of shape [batch_size, 478, 3] containing the 3D coordinates (x, y, z) of 478 facial landmarks for each instance in the batch.
+        landmarks (torch.Tensor): A tensor of shape [batch_size, 478, 3]
+        containing the 3D coordinates (x, y, z) of 478 facial landmarks for
+        each instance in the batch, expressed in the canonical face model's
+        coordinate convention.
     """
-
     # Force float32 — the canonical face model (loaded via torch.load with
     # weights_only=True) is float32, and umeyama_alignment downstream
     # requires both operands to share dtype. Without this cast, pandas's
     # default Python-float (float64) propagates through and breaks the
     # subsequent rigid-alignment matmul.
-    return torch.tensor(
+    landmarks = torch.tensor(
         fex.landmarks.astype("float32").values
     ).reshape(fex.shape[0], 478, 3)
+    # Flip Y and Z to translate from MediaPipe image-pixel convention into
+    # the canonical face model's head-centric convention.
+    return landmarks * _MEDIAPIPE_TO_CANONICAL_AXIS_FLIP.to(landmarks.device)
 
 
 def plot_face_landmarks(

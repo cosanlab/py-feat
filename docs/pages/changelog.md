@@ -31,6 +31,7 @@ Highlights:
 
 - **`MPDetector(face_model='retinaface')` works again.** The v0.7 RetinaFace rebuild deleted the MobileNet0.25 path that MPDetector's face detector relied on; the prior workaround was a `NotImplementedError` pointing users to `Detector(face_model='retinaface_r34')`. MPDetector now uses the same ResNet34 wrapper as `Detector`, so `MPDetector(face_model='retinaface')` and `MPDetector(face_model='retinaface_r34')` both build and detect end-to-end.
 - **MPDetector pose dtype mismatch fixed.** A pre-existing bug in `convert_landmarks_3d` produced `np.float64` landmarks (via `astype(float)`) while MediaPipe's canonical face model is `float32`. Once the retinaface path was reachable, `estimate_face_pose_from_mesh`'s matmul would have raised `expected m1 and m2 to have the same dtype`. Forced `astype("float32")` to fix.
+- **MPDetector pose Y/Z-axis convention mismatch fixed.** MediaPipe Face Mesh outputs landmarks in image-pixel space (Y down, Z into screen); the canonical face model lives in head-centric space (Y up, Z out of face). The Umeyama alignment was absorbing the convention difference into a 180° rotation about X, which surfaced as `Pitch` clustering near ±π for every forward-facing portrait. `convert_landmarks_3d` now flips Y and Z at the conversion boundary so the alignment recovers the actual head pose. After the fix, forward-facing portraits return `|Pitch| < 30°` instead of ~180°.
 - *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
 
 ## New features
@@ -63,6 +64,8 @@ If you used:
 ### MPDetector pose / gaze numerics changed
 
 If you compared `Pitch / Roll / Yaw / X / Y / Z` outputs from `MPDetector` between 0.6.x and 0.7.0, the values will differ. The prior estimator minimized the wrong objective (`mean(z_proj²)` instead of a true reprojection error) and produced effectively meaningless head-pose values; the new closed-form Umeyama alignment produces the actual head pose. Treat the prior values as noise.
+
+**Note on intermediate v0.7-dev builds:** a Y/Z-axis convention bug introduced alongside the new alignment (the canonical face model uses head-centric `Y up, Z out`; MediaPipe Face Mesh outputs `Y down, Z into screen`) made `Pitch` cluster at ±π for forward-facing portraits. Fixed in PR #279 before the 0.7.0 release. Only releases at or after this fix produce correct head pose; earlier 0.7-dev snapshots should be re-run.
 
 `MPDetector` also now emits `gaze_pitch` and `gaze_yaw` columns (radians, head-centric frame) in addition to the existing `gaze_angle`. The `gaze_angle` column is preserved for backward compatibility but its semantic shifted from "angle from camera-forward" to "angle from head-forward in head frame" - so a turned head no longer registers as averted gaze even when the eyes are looking along the head's forward axis.
 

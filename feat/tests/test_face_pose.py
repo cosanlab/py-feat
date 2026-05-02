@@ -192,6 +192,68 @@ class TestEstimateFacePoseFromMesh:
         assert e.shape == (1, 3)
         assert torch.allclose(e, torch.zeros(1, 3), atol=1e-4)
 
+    def test_mediapipe_axis_convention_recovered_after_flip(self):
+        """End-to-end convention guard: take canonical landmarks, apply a
+        known rotation + translation in canonical convention, then re-express
+        the result in MediaPipe-pixel convention (negate Y and Z), then apply
+        the same MediaPipe -> canonical flip that ``convert_landmarks_3d``
+        does, and confirm the recovered rotation matches the original.
+
+        Locks down what MPDetector.convert_landmarks_3d is doing - if anyone
+        accidentally drops or inverts the Y/Z flip in the future, this test
+        fails loud rather than letting Pitch silently drift to +/-pi like
+        v0.7.0-dev did before PR #279."""
+        canonical = load_canonical_face_model()
+        R_true = _make_rotation_matrix(0.20, -0.10, 0.05).unsqueeze(0)
+        t_true = torch.tensor([[5.0, -2.0, 50.0]])
+
+        # Apply the rotation+translation in canonical convention (what a real
+        # head pose does to the head-centric mesh in camera coordinates).
+        observed_canonical = (
+            R_true @ canonical.unsqueeze(0).transpose(-2, -1)
+        ).transpose(-2, -1) + t_true.unsqueeze(1)
+
+        # Re-express in MediaPipe-pixel convention: Y down, Z into screen.
+        observed_mediapipe = observed_canonical * torch.tensor([1.0, -1.0, -1.0])
+
+        # Apply the same axis flip ``convert_landmarks_3d`` performs.
+        observed_recovered = observed_mediapipe * torch.tensor([1.0, -1.0, -1.0])
+
+        R, t = estimate_face_pose_from_mesh(
+            observed_recovered, return_euler_angles=False
+        )
+        assert torch.allclose(R, R_true, atol=1e-4), (
+            f"R drift: max={(R - R_true).abs().max():.2e}"
+        )
+        assert torch.allclose(t, t_true, atol=1e-3), (
+            f"t drift: max={(t - t_true).abs().max():.2e}"
+        )
+
+    def test_skipping_axis_flip_fails(self):
+        """The complement of the test above: if the Y/Z flip is *omitted*,
+        Umeyama should NOT recover the original rotation - it produces a
+        rotation that includes a 180-degree X-axis flip. This test pins
+        down that the bug is real and the flip is necessary."""
+        canonical = load_canonical_face_model()
+        R_true = _make_rotation_matrix(0.20, -0.10, 0.05).unsqueeze(0)
+        observed_canonical = (
+            R_true @ canonical.unsqueeze(0).transpose(-2, -1)
+        ).transpose(-2, -1)
+
+        # MediaPipe-pixel convention: Y down, Z into screen.
+        observed_mediapipe = observed_canonical * torch.tensor([1.0, -1.0, -1.0])
+
+        # Pass the un-flipped MediaPipe-pixel landmarks straight in.
+        # The recovered R will absorb a 180-deg flip and disagree with R_true.
+        R, _ = estimate_face_pose_from_mesh(
+            observed_mediapipe, return_euler_angles=False
+        )
+        assert not torch.allclose(R, R_true, atol=0.1), (
+            "expected the un-flipped path to disagree with the truth - "
+            "either Umeyama got smarter (revisit the convention assumption) "
+            "or the test setup drifted"
+        )
+
 
 class TestEstimateGaze:
     def _make_mesh_with_iris_offset(self, iris_offset_left, iris_offset_right=None):
