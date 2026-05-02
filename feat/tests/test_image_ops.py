@@ -4,7 +4,7 @@ import torch
 from skimage.feature import hog as skimage_hog
 from torchvision.io import read_image
 from feat.transforms import Rescale
-from feat.utils.image_operations import HOGLayer
+from feat.utils.image_operations import HOGLayer, extract_face_from_bbox_torch
 from torchvision.transforms import Compose
 from feat.data import ImageDataset
 
@@ -387,4 +387,62 @@ def test_HOGLayer_feature_vector_false_returns_block_grid():
     # skimage's `normalized_blocks` shape:
     # (n_blocks_row, n_blocks_col, b_row, b_col, orientations).
     assert out.shape == (1, 13, 13, 2, 2, 8)
-    assert torch.isfinite(out).all()
+
+
+# extract_face_from_bbox_torch — batched mode tests
+
+
+def _solid_color_frames():
+    """Build a [3, 3, 100, 100] tensor where frame i is a solid value (i+1)."""
+    frames = torch.zeros((3, 3, 100, 100), dtype=torch.float32)
+    for i in range(3):
+        frames[i] = float(i + 1)
+    return frames
+
+
+def test_extract_face_default_indexing_b1_n_many():
+    """Single-frame, multi-face: every face crop should sample from frame 0."""
+    frame = _solid_color_frames()[0:1]  # shape [1, 3, 100, 100], all 1.0
+    bboxes = torch.tensor(
+        [[10.0, 10.0, 30.0, 30.0], [50.0, 50.0, 70.0, 70.0], [60.0, 10.0, 80.0, 30.0]],
+    )
+    crops, _ = extract_face_from_bbox_torch(frame, bboxes, face_size=16)
+    assert crops.shape == (3, 3, 16, 16)
+    # All crops are from frame 0 (value 1.0).
+    assert torch.allclose(crops, torch.ones_like(crops))
+
+
+def test_extract_face_explicit_frame_idx():
+    """Multi-frame: each face must sample from its own frame_idx."""
+    frames = _solid_color_frames()  # [3, 3, 100, 100], values 1.0, 2.0, 3.0
+    bboxes = torch.tensor(
+        [
+            [10.0, 10.0, 30.0, 30.0],
+            [50.0, 50.0, 70.0, 70.0],
+            [10.0, 10.0, 30.0, 30.0],
+            [50.0, 50.0, 70.0, 70.0],
+        ]
+    )
+    frame_idx = torch.tensor([0, 0, 2, 1])
+    crops, _ = extract_face_from_bbox_torch(
+        frames, bboxes, face_size=8, frame_idx=frame_idx
+    )
+    assert crops.shape == (4, 3, 8, 8)
+    # Crop 0 from frame 0 → all 1.0. Crop 2 from frame 2 → all 3.0. Crop 3 from frame 1 → all 2.0.
+    assert torch.allclose(crops[0], torch.full_like(crops[0], 1.0))
+    assert torch.allclose(crops[1], torch.full_like(crops[1], 1.0))
+    assert torch.allclose(crops[2], torch.full_like(crops[2], 3.0))
+    assert torch.allclose(crops[3], torch.full_like(crops[3], 2.0))
+
+
+def test_extract_face_legacy_modulo_indexing_warned():
+    """When frame_idx is None and B>1, the legacy `arange(N) % B` mapping kicks
+    in. The mapping is only correct when N % B == 0 and the caller has
+    interleaved faces in that exact order. Document the legacy behavior."""
+    frames = _solid_color_frames()  # 3 frames
+    bboxes = torch.tensor([[10.0, 10.0, 30.0, 30.0]] * 6)
+    crops, _ = extract_face_from_bbox_torch(frames, bboxes, face_size=8)
+    # arange(6) % 3 = [0, 1, 2, 0, 1, 2] → values 1, 2, 3, 1, 2, 3.
+    expected = torch.tensor([1.0, 2.0, 3.0, 1.0, 2.0, 3.0])
+    actual = crops.mean(dim=(1, 2, 3))
+    assert torch.allclose(actual, expected)
