@@ -400,14 +400,23 @@ def clean_signal(
 
 
 def cluster_identities(face_embeddings, threshold=0.8):
-    """Function to cluster face identities based on cosine similarity of embeddings
+    """Cluster face identities based on cosine similarity of embeddings.
+
+    Treats the thresholded cosine-similarity matrix as the adjacency matrix
+    of an undirected graph, and labels each connected component as one
+    identity. Two embeddings need not be directly above-threshold to share
+    a label - any chain of above-threshold edges puts them in the same
+    cluster (transitivity).
 
     Args:
-        face_embeddings (torch.tensor): an observation by embedding torch tensor
-        threshold (float): a threshold to determine which embeddings are the same person
+        face_embeddings: ``[N, D]`` tensor (or Fex / numpy array) of
+            embeddings.
+        threshold: cosine-similarity cutoff above which two embeddings are
+            considered the same person.
 
     Returns:
-        a list of of identities
+        list of length ``N`` with strings ``"Person_<k>"``, where the
+        cluster ids ``k`` follow the order in which clusters first appear.
     """
     from feat.data import Fex
 
@@ -419,38 +428,31 @@ def cluster_identities(face_embeddings, threshold=0.8):
     similarity_matrix = cosine_similarity(
         face_embeddings[None, :], face_embeddings[:, None], dim=-1
     )
-
     thresholded_matrix = similarity_matrix > threshold
+    N = thresholded_matrix.size(0)
 
-    # Clustering
-    visited = set()
-    clusters = []
-    cluster_indices = [-1 for _ in range(face_embeddings.size(0))]  # Initialize list
+    # Track visited as a bool tensor instead of a Python set. The previous
+    # implementation rebuilt `~torch.tensor([idx in visited for idx ...])`
+    # on every BFS pop, costing O(N) per pop and overall O(N^3) worst case
+    # plus N+ tensor allocations per detect() call.
+    visited = torch.zeros(N, dtype=torch.bool, device=thresholded_matrix.device)
+    cluster_indices = [-1] * N
+    next_cluster_idx = 0
 
-    for i in range(thresholded_matrix.size(0)):
-        if i not in visited:
-            # New cluster
-            cluster = {i}
-            stack = [i]
-            visited.add(i)
-            current_cluster_idx = len(
-                clusters
-            )  # This will be the index for the current cluster
-            cluster_indices[i] = current_cluster_idx
-            while stack:
-                current = stack.pop()
-                neighbors = (
-                    thresholded_matrix[current]
-                    & ~torch.tensor(
-                        [idx in visited for idx in range(thresholded_matrix.size(0))]
-                    )
-                ).nonzero(as_tuple=True)[0]
-                for neighbor in neighbors:
-                    stack.append(neighbor.item())
-                    cluster.add(neighbor.item())
-                    visited.add(neighbor.item())
-                    cluster_indices[neighbor.item()] = (
-                        current_cluster_idx  # Update the cluster index for the item
-                    )
-            clusters.append(cluster)
+    for i in range(N):
+        if visited[i]:
+            continue
+        stack = [i]
+        visited[i] = True
+        cluster_indices[i] = next_cluster_idx
+        while stack:
+            current = stack.pop()
+            # Neighbors above threshold AND not yet visited.
+            mask = thresholded_matrix[current] & ~visited
+            neighbors = mask.nonzero(as_tuple=True)[0].tolist()
+            for neighbor in neighbors:
+                stack.append(neighbor)
+                visited[neighbor] = True
+                cluster_indices[neighbor] = next_cluster_idx
+        next_cluster_idx += 1
     return [f"Person_{x}" for x in cluster_indices]
