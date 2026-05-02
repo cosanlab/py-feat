@@ -8,7 +8,16 @@ from scipy.integrate import simpson as simps
 import torch
 from torch.nn.functional import cosine_similarity
 
-__all__ = ["wavelet", "calc_hist_auc", "softmax", "cluster_identities"]
+__all__ = [
+    "wavelet",
+    "calc_hist_auc",
+    "softmax",
+    "cluster_identities",
+    "regress",
+    "downsample",
+    "upsample",
+    "set_decomposition_algorithm",
+]
 
 
 def wavelet(freq, num_cyc=3, sampling_freq=30.0):
@@ -84,6 +93,166 @@ def softmax(x):
         x: value to softmax
     """
     return 1.0 / (1 + 10.0**-(x))
+
+
+def regress(X, y, mode="ols", **kwargs):
+    """Ordinary least squares multiple regression.
+
+    Drop-in replacement for nltools.stats.regress for the ols path; other
+    modes (e.g., robust, ridge) are not implemented.
+
+    Args:
+        X: [n, p] design matrix (numpy array or array-like).
+        y: [n] or [n, k] response.
+        mode: only ``"ols"`` is supported.
+
+    Returns:
+        (beta, se, t_stats, p_vals, df, residuals).
+        beta/se/t_stats/p_vals shape: [p, k] (or [p] if y is 1-D).
+        df is a scalar (n - p). residuals shape: [n, k] (or [n]).
+    """
+    if mode != "ols":
+        raise NotImplementedError(
+            f"mode={mode!r} is not supported by feat.utils.stats.regress; only 'ols'"
+        )
+    if kwargs:
+        raise TypeError(f"unexpected keyword args: {sorted(kwargs)}")
+    X_arr = np.asarray(X, dtype=np.float64)
+    y_arr = np.asarray(y, dtype=np.float64)
+    one_d = y_arr.ndim == 1
+    if one_d:
+        y_arr = y_arr[:, None]
+
+    n, p = X_arr.shape
+    XtX_inv = np.linalg.pinv(X_arr.T @ X_arr)
+    beta = XtX_inv @ X_arr.T @ y_arr
+    res = y_arr - X_arr @ beta
+    df = n - p
+    sigma2 = (res ** 2).sum(axis=0) / max(df, 1)
+    diag = np.diag(XtX_inv)
+    se = np.sqrt(np.outer(diag, sigma2))
+    # t-stats; protect against div-by-zero for zero columns
+    se_safe = np.where(se == 0, np.finfo(se.dtype).tiny, se)
+    t_stats = beta / se_safe
+
+    from scipy.stats import t as _t
+
+    # Use sf (1 - cdf) directly to avoid precision loss when |t| is large.
+    p_vals = 2 * _t.sf(np.abs(t_stats), df)
+
+    if one_d:
+        beta = beta.squeeze(-1)
+        se = se.squeeze(-1)
+        t_stats = t_stats.squeeze(-1)
+        p_vals = p_vals.squeeze(-1)
+        res = res.squeeze(-1)
+    return beta, se, t_stats, p_vals, df, res
+
+
+def downsample(data, sampling_freq, target, **kwargs):
+    """Block-mean downsample a DataFrame's rows from ``sampling_freq`` to ``target``.
+
+    Drop-in replacement for nltools.stats.downsample for the typical
+    fixed-Hz use case in py-feat.
+
+    Args:
+        data: pandas.DataFrame (or 2-D array-like) where rows are time samples.
+        sampling_freq: original sampling frequency in Hz.
+        target: target sampling frequency in Hz; must be <= sampling_freq.
+
+    Returns:
+        Same type as input, with row count = floor(n / factor) where
+        factor = round(sampling_freq / target).
+    """
+    if kwargs:
+        raise TypeError(f"unexpected keyword args: {sorted(kwargs)}")
+    if target > sampling_freq:
+        raise ValueError(
+            f"target ({target}) must be <= sampling_freq ({sampling_freq})"
+        )
+    factor = int(round(sampling_freq / target))
+    if factor <= 1:
+        return data.copy() if hasattr(data, "copy") else np.array(data, copy=True)
+
+    if isinstance(data, pd.DataFrame):
+        n = len(data)
+        n_out = n // factor
+        truncated = data.iloc[: n_out * factor]
+        group_idx = np.repeat(np.arange(n_out), factor)
+        out = truncated.groupby(group_idx).mean()
+        out.reset_index(drop=True, inplace=True)
+        return out
+    arr = np.asarray(data)
+    n = arr.shape[0]
+    n_out = n // factor
+    truncated = arr[: n_out * factor]
+    return truncated.reshape(n_out, factor, *arr.shape[1:]).mean(axis=1)
+
+
+def upsample(data, sampling_freq, target, target_type="hz", **kwargs):
+    """Upsample a DataFrame's rows by Fourier-domain resampling.
+
+    Drop-in replacement for nltools.stats.upsample.
+
+    Args:
+        data: pandas.DataFrame (or 2-D array-like).
+        sampling_freq: original sampling frequency in Hz.
+        target: target frequency or duration; interpretation set by target_type.
+        target_type: 'hz' (target is target sampling rate in Hz),
+            'samples' (target is the desired sample count),
+            'seconds' (target is the period of the upsampled signal in seconds).
+
+    Returns:
+        Same type as input, with the new row count.
+    """
+    from scipy.signal import resample
+
+    if kwargs:
+        raise TypeError(f"unexpected keyword args: {sorted(kwargs)}")
+
+    n_in = len(data)
+    if target_type == "hz":
+        factor = target / sampling_freq
+        n_out = int(round(n_in * factor))
+    elif target_type == "samples":
+        n_out = int(round(target))
+    elif target_type == "seconds":
+        n_out = int(round(target * sampling_freq))
+    else:
+        raise ValueError(
+            f"target_type must be 'hz', 'samples', or 'seconds'; got {target_type!r}"
+        )
+
+    if isinstance(data, pd.DataFrame):
+        upsampled = resample(data.to_numpy(), n_out, axis=0)
+        return pd.DataFrame(upsampled, columns=data.columns)
+    return resample(np.asarray(data), n_out, axis=0)
+
+
+def set_decomposition_algorithm(algorithm="pca", n_components=None, *args, **kwargs):
+    """Return an unfit sklearn decomposition object by name.
+
+    Drop-in replacement for nltools.utils.set_decomposition_algorithm.
+
+    Args:
+        algorithm: one of 'pca', 'ica', 'nnmf', 'fa'.
+        n_components: passed through to the sklearn class.
+        Additional args/kwargs are forwarded to the sklearn class constructor.
+    """
+    from sklearn.decomposition import PCA, FastICA, NMF, FactorAnalysis
+
+    algo = algorithm.lower()
+    if algo == "pca":
+        return PCA(n_components=n_components, *args, **kwargs)
+    if algo == "ica":
+        return FastICA(n_components=n_components, *args, **kwargs)
+    if algo == "nnmf":
+        return NMF(n_components=n_components, *args, **kwargs)
+    if algo == "fa":
+        return FactorAnalysis(n_components=n_components, *args, **kwargs)
+    raise ValueError(
+        f"Unknown algorithm {algorithm!r}; use 'pca', 'ica', 'nnmf', or 'fa'"
+    )
 
 
 def cluster_identities(face_embeddings, threshold=0.8):
