@@ -45,27 +45,46 @@ from feat.utils.io import get_resource_path
 from huggingface_hub import hf_hub_download
 
 
+_TEMPLATE_CACHE: dict = {}
+
+
 def load_img2pose_3d_template(device=None) -> torch.Tensor:
     """Load img2pose's 68-point 3D face template from its HF config.
 
     The template is in head-centric coordinates with the same axis
     convention img2pose uses internally. Returns ``[68, 3]`` float32.
+
+    Parses + materializes the template once per process (and once per
+    requested device); subsequent calls hit a module-level cache. Without
+    this cache, calling ``pose_from_landmarks_2d`` per detect() would
+    re-open the HF cache file and re-parse the same JSON every frame -
+    a real perf hit at video frame rates.
     """
-    config_path = hf_hub_download(
-        repo_id="py-feat/img2pose",
-        filename="config.json",
-        cache_dir=get_resource_path(),
-    )
-    with open(config_path, "r") as f:
-        cfg = json.load(f)
-    pts = torch.tensor(cfg["threed_points"], dtype=torch.float32)
-    if pts.shape != (68, 3):
-        raise ValueError(
-            f"expected (68, 3) template, got {tuple(pts.shape)} in img2pose config"
+    cpu_key = "cpu"
+    if cpu_key not in _TEMPLATE_CACHE:
+        config_path = hf_hub_download(
+            repo_id="py-feat/img2pose",
+            filename="config.json",
+            cache_dir=get_resource_path(),
         )
-    if device is not None:
-        pts = pts.to(device)
-    return pts
+        with open(config_path, "r") as f:
+            cfg = json.load(f)
+        pts = torch.tensor(cfg["threed_points"], dtype=torch.float32)
+        if pts.shape != (68, 3):
+            raise ValueError(
+                f"expected (68, 3) template, got {tuple(pts.shape)} in img2pose config"
+            )
+        _TEMPLATE_CACHE[cpu_key] = pts
+
+    if device is None:
+        return _TEMPLATE_CACHE[cpu_key]
+
+    # Cache one materialized tensor per device so repeated GPU/MPS calls
+    # don't re-do the .to() copy each time.
+    device_key = str(torch.device(device))
+    if device_key not in _TEMPLATE_CACHE:
+        _TEMPLATE_CACHE[device_key] = _TEMPLATE_CACHE[cpu_key].to(device)
+    return _TEMPLATE_CACHE[device_key]
 
 
 def default_intrinsics(image_size: Tuple[int, int], device=None) -> torch.Tensor:
@@ -73,9 +92,14 @@ def default_intrinsics(image_size: Tuple[int, int], device=None) -> torch.Tensor
 
     Pinhole camera with focal length = max(W, H) (a common choice when the
     true camera intrinsics are unknown - the diagonal-of-image heuristic),
-    principal point at image center, square pixels. This is approximate but
+    principal point at image center, square pixels. Approximate but
     typically within a factor of 2 of true intrinsics for consumer cameras
     and standard webcam captures.
+
+    The recovered (R, t) is sensitive to focal length differently for
+    rotation vs. translation: a 40% focal-length error shifts ``t`` by
+    ~40% but rotates by less than ~2° in practice. Treat the X/Y/Z columns
+    as the unreliable ones when intrinsics are guessed; angles are robust.
 
     Args:
         image_size: ``(H, W)`` of the input image in pixels.

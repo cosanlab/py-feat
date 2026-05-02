@@ -568,6 +568,10 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         # are NaN-padded. Replace with PnP-derived pose from the 68 landmarks
         # we just computed, using img2pose's published 3D template (so the
         # output lives in the same head-centric coordinate frame).
+        #
+        # All frames in a single detect() share the same H/W (collated by
+        # DataLoader), so default intrinsics are constant across the batch
+        # and PnP can be one batched call across every face in every frame.
         if (
             self.info["face_model"] != "img2pose"
             and self.landmark_detector is not None
@@ -575,27 +579,15 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         ):
             from feat.utils.face_pose_pnp import pose_from_landmarks_2d
 
-            # Group landmarks by source frame so we can use the per-frame
-            # image size for default intrinsics. Faces from frames with no
-            # detection have NaN landmarks; skip them.
-            face_idx = 0
-            for face_output in faces_data:
-                n_face = face_output["new_boxes"].shape[0]
-                if n_face == 0 or torch.all(torch.isnan(face_output["new_boxes"])):
-                    face_idx += n_face
-                    continue
-                # new_landmarks is [N_total, 136]; slice the rows for this frame
-                # and reshape to [N_face_in_frame, 68, 2].
-                frame_lmk = new_landmarks[face_idx : face_idx + n_face].reshape(
-                    n_face, 68, 2
-                )
-                if not torch.isnan(frame_lmk).any():
-                    pnp_pose = pose_from_landmarks_2d(
-                        frame_lmk.to(self.device),
-                        face_output["image_size"],
-                    )
-                    poses[face_idx : face_idx + n_face] = pnp_pose
-                face_idx += n_face
+            # Skip faces with NaN landmarks (no detection in that frame).
+            valid = ~torch.isnan(new_landmarks).any(dim=1)
+            if valid.any():
+                lmk = new_landmarks[valid].reshape(-1, 68, 2).to(self.device)
+                # All faces share the same image_size since the DataLoader
+                # collates frames at one shape.
+                image_size = faces_data[0]["image_size"]
+                pnp_pose = pose_from_landmarks_2d(lmk, image_size)
+                poses[valid] = pnp_pose
 
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
