@@ -4,7 +4,7 @@ import numpy as np
 import os
 from feat.data import Fex
 from feat.utils.io import read_openface, get_test_data_path, read_feat, video_to_tensor
-from nltools.data import Adjacency
+# Adjacency import removed; Fex.distance now returns a pandas.DataFrame.
 
 
 def test_info(capsys):
@@ -135,8 +135,9 @@ def test_fex_old(imotions_data):
 
     # Test distance
     d = dat[["Positive"]].distance()
-    assert isinstance(d, Adjacency)
-    assert d.square_shape()[0] == len(dat)
+    assert isinstance(d, pd.DataFrame)
+    assert d.shape[0] == len(dat)
+    assert d.shape[1] == len(dat)
 
     # Test Copy
     assert isinstance(dat.copy(), Fex)
