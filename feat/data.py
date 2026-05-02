@@ -2590,13 +2590,23 @@ class VideoDataset(Dataset):
         """Lazy-construct the torchcodec decoder.
 
         Holding the decoder on `self` and reusing it across __getitem__
-        calls avoids re-opening the video for every frame. DataLoader
-        workers each get their own copy of the dataset and re-create
-        their own decoder, so this is safe under multi-worker loading.
+        calls avoids re-opening the video for every frame. The decoder
+        is dropped on pickling (see ``__getstate__``) so each DataLoader
+        worker reopens its own; the underlying torchcodec C++ stream
+        registration does not survive a serialization round-trip.
         """
         if self._decoder is None:
             self._decoder = VideoDecoder(self.file_name)
         return self._decoder
+
+    def __getstate__(self):
+        # The torchcodec VideoDecoder pickles successfully but deserializes
+        # into a state where `validateActiveStream` fails on first frame
+        # access. Drop it from the pickled payload so DataLoader workers
+        # re-open their own decoder via _get_decoder() lazy construction.
+        state = self.__dict__.copy()
+        state["_decoder"] = None
+        return state
 
     def get_video_metadata(self, video_file):
         m = self._get_decoder().metadata

@@ -107,20 +107,20 @@ def registration(face_lms, neutral=neutral, method="fullface"):
 
 
 def extract_face_from_landmarks(frame, landmarks, face_size=112):
-    """Extract a face in a frame with a convex hull of landmarks.
+    """Extract a face from a frame using a convex hull around its landmarks.
 
-    This function extracts the faces of the frame with convex hulls and masks out the rest.
+    Aligns the face by 68-landmark transform, masks pixels outside the
+    convex hull of the landmarks, and returns the cropped face.
 
     Args:
-        frame (array): The original image]
-        detected_faces (list): face bounding box
-        landmarks (list): the landmark information]
-        align (bool): align face to standard position
-        size_output (int, optional): [description]. Defaults to 112.
+        frame (torch.Tensor): image tensor of shape `[C, H, W]` or `[B, C, H, W]`.
+        landmarks (torch.Tensor): 68 landmark coordinates as a flat or
+            `(68, 2)` tensor on any device (moved to CPU/numpy internally).
+        face_size (int): output crop size in pixels (default 112).
 
     Returns:
-        resized_face_np: resized face as a numpy array
-        new_landmarks: landmarks of aligned face
+        masked_image: aligned cropped face with non-face pixels masked out.
+        new_landmarks: landmark coordinates in the aligned crop's frame.
     """
 
     if not isinstance(frame, torch.Tensor):

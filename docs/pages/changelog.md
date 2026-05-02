@@ -21,6 +21,7 @@ Highlights:
 - **Python 3.11+ required.** Drops support for 3.8 / 3.9 / 3.10. CI tests 3.11 / 3.12 / 3.13. *(PR #262)*
 - **`nltools` removed as a dependency.** Functions previously sourced from nltools are now in `feat.utils.stats`: `regress`, `downsample`, `upsample`, `set_decomposition_algorithm`. `Fex.distance()` now returns a `pandas.DataFrame` instead of an `nltools.data.Adjacency`. *(PR #262)*
 - **`nilearn` removed as a dependency.** `Fex.clean()` now uses an in-house `feat.utils.stats.clean_signal` (scipy/numpy-based) for detrending, confound regression, Butterworth filtering, and standardization. Same arguments as before; `*args, **kwargs` no longer forwarded.
+- **`av` (PyAV) removed as a dependency.** `VideoDataset` now reads frames and metadata via torchcodec only. The `metadata['fps_frac']` field (previously a `fractions.Fraction` from `av.stream.average_rate`) is gone; use `metadata['fps']` (float). *(PR #271)*
 - *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
 
 ## New features
