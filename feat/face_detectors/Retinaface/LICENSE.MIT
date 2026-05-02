@@ -1,6 +1,22 @@
-MIT License 
+MIT License
 
-Copyright (c) 2019
+The RetinaFace architecture in this directory is ported from
+yakhyo/retinaface-pytorch (https://github.com/yakhyo/retinaface-pytorch),
+released under the MIT License (Copyright (c) 2024 Yakhyokhuja Valikhujaev).
+
+The original biubug6/Pytorch_Retinaface implementation
+(https://github.com/biubug6/Pytorch_Retinaface) is the upstream prior art
+under the MIT License (Copyright (c) 2019).
+
+py-feat's adaptations:
+- ResNet34 backbone via torchvision instead of yakhyo's vendored copy
+- Module renamed `body` (was `fx`) for the backbone wrapper
+- Heads exposed as ClassHead/BboxHead/LandmarkHead each holding an internal
+  ModuleList of 1x1 convs
+- Batched, on-device postprocess: priors cached per (H, W, device), single
+  call to torchvision.ops.batched_nms across the entire batch
+- HuggingFace weights distributed at https://huggingface.co/py-feat/retinaface_r34
+  (state_dict remapped from yakhyo's layout via scripts/prepare_retinaface_r34.py)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
