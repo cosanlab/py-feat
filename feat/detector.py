@@ -161,7 +161,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     landmark_model_file, map_location=self.device, weights_only=True
                 )["state_dict"]  # Ensure Model weights are Float32 for MPS
             else:
-                raise ValueError("{landmark_model} is not currently supported.")
+                raise ValueError(f"{landmark_model} is not currently supported.")
             self.landmark_detector.load_state_dict(landmark_state_dict)
             self.landmark_detector.eval()
             self.landmark_detector.to(self.device)
@@ -189,7 +189,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                         cache_dir=get_resource_path(),
                     )
                 else:
-                    raise ValueError("{au_model} is not currently supported.")
+                    raise ValueError(f"{au_model} is not currently supported.")
 
                 au_unknown_types = get_untrusted_types(file=au_model_path)
                 loaded_au_model = load(au_model_path, trusted=au_unknown_types)
@@ -262,7 +262,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     )
 
             else:
-                raise ValueError("{emotion_model} is not currently supported.")
+                raise ValueError(f"{emotion_model} is not currently supported.")
         else:
             self.emotion_detector = None
 
@@ -292,7 +292,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 self.identity_detector.to(self.device)
                 # self.identity_detector = torch.compile(self.identity_detector)
             else:
-                raise ValueError("{identity_model} is not currently supported.")
+                raise ValueError(f"{identity_model} is not currently supported.")
         else:
             self.identity_detector = None
 
@@ -394,7 +394,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 landmarks = self.landmark_detector.forward(
                     extracted_faces.to(self.device)
                 )
-            if self.info["landmark_model"].lower() == "mobilefacenet":
+            elif self.info["landmark_model"].lower() == "mobilefacenet":
                 landmarks = self.landmark_detector.forward(
                     extracted_faces.to(self.device)
                 )[0]
@@ -676,7 +676,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 batch_results.to_csv(save, mode="a", index=False, header=batch_id == 0)
             else:
                 batch_output.append(batch_results)
-            frame_counter += 1 * batch_size
+            # Use the actual batch size (may be smaller than `batch_size` for the
+            # last batch when len(dataset) is not divisible by batch_size).
+            frame_counter += batch_data["Image"].shape[0]
 
         batch_output = (
             Fex(
