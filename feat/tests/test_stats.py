@@ -100,30 +100,68 @@ def test_regress_unexpected_kwargs_raises():
 # ----------------------------- downsample ---------------------------------------
 
 
-def test_downsample_dataframe_block_mean():
-    """Block-mean over groups of `factor` rows."""
+def test_downsample_default_samples_block_mean():
+    """Default target_type='samples': target is rows per output bin
+    (matches legacy nltools.stats.downsample default)."""
     df = pd.DataFrame(np.arange(60).reshape(60, 1), columns=["x"])
     out = downsample(df, sampling_freq=30, target=10)
+    assert len(out) == 6
+    # First output row = mean of input rows [0..9] = 4.5
+    assert out.iloc[0]["x"] == 4.5
+    # Last output row = mean of [50..59] = 54.5
+    assert out.iloc[-1]["x"] == 54.5
+
+
+def test_downsample_samples_uneven_last_bin():
+    """When n_input is not a multiple of bin size, the last bin is
+    shorter (matches nltools' ceil-grouping behavior, e.g. 519 -> 52
+    output rows for bin size 10)."""
+    df = pd.DataFrame(np.arange(519).reshape(519, 1).astype(float), columns=["x"])
+    out = downsample(df, sampling_freq=30, target=10)
+    assert len(out) == 52
+    # Last bin has 9 rows: mean of 510..518 = 514.0
+    assert out.iloc[-1]["x"] == 514.0
+
+
+def test_downsample_target_type_hz():
+    """target_type='hz': target is the output Hz."""
+    df = pd.DataFrame(np.arange(60).reshape(60, 1), columns=["x"])
+    out = downsample(df, sampling_freq=30, target=10, target_type="hz")
+    # bin size = round(30/10) = 3 -> 60/3 = 20 output rows
     assert len(out) == 20
-    # First output row should be mean of input rows [0, 1, 2] = 1.0
-    assert out.iloc[0]["x"] == 1.0
-    # Last output row should be mean of [57, 58, 59] = 58.0
-    assert out.iloc[-1]["x"] == 58.0
+    assert out.iloc[0]["x"] == 1.0  # mean of [0,1,2]
 
 
-def test_downsample_target_equals_source_returns_copy():
+def test_downsample_target_type_seconds():
+    """target_type='seconds': target is the output bin duration."""
+    df = pd.DataFrame(np.arange(60).reshape(60, 1).astype(float), columns=["x"])
+    out = downsample(df, sampling_freq=30, target=0.5, target_type="seconds")
+    # bin size = round(0.5 * 30) = 15 -> 60/15 = 4 output rows
+    assert len(out) == 4
+
+
+def test_downsample_target_equals_one_returns_copy():
+    """target=1 with target_type='samples' is a no-op."""
     df = pd.DataFrame(np.arange(20).reshape(20, 1), columns=["x"])
-    out = downsample(df, sampling_freq=30, target=30)
+    out = downsample(df, sampling_freq=30, target=1)
     pd.testing.assert_frame_equal(out, df)
-    # Mutating the output must not mutate input.
     out.iloc[0, 0] = 999
     assert df.iloc[0, 0] == 0
 
 
-def test_downsample_rejects_target_above_source():
+def test_downsample_target_type_hz_rejects_target_above_source():
     df = pd.DataFrame(np.arange(20).reshape(20, 1), columns=["x"])
     with pytest.raises(ValueError, match="must be <="):
-        downsample(df, sampling_freq=10, target=30)
+        downsample(df, sampling_freq=10, target=30, target_type="hz")
+
+
+def test_downsample_method_median():
+    """method='median' aggregates with median per bin."""
+    df = pd.DataFrame([[0], [10], [100]] * 4 + [[0], [10], [100]],
+                      columns=["x"]).astype(float)
+    out = downsample(df, sampling_freq=30, target=3, method="median")
+    # Each bin = [0, 10, 100] -> median = 10
+    assert (out["x"] == 10.0).all()
 
 
 # ----------------------------- upsample -----------------------------------------

@@ -146,8 +146,8 @@ def test_fex_old(imotions_data):
     # Test rectification
     rectified = df.rectification()
     assert (
-        df[df.au_columns].isna().sum()[0]
-        < rectified[rectified.au_columns].isna().sum()[0]
+        df[df.au_columns].isna().sum().iloc[0]
+        < rectified[rectified.au_columns].isna().sum().iloc[0]
     )
 
     # Test baseline
@@ -187,7 +187,7 @@ def test_fex_old(imotions_data):
 
     # Test clean
     assert isinstance(dat.clean(), Fex)
-    assert dat.clean().columns is dat.columns
+    assert dat.clean().columns.equals(dat.columns)
     assert dat.clean().sampling_freq == dat.sampling_freq
 
     # Test Decompose
