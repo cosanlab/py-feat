@@ -26,6 +26,7 @@ from feat.utils import (
     FEAT_FACEBOX_COLUMNS,
     FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_IDENTITY_COLUMNS,
+    hf_hub_download_with_fallback,
 )
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
@@ -52,6 +53,38 @@ from pathlib import Path
 sys.modules["__main__"].__dict__["XGBClassifier"] = XGBClassifier
 sys.modules["__main__"].__dict__["SVMClassifier"] = SVMClassifier
 sys.modules["__main__"].__dict__["EmoSVMClassifier"] = EmoSVMClassifier
+
+
+def _patch_xgboost_setstate_for_skops():
+    """Defend xgboost.Booster.__setstate__ against a bytearray-lifetime bug.
+
+    skops's load flow calls ``Booster.__setstate__({"handle": bytearray, ...})``.
+    xgboost then does ``ptr = (c_char * len(buf)).from_buffer(buf)`` and passes
+    ``ptr`` into a C call. On Python 3.13 the bytearray can be reallocated
+    mid-call, producing intermittent SIGSEGV. Copying the buffer into a
+    freshly-allocated bytearray narrows the window. The underlying race is
+    upstream and not fully closed - this is best-effort.
+
+    Applied unconditionally because skops's load flow always routes through
+    ``Booster.__setstate__`` regardless of which model file format the
+    Booster's serialized state is in. Idempotent.
+    """
+    import xgboost.core
+
+    if getattr(xgboost.core.Booster.__setstate__, "_pyfeat_patched", False):
+        return
+    _orig = xgboost.core.Booster.__setstate__
+
+    def _patched(self, state):
+        if state.get("handle") is not None:
+            state = {**state, "handle": bytearray(state["handle"])}
+        return _orig(self, state)
+
+    _patched._pyfeat_patched = True
+    xgboost.core.Booster.__setstate__ = _patched
+
+
+_patch_xgboost_setstate_for_skops()
 
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -176,17 +209,25 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             if self.landmark_detector is not None:
                 if au_model == "xgb":
                     self.au_detector = XGBClassifier()
-                    au_model_path = hf_hub_download(
+                    # _v2 file references the real wrapper class path (not __main__)
+                    # and embeds Booster buffers in xgboost's modern UBJ format.
+                    # Fall back to v1 if v2 isn't on the hub yet (e.g. fresh
+                    # py-feat install during the upload window between
+                    # code-release and HF-upload). Once v2 is uploaded the
+                    # fallback path is dead.
+                    au_model_path = hf_hub_download_with_fallback(
                         repo_id="py-feat/xgb_au",
-                        filename="xgb_au_classifier.skops",
+                        filename="xgb_au_classifier_v2.skops",
+                        fallback_filename="xgb_au_classifier.skops",
                         cache_dir=get_resource_path(),
                     )
 
                 elif au_model == "svm":
                     self.au_detector = SVMClassifier()
-                    au_model_path = hf_hub_download(
+                    au_model_path = hf_hub_download_with_fallback(
                         repo_id="py-feat/svm_au",
-                        filename="svm_au_classifier.skops",
+                        filename="svm_au_classifier_v2.skops",
+                        fallback_filename="svm_au_classifier.skops",
                         cache_dir=get_resource_path(),
                     )
                 else:
