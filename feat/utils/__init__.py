@@ -34,6 +34,11 @@ FEAT_FACEBOX_COLUMNS = [
 FEAT_TIME_COLUMNS = ["frame"]
 FEAT_FACEPOSE_COLUMNS_3D = ["Pitch", "Roll", "Yaw"]
 FEAT_FACEPOSE_COLUMNS_6D = ["Pitch", "Roll", "Yaw", "X", "Y", "Z"]
+# Gaze schema. Populated by MPDetector when iris landmarks are available
+# (MediaPipe Face Mesh 478-landmark output). `gaze_pitch` and `gaze_yaw`
+# are in head-centric frame; `gaze_angle` is the angle between the
+# combined gaze vector and head-forward (kept for backward compat).
+FEAT_GAZE_COLUMNS = ["gaze_pitch", "gaze_yaw", "gaze_angle"]
 FEAT_IDENTITY_COLUMNS = ["Identity"] + [
     f"Identity_{x+1}" for x in range(512)
 ]  # could add identity embeddings too (512)
