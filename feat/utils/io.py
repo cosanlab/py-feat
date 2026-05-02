@@ -22,7 +22,7 @@ from feat.utils import (
 
 
 from torchvision.datasets.utils import download_url as tv_download_url
-from torchvision.io import read_image, read_video
+from torchvision.io import read_image
 from torchvision.transforms.functional import to_pil_image
 import warnings
 import av
@@ -226,12 +226,7 @@ def load_pil_img(file_name, frame_id):
     if file_extension.lower() in ["jpg", "jpeg", "png", "bmp", "tiff", "pdf"]:
         frame_img = read_image(file_name)  # image path
     else:
-        # Ignore UserWarning: The pts_unit 'pts' gives wrong results. Please use
-        # pts_unit 'sec'. See why it's ok in this issue:
-        # https://github.com/pytorch/vision/issues/1931
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-            video, audio, info = read_video(file_name, output_format="TCHW")
+        video = video_to_tensor(file_name)
         frame_img = video[frame_id, :, :]
     return to_pil_image(frame_img)
 
