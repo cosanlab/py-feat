@@ -27,7 +27,6 @@ from torchvision import transforms
 from torchvision.io import read_image
 from feat.utils.io import decode_video
 from torch.utils.data import Dataset
-from torch import swapaxes
 from feat.transforms import Rescale
 from feat.utils import flatten_list
 from feat.utils.io import read_feat, read_openface, load_pil_img
@@ -51,8 +50,7 @@ from textwrap import wrap
 import torch
 from PIL import Image
 import logging
-import av
-from itertools import islice
+from torchcodec.decoders import VideoDecoder
 import plotly.graph_objects as go
 
 __all__ = [
@@ -2545,6 +2543,7 @@ class VideoDataset(Dataset):
         self.file_name = video_file
         self.skip_frames = skip_frames
         self.output_size = output_size
+        self._decoder = None
         self.get_video_metadata(video_file)
         # This is the list of frame ids used to slice the video not video_frames
         self.video_frames = np.arange(
@@ -2556,12 +2555,10 @@ class VideoDataset(Dataset):
         return len(self.video_frames)
 
     def __getitem__(self, idx):
-        # Get the frame data and frame number respective skip_frames
+        # Get the frame data and frame number respective skip_frames.
+        # torchcodec returns [C, H, W] uint8 tensors directly - matches
+        # the layout read_image produces, so no axis swap is needed.
         frame_data, frame_idx = self.load_frame(idx)
-
-        # Swap frame dims to match output of read_image: [time, channels, height, width]
-        # Otherwise detectors face on tensor dimension mismatch
-        frame_data = swapaxes(swapaxes(frame_data, 0, -1), 1, 2)
 
         # Rescale if needed like in ImageDataset
         if self.output_size is not None:
@@ -2589,36 +2586,36 @@ class VideoDataset(Dataset):
                 "Padding": {"Left": 0, "Top": 0, "Right": 0, "Bottom": 0},
             }
 
+    def _get_decoder(self):
+        """Lazy-construct the torchcodec decoder.
+
+        Holding the decoder on `self` and reusing it across __getitem__
+        calls avoids re-opening the video for every frame. DataLoader
+        workers each get their own copy of the dataset and re-create
+        their own decoder, so this is safe under multi-worker loading.
+        """
+        if self._decoder is None:
+            self._decoder = VideoDecoder(self.file_name)
+        return self._decoder
+
     def get_video_metadata(self, video_file):
-        container = av.open(video_file)
-        stream = container.streams.video[0]
-        fps = stream.average_rate
-        height = stream.height
-        width = stream.width
-        num_frames = stream.frames
-        container.close()
+        m = self._get_decoder().metadata
         self.metadata = {
-            "fps": float(fps),
-            "fps_frac": fps,
-            "height": height,
-            "width": width,
-            "num_frames": num_frames,
-            "shape": (height, width),
+            "fps": float(m.average_fps),
+            "height": m.height,
+            "width": m.width,
+            "num_frames": m.num_frames,
+            "shape": (m.height, m.width),
         }
 
     def load_frame(self, idx):
-        """Load in a single frame from the video using a lazy generator"""
+        """Load a single frame from the video by index.
 
-        # Get frame number respecting skip_frames
+        Returns the frame as a `[C, H, W]` uint8 tensor (torchcodec's
+        native layout, matching torchvision.io.read_image).
+        """
         frame_idx = int(self.video_frames[idx])
-
-        # Use a py-av generator to load in just this frame
-        container = av.open(self.file_name)
-        stream = container.streams.video[0]
-        frame = next(islice(container.decode(stream), frame_idx, None))
-        frame_data = torch.from_numpy(frame.to_ndarray(format="rgb24"))
-        container.close()
-
+        frame_data = self._get_decoder()[frame_idx]
         return frame_data, frame_idx
 
     def calc_approx_frame_time(self, idx):
