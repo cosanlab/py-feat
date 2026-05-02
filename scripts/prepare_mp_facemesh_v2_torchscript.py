@@ -93,7 +93,10 @@ def main() -> int:
     print("tracing to TorchScript with a 1x3x256x256 example input ...")
     example = torch.randn(1, 3, 256, 256)
     with torch.no_grad():
-        traced = torch.jit.trace(legacy, example, strict=False)
+        # strict=True enables the tracer's full correctness checks (tuple
+        # output shapes, no Python control flow, no dict outputs). The
+        # upstream FX GraphModule passes; confirmed at conversion time.
+        traced = torch.jit.trace(legacy, example, strict=True)
 
     print(f"saving {dst} ...")
     torch.jit.save(traced, str(dst))
@@ -112,9 +115,13 @@ def main() -> int:
                 a = legacy(x)
                 b = loaded(x)
             for i, (ta, tb) in enumerate(zip(a, b)):
-                diff = (ta - tb).abs().max().item()
-                if diff > 1e-6:
+                # Tracing should produce a graph that's bit-identical to the
+                # original GraphModule on the same inputs. Tightened from a
+                # 1e-6 tolerance to literal 0.0 so any future regression
+                # surfaces loud rather than getting swallowed by float drift.
+                if not torch.equal(ta, tb):
                     ok = False
+                    diff = (ta - tb).abs().max().item()
                     print(f"  batch={batch} out[{i}]: max diff {diff:.2e} (FAIL)")
         if ok:
             print("  all outputs bit-identical")
