@@ -15,6 +15,7 @@ from feat.facepose_detectors.img2pose.deps.models import (
 )
 from feat.au_detectors.StatLearning.SL_test import XGBClassifier, SVMClassifier
 from feat.emo_detectors.StatLearning.EmoSL_test import EmoSVMClassifier
+from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 from feat.landmark_detectors.mobilefacenet_test import MobileFaceNet
 from feat.landmark_detectors.basenet_test import MobileNet_GDConv
 from feat.landmark_detectors.pfld_compressed_test import PFLDInference
@@ -95,6 +96,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 class Detector(nn.Module, PyTorchModelHubMixin):
     def __init__(
         self,
+        face_model="img2pose",
         landmark_model="mobilefacenet",
         au_model="xgb",
         emotion_model="resmasknet",
@@ -103,53 +105,73 @@ class Detector(nn.Module, PyTorchModelHubMixin):
     ):
         super(Detector, self).__init__()
 
+        if face_model not in ("img2pose", "retinaface_r34"):
+            raise ValueError(
+                f"face_model must be 'img2pose' or 'retinaface_r34'; got {face_model!r}"
+            )
+
         self.info = dict(
-            face_model="img2pose",
+            face_model=face_model,
             landmark_model=None,
             emotion_model=None,
-            facepose_model="img2pose",
+            # facepose_model tracks where 6DoF pose comes from. Only img2pose
+            # regresses pose natively; with retinaface_r34, pose columns
+            # are NaN until a future PR adds a 5-keypoint -> 6DoF helper.
+            facepose_model="img2pose" if face_model == "img2pose" else None,
             au_model=None,
             identity_model=None,
         )
         self.device = set_torch_device(device)
 
-        # Load Model Configurations
-        facepose_config_file = hf_hub_download(
-            repo_id="py-feat/img2pose",
-            filename="config.json",
-            cache_dir=get_resource_path(),
-        )
-        with open(facepose_config_file, "r") as f:
-            facepose_config = json.load(f)
+        if face_model == "img2pose":
+            # Load Model Configurations
+            facepose_config_file = hf_hub_download(
+                repo_id="py-feat/img2pose",
+                filename="config.json",
+                cache_dir=get_resource_path(),
+            )
+            with open(facepose_config_file, "r") as f:
+                facepose_config = json.load(f)
 
-        # Initialize img2pose
-        backbone = resnet_fpn_backbone(backbone_name="resnet18", weights=None)
-        backbone.eval()
-        backbone.to(self.device)
-        self.facepose_detector = FasterDoFRCNN(
-            backbone=backbone,
-            num_classes=2,
-            min_size=facepose_config["min_size"],
-            max_size=facepose_config["max_size"],
-            pose_mean=torch.tensor(facepose_config["pose_mean"]),
-            pose_stddev=torch.tensor(facepose_config["pose_stddev"]),
-            threed_68_points=torch.tensor(facepose_config["threed_points"]),
-            rpn_pre_nms_top_n_test=facepose_config["rpn_pre_nms_top_n_test"],
-            rpn_post_nms_top_n_test=facepose_config["rpn_post_nms_top_n_test"],
-            bbox_x_factor=facepose_config["bbox_x_factor"],
-            bbox_y_factor=facepose_config["bbox_y_factor"],
-            expand_forehead=facepose_config["expand_forehead"],
-        )
-        facepose_model_file = hf_hub_download(
-            repo_id="py-feat/img2pose",
-            filename="model.safetensors",
-            cache_dir=get_resource_path(),
-        )
-        facepose_checkpoint = load_file(facepose_model_file)
-        self.facepose_detector.load_state_dict(facepose_checkpoint, load_model_weights)
-        self.facepose_detector.eval()
-        self.facepose_detector.to(self.device)
-        # self.facepose_detector = torch.compile(self.facepose_detector)
+            # Initialize img2pose
+            backbone = resnet_fpn_backbone(backbone_name="resnet18", weights=None)
+            backbone.eval()
+            backbone.to(self.device)
+            self.facepose_detector = FasterDoFRCNN(
+                backbone=backbone,
+                num_classes=2,
+                min_size=facepose_config["min_size"],
+                max_size=facepose_config["max_size"],
+                pose_mean=torch.tensor(facepose_config["pose_mean"]),
+                pose_stddev=torch.tensor(facepose_config["pose_stddev"]),
+                threed_68_points=torch.tensor(facepose_config["threed_points"]),
+                rpn_pre_nms_top_n_test=facepose_config["rpn_pre_nms_top_n_test"],
+                rpn_post_nms_top_n_test=facepose_config["rpn_post_nms_top_n_test"],
+                bbox_x_factor=facepose_config["bbox_x_factor"],
+                bbox_y_factor=facepose_config["bbox_y_factor"],
+                expand_forehead=facepose_config["expand_forehead"],
+            )
+            facepose_model_file = hf_hub_download(
+                repo_id="py-feat/img2pose",
+                filename="model.safetensors",
+                cache_dir=get_resource_path(),
+            )
+            facepose_checkpoint = load_file(facepose_model_file)
+            self.facepose_detector.load_state_dict(facepose_checkpoint, load_model_weights)
+            self.facepose_detector.eval()
+            self.facepose_detector.to(self.device)
+        else:  # retinaface_r34
+            # RetinaFace-R34: 88.9% WIDERFACE Hard AP (per yakhyo upstream),
+            # 15-20x faster per-image than img2pose at batch 16+ on MPS.
+            # No 6DoF head pose - pose columns are populated as NaN.
+            self.facepose_detector = Retinaface(device=self.device)
+            warnings.warn(
+                "face_model='retinaface_r34' does not regress 6DoF head pose; "
+                "Pitch/Roll/Yaw/X/Y/Z columns will be NaN. Use "
+                "face_model='img2pose' (default) if you need pose values, or "
+                "wait for the upcoming pure-torch solvePnP follow-up.",
+                stacklevel=2,
+            )
 
         # Initialize Landmark Detector
         self.info["landmark_model"] = landmark_model
@@ -344,35 +366,67 @@ class Detector(nn.Module, PyTorchModelHubMixin):
     @torch.inference_mode()
     def detect_faces(self, images, face_size=112, face_detection_threshold=0.5):
         """
-        detect faces and poses in a batch of images using img2pose
+        Detect faces and (with img2pose) 6DoF head pose in a batch of images.
 
         Args:
-            img (torch.Tensor): Tensor of shape (B, C, H, W) representing the images
+            images (torch.Tensor): Tensor of shape (B, C, H, W) representing the images
             face_size (int): Output size to resize face after cropping.
+            face_detection_threshold (float): Score threshold for keeping detections.
 
         Returns:
-            Fex: Prediction results dataframe
+            list of per-image dicts with keys: faces, boxes, new_boxes, poses,
+            scores, face_id (and resmasknet_faces if emotion_model='resmasknet').
+            Pose columns are NaN-filled when face_model='retinaface_r34'.
         """
 
-        # img2pose accepts a batched [B, C, H, W] tensor and returns a list
-        # of length B with per-image detections. Calling it once amortizes
-        # the ResNet18-FPN forward pass across the whole batch instead of
-        # paying the per-frame cost B times - the largest single Phase 1
-        # speedup item in the spec.
-        frames = convert_image_to_tensor(images, img_type="float32") / 255.0
-        frames = frames.to(self.device)
+        # img2pose / RetinaFace both accept a batched [B, C, H, W] tensor and
+        # return per-image detections. img2pose ingests pixel values in [0, 1];
+        # RetinaFace ingests pixel values in [0, 255]. The wrapper handles its
+        # own preprocessing so we keep the unscaled tensor for it.
+        frames_unit = convert_image_to_tensor(images, img_type="float32") / 255.0
+        frames_unit = frames_unit.to(self.device)
 
-        img2pose_outputs = self.facepose_detector(frames)
+        if self.info["face_model"] == "img2pose":
+            img2pose_outputs = self.facepose_detector(frames_unit)
+            per_image_dets = []
+            for img2pose_output in img2pose_outputs:
+                processed = postprocess_img2pose(
+                    img2pose_output, detection_threshold=face_detection_threshold
+                )
+                per_image_dets.append({
+                    "boxes": processed["boxes"],
+                    "scores": processed["scores"],
+                    "poses": processed["dofs"],  # [N, 6]
+                })
+        else:  # retinaface_r34: takes [0, 255] floats; returns list of [x1,y1,x2,y2,score]
+            frames_px = convert_image_to_tensor(images, img_type="float32").to(self.device)
+            rf_outputs = self.facepose_detector(frames_px)
+            per_image_dets = []
+            for image_dets in rf_outputs:
+                if image_dets:
+                    arr = torch.tensor(image_dets, dtype=torch.float32, device=self.device)
+                    boxes = arr[:, :4]
+                    scores = arr[:, 4]
+                    keep = scores >= face_detection_threshold
+                    boxes = boxes[keep]
+                    scores = scores[keep]
+                else:
+                    boxes = torch.empty((0, 4), device=self.device)
+                    scores = torch.empty((0,), device=self.device)
+                per_image_dets.append({
+                    "boxes": boxes,
+                    "scores": scores,
+                    "poses": torch.full(
+                        (boxes.shape[0], 6), float("nan"), device=self.device
+                    ),
+                })
 
         batch_results = []
-        for i, img2pose_output in enumerate(img2pose_outputs):
-            single_frame = frames[i, ...].unsqueeze(0)
-            processed = postprocess_img2pose(
-                img2pose_output, detection_threshold=face_detection_threshold
-            )
-            bbox = processed["boxes"]
-            poses = processed["dofs"]
-            facescores = processed["scores"]
+        for i, det in enumerate(per_image_dets):
+            single_frame = frames_unit[i, ...].unsqueeze(0)
+            bbox = det["boxes"]
+            poses = det["poses"]
+            facescores = det["scores"]
 
             # Extract faces from bbox
             if bbox.numel() != 0:
