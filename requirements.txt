@@ -1,12 +1,14 @@
 pandas>=2.0
 seaborn>=0.13.0
-nltools>=0.5.1
-numexpr<2.8.5
+numexpr>=2.8.5
+numpy>=1.24
+scipy>=1.11
 scikit-learn>=1.2
 pywavelets>=0.3.0
 h5py>=2.7.0
 Pillow>=6.0.0
-torchvision
+torch>=2.5
+torchvision>=0.20
 scikit-image>=0.19
 joblib
 easing_functions
