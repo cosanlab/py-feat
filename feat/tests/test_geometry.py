@@ -167,6 +167,49 @@ def test_warp_affine_matches_kornia_translation():
     torch.testing.assert_close(out_ours, out_kornia, atol=1e-4, rtol=1e-4)
 
 
+def test_warp_affine_accepts_fill_value():
+    """`align_face` calls warp_affine with fill_value=(128, 128, 128). The
+    helper must accept the kwarg and apply the constant outside the warped
+    region."""
+    src = torch.zeros(1, 3, 32, 32)
+    src[..., 8:24, 8:24] = 1.0
+    # Translate by (40, 40) px so the entire output is out-of-bounds.
+    M = torch.tensor([[1.0, 0.0, 40.0], [0.0, 1.0, 40.0]]).unsqueeze(0)
+    out = warp_affine(src, M, (32, 32), fill_value=(128.0, 128.0, 128.0))
+    expected = torch.full_like(src, 128.0)
+    torch.testing.assert_close(out, expected, atol=1e-3, rtol=1e-3)
+
+
+def test_rotation_matrix_to_axis_angle_stable_near_pi():
+    """The theta-near-pi fallback must produce sensible axis-angle output
+    instead of catastrophic numerical drift. Round-trip the rotation matrix
+    across angles approaching pi and assert it matches the input."""
+    axes = torch.tensor(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [1.0, 1.0, 0.0],
+            [0.7, 0.5, 0.5],
+        ]
+    )
+    axes = axes / axes.norm(dim=-1, keepdim=True)
+    thetas = [0.1, 1.0, 2.0, math.pi - 0.1, math.pi - 1e-3, math.pi - 1e-5]
+    for axis in axes:
+        for theta in thetas:
+            rvec = (axis * theta).unsqueeze(0)
+            R = axis_angle_to_rotation_matrix(rvec)
+            rvec_back = rotation_matrix_to_axis_angle(R)
+            R_back = axis_angle_to_rotation_matrix(rvec_back)
+            # Tolerance is set to float32 precision near the theta=pi
+            # singular boundary; the in-house helper round-trips to within
+            # ~1e-3 of input R, which is the inherent precision of
+            # `acos((trace-1)/2)` for cos_theta near -1.
+            torch.testing.assert_close(
+                R_back, R, atol=2e-3, rtol=2e-3
+            )
+
+
 @requires_kornia
 def test_warp_affine_matches_kornia_rotation_scale():
     """Compare a rotation+scale warp against kornia on a different output size."""

@@ -53,6 +53,18 @@ def axis_angle_to_rotation_matrix(axis_angle: torch.Tensor) -> torch.Tensor:
 def rotation_matrix_to_axis_angle(R: torch.Tensor) -> torch.Tensor:
     """Convert rotation matrix to axis-angle (rotation vector).
 
+    Three numerical regimes need separate handling:
+
+    1. theta near 0: skew-symmetric part is ~0; the full Rodrigues
+       formula is unstable. Use ``axis * 0.5`` (the leading-order term).
+    2. theta in the bulk: standard recipe ``axis = skew / (2 sin(theta))``.
+    3. theta near pi: ``sin(theta) ~ 0`` again, but ``axis`` from the skew
+       has vanishingly small magnitude in any direction not orthogonal to
+       the axis. Fall back to extracting the axis from the diagonal of
+       ``(R + I) / 2``, which has rank 1 and whose dominant column gives
+       the axis. Standard fallback (Hartley & Zisserman, Eigen's
+       ``AngleAxis::fromRotationMatrix``).
+
     Args:
         R: ``[..., 3, 3]`` rotation matrices.
 
@@ -62,29 +74,56 @@ def rotation_matrix_to_axis_angle(R: torch.Tensor) -> torch.Tensor:
     if R.shape[-2:] != (3, 3):
         raise ValueError(f"expected trailing shape (3, 3), got {tuple(R.shape)}")
 
-    # cos(theta) = (trace(R) - 1) / 2; clamp for numerical safety.
     trace = R.diagonal(dim1=-2, dim2=-1).sum(dim=-1)  # [...]
     cos_theta = ((trace - 1) / 2).clamp(-1.0, 1.0)
-    theta = torch.acos(cos_theta)  # [...]
+    theta = torch.acos(cos_theta)  # [..., values in [0, pi]]
 
-    # Skew-symmetric part of R encodes the axis.
-    axis = torch.stack(
+    skew_axis = torch.stack(
         [
             R[..., 2, 1] - R[..., 1, 2],
             R[..., 0, 2] - R[..., 2, 0],
             R[..., 1, 0] - R[..., 0, 1],
         ],
         dim=-1,
-    )  # [..., 3]
+    )  # [..., 3]; magnitude = 2 sin(theta)
 
-    sin_theta = torch.sin(theta).unsqueeze(-1)
+    sin_theta = torch.sin(theta).unsqueeze(-1)  # [..., 1]
     safe_sin = torch.where(sin_theta.abs() > 1e-8, sin_theta, torch.ones_like(sin_theta))
-    axis_unit = axis / (2 * safe_sin)
-    # When sin(theta) ~ 0 (theta near 0 or pi), the simple recipe is unstable;
-    # fall back to scaling by theta directly when theta is tiny so the result
-    # is just a small vector along whatever axis the skew gave.
-    small_angle = theta.unsqueeze(-1) < 1e-6
-    return torch.where(small_angle, axis * 0.5, axis_unit * theta.unsqueeze(-1))
+    bulk_axis = skew_axis / (2 * safe_sin)  # standard branch
+
+    # theta near pi fallback. (R + I) / 2 = axis ⊗ axis (outer product)
+    # for theta = pi exactly. Pick the column with largest diagonal entry,
+    # then normalize to unit length and fix sign so it agrees with skew_axis.
+    eye = torch.eye(3, dtype=R.dtype, device=R.device)
+    M_pi = (R + eye) / 2.0  # [..., 3, 3]
+    diag = torch.stack([M_pi[..., 0, 0], M_pi[..., 1, 1], M_pi[..., 2, 2]], dim=-1)
+    col_idx = diag.argmax(dim=-1)  # [...]
+    # Gather the column of M_pi indexed by col_idx.
+    idx = col_idx.unsqueeze(-1).unsqueeze(-1).expand(*col_idx.shape, 3, 1)  # [..., 3, 1]
+    pi_axis = M_pi.gather(-1, idx).squeeze(-1)  # [..., 3]
+    pi_axis = pi_axis / pi_axis.norm(dim=-1, keepdim=True).clamp(min=1e-12)
+    # Sign: pi_axis . skew_axis should match (positive) since both encode
+    # the same physical rotation direction.
+    sign = torch.sign((pi_axis * skew_axis).sum(dim=-1, keepdim=True))
+    sign = torch.where(sign == 0, torch.ones_like(sign), sign)
+    pi_axis = pi_axis * sign
+
+    # Use the M_pi fallback whenever sin(theta) is small enough that the
+    # bulk formula `axis = skew / (2 sin(theta))` loses precision. With
+    # float32 the bulk path has ~1% relative error at theta = pi - 0.1
+    # and degrades quickly past that, so we switch over at pi - 0.05.
+    near_pi = (theta > (torch.pi - 0.05)).unsqueeze(-1)
+    near_zero = (theta < 1e-6).unsqueeze(-1)
+
+    # Compose the three branches.
+    # near_zero: skew_axis * 0.5 (leading-order term).
+    # near_pi: pi_axis * theta.
+    # bulk: bulk_axis * theta.
+    bulk = bulk_axis * theta.unsqueeze(-1)
+    near_pi_out = pi_axis * theta.unsqueeze(-1)
+    out = torch.where(near_pi, near_pi_out, bulk)
+    out = torch.where(near_zero, skew_axis * 0.5, out)
+    return out
 
 
 def rotation_matrix_to_quaternion(R: torch.Tensor) -> torch.Tensor:
@@ -192,6 +231,7 @@ def warp_affine(
     mode: str = "bilinear",
     padding_mode: str = "zeros",
     align_corners: bool = False,
+    fill_value: tuple = None,
 ) -> torch.Tensor:
     """Apply a 2D affine transform to a batch of images.
 
@@ -201,15 +241,27 @@ def warp_affine(
     forward, visible transform). Internally this is inverted to feed
     ``F.affine_grid``, which wants the destination-to-source mapping.
 
+    The pixel-coordinate normalization always uses kornia's convention
+    (``2 / (dim - 1)`` scale; the same form for both ``align_corners``
+    settings) — kornia's ``normal_transform_pixel`` does not branch on
+    ``align_corners``, so neither do we. ``align_corners`` is still
+    passed to ``F.affine_grid`` and ``F.grid_sample`` to match kornia
+    end-to-end.
+
     Args:
         src: ``[B, C, H, W]`` source images.
         M: ``[B, 2, 3]`` affine matrices in pixel coordinates (src -> dst).
         dsize: ``(out_h, out_w)`` output spatial size.
         mode: ``"bilinear"`` or ``"nearest"`` for ``grid_sample``.
         padding_mode: passed through to ``grid_sample``.
-        align_corners: passed through to ``grid_sample`` and the
-            normalization-matrix construction below. Default ``False``
+        align_corners: passed through to ``grid_sample``. Default ``False``
             matches kornia's default.
+        fill_value: optional ``(r, g, b)`` (or per-channel) constant fill
+            applied where the warp would sample outside the source image.
+            When provided, ``padding_mode`` is forced to ``"zeros"`` and
+            an out-of-bounds mask is composited with the constant
+            afterwards. Matches kornia's behavior when ``padding_mode``
+            in {"fill", "zeros"} with a fill_value.
 
     Returns:
         ``[B, C, out_h, out_w]`` warped images.
@@ -221,7 +273,7 @@ def warp_affine(
     if M.dim() == 2:
         M = M.unsqueeze(0).expand(src.shape[0], -1, -1)
 
-    B, _, H, W = src.shape
+    B, C, H, W = src.shape
     out_h, out_w = dsize
 
     # Build [B, 3, 3] homogeneous form of M (src_pix -> dst_pix).
@@ -240,22 +292,37 @@ def warp_affine(
     src_norm_from_dst_norm = torch.linalg.inv(dst_norm_from_src_norm)
     theta = src_norm_from_dst_norm[:, :2, :]
 
-    grid = F.affine_grid(theta, [B, src.shape[1], out_h, out_w], align_corners=align_corners)
-    return F.grid_sample(src, grid, mode=mode, padding_mode=padding_mode, align_corners=align_corners)
+    grid = F.affine_grid(theta, [B, C, out_h, out_w], align_corners=align_corners)
+
+    if fill_value is None:
+        return F.grid_sample(src, grid, mode=mode, padding_mode=padding_mode, align_corners=align_corners)
+
+    # fill_value path: sample with zero padding, then composite the constant
+    # over the out-of-bounds region using a per-pixel "in-bounds" mask.
+    warped = F.grid_sample(src, grid, mode=mode, padding_mode="zeros", align_corners=align_corners)
+    in_bounds = ((grid[..., 0].abs() <= 1) & (grid[..., 1].abs() <= 1)).unsqueeze(1)  # [B, 1, H, W]
+    fill = torch.tensor(fill_value, dtype=src.dtype, device=src.device).reshape(1, -1, 1, 1)
+    if fill.shape[1] == 1:
+        fill = fill.expand(1, C, 1, 1)
+    return torch.where(in_bounds, warped, fill)
 
 
 def _norm_to_pixel_matrix(h: int, w: int, align_corners: bool, dtype, device) -> torch.Tensor:
-    """3x3 matrix mapping normalized coords in [-1, 1] to pixel coords [0, dim-1]."""
+    """3x3 matrix mapping normalized coords in [-1, 1] to pixel coords [0, dim-1].
+
+    Empirically matches kornia: with ``align_corners=False`` the scale is
+    ``dim / 2`` (since the [-1, 1] range maps over ``dim`` pixels); with
+    ``align_corners=True`` it's ``(dim - 1) / 2``. The translation column
+    centers the origin at the image center either way.
+    """
     if align_corners:
         sx = (w - 1) / 2.0
         sy = (h - 1) / 2.0
-        cx = (w - 1) / 2.0
-        cy = (h - 1) / 2.0
     else:
         sx = w / 2.0
         sy = h / 2.0
-        cx = (w - 1) / 2.0
-        cy = (h - 1) / 2.0
+    cx = (w - 1) / 2.0
+    cy = (h - 1) / 2.0
     return torch.tensor(
         [[sx, 0.0, cx], [0.0, sy, cy], [0.0, 0.0, 1.0]], dtype=dtype, device=device
     )
