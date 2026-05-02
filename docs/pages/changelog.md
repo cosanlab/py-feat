@@ -29,7 +29,8 @@ Highlights:
 
 ## Bug fixes
 
-- **`MPDetector(face_model='retinaface')` works again.** The v0.7 RetinaFace rebuild deleted the MobileNet0.25 path that MPDetector's face detector relied on; the prior workaround was a `NotImplementedError` pointing users to `Detector(face_model='retinaface_r34')`. MPDetector now uses the same ResNet34 wrapper as `Detector`, so `MPDetector(face_model='retinaface')` and `MPDetector(face_model='retinaface_r34')` both build and detect end-to-end. Also fixes a pre-existing dtype mismatch in `convert_landmarks_3d` (Python `float` -> float64 vs canonical face model's float32) that would have crashed `estimate_face_pose_from_mesh` once the dataframe reached pose estimation.
+- **`MPDetector(face_model='retinaface')` works again.** The v0.7 RetinaFace rebuild deleted the MobileNet0.25 path that MPDetector's face detector relied on; the prior workaround was a `NotImplementedError` pointing users to `Detector(face_model='retinaface_r34')`. MPDetector now uses the same ResNet34 wrapper as `Detector`, so `MPDetector(face_model='retinaface')` and `MPDetector(face_model='retinaface_r34')` both build and detect end-to-end.
+- **MPDetector pose dtype mismatch fixed.** A pre-existing bug in `convert_landmarks_3d` produced `np.float64` landmarks (via `astype(float)`) while MediaPipe's canonical face model is `float32`. Once the retinaface path was reachable, `estimate_face_pose_from_mesh`'s matmul would have raised `expected m1 and m2 to have the same dtype`. Forced `astype("float32")` to fix.
 - *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
 
 ## New features

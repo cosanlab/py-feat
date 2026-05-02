@@ -21,6 +21,12 @@ from feat.pretrained import AU_LANDMARK_MAP
 from torch.utils.data import DataLoader
 from PIL import Image
 from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
+
+# Aliases that resolve to the new ResNet34-backbone Retinaface wrapper.
+# 'retinaface' is the legacy MPDetector default; 'retinaface_r34' is the
+# canonical name in feat.detector.Detector. Accepting both keeps existing
+# MPDetector callers working while the canonical name is the documented one.
+_RETINAFACE_ALIASES = ("retinaface", "retinaface_r34")
 from feat.au_detectors.MP_Blendshapes.MP_Blendshapes_test import (
     MediaPipeBlendshapesMLPMixer,
 )
@@ -258,13 +264,10 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # feat.face_detectors.Retinaface.Retinaface_test.Retinaface, which
         # batches its postprocess on-device and downloads weights from the
         # py-feat/retinaface_r34 HuggingFace repo. Both 'retinaface' and
-        # 'retinaface_r34' resolve to the same wrapper here for API
-        # compatibility - 'retinaface' was MPDetector's prior default and
-        # we keep it accepted to avoid forcing every existing caller to
-        # change their argument.
+        # 'retinaface_r34' resolve to the same wrapper.
         self.info["face_model"] = face_model
         if face_model is not None:
-            if face_model in ("retinaface", "retinaface_r34"):
+            if face_model in _RETINAFACE_ALIASES:
                 self.face_detector = Retinaface(device=self.device)
             else:
                 raise ValueError(f"{face_model} is not currently supported.")
@@ -484,7 +487,8 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # wrapper handles its own mean-subtraction and on-device NMS;
         # we just pass the [B, 3, H, W] tensor in [0, 255] units it expects
         # and get back per-image lists of [x1, y1, x2, y2, score].
-        if self.info["face_model"] in ("retinaface", "retinaface_r34"):
+        is_retinaface = self.info["face_model"] in _RETINAFACE_ALIASES
+        if is_retinaface:
             rf_outputs = self.face_detector(frames.to(self.device))
         else:
             rf_outputs = [None] * frames.size(0)
@@ -493,7 +497,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         for i in range(frames.size(0)):
             frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
 
-            if self.info["face_model"] in ("retinaface", "retinaface_r34"):
+            if is_retinaface:
                 image_dets = rf_outputs[i]
                 if image_dets:
                     arr = torch.tensor(
@@ -530,8 +534,11 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 if torch.all(frame_results["scores"] == 0):  # No Face Detected
                     frame_results["resmasknet_faces"] = torch.zeros((1, 3, 224, 224))
                 else:
+                    # `frame` is the single-image tensor for index `i`; the
+                    # earlier code referenced `single_frame` which only
+                    # existed inside the deleted retinaface preprocess block.
                     resmasknet_faces, _ = extract_face_from_bbox_torch(
-                        single_frame, bbox, expand_bbox=1.1, face_size=224
+                        frame, bbox, expand_bbox=1.1, face_size=224
                     )
                     frame_results["resmasknet_faces"] = resmasknet_faces / 255.0
 

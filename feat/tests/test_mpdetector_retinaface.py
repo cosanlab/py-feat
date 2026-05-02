@@ -67,3 +67,35 @@ def test_mpdetector_retinaface_constructs_and_detects(face_model_name):
         vals = fex[col]
         assert not vals.isna().any(), f"{col} has NaN values"
         assert vals.abs().max() <= math.pi, f"{col} out of [-pi, pi]"
+
+
+@pytest.mark.skipif(not _have_test_image(), reason="multi_face.jpg missing")
+def test_mpdetector_retinaface_with_resmasknet_emotion():
+    """Regression test for a NameError that lurked in detect_faces' resmasknet
+    branch. The old retinaface block defined `single_frame` (mean-subtracted
+    copy of `frame`) and the resmasknet branch downstream re-used that
+    variable. When the migration deleted the mean-subtract block, the
+    `single_frame` reference stayed but the variable no longer existed -
+    so MPDetector(face_model='retinaface', emotion_model='resmasknet')
+    would raise NameError at the first detected face. This test exercises
+    that exact combination."""
+    from feat.MPDetector import MPDetector
+    from feat.utils.io import get_test_data_path
+
+    mp = MPDetector(
+        device="cpu",
+        face_model="retinaface",
+        landmark_model="mp_facemesh_v2",
+        au_model=None,
+        emotion_model="resmasknet",  # the path that used to NameError
+        identity_model=None,
+        facepose_model=None,
+    )
+    img = os.path.join(get_test_data_path(), "multi_face.jpg")
+    # Just need to confirm detect runs to completion without NameError.
+    fex = mp.detect(img)
+    assert len(fex) >= 4
+    # Resmasknet emotion outputs must be finite.
+    for col in ("anger", "disgust", "fear", "happiness", "sadness", "surprise", "neutral"):
+        if col in fex.columns:
+            assert not fex[col].isna().any(), f"{col} has NaN"
