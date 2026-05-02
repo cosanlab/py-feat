@@ -1,6 +1,10 @@
 import numpy as np
+import pytest
+import torch
+from skimage.feature import hog as skimage_hog
 from torchvision.io import read_image
 from feat.transforms import Rescale
+from feat.utils.image_operations import HOGLayer
 from torchvision.transforms import Compose
 from feat.data import ImageDataset
 
@@ -263,6 +267,124 @@ def test_decode():
     pass
 
 
-# TODO: write me
-def test_HOGLayer_class():
-    pass
+def _skimage_reference(img_chw_float, *, orientations, pixels_per_cell, cells_per_block, block_norm):
+    """skimage.feature.hog operates on HxWxC float images; mirror the call
+    extract_hog_features makes (channel_axis=-1, default L2-Hys block norm)."""
+    img_hwc = img_chw_float.permute(1, 2, 0).cpu().numpy()
+    return skimage_hog(
+        img_hwc,
+        orientations=orientations,
+        pixels_per_cell=pixels_per_cell,
+        cells_per_block=cells_per_block,
+        block_norm=block_norm,
+        visualize=False,
+        channel_axis=-1,
+        feature_vector=True,
+    )
+
+
+@pytest.mark.parametrize("block_norm", ["L1", "L1-sqrt", "L2", "L2-Hys"])
+def test_HOGLayer_matches_skimage(block_norm):
+    """HOGLayer must produce the same feature vector as skimage.feature.hog
+    for the parameter set used by extract_hog_features (orientations=8,
+    pixels_per_cell=(8,8), cells_per_block=(2,2), channel_axis=-1)."""
+    torch.manual_seed(0)
+    batch = torch.rand(2, 3, 112, 112)
+
+    expected = np.stack(
+        [
+            _skimage_reference(
+                batch[i],
+                orientations=8,
+                pixels_per_cell=(8, 8),
+                cells_per_block=(2, 2),
+                block_norm=block_norm,
+            )
+            for i in range(batch.shape[0])
+        ]
+    )
+
+    layer = HOGLayer(
+        orientations=8,
+        pixels_per_cell=8,
+        cells_per_block=2,
+        block_normalization=block_norm,
+        feature_vector=True,
+        device="cpu",
+    )
+    actual = layer(batch).cpu().numpy()
+
+    assert actual.shape == expected.shape
+    np.testing.assert_allclose(actual, expected, rtol=1e-4, atol=1e-5)
+
+
+def test_HOGLayer_handles_3_channel_input():
+    """Calling HOGLayer with an RGB face crop must not raise. (The current
+    Sobel weight has shape [2, 1, 3, 3] with groups=1, which expects a
+    1-channel tensor and errors on RGB inputs.)"""
+    torch.manual_seed(0)
+    batch = torch.rand(1, 3, 112, 112)
+    layer = HOGLayer(
+        orientations=8,
+        pixels_per_cell=8,
+        cells_per_block=2,
+        block_normalization="L2-Hys",
+        feature_vector=True,
+        device="cpu",
+    )
+    out = layer(batch)
+    assert out.ndim == 2
+    assert out.shape[0] == 1
+    assert torch.isfinite(out).all()
+
+
+def test_HOGLayer_matches_skimage_grayscale():
+    """Single-channel (grayscale) input must also match skimage."""
+    torch.manual_seed(0)
+    batch = torch.rand(2, 1, 112, 112)
+    expected = np.stack(
+        [
+            skimage_hog(
+                batch[i, 0].cpu().numpy(),
+                orientations=8,
+                pixels_per_cell=(8, 8),
+                cells_per_block=(2, 2),
+                block_norm="L2-Hys",
+                visualize=False,
+                feature_vector=True,
+            )
+            for i in range(batch.shape[0])
+        ]
+    )
+    layer = HOGLayer(
+        orientations=8,
+        pixels_per_cell=8,
+        cells_per_block=2,
+        block_normalization="L2-Hys",
+        feature_vector=True,
+        device="cpu",
+    )
+    actual = layer(batch).cpu().numpy()
+    np.testing.assert_allclose(actual, expected, rtol=1e-4, atol=1e-5)
+
+
+def test_HOGLayer_feature_vector_false_returns_block_grid():
+    """With feature_vector=False the layer should return the unflattened
+    block grid in skimage's layout:
+    [N, n_blocks_row, n_blocks_col, b_row, b_col, orientations]."""
+    torch.manual_seed(0)
+    batch = torch.rand(1, 3, 112, 112)
+    layer = HOGLayer(
+        orientations=8,
+        pixels_per_cell=8,
+        cells_per_block=2,
+        block_normalization="L2-Hys",
+        feature_vector=False,
+        device="cpu",
+    )
+    out = layer(batch)
+    # 112 / 8 = 14 cells per side; 14 - 2 + 1 = 13 blocks per side.
+    # skimage's `normalized_blocks` shape:
+    # (n_blocks_row, n_blocks_col, b_row, b_col, orientations).
+    assert out.shape == (1, 13, 13, 2, 2, 8)
+    assert torch.isfinite(out).all()
