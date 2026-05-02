@@ -1,10 +1,10 @@
 import torch
 from scipy.spatial.transform import Rotation
 from .image_operations import expand_bbox_rectangle
-import kornia
-import warnings
-
-warnings.filterwarnings("ignore", category=FutureWarning, module="kornia")
+from feat.utils.geometry import (
+    axis_angle_to_rotation_matrix,
+    rotation_matrix_to_axis_angle,
+)
 
 # def get_bbox_intrinsics(image_intrinsics, bbox):
 #     # crop principle point of view
@@ -300,16 +300,13 @@ def pose_bbox_to_full_image(pose, image_intrinsics, bbox):
     # reverse the projected points using the full image camera intrinsics
     tvec = projected_point.squeeze() @ torch.inverse(image_intrinsics.T)
 
-    # Convert rotation vector to rotation matrix using Kornia
-    rmat = kornia.geometry.conversions.axis_angle_to_rotation_matrix(rvec).squeeze(0)
+    rmat = axis_angle_to_rotation_matrix(rvec).squeeze(0)
 
     # project crop points using the crop camera intrinsics
     projected_point = bbox_intrinsics @ rmat
     # reverse the projected points using the full image camera intrinsics
     rmat = torch.inverse(image_intrinsics) @ projected_point
-    rvec = kornia.geometry.conversions.rotation_matrix_to_axis_angle(
-        rmat.unsqueeze(0)
-    ).squeeze(0)
+    rvec = rotation_matrix_to_axis_angle(rmat.unsqueeze(0)).squeeze(0)
 
     return torch.cat([rvec, tvec])
 
@@ -361,10 +358,7 @@ def transform_points(points, pose):
     points = points.to(torch.float32)
     pose = pose.to(torch.float32)
 
-    # Convert rotation vector to rotation matrix using Kornia
-    rmat = kornia.geometry.conversions.axis_angle_to_rotation_matrix(
-        pose[:3].unsqueeze(0)
-    ).squeeze(0)
+    rmat = axis_angle_to_rotation_matrix(pose[:3].unsqueeze(0)).squeeze(0)
 
     return points @ rmat.T + pose[3:]
 
