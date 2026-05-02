@@ -26,6 +26,7 @@ from feat.utils import (
     FEAT_FACEBOX_COLUMNS,
     FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_IDENTITY_COLUMNS,
+    hf_hub_download_with_fallback,
 )
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
@@ -59,11 +60,14 @@ def _patch_xgboost_setstate_for_skops():
 
     skops's load flow calls ``Booster.__setstate__({"handle": bytearray, ...})``.
     xgboost then does ``ptr = (c_char * len(buf)).from_buffer(buf)`` and passes
-    ``ptr`` into a C call (``XGBoosterUnserializeFromBuffer``). On Python 3.13
-    the bytearray can be reallocated mid-call, producing intermittent SIGSEGV.
-    Copying the buffer into a freshly-allocated bytearray narrows the window.
+    ``ptr`` into a C call. On Python 3.13 the bytearray can be reallocated
+    mid-call, producing intermittent SIGSEGV. Copying the buffer into a
+    freshly-allocated bytearray narrows the window. The underlying race is
+    upstream and not fully closed - this is best-effort.
 
-    Idempotent. No-op on Python versions where the original is stable.
+    Applied unconditionally because skops's load flow always routes through
+    ``Booster.__setstate__`` regardless of which model file format the
+    Booster's serialized state is in. Idempotent.
     """
     import xgboost.core
 
@@ -206,20 +210,24 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 if au_model == "xgb":
                     self.au_detector = XGBClassifier()
                     # _v2 file references the real wrapper class path (not __main__)
-                    # and embeds Booster buffers in xgboost's modern UBJ format. The
-                    # original *_classifier.skops on the same repo is kept for
-                    # backwards compatibility with py-feat <= 0.6.x installs.
-                    au_model_path = hf_hub_download(
+                    # and embeds Booster buffers in xgboost's modern UBJ format.
+                    # Fall back to v1 if v2 isn't on the hub yet (e.g. fresh
+                    # py-feat install during the upload window between
+                    # code-release and HF-upload). Once v2 is uploaded the
+                    # fallback path is dead.
+                    au_model_path = hf_hub_download_with_fallback(
                         repo_id="py-feat/xgb_au",
                         filename="xgb_au_classifier_v2.skops",
+                        fallback_filename="xgb_au_classifier.skops",
                         cache_dir=get_resource_path(),
                     )
 
                 elif au_model == "svm":
                     self.au_detector = SVMClassifier()
-                    au_model_path = hf_hub_download(
+                    au_model_path = hf_hub_download_with_fallback(
                         repo_id="py-feat/svm_au",
                         filename="svm_au_classifier_v2.skops",
+                        fallback_filename="svm_au_classifier.skops",
                         cache_dir=get_resource_path(),
                     )
                 else:

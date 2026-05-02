@@ -47,3 +47,48 @@ def test_utils():
 # TODO: write me
 def test_set_torch_device():
     pass
+
+
+def test_hf_hub_download_with_fallback_uses_v2_when_present(monkeypatch):
+    """Helper returns the primary file when hf_hub_download succeeds."""
+    from feat.utils import hf_hub_download_with_fallback
+
+    calls = []
+
+    def fake_download(repo_id, filename, cache_dir):
+        calls.append(filename)
+        return f"/fake/{filename}"
+
+    monkeypatch.setattr(
+        "huggingface_hub.hf_hub_download", fake_download, raising=False
+    )
+    result = hf_hub_download_with_fallback(
+        repo_id="x/y", filename="primary.skops",
+        fallback_filename="fallback.skops", cache_dir="/tmp",
+    )
+    assert result == "/fake/primary.skops"
+    assert calls == ["primary.skops"]
+
+
+def test_hf_hub_download_with_fallback_falls_back_on_404(monkeypatch):
+    """Helper retries with fallback_filename if primary raises EntryNotFoundError."""
+    from feat.utils import hf_hub_download_with_fallback
+    from huggingface_hub.utils import EntryNotFoundError
+
+    calls = []
+
+    def fake_download(repo_id, filename, cache_dir):
+        calls.append(filename)
+        if filename == "primary.skops":
+            raise EntryNotFoundError("primary.skops not found")
+        return f"/fake/{filename}"
+
+    monkeypatch.setattr(
+        "huggingface_hub.hf_hub_download", fake_download, raising=False
+    )
+    result = hf_hub_download_with_fallback(
+        repo_id="x/y", filename="primary.skops",
+        fallback_filename="fallback.skops", cache_dir="/tmp",
+    )
+    assert result == "/fake/fallback.skops"
+    assert calls == ["primary.skops", "fallback.skops"]

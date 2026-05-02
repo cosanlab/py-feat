@@ -400,3 +400,25 @@ def flatten_list(data):
     for row in data:
         flat_list += row
     return flat_list
+
+
+def hf_hub_download_with_fallback(repo_id, filename, fallback_filename, cache_dir):
+    """Download ``filename`` from HuggingFace; on miss, download ``fallback_filename``.
+
+    Used to roll out new model file versions without breaking installs in
+    the window between a code release and the artifact upload. Once the
+    new file is reliably present on the hub, the fallback path is dead
+    code; once the old file is removed, the fallback path errors. Both
+    are good outcomes.
+
+    Returns the local path of whichever file was successfully downloaded.
+    """
+    from huggingface_hub import hf_hub_download
+    from huggingface_hub.utils import EntryNotFoundError
+
+    try:
+        return hf_hub_download(repo_id=repo_id, filename=filename, cache_dir=cache_dir)
+    except EntryNotFoundError:
+        return hf_hub_download(
+            repo_id=repo_id, filename=fallback_filename, cache_dir=cache_dir
+        )
