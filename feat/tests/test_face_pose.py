@@ -97,6 +97,34 @@ class TestUmeyamaAlignment:
         _R, _t, s = umeyama_alignment(src, dst, with_scale=False)
         assert torch.allclose(s, torch.tensor(1.0))
 
+    def test_reflection_branch_returns_proper_rotation(self):
+        """When dst is a mirror of src across one axis, det(V U^T) is
+        negative and the algorithm must apply the D = diag(1, 1, -1)
+        correction to keep R a proper rotation (det = +1)."""
+        torch.manual_seed(123)
+        src = torch.randn(60, 3)
+        # Mirror across the x-axis.
+        dst = src.clone()
+        dst[:, 0] = -dst[:, 0]
+        R, _t, _s = umeyama_alignment(src, dst)
+        det = torch.linalg.det(R)
+        assert torch.allclose(det, torch.tensor(1.0), atol=1e-5), (
+            f"R must be a proper rotation (det=+1), got det={det.item()}"
+        )
+
+    def test_coincident_points_returns_zero_scale(self):
+        """All src points at the origin: src variance is 0, scale is
+        undefined. The helper should not produce NaN or Inf - it returns
+        scale = 0 (clamped) and a finite (but meaningless) R / t."""
+        src = torch.zeros(20, 3)
+        dst = torch.randn(20, 3)
+        R, t, s = umeyama_alignment(src, dst)
+        assert torch.isfinite(R).all()
+        assert torch.isfinite(t).all()
+        assert torch.isfinite(s)
+        # Clamped to >= 0.
+        assert s >= 0
+
 
 class TestRotationToEuler:
     def test_identity(self):

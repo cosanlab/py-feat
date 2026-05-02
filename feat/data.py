@@ -21,7 +21,7 @@ from sklearn.model_selection import cross_val_score
 from torchvision.transforms import Compose
 from torchvision import transforms
 from torchvision.io import read_image
-from feat.utils.io import video_to_tensor
+from feat.utils.io import decode_video
 from torch.utils.data import Dataset
 from torch import swapaxes
 from feat.transforms import Rescale
@@ -39,7 +39,7 @@ from feat.plotting import (
     emotion_annotation_position,
 )
 from feat.pretrained import AU_LANDMARK_MAP
-from nilearn.signal import clean
+# nilearn is a heavyweight dependency only needed for Fex.clean(); imported lazily.
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
 import matplotlib.pyplot as plt
@@ -1227,6 +1227,12 @@ class Fex(DataFrame):
         Returns:
             cleaned Fex instance
         """
+        try:
+            from nilearn.signal import clean
+        except ImportError as e:
+            raise ImportError(
+                "Fex.clean() requires nilearn. Install it with `pip install nilearn`."
+            ) from e
         if self.sessions is not None:
             if ignore_sessions:
                 sessions = None
@@ -1763,8 +1769,7 @@ class Fex(DataFrame):
                         ]:
                             img = read_image(row["input"])
                         else:
-                            video = video_to_tensor(row["input"])
-                            img = video[row["frame"], :, :]
+                            img = decode_video(row["input"])[int(row["frame"])]
                         color = "w"
                         face_ax.imshow(img.permute([1, 2, 0]))
                     else:

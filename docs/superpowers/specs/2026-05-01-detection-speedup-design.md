@@ -18,6 +18,18 @@ The OpenFace 3.0 paper (arXiv:2506.02891) reports ~2.2× over py-feat on CPU (38
 3. Existing detector-component swappability (`face_model`, `landmark_model`, `au_model`, `emotion_model`, `identity_model`) is preserved.
 4. Public schema of the returned `Fex` DataFrame is unchanged; numerical AU/emotion/identity outputs match pre-change values within a documented tolerance.
 
+**Per-item speedup budget (target = 5–15× combined on MPS):** estimates, not commitments. Each item's contribution should be measured on a fixed video before the next item lands.
+
+| Phase 1 item | Target speedup | Multiplicative? |
+|---|---|---|
+| 1.1 MPS device handoff (#258) | enables MPS at all (~3-5× over silent-CPU baseline) | base — others stack on this |
+| 1.3 Batch img2pose | 3-10× on top of 1.1 | yes |
+| 1.4 HOG wire-in | 1.05-1.15× | yes |
+| 1.5 Single 224² crop | 1.05-1.15× | yes |
+| 1.6 Stream video output | memory-only, no per-frame speedup | n/a |
+| 1.7 Kalman tracker (optional) | 1.2-2× on video | yes |
+| 1.8 (alt path) YOLO swap | 3-10× over batched-img2pose baseline | replaces 1.3 |
+
 **Non-goals (this spec):**
 
 - Training a single-pass multi-task trunk like OpenFace 3.0. Tracked separately if Phase 1+2 don't close the gap.
@@ -104,9 +116,11 @@ Order of operations is dictated by which dependency unblocks the next.
 - *Expected impact:* 1.2-2× on video, varies with how stable the face is.
 - *Risk:* Low if behind a flag. Defer if 1.3-1.6 close the gap.
 
-**1.8 Add YOLO as a `face_model` option (alternative to img2pose).**
+### Phase 1.5 (parallel track) — YOLO alternative
 
-img2pose is a ResNet18-FPN Faster R-CNN variant that runs at ~50-150 ms per frame on CPU. Modern face-YOLO variants (yolov8-face, yolov11-face from `ultralytics`) hit ~5-15 ms per frame on CPU, are batched natively, support MPS out of the box, and have well-maintained ONNX/TensorRT export paths. The case for offering YOLO as an alternative `face_model` is strong even if 1.3 (batching img2pose) succeeds.
+**1.8 is bigger than the rest of Phase 1** and is *not* a "quick win" peer. It introduces a new module, an optional dep, a license audit, a benchmark on WIDER FACE, and a `solvePnP` helper. Treat it as a parallel track — implementable in parallel with 1.3-1.7, with its own success criteria — rather than item 1.8 in the sequential order.
+
+img2pose is a ResNet18-FPN Faster R-CNN variant that runs at ~50-150 ms per frame on CPU [estimate; not verified against the upstream paper]. Modern face-YOLO variants (yolov8-face, yolov11-face from `ultralytics`) reportedly hit ~5-15 ms per frame on CPU, are batched natively, support MPS out of the box, and have well-maintained ONNX/TensorRT export paths [based on community-published benchmarks for yolov8n-face on similar consumer CPUs]. The case for offering YOLO as an alternative `face_model` is strong even if 1.3 (batching img2pose) succeeds.
 
 - *Where:* New `feat/face_detectors/yolo/` module mirroring the structure of `feat/face_detectors/Retinaface/`, registered in `Detector.__init__` as a valid `face_model='yolo'` choice.
 - *Change:*
