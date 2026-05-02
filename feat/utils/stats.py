@@ -138,7 +138,8 @@ def regress(X, y, mode="ols", **kwargs):
 
     from scipy.stats import t as _t
 
-    p_vals = 2 * (1 - _t.cdf(np.abs(t_stats), df))
+    # Use sf (1 - cdf) directly to avoid precision loss when |t| is large.
+    p_vals = 2 * _t.sf(np.abs(t_stats), df)
 
     if one_d:
         beta = beta.squeeze(-1)
