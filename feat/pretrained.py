@@ -15,6 +15,7 @@ from feat.emo_detectors.StatLearning.EmoSL_test import (
 )
 from feat.facepose_detectors.img2pose.deps.models import FasterDoFRCNN
 from feat.identity_detectors.facenet.facenet_test import Facenet
+from feat.utils import hf_hub_download_with_fallback
 from feat.utils.io import get_resource_path, download_url
 import os
 import json
@@ -275,9 +276,10 @@ def load_model_weights(model_type="au", model="xgb", location="huggingface"):
         if model == "xgb":
             if location == "huggingface":
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(
+                model_path = hf_hub_download_with_fallback(
                     repo_id="py-feat/xgb_au",
                     filename="xgb_au_classifier_v2.skops",
+                    fallback_filename="xgb_au_classifier.skops",
                     cache_dir=get_resource_path(),
                 )
                 unknown_types = get_untrusted_types(file=model_path)
@@ -354,9 +356,10 @@ def load_model_weights(model_type="au", model="xgb", location="huggingface"):
         elif model == "svm":
             if location == "huggingface":
                 # Load the entire model from skops serialized file
-                model_path = hf_hub_download(
+                model_path = hf_hub_download_with_fallback(
                     repo_id="py-feat/svm_au",
                     filename="svm_au_classifier_v2.skops",
+                    fallback_filename="svm_au_classifier.skops",
                     cache_dir=get_resource_path(),
                 )
                 unknown_types = get_untrusted_types(file=model_path)

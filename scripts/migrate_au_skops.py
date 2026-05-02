@@ -71,40 +71,60 @@ def _patched_setstate_factory(orig):
     return patched
 
 
-def _verify_xgb_predictions(old, new, *, n_samples: int = 10, seed: int = 0) -> bool:
-    """Compare xgb predict_proba on random features, per-classifier feature width."""
+def _verify_xgb_predictions(old, new, *, n_samples: int = 1000) -> bool:
+    """Compare xgb predict_proba on random features, per-classifier feature width.
 
-    rng = np.random.default_rng(seed)
+    Sweeps multiple seeds and feature scales so the random sample reaches
+    different leaves across the ensemble (Gaussian noise at one scale tends
+    to take the same path through every tree, which masks deeper-branch
+    corruption). With ``n_samples=1000`` and three scales per seed this hits
+    enough of the leaf surface to make 'bit-identical' a meaningful claim.
+    """
+
     ok = True
     for au, old_clf in old.classifiers.items():
         n_feat = old_clf.get_booster().num_features()
-        features = rng.normal(size=(n_samples, n_feat)).astype(np.float32)
-        old_probs = old_clf.predict_proba(features)
-        new_probs = new.classifiers[au].predict_proba(features)
-        if not np.array_equal(old_probs, new_probs):
-            ok = False
-            diff = np.abs(old_probs - new_probs).max()
-            print(f"  AU {au}: MISMATCH (max diff {diff:.2e}, n_feat={n_feat})")
+        for seed in (0, 17, 42):
+            for scale in (0.1, 1.0, 10.0):
+                rng = np.random.default_rng(seed)
+                features = (rng.normal(scale=scale, size=(n_samples, n_feat))
+                            .astype(np.float32))
+                old_probs = old_clf.predict_proba(features)
+                new_probs = new.classifiers[au].predict_proba(features)
+                if not np.array_equal(old_probs, new_probs):
+                    ok = False
+                    diff = np.abs(old_probs - new_probs).max()
+                    print(
+                        f"  AU {au}: MISMATCH (max diff {diff:.2e}, "
+                        f"n_feat={n_feat}, seed={seed}, scale={scale})"
+                    )
     return ok
 
 
-def _verify_svm_predictions(old, new, *, n_samples: int = 10, seed: int = 0) -> bool:
-    """Compare svm decision_function on random features.
+def _verify_svm_predictions(old, new, *, n_samples: int = 1000) -> bool:
+    """Compare svm decision_function on random features at multiple scales/seeds.
 
-    sklearn's LinearSVC takes a fixed feature width per classifier. We
-    probe each one at the width its trained coefficients expect."""
+    sklearn's LinearSVC is a single hyperplane so per-feature decision-function
+    parity at one scale already pins it bit-exactly, but we sweep anyway for
+    consistency with the xgb path."""
 
-    rng = np.random.default_rng(seed)
     ok = True
     for au, old_clf in old.classifiers.items():
         n_feat = old_clf.coef_.shape[1]
-        features = rng.normal(size=(n_samples, n_feat)).astype(np.float32)
-        old_dec = old_clf.decision_function(features)
-        new_dec = new.classifiers[au].decision_function(features)
-        if not np.array_equal(old_dec, new_dec):
-            ok = False
-            diff = np.abs(old_dec - new_dec).max()
-            print(f"  AU {au}: MISMATCH (max diff {diff:.2e}, n_feat={n_feat})")
+        for seed in (0, 17, 42):
+            for scale in (0.1, 1.0, 10.0):
+                rng = np.random.default_rng(seed)
+                features = (rng.normal(scale=scale, size=(n_samples, n_feat))
+                            .astype(np.float32))
+                old_dec = old_clf.decision_function(features)
+                new_dec = new.classifiers[au].decision_function(features)
+                if not np.array_equal(old_dec, new_dec):
+                    ok = False
+                    diff = np.abs(old_dec - new_dec).max()
+                    print(
+                        f"  AU {au}: MISMATCH (max diff {diff:.2e}, "
+                        f"n_feat={n_feat}, seed={seed}, scale={scale})"
+                    )
     return ok
 
 
@@ -116,8 +136,19 @@ def main() -> int:
     )
     parser.add_argument("--in", dest="src", required=True, help="path to old .skops")
     parser.add_argument("--out", dest="dst", required=True, help="path for new .skops")
+    parser.add_argument(
+        "--force", action="store_true",
+        help="overwrite output file if it already exists (default: error)"
+    )
     parser.add_argument("--no-verify", action="store_true", help="skip prediction parity check")
     args = parser.parse_args()
+
+    src = Path(args.src)
+    dst = Path(args.dst)
+    if not src.exists():
+        parser.error(f"input file does not exist: {src}")
+    if dst.exists() and not args.force:
+        parser.error(f"output exists; pass --force to overwrite: {dst}")
 
     # The original .skops files reference the wrapper class as __main__.{XGB,SVM}Classifier
     # instead of feat.au_detectors.StatLearning.SL_test.{XGB,SVM}Classifier. Inject the
@@ -127,50 +158,47 @@ def main() -> int:
     sys.modules["__main__"].SVMClassifier = SVMClassifier
 
     # Patch xgboost.Booster.__setstate__ to copy the buffer (lets the old xgb file
-    # load on Python 3.13 without segfault). Only needed for xgb.
+    # load on Python 3.13 without segfault). Only needed for xgb. Restored in the
+    # finally block below regardless of error path, so a partial migration leaves
+    # process-global state untouched.
     orig_setstate = xgboost.core.Booster.__setstate__
     if args.model == "xgb":
         xgboost.core.Booster.__setstate__ = _patched_setstate_factory(orig_setstate)
 
-    from skops.io import dump, get_untrusted_types, load
+    try:
+        from skops.io import dump, get_untrusted_types, load
 
-    src = Path(args.src)
-    dst = Path(args.dst)
-    if not src.exists():
-        parser.error(f"input file does not exist: {src}")
+        print(f"loading {src}...")
+        old = load(src, trusted=get_untrusted_types(file=src))
+        print(f"  classifiers: {len(old.classifiers)}")
 
-    print(f"loading {src}...")
-    old = load(src, trusted=get_untrusted_types(file=src))
-    print(f"  classifiers: {len(old.classifiers)}")
+        print(f"saving {dst} (modern format, real module path)...")
+        dump(old, dst)
 
-    print(f"saving {dst} (modern format, real module path)...")
-    dump(old, dst)
+        print(f"loading {dst}...")
+        new = load(dst, trusted=get_untrusted_types(file=dst))
 
-    print(f"loading {dst}...")
-    new = load(dst, trusted=get_untrusted_types(file=dst))
+        if not args.no_verify:
+            print("verifying bit-identical predictions across all classifiers...")
+            verify = _verify_xgb_predictions if args.model == "xgb" else _verify_svm_predictions
+            if verify(old, new):
+                print("  all classifiers produce bit-identical outputs")
+            else:
+                print("ERROR: predictions diverged after migration", file=sys.stderr)
+                return 2
 
-    if not args.no_verify:
-        print("verifying bit-identical predictions across all classifiers...")
-        verify = _verify_xgb_predictions if args.model == "xgb" else _verify_svm_predictions
-        if verify(old, new):
-            print("  all classifiers produce bit-identical outputs")
+        # Confirm the new file's untrusted-types list no longer references __main__
+        new_ut = get_untrusted_types(file=dst)
+        has_main_ref = any(t.startswith("__main__.") for t in new_ut)
+        if has_main_ref:
+            print(f"WARNING: new file still references __main__: {new_ut}", file=sys.stderr)
         else:
-            print("ERROR: predictions diverged after migration", file=sys.stderr)
-            return 2
+            print(f"  new file untrusted types: {new_ut}")
 
-    # Restore original Booster.__setstate__ for hygiene
-    xgboost.core.Booster.__setstate__ = orig_setstate
-
-    # Confirm the new file's untrusted-types list no longer references __main__
-    new_ut = get_untrusted_types(file=dst)
-    has_main_ref = any(t.startswith("__main__.") for t in new_ut)
-    if has_main_ref:
-        print(f"WARNING: new file still references __main__: {new_ut}", file=sys.stderr)
-    else:
-        print(f"  new file untrusted types: {new_ut}")
-
-    print(f"done: {dst}")
-    return 0
+        print(f"done: {dst}")
+        return 0
+    finally:
+        xgboost.core.Booster.__setstate__ = orig_setstate
 
 
 if __name__ == "__main__":
