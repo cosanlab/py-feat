@@ -1318,7 +1318,12 @@ def invert_padding_to_results(batch_results, batch_data, n_landmarks):
     ``.loc[mask, col]`` rewrites scaled quadratically with batch size and
     landmark count.
 
-    The replacement does the inversion in O(rows + landmarks) by:
+    The replacement still does O(rows × landmarks) work overall (you
+    have to read and write every cell), but as a constant number of
+    vectorized numpy ops instead of ``n_frames × 2 × n_landmarks``
+    boolean-mask-then-write pandas operations. For a 60-frame batch
+    with 478 landmarks the prior loop did ~57k mask writes; the new
+    helper does 7 column assignments. By steps:
 
     1. Mapping each row's ``frame`` value to its position in the batch.
     2. Looking up per-row ``pad_left``, ``pad_top``, ``scale``,
