@@ -68,6 +68,17 @@ def test_mpdetector_retinaface_constructs_and_detects(face_model_name):
         assert not vals.isna().any(), f"{col} has NaN values"
         assert vals.abs().max() <= math.pi, f"{col} out of [-pi, pi]"
 
+    # Sanity bound: multi_face.jpg is 5 forward-facing upright portraits.
+    # Pre-fix Pitch clustered at +/- pi because the MediaPipe-pixel and
+    # canonical-mesh coordinate systems disagreed on Y and Z axis sign;
+    # convert_landmarks_3d now translates between them. After the fix,
+    # |Pitch| should be modest (< 30 degrees) for every detected face.
+    assert fex.Pitch.abs().max() < math.radians(30), (
+        f"max |Pitch| = {math.degrees(fex.Pitch.abs().max()):.1f} deg "
+        "on a forward-facing group is suspicious - check the MediaPipe "
+        "Y/Z-axis convention flip in convert_landmarks_3d"
+    )
+
 
 @pytest.mark.skipif(not _have_test_image(), reason="multi_face.jpg missing")
 def test_mpdetector_retinaface_with_resmasknet_emotion():
