@@ -38,10 +38,14 @@ from feat.face_detectors.Retinaface.Retinaface_model import (
 from feat.utils import set_torch_device
 
 
-# BGR mean from the upstream training preprocessing. Subtracted from raw
-# pixel values [0, 255]. Held as a 4D tensor (1, 3, 1, 1) so it broadcasts
-# against any [B, 3, H, W] input. Materialized on-device in the wrapper.
-_BGR_MEAN = torch.tensor([104.0, 117.0, 123.0]).view(1, 3, 1, 1)
+# Pixel-mean from upstream training preprocessing.
+#
+# Yakhyo trained on BGR input (cv2.imread) and subtracted (104, 117, 123).
+# That's literally B=104, G=117, R=123. py-feat's pipeline tensor is RGB
+# (PILToTensor / torchvision.io.read_image). To get bit-equivalent
+# preprocessing without flipping channels, we apply the per-channel mean
+# in RGB order: R=123, G=117, B=104. Equivalent math, one fewer op.
+_RGB_MEAN = torch.tensor([123.0, 117.0, 104.0]).view(1, 3, 1, 1)
 
 
 class Retinaface:
@@ -116,7 +120,7 @@ class Retinaface:
         self._prior_cache: dict[tuple[int, int, torch.device], torch.Tensor] = {}
 
         # Mean tensor materialized on the right device once.
-        self._mean = _BGR_MEAN.to(self.device)
+        self._mean = _RGB_MEAN.to(self.device)
 
     def _get_priors(self, height: int, width: int) -> torch.Tensor:
         key = (height, width, self.device)

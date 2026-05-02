@@ -253,24 +253,22 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         self.info["face_model"] = face_model
         if face_model is not None:
             if face_model == "retinaface":
-                face_config_file = hf_hub_download(
-                    repo_id="py-feat/retinaface",
-                    filename="config.json",
-                    cache_dir=get_resource_path(),
+                # The legacy MobileNet0.25 RetinaFace integration was rebuilt
+                # in v0.7 around the new ResNet34 backbone (see
+                # feat.face_detectors.Retinaface). MPDetector hasn't been
+                # migrated yet - the path that constructs RetinaFace(cfg=...,
+                # phase="test") and downloads mobilenet0.25_Final.pth no
+                # longer matches the current class signature or HF layout.
+                # Fail loud with a migration pointer rather than letting a
+                # confusing TypeError surface from deep in __init__.
+                raise NotImplementedError(
+                    "MPDetector's retinaface face-detection path is pending "
+                    "migration to the new ResNet34-backbone wrapper. Use "
+                    "feat.detector.Detector(face_model='retinaface_r34') for "
+                    "now, or pass face_model=None to MPDetector if you only "
+                    "need the landmark / blendshape stages. Tracked as a "
+                    "follow-up to PR #275."
                 )
-                with open(face_config_file, "r") as f:
-                    self.face_config = json.load(f)
-
-                face_model_file = hf_hub_download(
-                    repo_id="py-feat/retinaface",
-                    filename="mobilenet0.25_Final.pth",
-                    cache_dir=get_resource_path(),
-                )
-                face_checkpoint = torch.load(
-                    face_model_file, map_location=self.device, weights_only=True
-                )
-
-                self.face_detector = RetinaFace(cfg=self.face_config, phase="test")
             else:
                 raise ValueError(f"{face_model} is not currently supported.")
 
