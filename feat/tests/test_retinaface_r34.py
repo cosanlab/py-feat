@@ -211,11 +211,20 @@ def test_detector_with_retinaface_r34_detects_multi_face():
         assert len(fex) >= 4, f"expected >=4 faces, got {len(fex)}"
         # Pose columns are populated via PnP. Each angle must be a finite
         # number in radians (between -pi and +pi).
+        import math
         for col in ("Pitch", "Roll", "Yaw"):
             vals = fex[col]
             assert not vals.isna().any(), f"{col} has NaN values"
-            import math
             assert (vals.abs() <= math.pi).all(), f"{col} out of [-pi, pi]"
+        # Sanity bound: faces in multi_face.jpg are all roughly frontal
+        # (pictured group facing the camera), so mean Yaw magnitude across
+        # the 5 detected faces should be modest. Loose enough to pass on
+        # any reasonable PnP solution; tight enough to catch a regression
+        # where the solver returns near-pi values for every face.
+        assert fex.Yaw.abs().mean() < math.radians(45), (
+            f"mean |Yaw| = {math.degrees(fex.Yaw.abs().mean()):.1f} deg "
+            "on a roughly-frontal multi-face group is suspicious"
+        )
         # Face / emotion outputs are real numbers.
         assert not fex.FaceRectX.isna().any()
         assert (fex.happiness > 0).any()
