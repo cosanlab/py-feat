@@ -65,6 +65,8 @@ If you used:
 
 If you compared `Pitch / Roll / Yaw / X / Y / Z` outputs from `MPDetector` between 0.6.x and 0.7.0, the values will differ. The prior estimator minimized the wrong objective (`mean(z_proj²)` instead of a true reprojection error) and produced effectively meaningless head-pose values; the new closed-form Umeyama alignment produces the actual head pose. Treat the prior values as noise.
 
+**Note on intermediate v0.7-dev builds:** a Y/Z-axis convention bug introduced alongside the new alignment (the canonical face model uses head-centric `Y up, Z out`; MediaPipe Face Mesh outputs `Y down, Z into screen`) made `Pitch` cluster at ±π for forward-facing portraits. Fixed in PR #279 before the 0.7.0 release. Only releases at or after this fix produce correct head pose; earlier 0.7-dev snapshots should be re-run.
+
 `MPDetector` also now emits `gaze_pitch` and `gaze_yaw` columns (radians, head-centric frame) in addition to the existing `gaze_angle`. The `gaze_angle` column is preserved for backward compatibility but its semantic shifted from "angle from camera-forward" to "angle from head-forward in head frame" - so a turned head no longer registers as averted gaze even when the eyes are looking along the head's forward axis.
 
 # 0.6.1

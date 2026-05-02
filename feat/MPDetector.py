@@ -27,6 +27,14 @@ from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 # canonical name in feat.detector.Detector. Accepting both keeps existing
 # MPDetector callers working while the canonical name is the documented one.
 _RETINAFACE_ALIASES = ("retinaface", "retinaface_r34")
+
+
+# Per-axis sign flip applied to MediaPipe Face Mesh landmarks to translate
+# them into the canonical face-model coordinate convention used downstream.
+# See `convert_landmarks_3d` for the full rationale.
+_MEDIAPIPE_TO_CANONICAL_AXIS_FLIP = torch.tensor(
+    [1.0, -1.0, -1.0], dtype=torch.float32
+)
 from feat.au_detectors.MP_Blendshapes.MP_Blendshapes_test import (
     MediaPipeBlendshapesMLPMixer,
 )
@@ -102,7 +110,7 @@ def convert_landmarks_3d(fex):
     ).reshape(fex.shape[0], 478, 3)
     # Flip Y and Z to translate from MediaPipe image-pixel convention into
     # the canonical face model's head-centric convention.
-    return landmarks * torch.tensor([1.0, -1.0, -1.0], dtype=torch.float32)
+    return landmarks * _MEDIAPIPE_TO_CANONICAL_AXIS_FLIP.to(landmarks.device)
 
 
 def plot_face_landmarks(
