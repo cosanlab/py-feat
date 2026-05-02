@@ -107,20 +107,20 @@ def registration(face_lms, neutral=neutral, method="fullface"):
 
 
 def extract_face_from_landmarks(frame, landmarks, face_size=112):
-    """Extract a face in a frame with a convex hull of landmarks.
+    """Extract a face from a frame using a convex hull around its landmarks.
 
-    This function extracts the faces of the frame with convex hulls and masks out the rest.
+    Aligns the face by 68-landmark transform, masks pixels outside the
+    convex hull of the landmarks, and returns the cropped face.
 
     Args:
-        frame (array): The original image]
-        detected_faces (list): face bounding box
-        landmarks (list): the landmark information]
-        align (bool): align face to standard position
-        size_output (int, optional): [description]. Defaults to 112.
+        frame (torch.Tensor): image tensor of shape `[C, H, W]` or `[B, C, H, W]`.
+        landmarks (torch.Tensor): 68 landmark coordinates as a flat or
+            `(68, 2)` tensor on any device (moved to CPU/numpy internally).
+        face_size (int): output crop size in pixels (default 112).
 
     Returns:
-        resized_face_np: resized face as a numpy array
-        new_landmarks: landmarks of aligned face
+        masked_image: aligned cropped face with non-face pixels masked out.
+        new_landmarks: landmark coordinates in the aligned crop's frame.
     """
 
     if not isinstance(frame, torch.Tensor):
@@ -129,7 +129,7 @@ def extract_face_from_landmarks(frame, landmarks, face_size=112):
     if len(frame.shape) != 4:
         frame = frame.unsqueeze(0)
 
-    landmarks = np.array(landmarks.cpu()).copy()
+    landmarks = landmarks.detach().cpu().numpy().copy()
 
     aligned_img, new_landmarks = align_face(
         frame,
@@ -303,14 +303,15 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             / 6.0
         )
 
-        mat2 = np.asmatrix(
+        mat2 = np.array(
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
                 [float(landmarks[2 * 30]), float(landmarks[2 * 30 + 1]), 1.0],
                 [float(landmarks[2 * 48]), float(landmarks[2 * 48 + 1]), 1.0],
                 [float(landmarks[2 * 54]), float(landmarks[2 * 54 + 1]), 1.0],
-            ]
+            ],
+            dtype=float,
         )
     elif landmark_type == 49:
         left_eye0 = (
@@ -358,14 +359,15 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             / 6.0
         )
 
-        mat2 = np.asmatrix(
+        mat2 = np.array(
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
                 [float(landmarks[2 * 13]), float(landmarks[2 * 13 + 1]), 1.0],
                 [float(landmarks[2 * 31]), float(landmarks[2 * 31 + 1]), 1.0],
                 [float(landmarks[2 * 37]), float(landmarks[2 * 37 + 1]), 1.0],
-            ]
+            ],
+            dtype=float,
         )
     else:
         raise ValueError("landmark_type must be (68,49).")
@@ -376,29 +378,33 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     l = math.sqrt(delta_x**2 + delta_y**2)
     sin_val = delta_y / l
     cos_val = delta_x / l
-    mat1 = np.asmatrix([[cos_val, sin_val, 0.0], [-sin_val, cos_val, 0.0], [0.0, 0.0, 1.0]])
+    mat1 = np.array(
+        [[cos_val, sin_val, 0.0], [-sin_val, cos_val, 0.0], [0.0, 0.0, 1.0]],
+        dtype=float,
+    )
 
-    mat2 = (mat1 * mat2.T).T
+    mat2 = (mat1 @ mat2.T).T
 
-    center_x = (max(mat2[:, 0]).item() + min(mat2[:, 0]).item()) / 2.0
-    center_y = (max(mat2[:, 1]).item() + min(mat2[:, 1]).item()) / 2.0
+    center_x = (mat2[:, 0].max() + mat2[:, 0].min()) / 2.0
+    center_y = (mat2[:, 1].max() + mat2[:, 1].min()) / 2.0
 
-    if (max(mat2[:, 0]) - min(mat2[:, 0])) > (max(mat2[:, 1]) - min(mat2[:, 1])):
-        half_size = 0.5 * box_enlarge * (max(mat2[:, 0]).item() - min(mat2[:, 0]).item())
+    if (mat2[:, 0].max() - mat2[:, 0].min()) > (mat2[:, 1].max() - mat2[:, 1].min()):
+        half_size = 0.5 * box_enlarge * (mat2[:, 0].max() - mat2[:, 0].min())
     else:
-        half_size = 0.5 * box_enlarge * (max(mat2[:, 1]).item() - min(mat2[:, 1]).item())
+        half_size = 0.5 * box_enlarge * (mat2[:, 1].max() - mat2[:, 1].min())
 
     scale = (img_size - 1) / 2.0 / half_size
 
-    mat3 = np.asmatrix(
+    mat3 = np.array(
         [
             [scale, 0.0, scale * (half_size - center_x)],
             [0.0, scale, scale * (half_size - center_y)],
             [0.0, 0.0, 1.0],
-        ]
+        ],
+        dtype=float,
     )
 
-    mat = mat3 * mat1
+    mat = mat3 @ mat1
     affine_matrix = torch.tensor(mat[0:2, :]).type(torch.float32).unsqueeze(0)
 
     # warp_affine expects [batch, channel, height, width]
@@ -422,8 +428,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
 
     land_3d = np.ones((len(landmarks) // 2, 3))
     land_3d[:, 0:2] = np.reshape(np.array(landmarks), (len(landmarks) // 2, 2))
-    mat_land_3d = np.asmatrix(land_3d)
-    new_landmarks = np.array((mat * mat_land_3d.T).T)
+    new_landmarks = (mat @ land_3d.T).T
     new_landmarks = np.array(list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))).astype(
         int
     )
