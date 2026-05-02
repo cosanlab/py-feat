@@ -114,10 +114,10 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             face_model=face_model,
             landmark_model=None,
             emotion_model=None,
-            # facepose_model tracks where 6DoF pose comes from. Only img2pose
-            # regresses pose natively; with retinaface_r34, pose columns
-            # are NaN until a future PR adds a 5-keypoint -> 6DoF helper.
-            facepose_model="img2pose" if face_model == "img2pose" else None,
+            # facepose_model tracks where 6DoF pose comes from. img2pose
+            # regresses pose natively; retinaface_r34 derives pose via
+            # DLT-PnP from the 68 landmarks (see feat.utils.face_pose_pnp).
+            facepose_model="img2pose" if face_model == "img2pose" else "pnp_dlt",
             au_model=None,
             identity_model=None,
         )
@@ -166,10 +166,13 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             # No 6DoF head pose - pose columns are populated as NaN.
             self.facepose_detector = Retinaface(device=self.device)
             warnings.warn(
-                "face_model='retinaface_r34' does not regress 6DoF head pose; "
-                "Pitch/Roll/Yaw/X/Y/Z columns will be NaN. Use "
-                "face_model='img2pose' (default) if you need pose values, or "
-                "wait for the upcoming pure-torch solvePnP follow-up.",
+                "face_model='retinaface_r34' does not regress 6DoF head pose. "
+                "Pose columns are populated via DLT-PnP from the 68 landmarks "
+                "and may differ from img2pose's regressed pose by up to ~30 "
+                "degrees on Pitch (the axis with shallowest landmark "
+                "differentiation). Use face_model='img2pose' (default) if you "
+                "need pose values that match Cheong et al (Affective Science "
+                "2023). See feat.utils.face_pose_pnp for accuracy notes.",
                 stacklevel=2,
             )
 
@@ -447,6 +450,10 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 "new_boxes": new_bbox,
                 "poses": poses,
                 "scores": facescores,
+                # image (H, W) needed downstream for PnP-based pose estimation
+                # when face_model != 'img2pose'. Cheap to thread through;
+                # avoids a second pass over `frames_unit` in forward().
+                "image_size": tuple(frames_unit.shape[-2:]),
             }
 
             # Extract Faces separately for Resmasknet
@@ -555,6 +562,41 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         poses = torch.cat(
             [face_output["poses"].to(self.device) for face_output in faces_data], dim=0
         )
+
+        # When face_model='retinaface_r34' (or any future detector that
+        # doesn't natively regress 6DoF pose), the per-frame `poses` tensors
+        # are NaN-padded. Replace with PnP-derived pose from the 68 landmarks
+        # we just computed, using img2pose's published 3D template (so the
+        # output lives in the same head-centric coordinate frame).
+        if (
+            self.info["face_model"] != "img2pose"
+            and self.landmark_detector is not None
+            and torch.isnan(poses).any()
+        ):
+            from feat.utils.face_pose_pnp import pose_from_landmarks_2d
+
+            # Group landmarks by source frame so we can use the per-frame
+            # image size for default intrinsics. Faces from frames with no
+            # detection have NaN landmarks; skip them.
+            face_idx = 0
+            for face_output in faces_data:
+                n_face = face_output["new_boxes"].shape[0]
+                if n_face == 0 or torch.all(torch.isnan(face_output["new_boxes"])):
+                    face_idx += n_face
+                    continue
+                # new_landmarks is [N_total, 136]; slice the rows for this frame
+                # and reshape to [N_face_in_frame, 68, 2].
+                frame_lmk = new_landmarks[face_idx : face_idx + n_face].reshape(
+                    n_face, 68, 2
+                )
+                if not torch.isnan(frame_lmk).any():
+                    pnp_pose = pose_from_landmarks_2d(
+                        frame_lmk.to(self.device),
+                        face_output["image_size"],
+                    )
+                    poses[face_idx : face_idx + n_face] = pnp_pose
+                face_idx += n_face
+
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
