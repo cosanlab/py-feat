@@ -402,6 +402,11 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     if img.ndim == 3:
         img = img[None, :]
 
+    # warp_affine internally builds a sampling grid that must live on
+    # the same device as the input. When img is on mps/cuda this raises
+    # grid_sampler device mismatch unless the matrix is moved too.
+    affine_matrix = affine_matrix.to(img.device)
+
     aligned_img = warp_affine(
         img,
         affine_matrix,
@@ -776,7 +781,8 @@ def mask_image(img, mask):
     #     raise ValueError(
     #         f"img must be pytorch tensor, not {type(img)} and mask must be np array not {type(mask)}"
     #     )
-    return torch.sgn(torch.tensor(mask).to(torch.float32)).unsqueeze(0).unsqueeze(0) * img
+    mask_t = torch.tensor(mask).to(torch.float32).to(img.device)
+    return torch.sgn(mask_t).unsqueeze(0).unsqueeze(0) * img
 
 
 def convert_to_euler(rotvec, is_rotvec=True):
