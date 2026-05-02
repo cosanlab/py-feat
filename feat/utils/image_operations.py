@@ -14,7 +14,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.transforms import PILToTensor, Compose
 import PIL
-from kornia.geometry.transform import warp_affine
+from feat.utils.geometry import (
+    warp_affine,
+    axis_angle_to_rotation_matrix,
+    rotation_matrix_to_quaternion,
+    euler_from_quaternion,
+)
 from skimage.morphology.convex_hull import grid_points_in_poly
 from feat.transforms import Rescale
 from feat.utils import set_torch_device
@@ -25,10 +30,7 @@ import torchvision.transforms as transforms
 import logging
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
-import kornia
 import warnings
-
-warnings.filterwarnings("ignore", category=FutureWarning, module="kornia")
 
 __all__ = [
     "neutral",
@@ -816,26 +818,13 @@ def rotvec_to_euler_angles(rotation_vector):
         torch.Tensor: Tensor of shape (N, 3) representing the Euler angles.
     """
 
-    # Ensure rotation_vector is of shape (N, 3)
     if rotation_vector.dim() == 1:
         rotation_vector = rotation_vector.unsqueeze(0)
-
-    # Convert rotation vector to rotation matrix
-    rotation_matrix = kornia.geometry.conversions.axis_angle_to_rotation_matrix(
-        rotation_vector
-    )
-
-    # Convert rotation matrix to quaternion
-    quaternion = kornia.geometry.conversions.rotation_matrix_to_quaternion(
-        rotation_matrix
-    )
-
-    # Convert quaternion to Euler angles
-    euler_angles = kornia.geometry.conversions.euler_from_quaternion(
+    rotation_matrix = axis_angle_to_rotation_matrix(rotation_vector)
+    quaternion = rotation_matrix_to_quaternion(rotation_matrix)
+    euler_angles = euler_from_quaternion(
         quaternion[..., 0], quaternion[..., 1], quaternion[..., 2], quaternion[..., 3]
     )
-
-    # Stack the results to form a single tensor
     return torch.stack(euler_angles, dim=-1)
 
 
