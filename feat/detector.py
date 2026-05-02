@@ -612,12 +612,10 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             identity_embeddings.cpu().detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
         )
 
-        # Return a plain pd.DataFrame, not a Fex. The Fex constructor's
-        # per-column attribute-setting loop (data.py:435 "Kludgy solution")
-        # is O(n_columns) and is called once per batch by detect(); over a
-        # 472-frame video at batch=16 that adds up to seconds of pure
-        # pandas overhead. detect() collects per-batch DataFrames and wraps
-        # them in a single Fex at the end.
+        # Return a plain pd.DataFrame; detect() wraps the concatenated
+        # result in a single Fex at the end. Avoids Fex.__init__'s
+        # O(n_columns) metadata loop (see Fex.__init__ in data.py) firing
+        # once per batch, which dominated wall-time on long videos.
         return pd.concat(
             [
                 feat_faceboxes,
@@ -748,12 +746,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             # last batch when len(dataset) is not divisible by batch_size).
             frame_counter += batch_data["Image"].shape[0]
 
-        # Build a single Fex once - either by reading the streamed CSV
-        # (save mode) or by concatenating the per-batch DataFrames
-        # forward() now returns. Per-batch Fex construction was the
-        # dominant cost on long videos because Fex.__init__ runs an
-        # O(n_columns) loop (data.py:435 "Kludgy solution") on every
-        # call. Wrapping once amortizes that cost across all frames.
+        # Build a single Fex once: either from the streamed CSV (save
+        # mode) or by concatenating the per-batch DataFrames forward()
+        # returned. See forward() comment for why we don't wrap per batch.
         if save:
             concat_df = pd.read_csv(save)
         else:
