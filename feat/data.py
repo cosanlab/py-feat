@@ -932,7 +932,11 @@ class Fex(DataFrame):
         se_df = pd.DataFrame(se, index=mX.columns, columns=my.columns)
         t_df = pd.DataFrame(t, index=mX.columns, columns=my.columns)
         p_df = pd.DataFrame(p, index=mX.columns, columns=my.columns)
-        df_df = pd.DataFrame(np.tile(df, (2, 1)), index=mX.columns, columns=my.columns)
+        df_df = pd.DataFrame(
+            np.full((len(mX.columns), len(my.columns)), df),
+            index=mX.columns,
+            columns=my.columns,
+        )
         res_df = pd.DataFrame(res, columns=my.columns)
         return b_df, se_df, t_df, p_df, df_df, res_df
 
