@@ -10,10 +10,14 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 from feat.utils.stats import (
+    clean_signal,
     downsample,
     upsample,
     regress,
     set_decomposition_algorithm,
+    wavelet,
+    calc_hist_auc,
+    cluster_identities,
 )
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.linear_model import LinearRegression
@@ -27,7 +31,6 @@ from torch import swapaxes
 from feat.transforms import Rescale
 from feat.utils import flatten_list
 from feat.utils.io import read_feat, read_openface, load_pil_img
-from feat.utils.stats import wavelet, calc_hist_auc, cluster_identities
 from feat.plotting import (
     plot_face,
     draw_lineface,
@@ -39,7 +42,6 @@ from feat.plotting import (
     emotion_annotation_position,
 )
 from feat.pretrained import AU_LANDMARK_MAP
-# nilearn is a heavyweight dependency only needed for Fex.clean(); imported lazily.
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
 import matplotlib.pyplot as plt
@@ -1200,63 +1202,44 @@ class Fex(DataFrame):
         high_pass=None,
         ensure_finite=False,
         ignore_sessions=False,
-        *args,
-        **kwargs,
     ):
-        """Clean Time Series signal
+        """Clean a time-series signal: detrend, regress confounds, filter, standardize.
 
-        This function wraps nilearn functionality and can filter, denoise,
-        detrend, etc.
-
-        See http://nilearn.github.io/modules/generated/nilearn.signal.clean.html
-
-        This function can do several things on the input signals, in
-        the following order: detrend, standardize, remove confounds, low and high-pass filter
-
-        If Fex.sessions is not None, sessions will be cleaned separately.
+        Operations applied in this order: detrend -> regress confounds ->
+        Butterworth low/high-pass filter -> standardize -> ensure_finite. If
+        ``Fex.sessions`` is set and ``ignore_sessions=False``, each session
+        is cleaned independently.
 
         Args:
-            confounds: (numpy.ndarray, str or list of Confounds timeseries) Shape must be (instant number, confound number), or just (instant number,). The number of time instants in signals and confounds must be identical (i.e. signals.shape[0] == confounds.shape[0]). If a string is provided, it is assumed to be the name of a csv file containing signals as columns, with an optional one-line header. If a list is provided, all confounds are removed from the input signal, as if all were in the same array.
-            low_pass: (float) low pass cutoff frequencies in Hz.
-            high_pass: (float) high pass cutoff frequencies in Hz.
-            detrend: (bool) If detrending should be applied on timeseries (before confound removal)
-            standardize: (bool) If True, returned signals are set to unit variance.
-            ensure_finite: (bool) If True, the non-finite values (NANs and infs) found in the data will be replaced by zeros.
-            ignore_sessions: (bool) If True, will ignore Fex.sessions information. Otherwise, method will be applied separately to each unique session.
+            detrend: subtract a linear trend from each column.
+            standardize: rescale each column to zero-mean unit-variance.
+            confounds: optional ``(T,)`` or ``(T, n_conf)`` confounds regressed
+                out via OLS.
+            low_pass: low-pass cutoff in Hz.
+            high_pass: high-pass cutoff in Hz.
+            ensure_finite: replace NaN/Inf with zero in the output.
+            ignore_sessions: if True, treat all rows as one session.
 
         Returns:
-            cleaned Fex instance
+            cleaned Fex instance.
         """
-        try:
-            from nilearn.signal import clean
-        except ImportError as e:
-            raise ImportError(
-                "Fex.clean() requires nilearn. Install it with `pip install nilearn`."
-            ) from e
-        if self.sessions is not None:
-            if ignore_sessions:
-                sessions = None
-            else:
-                sessions = self.sessions
+        if self.sessions is not None and not ignore_sessions:
+            sessions = self.sessions
         else:
             sessions = None
+        cleaned = clean_signal(
+            self.values,
+            detrend=detrend,
+            standardize=standardize,
+            confounds=confounds,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            ensure_finite=ensure_finite,
+            sampling_freq=float(self.sampling_freq),
+            runs=sessions,
+        )
         return self.__class__(
-            pd.DataFrame(
-                clean(
-                    self.values,
-                    detrend=detrend,
-                    standardize=standardize,
-                    confounds=confounds,
-                    low_pass=low_pass,
-                    high_pass=high_pass,
-                    ensure_finite=ensure_finite,
-                    t_r=1.0 / np.float64(self.sampling_freq),
-                    runs=sessions,
-                    *args,
-                    **kwargs,
-                ),
-                columns=self.columns,
-            ),
+            pd.DataFrame(cleaned, columns=self.columns),
             sampling_freq=self.sampling_freq,
             features=self.features,
             sessions=self.sessions,

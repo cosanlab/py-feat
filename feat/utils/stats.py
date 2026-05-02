@@ -17,6 +17,7 @@ __all__ = [
     "downsample",
     "upsample",
     "set_decomposition_algorithm",
+    "clean_signal",
 ]
 
 
@@ -253,6 +254,131 @@ def set_decomposition_algorithm(algorithm="pca", n_components=None, *args, **kwa
     raise ValueError(
         f"Unknown algorithm {algorithm!r}; use 'pca', 'ica', 'nnmf', or 'fa'"
     )
+
+
+def clean_signal(
+    signals,
+    *,
+    detrend=True,
+    standardize=True,
+    confounds=None,
+    low_pass=None,
+    high_pass=None,
+    ensure_finite=False,
+    sampling_freq=1.0,
+    runs=None,
+):
+    """Clean a 2D time-series signal: detrend, filter, regress confounds, standardize.
+
+    Drop-in replacement for the parts of ``nilearn.signal.clean`` that
+    ``Fex.clean`` uses, so py-feat can avoid taking on nilearn (and its
+    transitive nibabel/joblib/sklearn deps) just for time-series cleanup.
+
+    Operations are applied in nilearn's order:
+        1. Detrend (linear, optional)
+        2. Butterworth low/high/bandpass filter (optional, uses ``filtfilt``)
+        3. Regress out confounds (optional). Confounds are filtered with the
+           same Butterworth before regression so the filter and confound-
+           removal operators stay orthogonal (Lindquist et al. 2018).
+        4. Standardize (zero-mean unit-variance, optional)
+        5. Replace NaN/Inf with zero (optional)
+
+    Args:
+        signals: ``[T, n_signals]`` array (or 1-D, treated as ``[T, 1]``).
+        detrend: subtract a linear trend from each column.
+        standardize: rescale each column to zero-mean unit-variance
+            (using sample std, ``ddof=1``).
+        confounds: optional ``[T, n_conf]`` confounds regressed out via OLS
+            (intercept added).
+        low_pass: low-pass cutoff in Hz (Butterworth, order 5).
+        high_pass: high-pass cutoff in Hz.
+        ensure_finite: replace NaN/Inf with zero in the output.
+        sampling_freq: sampling rate in Hz (used for filter design).
+        runs: optional 1-D label array. If given, each unique label is
+            cleaned independently and the segments are concatenated back
+            in original order.
+
+    Returns:
+        ``np.ndarray`` of shape ``[T, n_signals]``.
+    """
+    from scipy.signal import butter, detrend as _detrend, filtfilt
+
+    signals = np.asarray(signals, dtype=np.float64)
+    one_d = signals.ndim == 1
+    if one_d:
+        signals = signals[:, None]
+
+    if runs is not None:
+        runs = np.asarray(runs)
+        if runs.shape[0] != signals.shape[0]:
+            raise ValueError(
+                f"runs length ({runs.shape[0]}) must match signals "
+                f"length ({signals.shape[0]})"
+            )
+        out = np.empty_like(signals)
+        for r in np.unique(runs):
+            mask = runs == r
+            sub_conf = confounds[mask] if confounds is not None else None
+            out[mask] = clean_signal(
+                signals[mask],
+                detrend=detrend,
+                standardize=standardize,
+                confounds=sub_conf,
+                low_pass=low_pass,
+                high_pass=high_pass,
+                ensure_finite=ensure_finite,
+                sampling_freq=sampling_freq,
+                runs=None,
+            )
+        return out.squeeze(-1) if one_d else out
+
+    if detrend:
+        signals = _detrend(signals, axis=0, type="linear")
+
+    # Filter design (used for both signals and confounds, per nilearn).
+    filter_b_a = None
+    if low_pass is not None or high_pass is not None:
+        nyq = sampling_freq / 2.0
+        if low_pass is not None and high_pass is not None:
+            filter_b_a = butter(
+                N=5, Wn=[high_pass / nyq, low_pass / nyq], btype="bandpass"
+            )
+        elif low_pass is not None:
+            filter_b_a = butter(N=5, Wn=low_pass / nyq, btype="lowpass")
+        else:
+            filter_b_a = butter(N=5, Wn=high_pass / nyq, btype="highpass")
+
+    if filter_b_a is not None:
+        signals = filtfilt(*filter_b_a, signals, axis=0)
+
+    if confounds is not None:
+        confounds = np.asarray(confounds, dtype=np.float64)
+        if confounds.ndim == 1:
+            confounds = confounds[:, None]
+        if confounds.shape[0] != signals.shape[0]:
+            raise ValueError(
+                f"confounds length ({confounds.shape[0]}) must match signals "
+                f"length ({signals.shape[0]})"
+            )
+        # Filter confounds with the same Butterworth so the filter and
+        # confound-removal operators stay orthogonal (nilearn's behavior).
+        if filter_b_a is not None:
+            confounds = filtfilt(*filter_b_a, confounds, axis=0)
+        # Append intercept and regress out via least squares.
+        X = np.hstack([confounds, np.ones((confounds.shape[0], 1))])
+        beta, *_ = np.linalg.lstsq(X, signals, rcond=None)
+        signals = signals - X @ beta
+
+    if standardize:
+        mean = signals.mean(axis=0)
+        std = signals.std(axis=0, ddof=1)
+        std = np.where(std == 0, 1.0, std)  # avoid div-by-zero on constant cols
+        signals = (signals - mean) / std
+
+    if ensure_finite:
+        signals = np.nan_to_num(signals, nan=0.0, posinf=0.0, neginf=0.0)
+
+    return signals.squeeze(-1) if one_d else signals
 
 
 def cluster_identities(face_embeddings, threshold=0.8):
