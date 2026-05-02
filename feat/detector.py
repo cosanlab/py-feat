@@ -35,6 +35,7 @@ from feat.utils.image_operations import (
     extract_hog_features,
     convert_bbox_output,
     compute_original_image_size,
+    invert_padding_to_results,
 )
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
@@ -161,7 +162,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     landmark_model_file, map_location=self.device, weights_only=True
                 )["state_dict"]  # Ensure Model weights are Float32 for MPS
             else:
-                raise ValueError("{landmark_model} is not currently supported.")
+                raise ValueError(f"{landmark_model} is not currently supported.")
             self.landmark_detector.load_state_dict(landmark_state_dict)
             self.landmark_detector.eval()
             self.landmark_detector.to(self.device)
@@ -189,7 +190,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                         cache_dir=get_resource_path(),
                     )
                 else:
-                    raise ValueError("{au_model} is not currently supported.")
+                    raise ValueError(f"{au_model} is not currently supported.")
 
                 au_unknown_types = get_untrusted_types(file=au_model_path)
                 loaded_au_model = load(au_model_path, trusted=au_unknown_types)
@@ -204,7 +205,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 )
             else:
                 raise ValueError(
-                    "Landmark Detector is required for AU Detection with {au_model}."
+                    f"Landmark Detector is required for AU Detection with {au_model}."
                 )
         else:
             self.au_detector = None
@@ -262,7 +263,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     )
 
             else:
-                raise ValueError("{emotion_model} is not currently supported.")
+                raise ValueError(f"{emotion_model} is not currently supported.")
         else:
             self.emotion_detector = None
 
@@ -292,7 +293,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 self.identity_detector.to(self.device)
                 # self.identity_detector = torch.compile(self.identity_detector)
             else:
-                raise ValueError("{identity_model} is not currently supported.")
+                raise ValueError(f"{identity_model} is not currently supported.")
         else:
             self.identity_detector = None
 
@@ -314,7 +315,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
 
         # img2pose
         frames = convert_image_to_tensor(images, img_type="float32") / 255.0
-        frames.to(self.device)
+        frames = frames.to(self.device)
 
         batch_results = []
         for i in range(frames.size(0)):
@@ -394,7 +395,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 landmarks = self.landmark_detector.forward(
                     extracted_faces.to(self.device)
                 )
-            if self.info["landmark_model"].lower() == "mobilefacenet":
+            elif self.info["landmark_model"].lower() == "mobilefacenet":
                 landmarks = self.landmark_detector.forward(
                     extracted_faces.to(self.device)
                 )[0]
@@ -617,66 +618,16 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             batch_results["input"] = np.concatenate(file_names)
             batch_results["frame"] = np.concatenate(frame_ids)
 
-            # Invert the face boxes and landmarks based on the padded output size
-            for j, frame_idx in enumerate(batch_results["frame"].unique()):
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, ["FrameHeight", "FrameWidth"]
-                ] = (
-                    compute_original_image_size(batch_data)[j, :]
-                    .repeat(
-                        len(
-                            batch_results.loc[
-                                batch_results["frame"] == frame_idx, "frame"
-                            ]
-                        ),
-                        1,
-                    )
-                    .numpy()
-                )
-                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"] = (
-                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"]
-                    - batch_data["Padding"]["Left"].detach().numpy()[j]
-                ) / batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"] = (
-                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"]
-                    - batch_data["Padding"]["Top"].detach().numpy()[j]
-                ) / batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, "FaceRectWidth"
-                ] = (
-                    (
-                        batch_results.loc[
-                            batch_results["frame"] == frame_idx, "FaceRectWidth"
-                        ]
-                    )
-                    / batch_data["Scale"].detach().numpy()[j]
-                )
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, "FaceRectHeight"
-                ] = (
-                    (
-                        batch_results.loc[
-                            batch_results["frame"] == frame_idx, "FaceRectHeight"
-                        ]
-                    )
-                    / batch_data["Scale"].detach().numpy()[j]
-                )
-
-                for i in range(68):
-                    batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"] = (
-                        batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"]
-                        - batch_data["Padding"]["Left"].detach().numpy()[j]
-                    ) / batch_data["Scale"].detach().numpy()[j]
-                    batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"] = (
-                        batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"]
-                        - batch_data["Padding"]["Top"].detach().numpy()[j]
-                    ) / batch_data["Scale"].detach().numpy()[j]
+            # Invert the face boxes and landmarks based on the padded output size.
+            invert_padding_to_results(batch_results, batch_data, n_landmarks=68)
 
             if save:
                 batch_results.to_csv(save, mode="a", index=False, header=batch_id == 0)
             else:
                 batch_output.append(batch_results)
-            frame_counter += 1 * batch_size
+            # Use the actual batch size (may be smaller than `batch_size` for the
+            # last batch when len(dataset) is not divisible by batch_size).
+            frame_counter += batch_data["Image"].shape[0]
 
         batch_output = (
             Fex(
