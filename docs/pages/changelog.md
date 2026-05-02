@@ -49,6 +49,12 @@ If you used:
 - `from nltools.data import Adjacency` for the result of `Fex.distance()` -> the result is now a plain `pandas.DataFrame`. Drop the import; use `.shape` instead of `.square_shape()`.
 - Python 3.10 or earlier -> upgrade to 3.11+. macOS users may also need `brew install libomp` for xgboost on Python 3.13.
 
+### MPDetector pose / gaze numerics changed
+
+If you compared `Pitch / Roll / Yaw / X / Y / Z` outputs from `MPDetector` between 0.6.x and 0.7.0, the values will differ. The prior estimator minimized the wrong objective (`mean(z_proj²)` instead of a true reprojection error) and produced effectively meaningless head-pose values; the new closed-form Umeyama alignment produces the actual head pose. Treat the prior values as noise.
+
+`MPDetector` also now emits `gaze_pitch` and `gaze_yaw` columns (radians, head-centric frame) in addition to the existing `gaze_angle`. The `gaze_angle` column is preserved for backward compatibility but its semantic shifted from "angle from camera-forward" to "angle from head-forward in head frame" - so a turned head no longer registers as averted gaze even when the eyes are looking along the head's forward axis.
+
 # 0.6.1
 
 ## Notes
