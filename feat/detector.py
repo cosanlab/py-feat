@@ -314,7 +314,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
 
         # img2pose
         frames = convert_image_to_tensor(images, img_type="float32") / 255.0
-        frames.to(self.device)
+        frames = frames.to(self.device)
 
         batch_results = []
         for i in range(frames.size(0)):

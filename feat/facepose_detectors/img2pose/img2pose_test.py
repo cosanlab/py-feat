@@ -314,12 +314,10 @@ class Img2Pose:
             dict: A dictionary of bboxes and poses
 
         """
-        # For device='mps'
-        # Uncommenting this line at least gets img2pose running but errors with
-        # Error: command buffer exited with error status.
-        # The Metal Performance Shaders operations encoded on it may not have completed.
-
-        # img = img.to(self.device)
+        # Move the image to the same device as the model. Required when
+        # device='mps' or 'cuda' — the upstream `convert_image_to_tensor`
+        # produces a CPU tensor regardless of the detector's device.
+        img = img.to(self.device)
 
         # Obtain prediction
         with torch.no_grad():
