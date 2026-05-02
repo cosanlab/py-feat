@@ -1,5 +1,36 @@
 # Change Log
 
+# 0.8.0 (in development on `v0.8-dev`)
+
+## Notes
+
+This is the first major-feature release after the 0.7 huggingface integration. It is a coordinated batch of breaking changes plus a step change in detection performance, video memory behavior, and Apple Silicon (MPS) support. Users on Python 3.10 or earlier, or who use `nltools.data.Adjacency` from `Fex.distance()`, will need to migrate (see the migration guide below).
+
+## Breaking API changes
+
+- **Python 3.11+ required.** Drops support for 3.8 / 3.9 / 3.10. CI now tests 3.11 / 3.12 / 3.13. *(PR #262)*
+- **`nltools` is no longer a dependency.** The four functions previously sourced from nltools are now in `feat.utils.stats`: `regress`, `downsample`, `upsample`, `set_decomposition_algorithm`. `Fex.distance()` now returns a `pandas.DataFrame` instead of an `nltools.data.Adjacency`. *(PR #262)*
+- *(More breaking changes to be added as PRs land.)*
+
+## New features
+
+- *(In progress - this list will grow as PRs land on `v0.8-dev`.)*
+- **Pure-PyTorch head-pose and gaze for MediaPipe Face Mesh.** Closed-form Umeyama similarity alignment replaces the iterative Adam-loop pose estimator; head-pose-compensated gaze. No OpenCV dependency. *(PR #261)*
+- **`feat.utils.io.decode_video`** for sliced or streamed video decoding via torchcodec; fixes the regression where loading a single frame for plotting decoded the entire video into memory. *(PR #263)*
+- **`HOGLayer`** is fixed and now produces feature vectors that match `skimage.feature.hog` to ~5e-8 absolute tolerance for L1, L1-sqrt, L2, and L2-Hys block normalizations. Wiring it into `extract_hog_features` is a follow-up. *(PR #259)*
+
+## Bug fixes
+
+- **MPS device handoff.** Three places in the inference path created tensors on CPU while model weights were on MPS or CUDA, causing `Detector(device='mps')` to crash partway through. After this, end-to-end MPS detection runs cleanly on Apple Silicon. *(PR #258)*
+- *(More bug fixes to be added as PRs land.)*
+
+## Migration guide (in progress)
+
+If you used:
+- `from nltools.stats import regress, downsample, upsample` -> change to `from feat.utils.stats import regress, downsample, upsample`.
+- `from nltools.data import Adjacency` for the result of `Fex.distance()` -> the result is now a plain `pandas.DataFrame`. Drop the import; use `.shape` instead of `.square_shape()`.
+- Python 3.10 or earlier -> upgrade to 3.11+. macOS users may also need `brew install libomp` for xgboost on Python 3.13.
+
 # 0.7.0
 
 ## Notes

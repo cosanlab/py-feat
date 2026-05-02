@@ -229,6 +229,7 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 
+
 <li class="toctree-l1"><a class="reference external" href="https://github.com/cosanlab/py-feat">GitHub Repository</a></li>
 </ul>
 
@@ -426,9 +427,17 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Change Log</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">0.7.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#in-development-on-v0-8-dev">0.8.0 (in development on <code class="docutils literal notranslate"><span class="pre">v0.8-dev</span></code>)</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-api-changes">Breaking API Changes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-api-changes">Breaking API changes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bug-fixes">Bug fixes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#migration-guide-in-progress">Migration guide (in progress)</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">0.7.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Breaking API Changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-default-models">Changes to Default Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-identity-detector">New Identity Detector</a></li>
 </ul>
@@ -436,48 +445,48 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation-updates">Documentation updates</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">0.6.1</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Notes</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">0.6.1</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Notes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">0.6.0</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Notes</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">0.6.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Notes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-changes"><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">0.5.1</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Notes</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">0.5.1</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Notes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">0.5.0</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Notes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10"><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes</a><ul class="nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">0.5.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id12"><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new">New</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking">Breaking</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fex-changes"><code class="docutils literal notranslate"><span class="pre">Fex</span></code> Changes</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">New</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Breaking</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">New</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Breaking</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development-changes">Development changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#general-fixes">General Fixes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">0.4.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">0.4.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-version-breaking-release">Major version breaking release!</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">New</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">New</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-changes">Breaking Changes</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Development changes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Development changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fixes">Fixes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">0.3.7</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">0.3.6</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">0.2.0</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">0.3.7</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">0.3.6</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">0.2.0</a></li>
 </ul>
 
             </nav>
@@ -493,10 +502,50 @@ document.write(`
   <section id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this heading">#</a></h1>
 </section>
-<section id="id1">
-<h1>0.7.0<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<section id="in-development-on-v0-8-dev">
+<h1>0.8.0 (in development on <code class="docutils literal notranslate"><span class="pre">v0.8-dev</span></code>)<a class="headerlink" href="#in-development-on-v0-8-dev" title="Permalink to this heading">#</a></h1>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h2>
+<p>This is the first major-feature release after the 0.7 huggingface integration. It is a coordinated batch of breaking changes plus a step change in detection performance, video memory behavior, and Apple Silicon (MPS) support. Users on Python 3.10 or earlier, or who use <code class="docutils literal notranslate"><span class="pre">nltools.data.Adjacency</span></code> from <code class="docutils literal notranslate"><span class="pre">Fex.distance()</span></code>, will need to migrate (see the migration guide below).</p>
+</section>
+<section id="breaking-api-changes">
+<h2>Breaking API changes<a class="headerlink" href="#breaking-api-changes" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Python 3.11+ required.</strong> Drops support for 3.8 / 3.9 / 3.10. CI now tests 3.11 / 3.12 / 3.13. <em>(PR #262)</em></p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">nltools</span></code> is no longer a dependency.</strong> The four functions previously sourced from nltools are now in <code class="docutils literal notranslate"><span class="pre">feat.utils.stats</span></code>: <code class="docutils literal notranslate"><span class="pre">regress</span></code>, <code class="docutils literal notranslate"><span class="pre">downsample</span></code>, <code class="docutils literal notranslate"><span class="pre">upsample</span></code>, <code class="docutils literal notranslate"><span class="pre">set_decomposition_algorithm</span></code>. <code class="docutils literal notranslate"><span class="pre">Fex.distance()</span></code> now returns a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> instead of an <code class="docutils literal notranslate"><span class="pre">nltools.data.Adjacency</span></code>. <em>(PR #262)</em></p></li>
+<li><p><em>(More breaking changes to be added as PRs land.)</em></p></li>
+</ul>
+</section>
+<section id="new-features">
+<h2>New features<a class="headerlink" href="#new-features" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><em>(In progress - this list will grow as PRs land on <code class="docutils literal notranslate"><span class="pre">v0.8-dev</span></code>.)</em></p></li>
+<li><p><strong>Pure-PyTorch head-pose and gaze for MediaPipe Face Mesh.</strong> Closed-form Umeyama similarity alignment replaces the iterative Adam-loop pose estimator; head-pose-compensated gaze. No OpenCV dependency. <em>(PR #261)</em></p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">feat.utils.io.decode_video</span></code></strong> for sliced or streamed video decoding via torchcodec; fixes the regression where loading a single frame for plotting decoded the entire video into memory. <em>(PR #263)</em></p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">HOGLayer</span></code></strong> is fixed and now produces feature vectors that match <code class="docutils literal notranslate"><span class="pre">skimage.feature.hog</span></code> to ~5e-8 absolute tolerance for L1, L1-sqrt, L2, and L2-Hys block normalizations. Wiring it into <code class="docutils literal notranslate"><span class="pre">extract_hog_features</span></code> is a follow-up. <em>(PR #259)</em></p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h2>Bug fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>MPS device handoff.</strong> Three places in the inference path created tensors on CPU while model weights were on MPS or CUDA, causing <code class="docutils literal notranslate"><span class="pre">Detector(device='mps')</span></code> to crash partway through. After this, end-to-end MPS detection runs cleanly on Apple Silicon. <em>(PR #258)</em></p></li>
+<li><p><em>(More bug fixes to be added as PRs land.)</em></p></li>
+</ul>
+</section>
+<section id="migration-guide-in-progress">
+<h2>Migration guide (in progress)<a class="headerlink" href="#migration-guide-in-progress" title="Permalink to this heading">#</a></h2>
+<p>If you used:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">nltools.stats</span> <span class="pre">import</span> <span class="pre">regress,</span> <span class="pre">downsample,</span> <span class="pre">upsample</span></code> -&gt; change to <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">feat.utils.stats</span> <span class="pre">import</span> <span class="pre">regress,</span> <span class="pre">downsample,</span> <span class="pre">upsample</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">nltools.data</span> <span class="pre">import</span> <span class="pre">Adjacency</span></code> for the result of <code class="docutils literal notranslate"><span class="pre">Fex.distance()</span></code> -&gt; the result is now a plain <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>. Drop the import; use <code class="docutils literal notranslate"><span class="pre">.shape</span></code> instead of <code class="docutils literal notranslate"><span class="pre">.square_shape()</span></code>.</p></li>
+<li><p>Python 3.10 or earlier -&gt; upgrade to 3.11+. macOS users may also need <code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">libomp</span></code> for xgboost on Python 3.13.</p></li>
+</ul>
+</section>
+</section>
+<section id="id1">
+<h1>0.7.0<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<section id="id2">
+<h2>Notes<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
 <p>This is a major structural overhaul of py-feat’s internal <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class. We’ve pruned unreliable models, simpliefied and streamlined, and extended the codebase with an eye towards future development. This includes:</p>
 <ul class="simple">
 <li><p>integration with huggingface: all our pre-trained models are now versioned and available on our <a class="reference external" href="https://huggingface.co/py-feat">HuggingFace model hub</a> and will be automatically downloaded when you first initialize a <code class="docutils literal notranslate"><span class="pre">Detector</span></code> object</p></li>
@@ -504,8 +553,8 @@ document.write(`
 <li><p>numerous bug fixes and improvements</p></li>
 </ul>
 </section>
-<section id="breaking-api-changes">
-<h2>Breaking API Changes<a class="headerlink" href="#breaking-api-changes" title="Permalink to this heading">#</a></h2>
+<section id="id3">
+<h2>Breaking API Changes<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Detector.detect_image()</span></code> and <code class="docutils literal notranslate"><span class="pre">Detector.detect_video()</span></code> have been removed and all detections can be be performed using a single <code class="docutils literal notranslate"><span class="pre">Detector.detect()</span></code> method</p></li>
 <li><p>To process different types of data use the <code class="docutils literal notranslate"><span class="pre">data_type</span></code> argument which supports <code class="docutils literal notranslate"><span class="pre">image</span></code>, <code class="docutils literal notranslate"><span class="pre">tensor</span></code>, and <code class="docutils literal notranslate"><span class="pre">video</span></code></p></li>
@@ -537,10 +586,10 @@ document.write(`
 </ul>
 </section>
 </section>
-<section id="id2">
-<h1>0.6.1<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h1>
-<section id="id3">
-<h2>Notes<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
+<section id="id4">
+<h1>0.6.1<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h1>
+<section id="id5">
+<h2>Notes<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h2>
 <p>This version <strong>drops support for Python 3.7</strong> and fixes several dependency related issues:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/162">#162</a></p></li>
@@ -551,10 +600,10 @@ document.write(`
 </ul>
 </section>
 </section>
-<section id="id4">
-<h1>0.6.0<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h1>
-<section id="id5">
-<h2>Notes<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h2>
+<section id="id6">
+<h1>0.6.0<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h1>
+<section id="id7">
+<h2>Notes<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h2>
 <p>This is a large model-update release. Several users noted issues with our AU models due to problematic HOG feature extraction. We have now retrained all of our models that were affected by this issue. This version will automatically download the new model weights and use them without any additional user input.</p>
 </section>
 <section id="detector-changes">
@@ -562,10 +611,10 @@ document.write(`
 <p>We have made the decision to make video processing much more memory efficient at the trade-off of increased processing time. Previously <code class="docutils literal notranslate"><span class="pre">py-feat</span></code> would load all frames into RAM and then process them. This was problematic for large videos and would cause kernel panics or system freezes. Now, <code class="docutils literal notranslate"><span class="pre">py-feat</span></code> will lazy-load video-frames one at a time, which scales to videos of any length or size assuming that your system has enough RAM to hold a few frames in memory (determined by <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>). However, this also makes processing videos a bit slower and GPU benefits less dramatic. We have made this trade-off in favor of an easier end-user experience, but will be watching torch’s <a class="reference external" href="https://pytorch.org/vision/stable/generated/torchvision.io.VideoReader.html#torchvision.io.VideoReader">VideoReader</a> implementation closely and likely use that in future versions.</p>
 </section>
 </section>
-<section id="id6">
-<h1>0.5.1<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h1>
-<section id="id7">
-<h2>Notes<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h2>
+<section id="id8">
+<h1>0.5.1<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h1>
+<section id="id9">
+<h2>Notes<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h2>
 <p>This is a maintenance release that addresses multiple under-the-hood issues with <code class="docutils literal notranslate"><span class="pre">py-feat</span></code> failing when images or videos contain 0 faces. It addresses the following specific issues amongst others and is recommended for all users:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/cosanlab/py-feat/issues/153">#153</a></p></li>
@@ -575,10 +624,10 @@ document.write(`
 </ul>
 </section>
 </section>
-<section id="id8">
-<h1>0.5.0<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h1>
-<section id="id9">
-<h2>Notes<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h2>
+<section id="id10">
+<h1>0.5.0<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h1>
+<section id="id11">
+<h2>Notes<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h2>
 <p>This is a large overhaul and refactor of some of the core testing and API functionality to make future development, maintenance, and testing easier. Notable highlights include:</p>
 <ul class="simple">
 <li><p>tighter integration with <code class="docutils literal notranslate"><span class="pre">torch</span></code> data loaders</p></li>
@@ -587,8 +636,8 @@ document.write(`
 <li><p>passing keyword arguments to underlying <code class="docutils literal notranslate"><span class="pre">torch</span></code> models for more control</p></li>
 </ul>
 </section>
-<section id="id10">
-<h2><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h2>
+<section id="id12">
+<h2><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h2>
 <section id="new">
 <h3>New<a class="headerlink" href="#new" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
@@ -616,8 +665,8 @@ document.write(`
 </section>
 <section id="fex-changes">
 <h2><code class="docutils literal notranslate"><span class="pre">Fex</span></code> Changes<a class="headerlink" href="#fex-changes" title="Permalink to this heading">#</a></h2>
-<section id="id11">
-<h3>New<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h3>
+<section id="id13">
+<h3>New<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>new <code class="docutils literal notranslate"><span class="pre">.update_sessions()</span></code> method that returns a <strong>copy</strong> of a <code class="docutils literal notranslate"><span class="pre">Fex</span></code> frame with the <code class="docutils literal notranslate"><span class="pre">.sessions</span></code> attribute updated, making it easy to chain operations</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.predict()</span></code> and <code class="docutils literal notranslate"><span class="pre">.regress()</span></code> now support passing attributes to <code class="docutils literal notranslate"><span class="pre">X</span></code> and or <code class="docutils literal notranslate"><span class="pre">Y</span></code> using string names that match the attribute names:</p>
@@ -633,8 +682,8 @@ document.write(`
 <li><p><code class="docutils literal notranslate"><span class="pre">.extract_*</span></code> methods now include <code class="docutils literal notranslate"><span class="pre">std</span></code> and <code class="docutils literal notranslate"><span class="pre">sem</span></code>. These are also included in <code class="docutils literal notranslate"><span class="pre">.extract_summary()</span></code></p></li>
 </ul>
 </section>
-<section id="id12">
-<h3>Breaking<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h3>
+<section id="id14">
+<h3>Breaking<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p>All <code class="docutils literal notranslate"><span class="pre">Fex</span></code> attributes have been pluralized as indicated below. For the time-being old attribute access will continue to work but will show a warning. We plan to formally drop support in a few versions</p>
 <ul>
@@ -679,8 +728,8 @@ document.write(`
 </ul>
 </section>
 </section>
-<section id="id13">
-<h1>0.4.0<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h1>
+<section id="id15">
+<h1>0.4.0<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h1>
 <section id="major-version-breaking-release">
 <h2>Major version breaking release!<a class="headerlink" href="#major-version-breaking-release" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
@@ -688,8 +737,8 @@ document.write(`
 <li><p>To fork development from an older version of <code class="docutils literal notranslate"><span class="pre">py-feat</span></code> you can use <a class="reference external" href="https://github.com/cosanlab/py-feat-archive">this archival repo</a> instead</p></li>
 </ul>
 </section>
-<section id="id14">
-<h2>New<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h2>
+<section id="id16">
+<h2>New<a class="headerlink" href="#id16" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Added <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> and <code class="docutils literal notranslate"><span class="pre">plot_face</span></code> functions in <code class="docutils literal notranslate"><span class="pre">feat.plotting</span></code> module</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Fex</span></code> data-classes returned from <code class="docutils literal notranslate"><span class="pre">Detector.detect_image()</span></code> or <code class="docutils literal notranslate"><span class="pre">Detector.detect_video()</span></code> now store the names of the different detectors used as attributes: <code class="docutils literal notranslate"><span class="pre">.face_model</span></code>, <code class="docutils literal notranslate"><span class="pre">.au_model</span></code>, etc</p></li>
@@ -721,8 +770,8 @@ document.write(`
 </ul>
 </section>
 </section>
-<section id="id15">
-<h2>Development changes<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h2>
+<section id="id17">
+<h2>Development changes<a class="headerlink" href="#id17" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Revamped pre-trained detector handling in new <code class="docutils literal notranslate"><span class="pre">feat.pretrained</span></code> module</p></li>
 <li><p>More tests including testing all detector combinations</p></li>
@@ -746,20 +795,20 @@ document.write(`
 </ul>
 </section>
 </section>
-<section id="id16">
-<h1>0.3.7<a class="headerlink" href="#id16" title="Permalink to this heading">#</a></h1>
+<section id="id18">
+<h1>0.3.7<a class="headerlink" href="#id18" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
 <li><p>Fix import error due to missing init</p></li>
 </ul>
 </section>
-<section id="id17">
-<h1>0.3.6<a class="headerlink" href="#id17" title="Permalink to this heading">#</a></h1>
+<section id="id19">
+<h1>0.3.6<a class="headerlink" href="#id19" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
 <li><p>Trigger Zenodo release</p></li>
 </ul>
 </section>
-<section id="id18">
-<h1>0.2.0<a class="headerlink" href="#id18" title="Permalink to this heading">#</a></h1>
+<section id="id20">
+<h1>0.2.0<a class="headerlink" href="#id20" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
 <li><p>Testing pypi upload</p></li>
 </ul>
@@ -820,9 +869,17 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Change Log</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">0.7.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#in-development-on-v0-8-dev">0.8.0 (in development on <code class="docutils literal notranslate"><span class="pre">v0.8-dev</span></code>)</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-api-changes">Breaking API Changes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-api-changes">Breaking API changes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bug-fixes">Bug fixes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#migration-guide-in-progress">Migration guide (in progress)</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">0.7.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Breaking API Changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-default-models">Changes to Default Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-identity-detector">New Identity Detector</a></li>
 </ul>
@@ -830,48 +887,48 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation-updates">Documentation updates</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">0.6.1</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Notes</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">0.6.1</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Notes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">0.6.0</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Notes</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">0.6.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Notes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-changes"><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">0.5.1</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Notes</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">0.5.1</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Notes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">0.5.0</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Notes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10"><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes</a><ul class="nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">0.5.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id12"><code class="docutils literal notranslate"><span class="pre">Detector</span></code> Changes</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new">New</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking">Breaking</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fex-changes"><code class="docutils literal notranslate"><span class="pre">Fex</span></code> Changes</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">New</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Breaking</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">New</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Breaking</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development-changes">Development changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#general-fixes">General Fixes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">0.4.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">0.4.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-version-breaking-release">Major version breaking release!</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">New</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">New</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-changes">Breaking Changes</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Development changes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Development changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fixes">Fixes</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">0.3.7</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">0.3.6</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">0.2.0</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">0.3.7</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">0.3.6</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">0.2.0</a></li>
 </ul>
 
   </nav></div>
