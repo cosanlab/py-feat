@@ -50,6 +50,7 @@ from feat.utils.image_operations import (
     extract_hog_features,
     convert_bbox_output,
     compute_original_image_size,
+    invert_padding_to_results,
 )
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections
@@ -975,61 +976,8 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             batch_results["input"] = np.concatenate(file_names)
             batch_results["frame"] = np.concatenate(frame_ids)
 
-            # Invert the face boxes and landmarks based on the padded output size
-            for j, frame_idx in enumerate(batch_results["frame"].unique()):
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, ["FrameHeight", "FrameWidth"]
-                ] = (
-                    compute_original_image_size(batch_data)[j, :]
-                    .repeat(
-                        len(
-                            batch_results.loc[
-                                batch_results["frame"] == frame_idx, "frame"
-                            ]
-                        ),
-                        1,
-                    )
-                    .numpy()
-                )
-                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"] = (
-                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"]
-                    - batch_data["Padding"]["Left"].detach().numpy()[j]
-                ) / batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"] = (
-                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"]
-                    - batch_data["Padding"]["Top"].detach().numpy()[j]
-                ) / batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, "FaceRectWidth"
-                ] = (
-                    (
-                        batch_results.loc[
-                            batch_results["frame"] == frame_idx, "FaceRectWidth"
-                        ]
-                    )
-                    / batch_data["Scale"].detach().numpy()[j]
-                )
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, "FaceRectHeight"
-                ] = (
-                    (
-                        batch_results.loc[
-                            batch_results["frame"] == frame_idx, "FaceRectHeight"
-                        ]
-                    )
-                    / batch_data["Scale"].detach().numpy()[j]
-                )
-
-                for i in range(478):
-                    batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"] = (
-                        batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"]
-                        - batch_data["Padding"]["Left"].detach().numpy()[j]
-                    ) / batch_data["Scale"].detach().numpy()[j]
-                    batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"] = (
-                        batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"]
-                        - batch_data["Padding"]["Top"].detach().numpy()[j]
-                    ) / batch_data["Scale"].detach().numpy()[j]
-                    # batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
+            # Invert the face boxes and landmarks based on the padded output size.
+            invert_padding_to_results(batch_results, batch_data, n_landmarks=478)
 
             batch_output.append(batch_results)
             frame_counter += 1 * batch_size
