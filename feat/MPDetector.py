@@ -20,10 +20,7 @@ from huggingface_hub import hf_hub_download, PyTorchModelHubMixin
 from feat.pretrained import AU_LANDMARK_MAP
 from torch.utils.data import DataLoader
 from PIL import Image
-from feat.face_detectors.Retinaface.Retinaface_model import (
-    RetinaFace,
-    postprocess_retinaface,
-)
+from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 from feat.au_detectors.MP_Blendshapes.MP_Blendshapes_test import (
     MediaPipeBlendshapesMLPMixer,
 )
@@ -45,7 +42,6 @@ from feat.utils import (
 )
 from feat.utils.image_operations import (
     convert_image_to_tensor,
-    convert_color_vector_to_tensor,
     extract_face_from_bbox_torch,
     inverse_transform_landmarks_torch,
     extract_hog_features,
@@ -73,7 +69,14 @@ def convert_landmarks_3d(fex):
         landmarks (torch.Tensor): A tensor of shape [batch_size, 478, 3] containing the 3D coordinates (x, y, z) of 478 facial landmarks for each instance in the batch.
     """
 
-    return torch.tensor(fex.landmarks.astype(float).values).reshape(fex.shape[0], 478, 3)
+    # Force float32 — the canonical face model (loaded via torch.load with
+    # weights_only=True) is float32, and umeyama_alignment downstream
+    # requires both operands to share dtype. Without this cast, pandas's
+    # default Python-float (float64) propagates through and breaks the
+    # subsequent rigid-alignment matmul.
+    return torch.tensor(
+        fex.landmarks.astype("float32").values
+    ).reshape(fex.shape[0], 478, 3)
 
 
 def plot_face_landmarks(
@@ -250,33 +253,21 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         )
         self.device = set_torch_device(device)
 
-        # Initialize Face Detector
+        # Initialize Face Detector. The v0.7 RetinaFace rebuild dropped the
+        # MobileNet0.25 path in favor of the ResNet34 wrapper at
+        # feat.face_detectors.Retinaface.Retinaface_test.Retinaface, which
+        # batches its postprocess on-device and downloads weights from the
+        # py-feat/retinaface_r34 HuggingFace repo. Both 'retinaface' and
+        # 'retinaface_r34' resolve to the same wrapper here for API
+        # compatibility - 'retinaface' was MPDetector's prior default and
+        # we keep it accepted to avoid forcing every existing caller to
+        # change their argument.
         self.info["face_model"] = face_model
         if face_model is not None:
-            if face_model == "retinaface":
-                # The legacy MobileNet0.25 RetinaFace integration was rebuilt
-                # in v0.7 around the new ResNet34 backbone (see
-                # feat.face_detectors.Retinaface). MPDetector hasn't been
-                # migrated yet - the path that constructs RetinaFace(cfg=...,
-                # phase="test") and downloads mobilenet0.25_Final.pth no
-                # longer matches the current class signature or HF layout.
-                # Fail loud with a migration pointer rather than letting a
-                # confusing TypeError surface from deep in __init__.
-                raise NotImplementedError(
-                    "MPDetector's retinaface face-detection path is pending "
-                    "migration to the new ResNet34-backbone wrapper. Use "
-                    "feat.detector.Detector(face_model='retinaface_r34') for "
-                    "now, or pass face_model=None to MPDetector if you only "
-                    "need the landmark / blendshape stages. Tracked as a "
-                    "follow-up to PR #275."
-                )
+            if face_model in ("retinaface", "retinaface_r34"):
+                self.face_detector = Retinaface(device=self.device)
             else:
                 raise ValueError(f"{face_model} is not currently supported.")
-
-            self.face_detector.load_state_dict(face_checkpoint)
-            self.face_detector.eval()
-            self.face_detector.to(self.device)
-            # self.face_detector = torch.compile(self.face_detector)
         else:
             self.face_detector = None
 
@@ -489,29 +480,30 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
 
         frames = convert_image_to_tensor(images, img_type="float32")
 
+        # Run the face detector once on the whole batch. The Retinaface
+        # wrapper handles its own mean-subtraction and on-device NMS;
+        # we just pass the [B, 3, H, W] tensor in [0, 255] units it expects
+        # and get back per-image lists of [x1, y1, x2, y2, score].
+        if self.info["face_model"] in ("retinaface", "retinaface_r34"):
+            rf_outputs = self.face_detector(frames.to(self.device))
+        else:
+            rf_outputs = [None] * frames.size(0)
+
         batch_results = []
         for i in range(frames.size(0)):
             frame = frames[i, ...].unsqueeze(0)  # Extract single image from batch
 
-            if self.info["face_model"] == "retinaface":
-                single_frame = torch.sub(
-                    frame, convert_color_vector_to_tensor(np.array([123, 117, 104]))
-                )
-
-                predicted_locations, predicted_scores, predicted_landmarks = (
-                    self.face_detector.forward(single_frame.to(self.device))
-                )
-                face_output = postprocess_retinaface(
-                    predicted_locations,
-                    predicted_scores,
-                    predicted_landmarks,
-                    self.face_config,
-                    single_frame,
-                    device=self.device,
-                )
-
-                bbox = face_output["boxes"]
-                facescores = face_output["scores"]
+            if self.info["face_model"] in ("retinaface", "retinaface_r34"):
+                image_dets = rf_outputs[i]
+                if image_dets:
+                    arr = torch.tensor(
+                        image_dets, dtype=torch.float32, device=self.device
+                    )
+                    bbox = arr[:, :4]
+                    facescores = arr[:, 4]
+                else:
+                    bbox = torch.empty((0, 4), device=self.device)
+                    facescores = torch.empty((0,), device=self.device)
 
             # Extract faces from bbox
             if bbox.numel() != 0:
