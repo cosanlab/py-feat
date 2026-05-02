@@ -64,7 +64,12 @@ def umeyama_alignment(src, dst, with_scale=True):
     Returns:
         R: [..., 3, 3] rotation matrix (det = +1, no reflection).
         t: [..., 3] translation vector.
-        scale: [...] scale factor (always returned; is 1.0 when with_scale=False).
+        scale: [...] non-negative scale factor (always returned; is 1.0
+            when with_scale=False; clamped to >= 0 when with_scale=True).
+            For degenerate inputs (e.g. coincident src points), scale
+            falls back to 0 and the recovered transform is meaningless;
+            callers that need to detect this case can check for very
+            small src variance themselves.
     """
     if src.shape != dst.shape:
         raise ValueError(
@@ -96,14 +101,21 @@ def umeyama_alignment(src, dst, with_scale=True):
     R = V @ D @ U.transpose(-2, -1)
 
     if with_scale:
-        # Variance of src (centered)
-        src_var = (src_c.pow(2).sum(dim=(-2, -1)))  # [...]
-        # Trace term: sum of singular values weighted by D's sign correction
-        # trace(diag(S) * D) = sum(S_i * D_ii) = S_0 + S_1 + sign * S_2
+        # Sum of squared deviations of src around its centroid. Note: this
+        # is `|src - mean(src)|^2`, not the statistical variance (no /N).
+        # The Umeyama scale formula uses this raw sum so the units cancel
+        # against the trace term.
+        src_sq_dev = src_c.pow(2).sum(dim=(-2, -1))  # [...]
+        # Trace term: sum of singular values weighted by D's sign correction.
+        # trace(diag(S) * D) = S_0 + S_1 + sign * S_2.
         S_signed = S.clone()
         S_signed[..., 2] = S_signed[..., 2] * sign
         trace_term = S_signed.sum(dim=-1)  # [...]
-        scale = trace_term / src_var.clamp(min=1e-12)
+        # Coincident-source-points: src_sq_dev ≈ 0, scale is undefined. Clamp
+        # both to avoid div-by-near-zero and force scale to a non-negative
+        # value (Umeyama scale is geometric stretch, never negative).
+        scale = trace_term / src_sq_dev.clamp(min=1e-12)
+        scale = scale.clamp(min=0.0)
     else:
         scale = torch.ones(R.shape[:-2], dtype=src.dtype, device=src.device)
 
