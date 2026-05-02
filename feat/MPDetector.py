@@ -13,7 +13,6 @@ import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from torch.optim import Adam
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
 from huggingface_hub import hf_hub_download, PyTorchModelHubMixin
@@ -37,6 +36,7 @@ from feat.utils import (
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FEAT_FACEPOSE_COLUMNS_6D,
+    FEAT_GAZE_COLUMNS,
     FEAT_IDENTITY_COLUMNS,
     MP_LANDMARK_COLUMNS,
     MP_BLENDSHAPE_NAMES,
@@ -50,44 +50,15 @@ from feat.utils.image_operations import (
     extract_hog_features,
     convert_bbox_output,
     compute_original_image_size,
+    invert_padding_to_results,
 )
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections
-
-
-def get_camera_intrinsics(batch_hw_tensor, focal_length=None):
-    """
-    Computes the camera intrinsic matrix for a batch of images.
-
-    Args:
-        batch_hw_tensor (torch.Tensor): A tensor of shape [B, 2] where B is the batch size, and each entry contains [H, W] for the height and width of the images.
-        focal_length (torch.Tensor, optional): A tensor of shape [B] representing the focal length for each image in the batch. If None, the focal length will default to the image width for each image.
-
-    Returns:
-        K (torch.Tensor): A tensor of shape [B, 3, 3] containing the camera intrinsic matrices for each image in the batch.
-    """
-    # Extract the batch size
-    batch_size = batch_hw_tensor.shape[0]
-
-    # Extract heights and widths
-    heights = batch_hw_tensor[:, 0]
-    widths = batch_hw_tensor[:, 1]
-
-    # If focal_length is not provided, default to image width for each image
-    if focal_length is None:
-        focal_length = widths  # [B]
-
-    # Initialize the camera intrinsic matrices
-    K = torch.zeros((batch_size, 3, 3), dtype=torch.float32)
-
-    # Populate the intrinsic matrices
-    K[:, 0, 0] = focal_length  # fx
-    K[:, 1, 1] = focal_length  # fy
-    K[:, 0, 2] = widths / 2  # cx
-    K[:, 1, 2] = heights / 2  # cy
-    K[:, 2, 2] = 1.0  # The homogeneous coordinate
-
-    return K
+from feat.utils.face_pose import (
+    estimate_face_pose_from_mesh,
+    rotation_matrix_to_euler_angles,
+)
+from feat.utils.face_gaze import estimate_gaze
 
 
 def convert_landmarks_3d(fex):
@@ -102,220 +73,6 @@ def convert_landmarks_3d(fex):
     """
 
     return torch.tensor(fex.landmarks.astype(float).values).reshape(fex.shape[0], 478, 3)
-
-
-def estimate_gaze_direction(fex, gaze_angle="combined", metric="radians"):
-    """
-    Estimates the gaze direction based on the 3D facial landmarks of the eyes and irises.
-
-    NOTES: This could eventually be added as Fex Method
-
-    Args:
-        fex (Fex): Fex DataFrame containing 478 3D landmark coordinates
-        gaze_angle (str): Specifies which gaze angle to calculate (default='combined')
-        metric (str): Specifies the unit for the resulting gaze angle (default='radians'):
-
-    Returns:
-        angle (torch.Tensor): A tensor of shape [batch_size] containing the estimated gaze angles for each
-            instance in the batch, in the specified metric (radians or degrees).
-    """
-
-    # Landmark roi locations
-    left_eye_roi = torch.tensor(
-        [33, 7, 163, 144, 145, 153, 154, 155, 133, 246, 161, 160, 159, 158, 157, 173],
-        dtype=int,
-    )
-    right_eye_roi = torch.tensor(
-        [263, 249, 390, 373, 374, 380, 381, 382, 362, 466, 388, 387, 386, 385, 384, 398],
-        dtype=int,
-    )
-    left_iris_roi = torch.tensor([468, 469, 470, 471, 472], dtype=int)
-    right_iris_roi = torch.tensor([473, 474, 475, 476, 477], dtype=int)
-
-    # Extract ROIs
-    landmarks = convert_landmarks_3d(fex.landmarks)
-    left_eye_landmarks = landmarks[:, left_eye_roi, :]
-    right_eye_landmarks = landmarks[:, right_eye_roi, :]
-    left_iris_landmarks = landmarks[:, left_iris_roi, :]
-    right_iris_landmarks = landmarks[:, right_iris_roi, :]
-
-    # Calculate the centers of the left and right eyes for the batch
-    left_eye_center = torch.mean(left_eye_landmarks, dim=1)  # [batch_size, 3]
-    right_eye_center = torch.mean(right_eye_landmarks, dim=1)  # [batch_size, 3]
-
-    # Calculate the centers of the left and right irises for the batch
-    left_iris_center = torch.mean(left_iris_landmarks, dim=1)  # [batch_size, 3]
-    right_iris_center = torch.mean(right_iris_landmarks, dim=1)  # [batch_size, 3]
-
-    # Calculate the gaze vectors for the left and right eyes
-    left_gaze_vector = F.normalize(
-        left_iris_center - left_eye_center, dim=1
-    )  # [batch_size, 3]
-    right_gaze_vector = F.normalize(
-        right_iris_center - right_eye_center, dim=1
-    )  # [batch_size, 3]
-
-    if gaze_angle.lower() == "combined":
-        combined_gaze_vector = F.normalize(
-            (left_gaze_vector + right_gaze_vector) / 2, dim=1
-        )  # [batch_size, 3]
-
-        # Assuming the forward vector is along the camera's z-axis, repeated for the batch
-        forward_vector = (
-            torch.tensor([0, 0, 1], dtype=combined_gaze_vector.dtype)
-            .unsqueeze(0)
-            .repeat(combined_gaze_vector.size(0), 1)
-        )  # [batch_size, 3]
-
-        gaze_angles = torch.acos(
-            torch.sum(combined_gaze_vector * forward_vector, dim=1)
-            / (
-                torch.norm(combined_gaze_vector, dim=1)
-                * torch.norm(forward_vector, dim=1)
-            )
-        )
-    elif gaze_angle.lower() == "left":
-        # Assuming the forward vector is along the camera's z-axis, repeated for the batch
-        forward_vector = (
-            torch.tensor([0, 0, 1], dtype=left_gaze_vector.dtype)
-            .unsqueeze(0)
-            .repeat(left_gaze_vector.size(0), 1)
-        )  # [batch_size, 3]
-
-        gaze_angles = torch.acos(
-            torch.sum(left_gaze_vector * forward_vector, dim=1)
-            / (torch.norm(left_gaze_vector, dim=1) * torch.norm(forward_vector, dim=1))
-        )
-    elif gaze_angle.lower() == "right":
-        # Assuming the forward vector is along the camera's z-axis, repeated for the batch
-        forward_vector = (
-            torch.tensor([0, 0, 1], dtype=right_gaze_vector.dtype)
-            .unsqueeze(0)
-            .repeat(right_gaze_vector.size(0), 1)
-        )  # [batch_size, 3]
-
-        gaze_angles = torch.acos(
-            torch.sum(right_gaze_vector * forward_vector, dim=1)
-            / (torch.norm(right_gaze_vector, dim=1) * torch.norm(forward_vector, dim=1))
-        )
-    else:
-        raise NotImplementedError(
-            "Only ['combined', 'left', 'right'] gaze_angle are currently implemented"
-        )
-
-    if metric.lower() == "radians":
-        return gaze_angles
-    elif metric.lower() == "degrees":
-        return torch.rad2deg(gaze_angles)
-    else:
-        raise NotImplementedError("metric can only be ['radians', 'degrees']")
-
-
-def rotation_matrix_to_euler_angles(R):
-    """
-    Convert a rotation matrix to Euler angles (pitch, roll, yaw).
-
-    Parameters:
-    -----------
-    R : torch.Tensor
-        A tensor of shape [batch_size, 3, 3] containing rotation matrices.
-
-    Returns:
-    --------
-    euler_angles : torch.Tensor
-        A tensor of shape [batch_size, 3] containing the Euler angles (pitch, roll, yaw) in radians.
-    """
-    sy = torch.sqrt(R[:, 0, 0] ** 2 + R[:, 1, 0] ** 2)
-
-    singular = sy < 1e-6
-
-    pitch = torch.where(
-        singular,
-        torch.atan2(-R[:, 2, 1], R[:, 1, 1]),
-        torch.atan2(R[:, 2, 1], R[:, 2, 2]),
-    )
-    roll = torch.atan2(-R[:, 2, 0], sy)
-    yaw = torch.where(
-        singular, torch.zeros_like(pitch), torch.atan2(R[:, 1, 0], R[:, 0, 0])
-    )
-
-    return torch.stack([pitch, roll, yaw], dim=1)
-
-
-def estimate_face_pose(pts_3d, K, max_iter=100, lr=1e-3, return_euler_angles=True):
-    """
-    Estimate the face pose for a batch of 3D points using an iterative optimization approach.
-
-    Args:
-        pts_3d (torch.Tensor): A tensor of shape [batch_size, n_points, 3] representing the batch of 3D facial landmarks.
-        K (torch.Tensor): A tensor of shape [batch_size, 3, 3] representing the camera intrinsic matrix for each image, or [3, 3] for a single shared intrinsic matrix.
-        max_iter (int): The maximum number of iterations for the optimization loop. (default=100)
-        lr (float): The learning rate for the Adam optimizer (default=1e-3)
-        return_euler_angles (bool): If True, return 6 DOF (i.e., pitch, roll, and yaw angles) instead of the rotation matrix. (default=True)
-
-    Returns:
-        R_or_angles (torch.Tensor): If `return_euler_angles` is True, returns a tensor of shape [batch_size, 3] containing the Euler angles (pitch, roll, yaw). If `return_euler_angles` is False, returns a tensor of shape [batch_size, 3, 3] containing the rotation matrices.
-        t (torch.Tensor): A tensor of shape [batch_size, 3] containing the estimated translation vectors.
-    """
-
-    # Ensure the dtype is consistent (e.g., float32)
-    pts_3d = pts_3d.float()
-    K = K.float()
-
-    batch_size = pts_3d.size(0)
-
-    # Check if K is a single matrix or a batch of matrices
-    if K.dim() == 2:
-        # If K is not batched, repeat it for each batch element
-        K = K.unsqueeze(0).repeat(batch_size, 1, 1)  # [batch_size, 3, 3]
-
-    # Initial estimates for R and t (use identity and zeros for each batch)
-    R = (
-        torch.eye(3, dtype=torch.float32)
-        .unsqueeze(0)
-        .repeat(batch_size, 1, 1)
-        .requires_grad_(True)
-    )  # [batch_size, 3, 3]
-    t = torch.zeros(batch_size, 3, dtype=torch.float32).requires_grad_(
-        True
-    )  # [batch_size, 3]
-
-    optimizer = Adam([R, t], lr=lr)
-
-    for _ in range(max_iter):
-        optimizer.zero_grad()
-
-        # Rebuild the computation graph in every iteration
-        pts_3d_proj = torch.bmm(pts_3d, R.transpose(1, 2)) + t.unsqueeze(
-            1
-        )  # [batch_size, n_points, 3]
-        pts_2d_proj = torch.bmm(K, pts_3d_proj.transpose(1, 2)).transpose(
-            1, 2
-        )  # [batch_size, n_points, 3]
-
-        # Normalize by the third coordinate
-        pts_2d_proj = pts_2d_proj[:, :, :2] / pts_2d_proj[:, :, 2:].clamp(
-            min=1e-7
-        )  # [batch_size, n_points, 2]
-
-        # Assuming directly facing camera means minimizing deviation from (x, y) plane
-        loss = torch.mean(pts_3d_proj[:, :, 2] ** 2)  # Minimize z-coordinates to zero
-
-        # Backpropagation
-        loss.backward(retain_graph=True)
-        optimizer.step()
-
-        # Normalize R to keep it a valid rotation matrix (optional step)
-        with torch.no_grad():  # Detach the graph here
-            U, _, V = torch.svd(R)
-            R.copy_(torch.bmm(U, V.transpose(1, 2)))  # Copy the values back to R in-place
-
-    if return_euler_angles:
-        # Convert rotation matrices to Euler angles (pitch, roll, yaw)
-        euler_angles = rotation_matrix_to_euler_angles(R)
-        return euler_angles, t
-    else:
-        return R, t
 
 
 def plot_face_landmarks(
@@ -515,7 +272,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
 
                 self.face_detector = RetinaFace(cfg=self.face_config, phase="test")
             else:
-                raise ValueError("{face_model} is not currently supported.")
+                raise ValueError(f"{face_model} is not currently supported.")
 
             self.face_detector.load_state_dict(face_checkpoint)
             self.face_detector.eval()
@@ -541,7 +298,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 self.landmark_detector.to(self.device)
                 # self.landmark_detector = torch.compile(self.landmark_detector)
             else:
-                raise ValueError("{landmark_model} is not currently supported.")
+                raise ValueError(f"{landmark_model} is not currently supported.")
 
         else:
             self.face_size = 112
@@ -562,12 +319,13 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                         au_model_path, map_location=device, weights_only=True
                     )
                     self.au_detector.load_state_dict(au_checkpoint)
+                    self.au_detector.eval()
                     self.au_detector.to(self.device)
                 else:
-                    raise ValueError("{au_model} is not currently supported.")
+                    raise ValueError(f"{au_model} is not currently supported.")
             else:
                 raise ValueError(
-                    "Landmark Detector is required for AU Detection with {au_model}."
+                    f"Landmark Detector is required for AU Detection with {au_model}."
                 )
         else:
             self.au_detector = None
@@ -628,7 +386,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                     )
 
             else:
-                raise ValueError("{emotion_model} is not currently supported.")
+                raise ValueError(f"{emotion_model} is not currently supported.")
         else:
             self.emotion_detector = None
 
@@ -658,7 +416,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 self.identity_detector.to(self.device)
                 # self.identity_detector = torch.compile(self.identity_detector)
             else:
-                raise ValueError("{identity_model} is not currently supported.")
+                raise ValueError(f"{identity_model} is not currently supported.")
         else:
             self.identity_detector = None
 
@@ -700,7 +458,6 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
 
                 bbox = face_output["boxes"]
                 facescores = face_output["scores"]
-                _ = face_output["landmarks"]
 
             # Extract faces from bbox
             if bbox.numel() != 0:
@@ -872,6 +629,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             facebox_columns=FEAT_FACEBOX_COLUMNS,
             landmark_columns=MP_LANDMARK_COLUMNS,
             facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
+            gaze_columns=FEAT_GAZE_COLUMNS,
             identity_columns=FEAT_IDENTITY_COLUMNS[1:],
             detector="Feat",
             face_model=self.info["face_model"],
@@ -975,64 +733,13 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             batch_results["input"] = np.concatenate(file_names)
             batch_results["frame"] = np.concatenate(frame_ids)
 
-            # Invert the face boxes and landmarks based on the padded output size
-            for j, frame_idx in enumerate(batch_results["frame"].unique()):
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, ["FrameHeight", "FrameWidth"]
-                ] = (
-                    compute_original_image_size(batch_data)[j, :]
-                    .repeat(
-                        len(
-                            batch_results.loc[
-                                batch_results["frame"] == frame_idx, "frame"
-                            ]
-                        ),
-                        1,
-                    )
-                    .numpy()
-                )
-                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"] = (
-                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectX"]
-                    - batch_data["Padding"]["Left"].detach().numpy()[j]
-                ) / batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"] = (
-                    batch_results.loc[batch_results["frame"] == frame_idx, "FaceRectY"]
-                    - batch_data["Padding"]["Top"].detach().numpy()[j]
-                ) / batch_data["Scale"].detach().numpy()[j]
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, "FaceRectWidth"
-                ] = (
-                    (
-                        batch_results.loc[
-                            batch_results["frame"] == frame_idx, "FaceRectWidth"
-                        ]
-                    )
-                    / batch_data["Scale"].detach().numpy()[j]
-                )
-                batch_results.loc[
-                    batch_results["frame"] == frame_idx, "FaceRectHeight"
-                ] = (
-                    (
-                        batch_results.loc[
-                            batch_results["frame"] == frame_idx, "FaceRectHeight"
-                        ]
-                    )
-                    / batch_data["Scale"].detach().numpy()[j]
-                )
-
-                for i in range(478):
-                    batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"] = (
-                        batch_results.loc[batch_results["frame"] == frame_idx, f"x_{i}"]
-                        - batch_data["Padding"]["Left"].detach().numpy()[j]
-                    ) / batch_data["Scale"].detach().numpy()[j]
-                    batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"] = (
-                        batch_results.loc[batch_results["frame"] == frame_idx, f"y_{i}"]
-                        - batch_data["Padding"]["Top"].detach().numpy()[j]
-                    ) / batch_data["Scale"].detach().numpy()[j]
-                    # batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] = (batch_results.loc[batch_results['frame']==frame_idx, f'z_{i}'] - batch_data["Padding"]["Top"].detach().numpy()[j])/batch_data["Scale"].detach().numpy()[j]
+            # Invert the face boxes and landmarks based on the padded output size.
+            invert_padding_to_results(batch_results, batch_data, n_landmarks=478)
 
             batch_output.append(batch_results)
-            frame_counter += 1 * batch_size
+            # Use the actual batch size (may be smaller than `batch_size` for the
+            # last batch when len(dataset) is not divisible by batch_size).
+            frame_counter += batch_data["Image"].shape[0]
         batch_output = pd.concat(batch_output)
         batch_output.reset_index(drop=True, inplace=True)
         if data_type.lower() == "video":
@@ -1044,22 +751,27 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # Compute Identities
         batch_output.compute_identities(threshold=face_identity_threshold, inplace=True)
 
-        # Add Gaze
-        batch_output["gaze_angle"] = estimate_gaze_direction(
-            batch_output, metric="radians", gaze_angle="combined"
+        # Pose: closed-form rigid alignment of the observed mesh to MediaPipe's
+        # canonical face model. Replaces the previous Adam-loop estimator that
+        # minimized z-coordinates (the wrong objective). Pure-PyTorch, no
+        # gradient required.
+        landmarks_3d = convert_landmarks_3d(batch_output)
+        R, t = estimate_face_pose_from_mesh(landmarks_3d, return_euler_angles=False)
+        euler = rotation_matrix_to_euler_angles(R)
+        batch_output.loc[:, FEAT_FACEPOSE_COLUMNS_6D] = (
+            torch.cat((euler, t), dim=1).cpu().numpy()
         )
 
-        # Add Pose
-        landmarks_3d = convert_landmarks_3d(batch_output)[
-            :, :468, :
-        ]  # Drop Irises - could also use restricted set (min 6) to speed up computation
-        K = get_camera_intrinsics(
-            torch.tensor(batch_output[["FrameHeight", "FrameWidth"]].values)
-        )  # Camera intrinsic matrix
-        with torch.enable_grad():  # Enable gradient tracking for pose estimation
-            R, t = estimate_face_pose(landmarks_3d, K, return_euler_angles=True)
-        batch_output.loc[:, FEAT_FACEPOSE_COLUMNS_6D] = (
-            torch.cat((R, t), dim=1).detach().numpy()
-        )
+        # Gaze in head-centric frame (compensated by R from above) with iris
+        # landmarks (478-pt mesh).
+        gaze = estimate_gaze(landmarks_3d, R=R)
+        py = gaze["combined_pitch_yaw"].cpu().numpy()
+        batch_output["gaze_pitch"] = py[:, 0]
+        batch_output["gaze_yaw"] = py[:, 1]
+        # Backward-compat: keep `gaze_angle` as the angle from head-forward.
+        combined_vec = gaze["combined_vector"].cpu().numpy()
+        forward = np.array([0.0, 0.0, 1.0])
+        cos_angle = np.clip((combined_vec * forward).sum(axis=1), -1.0, 1.0)
+        batch_output["gaze_angle"] = np.arccos(cos_angle)
 
         return batch_output
