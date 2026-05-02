@@ -197,7 +197,11 @@ def test_detector_with_retinaface_r34_detects_multi_face():
 
         det = Detector(face_model="retinaface_r34", device="cpu", au_model="svm")
         assert det.info["face_model"] == "retinaface_r34"
-        assert det.info["facepose_model"] is None  # pose comes from no model
+        # facepose_model = 'pnp_dlt' indicates pose came from DLT-PnP rather
+        # than img2pose's regressed values. Tracked separately so downstream
+        # code can decide whether the pose values are trustworthy enough for
+        # its application.
+        assert det.info["facepose_model"] == "pnp_dlt"
 
         path = os.path.join(get_test_data_path(), "multi_face.jpg")
         if not os.path.exists(path):
@@ -205,10 +209,22 @@ def test_detector_with_retinaface_r34_detects_multi_face():
 
         fex = det.detect(path)
         assert len(fex) >= 4, f"expected >=4 faces, got {len(fex)}"
-        # Pose columns must be NaN-filled with this face_model.
-        assert fex.Pitch.isna().all()
-        assert fex.Roll.isna().all()
-        assert fex.Yaw.isna().all()
+        # Pose columns are populated via PnP. Each angle must be a finite
+        # number in radians (between -pi and +pi).
+        import math
+        for col in ("Pitch", "Roll", "Yaw"):
+            vals = fex[col]
+            assert not vals.isna().any(), f"{col} has NaN values"
+            assert (vals.abs() <= math.pi).all(), f"{col} out of [-pi, pi]"
+        # Sanity bound: faces in multi_face.jpg are all roughly frontal
+        # (pictured group facing the camera), so mean Yaw magnitude across
+        # the 5 detected faces should be modest. Loose enough to pass on
+        # any reasonable PnP solution; tight enough to catch a regression
+        # where the solver returns near-pi values for every face.
+        assert fex.Yaw.abs().mean() < math.radians(45), (
+            f"mean |Yaw| = {math.degrees(fex.Yaw.abs().mean()):.1f} deg "
+            "on a roughly-frontal multi-face group is suspicious"
+        )
         # Face / emotion outputs are real numbers.
         assert not fex.FaceRectX.isna().any()
         assert (fex.happiness > 0).any()
