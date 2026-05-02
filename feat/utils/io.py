@@ -25,9 +25,8 @@ from torchvision.datasets.utils import download_url as tv_download_url
 from torchvision.io import read_image
 from torchvision.transforms.functional import to_pil_image
 import warnings
-import av
 import torch
-from torch import swapaxes
+from torchcodec.decoders import VideoDecoder
 
 __all__ = [
     "get_resource_path",
@@ -36,6 +35,8 @@ __all__ = [
     "download_url",
     "read_openface",
     "load_pil_img",
+    "decode_video",
+    "video_to_tensor",
 ]
 
 
@@ -211,33 +212,52 @@ def read_openface(openfacefile, features=None):
     return fex
 
 
+def decode_video(file_name):
+    """Open a video for sliced or streamed decoding via torchcodec.
+
+    Returns a `torchcodec.decoders.VideoDecoder`, which supports:
+      - random access by integer index: `decoder[i]` -> [C, H, W] uint8 tensor
+      - slicing: `decoder[a:b]` -> [N, C, H, W] uint8 tensor
+      - iteration: `for frame in decoder: ...` streams without loading the
+        whole video into memory
+      - metadata: `decoder.metadata` (frame count, fps, dimensions, codec)
+
+    Decoding is on CPU on macOS (Apple Silicon) and Linux without an NVIDIA
+    GPU; CUDA NVDEC is used automatically when available. There is no MPS
+    hardware-decode path in torchcodec today; transfer decoded tensors to
+    MPS via `.to('mps')` for inference.
+    """
+    return VideoDecoder(file_name)
+
+
+def video_to_tensor(file_name):
+    """Decode an entire video to a [T, C, H, W] uint8 tensor.
+
+    Convenience wrapper around `decode_video`. Loads the whole video into
+    memory; only suitable for short clips. For long videos prefer
+    `decode_video(file_name)` and slice or iterate.
+    """
+    return decode_video(file_name)[:]
+
+
 def load_pil_img(file_name, frame_id):
-    """Helper function to load a PIL image from a picture or video
+    """Helper function to load a PIL image from a picture or video.
+
+    For video inputs only the requested frame is decoded - prior versions
+    decoded the entire video and indexed in, which was wasteful for long
+    videos.
 
     Args:
-        file_name (str): path to file. Can be image or video
-        frame_id (int): if video, load frame
+        file_name (str): path to file. Can be image or video.
+        frame_id (int): if video, the frame index to load.
 
     Returns:
-        image: pil image instance
+        image: PIL Image instance.
     """
 
     file_extension = os.path.basename(file_name).split(".")[-1]
     if file_extension.lower() in ["jpg", "jpeg", "png", "bmp", "tiff", "pdf"]:
-        frame_img = read_image(file_name)  # image path
+        frame_img = read_image(file_name)
     else:
-        video = video_to_tensor(file_name)
-        frame_img = video[frame_id, :, :]
+        frame_img = decode_video(file_name)[int(frame_id)]
     return to_pil_image(frame_img)
-
-
-def video_to_tensor(file_name):
-    container = av.open(file_name)
-    stream = container.streams.video[0]
-    tensor = []
-    for frame in container.decode(stream):
-        frame_data = torch.from_numpy(frame.to_ndarray(format="rgb24"))
-        frame_data = swapaxes(swapaxes(frame_data, 0, -1), 1, 2)
-        tensor.append(frame_data)
-    container.close()
-    return torch.stack(tensor, dim=0)
