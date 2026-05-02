@@ -590,8 +590,16 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         new_bboxes = torch.cat([face["new_boxes"] for face in faces_data], dim=0)
         n_faces = extracted_faces.shape[0]
 
+        # Hoist CPU->device transfers out of per-detector branches: landmark
+        # and identity detectors both consume the face crops, and previously
+        # each branch issued its own `.to(self.device)` (each a fresh copy
+        # since the source stays on CPU). Move once, reuse. The HOG-emotion
+        # path below still uses the CPU-side `extracted_faces`.
+        faces_dev = extracted_faces.to(self.device)
+        new_bboxes_dev = new_bboxes.to(self.device)
+
         if self.landmark_detector is not None:
-            landmarks = self.landmark_detector.forward(extracted_faces.to(self.device))[0]
+            landmarks = self.landmark_detector.forward(faces_dev)[0]
 
             # Project landmarks back onto original image. # only rescale X/Y Coordinates, leave Z in original scale
             landmarks_3d = landmarks.reshape(n_faces, 478, 3)
@@ -605,7 +613,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 landmarks_3d[:, :, :2] * img_size
             )  # Scale X/Y Coordinates to [0,1]
             rescaled_landmarks_2d = inverse_transform_landmarks_torch(
-                landmarks_2d.reshape(n_faces, 478 * 2), new_bboxes.to(self.device)
+                landmarks_2d.reshape(n_faces, 478 * 2), new_bboxes_dev
             )
             new_landmarks = torch.cat(
                 (
@@ -638,9 +646,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             emotions = torch.full((n_faces, 7), float("nan"))
 
         if self.identity_detector is not None:
-            identity_embeddings = self.identity_detector.forward(
-                extracted_faces.to(self.device)
-            )
+            identity_embeddings = self.identity_detector.forward(faces_dev)
         else:
             identity_embeddings = torch.full((n_faces, 512), float("nan"))
 
