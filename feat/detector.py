@@ -488,22 +488,27 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         new_bboxes = torch.cat([face["new_boxes"] for face in faces_data], dim=0)
         n_faces = extracted_faces.shape[0]
 
+        # Hoist CPU->device transfers out of per-detector branches: landmark
+        # and identity detectors both consume the face crops, and previously
+        # each branch issued its own `.to(self.device)` (each a fresh copy
+        # since the source stays on CPU). Move once, reuse. The HOG-based
+        # AU and SVM-emotion paths below still use the CPU-side
+        # `extracted_faces`.
+        faces_dev = extracted_faces.to(self.device)
+
         if self.landmark_detector is not None:
             if self.info["landmark_model"].lower() == "mobilenet":
+                # Normalize must run on whichever copy will be passed in;
+                # apply on CPU then transfer once.
                 extracted_faces = Compose(
                     [Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
                 )(extracted_faces)
-                landmarks = self.landmark_detector.forward(
-                    extracted_faces.to(self.device)
-                )
+                faces_dev = extracted_faces.to(self.device)
+                landmarks = self.landmark_detector.forward(faces_dev)
             elif self.info["landmark_model"].lower() == "mobilefacenet":
-                landmarks = self.landmark_detector.forward(
-                    extracted_faces.to(self.device)
-                )[0]
+                landmarks = self.landmark_detector.forward(faces_dev)[0]
             else:
-                landmarks = self.landmark_detector.forward(
-                    extracted_faces.to(self.device)
-                )
+                landmarks = self.landmark_detector.forward(faces_dev)
             new_landmarks = inverse_transform_landmarks_torch(landmarks, new_bboxes)
         else:
             new_landmarks = torch.full((n_faces, 136), float("nan"))
@@ -527,9 +532,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             emotions = torch.full((n_faces, 7), float("nan"))
 
         if self.identity_detector is not None:
-            identity_embeddings = self.identity_detector.forward(
-                extracted_faces.to(self.device)
-            )
+            identity_embeddings = self.identity_detector.forward(faces_dev)
         else:
             identity_embeddings = torch.full((n_faces, 512), float("nan"))
 
