@@ -31,6 +31,7 @@ Highlights:
 
 - **`MPDetector(face_model='retinaface')` works again.** The v0.7 RetinaFace rebuild deleted the MobileNet0.25 path that MPDetector's face detector relied on; the prior workaround was a `NotImplementedError` pointing users to `Detector(face_model='retinaface_r34')`. MPDetector now uses the same ResNet34 wrapper as `Detector`, so `MPDetector(face_model='retinaface')` and `MPDetector(face_model='retinaface_r34')` both build and detect end-to-end.
 - **MPDetector pose dtype mismatch fixed.** A pre-existing bug in `convert_landmarks_3d` produced `np.float64` landmarks (via `astype(float)`) while MediaPipe's canonical face model is `float32`. Once the retinaface path was reachable, `estimate_face_pose_from_mesh`'s matmul would have raised `expected m1 and m2 to have the same dtype`. Forced `astype("float32")` to fix.
+- **MPDetector pose Y/Z-axis convention mismatch fixed.** MediaPipe Face Mesh outputs landmarks in image-pixel space (Y down, Z into screen); the canonical face model lives in head-centric space (Y up, Z out of face). The Umeyama alignment was absorbing the convention difference into a 180° rotation about X, which surfaced as `Pitch` clustering near ±π for every forward-facing portrait. `convert_landmarks_3d` now flips Y and Z at the conversion boundary so the alignment recovers the actual head pose. After the fix, forward-facing portraits return `|Pitch| < 30°` instead of ~180°.
 - *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
 
 ## New features
