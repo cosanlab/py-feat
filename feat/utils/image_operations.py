@@ -300,7 +300,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             / 6.0
         )
 
-        mat2 = np.mat(
+        mat2 = np.asmatrix(
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
@@ -355,7 +355,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
             / 6.0
         )
 
-        mat2 = np.mat(
+        mat2 = np.asmatrix(
             [
                 [left_eye0, left_eye1, 1],
                 [right_eye0, right_eye1, 1],
@@ -373,7 +373,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
     l = math.sqrt(delta_x**2 + delta_y**2)
     sin_val = delta_y / l
     cos_val = delta_x / l
-    mat1 = np.mat([[cos_val, sin_val, 0.0], [-sin_val, cos_val, 0.0], [0.0, 0.0, 1.0]])
+    mat1 = np.asmatrix([[cos_val, sin_val, 0.0], [-sin_val, cos_val, 0.0], [0.0, 0.0, 1.0]])
 
     mat2 = (mat1 * mat2.T).T
 
@@ -387,7 +387,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
 
     scale = (img_size - 1) / 2.0 / half_size
 
-    mat3 = np.mat(
+    mat3 = np.asmatrix(
         [
             [scale, 0.0, scale * (half_size - center_x)],
             [0.0, scale, scale * (half_size - center_y)],
@@ -414,7 +414,7 @@ def align_face(img, landmarks, landmark_type=68, box_enlarge=2.5, img_size=112):
 
     land_3d = np.ones((len(landmarks) // 2, 3))
     land_3d[:, 0:2] = np.reshape(np.array(landmarks), (len(landmarks) // 2, 2))
-    mat_land_3d = np.mat(land_3d)
+    mat_land_3d = np.asmatrix(land_3d)
     new_landmarks = np.array((mat * mat_land_3d.T).T)
     new_landmarks = np.array(list(zip(new_landmarks[:, 0], new_landmarks[:, 1]))).astype(
         int
