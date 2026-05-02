@@ -52,6 +52,7 @@ __all__ = [
     "extract_hog_features",
     "convert_bbox_output",
     "compute_original_image_size",
+    "invert_padding_to_results",
 ]
 
 # Neutral face coordinates
@@ -1335,3 +1336,81 @@ def compute_original_image_size(batch_data):
     original_height_width = torch.stack((original_height, original_width), dim=1)
 
     return original_height_width
+
+
+def invert_padding_to_results(batch_results, batch_data, n_landmarks):
+    """Vectorized inversion of dataloader padding/scaling on a batch of detector outputs.
+
+    Replaces a per-frame loop that previously called ``compute_original_image_size``,
+    extracted ``Padding`` and ``Scale`` numpy arrays, and rewrote
+    ``FrameHeight``, ``FrameWidth``, the four ``FaceRect*`` columns, and
+    ``x_i`` / ``y_i`` for every landmark *inside the loop*. The pandas
+    ``.loc[mask, col]`` rewrites scaled quadratically with batch size and
+    landmark count.
+
+    The replacement still does O(rows × landmarks) work overall (you
+    have to read and write every cell), but as a constant number of
+    vectorized numpy ops instead of ``n_frames × 2 × n_landmarks``
+    boolean-mask-then-write pandas operations. For a 60-frame batch
+    with 478 landmarks the prior loop did ~57k mask writes; the new
+    helper does 7 column assignments. By steps:
+
+    1. Mapping each row's ``frame`` value to its position in the batch.
+    2. Looking up per-row ``pad_left``, ``pad_top``, ``scale``,
+       ``frame_height``, ``frame_width`` once.
+    3. Doing all column updates with broadcasted numpy ops.
+
+    Args:
+        batch_results: pandas DataFrame (or Fex). Modified in place.
+        batch_data: dict from the DataLoader for the current batch with
+            ``Image``, ``Padding``, ``Scale`` tensors.
+        n_landmarks: number of (x_i, y_i) landmark pairs to invert
+            (68 for img2pose / mobilefacenet pipelines, 478 for MediaPipe).
+
+    Returns:
+        batch_results: the same object passed in (returned for chaining).
+    """
+    if len(batch_results) == 0:
+        return batch_results
+
+    # Once-per-batch numpy extractions (was once-per-frame in the old loop).
+    # Cast to float64 to match the dtype the legacy `df.loc[mask, col] = ...`
+    # path produced (pandas float64 columns dominated the float32 input).
+    original_hw = compute_original_image_size(batch_data).numpy().astype(np.float64)
+    pad_left_arr = batch_data["Padding"]["Left"].detach().numpy().astype(np.float64)
+    pad_top_arr = batch_data["Padding"]["Top"].detach().numpy().astype(np.float64)
+    scale_arr = batch_data["Scale"].detach().numpy().astype(np.float64)
+
+    # Each unique frame in batch_results corresponds to a position in the
+    # current batch. Preserve the order of first appearance to match the
+    # j = enumerate(unique_frames) convention the prior loop used.
+    unique_frames = batch_results["frame"].drop_duplicates().to_numpy()
+    frame_to_j = {f: j for j, f in enumerate(unique_frames)}
+    j_per_row = batch_results["frame"].map(frame_to_j).to_numpy()  # [n_rows]
+
+    pad_left = pad_left_arr[j_per_row]  # [n_rows]
+    pad_top = pad_top_arr[j_per_row]
+    scale = scale_arr[j_per_row]
+    frame_h = original_hw[j_per_row, 0]
+    frame_w = original_hw[j_per_row, 1]
+
+    batch_results["FrameHeight"] = frame_h
+    batch_results["FrameWidth"] = frame_w
+
+    batch_results["FaceRectX"] = (
+        batch_results["FaceRectX"].to_numpy() - pad_left
+    ) / scale
+    batch_results["FaceRectY"] = (
+        batch_results["FaceRectY"].to_numpy() - pad_top
+    ) / scale
+    batch_results["FaceRectWidth"] = batch_results["FaceRectWidth"].to_numpy() / scale
+    batch_results["FaceRectHeight"] = batch_results["FaceRectHeight"].to_numpy() / scale
+
+    x_cols = [f"x_{i}" for i in range(n_landmarks)]
+    y_cols = [f"y_{i}" for i in range(n_landmarks)]
+    x_vals = batch_results[x_cols].to_numpy()  # [n_rows, n_landmarks]
+    y_vals = batch_results[y_cols].to_numpy()
+    batch_results[x_cols] = (x_vals - pad_left[:, None]) / scale[:, None]
+    batch_results[y_cols] = (y_vals - pad_top[:, None]) / scale[:, None]
+
+    return batch_results
