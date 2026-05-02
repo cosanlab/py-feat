@@ -130,3 +130,40 @@ def test_runs_length_mismatch_raises():
     runs = np.array([0, 1])
     with pytest.raises(ValueError, match="runs length"):
         clean_signal(x, runs=runs)
+
+
+def test_matches_nilearn_when_available():
+    """End-to-end equivalence with nilearn.signal.clean. Skipped if
+    nilearn is not installed."""
+    nilearn_signal = pytest.importorskip("nilearn.signal")
+
+    rng = np.random.default_rng(42)
+    n, n_signals, n_conf = 200, 3, 2
+    fs = 30.0
+    x = rng.normal(size=(n, n_signals))
+    confounds = rng.normal(size=(n, n_conf))
+
+    ours = clean_signal(
+        x,
+        detrend=True,
+        standardize=True,
+        confounds=confounds,
+        low_pass=5.0,
+        high_pass=0.1,
+        sampling_freq=fs,
+    )
+    theirs = nilearn_signal.clean(
+        x,
+        detrend=True,
+        standardize="zscore_sample",  # nilearn's match for our ddof=1 std
+        confounds=confounds,
+        low_pass=5.0,
+        high_pass=0.1,
+        t_r=1.0 / fs,
+        standardize_confounds=False,  # we don't standardize confounds
+    )
+    # Loose tolerance: nilearn uses pivoted-QR with rank-tolerance for
+    # confound regression while we use plain lstsq; some divergence is
+    # expected for non-orthogonal confounds. The point of the test is to
+    # catch regression in operation order, not bit-exact equivalence.
+    np.testing.assert_allclose(ours, theirs, atol=0.3, rtol=0.3)
