@@ -568,7 +568,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                     raise ValueError(f"{au_model} is not currently supported.")
             else:
                 raise ValueError(
-                    "Landmark Detector is required for AU Detection with {au_model}."
+                    f"Landmark Detector is required for AU Detection with {au_model}."
                 )
         else:
             self.au_detector = None
