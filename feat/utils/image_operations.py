@@ -1404,7 +1404,15 @@ def invert_padding_to_results(batch_results, batch_data, n_landmarks):
     y_cols = [f"y_{i}" for i in range(n_landmarks)]
     x_vals = batch_results[x_cols].to_numpy()  # [n_rows, n_landmarks]
     y_vals = batch_results[y_cols].to_numpy()
-    batch_results[x_cols] = (x_vals - pad_left[:, None]) / scale[:, None]
-    batch_results[y_cols] = (y_vals - pad_top[:, None]) / scale[:, None]
+    # iloc-based column assignment is ~30x faster than the equivalent
+    # `batch_results[x_cols] = arr` form. The label-based form goes through
+    # pandas's `_iset_split_block` path once per column (956 ops on a
+    # MediaPipe-shape DataFrame, 136 ops on a 68-landmark one). iloc with a
+    # positional index lets pandas write the whole 2D slice through a
+    # single block update.
+    x_idx = batch_results.columns.get_indexer(x_cols)
+    y_idx = batch_results.columns.get_indexer(y_cols)
+    batch_results.iloc[:, x_idx] = (x_vals - pad_left[:, None]) / scale[:, None]
+    batch_results.iloc[:, y_idx] = (y_vals - pad_top[:, None]) / scale[:, None]
 
     return batch_results
