@@ -6,6 +6,7 @@ for more discussion: https://github.com/cosanlab/py-feat/pull/228
 """
 
 import json
+import warnings
 from tqdm import tqdm
 import torch
 import torch.nn as nn
@@ -286,17 +287,42 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         if landmark_model is not None:
             if landmark_model == "mp_facemesh_v2":
                 self.face_size = 256
-                landmark_model_file = hf_hub_download(
+                # Prefer the TorchScript model: torch.jit.load doesn't run
+                # arbitrary Python at load time the way `torch.load(weights_only=
+                # False)` does, and it doesn't require onnx2torch importable
+                # at runtime (the legacy file was a torch.fx.GraphModule produced
+                # by onnx2torch, which can only be unpickled if that package is
+                # importable). Falls back to the legacy pickle file for
+                # compatibility with older pinned HF revisions, but emits a
+                # warning so users know to upgrade.
+                from feat.utils import hf_hub_download_with_fallback
+
+                landmark_model_file = hf_hub_download_with_fallback(
                     repo_id="py-feat/mp_facemesh_v2",
-                    filename="face_landmarks_detector_Nx3x256x256_onnx.pth",
+                    filename="face_landmarks_detector.pt",
+                    fallback_filename="face_landmarks_detector_Nx3x256x256_onnx.pth",
                     cache_dir=get_resource_path(),
                 )
-                self.landmark_detector = torch.load(
-                    landmark_model_file, map_location=self.device, weights_only=False
-                )
+                if landmark_model_file.endswith(".pt"):
+                    self.landmark_detector = torch.jit.load(
+                        landmark_model_file, map_location=self.device
+                    )
+                else:
+                    warnings.warn(
+                        "mp_facemesh_v2: loading legacy pickled FX GraphModule via "
+                        "weights_only=False; this requires onnx2torch importable and "
+                        "executes arbitrary code at load time. Re-run with the new "
+                        "face_landmarks_detector.pt TorchScript file (uploaded to "
+                        "py-feat/mp_facemesh_v2 in v0.7).",
+                        stacklevel=2,
+                    )
+                    self.landmark_detector = torch.load(
+                        landmark_model_file,
+                        map_location=self.device,
+                        weights_only=False,
+                    )
                 self.landmark_detector.eval()
                 self.landmark_detector.to(self.device)
-                # self.landmark_detector = torch.compile(self.landmark_detector)
             else:
                 raise ValueError(f"{landmark_model} is not currently supported.")
 
