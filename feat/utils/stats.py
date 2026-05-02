@@ -267,16 +267,18 @@ def clean_signal(
     sampling_freq=1.0,
     runs=None,
 ):
-    """Clean a 2D time-series signal: detrend, regress confounds, filter, standardize.
+    """Clean a 2D time-series signal: detrend, filter, regress confounds, standardize.
 
     Drop-in replacement for the parts of ``nilearn.signal.clean`` that
     ``Fex.clean`` uses, so py-feat can avoid taking on nilearn (and its
     transitive nibabel/joblib/sklearn deps) just for time-series cleanup.
 
-    Operations are applied in this order:
+    Operations are applied in nilearn's order:
         1. Detrend (linear, optional)
-        2. Regress out confounds (optional)
-        3. Butterworth low/high/bandpass filter (optional, uses ``filtfilt``)
+        2. Butterworth low/high/bandpass filter (optional, uses ``filtfilt``)
+        3. Regress out confounds (optional). Confounds are filtered with the
+           same Butterworth before regression so the filter and confound-
+           removal operators stay orthogonal (Lindquist et al. 2018).
         4. Standardize (zero-mean unit-variance, optional)
         5. Replace NaN/Inf with zero (optional)
 
@@ -332,6 +334,22 @@ def clean_signal(
     if detrend:
         signals = _detrend(signals, axis=0, type="linear")
 
+    # Filter design (used for both signals and confounds, per nilearn).
+    filter_b_a = None
+    if low_pass is not None or high_pass is not None:
+        nyq = sampling_freq / 2.0
+        if low_pass is not None and high_pass is not None:
+            filter_b_a = butter(
+                N=5, Wn=[high_pass / nyq, low_pass / nyq], btype="bandpass"
+            )
+        elif low_pass is not None:
+            filter_b_a = butter(N=5, Wn=low_pass / nyq, btype="lowpass")
+        else:
+            filter_b_a = butter(N=5, Wn=high_pass / nyq, btype="highpass")
+
+    if filter_b_a is not None:
+        signals = filtfilt(*filter_b_a, signals, axis=0)
+
     if confounds is not None:
         confounds = np.asarray(confounds, dtype=np.float64)
         if confounds.ndim == 1:
@@ -341,22 +359,14 @@ def clean_signal(
                 f"confounds length ({confounds.shape[0]}) must match signals "
                 f"length ({signals.shape[0]})"
             )
+        # Filter confounds with the same Butterworth so the filter and
+        # confound-removal operators stay orthogonal (nilearn's behavior).
+        if filter_b_a is not None:
+            confounds = filtfilt(*filter_b_a, confounds, axis=0)
         # Append intercept and regress out via least squares.
         X = np.hstack([confounds, np.ones((confounds.shape[0], 1))])
         beta, *_ = np.linalg.lstsq(X, signals, rcond=None)
         signals = signals - X @ beta
-
-    if low_pass is not None or high_pass is not None:
-        nyq = sampling_freq / 2.0
-        if low_pass is not None and high_pass is not None:
-            b, a = butter(
-                N=5, Wn=[high_pass / nyq, low_pass / nyq], btype="bandpass"
-            )
-        elif low_pass is not None:
-            b, a = butter(N=5, Wn=low_pass / nyq, btype="lowpass")
-        else:
-            b, a = butter(N=5, Wn=high_pass / nyq, btype="highpass")
-        signals = filtfilt(b, a, signals, axis=0)
 
     if standardize:
         mean = signals.mean(axis=0)
