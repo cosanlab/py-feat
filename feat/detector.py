@@ -204,7 +204,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 )
             else:
                 raise ValueError(
-                    "Landmark Detector is required for AU Detection with {au_model}."
+                    f"Landmark Detector is required for AU Detection with {au_model}."
                 )
         else:
             self.au_detector = None
