@@ -53,6 +53,35 @@ sys.modules["__main__"].__dict__["XGBClassifier"] = XGBClassifier
 sys.modules["__main__"].__dict__["SVMClassifier"] = SVMClassifier
 sys.modules["__main__"].__dict__["EmoSVMClassifier"] = EmoSVMClassifier
 
+
+def _patch_xgboost_setstate_for_skops():
+    """Defend xgboost.Booster.__setstate__ against a bytearray-lifetime bug.
+
+    skops's load flow calls ``Booster.__setstate__({"handle": bytearray, ...})``.
+    xgboost then does ``ptr = (c_char * len(buf)).from_buffer(buf)`` and passes
+    ``ptr`` into a C call (``XGBoosterUnserializeFromBuffer``). On Python 3.13
+    the bytearray can be reallocated mid-call, producing intermittent SIGSEGV.
+    Copying the buffer into a freshly-allocated bytearray narrows the window.
+
+    Idempotent. No-op on Python versions where the original is stable.
+    """
+    import xgboost.core
+
+    if getattr(xgboost.core.Booster.__setstate__, "_pyfeat_patched", False):
+        return
+    _orig = xgboost.core.Booster.__setstate__
+
+    def _patched(self, state):
+        if state.get("handle") is not None:
+            state = {**state, "handle": bytearray(state["handle"])}
+        return _orig(self, state)
+
+    _patched._pyfeat_patched = True
+    xgboost.core.Booster.__setstate__ = _patched
+
+
+_patch_xgboost_setstate_for_skops()
+
 # Supress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="torch")
@@ -176,9 +205,13 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             if self.landmark_detector is not None:
                 if au_model == "xgb":
                     self.au_detector = XGBClassifier()
+                    # _v2 file references the real wrapper class path (not __main__)
+                    # and embeds Booster buffers in xgboost's modern UBJ format. The
+                    # original *_classifier.skops on the same repo is kept for
+                    # backwards compatibility with py-feat <= 0.6.x installs.
                     au_model_path = hf_hub_download(
                         repo_id="py-feat/xgb_au",
-                        filename="xgb_au_classifier.skops",
+                        filename="xgb_au_classifier_v2.skops",
                         cache_dir=get_resource_path(),
                     )
 
@@ -186,7 +219,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     self.au_detector = SVMClassifier()
                     au_model_path = hf_hub_download(
                         repo_id="py-feat/svm_au",
-                        filename="svm_au_classifier.skops",
+                        filename="svm_au_classifier_v2.skops",
                         cache_dir=get_resource_path(),
                     )
                 else:

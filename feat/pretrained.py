@@ -277,7 +277,7 @@ def load_model_weights(model_type="au", model="xgb", location="huggingface"):
                 # Load the entire model from skops serialized file
                 model_path = hf_hub_download(
                     repo_id="py-feat/xgb_au",
-                    filename="xgb_au_classifier.skops",
+                    filename="xgb_au_classifier_v2.skops",
                     cache_dir=get_resource_path(),
                 )
                 unknown_types = get_untrusted_types(file=model_path)
@@ -356,7 +356,7 @@ def load_model_weights(model_type="au", model="xgb", location="huggingface"):
                 # Load the entire model from skops serialized file
                 model_path = hf_hub_download(
                     repo_id="py-feat/svm_au",
-                    filename="svm_au_classifier.skops",
+                    filename="svm_au_classifier_v2.skops",
                     cache_dir=get_resource_path(),
                 )
                 unknown_types = get_untrusted_types(file=model_path)
