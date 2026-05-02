@@ -34,18 +34,36 @@ class ModelStats:
 
 
 def collect(org: str) -> list[ModelStats]:
+    """Enumerate all models under an org and collect download stats.
+
+    ``HfApi.list_models(..., full=True)`` returns most fields we need
+    (downloads, last_modified, tags) but does *not* reliably populate
+    ``card_data.license`` across hf_hub versions. We fall back to
+    ``model_info`` on a per-repo basis only to fetch license; failures
+    on individual repos are logged and skipped so a single
+    rate-limited/transient failure doesn't crash the whole sweep.
+    """
     api = HfApi()
     out: list[ModelStats] = []
-    for m in api.list_models(author=org, full=True):
-        info = api.model_info(m.modelId, files_metadata=False)
-        license_str = (info.card_data or {}).get("license", "") if info.card_data else ""
+    for info in api.list_models(author=org, full=True):
+        license_str = ""
+        try:
+            full_info = api.model_info(info.modelId, files_metadata=False)
+            cd = getattr(full_info, "card_data", None)
+            if cd is not None:
+                license_str = cd.get("license", "") or ""
+        except Exception as exc:
+            print(
+                f"warning: model_info({info.modelId!r}) failed: {exc}",
+                file=sys.stderr,
+            )
         out.append(
             ModelStats(
                 repo=info.modelId,
                 downloads_last_month=getattr(info, "downloads", 0) or 0,
                 downloads_all_time=getattr(info, "downloads_all_time", 0) or 0,
                 last_modified=str(getattr(info, "last_modified", "") or ""),
-                license=license_str or "",
+                license=license_str,
                 tags=", ".join(getattr(info, "tags", []) or []),
             )
         )
@@ -80,17 +98,26 @@ def render_table(stats: list[ModelStats]) -> str:
 
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    p = argparse.ArgumentParser(
+        description="HuggingFace download dashboard for an HF org."
+    )
     p.add_argument("--org", default="py-feat")
     p.add_argument("--json", action="store_true", help="emit JSON to stdout")
     p.add_argument("--csv", metavar="PATH", help="write a CSV file at PATH")
     args = p.parse_args()
 
-    stats = collect(args.org)
+    try:
+        stats = collect(args.org)
+    except Exception as exc:  # network / rate-limit / unknown org
+        print(f"Error fetching org '{args.org}': {exc}", file=sys.stderr)
+        sys.exit(2)
 
     if args.csv:
+        fieldnames = list(asdict(stats[0]).keys()) if stats else list(
+            ModelStats.__dataclass_fields__.keys()
+        )
         with open(args.csv, "w", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=list(asdict(stats[0]).keys()) if stats else [])
+            w = csv.DictWriter(f, fieldnames=fieldnames)
             w.writeheader()
             for s in stats:
                 w.writerow(asdict(s))
