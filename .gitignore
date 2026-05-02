@@ -20,9 +20,10 @@ docs/basic_tutorials/figure.ipynb
 docs/basic_tutorials/fig_maker
 
 #Ignore resources folder except config files and viz model
-resources/
+resources/*
 !resources/model_list.json
 !resources/neutral_face_coordinates.csv
+!resources/canonical_face_model.pt
 
 # PytestCache
 .pytest_cache/
