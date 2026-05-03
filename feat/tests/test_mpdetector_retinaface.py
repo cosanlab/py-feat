@@ -3,13 +3,13 @@
 Before this PR landed, MPDetector(face_model='retinaface') raised a
 NotImplementedError because the v0.7 RetinaFace rebuild left MPDetector's
 face-detection path pointing at the deleted MobileNet0.25 class. Now it
-uses the same ResNet34 wrapper that Detector(face_model='retinaface_r34')
+uses the same ResNet34 wrapper that Detector(face_model='retinaface')
 uses, so end-to-end MPDetector with retinaface works again.
 
 Pin the contract:
-1. Construction succeeds with face_model='retinaface' (the legacy MPDetector
-   default) AND face_model='retinaface_r34' (the canonical name in
-   Detector). Both resolve to the same wrapper.
+1. Construction succeeds with face_model='retinaface' on both Detector
+   and MPDetector. The same kwarg works in both classes (no alias
+   table — the v0.7-dev `'retinaface_r34'` spelling has been dropped).
 2. detect() on multi_face.jpg returns a Fex with one row per detected face,
    real bbox coords, and finite pose values (no NaN, no inf).
 """
@@ -29,20 +29,18 @@ def _have_test_image() -> bool:
 
 
 @pytest.mark.skipif(not _have_test_image(), reason="multi_face.jpg missing")
-@pytest.mark.parametrize("face_model_name", ["retinaface", "retinaface_r34"])
-def test_mpdetector_retinaface_constructs_and_detects(face_model_name):
-    """End-to-end: MPDetector with face_model='retinaface' (or its alias
-    'retinaface_r34') builds, detects faces in a real image, and returns
-    a Fex with finite pose values. Specifically pins down that the
-    pre-existing dtype mismatch in convert_landmarks_3d (Python `float`
-    -> float64 vs canonical face model's float32) is fixed alongside the
-    migration."""
+def test_mpdetector_retinaface_constructs_and_detects():
+    """End-to-end: MPDetector with face_model='retinaface' builds,
+    detects faces in a real image, and returns a Fex with finite pose
+    values. Specifically pins down that the pre-existing dtype mismatch
+    in convert_landmarks_3d (Python `float` -> float64 vs canonical
+    face model's float32) is fixed alongside the migration."""
     from feat.MPDetector import MPDetector
     from feat.utils.io import get_test_data_path
 
     mp = MPDetector(
         device="cpu",
-        face_model=face_model_name,
+        face_model="retinaface",
         landmark_model="mp_facemesh_v2",
         au_model=None,
         emotion_model=None,
@@ -50,7 +48,6 @@ def test_mpdetector_retinaface_constructs_and_detects(face_model_name):
         facepose_model=None,
     )
     assert mp.face_detector is not None
-    # The wrapper class name is `Retinaface` regardless of which alias was used.
     assert type(mp.face_detector).__name__ == "Retinaface"
 
     img = os.path.join(get_test_data_path(), "multi_face.jpg")
