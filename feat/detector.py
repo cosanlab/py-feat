@@ -94,13 +94,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 
 
 class Detector(nn.Module, PyTorchModelHubMixin):
-    # `retinaface` and `retinaface_r34` both resolve to the ResNet34-backbone
-    # RetinaFace wrapper. The two-name form mirrors `MPDetector` (which
-    # accepts the same aliases for v0.6 backwards compatibility). Users
-    # should prefer the shorter `'retinaface'` form; `'retinaface_r34'` is
-    # kept around for anyone who already adopted it during v0.7-dev.
-    _RETINAFACE_ALIASES = ("retinaface", "retinaface_r34")
-    _SUPPORTED_FACE_MODELS = ("img2pose",) + _RETINAFACE_ALIASES
+    _SUPPORTED_FACE_MODELS = ("img2pose", "retinaface")
 
     def __init__(
         self,
@@ -119,8 +113,6 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 f"got {face_model!r}"
             )
 
-        is_retinaface = face_model in self._RETINAFACE_ALIASES
-
         self.info = dict(
             face_model=face_model,
             landmark_model=None,
@@ -128,7 +120,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             # facepose_model tracks where 6DoF pose comes from. img2pose
             # regresses pose natively; retinaface derives pose via DLT-PnP
             # from the 68 landmarks (see feat.utils.face_pose_pnp).
-            facepose_model="pnp_dlt" if is_retinaface else "img2pose",
+            facepose_model="pnp_dlt" if face_model == "retinaface" else "img2pose",
             au_model=None,
             identity_model=None,
         )
@@ -171,13 +163,13 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             self.facepose_detector.load_state_dict(facepose_checkpoint, load_model_weights)
             self.facepose_detector.eval()
             self.facepose_detector.to(self.device)
-        else:  # retinaface / retinaface_r34
+        else:  # retinaface
             # RetinaFace-R34: 88.9% WIDERFACE Hard AP (per yakhyo upstream),
             # 15-20x faster per-image than img2pose at batch 16+ on MPS.
             # No 6DoF head pose - pose columns are populated as NaN.
             self.facepose_detector = Retinaface(device=self.device)
             warnings.warn(
-                f"face_model={face_model!r} does not regress 6DoF head pose. "
+                "face_model='retinaface' does not regress 6DoF head pose. "
                 "Pose columns are populated via DLT-PnP from the 68 landmarks "
                 "and may differ from img2pose's regressed pose by up to ~30 "
                 "degrees on Pitch (the axis with shallowest landmark "
@@ -390,7 +382,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         Returns:
             list of per-image dicts with keys: faces, boxes, new_boxes, poses,
             scores, face_id (and resmasknet_faces if emotion_model='resmasknet').
-            Pose columns are NaN-filled when face_model='retinaface_r34'.
+            Pose columns are NaN-filled when face_model='retinaface'.
         """
 
         # img2pose / RetinaFace both accept a batched [B, C, H, W] tensor and
@@ -412,7 +404,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     "scores": processed["scores"],
                     "poses": processed["dofs"],  # [N, 6]
                 })
-        else:  # retinaface_r34: takes [0, 255] floats; returns list of [x1,y1,x2,y2,score]
+        else:  # retinaface: takes [0, 255] floats; returns list of [x1,y1,x2,y2,score]
             frames_px = convert_image_to_tensor(images, img_type="float32").to(self.device)
             rf_outputs = self.facepose_detector(frames_px)
             per_image_dets = []
@@ -574,7 +566,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             [face_output["poses"].to(self.device) for face_output in faces_data], dim=0
         )
 
-        # When face_model='retinaface_r34' (or any future detector that
+        # When face_model='retinaface' (or any future detector that
         # doesn't natively regress 6DoF pose), the per-frame `poses` tensors
         # are NaN-padded. Replace with PnP-derived pose from the 68 landmarks
         # we just computed, using img2pose's published 3D template (so the
