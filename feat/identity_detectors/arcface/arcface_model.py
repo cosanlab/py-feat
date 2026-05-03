@@ -3,34 +3,43 @@
 Loads InsightFace's ArcFace ResNet50 (the ``buffalo_l`` pack's
 ``w600k_r50.onnx`` converted to PyTorch ``.safetensors``) and exposes a
 ``forward(face_crops) -> [N, 512]`` interface compatible with the
-existing facenet identity detector in ``feat.detector.Detector`` and
+existing identity-detector contract in ``feat.detector.Detector`` and
 ``feat.MPDetector.MPDetector``.
 
-Why ArcFace
------------
-The default identity detector in py-feat is ``facenet`` (InceptionResnetV1
-trained with triplet loss on VGGFace2). Triplet-loss embeddings are
-known to entangle identity with pose and expression — a serious problem
-for FEAT's intended use case (clustering identities across video frames
-where pose and expression vary deliberately).
+Why ArcFace is now the default
+------------------------------
+py-feat used to default to ``facenet`` (InceptionResnetV1 trained with
+triplet loss on VGGFace2). Triplet-loss embeddings entangle identity
+with pose and expression — a serious problem for FEAT's intended use
+case of clustering identities across video frames where pose and
+expression vary deliberately. On the multi_face.jpg fixture, FaceNet's
+max off-diagonal cosine similarity between *different* people was 0.76
+(merging 2 identities at a typical 0.5 threshold); ArcFace's was 0.35
+(all 5 stayed separate).
 
-ArcFace replaces triplet loss with an angular-margin softmax loss that
-constrains identities to occupy disjoint angular regions of the
-embedding sphere. The result is much tighter intra-identity clusters
-under pose/expression variation. Published numbers on IJB-C (the
-hardest standard face-recognition benchmark, with diverse poses and
-expressions) put ArcFace-R50/WebFace600K at ~96% TAR @ FAR=1e-4 vs.
-~80% for FaceNet/VGGFace2.
+ArcFace replaces triplet loss with an angular-margin softmax that
+constrains identities to disjoint angular regions of the embedding
+sphere, producing tighter intra-identity clusters. Published numbers
+on IJB-C (the hardest standard face-recognition benchmark, with
+diverse poses and expressions) put ArcFace-R50/WebFace600K at 96.18%
+TAR @ FAR=1e-4 vs. ~80% for FaceNet/VGGFace2.
+
+Inference cost is essentially unchanged: 13.0 -> 13.5 ms/frame on M5
+MBP MPS (4% slower) for the full retinaface_r34 + svm AU + identity
+pipeline on a 472-frame video. ArcFace's larger backbone (43.6M vs
+~25M params) is offset by smaller input (112x112 vs 160x160).
 
 License
 -------
 The InsightFace code is MIT-licensed. The pretrained weights are
-distributed under InsightFace's "non-commercial research" terms; see
-https://github.com/deepinsight/insightface for the model card. py-feat
-inherits the same license-risk profile that already applied to the
-default facenet weights (VGGFace2-trained, also research-only).
-Commercial users should validate license compatibility for their use
-case.
+distributed under InsightFace's non-commercial-research terms; the
+underlying training data (WebFace600K, Tsinghua's curated subset of
+WebFace260M) is also research-only. Both layers are documented in
+the model card at https://github.com/deepinsight/insightface and in
+``feat/identity_detectors/arcface/README.md``. Commercial users
+should validate license compatibility; the default FaceNet weights
+inherited a similar VGGFace2 research-only restriction, so this is
+not a new license category for py-feat.
 """
 
 import torch
