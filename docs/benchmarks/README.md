@@ -27,12 +27,18 @@ make perf regressions easy to spot across releases.
 
 ## Reading the files
 
-Every benchmark file follows the same structure:
+Every benchmark file has two parts:
 
-1. **Run metadata** — date, py-feat version, git commit, host, swept axes
-2. **Headline numbers** — the best ms/frame for video and images, plus key cross-device comparisons
-3. **One section per dataset × configuration** — full table of every cell that was swept
-4. **Findings & recommendations** — interpretation of what the numbers say (added by hand if useful)
+1. **Script-generated** (always present, produced by `--markdown`):
+   - Run metadata block — date, py-feat version, git commit, host, Python / PyTorch versions, OMP_NUM_THREADS, swept axes
+   - One section per dataset (video, images), each with one subsection per configuration (`img2pose`, `retinaface`, `MPDetector retinaface`)
+   - Each subsection is a markdown table with one row per (device × batch × workers) cell
+
+2. **Optional hand-curated narrative** (appended below the script-generated part with a `---` separator):
+   - Headline numbers — the best ms/frame and key cross-device comparisons
+   - Findings & recommendations — interpretation of what the numbers say
+
+The hand-curated narrative is optional. It's worth adding for runs that change the recommended defaults (e.g., the inaugural `2026-05-03-*.md` after the OMP_NUM_THREADS fix); routine regression-tracking runs don't need it.
 
 ## What's in scope
 

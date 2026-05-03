@@ -63,7 +63,9 @@ warnings.simplefilter("ignore")
 
 import torch
 
-import feat
+# Pull just the version string. `import feat` works too but pulls in
+# torch and the whole detector graph just for a string lookup.
+from feat.version import __version__ as _feat_version
 from feat.utils.io import get_test_data_path
 
 VIDEO_LONG = os.path.join(get_test_data_path(), "WolfgangLanger_Pexels.mp4")
@@ -72,7 +74,18 @@ IMG_MULTI = os.path.join(get_test_data_path(), "multi_face.jpg")
 
 
 def time_one(detector, inputs, data_type: str, batch_size: int, num_workers: int):
-    """Run one warmup call + one timed call. Returns (seconds, n_rows)."""
+    """Run one warmup call + one timed call.
+
+    Returns ``(seconds, n_rows, n_units)`` where ``n_units`` is the
+    denominator the per-unit metric divides by:
+
+    - For ``data_type='video'``: number of unique frames processed
+      (``fex['frame'].nunique()``). For multi-face video this is
+      smaller than ``n_rows = len(fex)``, so ms/frame is computed
+      correctly.
+    - For ``data_type='image'``: number of input images (``len(inputs)``),
+      independent of how many faces were detected per image.
+    """
     detector.detect(
         inputs, data_type=data_type, batch_size=batch_size, num_workers=num_workers
     )
@@ -80,7 +93,13 @@ def time_one(detector, inputs, data_type: str, batch_size: int, num_workers: int
     fex = detector.detect(
         inputs, data_type=data_type, batch_size=batch_size, num_workers=num_workers
     )
-    return time.perf_counter() - t, len(fex)
+    sec = time.perf_counter() - t
+    n_rows = len(fex)
+    if data_type == "video":
+        n_units = int(fex["frame"].nunique())
+    else:  # image
+        n_units = len(inputs)
+    return sec, n_rows, n_units
 
 
 def banner(s: str) -> None:
@@ -132,10 +151,14 @@ class Row:
         "batch",
         "workers",
         "sec",
-        "n_rows",
+        "n_rows",  # output rows = detected faces (sum across frames/images)
+        "n_units",  # frames (for video) or input images (for image kind)
     )
 
-    def __init__(self, section_kind, section_label, cfg_label, device, batch, workers, sec, n_rows):
+    def __init__(
+        self, section_kind, section_label, cfg_label,
+        device, batch, workers, sec, n_rows, n_units,
+    ):
         self.section_kind = section_kind
         self.section_label = section_label
         self.cfg_label = cfg_label
@@ -144,16 +167,18 @@ class Row:
         self.workers = workers
         self.sec = sec
         self.n_rows = n_rows
+        self.n_units = n_units
 
     @property
     def per_unit_ms(self):
-        # per-frame for video, per-image for image
-        return self.sec / self.n_rows * 1000 if self.section_kind == "video" \
-            else self.sec / 16 * 1000  # 16 = len(image_paths), hardcoded for now
+        """ms per frame (video) or per image (image kind), correct for
+        multi-face inputs."""
+        return self.sec / self.n_units * 1000
 
     @property
     def fps(self):
-        return self.n_rows / self.sec
+        """frames per second processed (video) or images per second (image)."""
+        return self.n_units / self.sec
 
 
 def _live_print_video(row: Row, has_workers_axis: bool):
@@ -222,7 +247,7 @@ def run_video_sweep(
             det = build(device)
             for bs in batch_sizes:
                 for nw in num_workers_options:
-                    sec, n = time_one(det, video_path, "video", bs, nw)
+                    sec, n_rows, n_units = time_one(det, video_path, "video", bs, nw)
                     row = Row(
                         section_kind="video",
                         section_label=label,
@@ -231,7 +256,8 @@ def run_video_sweep(
                         batch=bs,
                         workers=nw,
                         sec=sec,
-                        n_rows=n,
+                        n_rows=n_rows,
+                        n_units=n_units,
                     )
                     rows_out.append(row)
                     _live_print_video(row, has_workers_axis)
@@ -257,7 +283,9 @@ def run_image_sweep(
             det = build(device)
             for bs in batch_sizes:
                 for nw in num_workers_options:
-                    sec, n = time_one(det, image_paths, "image", bs, nw)
+                    sec, n_rows, n_units = time_one(
+                        det, image_paths, "image", bs, nw
+                    )
                     row = Row(
                         section_kind="image",
                         section_label=label,
@@ -266,7 +294,8 @@ def run_image_sweep(
                         batch=bs,
                         workers=nw,
                         sec=sec,
-                        n_rows=n,
+                        n_rows=n_rows,
+                        n_units=n_units,
                     )
                     rows_out.append(row)
                     _live_print_image(row, has_workers_axis)
@@ -281,23 +310,25 @@ def run_image_sweep(
 
 
 def _git_commit_short() -> str:
+    """Return the short SHA, or 'nogit' if git or repo is unavailable.
+
+    Used both as run metadata and as part of the default markdown filename;
+    avoid characters like parentheses that would make the resulting path
+    awkward to type or grep for.
+    """
     try:
         return subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"], text=True
         ).strip()
     except Exception:
-        return "(unknown)"
+        return "nogit"
 
 
 def _hardware_summary() -> str:
     try:
-        import platform as _p
-        node = _p.node()
-        machine = _p.machine()
-        cpu_count = os.cpu_count()
-        return f"{node} ({machine}, {cpu_count} CPUs)"
+        return f"{platform.node()} ({platform.machine()}, {os.cpu_count()} CPUs)"
     except Exception:
-        return "(unknown)"
+        return "unknown"
 
 
 def _md_table_rows(rows: list, has_workers_axis: bool, kind: str) -> str:
@@ -362,7 +393,7 @@ def write_markdown(
     md.append(f"# py-feat detector benchmark — {now}\n")
     md.append("## Run metadata\n")
     md.append(f"- **Date:** {now}")
-    md.append(f"- **py-feat version:** {feat.__version__}")
+    md.append(f"- **py-feat version:** {_feat_version}")
     md.append(f"- **Git commit:** {git_sha}")
     md.append(f"- **Host:** {hw}")
     md.append(f"- **Python:** {pyver}")
