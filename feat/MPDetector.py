@@ -62,6 +62,7 @@ from feat.utils.image_operations import (
     convert_bbox_output,
     compute_original_image_size,
     invert_padding_to_results,
+    per_face_padding_inversion_terms,
 )
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections
@@ -608,20 +609,41 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         return batch_results
 
     @torch.inference_mode()
-    def forward(self, faces_data):
+    def forward(self, faces_data, batch_data):
         """
         Run Model Inference on detected faces.
 
         Args:
             faces_data (list of dict): Detected faces and associated data from `detect_faces`.
+            batch_data (dict): The DataLoader's batch dict for this call.
+                Used to convert per-face bbox/landmark coordinates from
+                the padded-image space the models operate in back to the
+                original-frame space the caller expects, in a single
+                vectorized tensor op (replacing the prior post-hoc
+                `invert_padding_to_results` DataFrame mutation).
 
         Returns:
-            Fex: Prediction results dataframe
+            Fex: Per-face prediction results in original-frame
+            coordinates, including FrameHeight / FrameWidth columns.
         """
 
         extracted_faces = torch.cat([face["faces"] for face in faces_data], dim=0)
         new_bboxes = torch.cat([face["new_boxes"] for face in faces_data], dim=0)
         n_faces = extracted_faces.shape[0]
+
+        # Per-face mapping back to the source frame in the batch. Used
+        # below to broadcast the DataLoader's per-frame Rescale
+        # (Padding + Scale) parameters to per-face tensors so we can
+        # convert bboxes / landmarks from padded-image space to
+        # original-frame space without a post-hoc DataFrame walk.
+        n_per_frame = [face["faces"].shape[0] for face in faces_data]
+        frame_idx = torch.repeat_interleave(
+            torch.arange(len(faces_data), device=self.device),
+            torch.tensor(n_per_frame, device=self.device),
+        )
+        pad_left, pad_top, scale, frame_h, frame_w = per_face_padding_inversion_terms(
+            batch_data, frame_idx, self.device
+        )
 
         # Hoist CPU->device transfers out of per-detector branches: landmark
         # and identity detectors both consume the face crops, and previously
@@ -696,7 +718,11 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         else:
             aus = torch.full((n_faces, 52), float("nan"))
 
-        # Create Fex Output Representation
+        # Create Fex Output Representation. Bboxes come out of
+        # convert_bbox_output in PADDED-frame space (the same space the
+        # face detector + landmark detector operated in). Subtract the
+        # DataLoader's per-face padding and divide by its scale to land
+        # in ORIGINAL-frame space — what the user expects in Fex.
         bboxes = torch.cat(
             [
                 convert_bbox_output(
@@ -707,8 +733,13 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             ],
             dim=0,
         )
+        bboxes_orig = bboxes.clone()
+        bboxes_orig[:, 0] = (bboxes[:, 0] - pad_left) / scale
+        bboxes_orig[:, 1] = (bboxes[:, 1] - pad_top) / scale
+        bboxes_orig[:, 2] = bboxes[:, 2] / scale
+        bboxes_orig[:, 3] = bboxes[:, 3] / scale
         feat_faceboxes = pd.DataFrame(
-            bboxes.cpu().detach().numpy(),
+            bboxes_orig.cpu().detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
         )
 
@@ -718,8 +749,19 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
 
+        # Invert the DataLoader's Rescale on the 478 (x, y, z) landmark
+        # triples. Z is depth in face-crop scale already (untouched by
+        # the image-plane Rescale), so only X/Y need adjustment.
+        landmarks_3d_padded = new_landmarks.reshape(n_faces, 478, 3)
+        landmarks_3d_orig = landmarks_3d_padded.clone()
+        landmarks_3d_orig[..., 0] = (
+            landmarks_3d_padded[..., 0] - pad_left[:, None]
+        ) / scale[:, None]
+        landmarks_3d_orig[..., 1] = (
+            landmarks_3d_padded[..., 1] - pad_top[:, None]
+        ) / scale[:, None]
         feat_landmarks = pd.DataFrame(
-            new_landmarks.reshape(n_faces, 478 * 3).cpu().detach().numpy(),
+            landmarks_3d_orig.reshape(n_faces, 478 * 3).cpu().detach().numpy(),
             columns=MP_LANDMARK_COLUMNS,
         )
         feat_aus = pd.DataFrame(aus.cpu().detach().numpy(), columns=MP_BLENDSHAPE_NAMES)
@@ -732,6 +774,17 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             identity_embeddings.cpu().detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
         )
 
+        # Frame metadata: original (pre-Rescale) frame dimensions per
+        # face. Added here instead of in `invert_padding_to_results`
+        # post-hoc so the entire DataFrame leaves forward() in
+        # original-frame coords with no further mutation.
+        feat_frame_meta = pd.DataFrame(
+            {
+                "FrameHeight": frame_h.cpu().detach().numpy().astype(np.float64),
+                "FrameWidth": frame_w.cpu().detach().numpy().astype(np.float64),
+            }
+        )
+
         return Fex(
             pd.concat(
                 [
@@ -741,6 +794,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                     feat_aus,
                     feat_emotions,
                     feat_identities,
+                    feat_frame_meta,
                 ],
                 axis=1,
             ),
@@ -837,7 +891,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 face_size=self.face_size,
                 face_detection_threshold=face_detection_threshold,
             )
-            batch_results = self.forward(faces_data)
+            batch_results = self.forward(faces_data, batch_data)
 
             # Create metadata for each frame
             file_names = []
@@ -853,8 +907,10 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             batch_results["input"] = np.concatenate(file_names)
             batch_results["frame"] = np.concatenate(frame_ids)
 
-            # Invert the face boxes and landmarks based on the padded output size.
-            invert_padding_to_results(batch_results, batch_data, n_landmarks=478)
+            # Padded->original-frame coordinate inversion now happens
+            # inside forward() in tensor space; no post-hoc DataFrame walk
+            # is needed here. (`invert_padding_to_results` is still
+            # exported for any external caller that depended on it.)
 
             batch_output.append(batch_results)
             # Use the actual batch size (may be smaller than `batch_size` for the
