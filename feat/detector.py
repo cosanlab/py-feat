@@ -1,3 +1,4 @@
+import os
 import json
 from tqdm import tqdm
 import numpy as np
@@ -9,6 +10,7 @@ from feat.emo_detectors.ResMaskNet.resmasknet_test import (
     ResMasking,
 )
 from feat.identity_detectors.facenet.facenet_model import InceptionResnetV1
+from feat.identity_detectors.arcface.arcface_model import ArcFace
 from feat.facepose_detectors.img2pose.deps.models import (
     FasterDoFRCNN,
     postprocess_img2pose,
@@ -103,7 +105,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         landmark_model="mobilefacenet",
         au_model="xgb",
         emotion_model="resmasknet",
-        identity_model="facenet",
+        identity_model="arcface",
         device="cpu",
     ):
         super(Detector, self).__init__()
@@ -362,6 +364,41 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 self.identity_detector.eval()
                 self.identity_detector.to(self.device)
                 # self.identity_detector = torch.compile(self.identity_detector)
+            elif identity_model in ("arcface", "arcface_r50"):
+                # ArcFace ResNet50 trained on WebFace600K (InsightFace's
+                # buffalo_l recognition model, converted from ONNX to
+                # PyTorch via scripts/convert_arcface_onnx_to_safetensors.py).
+                # Embeddings are angular-margin-trained — they disentangle
+                # identity from pose and expression much better than
+                # facenet's triplet-loss embeddings. See model card on
+                # https://huggingface.co/py-feat/arcface_r50 for license.
+                self.identity_detector = ArcFace(backbone="r50")
+                arcface_path = os.environ.get("FEAT_ARCFACE_R50_PATH")
+                if arcface_path is None:
+                    arcface_path = hf_hub_download(
+                        repo_id="py-feat/arcface_r50",
+                        filename="arcface_r50.safetensors",
+                        cache_dir=get_resource_path(),
+                    )
+                # strict=False because BatchNorm's `num_batches_tracked`
+                # buffer isn't in the converted safetensors (it's not in
+                # the source ONNX). Validate the missing/unexpected keys
+                # ourselves so a wrong-file or empty-file load fails
+                # loudly rather than silently producing garbage embeddings.
+                missing, unexpected = self.identity_detector.net.load_state_dict(
+                    load_file(arcface_path), strict=False
+                )
+                real_missing = [k for k in missing if "num_batches_tracked" not in k]
+                if real_missing or unexpected:
+                    raise RuntimeError(
+                        f"ArcFace weights at {arcface_path!r} are inconsistent "
+                        f"with the architecture. Missing: {real_missing}; "
+                        f"unexpected: {list(unexpected)}. Re-download from "
+                        f"py-feat/arcface_r50 or re-run "
+                        f"scripts/convert_arcface_onnx_to_safetensors.py."
+                    )
+                self.identity_detector.eval()
+                self.identity_detector.to(self.device)
             else:
                 raise ValueError(f"{identity_model} is not currently supported.")
         else:

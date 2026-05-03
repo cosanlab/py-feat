@@ -19,4 +19,15 @@ We also link to applicable licenses from models/code used in Py-Feat:
 - MobileFaceNet: https://github.com/cunjian/pytorch_face_landmark (mobilefacenet)
 - PFLD: https://github.com/cunjian/pytorch_face_landmark (pfld_compressed)
 - Residual Masking Network: https://github.com/phamquiluan/ResidualMaskingNetwork/issues/18
-- Facenet: https://github.com/timesler/facenet-pytorch/blob/master/LICENSE.md`
+- Facenet: https://github.com/timesler/facenet-pytorch/blob/master/LICENSE.md
+- ArcFace / InsightFace (code): https://github.com/deepinsight/insightface/blob/master/LICENSE (MIT)
+- ArcFace ResNet50 pretrained weights (`buffalo_l`'s `w600k_r50.onnx`,
+  repackaged as `arcface_r50.safetensors` at
+  https://huggingface.co/py-feat/arcface_r50): distributed under
+  InsightFace's non-commercial-research terms. The underlying training
+  data (WebFace600K, a Tsinghua-curated subset of WebFace260M:
+  https://www.face-benchmark.org/) is also non-commercial-research only.
+  Py-Feat's conversion code and integration are MIT-licensed, but the
+  converted weights inherit the upstream restriction. Commercial users
+  must independently validate license compatibility for their use case
+  and may need to substitute a different identity model.
