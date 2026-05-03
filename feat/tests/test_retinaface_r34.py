@@ -8,7 +8,7 @@ Pins three layers of contract:
    and pretrained.py) does its postprocess on-device, accepts batches,
    and produces equivalent per-image output for both batched and serial
    calls.
-3. **Detector integration**: ``Detector(face_model='retinaface_r34')``
+3. **Detector integration**: ``Detector(face_model='retinaface')``
    builds, detects faces in a real test image, and propagates NaN-filled
    pose columns (since R34 has no head-pose regression).
 
@@ -86,6 +86,41 @@ def test_retinaface_model_rejects_non_resnet34_cfg():
     bad_cfg["name"] = "mobilenet0.25"
     with pytest.raises(ValueError, match="resnet34"):
         RetinaFace(bad_cfg)
+
+
+# -------------------- Detector / MPDetector face_model validation -------
+
+
+def test_detector_supports_retinaface():
+    """`face_model='retinaface'` must be a recognized value on `Detector`,
+    same as on `MPDetector`. The shorter name is the canonical kwarg
+    across both classes; the underlying HF repo retains the
+    backbone-tagged `py-feat/retinaface_r34` filename."""
+    from feat.detector import Detector
+
+    assert "retinaface" in Detector._SUPPORTED_FACE_MODELS
+    assert "img2pose" in Detector._SUPPORTED_FACE_MODELS
+    # Sanity: the tagged-backbone alias from earlier v0.7-dev iterations
+    # is no longer accepted - users must move to the unified spelling.
+    assert "retinaface_r34" not in Detector._SUPPORTED_FACE_MODELS
+
+
+def test_detector_rejects_unknown_face_model():
+    """Validation must surface a clear error before any weight download."""
+    from feat.detector import Detector
+
+    with pytest.raises(ValueError, match="face_model must be one of"):
+        Detector(face_model="not_a_real_model")
+
+
+def test_detector_rejects_legacy_retinaface_r34_kwarg():
+    """The `'retinaface_r34'` alias was dropped in v0.7.0 in favor of
+    the shorter `'retinaface'`. Users on `v0.7-dev` who were already
+    passing the old name must update."""
+    from feat.detector import Detector
+
+    with pytest.raises(ValueError, match="face_model must be one of"):
+        Detector(face_model="retinaface_r34")
 
 
 # -------------------- wrapper-level (needs weights) ----------------------
@@ -174,8 +209,8 @@ def test_wrapper_batched_matches_serial():
 
 
 @pytest.mark.skipif(not _have_weights(), reason="local R34 safetensors not present")
-def test_detector_with_retinaface_r34_detects_multi_face():
-    """End-to-end: Detector(face_model='retinaface_r34') -> detect() -> Fex.
+def test_detector_with_retinaface_detects_multi_face():
+    """End-to-end: Detector(face_model='retinaface') -> detect() -> Fex.
     Verifies the dispatch in detect_faces, the per-frame extraction path,
     and that pose columns end up NaN."""
     # Stub the HF download to point at the local safetensors so the test
@@ -195,8 +230,8 @@ def test_detector_with_retinaface_r34_detects_multi_face():
     try:
         from feat.detector import Detector
 
-        det = Detector(face_model="retinaface_r34", device="cpu", au_model="svm")
-        assert det.info["face_model"] == "retinaface_r34"
+        det = Detector(face_model="retinaface", device="cpu", au_model="svm")
+        assert det.info["face_model"] == "retinaface"
         # facepose_model = 'pnp_dlt' indicates pose came from DLT-PnP rather
         # than img2pose's regressed values. Tracked separately so downstream
         # code can decide whether the pose values are trustworthy enough for

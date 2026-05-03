@@ -1,6 +1,6 @@
 """Pure-PyTorch PnP head-pose estimation from 2D landmarks.
 
-When ``Detector(face_model='retinaface_r34')`` (or any other detector that
+When ``Detector(face_model='retinaface')`` (or any other detector that
 doesn't natively regress 6DoF pose) is used, the 6DoF pose columns are
 populated by solving a Perspective-n-Point (PnP) problem against the 68
 2D landmarks from the landmark stage.
@@ -31,7 +31,7 @@ Accuracy caveats:
 If you need img2pose-grade pose accuracy, stay on
 ``Detector(face_model='img2pose')``. The PnP path is documented as
 approximate and intended for users who prefer faster batched detection
-via ``face_model='retinaface_r34'`` and can tolerate looser pose values.
+via ``face_model='retinaface'`` and can tolerate looser pose values.
 """
 
 from __future__ import annotations
