@@ -22,12 +22,6 @@ from torch.utils.data import DataLoader
 from PIL import Image
 from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 
-# Aliases that resolve to the new ResNet34-backbone Retinaface wrapper.
-# 'retinaface' is the legacy MPDetector default; 'retinaface_r34' is the
-# canonical name in feat.detector.Detector. Accepting both keeps existing
-# MPDetector callers working while the canonical name is the documented one.
-_RETINAFACE_ALIASES = ("retinaface", "retinaface_r34")
-
 
 # Per-axis sign flip applied to MediaPipe Face Mesh landmarks to translate
 # them into the canonical face-model coordinate convention used downstream.
@@ -292,11 +286,11 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # MobileNet0.25 path in favor of the ResNet34 wrapper at
         # feat.face_detectors.Retinaface.Retinaface_test.Retinaface, which
         # batches its postprocess on-device and downloads weights from the
-        # py-feat/retinaface_r34 HuggingFace repo. Both 'retinaface' and
-        # 'retinaface_r34' resolve to the same wrapper.
+        # py-feat/retinaface_r34 HuggingFace repo (the repo retains the
+        # backbone-tagged name; the kwarg is just 'retinaface').
         self.info["face_model"] = face_model
         if face_model is not None:
-            if face_model in _RETINAFACE_ALIASES:
+            if face_model == "retinaface":
                 self.face_detector = Retinaface(device=self.device)
             else:
                 raise ValueError(f"{face_model} is not currently supported.")
@@ -517,7 +511,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # wrapper handles its own mean-subtraction and on-device NMS;
         # we just pass the [B, 3, H, W] tensor in [0, 255] units it expects
         # and get back per-image lists of [x1, y1, x2, y2, score].
-        is_retinaface = self.info["face_model"] in _RETINAFACE_ALIASES
+        is_retinaface = self.info["face_model"] == "retinaface"
         if is_retinaface:
             rf_outputs = self.face_detector(frames.to(self.device))
         else:
