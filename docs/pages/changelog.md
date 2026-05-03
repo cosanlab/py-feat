@@ -60,6 +60,8 @@ If you used:
 
 If you compared `Pitch / Roll / Yaw / X / Y / Z` outputs from `MPDetector` between 0.6.x and 0.7.0, the values will differ. The prior estimator minimized the wrong objective (`mean(z_proj²)` instead of a true reprojection error) and produced effectively meaningless head-pose values; the new closed-form Umeyama alignment produces the actual head pose. Treat the prior values as noise.
 
+**Pose translation columns now in original-frame pixels.** The Umeyama alignment that recovers head pose is scale-invariant for rotation (`Pitch/Roll/Yaw` unchanged), but the translation term (`X/Y/Z` columns of the 6DoF pose) moves with the input scale. As of the perf refactor that folds DataLoader Rescale-inversion into `forward()` (replacing the post-hoc `invert_padding_to_results` step), `MPDetector` reads landmarks from the Fex in *original-frame* pixel coords rather than padded-frame coords. So `X/Y/Z` magnitudes in `Fex.facepose` are now in the same coordinate system as `FaceRectX`, `x_0`, etc. — typically smaller than before and shifted, but in a more useful frame.
+
 `MPDetector` also now emits `gaze_pitch` and `gaze_yaw` columns (radians, head-centric frame) in addition to the existing `gaze_angle`. The `gaze_angle` column is preserved for backward compatibility but its semantic shifted from "angle from camera-forward" to "angle from head-forward in head frame" - so a turned head no longer registers as averted gaze even when the eyes are looking along the head's forward axis.
 
 # 0.6.1
