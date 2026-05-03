@@ -5,6 +5,7 @@ performance. It is not currently recommended for use. See this (closed) PR
 for more discussion: https://github.com/cosanlab/py-feat/pull/228
 """
 
+import os
 import json
 import warnings
 from tqdm import tqdm
@@ -16,11 +17,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
+from safetensors.torch import load_file
 from huggingface_hub import hf_hub_download, PyTorchModelHubMixin
 from feat.pretrained import AU_LANDMARK_MAP
 from torch.utils.data import DataLoader
 from PIL import Image
 from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
+from feat.identity_detectors.arcface.arcface_model import ArcFace
 
 
 # Per-axis sign flip applied to MediaPipe Face Mesh landmarks to translate
@@ -486,6 +489,24 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 self.identity_detector.eval()
                 self.identity_detector.to(self.device)
                 # self.identity_detector = torch.compile(self.identity_detector)
+            elif identity_model in ("arcface", "arcface_r50"):
+                # ArcFace ResNet50 (InsightFace buffalo_l). See
+                # feat.identity_detectors.arcface.arcface_model and the
+                # equivalent branch in feat.detector.Detector for rationale
+                # and license notes.
+                self.identity_detector = ArcFace(backbone="r50")
+                arcface_path = os.environ.get("FEAT_ARCFACE_R50_PATH")
+                if arcface_path is None:
+                    arcface_path = hf_hub_download(
+                        repo_id="py-feat/arcface_r50",
+                        filename="arcface_r50.safetensors",
+                        cache_dir=get_resource_path(),
+                    )
+                self.identity_detector.net.load_state_dict(
+                    load_file(arcface_path), strict=False
+                )
+                self.identity_detector.eval()
+                self.identity_detector.to(self.device)
             else:
                 raise ValueError(f"{identity_model} is not currently supported.")
         else:
