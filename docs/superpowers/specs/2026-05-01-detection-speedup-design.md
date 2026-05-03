@@ -97,7 +97,7 @@ Order of operations is dictated by which dependency unblocks the next.
 
 **1.5 Single 224² face crop, downsampled on GPU.**
 - *Where:* `feat/detector.py:357-367` (the second `extract_face_from_bbox_torch` call when `emotion_model='resmasknet'`)
-- *Change:* Crop each face once at 224² and downsample on-GPU to 112² where needed (landmarks, identity). Re-use the 224² crop directly for ResMaskNet.
+- *Change:* Crop each face once at 224² and downsample on-GPU to 112² where needed (landmarks, identity). Reuse the 224² crop directly for ResMaskNet.
 - *Validation:* AU/landmark/emotion/identity outputs must match within the existing detector tests' tolerances. Add a regression test asserting only one `extract_face_from_bbox_torch` call happens per face when ResMaskNet is selected (use a counter or mock).
 - *Expected impact:* ~5-15%. Larger when face count per frame is high.
 - *Risk:* Low. The 112² crops can be a `F.interpolate(crop_224, size=112, mode='bilinear', align_corners=False)` step.

@@ -100,7 +100,7 @@ def _patch_xgboost_setstate_for_skops():
 
 _patch_xgboost_setstate_for_skops()
 
-# Supress sklearn warning about pickled estimators and diff sklearn versions
+# Suppress sklearn warning about pickled estimators and diff sklearn versions
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="torch")
 warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")

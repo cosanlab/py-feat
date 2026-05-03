@@ -42,7 +42,7 @@ J. Deng, J. Guo, E. Ververas, I. Kotsia, S. Zafeiriou. RetinaFace: Single-Shot M
 ## Acknowledgements
 We thank Yakhyokhuja Valikhujaev for the ResNet34-backbone PyTorch implementation, biubug6 for the original PyTorch reference, and the WIDERFACE authors (Yang, Luo, Loy, Tang) for the training data — all distributed under permissive terms.
 
-## Example Useage
+## Example Usage
 
 ```python
 import torch

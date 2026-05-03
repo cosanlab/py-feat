@@ -2448,7 +2448,7 @@ def draw_plotly_pose(row, img_height, fig, line_width=2, output="dictionary"):
         row (FexSeries): FexSeries instance
         img_height (int): height of image overlay. used to adjust coordinates
         fig: plotly figure handle
-        line_width (int): (optional) width of line if outputing a plotly figure instance
+        line_width (int): (optional) width of line if outputting a plotly figure instance
         output (str): type of output "figure" for plotly figure object or "dictionary"
 
     Returns:

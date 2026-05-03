@@ -81,7 +81,7 @@ def test_mpdetector_retinaface_constructs_and_detects():
 def test_mpdetector_retinaface_with_resmasknet_emotion():
     """Regression test for a NameError that lurked in detect_faces' resmasknet
     branch. The old retinaface block defined `single_frame` (mean-subtracted
-    copy of `frame`) and the resmasknet branch downstream re-used that
+    copy of `frame`) and the resmasknet branch downstream reused that
     variable. When the migration deleted the mean-subtract block, the
     `single_frame` reference stayed but the variable no longer existed -
     so MPDetector(face_model='retinaface', emotion_model='resmasknet')

@@ -229,7 +229,7 @@ class Test_Identity_Models:
         # Identities for each face should change
         assert not out.identities.equals(out2.identities)
 
-        # But embeddings don't as they're simply re-used at the new threshold
+        # But embeddings don't as they're simply reused at the new threshold
         assert out.identity_embeddings.equals(out2.identity_embeddings)
 
         # Should be equivalent to setting that threshold when first calling detector
