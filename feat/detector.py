@@ -94,6 +94,14 @@ warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 
 
 class Detector(nn.Module, PyTorchModelHubMixin):
+    # `retinaface` and `retinaface_r34` both resolve to the ResNet34-backbone
+    # RetinaFace wrapper. The two-name form mirrors `MPDetector` (which
+    # accepts the same aliases for v0.6 backwards compatibility). Users
+    # should prefer the shorter `'retinaface'` form; `'retinaface_r34'` is
+    # kept around for anyone who already adopted it during v0.7-dev.
+    _RETINAFACE_ALIASES = ("retinaface", "retinaface_r34")
+    _SUPPORTED_FACE_MODELS = ("img2pose",) + _RETINAFACE_ALIASES
+
     def __init__(
         self,
         face_model="img2pose",
@@ -105,19 +113,22 @@ class Detector(nn.Module, PyTorchModelHubMixin):
     ):
         super(Detector, self).__init__()
 
-        if face_model not in ("img2pose", "retinaface_r34"):
+        if face_model not in self._SUPPORTED_FACE_MODELS:
             raise ValueError(
-                f"face_model must be 'img2pose' or 'retinaface_r34'; got {face_model!r}"
+                f"face_model must be one of {self._SUPPORTED_FACE_MODELS}; "
+                f"got {face_model!r}"
             )
+
+        is_retinaface = face_model in self._RETINAFACE_ALIASES
 
         self.info = dict(
             face_model=face_model,
             landmark_model=None,
             emotion_model=None,
             # facepose_model tracks where 6DoF pose comes from. img2pose
-            # regresses pose natively; retinaface_r34 derives pose via
-            # DLT-PnP from the 68 landmarks (see feat.utils.face_pose_pnp).
-            facepose_model="img2pose" if face_model == "img2pose" else "pnp_dlt",
+            # regresses pose natively; retinaface derives pose via DLT-PnP
+            # from the 68 landmarks (see feat.utils.face_pose_pnp).
+            facepose_model="pnp_dlt" if is_retinaface else "img2pose",
             au_model=None,
             identity_model=None,
         )
@@ -160,13 +171,13 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             self.facepose_detector.load_state_dict(facepose_checkpoint, load_model_weights)
             self.facepose_detector.eval()
             self.facepose_detector.to(self.device)
-        else:  # retinaface_r34
+        else:  # retinaface / retinaface_r34
             # RetinaFace-R34: 88.9% WIDERFACE Hard AP (per yakhyo upstream),
             # 15-20x faster per-image than img2pose at batch 16+ on MPS.
             # No 6DoF head pose - pose columns are populated as NaN.
             self.facepose_detector = Retinaface(device=self.device)
             warnings.warn(
-                "face_model='retinaface_r34' does not regress 6DoF head pose. "
+                f"face_model={face_model!r} does not regress 6DoF head pose. "
                 "Pose columns are populated via DLT-PnP from the 68 landmarks "
                 "and may differ from img2pose's regressed pose by up to ~30 "
                 "degrees on Pitch (the axis with shallowest landmark "
