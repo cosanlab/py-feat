@@ -1,74 +1,88 @@
 # ArcFace identity detector
 
-Modern alternative to the default `facenet` identity detector. ArcFace
-embeddings disentangle identity from pose and expression much better
-than triplet-loss embeddings (FaceNet).
+The default identity detector in py-feat ≥ 0.7. ArcFace embeddings
+disentangle identity from pose and expression much better than the
+prior FaceNet/triplet-loss embeddings — exactly what FEAT video
+clustering needs.
+
+For the full model card (training data, benchmarks, limitations,
+license details, citations) see
+**[`MODEL_CARD.md`](./MODEL_CARD.md)**. That file is also uploaded
+verbatim as the README on the HuggingFace repo
+[`py-feat/arcface_r50`](https://huggingface.co/py-feat/arcface_r50).
+
+## Quick reference
+
+| | |
+|---|---|
+| Architecture | IResNet-50 (43.6 M params) |
+| Embedding dim | 512 |
+| Source | InsightFace `buffalo_l` (file `w600k_r50.onnx`) |
+| Training data | WebFace600K (Tsinghua) |
+| File size | 166 MB safetensors |
+| File hosted at | `py-feat/arcface_r50` on HuggingFace |
+| Inference cost vs. FaceNet | +4 % per frame (13.0 → 13.5 ms/frame on M5 MBP MPS) |
 
 ## Usage
 
 ```python
 from feat import Detector
+
+# Default in v0.7+
+detector = Detector()
+
+# Or explicit:
 detector = Detector(identity_model="arcface")
-fex = detector.detect("video.mp4")
+
+# To pin the prior FaceNet for backwards compatibility:
+detector = Detector(identity_model="facenet")
 ```
 
-## Model card
+## License at a glance
 
-- **Architecture:** IR-50 (43.6M params, 166MB safetensors)
-- **Training data:** WebFace600K (pseudo-labeled, ~600K identities)
-- **Loss:** ArcFace angular margin softmax
-- **Source:** Converted from InsightFace's `buffalo_l` pack
-  ([releases](https://github.com/deepinsight/insightface/releases))
-  via `scripts/convert_arcface_onnx_to_safetensors.py`.
-- **Reported benchmarks (TAR @ FAR=1e-4):**
-  - LFW: 99.83%
-  - IJB-C: 96.18%
-  - Compare to `facenet` (VGGFace2): ~80% on IJB-C — ArcFace is
-    substantially better on the hard benchmarks where pose and
-    expression vary, which is the exact regime of FEAT video data.
+- **InsightFace code** (the architecture, training scripts): MIT.
+- **The pretrained weights we distribute**: non-commercial research
+  only (InsightFace's terms + WebFace600K's terms, both layered).
+- **Py-Feat's integration code in this directory**: MIT (same as the
+  rest of py-feat).
+- **The conversion script** (`scripts/convert_arcface_onnx_to_safetensors.py`):
+  MIT — but the converted weights it produces inherit the upstream
+  restriction.
 
-## License
-
-The InsightFace **code** is MIT-licensed. The **pretrained weights**
-are distributed under InsightFace's "non-commercial research" terms;
-see [their model card](https://github.com/deepinsight/insightface) for
-the original distribution. Commercial users should validate license
-compatibility for their use case. The default `facenet` weights inherit
-the same kind of restriction (VGGFace2-trained, also research-only),
-so this is not a new license category for py-feat — but it remains
-the user's responsibility under the BSD-3-Clause that py-feat itself
-ships under.
+The full attribution and citation block, including BibTeX entries for
+the ArcFace paper, InsightFace project, WebFace260M paper, and the
+ResNet method paper, is in [`MODEL_CARD.md`](./MODEL_CARD.md). The
+Py-Feat root [`LICENSE`](../../../LICENSE) lists this model in the
+third-party-licenses section.
 
 ## Reproducing the conversion
 
-The InsightFace ONNX export folds most BatchNorms into the adjacent
-Convs. Our `iresnet.py` matches that fused structure so initializer
-names map 1:1 with no surgery. To rebuild the safetensors from
-scratch:
-
 ```bash
-# 1. Download the InsightFace pack (~275MB)
+# 1. Pull buffalo_l (~275 MB) from InsightFace's GitHub release
 curl -L -o /tmp/buffalo_l.zip \
     https://github.com/deepinsight/insightface/releases/download/v0.7/buffalo_l.zip
 unzip -o /tmp/buffalo_l.zip w600k_r50.onnx -d /tmp/
 
-# 2. Convert + verify
+# 2. Convert + verify (numerical equivalence to source ONNX)
 python scripts/convert_arcface_onnx_to_safetensors.py \
     --onnx /tmp/w600k_r50.onnx \
-    --out /tmp/arcface_r50.safetensors \
+    --out  /tmp/arcface_r50.safetensors \
     --backbone r50 \
     --verify
-# Expected output: max |diff| < 1e-5, cosine similarity == 1.0
+# Expected: max |diff| < 1e-5, cosine similarity = 1.0
 
-# 3. Upload to py-feat/arcface_r50 on HuggingFace (maintainers only)
-huggingface-cli upload py-feat/arcface_r50 /tmp/arcface_r50.safetensors arcface_r50.safetensors
+# 3. (maintainers only) Upload to HuggingFace, including the model card
+huggingface-cli upload py-feat/arcface_r50 \
+    feat/identity_detectors/arcface/MODEL_CARD.md README.md
+huggingface-cli upload py-feat/arcface_r50 \
+    /tmp/arcface_r50.safetensors arcface_r50.safetensors
 ```
 
-For local testing without uploading, set the env var:
+## Local testing without HF upload
 
 ```bash
 export FEAT_ARCFACE_R50_PATH=/tmp/arcface_r50.safetensors
 ```
 
-The detector will load the weights from this path instead of fetching
-from HuggingFace.
+The detector will load weights from this path instead of fetching from
+HuggingFace.
