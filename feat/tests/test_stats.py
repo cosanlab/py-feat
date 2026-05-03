@@ -16,7 +16,9 @@ from feat.utils.stats import (
     downsample,
     upsample,
     set_decomposition_algorithm,
+    cluster_identities,
 )
+import torch
 
 
 # ----------------------------- regress vs statsmodels ----------------------------
@@ -202,3 +204,75 @@ def test_decomposition_factory_returns_correct_classes():
 def test_decomposition_factory_rejects_unknown_algorithm():
     with pytest.raises(ValueError, match="Unknown algorithm"):
         set_decomposition_algorithm("rsvd", n_components=2)
+
+
+# ----------------------------- cluster_identities ----------------------------
+
+
+def test_cluster_identities_single_embedding():
+    emb = torch.tensor([[1.0, 0.0, 0.0]])
+    assert cluster_identities(emb, threshold=0.5) == ["Person_0"]
+
+
+def test_cluster_identities_two_identical_one_unique():
+    """Two identical embeddings cluster together; the third clusters alone."""
+    emb = torch.tensor(
+        [
+            [1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ]
+    )
+    out = cluster_identities(emb, threshold=0.5)
+    # First two share cluster, third is its own.
+    assert out[0] == out[1]
+    assert out[0] != out[2]
+
+
+def test_cluster_identities_three_distinct():
+    """Orthogonal embeddings each form their own cluster."""
+    emb = torch.eye(3)
+    out = cluster_identities(emb, threshold=0.5)
+    assert len(set(out)) == 3
+
+
+def test_cluster_identities_transitive_chain():
+    """A-B and B-C similarity above threshold; A-C below. All three should
+    still cluster together via transitivity (B bridges them)."""
+    # cos(A,B) = cos(B,C) ~ 0.93; cos(A,C) ~ 0.74
+    emb = torch.tensor(
+        [
+            [1.0, 0.0, 0.0],   # A
+            [0.7, 0.7, 0.0],   # B (close to A and C)
+            [0.0, 1.0, 0.0],   # C
+        ]
+    )
+    out = cluster_identities(emb, threshold=0.8)
+    # Threshold 0.8: A-B (0.7) below, B-C (0.7) below — actually all separate.
+    # Use a lower threshold to test transitivity.
+    out2 = cluster_identities(emb, threshold=0.6)
+    # cos(A,B) = 0.7, cos(B,C) = 0.7, cos(A,C) = 0
+    # At 0.6: A connects to B, B connects to C. A-C transitively.
+    assert out2[0] == out2[1] == out2[2]
+
+
+def test_cluster_identities_format():
+    emb = torch.eye(2)
+    out = cluster_identities(emb, threshold=0.5)
+    assert all(p.startswith("Person_") for p in out)
+    assert all(p.split("_")[1].isdigit() for p in out)
+
+
+def test_cluster_identities_large_input_completes():
+    """Regression: prior implementation was O(N^3) due to a Python list
+    comprehension on every BFS pop. 200 embeddings finishes in well under
+    a second on the new path."""
+    import time
+    rng = torch.manual_seed(0)
+    emb = torch.randn(200, 64)
+    emb = torch.nn.functional.normalize(emb, dim=1)
+    t = time.perf_counter()
+    out = cluster_identities(emb, threshold=0.3)
+    elapsed = time.perf_counter() - t
+    assert len(out) == 200
+    assert elapsed < 1.0, f"cluster_identities took {elapsed:.2f}s on 200 embeddings"

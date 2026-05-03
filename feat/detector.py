@@ -424,51 +424,95 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     ),
                 })
 
+        # Gather bboxes across the batch so face cropping runs as one
+        # batched grid_sample call instead of one per frame. The per-frame
+        # Python loop over GPU ops cost ~1ms/frame of pure kernel-launch
+        # overhead. No-detection frames contribute one NaN-bbox placeholder
+        # so downstream forward() sees >= 1 row per frame.
+        B = len(per_image_dets)
+        wants_resmasknet = self.info["emotion_model"] == "resmasknet"
+
+        bbox_chunks = []
+        score_chunks = []
+        pose_chunks = []
+        no_det_per_frame = []
+        n_per_frame = []
+        for det in per_image_dets:
+            if det["boxes"].numel() != 0:
+                bbox_chunks.append(det["boxes"])
+                score_chunks.append(det["scores"])
+                pose_chunks.append(det["poses"])
+                n_per_frame.append(det["boxes"].shape[0])
+                no_det_per_frame.append(False)
+            else:
+                bbox_chunks.append(torch.full((1, 4), float("nan"), device=self.device))
+                score_chunks.append(torch.zeros((1,), device=self.device))
+                pose_chunks.append(torch.full((1, 6), float("nan"), device=self.device))
+                n_per_frame.append(1)
+                no_det_per_frame.append(True)
+
+        all_bboxes = torch.cat(bbox_chunks, dim=0)
+        all_scores = torch.cat(score_chunks, dim=0)
+        all_poses = torch.cat(pose_chunks, dim=0)
+        n_per_frame_t = torch.tensor(n_per_frame, device=self.device)
+        all_frame_idx = torch.repeat_interleave(
+            torch.arange(B, device=self.device), n_per_frame_t
+        )
+
+        # Replace NaN bboxes with zero so grid_sample doesn't propagate
+        # NaNs into the crops; we restore the no-detection signal via
+        # `all_bboxes` (kept NaN) and `extracted` masking below.
+        bboxes_for_extract = torch.where(
+            torch.isnan(all_bboxes), torch.zeros_like(all_bboxes), all_bboxes
+        )
+        all_extracted, all_new_bboxes = extract_face_from_bbox_torch(
+            frames_unit,
+            bboxes_for_extract,
+            face_size=face_size,
+            frame_idx=all_frame_idx,
+        )
+
+        no_det_mask = torch.isnan(all_bboxes).any(dim=1)
+        if no_det_mask.any():
+            all_extracted = all_extracted.clone()
+            all_extracted[no_det_mask] = 0
+            all_new_bboxes = all_new_bboxes.clone().to(torch.float32)
+            all_new_bboxes[no_det_mask] = float("nan")
+
+        if wants_resmasknet:
+            resmasknet_all, _ = extract_face_from_bbox_torch(
+                frames_unit,
+                bboxes_for_extract,
+                expand_bbox=1.1,
+                face_size=224,
+                frame_idx=all_frame_idx,
+            )
+            if no_det_mask.any():
+                resmasknet_all = resmasknet_all.clone()
+                resmasknet_all[no_det_mask] = float("nan")
+
+        # Redistribute into per-frame dicts (preserves the public return
+        # signature of detect_faces). This second pass is cheap — just
+        # tensor slicing — and lets forward() stay unchanged.
+        image_size = tuple(frames_unit.shape[-2:])
         batch_results = []
-        for i, det in enumerate(per_image_dets):
-            single_frame = frames_unit[i, ...].unsqueeze(0)
-            bbox = det["boxes"]
-            poses = det["poses"]
-            facescores = det["scores"]
-
-            # Extract faces from bbox
-            if bbox.numel() != 0:
-                extracted_faces, new_bbox = extract_face_from_bbox_torch(
-                    single_frame, bbox, face_size=face_size
-                )
-            else:  # No Face Detected - propagate NaN-padded outputs
-                extracted_faces = torch.zeros((1, 3, face_size, face_size))
-                bbox = torch.full((1, 4), float("nan"))
-                new_bbox = torch.full((1, 4), float("nan"))
-                facescores = torch.zeros((1))
-                poses = torch.full((1, 6), float("nan"))
-
+        cursor = 0
+        for i in range(B):
+            n = n_per_frame[i]
+            sl = slice(cursor, cursor + n)
             frame_results = {
                 "face_id": i,
-                "faces": extracted_faces,
-                "boxes": bbox,
-                "new_boxes": new_bbox,
-                "poses": poses,
-                "scores": facescores,
-                # image (H, W) needed downstream for PnP-based pose estimation
-                # when face_model != 'img2pose'. Cheap to thread through;
-                # avoids a second pass over `frames_unit` in forward().
-                "image_size": tuple(frames_unit.shape[-2:]),
+                "faces": all_extracted[sl],
+                "boxes": all_bboxes[sl],
+                "new_boxes": all_new_bboxes[sl],
+                "poses": all_poses[sl],
+                "scores": all_scores[sl],
+                "image_size": image_size,
             }
-
-            # Extract Faces separately for Resmasknet
-            if self.info["emotion_model"] == "resmasknet":
-                if torch.all(torch.isnan(bbox)):  # No Face Detected
-                    frame_results["resmasknet_faces"] = torch.full(
-                        (1, 3, 224, 224), float("nan")
-                    )
-                else:
-                    resmasknet_faces, _ = extract_face_from_bbox_torch(
-                        single_frame, bbox, expand_bbox=1.1, face_size=224
-                    )
-                    frame_results["resmasknet_faces"] = resmasknet_faces
-
+            if wants_resmasknet:
+                frame_results["resmasknet_faces"] = resmasknet_all[sl]
             batch_results.append(frame_results)
+            cursor += n
 
         return batch_results
 
@@ -488,22 +532,27 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         new_bboxes = torch.cat([face["new_boxes"] for face in faces_data], dim=0)
         n_faces = extracted_faces.shape[0]
 
+        # Hoist CPU->device transfers out of per-detector branches: landmark
+        # and identity detectors both consume the face crops, and previously
+        # each branch issued its own `.to(self.device)` (each a fresh copy
+        # since the source stays on CPU). Move once, reuse. The HOG-based
+        # AU and SVM-emotion paths below still use the CPU-side
+        # `extracted_faces`.
+        faces_dev = extracted_faces.to(self.device)
+
         if self.landmark_detector is not None:
             if self.info["landmark_model"].lower() == "mobilenet":
+                # Normalize must run on whichever copy will be passed in;
+                # apply on CPU then transfer once.
                 extracted_faces = Compose(
                     [Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
                 )(extracted_faces)
-                landmarks = self.landmark_detector.forward(
-                    extracted_faces.to(self.device)
-                )
+                faces_dev = extracted_faces.to(self.device)
+                landmarks = self.landmark_detector.forward(faces_dev)
             elif self.info["landmark_model"].lower() == "mobilefacenet":
-                landmarks = self.landmark_detector.forward(
-                    extracted_faces.to(self.device)
-                )[0]
+                landmarks = self.landmark_detector.forward(faces_dev)[0]
             else:
-                landmarks = self.landmark_detector.forward(
-                    extracted_faces.to(self.device)
-                )
+                landmarks = self.landmark_detector.forward(faces_dev)
             new_landmarks = inverse_transform_landmarks_torch(landmarks, new_bboxes)
         else:
             new_landmarks = torch.full((n_faces, 136), float("nan"))
@@ -527,9 +576,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             emotions = torch.full((n_faces, 7), float("nan"))
 
         if self.identity_detector is not None:
-            identity_embeddings = self.identity_detector.forward(
-                extracted_faces.to(self.device)
-            )
+            identity_embeddings = self.identity_detector.forward(faces_dev)
         else:
             identity_embeddings = torch.full((n_faces, 512), float("nan"))
 

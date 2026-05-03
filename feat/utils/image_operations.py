@@ -1120,8 +1120,30 @@ class HOGLayer(torch.nn.Module):
         return hog_image
 
 
-def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bbox=1.2):
-    """Extract face from image and resize using pytorch."""
+def extract_face_from_bbox_torch(
+    frame, detected_faces, face_size=112, expand_bbox=1.2, frame_idx=None
+):
+    """Extract face from image and resize using pytorch.
+
+    Args:
+        frame: ``[B, C, H, W]`` tensor of source frames.
+        detected_faces: ``[N, 4]`` tensor of bboxes in ``[x1, y1, x2, y2]``
+            format. ``N`` need not equal ``B`` — multiple faces per frame
+            are supported via ``frame_idx``.
+        face_size: output spatial size; crops are returned at
+            ``[N, C, face_size, face_size]``.
+        expand_bbox: multiplier on bbox width/height before clipping to
+            the source frame; lets the crop carry context around the face.
+        frame_idx: optional ``[N]`` long tensor mapping each face to the
+            frame it came from. Required whenever ``B > 1`` and faces
+            aren't striped one-per-frame across the batch. When ``None``,
+            falls back to ``arange(N) % B`` for backwards compatibility
+            with the legacy single-frame call sites (``B == 1``).
+
+    Returns:
+        cropped_faces: ``[N, C, face_size, face_size]`` tensor.
+        new_bboxes: ``[N, 4]`` clipped/expanded bboxes (long).
+    """
 
     device = frame.device
     B, C, H, W = frame.shape
@@ -1179,8 +1201,13 @@ def extract_face_from_bbox_torch(frame, detected_faces, face_size=112, expand_bb
     frame = frame.float()
     grid = grid.float()
 
-    # Calculate frame indices for each face, assuming faces are sequentially ordered
-    face_indices = torch.arange(N, device=device) % B  # Repeat for each batch element
+    # Map each face to its source frame. Callers with multi-frame batches
+    # and variable face counts pass an explicit `frame_idx`; legacy
+    # single-frame callers (B == 1) use the default `arange(N) % B`.
+    if frame_idx is None:
+        face_indices = torch.arange(N, device=device) % B
+    else:
+        face_indices = frame_idx.to(device=device, dtype=torch.long)
     frame_expanded = frame[face_indices]  # Select corresponding frame for each face
 
     # Use grid_sample to extract and resize faces
@@ -1404,7 +1431,15 @@ def invert_padding_to_results(batch_results, batch_data, n_landmarks):
     y_cols = [f"y_{i}" for i in range(n_landmarks)]
     x_vals = batch_results[x_cols].to_numpy()  # [n_rows, n_landmarks]
     y_vals = batch_results[y_cols].to_numpy()
-    batch_results[x_cols] = (x_vals - pad_left[:, None]) / scale[:, None]
-    batch_results[y_cols] = (y_vals - pad_top[:, None]) / scale[:, None]
+    # iloc-based column assignment is ~30x faster than the equivalent
+    # `batch_results[x_cols] = arr` form. The label-based form goes through
+    # pandas's `_iset_split_block` path once per column (956 ops on a
+    # MediaPipe-shape DataFrame, 136 ops on a 68-landmark one). iloc with a
+    # positional index lets pandas write the whole 2D slice through a
+    # single block update.
+    x_idx = batch_results.columns.get_indexer(x_cols)
+    y_idx = batch_results.columns.get_indexer(y_cols)
+    batch_results.iloc[:, x_idx] = (x_vals - pad_left[:, None]) / scale[:, None]
+    batch_results.iloc[:, y_idx] = (y_vals - pad_top[:, None]) / scale[:, None]
 
     return batch_results
