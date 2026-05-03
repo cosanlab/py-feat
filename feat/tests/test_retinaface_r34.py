@@ -88,6 +88,40 @@ def test_retinaface_model_rejects_non_resnet34_cfg():
         RetinaFace(bad_cfg)
 
 
+# -------------------- Detector / MPDetector kwarg aliases ----------------
+
+
+def test_detector_supports_retinaface_aliases():
+    """Both `'retinaface'` and `'retinaface_r34'` should be valid
+    `face_model` values on `Detector`. They resolve to the same wrapper;
+    `info['face_model']` preserves whichever name the caller passed in,
+    and `info['facepose_model']` is `'pnp_dlt'` for either."""
+    from feat.detector import Detector
+
+    assert "retinaface" in Detector._SUPPORTED_FACE_MODELS
+    assert "retinaface_r34" in Detector._SUPPORTED_FACE_MODELS
+    assert "img2pose" in Detector._SUPPORTED_FACE_MODELS
+    # Aliases set must be a subset of the supported set.
+    for alias in Detector._RETINAFACE_ALIASES:
+        assert alias in Detector._SUPPORTED_FACE_MODELS
+
+
+def test_detector_rejects_unknown_face_model():
+    """Validation must surface a clear error before any weight download."""
+    from feat.detector import Detector
+
+    with pytest.raises(ValueError, match="face_model must be one of"):
+        Detector(face_model="not_a_real_model")
+
+
+def test_mpdetector_supports_retinaface_aliases():
+    """Mirror of the Detector test: MPDetector also accepts both names."""
+    from feat.MPDetector import _RETINAFACE_ALIASES
+
+    assert "retinaface" in _RETINAFACE_ALIASES
+    assert "retinaface_r34" in _RETINAFACE_ALIASES
+
+
 # -------------------- wrapper-level (needs weights) ----------------------
 
 
