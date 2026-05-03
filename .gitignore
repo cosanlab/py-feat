@@ -36,6 +36,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Local secrets / tokens (never commit these)
+.env
+.env.local
+
 # Distribution / packaging
 .Python
 env/
