@@ -270,7 +270,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         au_model="mp_blendshapes",
         facepose_model=None,
         emotion_model=None,
-        identity_model=None,
+        identity_model="arcface",
         device="cpu",
     ):
         super(MPDetector, self).__init__()
@@ -502,9 +502,20 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                         filename="arcface_r50.safetensors",
                         cache_dir=get_resource_path(),
                     )
-                self.identity_detector.net.load_state_dict(
+                # See the equivalent branch in feat.detector.Detector for
+                # the strict-vs-validation rationale.
+                missing, unexpected = self.identity_detector.net.load_state_dict(
                     load_file(arcface_path), strict=False
                 )
+                real_missing = [k for k in missing if "num_batches_tracked" not in k]
+                if real_missing or unexpected:
+                    raise RuntimeError(
+                        f"ArcFace weights at {arcface_path!r} are inconsistent "
+                        f"with the architecture. Missing: {real_missing}; "
+                        f"unexpected: {list(unexpected)}. Re-download from "
+                        f"py-feat/arcface_r50 or re-run "
+                        f"scripts/convert_arcface_onnx_to_safetensors.py."
+                    )
                 self.identity_detector.eval()
                 self.identity_detector.to(self.device)
             else:

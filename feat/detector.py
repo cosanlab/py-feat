@@ -380,9 +380,23 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                         filename="arcface_r50.safetensors",
                         cache_dir=get_resource_path(),
                     )
-                self.identity_detector.net.load_state_dict(
+                # strict=False because BatchNorm's `num_batches_tracked`
+                # buffer isn't in the converted safetensors (it's not in
+                # the source ONNX). Validate the missing/unexpected keys
+                # ourselves so a wrong-file or empty-file load fails
+                # loudly rather than silently producing garbage embeddings.
+                missing, unexpected = self.identity_detector.net.load_state_dict(
                     load_file(arcface_path), strict=False
                 )
+                real_missing = [k for k in missing if "num_batches_tracked" not in k]
+                if real_missing or unexpected:
+                    raise RuntimeError(
+                        f"ArcFace weights at {arcface_path!r} are inconsistent "
+                        f"with the architecture. Missing: {real_missing}; "
+                        f"unexpected: {list(unexpected)}. Re-download from "
+                        f"py-feat/arcface_r50 or re-run "
+                        f"scripts/convert_arcface_onnx_to_safetensors.py."
+                    )
                 self.identity_detector.eval()
                 self.identity_detector.to(self.device)
             else:
