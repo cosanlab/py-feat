@@ -105,7 +105,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         landmark_model="mobilefacenet",
         au_model="xgb",
         emotion_model="resmasknet",
-        identity_model="facenet",
+        identity_model="arcface",
         device="cpu",
     ):
         super(Detector, self).__init__()
