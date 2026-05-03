@@ -67,6 +67,8 @@ If you compared `Pitch / Roll / Yaw / X / Y / Z` outputs from `MPDetector` betwe
 
 **Note on intermediate v0.7-dev builds:** a Y/Z-axis convention bug introduced alongside the new alignment (the canonical face model uses head-centric `Y up, Z out`; MediaPipe Face Mesh outputs `Y down, Z into screen`) made `Pitch` cluster at ±π for forward-facing portraits. Fixed in PR #279 before the 0.7.0 release. Only releases at or after this fix produce correct head pose; earlier 0.7-dev snapshots should be re-run.
 
+**Pose translation columns now in original-frame pixels.** The Umeyama alignment that recovers head pose is scale-invariant for rotation (`Pitch/Roll/Yaw` unchanged), but the translation term (`X/Y/Z` columns of the 6DoF pose) moves with the input scale. As of the perf refactor that folds DataLoader Rescale-inversion into `forward()` (replacing the post-hoc `invert_padding_to_results` step), `MPDetector` reads landmarks from the Fex in *original-frame* pixel coords rather than padded-frame coords. So `X/Y/Z` magnitudes in `Fex.facepose` are now in the same coordinate system as `FaceRectX`, `x_0`, etc. — typically smaller than before and shifted, but in a more useful frame. Only relevant if you compared 6DoF translation values across v0.7-dev snapshots.
+
 `MPDetector` also now emits `gaze_pitch` and `gaze_yaw` columns (radians, head-centric frame) in addition to the existing `gaze_angle`. The `gaze_angle` column is preserved for backward compatibility but its semantic shifted from "angle from camera-forward" to "angle from head-forward in head frame" - so a turned head no longer registers as averted gaze even when the eyes are looking along the head's forward axis.
 
 # 0.6.1

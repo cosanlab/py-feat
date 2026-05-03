@@ -733,13 +733,16 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             ],
             dim=0,
         )
-        bboxes_orig = bboxes.clone()
-        bboxes_orig[:, 0] = (bboxes[:, 0] - pad_left) / scale
-        bboxes_orig[:, 1] = (bboxes[:, 1] - pad_top) / scale
-        bboxes_orig[:, 2] = bboxes[:, 2] / scale
-        bboxes_orig[:, 3] = bboxes[:, 3] / scale
+        # In-place arithmetic: each axis reads + writes the same column,
+        # axes are independent, and `bboxes` is freshly allocated by
+        # torch.cat above and not referenced again after the DataFrame
+        # is built. (Score column 4 is unchanged by Rescale inversion.)
+        bboxes[:, 0] = (bboxes[:, 0] - pad_left) / scale
+        bboxes[:, 1] = (bboxes[:, 1] - pad_top) / scale
+        bboxes[:, 2] = bboxes[:, 2] / scale
+        bboxes[:, 3] = bboxes[:, 3] / scale
         feat_faceboxes = pd.DataFrame(
-            bboxes_orig.cpu().detach().numpy(),
+            bboxes.cpu().detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
         )
 
@@ -752,16 +755,17 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # Invert the DataLoader's Rescale on the 478 (x, y, z) landmark
         # triples. Z is depth in face-crop scale already (untouched by
         # the image-plane Rescale), so only X/Y need adjustment.
-        landmarks_3d_padded = new_landmarks.reshape(n_faces, 478, 3)
-        landmarks_3d_orig = landmarks_3d_padded.clone()
-        landmarks_3d_orig[..., 0] = (
-            landmarks_3d_padded[..., 0] - pad_left[:, None]
+        # In-place is safe — `new_landmarks` is not used after the
+        # DataFrame is built.
+        landmarks_3d = new_landmarks.reshape(n_faces, 478, 3)
+        landmarks_3d[..., 0] = (
+            landmarks_3d[..., 0] - pad_left[:, None]
         ) / scale[:, None]
-        landmarks_3d_orig[..., 1] = (
-            landmarks_3d_padded[..., 1] - pad_top[:, None]
+        landmarks_3d[..., 1] = (
+            landmarks_3d[..., 1] - pad_top[:, None]
         ) / scale[:, None]
         feat_landmarks = pd.DataFrame(
-            landmarks_3d_orig.reshape(n_faces, 478 * 3).cpu().detach().numpy(),
+            landmarks_3d.reshape(n_faces, 478 * 3).cpu().detach().numpy(),
             columns=MP_LANDMARK_COLUMNS,
         )
         feat_aus = pd.DataFrame(aus.cpu().detach().numpy(), columns=MP_BLENDSHAPE_NAMES)

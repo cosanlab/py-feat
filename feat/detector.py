@@ -628,13 +628,16 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             ],
             dim=0,
         )
-        bboxes_orig = bboxes.clone()
-        bboxes_orig[:, 0] = (bboxes[:, 0] - pad_left) / scale
-        bboxes_orig[:, 1] = (bboxes[:, 1] - pad_top) / scale
-        bboxes_orig[:, 2] = bboxes[:, 2] / scale
-        bboxes_orig[:, 3] = bboxes[:, 3] / scale
+        # In-place arithmetic: each axis reads + writes the same column,
+        # axes are independent, and `bboxes` is freshly allocated by
+        # torch.cat above and not referenced again after the DataFrame
+        # is built. (Score column 4 is unchanged by Rescale inversion.)
+        bboxes[:, 0] = (bboxes[:, 0] - pad_left) / scale
+        bboxes[:, 1] = (bboxes[:, 1] - pad_top) / scale
+        bboxes[:, 2] = bboxes[:, 2] / scale
+        bboxes[:, 3] = bboxes[:, 3] / scale
         feat_faceboxes = pd.DataFrame(
-            bboxes_orig.cpu().detach().numpy(),
+            bboxes.cpu().detach().numpy(),
             columns=FEAT_FACEBOX_COLUMNS,
         )
 
@@ -675,18 +678,18 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         # Invert the DataLoader's Rescale on the 68 (x, y) landmark pairs.
         # The PnP block above (when active) already consumed the
         # padded-frame landmarks; invert here for the user-visible
-        # output. NaN landmarks (no-detection rows) propagate as NaN
-        # through the arithmetic, which is what we want.
+        # output. In-place is safe — `new_landmarks` is not used after
+        # the DataFrame is built. NaN landmarks (no-detection rows)
+        # propagate as NaN through the arithmetic, which is what we want.
         reshape_landmarks = new_landmarks.reshape(new_landmarks.shape[0], 68, 2)
-        reshape_landmarks_orig = reshape_landmarks.clone()
-        reshape_landmarks_orig[..., 0] = (
+        reshape_landmarks[..., 0] = (
             reshape_landmarks[..., 0] - pad_left[:, None]
         ) / scale[:, None]
-        reshape_landmarks_orig[..., 1] = (
+        reshape_landmarks[..., 1] = (
             reshape_landmarks[..., 1] - pad_top[:, None]
         ) / scale[:, None]
         reordered_landmarks = torch.cat(
-            [reshape_landmarks_orig[:, :, 0], reshape_landmarks_orig[:, :, 1]], dim=1
+            [reshape_landmarks[:, :, 0], reshape_landmarks[:, :, 1]], dim=1
         )
         feat_landmarks = pd.DataFrame(
             reordered_landmarks.cpu().detach().numpy(),
