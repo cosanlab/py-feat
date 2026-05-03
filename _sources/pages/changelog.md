@@ -1,53 +1,36 @@
 # Change Log
 
-# 0.7.0 (in development on `v0.7-dev`)
+# 0.7.0
 
 ## Notes
 
-The first release since 0.6.2 (March 2024). This is both a major structural overhaul of py-feat's internal `Detector` class and a coordinated batch of breaking changes that bring py-feat onto modern Python and PyTorch. Users on Python 3.10 or earlier, or who use `nltools.data.Adjacency` from `Fex.distance()`, will need to migrate (see the migration guide below).
+This is a major structural overhaul of py-feat's internal `Detector` class. We've pruned unreliable models, simpliefied and streamlined, and extended the codebase with an eye towards future development. This includes:
+- integration with huggingface: all our pre-trained models are now versioned and available on our [HuggingFace model hub](https://huggingface.co/py-feat) and will be automatically downloaded when you first initialize a `Detector` object
+- we have an experimental mediapipe detector in the works that focuses on real-time performance
+- numerous bug fixes and improvements
 
-Highlights:
-- HuggingFace model hub integration: all pre-trained models are now versioned and downloaded on first use.
-- End-to-end MPS support on Apple Silicon (was silently disabled before).
-- Pure-PyTorch head-pose and gaze for the MediaPipe Face Mesh detector. No OpenCV dependency.
-- Modern video decoding via torchcodec (CPU + CUDA; CPU on Apple Silicon, transfer to MPS for inference).
-- Fixed `HOGLayer` (previously broken; now matches `skimage.feature.hog` to ~5e-8 absolute tolerance).
-- Removed `nltools` as a runtime dependency.
+## Breaking API Changes
 
-## Breaking API changes
+- `Detector.detect_image()` and `Detector.detect_video()` have been removed and all detections can be be performed using a single `Detector.detect()` method
+- To process different types of data use the `data_type` argument which supports `image`, `tensor`, and `video`
 
-- `Detector.detect_image()` and `Detector.detect_video()` are removed; both flows go through a single `Detector.detect()` with `data_type` in `{'image', 'tensor', 'video'}`.
-- The default face detector is `img2pose`, which also provides 6-DoF head-pose estimation.
-- **Python 3.11+ required.** Drops support for 3.8 / 3.9 / 3.10. CI tests 3.11 / 3.12 / 3.13. *(PR #262)*
-- **`nltools` removed as a dependency.** Functions previously sourced from nltools are now in `feat.utils.stats`: `regress`, `downsample`, `upsample`, `set_decomposition_algorithm`. `Fex.distance()` now returns a `pandas.DataFrame` instead of an `nltools.data.Adjacency`. *(PR #262)*
-- *(More breaking changes to be added as PRs land on `v0.7-dev`.)*
+## Changes to Default Models
+- We have completely switched and modiefied our face detection model to `img2pose` which also provides 6-degrees of head-pose estimation - this can no longer be changed
+- Our other default detectors remain unchanges. Please see our [documentation](https://py-feat.org/pages/models.html) for more details.
 
-## New features
+### New Identity Detector
 
-- **Identity detector** via [facenet](https://github.com/timesler/facenet-pytorch). Each detected face is projected into a 512-d embedding space and clustered by cosine similarity; the resulting label is stored in `Fex.identities` and the embeddings in `Fex.identity_embeddings`. The clustering threshold defaults to 0.8 and can be tuned at detection time via `face_identity_threshold` or recomputed on an existing `Fex` via `.compute_identities(threshold=new_threshold)`.
-- **HuggingFace model integration.** Pre-trained weights live at the [py-feat HuggingFace org](https://huggingface.co/py-feat) and are downloaded on first use.
-- **Pure-PyTorch head-pose and gaze for MediaPipe Face Mesh.** Closed-form Umeyama similarity alignment replaces the iterative Adam-loop pose estimator; head-pose-compensated gaze in head-centric frame. No OpenCV dependency. *(PR #261)*
-- **`feat.utils.io.decode_video`** for sliced or streamed video decoding via torchcodec; replaces the prior PyAV path and fixes the regression where loading a single frame for plotting decoded the entire video into memory. *(PR #263)*
-- **`HOGLayer`** now produces feature vectors that match `skimage.feature.hog` to ~5e-8 absolute tolerance for L1, L1-sqrt, L2, and L2-Hys block normalizations. Wiring it into `extract_hog_features` is a follow-up. *(PR #259)*
-- *(More features to be added as PRs land on `v0.7-dev`.)*
-
-## Bug fixes
-
-- **MPS device handoff.** Three places in the inference path created tensors on CPU while model weights were on MPS or CUDA, causing `Detector(device='mps')` to crash partway through. End-to-end MPS detection now runs cleanly on Apple Silicon. *(PR #258)*
-- *(More bug fixes to be added as PRs land on `v0.7-dev`.)*
+- Py-feat now includes an **identity detector** via [facenet](https://github.com/timesler/facenet-pytorch). This works by projecting each detected face in an image or video frame into a 512d embedding space and clustering these embeddings using their cosine similarity
+- `Fex` objects include an extra column containing the identity label for each face (accessible via `Fex.identities`) as well as additional columns for each of the 512 embeddings dimensions (accessible via `Fex.identity_embeddings`). Embeddings can be useful for downstream model-training tasks.
+- **Note:** identity embeddings are affected by facial expressions to some degree, and while our default threshold of 0.8 works well for many cases, you should adjust this to tailor it to your particular data.
+- To save computation time, we make it possible to recompute identity labels **after** detection has been performed using the `.compute_identities(threshold=new_threshold)` method on `Fex` data objects. By default this returns a new `Fex` object with new labels in the `'Identity'` column, but can also overwrite itself in-place.
+- You can also adjust the threshold at detection time using the `face_identity_threshold` keyword argument to `Detector.detect_image()` or `Detector.detect_video()`.
+- Recomputing identity labels by changing the threshold **does not** change the 512d embeddings, it just adjusts how clustering is performed to get the identity labels.
 
 ## Documentation updates
 
-- Tutorials updated for the new `Detector.detect()` API.
-- New [FAQ](https://py-feat.org/pages/faq.html).
-
-## Migration guide (in progress)
-
-If you used:
-- `Detector.detect_image()` or `Detector.detect_video()` -> change to `Detector.detect(..., data_type='image')` or `data_type='video'`.
-- `from nltools.stats import regress, downsample, upsample` -> change to `from feat.utils.stats import regress, downsample, upsample`.
-- `from nltools.data import Adjacency` for the result of `Fex.distance()` -> the result is now a plain `pandas.DataFrame`. Drop the import; use `.shape` instead of `.square_shape()`.
-- Python 3.10 or earlier -> upgrade to 3.11+. macOS users may also need `brew install libomp` for xgboost on Python 3.13.
+- Our tutorials have been updated to reflect the new API change
+- We have a new [FAQ](https://py-feat.org/pages/faq.html) to help address common questions
 
 # 0.6.1
 
