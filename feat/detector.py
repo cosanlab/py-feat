@@ -1,3 +1,13 @@
+# Import xgboost FIRST, before any module that pulls in torch. On
+# Python 3.13 + macOS, if torch's OpenMP/MKL runtime loads before
+# xgboost's, subsequent xgboost.Booster.__setstate__ calls during
+# skops.io.load(...) crash the process with SIGSEGV. The first OpenMP
+# runtime wins; loading xgboost first puts its runtime in charge and
+# the skops load path stays stable. Verified empirically: with this
+# order the load succeeds, with `import torch` ahead of it the load
+# is exit 139.
+import xgboost  # noqa: F401  (must come before torch-using imports)
+
 import os
 import json
 from tqdm import tqdm
