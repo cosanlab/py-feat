@@ -69,7 +69,7 @@ We thank the InsightFace project (Guo, Deng et al.) for releasing the architectu
 ## License Note
 The InsightFace **code** is MIT-licensed. The **pretrained weights distributed in this repo** are released under InsightFace's non-commercial-research license, and the underlying training data (WebFace600K / WebFace260M) is also non-commercial-research only. Py-Feat's conversion code and integration are MIT-licensed, but the converted weights inherit the upstream restriction. Commercial users must independently validate license compatibility and may need to substitute a different identity model.
 
-## Example Useage
+## Example Usage
 
 ```python
 import torch
