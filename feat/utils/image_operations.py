@@ -1359,6 +1359,48 @@ def compute_original_image_size(batch_data):
     return original_height_width
 
 
+def per_face_padding_inversion_terms(batch_data, frame_idx, device):
+    """Look up per-face DataLoader-Rescale inversion terms.
+
+    The DataLoader's ``Rescale`` transform pads + scales each frame to a
+    uniform shape so the batch can collate. ``forward()`` consumes the
+    padded frames directly, so any coordinates it produces (face bboxes,
+    landmarks) are in *padded-frame* space. To convert back to the
+    *original-frame* coordinates the user expects, we need per-frame
+    ``pad_left``, ``pad_top``, ``scale`` values plus the original
+    ``frame_h`` / ``frame_w``.
+
+    This helper expands those per-frame quantities to per-face tensors
+    via the ``frame_idx`` mapping (which face came from which frame in
+    the batch).
+
+    Args:
+        batch_data: dict from the DataLoader. Must contain ``"Padding"``
+            (with ``"Left"`` / ``"Top"``), ``"Scale"``, and ``"Image"``.
+        frame_idx: ``[N]`` long tensor mapping each face to its source
+            frame in the batch. Build via
+            ``torch.repeat_interleave(arange(B), n_faces_per_frame)``.
+        device: device the returned tensors should live on (typically
+            the model's device, so the inversion math runs on-device
+            without an extra round-trip).
+
+    Returns:
+        tuple of five ``[N]`` float tensors on ``device``:
+        ``(pad_left, pad_top, scale, frame_h, frame_w)``.
+    """
+    # Cast to float32 BEFORE moving to device. MPS doesn't accept
+    # float64 tensors via `.to('mps')`, and the DataLoader's Padding /
+    # Scale tensors come back as float64 by default. Casting first
+    # avoids the round-trip.
+    pad_left = batch_data["Padding"]["Left"].float().to(device)[frame_idx]
+    pad_top = batch_data["Padding"]["Top"].float().to(device)[frame_idx]
+    scale = batch_data["Scale"].float().to(device)[frame_idx]
+    original_hw = compute_original_image_size(batch_data).float().to(device)
+    frame_h = original_hw[frame_idx, 0]
+    frame_w = original_hw[frame_idx, 1]
+    return pad_left, pad_top, scale, frame_h, frame_w
+
+
 def invert_padding_to_results(batch_results, batch_data, n_landmarks):
     """Vectorized inversion of dataloader padding/scaling on a batch of detector outputs.
 
