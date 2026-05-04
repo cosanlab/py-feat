@@ -106,7 +106,7 @@ class FexSeries(Series):
         "landmark_columns",
         "facepose_columns",
         "identity_columns",
-        "gaze_columns",  # TODO: Not currently supported
+        "gaze_columns",
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -366,7 +366,7 @@ class Fex(DataFrame):
         "landmark_columns",
         "facepose_columns",
         "identity_columns",
-        "gaze_columns",  # TODO: Not currently supported
+        "gaze_columns",
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -390,7 +390,6 @@ class Fex(DataFrame):
         # merge operation: using metadata of the left object
         if method == "merge":
             for name in self._metadata:
-                print("self", name, self.au_columns, other.left.au_columns)
                 object.__setattr__(self, name, getattr(other.left, name, None))
         # concat operation: using metadata of the first object
         elif method == "concat":
