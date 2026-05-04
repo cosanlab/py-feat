@@ -341,19 +341,27 @@ def decode_landmarks(pre, priors, variances):
 
 
 def postprocess_retinaface(*args, **kwargs):
-    """Removed in v0.7. The previous mobilenet0.25 RetinaFace integration was
-    broken (the HF download path crashed) and has been replaced by the
-    ResNet34-backbone implementation in Retinaface_test.Retinaface, which
-    handles its own batched postprocess on-device.
+    """Importable stub for the v0.6 mobilenet0.25 postprocess function.
 
-    Kept as an importable stub so MPDetector's old retinaface path doesn't
-    error at module import time. MPDetector needs a follow-up to switch to
-    the new wrapper class.
+    The v0.6 wrapper called this from a per-image Python loop with
+    CPU/numpy round-trips on every iteration. The v0.7 ResNet34 wrapper
+    (``Retinaface_test.Retinaface``) does anchor decode, NMS, and
+    threshold all on-device in a single pass, so the standalone
+    postprocess function has no role in the current pipeline.
+
+    The function is preserved as an importable name so external code
+    that ``from feat.face_detectors.Retinaface.Retinaface_model import
+    postprocess_retinaface`` doesn't break at import time. Restoring
+    MobileNet0.25 as a selectable backbone (alongside the current
+    ResNet34) is on the post-v0.7 roadmap; when that lands, this
+    function will be re-implemented to call the on-device path of the
+    revived backbone.
     """
     raise NotImplementedError(
-        "postprocess_retinaface was removed when the RetinaFace integration "
-        "was rebuilt around the ResNet34 backbone. Use "
+        "postprocess_retinaface is a v0.6 entry point; the v0.7 RetinaFace "
+        "integration moved postprocess on-device. Use "
         "feat.face_detectors.Retinaface.Retinaface_test.Retinaface, which "
         "produces per-image lists of [xmin, ymin, xmax, ymax, score] "
-        "directly, with batched postprocess on-device."
+        "directly. Restoring a MobileNet0.25 backbone option is planned "
+        "post-v0.7."
     )
