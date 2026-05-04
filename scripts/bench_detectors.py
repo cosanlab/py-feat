@@ -15,8 +15,9 @@ Usage:
     # Custom batch sizes
     python scripts/bench_detectors.py --batches 1 8 32
 
-    # Restrict to a single device (useful for CI where only one is available)
+    # Restrict to specific devices
     python scripts/bench_detectors.py --devices mps
+    python scripts/bench_detectors.py --devices cpu cuda
 
     # Also write a markdown report (good for tracking results over time)
     python scripts/bench_detectors.py --workers 0 2 --markdown
@@ -264,6 +265,8 @@ def run_video_sweep(
             del det
             if device == "mps":
                 torch.mps.empty_cache()
+            elif device == "cuda":
+                torch.cuda.empty_cache()
 
 
 def run_image_sweep(
@@ -302,6 +305,8 @@ def run_image_sweep(
             del det
             if device == "mps":
                 torch.mps.empty_cache()
+            elif device == "cuda":
+                torch.cuda.empty_cache()
 
 
 # ---------------------------------------------------------------------------
@@ -398,7 +403,7 @@ def write_markdown(
     md.append(f"- **Host:** {hw}")
     md.append(f"- **Python:** {pyver}")
     md.append(f"- **PyTorch:** {torch.__version__}")
-    md.append(f"- **MPS available:** {torch.backends.mps.is_available()}")
+    md.append(f"- **GPU:** {_gpu_summary()}")
     md.append(f"- **OMP_NUM_THREADS:** `{omp}`")
     md.append(f"- **Devices swept:** {list(all_devices)}")
     md.append(f"- **Batch sizes:** {args.batches}")
@@ -428,7 +433,7 @@ def write_markdown(
             md.append(_md_table_rows(cfg_rows, has_workers_axis, section_kind))
             md.append("")
 
-    out_path.write_text("\n".join(md))
+    out_path.write_text("\n".join(md), encoding="utf-8")
     print(f"\n# Markdown report written to {out_path}", flush=True)
 
 
@@ -463,9 +468,12 @@ def _parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--devices",
-        choices=["cpu", "mps", "both"],
-        default="both",
-        help="Which devices to test.",
+        nargs="+",
+        default=["auto"],
+        help=(
+            "Devices to test. Pass one or more of: cpu, mps, cuda, auto. "
+            "'auto' (default) picks cpu + the best available accelerator."
+        ),
     )
     p.add_argument(
         "--skip-long-video",
@@ -496,18 +504,54 @@ def _parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
+def _resolve_devices(requested: list[str]) -> tuple[str, ...]:
+    """Turn the --devices list into concrete device strings."""
+    mps_ok = torch.backends.mps.is_available()
+    cuda_ok = torch.cuda.is_available()
+
+    # Handle legacy "both" and "auto"
+    resolved = []
+    for d in requested:
+        if d in ("both", "auto"):
+            resolved.append("cpu")
+            if cuda_ok:
+                resolved.append("cuda")
+            elif mps_ok:
+                resolved.append("mps")
+        elif d == "mps":
+            if not mps_ok:
+                raise SystemExit("mps requested but torch.backends.mps.is_available() is False")
+            resolved.append("mps")
+        elif d == "cuda":
+            if not cuda_ok:
+                raise SystemExit("cuda requested but torch.cuda.is_available() is False")
+            resolved.append("cuda")
+        else:
+            resolved.append(d)
+    # Deduplicate preserving order
+    seen = set()
+    out = []
+    for d in resolved:
+        if d not in seen:
+            seen.add(d)
+            out.append(d)
+    return tuple(out)
+
+
+def _gpu_summary() -> str:
+    """Return a short GPU description for metadata."""
+    parts = []
+    if torch.cuda.is_available():
+        parts.append(f"CUDA {torch.version.cuda}, {torch.cuda.get_device_name(0)}")
+    if torch.backends.mps.is_available():
+        parts.append("MPS available")
+    return "; ".join(parts) if parts else "no GPU"
+
+
 def main() -> None:
     args = _parse_args()
 
-    mps_available = torch.backends.mps.is_available()
-    if args.devices == "both":
-        all_devices = ("cpu", "mps") if mps_available else ("cpu",)
-    elif args.devices == "mps":
-        if not mps_available:
-            raise SystemExit("mps requested but torch.backends.mps.is_available() is False")
-        all_devices = ("mps",)
-    else:
-        all_devices = ("cpu",)
+    all_devices = _resolve_devices(args.devices)
 
     devices_for_short = {cfg: all_devices for cfg, _ in CONFIGS}
     # Skip CPU+img2pose on the long video (~10 min/run on M-series CPUs).
@@ -517,10 +561,7 @@ def main() -> None:
         devices_for_long["img2pose"] = long_img2pose if long_img2pose else ("cpu",)
 
     print("# py-feat detector benchmark", flush=True)
-    print(
-        f"# torch.backends.mps.is_available() = {mps_available}",
-        flush=True,
-    )
+    print(f"# GPU: {_gpu_summary()}", flush=True)
     print(
         f"# OMP_NUM_THREADS = {os.environ.get('OMP_NUM_THREADS', 'unset')}",
         flush=True,
