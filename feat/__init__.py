@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
 """Top-level package for FEAT."""
-
-from __future__ import absolute_import
 
 # --- OpenMP runtime conflict mitigation (must run before any other import) ---
 #

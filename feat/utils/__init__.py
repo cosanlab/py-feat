@@ -43,6 +43,16 @@ FEAT_IDENTITY_COLUMNS = ["Identity"] + [
     f"Identity_{x+1}" for x in range(512)
 ]  # could add identity embeddings too (512)
 
+# Landmark counts. The "68" is the OpenFace / mobilefacenet 2D layout used
+# by the legacy Detector path; the "478" is the MediaPipe FaceMesh layout
+# used by MPDetector. Spell them out so reshape() arithmetic and NaN-fill
+# shapes don't read as bare integers in hot-path code.
+N_OPENFACE_LANDMARKS = 68
+N_OPENFACE_LANDMARKS_2D_FLAT = N_OPENFACE_LANDMARKS * 2  # 136
+N_MEDIAPIPE_LANDMARKS = 478
+N_MEDIAPIPE_LANDMARKS_3D_FLAT = N_MEDIAPIPE_LANDMARKS * 3  # 1434
+N_MEDIAPIPE_LANDMARKS_2D_FLAT = N_MEDIAPIPE_LANDMARKS * 2  # 956
+
 MP_BLENDSHAPE_MODEL_LANDMARKS_SUBSET = [
     0,
     1,

@@ -115,6 +115,30 @@ def test_extract_hog_features_empty_input():
     assert new_landmarks == []
 
 
+def test_extract_hog_features_cached_layer_matches_uncached():
+    """Passing a pre-built HOGLayer must produce identical output.
+
+    Detector/MPDetector cache a single HOGLayer instance instead of
+    rebuilding it on every detect() call. The cached path must be
+    bitwise-identical to the un-cached path; otherwise we silently
+    drift the trained classifier inputs.
+    """
+    from feat.utils.image_operations import HOGLayer
+
+    faces, landmarks = _make_synthetic_face_batch(n_faces=3, seed=2)
+    uncached, _ = extract_hog_features(faces, landmarks)
+    cached_layer = HOGLayer(
+        orientations=8,
+        pixels_per_cell=8,
+        cells_per_block=2,
+        block_normalization="L2-Hys",
+        feature_vector=True,
+        device="cpu",
+    )
+    cached, _ = extract_hog_features(faces, landmarks, hog_layer=cached_layer)
+    np.testing.assert_array_equal(cached, uncached)
+
+
 def _real_face_batch(face_size=112):
     """Load a real face image, resize to face_size, return tensor + landmarks.
 

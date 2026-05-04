@@ -299,3 +299,43 @@ def test_stats():
 def test_video_to_tensor(single_face_mov):
     tensor = video_to_tensor(single_face_mov)
     assert tensor.shape == (72, 3, 360, 640)
+
+
+def test_fex_preserves_model_identity_metadata():
+    """Fex output of detect() carries model identity in _metadata.
+
+    Detector and MPDetector both pass model names into the Fex
+    constructor (face_model, landmark_model, au_model, emotion_model,
+    facepose_model, identity_model). _metadata is the propagation
+    contract: anything listed there must survive copy / slice / concat
+    via __finalize__. This test guards against accidentally dropping a
+    model-identity field from _metadata or stopping populating it.
+    """
+    fex = Fex(
+        face_model="img2pose",
+        landmark_model="mobilefacenet",
+        au_model="xgb",
+        emotion_model="resmasknet",
+        facepose_model="img2pose",
+        identity_model="arcface",
+    )
+    assert fex.face_model == "img2pose"
+    assert fex.landmark_model == "mobilefacenet"
+    assert fex.au_model == "xgb"
+    assert fex.emotion_model == "resmasknet"
+    assert fex.facepose_model == "img2pose"
+    assert fex.identity_model == "arcface"
+
+    for name in (
+        "face_model",
+        "landmark_model",
+        "au_model",
+        "emotion_model",
+        "facepose_model",
+        "identity_model",
+    ):
+        assert name in fex._metadata, f"{name} must be a Fex._metadata field"
+
+    sliced = fex.iloc[:0].copy()
+    assert sliced.face_model == "img2pose"
+    assert sliced.au_model == "xgb"
