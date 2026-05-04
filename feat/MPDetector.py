@@ -170,95 +170,34 @@ def plot_face_landmarks(
             )
             ax.add_line(line)
 
-    # Face tessellation
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION,
-            tesselation_color,
-            tesselation_linestyle,
-            tesselation_linewidth,
-        )
+    # Face parts in draw order (matplotlib stacks later draws on top, so
+    # tessellation goes first as a backdrop and the face oval last as a
+    # solid outline). Iterating part-major preserves the legacy
+    # draw order: all faces' tessellation, then all faces' mouths, etc.
+    face_parts = (
+        (FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION,
+         tesselation_color, tesselation_linestyle, tesselation_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_LIPS,
+         mouth_color, mouth_linestyle, mouth_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_LEFT_IRIS,
+         iris_color, iris_linestyle, iris_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_LEFT_EYE,
+         eye_color, eye_linestyle, eye_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_LEFT_EYEBROW,
+         eye_color, eye_linestyle, eye_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_IRIS,
+         iris_color, iris_linestyle, iris_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_EYE,
+         eye_color, eye_linestyle, eye_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_EYEBROW,
+         eye_color, eye_linestyle, eye_linewidth),
+        (FaceLandmarksConnections.FACE_LANDMARKS_FACE_OVAL,
+         oval_color, oval_linestyle, oval_linewidth),
+    )
 
-    # Mouth
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_LIPS,
-            mouth_color,
-            mouth_linestyle,
-            mouth_linewidth,
-        )
-
-    # Left iris
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_LEFT_IRIS,
-            iris_color,
-            iris_linestyle,
-            iris_linewidth,
-        )
-
-    # Left eye
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_LEFT_EYE,
-            eye_color,
-            eye_linestyle,
-            eye_linewidth,
-        )
-
-    # Left eyebrow
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_LEFT_EYEBROW,
-            eye_color,
-            eye_linestyle,
-            eye_linewidth,
-        )
-
-    # Right iris
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_IRIS,
-            iris_color,
-            iris_linestyle,
-            iris_linewidth,
-        )
-
-    # Right eye
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_EYE,
-            eye_color,
-            eye_linestyle,
-            eye_linewidth,
-        )
-
-    # Right eyebrow
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_RIGHT_EYEBROW,
-            eye_color,
-            eye_linestyle,
-            eye_linewidth,
-        )
-
-    # Face oval
-    for face in range(n_faces_frame):
-        draw_connections(
-            face,
-            FaceLandmarksConnections.FACE_LANDMARKS_FACE_OVAL,
-            oval_color,
-            oval_linestyle,
-            oval_linewidth,
-        )
+    for connections, color, linestyle, linewidth in face_parts:
+        for face in range(n_faces_frame):
+            draw_connections(face, connections, color, linestyle, linewidth)
 
     # Optionally turn off axis for a clean plot
     ax.axis("off")
