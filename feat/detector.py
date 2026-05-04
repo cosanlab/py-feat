@@ -48,13 +48,13 @@ from feat.utils.image_operations import (
     convert_image_to_tensor,
     extract_face_from_bbox_torch,
     inverse_transform_landmarks_torch,
-    extract_hog_features,
     convert_bbox_output,
     compute_original_image_size,
     invert_padding_to_results,
     per_face_padding_inversion_terms,
     HOGLayer,
 )
+from feat.utils._face_mask_torch import extract_hog_features_batched
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
 from safetensors.torch import load_file
@@ -143,10 +143,10 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         self.device = set_torch_device(device)
 
         # Cache one HOGLayer per Detector instance. Building it allocates
-        # the Sobel buffers and the AvgPool2d module; doing it inside
-        # extract_hog_features means paying that cost twice per detect()
-        # call (once for emotion, once for AU). The layer carries no
-        # state across calls, so reusing is safe.
+        # the Sobel buffers and the AvgPool2d module; doing it inside the
+        # HOG-feature extractor means paying that cost twice per detect()
+        # call (once for emotion=svm, once for au=xgb). The layer carries
+        # no state across calls, so reusing is safe.
         self._hog_layer = HOGLayer(
             orientations=8,
             pixels_per_cell=8,
@@ -659,7 +659,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 emotions = self.emotion_detector.forward(resmasknet_faces.to(self.device))
                 emotions = torch.softmax(emotions, 1)
             elif self.info["emotion_model"] == "svm":
-                hog_features, emo_new_landmarks = extract_hog_features(
+                hog_features, emo_new_landmarks = extract_hog_features_batched(
                     extracted_faces, landmarks, hog_layer=self._hog_layer
                 )
                 emotions = self.emotion_detector.detect_emo(
@@ -675,7 +675,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             identity_embeddings = torch.full((n_faces, 512), float("nan"))
 
         if self.au_detector is not None:
-            hog_features, au_new_landmarks = extract_hog_features(
+            hog_features, au_new_landmarks = extract_hog_features_batched(
                 extracted_faces, landmarks, hog_layer=self._hog_layer
             )
             aus = self.au_detector.detect_au(

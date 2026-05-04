@@ -58,13 +58,13 @@ from feat.utils.image_operations import (
     convert_image_to_tensor,
     extract_face_from_bbox_torch,
     inverse_transform_landmarks_torch,
-    extract_hog_features,
     convert_bbox_output,
     compute_original_image_size,
     invert_padding_to_results,
     per_face_padding_inversion_terms,
     HOGLayer,
 )
+from feat.utils._face_mask_torch import extract_hog_features_batched
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections
 from feat.utils.face_pose import (
@@ -291,7 +291,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
 
         # Cache one HOGLayer per detector instance. See feat/detector.py for
         # the same pattern; mp_blendshapes doesn't use HOG but svm_au still
-        # might via the same extract_hog_features path.
+        # might via the same HOG-feature extraction path.
         self._hog_layer = HOGLayer(
             orientations=8,
             pixels_per_cell=8,
@@ -743,7 +743,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 emotions = self.emotion_detector.forward(resmasknet_faces.to(self.device))
                 emotions = torch.softmax(emotions, 1)
             elif self.info["emotion_model"] == "svm":
-                hog_features, emo_new_landmarks = extract_hog_features(
+                hog_features, emo_new_landmarks = extract_hog_features_batched(
                     extracted_faces, landmarks, hog_layer=self._hog_layer
                 )
                 emotions = self.emotion_detector.detect_emo(
