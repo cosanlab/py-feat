@@ -1,25 +1,22 @@
-"""Parity tests for the experimental torch-native face mask path.
+"""Parity tests for the batched face mask preparation path.
 
 The legacy per-face Python loop in feat/utils/image_operations.py does:
    align_face -> ConvexHull -> grid_points_in_poly -> mask_image
 
-The torch-native replacement in feat/utils/_face_mask_torch.py must
-produce the same masked aligned face up to (1) bilinear-warp numerical
-precision and (2) edge-pixel ambiguity in the polygon rasterization.
-
-These tests pin down the parity contract so we can ship the
-optimization without silently regressing AU classifier inputs.
+The batched replacement in feat/utils/face_mask.py runs the same
+sequence with the alignment and final mask application batched on the
+input device. The convex-hull mask construction itself stays on CPU
+(via the same scipy + skimage calls) for bit-for-bit parity with the
+legacy AU classifier feature space.
 """
 
 from __future__ import annotations
 
 import numpy as np
-import pytest
 import torch
 
-from feat.utils._face_mask_torch import (
+from feat.utils.face_mask import (
     align_faces_batched,
-    polygon_masks_batched,
     extract_faces_from_landmarks_batched,
 )
 from feat.utils.image_operations import (
@@ -146,73 +143,6 @@ def test_align_faces_batched_matches_legacy_per_face():
         )
 
 
-# -------------------- polygon_masks_batched --------------------
-
-
-def test_polygon_masks_batched_simple_square():
-    """4-vertex axis-aligned square: trivial case."""
-    polygons = torch.tensor(
-        [[[10, 10], [50, 10], [50, 40], [10, 40]]], dtype=torch.float32
-    )
-    polygon_lens = torch.tensor([4])
-    mask = polygon_masks_batched(polygons, polygon_lens, height=64, width=64)
-    assert mask.shape == (1, 64, 64)
-    # Pixel (20, 20) is well inside; (5, 5) is outside.
-    assert mask[0, 20, 20].item() is True
-    assert mask[0, 5, 5].item() is False
-    assert mask[0, 60, 60].item() is False
-
-
-def test_polygon_masks_batched_matches_skimage_for_convex():
-    """For convex polygons (the case we care about), torch ray-cast
-    must match skimage.draw.polygon2mask up to edge-pixel ambiguity.
-    """
-    from skimage.draw import polygon2mask
-
-    # Hexagon-ish convex polygon.
-    polygons = torch.tensor(
-        [[[30, 10], [60, 25], [60, 55], [30, 70], [10, 55], [10, 25]]],
-        dtype=torch.float32,
-    )
-    polygon_lens = torch.tensor([6])
-    h = w = 80
-
-    torch_mask = polygon_masks_batched(polygons, polygon_lens, h, w)[0].numpy()
-
-    # skimage takes (row, col) = (y, x) order.
-    sk_polygon = polygons[0].numpy()[:, [1, 0]]
-    sk_mask = polygon2mask((h, w), sk_polygon)
-
-    # Allow at most 2% disagreement at the polygon edge (pixels exactly
-    # on the boundary are implementation-defined).
-    disagree = (torch_mask != sk_mask).sum() / torch_mask.size
-    assert disagree < 0.02, f"mask disagreement {disagree:.4f} > 0.02"
-
-
-def test_polygon_masks_batched_padded_polygons():
-    """Mixed-length polygons in one batch: pad to the longer one,
-    pass polygon_lens, verify each polygon masks correctly.
-    """
-    # Polygon 0: triangle (3 verts). Polygon 1: square (4 verts).
-    polygons = torch.tensor(
-        [
-            [[10, 10], [50, 10], [30, 40], [0, 0]],  # triangle, last is padding
-            [[10, 10], [50, 10], [50, 40], [10, 40]],
-        ],
-        dtype=torch.float32,
-    )
-    polygon_lens = torch.tensor([3, 4])
-    mask = polygon_masks_batched(polygons, polygon_lens, height=64, width=64)
-    assert mask.shape == (2, 64, 64)
-    # Triangle interior point.
-    assert mask[0, 20, 30].item() is True
-    # Square interior point.
-    assert mask[1, 20, 30].item() is True
-    # Both should NOT include the padded-corner region for polygon 0.
-    # The padded vertex (0, 0) is wrapped back to the first vertex (10, 10),
-    # so the triangle is: (10,10) -> (50,10) -> (30,40) -> (10,10). Correct.
-
-
 # -------------------- extract_faces_from_landmarks_batched (full pipeline) --------------------
 
 
@@ -275,16 +205,19 @@ def test_extract_faces_from_landmarks_batched_parity_with_legacy():
 
 
 def test_extract_hog_features_batched_matches_legacy():
-    """Drop-in replacement test: same input contract, same HOG output.
+    """Drop-in replacement test: HOG output matches legacy to float32 ulp.
 
-    extract_hog_features_batched is meant to be a drop-in replacement
-    for the legacy extract_hog_features (normalized [0, 1] landmark
-    input contract). With the default mask_strategy='skimage', the
-    convex-hull mask is computed by the same skimage call as the
-    legacy path, so HOG output must be bit-for-bit identical except
-    for any float-rounding noise introduced by the batched warp_affine.
+    extract_hog_features_batched is a drop-in replacement for the legacy
+    extract_hog_features (normalized [0, 1] landmark input contract). The
+    batched path computes the convex-hull mask via the same skimage call
+    as the legacy loop, so the masked-pixel set is identical. HOG output
+    matches the legacy path to within float32 epsilon (~5e-6 absolute,
+    ~5e-5 relative) — the residual is from numpy-vs-torch last-bit
+    differences in float64 division/matmul during affine matrix
+    construction, well below any xgboost leaf-split threshold and
+    confirmed not to flip end-to-end AU predictions on test images.
     """
-    from feat.utils._face_mask_torch import extract_hog_features_batched
+    from feat.utils.face_mask import extract_hog_features_batched
     from feat.utils.image_operations import extract_hog_features
 
     # Generate synthetic faces with NORMALIZED landmarks in [0, 1]
@@ -313,19 +246,19 @@ def test_extract_hog_features_batched_matches_legacy():
     landmarks_flat = landmarks_norm.reshape(faces.shape[0], -1)
 
     legacy_features, _ = extract_hog_features(faces, landmarks_flat)
-    new_features, _ = extract_hog_features_batched(
-        faces, landmarks_flat, mask_strategy="skimage"
-    )
+    new_features, _ = extract_hog_features_batched(faces, landmarks_flat)
 
     assert new_features.shape == legacy_features.shape
     diff = np.abs(new_features - legacy_features)
     max_abs = diff.max()
     mean_abs = diff.mean()
-    # The skimage mask path should produce essentially identical HOG
-    # features. Any drift comes only from warp_affine numerical noise
-    # (kornia vs the legacy single-face path use the same warp_affine
-    # internally, so this should be near-zero).
-    assert mean_abs < 1e-4, (
-        f"mean |new - legacy| = {mean_abs:.6f} exceeds 1e-4 "
-        f"(max diff {max_abs:.6f}); skimage mask path drifted unexpectedly."
+    # float32 epsilon is ~1.2e-7. Numpy-vs-torch last-bit differences
+    # in the float64 affine matrix construction propagate through the
+    # warp_affine cast to float32 and produce ~5e-6 max drift. Tight
+    # enough that no xgboost leaf split can flip on it; loose enough
+    # to allow numpy/torch float64 last-bit differences.
+    assert max_abs < 1e-5, (
+        f"max |new - legacy| = {max_abs:.6e}; expected float32-ulp drift "
+        f"(~5e-6). Drift this large suggests the batched path diverged "
+        f"from the legacy mask or affine. mean |diff| = {mean_abs:.6e}."
     )

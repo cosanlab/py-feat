@@ -64,7 +64,7 @@ from feat.utils.image_operations import (
     per_face_padding_inversion_terms,
     HOGLayer,
 )
-from feat.utils._face_mask_torch import extract_hog_features_batched
+from feat.utils.face_mask import extract_hog_features_batched
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections
 from feat.utils.face_pose import (
@@ -743,13 +743,23 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 emotions = self.emotion_detector.forward(resmasknet_faces.to(self.device))
                 emotions = torch.softmax(emotions, 1)
             elif self.info["emotion_model"] == "svm":
-                hog_features, emo_new_landmarks = extract_hog_features_batched(
-                    extracted_faces, landmarks, hog_layer=self._hog_layer
+                # MPDetector's landmark detector is mp_facemesh_v2, which
+                # outputs 478 mediapipe landmarks. The HOG / SVM emotion
+                # path requires 68 OpenFace-layout landmarks for align_face
+                # to work. We don't ship a 478->68 translator yet (see
+                # issue #294), so this combination is unreachable for now.
+                # Note: the legacy code at this site was equivalently
+                # broken (extract_hog_features hard-codes landmark_type=68),
+                # but produced a confusing reshape crash instead of a
+                # clean error.
+                raise NotImplementedError(
+                    "MPDetector(emotion_model='svm') is not supported: "
+                    "the SVM emotion classifier requires 68 OpenFace-layout "
+                    "landmarks but MPDetector produces 478 MediaPipe "
+                    "landmarks. A 478->68 translator is tracked in issue "
+                    "#294. Use Detector(emotion_model='svm') instead, or "
+                    "MPDetector(emotion_model='resmasknet')."
                 )
-                emotions = self.emotion_detector.detect_emo(
-                    frame=hog_features, landmarks=[emo_new_landmarks]
-                )
-                emotions = torch.tensor(emotions)
         else:
             emotions = torch.full((n_faces, 7), float("nan"))
 

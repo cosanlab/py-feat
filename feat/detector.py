@@ -54,7 +54,7 @@ from feat.utils.image_operations import (
     per_face_padding_inversion_terms,
     HOGLayer,
 )
-from feat.utils._face_mask_torch import extract_hog_features_batched
+from feat.utils.face_mask import extract_hog_features_batched
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
 from safetensors.torch import load_file
