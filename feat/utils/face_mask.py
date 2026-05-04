@@ -74,20 +74,27 @@ def align_faces_batched(
 
     # Legacy align_face does the matrix algebra in numpy float64 and only
     # casts to float32 at warp_affine time (image_operations.py:408). We
-    # match that to keep the affine matrix bitwise-identical: float32
-    # introduces ~1e-7 mean drift per HOG feature which is normally fine
-    # but can flip xgboost leaf splits on out-of-distribution inputs.
-    # Compute M in float64, cast to float32 only for the warp itself.
+    # match that to keep the affine matrix and projected landmarks within
+    # float32 ulp of the legacy path: float32 throughout would introduce
+    # ~1e-4 drift per HOG feature, enough to flip xgboost leaf splits on
+    # OOD inputs.
+    #
+    # MPS doesn't support float64 ops, so we run the matrix algebra on
+    # CPU regardless of the input device. The transferred tensors are
+    # tiny ([N, 5, 2] anchors and [N, 2, 3] result), and the result moves
+    # back to the GPU once before warp_affine consumes it.
     dtype64 = torch.float64
     dtype32 = torch.float32
 
-    lm = landmarks.to(device=device, dtype=dtype64)
+    # .cpu() first, then .to(float64). MPS errors if you ask for a
+    # float64 dtype change while a tensor is still on the device.
+    lm_cpu = landmarks.cpu().to(dtype=dtype64)
 
-    left_eye = lm[:, _LEFT_EYE_IDX.to(device)].mean(dim=1)  # [N, 2]
-    right_eye = lm[:, _RIGHT_EYE_IDX.to(device)].mean(dim=1)
-    nose = lm[:, _NOSE_TIP_IDX]
-    mouth_l = lm[:, _MOUTH_LEFT_IDX]
-    mouth_r = lm[:, _MOUTH_RIGHT_IDX]
+    left_eye = lm_cpu[:, _LEFT_EYE_IDX].mean(dim=1)  # [N, 2]
+    right_eye = lm_cpu[:, _RIGHT_EYE_IDX].mean(dim=1)
+    nose = lm_cpu[:, _NOSE_TIP_IDX]
+    mouth_l = lm_cpu[:, _MOUTH_LEFT_IDX]
+    mouth_r = lm_cpu[:, _MOUTH_RIGHT_IDX]
 
     # mat2 in legacy: [5 anchors, (x, y, 1)]
     anchors = torch.stack([left_eye, right_eye, nose, mouth_l, mouth_r], dim=1)  # [N, 5, 2]
@@ -100,7 +107,7 @@ def align_faces_batched(
 
     # mat1: rotation that brings the eye axis horizontal.
     # Legacy: [[cos, sin, 0], [-sin, cos, 0], [0, 0, 1]]
-    zero = torch.zeros(n, device=device, dtype=dtype64)
+    zero = torch.zeros(n, dtype=dtype64)
     mat1 = torch.stack(
         [
             torch.stack([cos_v, sin_v, zero], dim=1),
@@ -110,7 +117,6 @@ def align_faces_batched(
     )  # [N, 2, 3]
 
     # Apply mat1 to anchors.
-    # anchors_h = [x, y, 1]; rotated.x = cos*x + sin*y; rotated.y = -sin*x + cos*y
     rot_anchors = torch.einsum("nij,naj->nai", mat1[:, :, :2], anchors)  # [N, 5, 2]
 
     # Bounding box of rotated anchors.
@@ -137,18 +143,17 @@ def align_faces_batched(
         dim=1,
     )  # [N, 2, 3]
 
-    # Compose: full = mat3 @ mat1 (in 3x3 form, but mat1 has [0,0,1] last row implicit)
-    # mat1 acts as [[cos, sin, 0], [-sin, cos, 0]]; mat3 applies after.
+    # Compose: full = mat3 @ mat1 (in 3x3 form, but mat1 has [0,0,1] last row implicit).
     # full[:2, :2] = mat3[:2, :2] @ mat1[:2, :2]
-    # full[:2, 2]  = mat3[:2, :2] @ mat1[:2, 2] + mat3[:2, 2]   (= mat3[:2, 2] since mat1 t = 0)
-    M64 = torch.zeros(n, 2, 3, device=device, dtype=dtype64)
+    # full[:2, 2]  = mat3[:2, 2]   (since mat1[:2, 2] = 0)
+    M64 = torch.zeros(n, 2, 3, dtype=dtype64)
     M64[:, :2, :2] = torch.einsum("nij,njk->nik", mat3[:, :, :2], mat1[:, :, :2])
     M64[:, :2, 2] = mat3[:, :, 2]
 
-    # Cast to float32 for the warp — legacy does the same at affine_matrix
-    # construction time (image_operations.py:408). MPS doesn't support
-    # float64 grid_sample, so the warp must run in float32 regardless.
-    M = M64.to(dtype32)
+    # Move the small [N, 2, 3] matrix to the input device as float32 for
+    # warp_affine. (kornia and our local warp_affine both want float32;
+    # MPS doesn't support float64 grid_sample.)
+    M = M64.to(device=device, dtype=dtype32)
 
     aligned = warp_affine(
         frames.to(dtype=dtype32),
@@ -160,14 +165,12 @@ def align_faces_batched(
         fill_value=(128, 128, 128),
     )
 
-    # Project landmarks via the float64 matrix to match legacy precision,
-    # then cast to int. Legacy: `(mat @ land_3d.T).T` in float64, then
-    # `.astype(int)` (image_operations.py:431-434).
-    lm_h = torch.cat(
-        [lm, torch.ones(n, 68, 1, device=device, dtype=dtype64)], dim=2
-    )  # [N, 68, 3]
+    # Project landmarks via the float64 matrix on CPU to match legacy
+    # precision, then cast to int. Legacy: `(mat @ land_3d.T).T` in
+    # numpy float64, then `.astype(int)` (image_operations.py:431-434).
+    lm_h = torch.cat([lm_cpu, torch.ones(n, 68, 1, dtype=dtype64)], dim=2)  # [N, 68, 3]
     aligned_lm = torch.einsum("nij,nkj->nki", M64, lm_h)  # [N, 68, 2]
-    aligned_lm_int = aligned_lm.to(torch.int64)
+    aligned_lm_int = aligned_lm.to(torch.int64).to(device)
 
     return aligned, aligned_lm_int, M
 
