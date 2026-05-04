@@ -25,29 +25,40 @@ Usage:
     # Custom markdown path
     python scripts/bench_detectors.py --markdown docs/benchmarks/my-run.md
 
-What it covers (all three configurations process the same input):
-    1. Detector(face_model='img2pose', au_model='svm')         (default path)
-    2. Detector(face_model='retinaface', au_model='svm')       (new fast path)
+What it covers (all three configurations process the same input with
+full-pipeline emotion + identity enabled, matching default user setup):
+    1. Detector(face_model='img2pose', au_model='xgb',
+                emotion_model='resmasknet', identity_model='arcface')
+                                                              (default path)
+    2. Detector(face_model='retinaface', au_model='xgb',
+                emotion_model='resmasknet', identity_model='arcface')
+                                                              (fast face-detect path)
     3. MPDetector(face_model='retinaface',
                   landmark_model='mp_facemesh_v2',
-                  au_model='mp_blendshapes')                    (mediapipe path)
+                  au_model='mp_blendshapes',
+                  emotion_model='resmasknet',
+                  identity_model='arcface')                    (mediapipe path)
 
-The Detector svm AU classifier is held constant in the first two so
-varying face_model is the only variable. MPDetector uses its native
-mp_blendshapes stage. Emotion / identity / facepose disabled across
-the board so we measure detection + landmark + AU only.
+The first two share xgb AU + resmasknet emotion + arcface identity, so
+varying face_model is the only differential. MPDetector swaps in its
+native mp_blendshapes AU stage and the mp_facemesh_v2 landmarks but
+otherwise matches.
 
 Notes:
+- xgb AU was previously known to segfault on Python 3.13 + skops; the
+  OMP_NUM_THREADS=1 default in feat/__init__.py (PR #288) closed that.
+  xgb is now the recommended default and what this bench runs.
 - Skips CPU+img2pose on the long-video path (~10 min/run on M-series CPUs;
   the CPU+img2pose number is implied by the short-video baseline).
-- xgb AU is not benchmarked here because it segfaults on Python 3.13 +
-  skops on some configurations. svm AU is the apples-to-apples constant.
 - Each timed call is preceded by one untimed warmup. Reports the wall
   time of the timed call.
 - num_workers > 0 has been measured slower than num_workers=0 in every
-  cell on M-series + Python 3.13 with the default OMP_NUM_THREADS=1
-  (per ``feat/__init__.py``); the option exists so the regression
-  baseline is reproducible. See py-feat #288 for context.
+  cell on M-series + Python 3.13 with the default OMP_NUM_THREADS=1;
+  the option exists so the regression baseline is reproducible.
+  See py-feat #288 for context.
+- Prior community benchmarks (pre-v0.7) are tracked in py-feat issue #184
+  via a contributed Google Sheet; numbers there used per-stage timing
+  rather than detect() wall time so are not directly comparable.
 """
 from __future__ import annotations
 
@@ -109,22 +120,43 @@ def banner(s: str) -> None:
 
 def _build_d_img2pose(device):
     from feat.detector import Detector
-    return Detector(face_model="img2pose", au_model="svm", device=device)
+    # Default-style config: xgb AU (the public default), resmasknet
+    # emotion, arcface identity, img2pose facepose. This matches what
+    # most users run in production.
+    return Detector(
+        face_model="img2pose",
+        au_model="xgb",
+        emotion_model="resmasknet",
+        identity_model="arcface",
+        device=device,
+    )
 
 
 def _build_d_retinaface(device):
     from feat.detector import Detector
-    return Detector(face_model="retinaface", au_model="svm", device=device)
+    # Same full-config, swapped face model. Facepose falls back to
+    # pnp_dlt automatically when face_model='retinaface'.
+    return Detector(
+        face_model="retinaface",
+        au_model="xgb",
+        emotion_model="resmasknet",
+        identity_model="arcface",
+        device=device,
+    )
 
 
 def _build_mp_detector(device):
     from feat.MPDetector import MPDetector
+    # MPDetector with the same emotion + identity stack so the three
+    # configs are head-to-head comparable. mp_blendshapes is the
+    # native AU stage; facepose stays None because MPDetector
+    # computes pose via mesh alignment (not an exchangeable model).
     return MPDetector(
         face_model="retinaface",
         landmark_model="mp_facemesh_v2",
         au_model="mp_blendshapes",
-        emotion_model=None,
-        identity_model=None,
+        emotion_model="resmasknet",
+        identity_model="arcface",
         facepose_model=None,
         device=device,
     )
