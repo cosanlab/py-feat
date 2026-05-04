@@ -50,6 +50,9 @@ from feat.utils import (
     MP_LANDMARK_COLUMNS,
     MP_BLENDSHAPE_NAMES,
     MP_BLENDSHAPE_MODEL_LANDMARKS_SUBSET,
+    N_MEDIAPIPE_LANDMARKS,
+    N_MEDIAPIPE_LANDMARKS_3D_FLAT,
+    N_MEDIAPIPE_LANDMARKS_2D_FLAT,
 )
 from feat.utils.image_operations import (
     convert_image_to_tensor,
@@ -60,6 +63,7 @@ from feat.utils.image_operations import (
     compute_original_image_size,
     invert_padding_to_results,
     per_face_padding_inversion_terms,
+    HOGLayer,
 )
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections
@@ -105,7 +109,7 @@ def convert_landmarks_3d(fex):
     # subsequent rigid-alignment matmul.
     landmarks = torch.tensor(
         fex.landmarks.astype("float32").values
-    ).reshape(fex.shape[0], 478, 3)
+    ).reshape(fex.shape[0], N_MEDIAPIPE_LANDMARKS, 3)
     # Flip Y and Z to translate from MediaPipe image-pixel convention into
     # the canonical face model's head-centric convention.
     return landmarks * _MEDIAPIPE_TO_CANONICAL_AXIS_FLIP.to(landmarks.device)
@@ -273,7 +277,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         identity_model="arcface",
         device="cpu",
     ):
-        super(MPDetector, self).__init__()
+        super().__init__()
 
         self.info = dict(
             face_model=face_model,
@@ -284,6 +288,18 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             identity_model=identity_model,
         )
         self.device = set_torch_device(device)
+
+        # Cache one HOGLayer per detector instance. See feat/detector.py for
+        # the same pattern; mp_blendshapes doesn't use HOG but svm_au still
+        # might via the same extract_hog_features path.
+        self._hog_layer = HOGLayer(
+            orientations=8,
+            pixels_per_cell=8,
+            cells_per_block=2,
+            block_normalization="L2-Hys",
+            feature_vector=True,
+            device=self.device,
+        ).to(self.device)
 
         # Initialize Face Detector. The v0.7 RetinaFace rebuild dropped the
         # MobileNet0.25 path in favor of the ResNet34 wrapper at
@@ -377,6 +393,15 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         else:
             self.face_size = 112
             self.landmark_detector = None
+
+        # Pre-built [1, 1, 2] tensor used in forward() to scale landmark
+        # x/y from face-crop pixels to [0, 1]. Building it once instead
+        # of per-frame eliminates a small allocation in the hot path.
+        self._landmark_scale = torch.tensor(
+            [[1.0 / self.face_size, 1.0 / self.face_size]],
+            dtype=torch.float32,
+            device=self.device,
+        ).unsqueeze(0)
 
         # Initialize AU Detector
         self.info["au_model"] = au_model
@@ -684,30 +709,26 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             landmarks = self.landmark_detector.forward(faces_dev)[0]
 
             # Project landmarks back onto original image. # only rescale X/Y Coordinates, leave Z in original scale
-            landmarks_3d = landmarks.reshape(n_faces, 478, 3)
-            img_size = (
-                torch.tensor((1 / self.face_size, 1 / self.face_size))
-                .unsqueeze(0)
-                .unsqueeze(0)
-                .to(self.device)
-            )
+            landmarks_3d = landmarks.reshape(n_faces, N_MEDIAPIPE_LANDMARKS, 3)
             landmarks_2d = (
-                landmarks_3d[:, :, :2] * img_size
+                landmarks_3d[:, :, :2] * self._landmark_scale
             )  # Scale X/Y Coordinates to [0,1]
             rescaled_landmarks_2d = inverse_transform_landmarks_torch(
-                landmarks_2d.reshape(n_faces, 478 * 2), new_bboxes_dev
+                landmarks_2d.reshape(n_faces, N_MEDIAPIPE_LANDMARKS_2D_FLAT),
+                new_bboxes_dev,
             )
             new_landmarks = torch.cat(
                 (
-                    rescaled_landmarks_2d.reshape(n_faces, 478, 2),
+                    rescaled_landmarks_2d.reshape(n_faces, N_MEDIAPIPE_LANDMARKS, 2),
                     landmarks_3d[:, :, 2].unsqueeze(2),
                 ),
                 dim=2,
             )  # leave Z in original scale
 
         else:
-            # new_landmarks = torch.full((n_faces, 136), float('nan'))
-            new_landmarks = torch.full((n_faces, 1434), float("nan"))
+            new_landmarks = torch.full(
+                (n_faces, N_MEDIAPIPE_LANDMARKS_3D_FLAT), float("nan")
+            )
 
         if self.emotion_detector is not None:
             if self.info["emotion_model"] == "resmasknet":
@@ -718,7 +739,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 emotions = torch.softmax(emotions, 1)
             elif self.info["emotion_model"] == "svm":
                 hog_features, emo_new_landmarks = extract_hog_features(
-                    extracted_faces, landmarks
+                    extracted_faces, landmarks, hog_layer=self._hog_layer
                 )
                 emotions = self.emotion_detector.detect_emo(
                     frame=hog_features, landmarks=[emo_new_landmarks]
@@ -735,7 +756,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         if self.au_detector is not None:
             aus = (
                 self.au_detector(
-                    landmarks.reshape(n_faces, 478, 3)[
+                    landmarks.reshape(n_faces, N_MEDIAPIPE_LANDMARKS, 3)[
                         :, MP_BLENDSHAPE_MODEL_LANDMARKS_SUBSET, :2
                     ].to(self.device)
                 )
@@ -784,7 +805,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # the image-plane Rescale), so only X/Y need adjustment.
         # In-place is safe — `new_landmarks` is not used after the
         # DataFrame is built.
-        landmarks_3d = new_landmarks.reshape(n_faces, 478, 3)
+        landmarks_3d = new_landmarks.reshape(n_faces, N_MEDIAPIPE_LANDMARKS, 3)
         landmarks_3d[..., 0] = (
             landmarks_3d[..., 0] - pad_left[:, None]
         ) / scale[:, None]
@@ -792,7 +813,10 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             landmarks_3d[..., 1] - pad_top[:, None]
         ) / scale[:, None]
         feat_landmarks = pd.DataFrame(
-            landmarks_3d.reshape(n_faces, 478 * 3).cpu().detach().numpy(),
+            landmarks_3d.reshape(n_faces, N_MEDIAPIPE_LANDMARKS_3D_FLAT)
+            .cpu()
+            .detach()
+            .numpy(),
             columns=MP_LANDMARK_COLUMNS,
         )
         feat_aus = pd.DataFrame(aus.cpu().detach().numpy(), columns=MP_BLENDSHAPE_NAMES)

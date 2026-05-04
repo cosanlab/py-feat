@@ -51,6 +51,7 @@ from feat.utils.image_operations import (
     compute_original_image_size,
     invert_padding_to_results,
     per_face_padding_inversion_terms,
+    HOGLayer,
 )
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from skops.io import load, get_untrusted_types
@@ -118,7 +119,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         identity_model="arcface",
         device="cpu",
     ):
-        super(Detector, self).__init__()
+        super().__init__()
 
         if face_model not in self._SUPPORTED_FACE_MODELS:
             raise ValueError(
@@ -138,6 +139,20 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             identity_model=None,
         )
         self.device = set_torch_device(device)
+
+        # Cache one HOGLayer per Detector instance. Building it allocates
+        # the Sobel buffers and the AvgPool2d module; doing it inside
+        # extract_hog_features means paying that cost twice per detect()
+        # call (once for emotion, once for AU). The layer carries no
+        # state across calls, so reusing is safe.
+        self._hog_layer = HOGLayer(
+            orientations=8,
+            pixels_per_cell=8,
+            cells_per_block=2,
+            block_normalization="L2-Hys",
+            feature_vector=True,
+            device=self.device,
+        ).to(self.device)
 
         if face_model == "img2pose":
             # Load Model Configurations
@@ -639,7 +654,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 emotions = torch.softmax(emotions, 1)
             elif self.info["emotion_model"] == "svm":
                 hog_features, emo_new_landmarks = extract_hog_features(
-                    extracted_faces, landmarks
+                    extracted_faces, landmarks, hog_layer=self._hog_layer
                 )
                 emotions = self.emotion_detector.detect_emo(
                     frame=hog_features, landmarks=[emo_new_landmarks]
@@ -655,7 +670,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
 
         if self.au_detector is not None:
             hog_features, au_new_landmarks = extract_hog_features(
-                extracted_faces, landmarks
+                extracted_faces, landmarks, hog_layer=self._hog_layer
             )
             aus = self.au_detector.detect_au(
                 frame=hog_features, landmarks=[au_new_landmarks]

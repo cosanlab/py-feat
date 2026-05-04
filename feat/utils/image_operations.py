@@ -932,7 +932,7 @@ class HOGLayer(torch.nn.Module):
                 if False, return the unflattened array in the same layout.
             device (str): one of ``"auto"``, ``"cpu"``, ``"cuda"``, ``"mps"``.
         """
-        super(HOGLayer, self).__init__()
+        super().__init__()
         self.orientations = orientations
         self.pixels_per_cell = pixels_per_cell
         self.cells_per_block = cells_per_block
@@ -1258,7 +1258,7 @@ def inverse_transform_landmarks_torch(landmarks, boxes):
     return transformed_landmarks.reshape(N, N_landmarks)
 
 
-def extract_hog_features(extracted_faces, landmarks):
+def extract_hog_features(extracted_faces, landmarks, hog_layer=None):
     """Extract HOG features for AU classification using torch-native HOGLayer.
 
     Replaces the prior per-face skimage call which round-tripped each face
@@ -1271,6 +1271,11 @@ def extract_hog_features(extracted_faces, landmarks):
         extracted_faces: [N, C, H, W] face crops, float32 in [0, 1].
         landmarks: [N, n_landmarks*2] flattened (x, y) landmark coordinates
             in image space.
+        hog_layer: optional pre-built HOGLayer to reuse across calls.
+            Detector and MPDetector cache one in __init__ so repeated
+            detect() calls don't pay the per-call construction cost.
+            If None, a fresh layer is built (backward-compat for direct
+            external callers).
 
     Returns:
         hog_features: numpy array of shape [N, n_features].
@@ -1302,16 +1307,17 @@ def extract_hog_features(extracted_faces, landmarks):
         return np.zeros((0, 0), dtype=np.float32), au_new_landmarks
 
     batch = torch.stack(convex_hulls, dim=0)  # [N, C, H, W]
-    layer = HOGLayer(
-        orientations=8,
-        pixels_per_cell=8,
-        cells_per_block=2,
-        block_normalization="L2-Hys",
-        feature_vector=True,
-        device=batch.device,
-    ).to(batch.device)
+    if hog_layer is None:
+        hog_layer = HOGLayer(
+            orientations=8,
+            pixels_per_cell=8,
+            cells_per_block=2,
+            block_normalization="L2-Hys",
+            feature_vector=True,
+            device=batch.device,
+        ).to(batch.device)
     with torch.inference_mode():
-        features = layer(batch).cpu().numpy()
+        features = hog_layer(batch).cpu().numpy()
     return features, au_new_landmarks
 
 
