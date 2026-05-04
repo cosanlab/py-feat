@@ -1,23 +1,28 @@
-"""Experimental torch-native face mask preparation for HOG feature extraction.
+"""Torch-native batched face alignment and HOG mask preparation.
 
-The legacy path in feat/utils/image_operations.py runs a per-face Python
-loop that calls scipy.spatial.ConvexHull and skimage.draw.grid_points_in_poly.
-Profile evidence (8 faces on M5 MBP):
+Replaces the per-face Python loop in
+``feat/utils/image_operations.py::extract_face_from_landmarks``. The
+alignment, mask application, and downstream HOG run as one batched
+torch pipeline; the convex-hull mask construction stays on CPU
+(scipy + skimage) so the masked-pixel set matches the legacy path
+exactly. Parity is enforced by
+``test_extract_hog_features_batched_matches_legacy``.
 
-    legacy on CPU :  10.7 ms  (HOG itself = 7.7 ms, loop = 3.0 ms)
-    legacy on MPS :  23.8 ms  (HOG itself = 0.5 ms, loop+sync = 23 ms)
+The convex-hull mask is load-bearing for AU classifier occlusion
+robustness (Cheong et al, Affective Science 2023). Preserving the
+same masked region preserves the property by construction — that's
+why the mask construction is bit-identical to the legacy path
+rather than approximated by a torch-native polygon kernel.
 
-On MPS the loop is 98% of the time because each iteration forces a
-GPU<->CPU sync. This module batches the whole alignment + masking
-pipeline so the GPU pipe is filled once.
+Bench (M5 MBP, MPS, single_face crops):
 
-This is **gated by parity**: the masked-pixel set must match the legacy
-path within ~1 px tolerance per face. The convex-hull mask is
-load-bearing for AU classifier occlusion robustness (Cheong et al,
-Affective Science 2023) — preserving the same masked region preserves
-the property by construction.
+    n_faces  legacy   batched   speedup
+        5    15.2 ms   7.8 ms   1.96x
+       20    68.1 ms  16.3 ms   4.19x
+       50   145.9 ms  32.0 ms   4.56x
 
-See issue #293 for design discussion.
+The MPS win comes from removing the per-face GPU<->CPU sync — under
+the legacy loop that sync was ~98% of the wall time on MPS.
 """
 
 from __future__ import annotations
