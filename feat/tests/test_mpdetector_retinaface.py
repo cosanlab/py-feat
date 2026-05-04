@@ -107,3 +107,37 @@ def test_mpdetector_retinaface_with_resmasknet_emotion():
     for col in ("anger", "disgust", "fear", "happiness", "sadness", "surprise", "neutral"):
         if col in fex.columns:
             assert not fex[col].isna().any(), f"{col} has NaN"
+
+
+@pytest.mark.skipif(not _have_test_image(), reason="multi_face.jpg missing")
+def test_mpdetector_landmark_scale_buffer():
+    """`_landmark_scale` is a registered buffer with the right shape/value.
+
+    `MPDetector.forward` used to allocate `(1/face_size, 1/face_size)`
+    on every call; it's now precomputed in __init__. The shape contract
+    is `[1, 1, 2]` (broadcastable against `[N, 478, 2]` landmarks), and
+    registering as a buffer (rather than a plain attribute) means
+    `MPDetector.to(other_device)` migrates it alongside the registered
+    submodules — important if a future caller swaps device after
+    construction.
+    """
+    import torch
+
+    from feat.MPDetector import MPDetector
+
+    mp = MPDetector(
+        device="cpu",
+        face_model="retinaface",
+        landmark_model="mp_facemesh_v2",
+        au_model=None,
+        emotion_model=None,
+        identity_model=None,
+        facepose_model=None,
+    )
+    assert "_landmark_scale" in dict(mp.named_buffers())
+    assert mp._landmark_scale.shape == (1, 1, 2)
+    expected = 1.0 / mp.face_size
+    assert torch.allclose(
+        mp._landmark_scale,
+        torch.tensor([[[expected, expected]]], dtype=torch.float32),
+    )

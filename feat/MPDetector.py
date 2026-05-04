@@ -395,13 +395,18 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             self.landmark_detector = None
 
         # Pre-built [1, 1, 2] tensor used in forward() to scale landmark
-        # x/y from face-crop pixels to [0, 1]. Building it once instead
-        # of per-frame eliminates a small allocation in the hot path.
-        self._landmark_scale = torch.tensor(
-            [[1.0 / self.face_size, 1.0 / self.face_size]],
-            dtype=torch.float32,
-            device=self.device,
-        ).unsqueeze(0)
+        # x/y from face-crop pixels to [0, 1]. Built once instead of
+        # per-frame to skip the small allocation in the hot path.
+        # Registered as a buffer so MPDetector.to(other_device) moves it
+        # alongside self._hog_layer (which is a registered submodule).
+        self.register_buffer(
+            "_landmark_scale",
+            torch.tensor(
+                [[[1.0 / self.face_size, 1.0 / self.face_size]]],
+                dtype=torch.float32,
+                device=self.device,
+            ),
+        )
 
         # Initialize AU Detector
         self.info["au_model"] = au_model

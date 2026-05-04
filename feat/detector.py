@@ -40,6 +40,8 @@ from feat.utils import (
     FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_IDENTITY_COLUMNS,
     hf_hub_download_with_fallback,
+    N_OPENFACE_LANDMARKS,
+    N_OPENFACE_LANDMARKS_2D_FLAT,
 )
 from feat.utils.io import get_resource_path
 from feat.utils.image_operations import (
@@ -213,7 +215,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             if landmark_model == "mobilefacenet":
                 self.face_size = 112
                 self.landmark_detector = MobileFaceNet(
-                    [self.face_size, self.face_size], 136, device=self.device
+                    [self.face_size, self.face_size],
+                    N_OPENFACE_LANDMARKS_2D_FLAT,
+                    device=self.device,
                 )
                 landmark_model_file = hf_hub_download(
                     repo_id="py-feat/mobilefacenet",
@@ -225,7 +229,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 )["state_dict"]  # Ensure Model weights are Float32 for MPS
             elif landmark_model == "mobilenet":
                 self.face_size = 224
-                self.landmark_detector = MobileNet_GDConv(136)
+                self.landmark_detector = MobileNet_GDConv(N_OPENFACE_LANDMARKS_2D_FLAT)
                 landmark_model_file = hf_hub_download(
                     repo_id="py-feat/mobilenet",
                     filename="mobilenet_224_model_best_gdconv_external.pth.tar",
@@ -643,7 +647,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 landmarks = self.landmark_detector.forward(faces_dev)
             new_landmarks = inverse_transform_landmarks_torch(landmarks, new_bboxes)
         else:
-            new_landmarks = torch.full((n_faces, 136), float("nan"))
+            new_landmarks = torch.full(
+                (n_faces, N_OPENFACE_LANDMARKS_2D_FLAT), float("nan")
+            )
 
         if self.emotion_detector is not None:
             if self.info["emotion_model"] == "resmasknet":
@@ -729,7 +735,11 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             # Skip faces with NaN landmarks (no detection in that frame).
             valid = ~torch.isnan(new_landmarks).any(dim=1)
             if valid.any():
-                lmk = new_landmarks[valid].reshape(-1, 68, 2).to(self.device)
+                lmk = (
+                    new_landmarks[valid]
+                    .reshape(-1, N_OPENFACE_LANDMARKS, 2)
+                    .to(self.device)
+                )
                 # All faces share the same image_size since the DataLoader
                 # collates frames at one shape.
                 image_size = faces_data[0]["image_size"]
@@ -746,7 +756,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         # output. In-place is safe — `new_landmarks` is not used after
         # the DataFrame is built. NaN landmarks (no-detection rows)
         # propagate as NaN through the arithmetic, which is what we want.
-        reshape_landmarks = new_landmarks.reshape(new_landmarks.shape[0], 68, 2)
+        reshape_landmarks = new_landmarks.reshape(
+            new_landmarks.shape[0], N_OPENFACE_LANDMARKS, 2
+        )
         reshape_landmarks[..., 0] = (
             reshape_landmarks[..., 0] - pad_left[:, None]
         ) / scale[:, None]
