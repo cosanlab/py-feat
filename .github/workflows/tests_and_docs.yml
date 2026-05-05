@@ -59,6 +59,13 @@ jobs:
         run: |
           conda activate test
           conda env list
+          # torchcodec (video reader, runtime dep since py-av was dropped)
+          # links dynamically against ffmpeg's libavutil.so.* / .dylib.
+          # Install ffmpeg from conda-forge so the shared libraries are
+          # available; otherwise every test that imports the package
+          # tree fails at collection time with "Could not load
+          # libtorchcodec ... libavutil.so.X: cannot open shared object".
+          conda install -c conda-forge -y ffmpeg
           pip install . -r requirements-dev.txt
       # Actually run the tests with coverage
       - name: Run Tests
