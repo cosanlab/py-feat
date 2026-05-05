@@ -6,6 +6,10 @@ on:
     branches:
       - main
       - master
+      # Active development branches. The 'v*-dev' glob covers future
+      # dev branches (v0.8-dev, etc.) so this workflow doesn't need
+      # to be re-edited each release cycle.
+      - 'v*-dev'
 
 jobs:
   # Job (1): Run testing in parallel against multiples OSs and Python versions
