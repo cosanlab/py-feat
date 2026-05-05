@@ -125,7 +125,6 @@ def test_euler_conversion_round_trip():
     precision). Doesn't pin a specific axis convention - just locks down
     that the conversion is consistent."""
     from feat.utils.geometry import (
-        axis_angle_to_rotation_matrix,
         rotation_matrix_to_quaternion,
         euler_from_quaternion,
     )

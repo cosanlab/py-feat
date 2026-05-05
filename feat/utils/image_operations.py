@@ -25,12 +25,9 @@ from feat.transforms import Rescale
 from feat.utils import set_torch_device
 from copy import deepcopy
 from skimage import draw
-from skimage.feature import hog
-import torchvision.transforms as transforms
 import logging
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
-import warnings
 
 __all__ = [
     "neutral",

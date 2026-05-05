@@ -11,7 +11,6 @@ These cover:
 """
 
 import os
-import tracemalloc
 
 import torch
 from PIL import Image

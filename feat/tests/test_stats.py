@@ -247,7 +247,6 @@ def test_cluster_identities_transitive_chain():
             [0.0, 1.0, 0.0],   # C
         ]
     )
-    out = cluster_identities(emb, threshold=0.8)
     # Threshold 0.8: A-B (0.7) below, B-C (0.7) below — actually all separate.
     # Use a lower threshold to test transitivity.
     out2 = cluster_identities(emb, threshold=0.6)
@@ -268,7 +267,7 @@ def test_cluster_identities_large_input_completes():
     comprehension on every BFS pop. 200 embeddings finishes in well under
     a second on the new path."""
     import time
-    rng = torch.manual_seed(0)
+    torch.manual_seed(0)
     emb = torch.randn(200, 64)
     emb = torch.nn.functional.normalize(emb, dim=1)
     t = time.perf_counter()

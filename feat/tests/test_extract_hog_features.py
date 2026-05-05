@@ -15,7 +15,6 @@ divergence.
 
 import numpy as np
 import os
-import pytest
 import torch
 from skimage.feature import hog as skimage_hog
 from torchvision import transforms
