@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
 from feat.utils.io import get_resource_path, download_url
 from feat.utils.image_operations import align_face, mask_image
-from feat.utils import flatten_list
+from feat.utils import flatten_list, hf_hub_download_with_fallback
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -1002,8 +1002,11 @@ def predict(au, model=None, feature_range=None):
     """
     if model is None:
         model = load_viz_model()
-    elif not isinstance(model, PLSRegression):
-        raise ValueError("make sure that model is a PLSRegression instance")
+    elif not isinstance(model, (PLSRegression, PLSAULandmarkModel)):
+        raise ValueError(
+            "model must be a PLSRegression instance or PLSAULandmarkModel "
+            "(returned by feat.plotting.load_viz_model())"
+        )
 
     if len(au) != model.n_components:
         print(au)
@@ -1017,10 +1020,10 @@ def predict(au, model=None, feature_range=None):
         au = minmax_scale(au, feature_range=feature_range, axis=1)
 
     # Handle auto-raveling feature added to PLSRegression in sklearn 1.3
-    # because our model was trained in an earlier version where this attribute
-    # did not exist
+    # because our v1 model was trained in an earlier version where this
+    # attribute did not exist. PLSAULandmarkModel ignores this.
     # https://scikit-learn.org/stable/whats_new/v1.3.html#sklearn-cross-decomposition
-    if not hasattr(model, "_predict_1d"):
+    if isinstance(model, PLSRegression) and not hasattr(model, "_predict_1d"):
         model._predict_1d = True
     landmarks = np.reshape(model.predict(au), (2, 68))
     return landmarks
@@ -1282,26 +1285,109 @@ def animate_face(
     plt.close("all")
 
 
+class PLSAULandmarkModel:
+    """Lightweight wrapper around the v2 AU → 68-pt landmark PLS weights.
+
+    Mirrors the subset of sklearn's ``PLSRegression`` interface that
+    ``feat.plotting.predict()`` actually uses: a ``.predict(au)`` method
+    and an ``.n_components`` attribute reporting the AU input dimension
+    (20). The underlying model was trained with 23 input features
+    (20 AU + 3 pose); pose is implicitly held at zero at inference, which
+    by construction zeros out the 60 pose×AU interaction features that
+    contributed during training. Inference is a single matmul.
+
+    Loaded by ``load_viz_model()`` (default since this PR). See
+    https://huggingface.co/py-feat/au_to_landmarks for the model card,
+    training details, and OOS performance (R² = 0.794 ± 0.004 on 3-fold
+    GroupKFold-by-video).
+    """
+
+    def __init__(self, coef, intercept, au_columns, model_name="au_to_landmarks_pls_v2"):
+        # coef shape: (23, 136); the deployed slice with pose absorbed
+        self._coef = np.asarray(coef, dtype=np.float32)
+        self._intercept = np.asarray(intercept, dtype=np.float32)
+        self.au_columns = list(au_columns)
+        # Number of AU input features the user passes (pose is implicit-zero)
+        self.n_components = 20
+        self.model_name_ = model_name
+
+    def predict(self, au):
+        """Predict 136-d axis-major landmarks from (n_samples, 20) AU intensities.
+
+        Pose is held at zero by zero-padding the input to 23-d so the
+        deployed coef matrix can be used directly.
+        """
+        au = np.asarray(au, dtype=np.float32)
+        if au.ndim == 1:
+            au = au.reshape(1, -1)
+        n = au.shape[0]
+        x = np.empty((n, self._coef.shape[0]), dtype=np.float32)
+        x[:, : au.shape[1]] = au
+        x[:, au.shape[1] :] = 0.0  # pose covariates → zero
+        return x @ self._coef + self._intercept
+
+    def __repr__(self):
+        return (
+            f"PLSAULandmarkModel(model_name='{self.model_name_}', "
+            f"n_components={self.n_components}, "
+            f"output_shape=(n_samples, {self._coef.shape[1]}))"
+        )
+
+
+def _load_pls_v2_from_hub(verbose=False):
+    """Download and wrap the v2 AU→68-pt landmark PLS NPZ from HuggingFace Hub."""
+    if verbose:
+        print("Loading v2 PLS landmarks model from HuggingFace Hub")
+    path = hf_hub_download_with_fallback(
+        repo_id="py-feat/au_to_landmarks",
+        filename="au_to_landmarks_pls_v2.npz",
+    )
+    z = np.load(path, allow_pickle=False)
+    return PLSAULandmarkModel(
+        coef=z["coef"],
+        intercept=z["intercept"],
+        au_columns=[str(s) for s in z["au_columns"]],
+        model_name="au_to_landmarks_pls_v2",
+    )
+
+
 def load_viz_model(
     file_name=None,
     prefer_joblib_if_version_match=True,
     verbose=False,
 ):
-    """Load the h5 PLS model for plotting. Will try using joblib if python and sklearn
-    major and minor versions match those the model was trained with (3.8.x and 1.0.x
-    respectively), otherwise will reconstruct the model object using h5 data.
+    """Load the AU → 68-pt facial landmark PLS visualization model.
+
+    Default (``file_name=None``) returns the **v2 PLS model** (
+    ``PLSAULandmarkModel``) trained on 350K paired (AU, landmark) frames
+    from ~10K CelebV-HQ celebrity videos. OOS R² = 0.794 ± 0.004 on 3-fold
+    GroupKFold-by-video; significantly outperforms the v1 Cheong et al. 2023
+    model (R² ≈ 0.4-0.5 on 13K class-balanced rows).
+
+    For backward compatibility, passing ``file_name="pyfeat_aus_to_landmarks"``
+    loads the legacy v1 model (``sklearn.cross_decomposition.PLSRegression``
+    instance, with the ``.h5`` companion for metadata). The v1 weights are
+    co-housed in the same HuggingFace repo (https://huggingface.co/py-feat/au_to_landmarks)
+    so rollback works without breaking caches.
 
     Args:
-        file_name (str, optional): Specify model to load.. Defaults to 'blue.h5'.
-        prefer_joblib_if_version_match (bool, optional): If the sklearn and python major.minor versions
-        match then return the pickled PLSRegression object. Otherwise build it from
-        scratch using .h5 data. Default True
+        file_name (str, optional): If ``None`` (default), load v2 PLS NPZ.
+            If ``"pyfeat_aus_to_landmarks"``, load legacy v1 joblib + h5.
+        prefer_joblib_if_version_match (bool, optional): Only relevant for
+            v1 legacy loading. If sklearn / Python major.minor match the
+            versions the v1 model was trained with, return the unpickled
+            ``PLSRegression``. Otherwise reconstruct from ``.h5``. Default True.
+        verbose (bool, optional): Print progress messages. Default False.
 
     Returns:
-        model: PLS model
+        model: ``PLSAULandmarkModel`` (v2, default) or ``PLSRegression`` (v1).
+            Both expose ``.predict(au)`` and ``.n_components`` so
+            ``feat.plotting.predict()`` works transparently with either.
     """
 
-    file_name = "pyfeat_aus_to_landmarks" if file_name is None else file_name
+    # New default: v2 PLS NPZ from HuggingFace Hub.
+    if file_name is None:
+        return _load_pls_v2_from_hub(verbose=verbose)
 
     if "." in file_name:
         raise TypeError("Please use a file name with no extension")
