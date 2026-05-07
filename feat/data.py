@@ -41,6 +41,7 @@ from feat.plotting import (
     emotion_annotation_position,
 )
 from feat.pretrained import AU_LANDMARK_MAP
+from feat.utils.blendshape_to_au import DLIB68_FROM_MP478
 from scipy.signal import convolve
 from scipy.stats import ttest_1samp, ttest_ind
 import matplotlib.pyplot as plt
@@ -502,6 +503,53 @@ class Fex(DataFrame):
             "Fex.landmark has now been renamed to Fex.landmarks", DeprecationWarning
         )
         return self[self.landmark_columns]
+
+    def landmarks_dlib68_xy(self, row=None):
+        """Return (x, y) arrays in dlib-68 layout, regardless of source detector.
+
+        Provides a uniform 2D-landmark interface across detectors so plotting
+        and downstream consumers don't have to branch on the underlying topology:
+
+        - **Detector** (``Detector(landmark_model="mobilefacenet")``) outputs
+          136-d ``[x_0..x_67, y_0..y_67]`` directly — returned as-is.
+        - **MPDetector** outputs 1434-d ``[x_0..x_477 | y_0..y_477 | z_0..z_477]``
+          (the 478-vertex MediaPipe FaceMesh in image-space pixels). The 68
+          dlib-equivalent vertices are sampled via ``DLIB68_FROM_MP478``
+          (see ``feat.utils.blendshape_to_au``); z is dropped.
+
+        Args:
+            row: optional pandas Series (single Fex row). If ``None``, operates
+                on all rows of ``self`` and returns shape ``(n_rows, 68)`` for
+                each axis. Otherwise returns shape ``(68,)`` per axis.
+
+        Returns:
+            (x, y): two numpy arrays of dlib-68 layout. Shapes ``(68,)`` if
+                ``row`` is given, else ``(n_rows, 68)``.
+        """
+        n_lm_cols = len(self.landmark_columns)
+        source = self if row is None else row
+
+        if n_lm_cols == 136:
+            # Detector path — already dlib-68
+            arr = (source[self.landmark_columns].values
+                   if row is None
+                   else source[self.landmark_columns].values)
+            arr = np.atleast_2d(arr) if row is None else arr
+            x = arr[:, :68] if row is None else arr[:68]
+            y = arr[:, 68:] if row is None else arr[68:]
+            return x.astype(np.float64), y.astype(np.float64)
+        elif n_lm_cols == 1434:
+            # MPDetector path — 478-vertex 3D mesh; sample 68-pt dlib subset
+            x_cols = [f"x_{i}" for i in DLIB68_FROM_MP478]
+            y_cols = [f"y_{i}" for i in DLIB68_FROM_MP478]
+            x = source[x_cols].values.astype(np.float64)
+            y = source[y_cols].values.astype(np.float64)
+            return x, y
+        else:
+            raise ValueError(
+                f"Unexpected landmark_columns length ({n_lm_cols}); expected 136 "
+                "(dlib-68) or 1434 (MP-478 mesh)."
+            )
 
     @property
     def poses(self):
@@ -1773,9 +1821,11 @@ class Fex(DataFrame):
                         )
 
                     if faces == "landmarks":
-                        landmark = row[self.landmark_columns].values
-                        currx = landmark[:68]
-                        curry = landmark[68:]
+                        # Branch on landmark topology: dlib-68 (136 cols) returns
+                        # as-is; MP-478 (1434 cols) samples the 68 dlib-equivalent
+                        # vertices via DLIB68_FROM_MP478 so the same draw_lineface
+                        # path works for both detectors.
+                        currx, curry = self.landmarks_dlib68_xy(row=row)
 
                         # facelines
                         face_ax = draw_lineface(
