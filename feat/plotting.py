@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
 from feat.utils.io import get_resource_path, download_url
 from feat.utils.image_operations import align_face, mask_image
-from feat.utils import flatten_list, hf_hub_download_with_fallback
+from feat.utils import flatten_list
+from huggingface_hub import hf_hub_download
 from math import sin, cos
 import warnings
 import seaborn as sns
@@ -923,8 +924,11 @@ def plot_face(
     if model is None or isinstance(model, str):
         model = load_viz_model(model)
     else:
-        if not isinstance(model, PLSRegression):
-            raise ValueError("make sure that model is a PLSRegression instance")
+        if not isinstance(model, (PLSRegression, PLSAULandmarkModel)):
+            raise ValueError(
+                "model must be a PLSRegression instance or PLSAULandmarkModel "
+                "(returned by feat.plotting.load_viz_model())"
+            )
 
     if au is None or isinstance(au, str) and au == "neutral":
         au = np.zeros(model.n_components)
@@ -1334,21 +1338,33 @@ class PLSAULandmarkModel:
         )
 
 
+# Module-level cache for the v2 wrapper. Avoids re-deserializing the NPZ
+# (and re-allocating the coef/intercept arrays) on every load_viz_model() call.
+# The HF download itself is already cached by huggingface_hub.
+_PLS_V2_VIZ_MODEL = None
+
+
 def _load_pls_v2_from_hub(verbose=False):
-    """Download and wrap the v2 AU→68-pt landmark PLS NPZ from HuggingFace Hub."""
+    """Download (cached) and wrap the v2 AU → 68-pt landmark PLS NPZ from HuggingFace Hub."""
+    global _PLS_V2_VIZ_MODEL
+    if _PLS_V2_VIZ_MODEL is not None:
+        return _PLS_V2_VIZ_MODEL
+
     if verbose:
         print("Loading v2 PLS landmarks model from HuggingFace Hub")
-    path = hf_hub_download_with_fallback(
+    path = hf_hub_download(
         repo_id="py-feat/au_to_landmarks",
         filename="au_to_landmarks_pls_v2.npz",
+        cache_dir=get_resource_path(),
     )
     z = np.load(path, allow_pickle=False)
-    return PLSAULandmarkModel(
+    _PLS_V2_VIZ_MODEL = PLSAULandmarkModel(
         coef=z["coef"],
         intercept=z["intercept"],
         au_columns=[str(s) for s in z["au_columns"]],
         model_name="au_to_landmarks_pls_v2",
     )
+    return _PLS_V2_VIZ_MODEL
 
 
 def load_viz_model(
@@ -1392,16 +1408,32 @@ def load_viz_model(
     if "." in file_name:
         raise TypeError("Please use a file name with no extension")
 
-    h5_path = os.path.join(get_resource_path(), f"{file_name}.h5")
-    joblib_path = os.path.join(get_resource_path(), f"{file_name}.joblib")
-
-    # Make sure saved viz model exists
-    if not os.path.exists(h5_path) or not os.path.exists(joblib_path):
-        with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
-            model_urls = json.load(f)
-            urls = model_urls["viz_models"][file_name]["urls"]
-            for url in urls:
-                download_url(url, get_resource_path(), verbose=verbose)
+    if file_name == "pyfeat_aus_to_landmarks":
+        # Legacy v1 model: now mirrored on HuggingFace Hub at
+        # py-feat/au_to_landmarks alongside the v2 NPZ. Both files are needed
+        # (the .joblib carries the unpickled PLSRegression; the .h5 carries
+        # metadata + reconstruction tensors). hf_hub_download caches under
+        # ``feat/resources/`` so subsequent calls hit the local cache.
+        joblib_path = hf_hub_download(
+            repo_id="py-feat/au_to_landmarks",
+            filename=f"{file_name}.joblib",
+            cache_dir=get_resource_path(),
+        )
+        h5_path = hf_hub_download(
+            repo_id="py-feat/au_to_landmarks",
+            filename=f"{file_name}.h5",
+            cache_dir=get_resource_path(),
+        )
+    else:
+        # Other custom viz models — legacy URL-based path via model_list.json.
+        h5_path = os.path.join(get_resource_path(), f"{file_name}.h5")
+        joblib_path = os.path.join(get_resource_path(), f"{file_name}.joblib")
+        if not os.path.exists(h5_path) or not os.path.exists(joblib_path):
+            with open(os.path.join(get_resource_path(), "model_list.json"), "r") as f:
+                model_urls = json.load(f)
+                urls = model_urls["viz_models"][file_name]["urls"]
+                for url in urls:
+                    download_url(url, get_resource_path(), verbose=verbose)
 
     # Check sklearn and python version to see if we can load joblib
     my_skmajor, my_skminor, *my_skpatch = skversion.split(".")
