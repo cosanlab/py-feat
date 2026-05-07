@@ -64,6 +64,7 @@ from feat.utils.image_operations import (
     per_face_padding_inversion_terms,
     HOGLayer,
 )
+from feat.utils.blendshape_to_au import pls_predict_batch
 from feat.utils.face_mask import extract_hog_features_batched
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections
@@ -773,7 +774,19 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             .numpy(),
             columns=MP_LANDMARK_COLUMNS,
         )
-        feat_aus = pd.DataFrame(aus.cpu().detach().numpy(), columns=MP_BLENDSHAPE_NAMES)
+        # MP's blendshape head outputs 52 ARKit-style coefficients. Keep these
+        # under their canonical blendshape names so users can still inspect them
+        # individually (e.g., for the AU-mesh viz model that consumes blendshapes).
+        bs_array = aus.cpu().detach().numpy()
+        feat_blendshapes = pd.DataFrame(bs_array, columns=MP_BLENDSHAPE_NAMES)
+
+        # Predict 20 FACS AU intensities from the 52 blendshapes via the
+        # Cheong-style PLS regressor (py-feat/bs_to_au on HuggingFace). This
+        # gives MPDetector an AU-column output stream comparable to Detector's
+        # xgb output, while retaining the blendshape columns alongside.
+        feat_aus = pd.DataFrame(
+            pls_predict_batch(bs_array), columns=AU_LANDMARK_MAP["Feat"],
+        )
 
         feat_emotions = pd.DataFrame(
             emotions.cpu().detach().numpy(), columns=FEAT_EMOTION_COLUMNS
@@ -803,6 +816,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 feat_faceboxes,
                 feat_landmarks,
                 feat_poses,
+                feat_blendshapes,
                 feat_aus,
                 feat_emotions,
                 feat_identities,
