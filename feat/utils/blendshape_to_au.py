@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from feat.utils import hf_hub_download_with_fallback
+from huggingface_hub import hf_hub_download
+
+from feat.utils.io import get_resource_path
 
 # ---------------------------------------------------------------------
 # Learned PLS regression: 52 MP blendshapes → 20 AU intensities
@@ -34,9 +36,10 @@ def _load_pls_weights():
     if _PLS_WEIGHTS is not None:
         return _PLS_WEIGHTS
 
-    path = hf_hub_download_with_fallback(
+    path = hf_hub_download(
         repo_id=_PLS_REPO_ID,
         filename=_PLS_FILENAME,
+        cache_dir=get_resource_path(),
     )
     z = np.load(path, allow_pickle=False)
     _PLS_WEIGHTS = {
@@ -65,18 +68,43 @@ def pls_predict_batch(
     See `https://huggingface.co/py-feat/bs_to_au` for the model card.
 
     Args:
-        blendshape_array: (N, 52) array of MP blendshape coefficients. Columns
-            must follow MediaPipe FaceLandmarker order (matches MPDetector
-            output); see ``_PLS_WEIGHTS["blendshape_columns"]`` after load.
+        blendshape_array: blendshape coefficients in MediaPipe FaceLandmarker
+            order (matches MPDetector output). Either a 1-D ``(52,)`` vector
+            for a single face or a 2-D ``(N, 52)`` batch. See
+            ``_PLS_WEIGHTS["blendshape_columns"]`` after load for the exact
+            column names.
         clip: if True (default), output is clipped to [0, 1] for display
             consistency with FACS intensity convention.
 
     Returns:
-        (N, 20) array of AU intensities in py-feat's standard order.
+        AU intensities in py-feat's standard order. Shape matches input batching:
+        ``(20,)`` for a 1-D input, ``(N, 20)`` for a 2-D input.
     """
     w = _load_pls_weights()
-    out = blendshape_array.astype(np.float32) @ w["coef"] + w["intercept"]
-    return np.clip(out, 0.0, 1.0) if clip else out
+    bs = np.asarray(blendshape_array, dtype=np.float32)
+    n_features = w["coef"].shape[0]
+    if bs.ndim == 1:
+        if bs.shape[0] != n_features:
+            raise ValueError(
+                f"Expected 1-D input of length {n_features}, got {bs.shape[0]}."
+            )
+        bs = bs.reshape(1, -1)
+        squeeze_out = True
+    elif bs.ndim == 2:
+        if bs.shape[1] != n_features:
+            raise ValueError(
+                f"Expected 2-D input with {n_features} columns, got shape {bs.shape}."
+            )
+        squeeze_out = False
+    else:
+        raise ValueError(
+            f"blendshape_array must be 1-D ({n_features},) or 2-D (N, {n_features}); "
+            f"got ndim={bs.ndim}, shape={bs.shape}."
+        )
+    out = bs @ w["coef"] + w["intercept"]
+    if clip:
+        out = np.clip(out, 0.0, 1.0)
+    return out[0] if squeeze_out else out
 
 
 # ---------------------------------------------------------------------
