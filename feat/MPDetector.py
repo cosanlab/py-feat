@@ -64,9 +64,14 @@ from feat.utils.image_operations import (
     per_face_padding_inversion_terms,
     HOGLayer,
 )
-from feat.utils.blendshape_to_au import pls_predict_batch
+from feat.utils.blendshape_to_au import pls_predict_batch, _load_pls_weights
 from feat.utils.face_mask import extract_hog_features_batched
 from feat.utils.io import get_resource_path
+
+# One-time guard: confirm the PLS regressor's au_columns are in
+# AU_LANDMARK_MAP["Feat"] order before we relabel its output. Single-element
+# list so forward() can flip it without `global`.
+_pls_au_order_verified = [False]
 from feat.utils.mp_plotting import FaceLandmarksConnections
 from feat.utils.face_pose import (
     estimate_face_pose_from_mesh,
@@ -783,7 +788,18 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         # Predict 20 FACS AU intensities from the 52 blendshapes via the
         # Cheong-style PLS regressor (py-feat/bs_to_au on HuggingFace). This
         # gives MPDetector an AU-column output stream comparable to Detector's
-        # xgb output, while retaining the blendshape columns alongside.
+        # xgb output, while retaining the blendshape columns alongside. The
+        # one-time assertion guards against a future re-trained npz with a
+        # shuffled au_columns order that would silently mislabel AU columns.
+        if not _pls_au_order_verified[0]:
+            _w = _load_pls_weights()
+            if _w["au_columns"] != AU_LANDMARK_MAP["Feat"]:
+                raise RuntimeError(
+                    "BS→AU PLS au_columns drifted from AU_LANDMARK_MAP['Feat']. "
+                    f"PLS: {_w['au_columns']}; canonical: {AU_LANDMARK_MAP['Feat']}. "
+                    "Re-train or update the canonical AU list."
+                )
+            _pls_au_order_verified[0] = True
         feat_aus = pd.DataFrame(
             pls_predict_batch(bs_array), columns=AU_LANDMARK_MAP["Feat"],
         )
