@@ -1367,6 +1367,257 @@ def _load_pls_v2_from_hub(verbose=False):
     return _PLS_V2_VIZ_MODEL
 
 
+# ---------------------------------------------------------------------
+# AU + pose → 478-vertex MediaPipe FaceMesh (opt-in 3D visualization).
+# Mirrors the 68-pt landmark wrapper above. Output lives in a pose-canonical
+# frame anchored on stable upper-face landmarks (forehead + nose bridge +
+# canthi). See https://huggingface.co/py-feat/au_to_mesh for the model card.
+# ---------------------------------------------------------------------
+
+
+class PLSAUMeshModel:
+    """Wrapper around the v2 AU + pose → 478-vertex MP mesh PLS weights.
+
+    Mirrors the ``PLSAULandmarkModel`` interface (``.predict(au)``,
+    ``.n_components``) but emits the full 3D MediaPipe FaceMesh instead of
+    a 68-point dlib-style 2D landmark layout. Pose is held implicit-zero
+    at inference; the absorbed pose×AU interaction terms drop out
+    automatically. Inference is a single matmul.
+
+    Loaded by ``load_face_mesh_viz_model()``. Underlying weights live in
+    the ``py-feat/au_to_mesh`` HF Hub repo.
+    """
+
+    def __init__(
+        self,
+        coef,
+        intercept,
+        au_columns,
+        pose_columns,
+        mean_aligned_mesh,
+        model_name="au_to_mesh_pls_v2",
+    ):
+        # coef shape: (23, 1434); the deployed slice with pose absorbed
+        self._coef = np.asarray(coef, dtype=np.float32)
+        self._intercept = np.asarray(intercept, dtype=np.float32)
+        self.au_columns = list(au_columns)
+        self.pose_columns = list(pose_columns)
+        # Number of AU input features the user passes (pose is implicit-zero)
+        self.n_components = len(self.au_columns)
+        # Population-mean rest mesh in pose-canonical frame; useful as a
+        # reference baseline for visualizing AU deltas.
+        self.mean_aligned_mesh = np.asarray(mean_aligned_mesh, dtype=np.float32)
+        self.model_name_ = model_name
+
+    def predict(self, au):
+        """Predict (n_samples, 1434) flat mesh coords from (n_samples, 20) AU.
+
+        The 1434-d flat layout is **axis-major**: ``[x_0..x_477 | y_0..y_477
+        | z_0..z_477]`` — matching how training stacks the per-vertex columns
+        ``x_i / y_i / z_i``. Use ``predict_face_mesh()`` for an ``(n, 478, 3)``
+        reshape with the right vertex ordering.
+
+        Pose channels are zero-padded so the deployed coef matrix can be
+        used directly. Output is in the Procrustes-aligned canonical frame
+        (units are GPA-aligned cm, not image pixels).
+        """
+        au = np.asarray(au, dtype=np.float32)
+        if au.ndim == 1:
+            au = au.reshape(1, -1)
+        if au.shape[1] != self.n_components:
+            raise ValueError(
+                f"au must have {self.n_components} columns "
+                f"(matching {self.au_columns}); got {au.shape[1]}."
+            )
+        n = au.shape[0]
+        x = np.zeros((n, self._coef.shape[0]), dtype=np.float32)
+        x[:, : au.shape[1]] = au
+        # Pose channels remain zero (already initialized)
+        return x @ self._coef + self._intercept
+
+    def __repr__(self):
+        return (
+            f"PLSAUMeshModel(model_name='{self.model_name_}', "
+            f"n_components={self.n_components}, "
+            f"output_shape=(n_samples, 478, 3))"
+        )
+
+
+# Module-level cache; the HF download is already cached by huggingface_hub.
+_PLS_V2_MESH_MODEL = None
+
+
+def _load_pls_au_to_mesh_v2_from_hub(verbose=False):
+    """Download (cached) and wrap the v2 AU→mesh PLS NPZ from HuggingFace Hub."""
+    global _PLS_V2_MESH_MODEL
+    if _PLS_V2_MESH_MODEL is not None:
+        return _PLS_V2_MESH_MODEL
+
+    if verbose:
+        print("Loading v2 PLS AU→mesh model from HuggingFace Hub")
+    path = hf_hub_download(
+        repo_id="py-feat/au_to_mesh",
+        filename="au_to_mesh_pls_v2.npz",
+        cache_dir=get_resource_path(),
+    )
+    z = np.load(path, allow_pickle=False)
+    au_columns = [str(s) for s in z["au_columns"]]
+    # Guard against silent mislabeling: callers pass `au` as a 20-d vector
+    # assuming index i corresponds to AU_LANDMARK_MAP["Feat"][i]. A re-trained
+    # npz with a shuffled column order would silently use wrong AU positions
+    # and produce subtly wrong mesh deformations. Refuse to load instead.
+    if au_columns != AU_LANDMARK_MAP["Feat"]:
+        raise RuntimeError(
+            "AU→mesh PLS au_columns drifted from AU_LANDMARK_MAP['Feat']. "
+            f"NPZ: {au_columns}; canonical: {AU_LANDMARK_MAP['Feat']}. "
+            "Re-train or update the canonical AU list."
+        )
+    _PLS_V2_MESH_MODEL = PLSAUMeshModel(
+        coef=z["coef"],
+        intercept=z["intercept"],
+        au_columns=au_columns,
+        pose_columns=[str(s) for s in z["pose_columns"]],
+        mean_aligned_mesh=z["mean_aligned_mesh"],
+        model_name="au_to_mesh_pls_v2",
+    )
+    return _PLS_V2_MESH_MODEL
+
+
+def load_face_mesh_viz_model(verbose=False):
+    """Load the AU + pose → 478-pt MediaPipe FaceMesh PLS visualization model.
+
+    Returns a ``PLSAUMeshModel`` whose ``.predict(au)`` produces the 478-vertex
+    3D mesh (flattened to 1434-d) in a pose-canonical frame. Use
+    ``predict_face_mesh()`` for a (478, 3) reshape, or ``plot_face_mesh()`` for
+    a quick 3D wireframe.
+
+    Args:
+        verbose: print a status line when first downloading.
+
+    Returns:
+        PLSAUMeshModel
+    """
+    return _load_pls_au_to_mesh_v2_from_hub(verbose=verbose)
+
+
+def predict_face_mesh(au, model=None):
+    """Predict the 3D MediaPipe FaceMesh from AU intensities.
+
+    Args:
+        au: AU intensity vector or batch. Shape ``(20,)`` or ``(n, 20)`` — the
+            standard ``AU_LANDMARK_MAP['Feat']`` order.
+        model: optional ``PLSAUMeshModel``; defaults to the cached v2 model.
+
+    Returns:
+        Predicted mesh in pose-canonical-frame coordinates (GPA-aligned cm,
+        not image pixels). Shape ``(478, 3)`` for a 1-D AU input,
+        ``(n, 478, 3)`` for a batched 2-D input.
+    """
+    if model is None:
+        model = load_face_mesh_viz_model()
+    if not isinstance(model, PLSAUMeshModel):
+        raise ValueError(
+            "model must be a PLSAUMeshModel "
+            "(returned by feat.plotting.load_face_mesh_viz_model())"
+        )
+    au_arr = np.asarray(au)
+    is_single = au_arr.ndim == 1
+    if au_arr.ndim == 1:
+        au_arr = au_arr.reshape(1, -1)
+    if au_arr.shape[1] != model.n_components:
+        raise ValueError(
+            f"au vector must be length {model.n_components}; got {au_arr.shape[1]}."
+        )
+    flat = model.predict(au_arr)  # (n, 1434), axis-major [x | y | z]
+    xs = flat[:, :478]
+    ys = flat[:, 478:956]
+    zs = flat[:, 956:]
+    mesh = np.stack([xs, ys, zs], axis=-1)  # (n, 478, 3)
+    return mesh[0] if is_single else mesh
+
+
+def plot_face_mesh(
+    au=None,
+    model=None,
+    ax=None,
+    color="black",
+    linewidth=0.6,
+    alpha=0.9,
+    view_init=(0, -90),
+):
+    """3D wireframe of the predicted face mesh. Opt-in alternative to ``plot_face``.
+
+    Renders the canonical MediaPipe contours (lips + eyes + eyebrows + face
+    oval) from the predicted 478-vertex mesh. For a quick reference plot,
+    leave ``au=None`` to draw the population-mean rest mesh.
+
+    Coordinate frame: the trained mesh uses standard math convention with
+    ``+X`` lateral, ``+Y`` up (forehead at ~+8, chin at ~-8), ``+Z`` out of
+    the face. We map data ``(x, y, z)`` to matplotlib ``(x, z, y)`` so the
+    default 3D viewport renders the face standing upright with Z (depth) into
+    the screen — matching how a viewer sees the face.
+
+    Args:
+        au: AU intensity vector ``(20,)`` in ``AU_LANDMARK_MAP['Feat']`` order.
+            ``None`` plots the rest mesh.
+        model: optional ``PLSAUMeshModel``; defaults to the cached v2 model.
+        ax: optional matplotlib 3D axis. If ``None``, a new figure is created.
+        color, linewidth, alpha: line styling.
+        view_init: ``(elev, azim)`` matplotlib view angles. Default frames
+            the face front-on; rotate ``azim`` to see profile.
+
+    Returns:
+        The matplotlib 3D axis with the wireframe drawn.
+    """
+    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
+    from feat.utils.mp_plotting import FaceLandmarksConnections
+
+    if au is None:
+        if model is None:
+            model = load_face_mesh_viz_model()
+        verts = model.mean_aligned_mesh
+    else:
+        verts = predict_face_mesh(au, model=model)
+        if verts.ndim != 2:
+            raise ValueError(
+                "plot_face_mesh expects a single AU vector; pass one face at a time. "
+                "For batched predictions use predict_face_mesh(au_batch)."
+            )
+
+    if ax is None:
+        fig = plt.figure(figsize=(5, 5))
+        ax = fig.add_subplot(111, projection="3d")
+
+    # Map data (X, Y, Z) → matplotlib (X, Z, Y) so face renders upright with
+    # depth into the screen under the default viewport.
+    xs = verts[:, 0]
+    ys_mpl = verts[:, 2]
+    zs_mpl = verts[:, 1]
+
+    for conn in FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS:
+        a, b = conn.start, conn.end
+        ax.plot(
+            [xs[a], xs[b]], [ys_mpl[a], ys_mpl[b]], [zs_mpl[a], zs_mpl[b]],
+            color=color, linewidth=linewidth, alpha=alpha,
+        )
+
+    # Equal aspect ratio so the face isn't squashed by mpl3d's default scaling.
+    extents = np.array([
+        [xs.min(), xs.max()],
+        [ys_mpl.min(), ys_mpl.max()],
+        [zs_mpl.min(), zs_mpl.max()],
+    ])
+    centers = extents.mean(axis=1)
+    half = (extents[:, 1] - extents[:, 0]).max() / 2
+    ax.set_xlim(centers[0] - half, centers[0] + half)
+    ax.set_ylim(centers[1] - half, centers[1] + half)
+    ax.set_zlim(centers[2] - half, centers[2] + half)
+    ax.set_box_aspect((1, 1, 1))
+    ax.view_init(elev=view_init[0], azim=view_init[1])
+    ax.set_axis_off()
+    return ax
+
+
 def load_viz_model(
     file_name=None,
     prefer_joblib_if_version_match=True,
