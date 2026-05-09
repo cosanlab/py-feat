@@ -85,6 +85,16 @@ class TestPLSAUMeshModel:
                         + stub_mesh_model._intercept)
         np.testing.assert_allclose(out_wrapper, out_explicit, atol=1e-6)
 
+    def test_predict_rejects_wrong_au_width(self, stub_mesh_model):
+        """A user calling ``model.predict(au)`` directly (sklearn convention)
+        with the wrong number of AU columns must raise, not silently truncate
+        or zero-pad. Without this check the wrapper would accept e.g. a 19-d
+        vector and zero-pad it as if it were AU01..AU19 missing AU43."""
+        with pytest.raises(ValueError, match=r"must have 20 columns"):
+            stub_mesh_model.predict(np.zeros((2, 19), dtype=np.float32))
+        with pytest.raises(ValueError, match=r"must have 20 columns"):
+            stub_mesh_model.predict(np.zeros(19, dtype=np.float32))
+
     def test_n_components_is_20(self, stub_mesh_model):
         assert stub_mesh_model.n_components == 20
 
@@ -173,10 +183,67 @@ class TestPlotFaceMesh:
         with pytest.raises(ValueError, match=r"single AU vector"):
             plot_face_mesh(au=np.zeros((2, 20)), model=stub_mesh_model)
 
+    def test_data_y_maps_to_matplotlib_z(self, stub_mesh_model):
+        """Pin the data→matplotlib axis swap: data Y (vertical) renders along
+        matplotlib's Z. If someone "fixes" the swap to plot data verbatim,
+        the face would render lying down — locking this prevents regression.
+        """
+        ax = plot_face_mesh(au=None, model=stub_mesh_model)
+        verts = stub_mesh_model.mean_aligned_mesh
+        zlim = ax.get_zlim()
+        ylim = ax.get_ylim()
+        # The data-Y range must align with matplotlib's Z axis (the swap
+        # target). Compare span widths since matplotlib re-centers via
+        # set_zlim — small float32-vs-float64 rounding is absorbed.
+        data_y_span = float(verts[:, 1].max() - verts[:, 1].min())
+        data_z_span = float(verts[:, 2].max() - verts[:, 2].min())
+        mpl_z_span = zlim[1] - zlim[0]
+        mpl_y_span = ylim[1] - ylim[0]
+        # The largest data span is data-Y (~17). After the swap it lands on
+        # mpl-Z. Equal-aspect makes all three mpl axes share that max span.
+        assert mpl_z_span >= data_y_span - 1e-3, \
+            f"mpl Z span ({mpl_z_span:.3f}) should contain data Y span ({data_y_span:.3f})"
+        # Verify the swap is real, not just equal-aspect coincidence: data-Z
+        # span (~8) is smaller than data-Y span (~17), so if the swap were
+        # absent (data Z → mpl Z), mpl-Z span would only need to contain ~8.
+        assert data_y_span > data_z_span * 1.5, \
+            "fixture must have asymmetric Y/Z spans for the swap test to be meaningful"
+
 
 # ---------------------------------------------------------------------
 # Real HF Hub fetch — runs once, then hits cache.
 # ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
+# Drift guard — refuses to load a model with shuffled au_columns.
+# ---------------------------------------------------------------------
+
+class TestAuColumnDriftGuard:
+    def test_drift_raises_at_load(self, monkeypatch, tmp_path):
+        """If a future re-trained npz has shuffled au_columns,
+        _load_pls_au_to_mesh_v2_from_hub must refuse to load rather than
+        silently using wrong AU positions."""
+        from feat.pretrained import AU_LANDMARK_MAP
+
+        # Build a fake npz on disk with shuffled au_columns
+        bad_path = tmp_path / "au_to_mesh_bad.npz"
+        np.savez(
+            bad_path,
+            coef=np.zeros((23, 1434), dtype=np.float32),
+            intercept=np.zeros(1434, dtype=np.float32),
+            au_columns=np.array(AU_LANDMARK_MAP["Feat"][::-1]),  # reversed
+            pose_columns=np.array(["Pitch", "Yaw", "Roll"]),
+            mean_aligned_mesh=np.zeros((478, 3), dtype=np.float32),
+        )
+
+        # Bypass HF download: make hf_hub_download return our fake path
+        monkeypatch.setattr(plt_mod, "_PLS_V2_MESH_MODEL", None)
+        monkeypatch.setattr(plt_mod, "hf_hub_download",
+                            lambda **kwargs: str(bad_path))
+
+        with pytest.raises(RuntimeError, match=r"au_columns drifted"):
+            plt_mod._load_pls_au_to_mesh_v2_from_hub()
+
 
 @pytest.mark.network
 class TestRealMeshLoad:

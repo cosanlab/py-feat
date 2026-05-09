@@ -1418,11 +1418,17 @@ class PLSAUMeshModel:
         reshape with the right vertex ordering.
 
         Pose channels are zero-padded so the deployed coef matrix can be
-        used directly. Output is in the Procrustes-aligned canonical frame.
+        used directly. Output is in the Procrustes-aligned canonical frame
+        (units are GPA-aligned cm, not image pixels).
         """
         au = np.asarray(au, dtype=np.float32)
         if au.ndim == 1:
             au = au.reshape(1, -1)
+        if au.shape[1] != self.n_components:
+            raise ValueError(
+                f"au must have {self.n_components} columns "
+                f"(matching {self.au_columns}); got {au.shape[1]}."
+            )
         n = au.shape[0]
         x = np.zeros((n, self._coef.shape[0]), dtype=np.float32)
         x[:, : au.shape[1]] = au
@@ -1455,10 +1461,21 @@ def _load_pls_au_to_mesh_v2_from_hub(verbose=False):
         cache_dir=get_resource_path(),
     )
     z = np.load(path, allow_pickle=False)
+    au_columns = [str(s) for s in z["au_columns"]]
+    # Guard against silent mislabeling: callers pass `au` as a 20-d vector
+    # assuming index i corresponds to AU_LANDMARK_MAP["Feat"][i]. A re-trained
+    # npz with a shuffled column order would silently use wrong AU positions
+    # and produce subtly wrong mesh deformations. Refuse to load instead.
+    if au_columns != AU_LANDMARK_MAP["Feat"]:
+        raise RuntimeError(
+            "AU→mesh PLS au_columns drifted from AU_LANDMARK_MAP['Feat']. "
+            f"NPZ: {au_columns}; canonical: {AU_LANDMARK_MAP['Feat']}. "
+            "Re-train or update the canonical AU list."
+        )
     _PLS_V2_MESH_MODEL = PLSAUMeshModel(
         coef=z["coef"],
         intercept=z["intercept"],
-        au_columns=[str(s) for s in z["au_columns"]],
+        au_columns=au_columns,
         pose_columns=[str(s) for s in z["pose_columns"]],
         mean_aligned_mesh=z["mean_aligned_mesh"],
         model_name="au_to_mesh_pls_v2",
@@ -1492,8 +1509,9 @@ def predict_face_mesh(au, model=None):
         model: optional ``PLSAUMeshModel``; defaults to the cached v2 model.
 
     Returns:
-        Predicted mesh in pose-canonical pixel coords. Shape ``(478, 3)`` for
-        a 1-D AU input, ``(n, 478, 3)`` for a batched 2-D input.
+        Predicted mesh in pose-canonical-frame coordinates (GPA-aligned cm,
+        not image pixels). Shape ``(478, 3)`` for a 1-D AU input,
+        ``(n, 478, 3)`` for a batched 2-D input.
     """
     if model is None:
         model = load_face_mesh_viz_model()
