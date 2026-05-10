@@ -189,6 +189,13 @@ class TestPredictMeshFromDlib68:
         np.testing.assert_array_equal(mesh[:, 1], zero_coef_model._intercept[478:956])
         np.testing.assert_array_equal(mesh[:, 2], zero_coef_model._intercept[956:])
 
+    def test_empty_batch_passthrough(self, stub_bridge_model):
+        """A zero-row batch (e.g. when no faces detected upstream) should
+        produce an empty (0, 478, 3) result without raising."""
+        empty = np.zeros((0, 68, 2), dtype=np.float32)
+        out = predict_mesh_from_dlib68(empty, model=stub_bridge_model)
+        assert out.shape == (0, 478, 3)
+
     def test_rejects_wrong_landmark_shape(self, stub_bridge_model):
         with pytest.raises(ValueError, match=r"\(68, 2\) or \(n, 68, 2\)"):
             predict_mesh_from_dlib68(np.zeros((50, 2)), model=stub_bridge_model)

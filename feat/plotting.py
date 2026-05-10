@@ -1538,13 +1538,14 @@ def predict_face_mesh(au, model=None):
 
 def plot_face_mesh(
     au=None,
-    mesh=None,
     model=None,
     ax=None,
     color="black",
     linewidth=0.6,
     alpha=0.9,
     view_init=(0, -90),
+    *,
+    mesh=None,
 ):
     """3D wireframe of the predicted face mesh. Opt-in alternative to ``plot_face``.
 
