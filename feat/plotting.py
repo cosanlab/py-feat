@@ -12,7 +12,11 @@ from sklearn import __version__ as skversion
 import matplotlib.pyplot as plt
 from feat.pretrained import AU_LANDMARK_MAP
 from feat.utils.io import get_resource_path, download_url
-from feat.utils.image_operations import align_face, mask_image
+from feat.utils.image_operations import (
+    align_face,
+    mask_image,
+    procrustes_align_2d_batched,
+)
 from feat.utils import flatten_list
 from huggingface_hub import hf_hub_download
 from math import sin, cos
@@ -1646,57 +1650,6 @@ def plot_face_mesh(
 # ---------------------------------------------------------------------
 
 
-def _procrustes_align_2d_batched(coords, anchor_idx, ref_anchors):
-    """Batched 2D Umeyama similarity alignment.
-
-    Aligns each face's full landmark set so that its anchor subset best
-    matches the reference anchors (in least-squares sense, allowing
-    rotation + isotropic scale + translation). Mirrors the helper used at
-    training time so inference operates in the same canonical frame.
-
-    Args:
-        coords: ``(n, 68, 2)`` raw 2-D landmarks per face.
-        anchor_idx: ``(k,)`` int indices of stable anchors (e.g., the 8
-            saved with the model: nose bridge 27-30 + canthi 36/39/42/45).
-        ref_anchors: ``(k, 2)`` reference anchor positions.
-
-    Returns:
-        ``(n, 68, 2)`` aligned landmarks in the reference frame.
-    """
-    coords = np.asarray(coords, dtype=np.float32)
-    if coords.ndim != 3 or coords.shape[1:] != (68, 2):
-        raise ValueError(
-            f"coords must have shape (n, 68, 2); got {coords.shape}"
-        )
-    N = coords.shape[0]
-    P = coords[:, anchor_idx]  # (N, k, 2)
-    P_mean = P.mean(axis=1, keepdims=True)
-    Q_mean = ref_anchors.mean(axis=0)
-    P_c = P - P_mean
-    Q_c = ref_anchors - Q_mean
-    H = np.einsum("ki,nkj->nij", Q_c.astype(np.float64), P_c.astype(np.float64))
-    U, S, Vt = np.linalg.svd(H)
-    UVt = U @ Vt
-    det = np.linalg.det(UVt)
-    d = np.where(det < 0, -1.0, 1.0)
-    D = np.zeros((N, 2, 2), dtype=np.float64)
-    D[:, 0, 0] = 1.0
-    D[:, 1, 1] = d
-    R = U @ D @ Vt
-    var_P = (P_c.astype(np.float64) ** 2).sum(axis=(1, 2))
-    s_num = (S * np.stack([np.ones(N), d], axis=1)).sum(axis=1)
-    s = s_num / np.maximum(var_P, 1e-12)
-    P_mean_sq = P_mean.squeeze(1).astype(np.float64)
-    Rp = np.einsum("nij,nj->ni", R, P_mean_sq)
-    t = Q_mean.astype(np.float64)[None] - s[:, None] * Rp
-    coords_64 = coords.astype(np.float64)
-    aligned = (
-        s[:, None, None] * np.einsum("nvi,nji->nvj", coords_64, R)
-        + t[:, None, :]
-    )
-    return aligned.astype(np.float32)
-
-
 class PCALandmarks68ToMeshModel:
     """Wrapper around the v2 dlib-68 → MP-478 PCA-bottleneck bridge weights.
 
@@ -1857,7 +1810,7 @@ def predict_mesh_from_dlib68(landmarks_68, model=None):
             f"landmarks_68 must have shape (68, 2) or (n, 68, 2); got {arr.shape}"
         )
 
-    aligned = _procrustes_align_2d_batched(
+    aligned = procrustes_align_2d_batched(
         arr, model.anchor_indices_dlib68, model.reference_dlib_anchors,
     )
     # Axis-major flat input: [x_0..x_67 | y_0..y_67]
