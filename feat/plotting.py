@@ -1544,12 +1544,19 @@ def plot_face_mesh(
     linewidth=0.6,
     alpha=0.9,
     view_init=(0, -90),
+    *,
+    mesh=None,
 ):
     """3D wireframe of the predicted face mesh. Opt-in alternative to ``plot_face``.
 
     Renders the canonical MediaPipe contours (lips + eyes + eyebrows + face
-    oval) from the predicted 478-vertex mesh. For a quick reference plot,
-    leave ``au=None`` to draw the population-mean rest mesh.
+    oval) from a 478-vertex mesh. The mesh source is selected by what the
+    caller passes:
+
+    - ``mesh`` given: draw that mesh directly (e.g., output of
+      ``predict_mesh_from_dlib68`` for a Detector Fex).
+    - ``au`` given: predict via the AU→mesh PLS model (PR #304).
+    - neither: draw the population-mean rest mesh.
 
     Coordinate frame: the trained mesh uses standard math convention with
     ``+X`` lateral, ``+Y`` up (forehead at ~+8, chin at ~-8), ``+Z`` out of
@@ -1559,8 +1566,9 @@ def plot_face_mesh(
 
     Args:
         au: AU intensity vector ``(20,)`` in ``AU_LANDMARK_MAP['Feat']`` order.
-            ``None`` plots the rest mesh.
-        model: optional ``PLSAUMeshModel``; defaults to the cached v2 model.
+        mesh: precomputed ``(478, 3)`` mesh array, in the canonical frame.
+        model: optional ``PLSAUMeshModel`` for the ``au`` path; defaults to
+            the cached v2 model.
         ax: optional matplotlib 3D axis. If ``None``, a new figure is created.
         color, linewidth, alpha: line styling.
         view_init: ``(elev, azim)`` matplotlib view angles. Default frames
@@ -1572,7 +1580,17 @@ def plot_face_mesh(
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
     from feat.utils.mp_plotting import FaceLandmarksConnections
 
-    if au is None:
+    if mesh is not None and au is not None:
+        raise ValueError("pass either `au` or `mesh`, not both")
+
+    if mesh is not None:
+        verts = np.asarray(mesh, dtype=np.float32)
+        if verts.shape != (478, 3):
+            raise ValueError(
+                f"mesh must have shape (478, 3); got {verts.shape}. "
+                "For batched predictions, plot one face at a time."
+            )
+    elif au is None:
         if model is None:
             model = load_face_mesh_viz_model()
         verts = model.mean_aligned_mesh
@@ -1616,6 +1634,240 @@ def plot_face_mesh(
     ax.view_init(elev=view_init[0], azim=view_init[1])
     ax.set_axis_off()
     return ax
+
+
+# ---------------------------------------------------------------------
+# 68-pt dlib landmarks → 478-vertex MediaPipe FaceMesh bridge.
+# Lets users with a Detector Fex (mobilefacenet 68-pt) reconstruct an
+# approximate MP mesh, opening up plot_face_mesh + downstream 3D consumers
+# without a separate MPDetector pass. PCA-bottleneck linear regression
+# trained on 340K paired (dlib-68, MP-478) frames; OOS R² ≈ 0.48.
+# See https://huggingface.co/py-feat/landmarks68_to_mesh478.
+# ---------------------------------------------------------------------
+
+
+def _procrustes_align_2d_batched(coords, anchor_idx, ref_anchors):
+    """Batched 2D Umeyama similarity alignment.
+
+    Aligns each face's full landmark set so that its anchor subset best
+    matches the reference anchors (in least-squares sense, allowing
+    rotation + isotropic scale + translation). Mirrors the helper used at
+    training time so inference operates in the same canonical frame.
+
+    Args:
+        coords: ``(n, 68, 2)`` raw 2-D landmarks per face.
+        anchor_idx: ``(k,)`` int indices of stable anchors (e.g., the 8
+            saved with the model: nose bridge 27-30 + canthi 36/39/42/45).
+        ref_anchors: ``(k, 2)`` reference anchor positions.
+
+    Returns:
+        ``(n, 68, 2)`` aligned landmarks in the reference frame.
+    """
+    coords = np.asarray(coords, dtype=np.float32)
+    if coords.ndim != 3 or coords.shape[1:] != (68, 2):
+        raise ValueError(
+            f"coords must have shape (n, 68, 2); got {coords.shape}"
+        )
+    N = coords.shape[0]
+    P = coords[:, anchor_idx]  # (N, k, 2)
+    P_mean = P.mean(axis=1, keepdims=True)
+    Q_mean = ref_anchors.mean(axis=0)
+    P_c = P - P_mean
+    Q_c = ref_anchors - Q_mean
+    H = np.einsum("ki,nkj->nij", Q_c.astype(np.float64), P_c.astype(np.float64))
+    U, S, Vt = np.linalg.svd(H)
+    UVt = U @ Vt
+    det = np.linalg.det(UVt)
+    d = np.where(det < 0, -1.0, 1.0)
+    D = np.zeros((N, 2, 2), dtype=np.float64)
+    D[:, 0, 0] = 1.0
+    D[:, 1, 1] = d
+    R = U @ D @ Vt
+    var_P = (P_c.astype(np.float64) ** 2).sum(axis=(1, 2))
+    s_num = (S * np.stack([np.ones(N), d], axis=1)).sum(axis=1)
+    s = s_num / np.maximum(var_P, 1e-12)
+    P_mean_sq = P_mean.squeeze(1).astype(np.float64)
+    Rp = np.einsum("nij,nj->ni", R, P_mean_sq)
+    t = Q_mean.astype(np.float64)[None] - s[:, None] * Rp
+    coords_64 = coords.astype(np.float64)
+    aligned = (
+        s[:, None, None] * np.einsum("nvi,nji->nvj", coords_64, R)
+        + t[:, None, :]
+    )
+    return aligned.astype(np.float32)
+
+
+class PCALandmarks68ToMeshModel:
+    """Wrapper around the v2 dlib-68 → MP-478 PCA-bottleneck bridge weights.
+
+    Inference takes Procrustes-aligned 68-pt landmarks (axis-major flat
+    ``[x_0..x_67 | y_0..y_67]``, 136-d) and emits the 478-vertex 3D mesh
+    flattened to 1434-d in the same axis-major layout as the AU→mesh model
+    (PR #304). Use ``predict_mesh_from_dlib68()`` for the convenient end-to-end
+    path that handles raw-landmark alignment + reshape.
+
+    Loaded by ``load_landmarks68_to_mesh478_model()``. Underlying weights live
+    in the ``py-feat/landmarks68_to_mesh478`` HF Hub repo. OOS R² ≈ 0.48.
+    """
+
+    def __init__(
+        self,
+        coef,
+        intercept,
+        input_columns,
+        anchor_indices_dlib68,
+        reference_dlib_anchors,
+        mean_aligned_dlib_landmarks,
+        mean_predicted_mesh,
+        model_name="landmarks68_to_mesh478_pca_v2",
+    ):
+        # coef shape: (136, 1434); deployed weights with PCA absorbed
+        self._coef = np.asarray(coef, dtype=np.float32)
+        self._intercept = np.asarray(intercept, dtype=np.float32)
+        self.input_columns = list(input_columns)
+        self.anchor_indices_dlib68 = np.asarray(anchor_indices_dlib68, dtype=np.int64)
+        self.reference_dlib_anchors = np.asarray(reference_dlib_anchors, dtype=np.float32)
+        self.mean_aligned_dlib_landmarks = np.asarray(
+            mean_aligned_dlib_landmarks, dtype=np.float32
+        )
+        self.mean_predicted_mesh = np.asarray(mean_predicted_mesh, dtype=np.float32)
+        self.model_name_ = model_name
+
+    def predict(self, aligned_landmarks_136):
+        """Predict (n, 1434) flat axis-major mesh from (n, 136) aligned landmarks.
+
+        Inputs must already be Procrustes-aligned to the model's reference
+        anchors. Use ``predict_mesh_from_dlib68()`` for raw-landmark inputs
+        (it handles alignment + reshape).
+        """
+        x = np.asarray(aligned_landmarks_136, dtype=np.float32)
+        if x.ndim == 1:
+            x = x.reshape(1, -1)
+        if x.shape[1] != self._coef.shape[0]:
+            raise ValueError(
+                f"input must have {self._coef.shape[0]} columns "
+                "(axis-major aligned [x_0..x_67 | y_0..y_67]); "
+                f"got {x.shape[1]}."
+            )
+        return x @ self._coef + self._intercept
+
+    def __repr__(self):
+        return (
+            f"PCALandmarks68ToMeshModel(model_name='{self.model_name_}', "
+            f"input_dim={self._coef.shape[0]}, "
+            f"output_shape=(n_samples, 478, 3))"
+        )
+
+
+_LM68_TO_MESH478_MODEL = None
+
+
+def _load_landmarks68_to_mesh478_v2_from_hub(verbose=False):
+    """Download (cached) and wrap the v2 68→478 PCA-bottleneck NPZ from HF Hub."""
+    global _LM68_TO_MESH478_MODEL
+    if _LM68_TO_MESH478_MODEL is not None:
+        return _LM68_TO_MESH478_MODEL
+
+    if verbose:
+        print("Loading v2 PCA dlib-68 → MP-478 model from HuggingFace Hub")
+    path = hf_hub_download(
+        repo_id="py-feat/landmarks68_to_mesh478",
+        filename="landmarks68_to_mesh478_pca_v2.npz",
+        cache_dir=get_resource_path(),
+    )
+    z = np.load(path, allow_pickle=False)
+    input_columns = [str(s) for s in z["input_columns"]]
+    # Guard against silent layout drift: the bridge expects axis-major
+    # `lm_x_0..lm_x_67, lm_y_0..lm_y_67`. A future re-trained npz with a
+    # different convention (e.g., interleaved per-vertex) would silently
+    # produce garbage.
+    expected = [f"lm_x_{i}" for i in range(68)] + [f"lm_y_{i}" for i in range(68)]
+    if input_columns != expected:
+        raise RuntimeError(
+            "landmarks68_to_mesh478 input_columns drifted from canonical "
+            "axis-major lm_x / lm_y layout. Re-train or update the loader."
+        )
+    _LM68_TO_MESH478_MODEL = PCALandmarks68ToMeshModel(
+        coef=z["coef"],
+        intercept=z["intercept"],
+        input_columns=input_columns,
+        anchor_indices_dlib68=z["anchor_indices_dlib68"],
+        reference_dlib_anchors=z["reference_dlib_anchors"],
+        mean_aligned_dlib_landmarks=z["mean_aligned_dlib_landmarks"],
+        mean_predicted_mesh=z["mean_predicted_mesh"],
+        model_name="landmarks68_to_mesh478_pca_v2",
+    )
+    return _LM68_TO_MESH478_MODEL
+
+
+def load_landmarks68_to_mesh478_model(verbose=False):
+    """Load the dlib-68 → MP-478 PCA-bottleneck bridge model.
+
+    Use ``predict_mesh_from_dlib68()`` for the convenient end-to-end path
+    that aligns raw landmarks + predicts + reshapes in one call.
+
+    Args:
+        verbose: print a status line when first downloading.
+
+    Returns:
+        PCALandmarks68ToMeshModel
+    """
+    return _load_landmarks68_to_mesh478_v2_from_hub(verbose=verbose)
+
+
+def predict_mesh_from_dlib68(landmarks_68, model=None):
+    """Reconstruct a 478-vertex MP mesh from raw 68-pt dlib landmarks.
+
+    Bridges Detector output (mobilefacenet 68-pt landmarks in image-space
+    pixels) to the MediaPipe FaceMesh frame, so users with a Detector Fex
+    can feed ``plot_face_mesh()`` or other 3D consumers without running
+    MPDetector.
+
+    Steps internally:
+        1. Procrustes-align the raw landmarks to the saved reference anchors
+           (8 stable upper-face points: nose bridge + canthi).
+        2. Flatten axis-major and apply the (136 → 1434) PCA-bottleneck weights.
+        3. Reshape the flat output to ``(478, 3)``.
+
+    Args:
+        landmarks_68: ``(68, 2)`` for a single face or ``(n, 68, 2)`` for a
+            batch. In image-space pixels (e.g., from
+            ``Fex.landmarks_dlib68_xy``).
+        model: optional ``PCALandmarks68ToMeshModel``; defaults to the cached
+            v2 model.
+
+    Returns:
+        Predicted mesh in pose-canonical-frame coordinates (GPA-aligned cm,
+        not image pixels). Shape ``(478, 3)`` for a 2-D input,
+        ``(n, 478, 3)`` for a 3-D batch.
+    """
+    if model is None:
+        model = load_landmarks68_to_mesh478_model()
+    if not isinstance(model, PCALandmarks68ToMeshModel):
+        raise ValueError(
+            "model must be a PCALandmarks68ToMeshModel "
+            "(returned by feat.plotting.load_landmarks68_to_mesh478_model())"
+        )
+    arr = np.asarray(landmarks_68, dtype=np.float32)
+    is_single = arr.ndim == 2
+    if arr.ndim == 2:
+        arr = arr[None, ...]
+    if arr.ndim != 3 or arr.shape[1:] != (68, 2):
+        raise ValueError(
+            f"landmarks_68 must have shape (68, 2) or (n, 68, 2); got {arr.shape}"
+        )
+
+    aligned = _procrustes_align_2d_batched(
+        arr, model.anchor_indices_dlib68, model.reference_dlib_anchors,
+    )
+    # Axis-major flat input: [x_0..x_67 | y_0..y_67]
+    x_flat = np.hstack([aligned[:, :, 0], aligned[:, :, 1]]).astype(np.float32)
+    flat = model.predict(x_flat)  # (n, 1434), axis-major [x | y | z]
+    xs = flat[:, :478]
+    ys = flat[:, 478:956]
+    zs = flat[:, 956:]
+    mesh = np.stack([xs, ys, zs], axis=-1)  # (n, 478, 3)
+    return mesh[0] if is_single else mesh
 
 
 def load_viz_model(
