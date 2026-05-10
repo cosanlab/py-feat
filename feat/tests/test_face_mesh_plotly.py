@@ -84,8 +84,17 @@ class TestModeDispatch:
         assert len(fig.data[0].x) == 3 * N_CONTOURS_EDGES
 
     def test_invalid_mode_raises(self, stub_mesh_model):
-        with pytest.raises(ValueError, match=r"'tesselation' or 'contours'"):
+        with pytest.raises(ValueError, match=r"'tesselation'"):
             plot_face_mesh_plotly(mode="bogus")
+
+    def test_tessellation_double_l_spelling_accepted(self, stub_mesh_model):
+        """``'tessellation'`` (standard English, double-l) is an alias of
+        the MediaPipe-compatible ``'tesselation'`` (single-l)."""
+        fig_single = plot_face_mesh_plotly(mode="tesselation")
+        fig_double = plot_face_mesh_plotly(mode="tessellation")
+        # Same edge count → same number of points emitted
+        assert len(fig_single.data[0].x) == len(fig_double.data[0].x)
+        assert len(fig_double.data[0].x) == 3 * N_TESSELATION_EDGES
 
     def test_nan_separator_between_segments(self, stub_mesh_model):
         """Every 3rd point must be NaN — that's the line-segment terminator
@@ -192,3 +201,34 @@ class TestLayout:
         fig = plot_face_mesh_plotly(background="lightgray")
         assert fig.layout.scene.bgcolor == "lightgray"
         assert fig.layout.paper_bgcolor == "lightgray"
+
+    def test_color_and_line_width_passthrough(self, stub_mesh_model):
+        """Style kwargs must reach the trace — catches a future refactor
+        that drops them when building the Scatter3d."""
+        fig = plot_face_mesh_plotly(color="crimson", line_width=4.0)
+        line = fig.data[0].line
+        assert line.color == "crimson"
+        assert line.width == 4.0
+
+
+# ---------------------------------------------------------------------
+# Real HF Hub fetch — runs once, then hits cache.
+# ---------------------------------------------------------------------
+
+@pytest.mark.network
+class TestRealModelSmoke:
+    def test_renders_with_real_au_mesh_model(self, monkeypatch):
+        """End-to-end: clear the cached PLS model so load_face_mesh_viz_model
+        actually fetches from HF Hub, then render a figure with a non-trivial
+        AU activation. Verifies real predict + figure construction round-trips."""
+        monkeypatch.setattr(plt_mod, "_PLS_V2_MESH_MODEL", None)
+        au = np.zeros(20, dtype=np.float32)
+        # AU12 (smile) — index 9 in AU_LANDMARK_MAP['Feat']
+        au[9] = 3.0
+        fig = plot_face_mesh_plotly(au=au)
+        # One trace, dense tessellation by default
+        assert len(fig.data) == 1
+        assert len(fig.data[0].x) == 3 * N_TESSELATION_EDGES
+        # Sanity: scene has finite axis ranges (no NaN propagation)
+        z_range = fig.layout.scene.zaxis.range
+        assert all(np.isfinite(z_range))

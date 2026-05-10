@@ -1666,8 +1666,10 @@ def plot_face_mesh_plotly(
             ``predict_mesh_from_dlib68``). Mutually exclusive with ``au``.
         mode: which connection set to draw —
 
-            - ``'tesselation'`` (default): the 2,556-edge MP tessellation;
-              shows the full mesh structure and looks dense / 3D.
+            - ``'tesselation'`` (or ``'tessellation'``, default): the
+              2,556-edge MP tessellation; shows the full mesh structure
+              and looks dense / 3D. (MediaPipe's upstream constant uses
+              the single-l spelling; both are accepted.)
             - ``'contours'``: the 124-edge canonical contours (lips + eyes
               + eyebrows + face oval); matches ``plot_face_mesh``.
 
@@ -1703,12 +1705,18 @@ def plot_face_mesh_plotly(
                 "plot_face_mesh_plotly expects a single AU vector; pass one face at a time."
             )
 
-    if mode == "tesselation":
+    # MediaPipe's constant uses the single-l "tesselation" spelling; accept
+    # the standard English "tessellation" too so users typing either land
+    # in the right place.
+    if mode in ("tesselation", "tessellation"):
         connections = FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION
     elif mode == "contours":
         connections = FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS
     else:
-        raise ValueError(f"mode must be 'tesselation' or 'contours'; got {mode!r}")
+        raise ValueError(
+            f"mode must be 'tesselation' (or 'tessellation') or 'contours'; "
+            f"got {mode!r}"
+        )
 
     # Apply same data → mpl axis swap as plot_face_mesh so face is upright.
     xs = verts[:, 0]
