@@ -45,3 +45,15 @@ Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 ## Identity detection
 
 - **`facenet`: FaceNet: A unified embedding for face recognition and clustering ([Schroff et al, 2015](https://arxiv.org/abs/1503.03832))**. Inception Resnet (V1) pretrained on VGGFace2 and CASIA-Webface.
+
+## Visualization & translation models
+
+These linear PLS / PCA models translate between the different feature spaces py-feat works in. They are not face detectors — they take detector outputs (AUs, blendshapes, landmarks) and produce other view-friendly representations. All four are versioned at `py-feat/<repo>` on HuggingFace and downloaded on first use.
+
+- **`bs_to_au`** ([`py-feat/bs_to_au`](https://huggingface.co/py-feat/bs_to_au)). PLS regression mapping the 52 MediaPipe / ARKit blendshapes (`MPDetector` output) to the 20 FACS AU intensities used by py-feat. Lets `MPDetector` surface AU columns alongside its blendshapes. Trained on ~350K paired frames from 10K CelebV-HQ celebrity videos. OOS variance-weighted R² = 0.236 ± 0.008 (3-fold GroupKFold by video). On a DISFA+ benchmark (n=57,150 frames, 12 labeled AUs) this beats both the standard xgb-on-dlib baseline and an alternative MP-mesh→68→xgb path on mean Pearson r (0.51 vs 0.40 vs 0.49).
+
+- **`au_to_landmarks`** ([`py-feat/au_to_landmarks`](https://huggingface.co/py-feat/au_to_landmarks)). PLS regression for the AU → 68-pt dlib-style landmark visualization (`feat.plotting.plot_face`, `feat.plotting.predict`). The repo hosts both the v2 model (default, trained on ~10K CelebV-HQ wild-celebrity videos with pose covariates; OOS R² = 0.794) and the legacy v1 model for backwards-compatible loading via `load_viz_model("pyfeat_aus_to_landmarks")`.
+
+- **`au_to_mesh`** ([`py-feat/au_to_mesh`](https://huggingface.co/py-feat/au_to_mesh)). PLS regression for AU → 478-vertex MediaPipe FaceMesh, consumed by `plot_face_mesh` and `predict_face_mesh`. Output lives in a pose-canonical Procrustes-aligned frame (units: GPA-aligned cm). Trained on ~344K paired frames; OOS R² = 0.244 (with pose covariates).
+
+- **`landmarks68_to_mesh478`** ([`py-feat/landmarks68_to_mesh478`](https://huggingface.co/py-feat/landmarks68_to_mesh478)). PCA-bottleneck linear regression mapping 68-pt dlib landmarks (`Detector` output) to the 478-vertex MP mesh. Used by `predict_mesh_from_dlib68` so users with a `Detector` Fex can render the 3D mesh without a separate `MPDetector` pass. Trained on ~340K paired frames; OOS R² = 0.479 — substantially higher than the AU → mesh model because dlib landmarks share rich spatial information with the MP mesh that 20 AU intensities can't encode.
