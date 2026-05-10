@@ -1640,6 +1640,136 @@ def plot_face_mesh(
     return ax
 
 
+def plot_face_mesh_plotly(
+    au=None,
+    model=None,
+    color="black",
+    line_width=1.5,
+    opacity=0.85,
+    background="white",
+    *,
+    mesh=None,
+    mode="tesselation",
+):
+    """Interactive 3D face mesh as a Plotly figure. Opt-in alternative to ``plot_face_mesh``.
+
+    Renders the 478-vertex MP face mesh as a wireframe in an interactive
+    Plotly 3D scene the user can rotate, pan, and zoom. Same data sources
+    as ``plot_face_mesh``: pass ``au`` for an AU→mesh PLS prediction, ``mesh``
+    for a precomputed ``(478, 3)`` array, or neither for the rest mesh.
+
+    Args:
+        au: AU intensity vector ``(20,)`` in ``AU_LANDMARK_MAP['Feat']`` order.
+        model: optional ``PLSAUMeshModel`` for the ``au`` path.
+        color, line_width, opacity, background: scene styling.
+        mesh: keyword-only. Precomputed ``(478, 3)`` mesh (e.g., from
+            ``predict_mesh_from_dlib68``). Mutually exclusive with ``au``.
+        mode: which connection set to draw —
+
+            - ``'tesselation'`` (or ``'tessellation'``, default): the
+              2,556-edge MP tessellation; shows the full mesh structure
+              and looks dense / 3D. (MediaPipe's upstream constant uses
+              the single-l spelling; both are accepted.)
+            - ``'contours'``: the 124-edge canonical contours (lips + eyes
+              + eyebrows + face oval); matches ``plot_face_mesh``.
+
+    Returns:
+        ``plotly.graph_objects.Figure``. Call ``.show()`` to render in a
+        browser/notebook, or ``.write_html(path)`` / ``.write_image(path)``
+        to persist.
+
+    Coordinate frame: matches ``plot_face_mesh`` — data ``(X, Y, Z)`` is
+    mapped to Plotly ``(X, Z, Y)`` so the face renders upright with depth
+    into the screen under the default camera.
+    """
+    import plotly.graph_objects as go
+    from feat.utils.mp_plotting import FaceLandmarksConnections
+
+    if mesh is not None and au is not None:
+        raise ValueError("pass either `au` or `mesh`, not both")
+
+    if mesh is not None:
+        verts = np.asarray(mesh, dtype=np.float32)
+        if verts.shape != (478, 3):
+            raise ValueError(
+                f"mesh must have shape (478, 3); got {verts.shape}."
+            )
+    elif au is None:
+        if model is None:
+            model = load_face_mesh_viz_model()
+        verts = model.mean_aligned_mesh
+    else:
+        verts = predict_face_mesh(au, model=model)
+        if verts.ndim != 2:
+            raise ValueError(
+                "plot_face_mesh_plotly expects a single AU vector; pass one face at a time."
+            )
+
+    # MediaPipe's constant uses the single-l "tesselation" spelling; accept
+    # the standard English "tessellation" too so users typing either land
+    # in the right place.
+    if mode in ("tesselation", "tessellation"):
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION
+    elif mode == "contours":
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS
+    else:
+        raise ValueError(
+            f"mode must be 'tesselation' (or 'tessellation') or 'contours'; "
+            f"got {mode!r}"
+        )
+
+    # Apply same data → mpl axis swap as plot_face_mesh so face is upright.
+    xs = verts[:, 0]
+    ys = verts[:, 2]
+    zs = verts[:, 1]
+
+    # Build a single Scatter3d trace with NaN separators between line
+    # segments — much faster than emitting one trace per edge for the
+    # 2,556-edge tessellation.
+    n_edges = len(connections)
+    seg_x = np.empty(3 * n_edges, dtype=np.float32)
+    seg_y = np.empty(3 * n_edges, dtype=np.float32)
+    seg_z = np.empty(3 * n_edges, dtype=np.float32)
+    nan = np.float32(np.nan)
+    for i, conn in enumerate(connections):
+        a, b = conn.start, conn.end
+        seg_x[3 * i] = xs[a]; seg_x[3 * i + 1] = xs[b]; seg_x[3 * i + 2] = nan
+        seg_y[3 * i] = ys[a]; seg_y[3 * i + 1] = ys[b]; seg_y[3 * i + 2] = nan
+        seg_z[3 * i] = zs[a]; seg_z[3 * i + 1] = zs[b]; seg_z[3 * i + 2] = nan
+
+    fig = go.Figure(
+        data=go.Scatter3d(
+            x=seg_x, y=seg_y, z=seg_z,
+            mode="lines",
+            line=dict(color=color, width=line_width),
+            opacity=opacity,
+            showlegend=False,
+            hoverinfo="skip",
+        )
+    )
+
+    # Equal-aspect bounds so the face isn't visually squashed.
+    extents = np.array([
+        [xs.min(), xs.max()],
+        [ys.min(), ys.max()],
+        [zs.min(), zs.max()],
+    ])
+    centers = extents.mean(axis=1)
+    half = (extents[:, 1] - extents[:, 0]).max() / 2
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(visible=False, range=[centers[0] - half, centers[0] + half]),
+            yaxis=dict(visible=False, range=[centers[1] - half, centers[1] + half]),
+            zaxis=dict(visible=False, range=[centers[2] - half, centers[2] + half]),
+            aspectmode="cube",
+            bgcolor=background,
+        ),
+        margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor=background,
+    )
+    return fig
+
+
 # ---------------------------------------------------------------------
 # 68-pt dlib landmarks → 478-vertex MediaPipe FaceMesh bridge.
 # Lets users with a Detector Fex (mobilefacenet 68-pt) reconstruct an
