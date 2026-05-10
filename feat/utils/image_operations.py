@@ -1258,6 +1258,78 @@ def inverse_transform_landmarks_torch(landmarks, boxes):
     return transformed_landmarks.reshape(N, N_landmarks)
 
 
+def procrustes_align_2d_batched(coords, anchor_idx, ref_anchors):
+    """Batched 2D Umeyama similarity alignment to a fixed reference frame.
+
+    For each face, finds the rigid + isotropic-scale transform that best maps
+    its anchor subset to ``ref_anchors`` (least-squares), then applies that
+    transform to all of the face's landmarks. Mirrors the helper used at
+    py-feat training time so inference and training canonicalize landmarks
+    in the same frame.
+
+    Used by the dlib-68 → MP-478 bridge in ``feat.plotting`` and any other
+    consumer that needs to align landmarks to a saved reference (e.g.,
+    cross-detector landmark normalization). Numpy / float64 internally for
+    SVD stability; output cast to float32.
+
+    Args:
+        coords: ``(n, K, 2)`` raw 2-D landmarks per face. ``K`` is whatever
+            number of points the caller carries (e.g., 68 for dlib).
+        anchor_idx: ``(k,)`` int indices selecting stable anchor points
+            from each face's K landmarks.
+        ref_anchors: ``(k, 2)`` reference anchor positions in the target
+            frame (e.g., a population-mean canonical pose).
+
+    Returns:
+        ``(n, K, 2)`` aligned landmarks in the reference frame. Same dtype
+        as the input (after promotion to float32).
+
+    Raises:
+        ValueError: if ``coords`` is not 3-D with last-dim 2, or if
+            ``anchor_idx`` does not match ``ref_anchors`` length.
+    """
+    coords = np.asarray(coords, dtype=np.float32)
+    if coords.ndim != 3 or coords.shape[-1] != 2:
+        raise ValueError(
+            f"coords must have shape (n, K, 2); got {coords.shape}"
+        )
+    anchor_idx = np.asarray(anchor_idx, dtype=np.int64)
+    ref_anchors = np.asarray(ref_anchors, dtype=np.float32)
+    if ref_anchors.shape != (anchor_idx.shape[0], 2):
+        raise ValueError(
+            f"ref_anchors shape {ref_anchors.shape} must be "
+            f"({anchor_idx.shape[0]}, 2) to match anchor_idx length."
+        )
+    N = coords.shape[0]
+    P = coords[:, anchor_idx]  # (N, k, 2)
+    P_mean = P.mean(axis=1, keepdims=True)
+    Q_mean = ref_anchors.mean(axis=0)
+    P_c = P - P_mean
+    Q_c = ref_anchors - Q_mean
+    # SVD in float64 for numerical stability; small (2x2) so cheap regardless.
+    H = np.einsum("ki,nkj->nij", Q_c.astype(np.float64), P_c.astype(np.float64))
+    U, S, Vt = np.linalg.svd(H)
+    UVt = U @ Vt
+    det = np.linalg.det(UVt)
+    d = np.where(det < 0, -1.0, 1.0)
+    D = np.zeros((N, 2, 2), dtype=np.float64)
+    D[:, 0, 0] = 1.0
+    D[:, 1, 1] = d
+    R = U @ D @ Vt
+    var_P = (P_c.astype(np.float64) ** 2).sum(axis=(1, 2))
+    s_num = (S * np.stack([np.ones(N), d], axis=1)).sum(axis=1)
+    s = s_num / np.maximum(var_P, 1e-12)
+    P_mean_sq = P_mean.squeeze(1).astype(np.float64)
+    Rp = np.einsum("nij,nj->ni", R, P_mean_sq)
+    t = Q_mean.astype(np.float64)[None] - s[:, None] * Rp
+    coords_64 = coords.astype(np.float64)
+    aligned = (
+        s[:, None, None] * np.einsum("nvi,nji->nvj", coords_64, R)
+        + t[:, None, :]
+    )
+    return aligned.astype(np.float32)
+
+
 def extract_hog_features(extracted_faces, landmarks, hog_layer=None):
     """Extract HOG features for AU classification using torch-native HOGLayer.
 

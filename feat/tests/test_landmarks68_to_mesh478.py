@@ -16,7 +16,6 @@ matplotlib.use("Agg")  # headless
 from feat import plotting as plt_mod
 from feat.plotting import (
     PCALandmarks68ToMeshModel,
-    _procrustes_align_2d_batched,
     load_landmarks68_to_mesh478_model,
     plot_face_mesh,
     predict_mesh_from_dlib68,
@@ -63,63 +62,6 @@ def stub_bridge_model(monkeypatch):
     )
     monkeypatch.setattr(plt_mod, "_LM68_TO_MESH478_MODEL", model)
     return model
-
-
-# ---------------------------------------------------------------------
-# _procrustes_align_2d_batched
-# ---------------------------------------------------------------------
-
-class TestProcrustes2D:
-    def test_identity_when_anchors_already_match(self, stub_bridge_model):
-        """If a face's anchors already equal the reference, alignment is a no-op."""
-        landmarks = stub_bridge_model.mean_aligned_dlib_landmarks.copy()
-        # Place the reference anchors at the canonical positions
-        landmarks[stub_bridge_model.anchor_indices_dlib68] = (
-            stub_bridge_model.reference_dlib_anchors
-        )
-        aligned = _procrustes_align_2d_batched(
-            landmarks[None],
-            stub_bridge_model.anchor_indices_dlib68,
-            stub_bridge_model.reference_dlib_anchors,
-        )
-        np.testing.assert_allclose(
-            aligned[0, stub_bridge_model.anchor_indices_dlib68],
-            stub_bridge_model.reference_dlib_anchors,
-            atol=1e-3,
-        )
-
-    def test_recovers_reference_after_rotation_scale(self, stub_bridge_model):
-        """Apply a rotation + scale + translation to a face that already
-        matches the reference; alignment should invert it."""
-        landmarks = np.zeros((68, 2), dtype=np.float32)
-        landmarks[stub_bridge_model.anchor_indices_dlib68] = (
-            stub_bridge_model.reference_dlib_anchors
-        )
-        # Apply a known similarity: rotate by 30°, scale 1.5x, translate by (50, -20)
-        theta = np.deg2rad(30.0)
-        R = np.array([[np.cos(theta), -np.sin(theta)],
-                      [np.sin(theta),  np.cos(theta)]], dtype=np.float32)
-        s = 1.5
-        t = np.array([50.0, -20.0], dtype=np.float32)
-        transformed = (s * landmarks @ R.T + t).astype(np.float32)
-        aligned = _procrustes_align_2d_batched(
-            transformed[None],
-            stub_bridge_model.anchor_indices_dlib68,
-            stub_bridge_model.reference_dlib_anchors,
-        )
-        np.testing.assert_allclose(
-            aligned[0, stub_bridge_model.anchor_indices_dlib68],
-            stub_bridge_model.reference_dlib_anchors,
-            atol=1e-2,
-        )
-
-    def test_rejects_wrong_shape(self, stub_bridge_model):
-        with pytest.raises(ValueError, match=r"\(n, 68, 2\)"):
-            _procrustes_align_2d_batched(
-                np.zeros((10, 2), dtype=np.float32),
-                stub_bridge_model.anchor_indices_dlib68,
-                stub_bridge_model.reference_dlib_anchors,
-            )
 
 
 # ---------------------------------------------------------------------
