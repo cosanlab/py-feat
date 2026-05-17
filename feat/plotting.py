@@ -1944,14 +1944,31 @@ def plot_face_mesh_plotly(
         origin, direction, length = _gaze_arrow_in_mesh_frame(
             verts, pitch_rad, yaw_rad, length_frac=gaze_length_frac,
         )
-        end_pt = origin + length * direction
-        # Data → plotly axis swap (x, z, y) so arrow lives in same scene as mesh.
+        # Shaft from origin to ~80% of the arrow length, then a Cone tip
+        # for the remaining 20%. Scatter3d alone has no arrowhead and
+        # marker symbols don't render as directional in 3D, so the cone
+        # is what makes this read as an arrow rather than a stick.
+        shaft_end = origin + length * 0.8 * direction
+        tip_base = origin + length * direction
+        face_h = float(verts[:, 1].max() - verts[:, 1].min())
+        cone_size = face_h * 0.08  # arrowhead diameter relative to face
+        # Data → plotly axis swap (x, z, y) for both traces.
         traces.append(go.Scatter3d(
-            x=[origin[0], end_pt[0]], y=[origin[2], end_pt[2]], z=[origin[1], end_pt[1]],
-            mode="lines+markers",
-            line=dict(color=gaze_color, width=line_width * 3),
-            marker=dict(size=[1, 5], color=gaze_color, symbol=["circle", "diamond"]),
+            x=[origin[0], shaft_end[0]],
+            y=[origin[2], shaft_end[2]],
+            z=[origin[1], shaft_end[1]],
+            mode="lines",
+            line=dict(color=gaze_color, width=10),
             showlegend=False, hoverinfo="skip",
+        ))
+        traces.append(go.Cone(
+            x=[shaft_end[0]], y=[shaft_end[2]], z=[shaft_end[1]],
+            u=[(tip_base[0] - shaft_end[0])],
+            v=[(tip_base[2] - shaft_end[2])],
+            w=[(tip_base[1] - shaft_end[1])],
+            sizemode="absolute", sizeref=cone_size, anchor="tail",
+            colorscale=[[0, gaze_color], [1, gaze_color]],
+            showscale=False, showlegend=False, hoverinfo="skip",
         ))
 
     fig = go.Figure(data=traces)
