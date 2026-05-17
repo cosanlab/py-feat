@@ -980,9 +980,18 @@ def plot_face(
         landmarks = _symmetrize_dlib68(landmarks)
     currx, curry = [landmarks[x, :] for x in range(2)]
 
+    # Decide whether to manage viewport ourselves. Yes if we own the axis
+    # (created it) OR if the caller handed us a blank axis (e.g.,
+    # plt.subplots in the vectorfield demo). No if the host axis already
+    # has data (e.g., plot_detections having called imshow on the original
+    # image first — the host's coord system is intentional and we shouldn't
+    # override it).
     owns_axis = ax is None
     if ax is None:
         ax = _create_empty_figure()
+        host_had_data = False
+    else:
+        host_had_data = ax.has_data()
 
     if muscles is not None:
         if muscles is True:
@@ -1038,12 +1047,13 @@ def plot_face(
     # calibrated for the v1 viz model; the v2 PLSAULandmarkModel (PR #301)
     # returns landmarks in a different range, so a hardcoded viewport drew
     # everything off-screen.
-    if owns_axis:
-        # Only manage viewport/aspect when we created the figure ourselves.
-        # When plot_face is called with an externally-provided axis (e.g.,
-        # from Fex.plot_detections embedding the synthetic face inside an
-        # original-image axis), the caller controls scaling and positioning;
-        # touching it here would fight with their layout.
+    if not host_had_data:
+        # Manage viewport/aspect when (a) we created the figure ourselves
+        # or (b) the caller passed an externally-allocated but empty axis
+        # (e.g., the vectorfield demo's plt.subplots axes). Skip when the
+        # host axis already has data — e.g., Fex.plot_detections having
+        # called imshow on the original image first — because the host's
+        # coord system is intentional and our viewport would fight it.
         ax.relim(visible_only=True)
         (xmin, xmax) = ax.dataLim.intervalx
         (ymin, ymax) = ax.dataLim.intervaly
