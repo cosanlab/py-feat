@@ -1808,6 +1808,14 @@ def plot_face_mesh(
         segments, colors=color, linewidths=linewidth, alpha=alpha,
     ))
 
+    # Iris markers — small dark spheres at the MP iris-center landmarks so
+    # the eyes don't look empty. Same data → mpl axis swap (x, z, y).
+    iris_idx = [_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER]
+    ax.scatter(
+        verts[iris_idx, 0], verts[iris_idx, 2], verts[iris_idx, 1],
+        c="black", s=40, depthshade=False,
+    )
+
     if gaze is not None:
         pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
         origin, direction, length = _gaze_arrow_in_mesh_frame(
@@ -1947,6 +1955,18 @@ def plot_face_mesh_plotly(
         hoverinfo="skip",
     )]
 
+    # Iris markers — small dark dots at the MP iris-center landmarks so the
+    # eyes don't look like empty sockets. Data → plotly axis swap (x, z, y).
+    iris_x = verts[[_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER], 0]
+    iris_y = verts[[_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER], 2]
+    iris_z = verts[[_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER], 1]
+    traces.append(go.Scatter3d(
+        x=iris_x, y=iris_y, z=iris_z,
+        mode="markers",
+        marker=dict(color="black", size=6),
+        showlegend=False, hoverinfo="skip",
+    ))
+
     if gaze is not None:
         pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
         origin, direction, length = _gaze_arrow_in_mesh_frame(
@@ -2007,6 +2027,15 @@ def plot_face_mesh_plotly(
 # outer corner). Midpoint is a stable origin for the gaze arrow in the
 # mesh's pose-canonical frame.
 _MP_OUTER_CANTHI = (33, 263)
+
+# MP-478 iris landmarks (the +10 vertices MediaPipe added when iris-tracking
+# is enabled). 468-472 = left iris (center + 4 contour ring points),
+# 473-477 = right iris. py-feat's au_to_mesh model is trained to output
+# these too, so we can render filled "eyes" instead of empty sockets.
+_MP_IRIS_LEFT_CENTER = 468
+_MP_IRIS_LEFT_RING = (469, 470, 471, 472)
+_MP_IRIS_RIGHT_CENTER = 473
+_MP_IRIS_RIGHT_RING = (474, 475, 476, 477)
 
 
 def _gaze_arrow_in_mesh_frame(verts, pitch_rad, yaw_rad, length_frac=0.3):
@@ -2354,13 +2383,27 @@ def animate_face_mesh_plotly(
             hoverinfo="skip",
         )
 
+    def _iris_trace(verts):
+        # Iris-center markers so the eyes aren't empty sockets. Same
+        # axis swap (data X,Y,Z) → (plotly X, Z, Y).
+        idx = [_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER]
+        return go.Scatter3d(
+            x=verts[idx, 0], y=verts[idx, 2], z=verts[idx, 1],
+            mode="markers",
+            marker=dict(color="black", size=6),
+            showlegend=False, hoverinfo="skip",
+        )
+
     frames = [
-        go.Frame(data=[_scatter(all_xs[i], all_ys[i], all_zs[i])], name=str(i))
+        go.Frame(
+            data=[_scatter(all_xs[i], all_ys[i], all_zs[i]), _iris_trace(meshes[i])],
+            name=str(i),
+        )
         for i in range(len(meshes))
     ]
 
     fig = go.Figure(
-        data=[_scatter(all_xs[0], all_ys[0], all_zs[0])],
+        data=[_scatter(all_xs[0], all_ys[0], all_zs[0]), _iris_trace(meshes[0])],
         frames=frames,
     )
     updatemenus, sliders = _plotly_animation_controls(len(meshes), fps)
