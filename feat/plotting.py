@@ -2052,10 +2052,12 @@ _MP_IRIS_RIGHT_RING = (474, 475, 476, 477)
 def _iris_mesh_traces_plotly(verts, color="#b08868"):
     """Build go.Mesh3d traces for the iris disks (left + right).
 
-    Each iris is a small triangle fan: center landmark + 4 contour
-    landmarks, giving 4 triangles. Using true 3D surface geometry instead
-    of Scatter3d markers means the iris rotates with the face and gets
-    correctly occluded by the mesh when the face turns to profile.
+    MP supplies only 4 contour landmarks per iris, which fans to a
+    diamond shape with visible triangle edges. We interpolate midpoints
+    between adjacent contour landmarks (pulled out to the same radius
+    from center) to get an 8-vertex ring → 8-triangle fan that reads as
+    a smoother disk. True 3D Mesh3d surface so the iris rotates with
+    the face and gets correctly occluded in profile view.
     Data → plotly axis swap (X, Y, Z) → (X, Z, Y).
     """
     import plotly.graph_objects as go
@@ -2064,12 +2066,28 @@ def _iris_mesh_traces_plotly(verts, color="#b08868"):
         (_MP_IRIS_LEFT_CENTER, _MP_IRIS_LEFT_RING),
         (_MP_IRIS_RIGHT_CENTER, _MP_IRIS_RIGHT_RING),
     ):
-        idx = (center_idx,) + ring_idx  # 5 vertices: center + 4 ring
-        pts = verts[list(idx)]
-        # Triangle fan: (0, 1, 2), (0, 2, 3), (0, 3, 4), (0, 4, 1)
-        i_tri = [0, 0, 0, 0]
-        j_tri = [1, 2, 3, 4]
-        k_tri = [2, 3, 4, 1]
+        center = verts[center_idx]
+        ring = verts[list(ring_idx)]  # (4, 3)
+        # Midpoints between adjacent ring points, pulled out to the iris
+        # radius so they sit on the disk boundary instead of a chord.
+        ring_radius = float(np.mean(np.linalg.norm(ring - center, axis=1)))
+        mids = []
+        for k in range(4):
+            mid = (ring[k] + ring[(k + 1) % 4]) / 2.0
+            # Push midpoint outward from center to the ring radius.
+            r_to_mid = mid - center
+            mid_pulled = center + r_to_mid * (ring_radius / max(np.linalg.norm(r_to_mid), 1e-6))
+            mids.append(mid_pulled)
+        mids = np.stack(mids)
+        # 9 vertices: 0 = center, 1-4 = original ring, 5-8 = midpoints.
+        # Triangle fan in order: ring[0], mid[0], ring[1], mid[1], ..., ring[0]
+        pts = np.vstack([center[None, :], ring, mids])
+        ordered = [1, 5, 2, 6, 3, 7, 4, 8]  # indices in pts for the 8 perimeter points
+        i_tri, j_tri, k_tri = [], [], []
+        for k in range(8):
+            i_tri.append(0)
+            j_tri.append(ordered[k])
+            k_tri.append(ordered[(k + 1) % 8])
         traces.append(go.Mesh3d(
             x=pts[:, 0], y=pts[:, 2], z=pts[:, 1],
             i=i_tri, j=j_tri, k=k_tri,
@@ -2085,10 +2103,15 @@ def _iris_pupil_positions(verts, pitch_rad=None, yaw_rad=None):
     """Compute iris and pupil center positions for both eyes, optionally
     shifted in the gaze direction so the eyes visually track the gaze.
 
+    The pupil is also pushed forward (+Z, out of face) by 20% of iris
+    radius so it consistently renders in front of the iris Mesh3d disk
+    instead of getting partially clipped by plotly's depth test when
+    iris and pupil share the same Z plane.
+
     Returns:
         iris_centers: (2, 3) array of [left_iris, right_iris] center coords
-        pupil_centers: (2, 3) array — same as iris by default, shifted
-            laterally + vertically by ~40% of iris radius when gaze given
+        pupil_centers: (2, 3) array — iris centers + forward Z offset,
+            additionally shifted laterally + vertically when gaze given
         iris_radii: (2,) array of per-eye iris radii (mean distance from
             iris-center landmark to its 4 ring landmarks)
     """
@@ -2100,12 +2123,14 @@ def _iris_pupil_positions(verts, pitch_rad=None, yaw_rad=None):
     iris_radii = np.array([r_l, r_r], dtype=np.float32)
 
     pupil_centers = iris_centers.copy()
+    # Push pupil forward (out of face) so it renders cleanly in front of
+    # the iris Mesh3d regardless of camera angle.
+    pupil_centers[:, 2] += iris_radii * 0.20
     if pitch_rad is not None and yaw_rad is not None:
         # Shift pupil within the iris by a fraction of iris radius, in the
-        # direction of gaze. Z component would push the pupil into/out of
-        # the face plane, which has no visible effect under the default
-        # front-on camera, so we drop it and use only the lateral + vertical
-        # components — same convention as matplotlib plot_face's gaze 4-vec.
+        # direction of gaze. Drop the Z component — Z is depth and has no
+        # visible 2D effect under the default front-on camera; same
+        # convention as matplotlib plot_face's gaze 4-vec.
         cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
         cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
         gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
