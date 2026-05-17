@@ -1058,21 +1058,19 @@ def plot_face(
         (xmin, xmax) = ax.dataLim.intervalx
         (ymin, ymax) = ax.dataLim.intervaly
         x_pad = (xmax - xmin) * 0.15
-        # Asymmetric vertical padding: lots of room above the brows
-        # (forehead the v2 model doesn't render) and a bit below the chin.
-        # Targets the eye line at roughly 60% from the top of the frame
-        # for natural face proportions. adjustable='box' below honors
-        # these limits exactly and instead shrinks the axes' position
-        # within the figure to satisfy the aspect lock — face stays
-        # large, axes stays where requested.
-        y_top_pad = (ymax - ymin) * 0.55
-        y_bot_pad = (ymax - ymin) * 0.10
+        # Mostly symmetric padding with a slight top bias for forehead
+        # feel. adjustable='datalim' (below) keeps every axes the same
+        # physical size in the figure — so side-by-side plot_face panels
+        # have consistent dimensions even when their data ranges differ
+        # (e.g., vectorfield demo's Neutral vs Raised inner brow). The
+        # cost is that asymmetric padding gets partially eaten back by
+        # datalim's symmetric expansion to satisfy the aspect lock, so
+        # the eye position ends up close to vertical center regardless.
+        y_top_pad = (ymax - ymin) * 0.25
+        y_bot_pad = (ymax - ymin) * 0.15
         ax.set_xlim(xmin - x_pad, xmax + x_pad)
         ax.set_ylim(ymin - y_top_pad, ymax + y_bot_pad)
-        # Preserve true aspect ratio so the face isn't stretched by figsize
-        # mismatch (data is roughly square but default figsize=(4,5) is taller
-        # than wide, which used to produce a thin-and-tall face).
-        ax.set_aspect("equal", adjustable="box")
+        ax.set_aspect("equal", adjustable="datalim")
 
     # Always ensure image-coords y orientation (forehead = small y at top,
     # chin = large y at bottom). plot_face's landmarks live in image-coord
