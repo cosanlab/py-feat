@@ -1048,17 +1048,21 @@ def plot_face(
         (xmin, xmax) = ax.dataLim.intervalx
         (ymin, ymax) = ax.dataLim.intervaly
         x_pad = (xmax - xmin) * 0.15
-        y_pad = (ymax - ymin) * 0.18
+        # Asymmetric vertical padding: lots of room above the brows
+        # (forehead the v2 model doesn't render) and a bit below the chin.
+        # Targets the eye line at roughly 60% from the top of the frame
+        # for natural face proportions. adjustable='box' below honors
+        # these limits exactly and instead shrinks the axes' position
+        # within the figure to satisfy the aspect lock — face stays
+        # large, axes stays where requested.
+        y_top_pad = (ymax - ymin) * 0.55
+        y_bot_pad = (ymax - ymin) * 0.10
         ax.set_xlim(xmin - x_pad, xmax + x_pad)
-        ax.set_ylim(ymin - y_pad, ymax + y_pad)
+        ax.set_ylim(ymin - y_top_pad, ymax + y_bot_pad)
         # Preserve true aspect ratio so the face isn't stretched by figsize
         # mismatch (data is roughly square but default figsize=(4,5) is taller
         # than wide, which used to produce a thin-and-tall face).
-        # adjustable='datalim' centers the face by expanding whichever axis
-        # needs more range to satisfy the aspect lock, giving symmetric
-        # whitespace around the face — including implicit forehead room
-        # above the brows where the dlib-68 layout has no landmarks.
-        ax.set_aspect("equal", adjustable="datalim")
+        ax.set_aspect("equal", adjustable="box")
 
     # Always ensure image-coords y orientation (forehead = small y at top,
     # chin = large y at bottom). plot_face's landmarks live in image-coord
@@ -2004,6 +2008,55 @@ def _gaze_arrow_in_mesh_frame(verts, pitch_rad, yaw_rad, length_frac=0.3):
     return origin, direction, length
 
 
+def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
+    """Build the updatemenus + sliders block shared by all plotly animations.
+
+    Plotly has no native infinite-loop animation primitive in the Python API,
+    so the Loop button plays a sequence of ``loop_repeats`` cycles back-to-
+    back (essentially infinite for any practical viewing session, and only
+    adds a list of frame-name strings to the figure JSON — negligible bytes).
+
+    Buttons sit below the slider in a horizontal row so they don't overlap
+    the figure title (which y=1.05 placement collided with).
+    """
+    frame_names = [str(i) for i in range(n_frames)]
+    frame_duration_ms = int(1000 / fps)
+    play_opts = dict(
+        frame=dict(duration=frame_duration_ms, redraw=True),
+        transition=dict(duration=0),
+        fromcurrent=True,
+        mode="immediate",
+    )
+    pause_opts = dict(frame=dict(duration=0, redraw=False), mode="immediate")
+    loop_opts = dict(
+        frame=dict(duration=frame_duration_ms, redraw=True),
+        transition=dict(duration=0),
+        fromcurrent=False,
+        mode="immediate",
+    )
+    updatemenus = [dict(
+        type="buttons", direction="right", showactive=False,
+        y=-0.10, x=0.5, xanchor="center", yanchor="top",
+        pad=dict(t=10, r=10, b=10, l=10),
+        buttons=[
+            dict(label="▶ Play", method="animate", args=[None, play_opts]),
+            dict(label="❚❚ Pause", method="animate", args=[[None], pause_opts]),
+            dict(label="↻ Loop",  method="animate",
+                 args=[frame_names * loop_repeats, loop_opts]),
+        ],
+    )]
+    sliders = [dict(
+        active=0, y=0, x=0.05, len=0.9, xanchor="left", yanchor="top",
+        currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
+        steps=[dict(
+            method="animate", label=name,
+            args=[[name], dict(frame=dict(duration=0, redraw=True),
+                               mode="immediate", transition=dict(duration=0))]
+        ) for name in frame_names],
+    )]
+    return updatemenus, sliders
+
+
 # dlib-68 line sequences used by draw_lineface(). Lifted here so the plotly
 # 2D animation can build the same face geometry without owning matplotlib state.
 # Each tuple is a polyline through landmark indices; NaN separates them when
@@ -2123,33 +2176,15 @@ def animate_face_plotly(
         data=[_scatter(*packed[0])],
         frames=frames,
     )
+    updatemenus, sliders = _plotly_animation_controls(len(packed), fps)
     fig.update_layout(
         xaxis=dict(visible=False, range=x_range, scaleanchor="y", scaleratio=1),
         yaxis=dict(visible=False, range=y_range),
-        margin=dict(l=0, r=0, t=30, b=0),
+        margin=dict(l=0, r=0, t=30, b=100),
         paper_bgcolor=background,
         plot_bgcolor=background,
-        updatemenus=[dict(
-            type="buttons", showactive=False, y=1.05, x=0.0, xanchor="left", yanchor="top",
-            buttons=[
-                dict(label="▶ Play", method="animate", args=[None, dict(
-                    frame=dict(duration=frame_duration_ms, redraw=True),
-                    fromcurrent=True, transition=dict(duration=0), mode="immediate"
-                )]),
-                dict(label="❚❚ Pause", method="animate", args=[[None], dict(
-                    frame=dict(duration=0, redraw=False), mode="immediate"
-                )]),
-            ],
-        )],
-        sliders=[dict(
-            active=0, y=0, x=0.05, len=0.9, xanchor="left", yanchor="top",
-            currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
-            steps=[dict(
-                method="animate", label=str(i),
-                args=[[str(i)], dict(frame=dict(duration=0, redraw=True),
-                                     mode="immediate", transition=dict(duration=0))]
-            ) for i in range(len(packed))],
-        )],
+        updatemenus=updatemenus,
+        sliders=sliders,
     )
     return fig
 
@@ -2268,12 +2303,12 @@ def animate_face_mesh_plotly(
         go.Frame(data=[_scatter(all_xs[i], all_ys[i], all_zs[i])], name=str(i))
         for i in range(len(meshes))
     ]
-    frame_duration_ms = int(1000 / fps)
 
     fig = go.Figure(
         data=[_scatter(all_xs[0], all_ys[0], all_zs[0])],
         frames=frames,
     )
+    updatemenus, sliders = _plotly_animation_controls(len(meshes), fps)
     fig.update_layout(
         scene=dict(
             xaxis=dict(visible=False, range=[centers[0] - half, centers[0] + half]),
@@ -2282,29 +2317,10 @@ def animate_face_mesh_plotly(
             aspectmode="cube",
             bgcolor=background,
         ),
-        margin=dict(l=0, r=0, t=30, b=0),
+        margin=dict(l=0, r=0, t=30, b=100),
         paper_bgcolor=background,
-        updatemenus=[dict(
-            type="buttons", showactive=False, y=1.05, x=0.0, xanchor="left", yanchor="top",
-            buttons=[
-                dict(label="▶ Play", method="animate", args=[None, dict(
-                    frame=dict(duration=frame_duration_ms, redraw=True),
-                    fromcurrent=True, transition=dict(duration=0), mode="immediate"
-                )]),
-                dict(label="❚❚ Pause", method="animate", args=[[None], dict(
-                    frame=dict(duration=0, redraw=False), mode="immediate"
-                )]),
-            ],
-        )],
-        sliders=[dict(
-            active=0, y=0, x=0.05, len=0.9, xanchor="left", yanchor="top",
-            currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
-            steps=[dict(
-                method="animate", label=str(i),
-                args=[[str(i)], dict(frame=dict(duration=0, redraw=True),
-                                     mode="immediate", transition=dict(duration=0))]
-            ) for i in range(len(meshes))],
-        )],
+        updatemenus=updatemenus,
+        sliders=sliders,
     )
     return fig
 
