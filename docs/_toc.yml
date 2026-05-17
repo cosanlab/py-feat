@@ -27,6 +27,10 @@ parts:
   - caption: API
     chapters:
       - file: pages/api
+  - caption: Benchmarks
+    chapters:
+      - file: benchmarks/accuracy
+      - file: benchmarks/throughput
   - caption: Contributing
     chapters:
       - file: pages/contribute
