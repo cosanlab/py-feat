@@ -1667,6 +1667,9 @@ def plot_face_mesh(
     *,
     mesh=None,
     mode="contours",
+    gaze=None,
+    gaze_color="gold",
+    gaze_length_frac=0.3,
 ):
     """3D wireframe of the predicted face mesh. Opt-in alternative to ``plot_face``.
 
@@ -1765,6 +1768,19 @@ def plot_face_mesh(
         segments, colors=color, linewidths=linewidth, alpha=alpha,
     ))
 
+    if gaze is not None:
+        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
+        origin, direction, length = _gaze_arrow_in_mesh_frame(
+            verts, pitch_rad, yaw_rad, length_frac=gaze_length_frac,
+        )
+        end_pt = origin + length * direction
+        # Same data → mpl-axis swap (x, z, y) used for the mesh.
+        ax.quiver(
+            origin[0], origin[2], origin[1],
+            (end_pt[0] - origin[0]), (end_pt[2] - origin[2]), (end_pt[1] - origin[1]),
+            color=gaze_color, linewidth=2.0, arrow_length_ratio=0.25,
+        )
+
     # Equal aspect ratio so the face isn't squashed by mpl3d's default scaling.
     extents = np.array([
         [xs.min(), xs.max()],
@@ -1792,6 +1808,9 @@ def plot_face_mesh_plotly(
     *,
     mesh=None,
     mode="tesselation",
+    gaze=None,
+    gaze_color="gold",
+    gaze_length_frac=0.3,
 ):
     """Interactive 3D face mesh as a Plotly figure. Opt-in alternative to ``plot_face_mesh``.
 
@@ -1879,16 +1898,31 @@ def plot_face_mesh_plotly(
         seg_y[3 * i] = ys[a]; seg_y[3 * i + 1] = ys[b]; seg_y[3 * i + 2] = nan
         seg_z[3 * i] = zs[a]; seg_z[3 * i + 1] = zs[b]; seg_z[3 * i + 2] = nan
 
-    fig = go.Figure(
-        data=go.Scatter3d(
-            x=seg_x, y=seg_y, z=seg_z,
-            mode="lines",
-            line=dict(color=color, width=line_width),
-            opacity=opacity,
-            showlegend=False,
-            hoverinfo="skip",
+    traces = [go.Scatter3d(
+        x=seg_x, y=seg_y, z=seg_z,
+        mode="lines",
+        line=dict(color=color, width=line_width),
+        opacity=opacity,
+        showlegend=False,
+        hoverinfo="skip",
+    )]
+
+    if gaze is not None:
+        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
+        origin, direction, length = _gaze_arrow_in_mesh_frame(
+            verts, pitch_rad, yaw_rad, length_frac=gaze_length_frac,
         )
-    )
+        end_pt = origin + length * direction
+        # Data → plotly axis swap (x, z, y) so arrow lives in same scene as mesh.
+        traces.append(go.Scatter3d(
+            x=[origin[0], end_pt[0]], y=[origin[2], end_pt[2]], z=[origin[1], end_pt[1]],
+            mode="lines+markers",
+            line=dict(color=gaze_color, width=line_width * 3),
+            marker=dict(size=[1, 5], color=gaze_color, symbol=["circle", "diamond"]),
+            showlegend=False, hoverinfo="skip",
+        ))
+
+    fig = go.Figure(data=traces)
 
     # Equal-aspect bounds so the face isn't visually squashed.
     extents = np.array([
@@ -1908,6 +1942,341 @@ def plot_face_mesh_plotly(
         ),
         margin=dict(l=0, r=0, t=0, b=0),
         paper_bgcolor=background,
+    )
+    return fig
+
+
+# MP-478 mesh: outer-canthi landmark indices (anatomical-left / -right eye
+# outer corner). Midpoint is a stable origin for the gaze arrow in the
+# mesh's pose-canonical frame.
+_MP_OUTER_CANTHI = (33, 263)
+
+
+def _gaze_arrow_in_mesh_frame(verts, pitch_rad, yaw_rad, length_frac=0.3):
+    """Return (origin, direction, length) for a gaze arrow on a 478-vertex MP mesh.
+
+    Origin: midpoint of outer-canthi landmarks (33, 263) — a stable per-frame
+    anchor that doesn't drift with eyelid AUs.
+
+    Direction in the mesh's (+X lateral-to-viewer's-left, +Y up, +Z out-of-face)
+    frame from L2CS (pitch, yaw) head-centric Euler angles. Positive pitch =
+    looking up; positive yaw = turning head/eyes to the subject's right
+    (which is the viewer's left, i.e., -X in the mesh frame).
+
+    Length: ``length_frac`` of the face Y-extent (chin-to-forehead) so the
+    arrow scales with whatever face size the mesh model produces.
+    """
+    origin = (verts[_MP_OUTER_CANTHI[0]] + verts[_MP_OUTER_CANTHI[1]]) / 2.0
+    cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
+    cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+    # Subject's-right yaw → viewer's-left → -X direction in mesh frame.
+    direction = np.array([-sy * cp, sp, cy * cp], dtype=np.float32)
+    face_h = float(verts[:, 1].max() - verts[:, 1].min())
+    length = face_h * length_frac
+    return origin, direction, length
+
+
+# dlib-68 line sequences used by draw_lineface(). Lifted here so the plotly
+# 2D animation can build the same face geometry without owning matplotlib state.
+# Each tuple is a polyline through landmark indices; NaN separates them when
+# packed into a single Plotly Scatter trace.
+_DLIB68_LINE_PATHS = (
+    tuple(range(0, 17)),                                            # jaw / face outline
+    (17, 18, 19, 20, 21),                                           # left eyebrow
+    (22, 23, 24, 25, 26),                                           # right eyebrow
+    (27, 28, 29, 30),                                               # nose bridge
+    (31, 32, 33, 34, 35),                                           # nose bottom
+    (36, 37, 38, 39, 40, 41, 36),                                   # left eye
+    (42, 43, 44, 45, 46, 47, 42),                                   # right eye
+    (48, 49, 50, 51, 52, 53, 54, 64, 63, 62, 61, 60, 48),           # lips outer top + inner top
+    (48, 60, 67, 66, 65, 64, 54, 55, 56, 57, 58, 59, 48),           # lips inner bottom + outer bottom
+)
+
+
+def animate_face_plotly(
+    start,
+    end,
+    num_frames=24,
+    fps=15,
+    include_reverse=True,
+    model=None,
+    color="black",
+    line_width=1.5,
+    background="white",
+    symmetrize=True,
+):
+    """Interactive 2D 68-pt face-landmark animation in Plotly.
+
+    Returns a Plotly ``Figure`` with frames + play/pause + slider, animating
+    the legacy ``plot_face`` line geometry between ``start`` and ``end`` AU
+    vectors. Complements ``animate_face`` (matplotlib GIF) and
+    ``animate_face_mesh_plotly`` (3D mesh).
+
+    The plotly version is handy for live notebook exploration when you
+    don't want to write a GIF file — and unlike matplotlib's celluloid
+    path, the animation keeps the figure interactive (pan, zoom, scrub
+    via the slider).
+
+    Args:
+        start: AU intensity vector ``(20,)`` at frame 0.
+        end: AU intensity vector ``(20,)`` at the peak.
+        num_frames: frames in the start→end half (cubic-eased).
+        fps: playback rate (sets per-frame transition duration).
+        include_reverse: append end→start so the loop returns to neutral.
+        model: optional viz model override (defaults to the cached v2
+            ``PLSAULandmarkModel``; same default as ``plot_face``).
+        color, line_width, background: scene styling.
+        symmetrize: mirror-average each frame's predicted landmarks so the
+            animation stays clean even when the underlying model is
+            mildly asymmetric (same default as ``plot_face``).
+
+    Returns:
+        ``plotly.graph_objects.Figure``.
+    """
+    import plotly.graph_objects as go
+
+    if model is None:
+        model = load_viz_model()
+
+    aus = interpolate_aus(
+        start=np.asarray(start, dtype=np.float32),
+        end=np.asarray(end, dtype=np.float32),
+        num_frames=num_frames,
+        include_reverse=include_reverse,
+    )
+
+    # Per-frame landmark prediction + optional symmetrize.
+    frames_xy = []
+    for au in aus:
+        lm = predict(au, model=model)
+        if symmetrize:
+            lm = _symmetrize_dlib68(lm)
+        frames_xy.append(lm)
+
+    # Build NaN-separated polyline arrays per frame using the same line
+    # paths draw_lineface walks. y-axis is inverted at layout level so
+    # we get the image-coord convention used by plot_face.
+    def _pack(lm):
+        xs, ys = [], []
+        for path in _DLIB68_LINE_PATHS:
+            xs.extend(lm[0, i] for i in path)
+            xs.append(np.nan)
+            ys.extend(lm[1, i] for i in path)
+            ys.append(np.nan)
+        return np.array(xs, dtype=np.float32), np.array(ys, dtype=np.float32)
+
+    packed = [_pack(lm) for lm in frames_xy]
+
+    # Global extent across all frames → stable camera (no zoom jitter).
+    all_xs = np.concatenate([p[0] for p in packed])
+    all_ys = np.concatenate([p[1] for p in packed])
+    finite_x = all_xs[np.isfinite(all_xs)]
+    finite_y = all_ys[np.isfinite(all_ys)]
+    x_pad = (finite_x.max() - finite_x.min()) * 0.10
+    y_pad = (finite_y.max() - finite_y.min()) * 0.08
+    x_range = [finite_x.min() - x_pad, finite_x.max() + x_pad]
+    y_range = [finite_y.max() + y_pad, finite_y.min() - y_pad]  # inverted
+
+    def _scatter(seg_x, seg_y):
+        return go.Scatter(
+            x=seg_x, y=seg_y,
+            mode="lines",
+            line=dict(color=color, width=line_width),
+            showlegend=False, hoverinfo="skip",
+        )
+
+    frames = [
+        go.Frame(data=[_scatter(*packed[i])], name=str(i))
+        for i in range(len(packed))
+    ]
+    frame_duration_ms = int(1000 / fps)
+
+    fig = go.Figure(
+        data=[_scatter(*packed[0])],
+        frames=frames,
+    )
+    fig.update_layout(
+        xaxis=dict(visible=False, range=x_range, scaleanchor="y", scaleratio=1),
+        yaxis=dict(visible=False, range=y_range),
+        margin=dict(l=0, r=0, t=30, b=0),
+        paper_bgcolor=background,
+        plot_bgcolor=background,
+        updatemenus=[dict(
+            type="buttons", showactive=False, y=1.05, x=0.0, xanchor="left", yanchor="top",
+            buttons=[
+                dict(label="▶ Play", method="animate", args=[None, dict(
+                    frame=dict(duration=frame_duration_ms, redraw=True),
+                    fromcurrent=True, transition=dict(duration=0), mode="immediate"
+                )]),
+                dict(label="❚❚ Pause", method="animate", args=[[None], dict(
+                    frame=dict(duration=0, redraw=False), mode="immediate"
+                )]),
+            ],
+        )],
+        sliders=[dict(
+            active=0, y=0, x=0.05, len=0.9, xanchor="left", yanchor="top",
+            currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
+            steps=[dict(
+                method="animate", label=str(i),
+                args=[[str(i)], dict(frame=dict(duration=0, redraw=True),
+                                     mode="immediate", transition=dict(duration=0))]
+            ) for i in range(len(packed))],
+        )],
+    )
+    return fig
+
+
+def animate_face_mesh_plotly(
+    start,
+    end,
+    num_frames=24,
+    fps=15,
+    include_reverse=True,
+    model=None,
+    mode="tesselation",
+    color="black",
+    line_width=1.5,
+    opacity=0.85,
+    background="white",
+):
+    """Interactive 3D face-mesh animation between two AU intensity vectors.
+
+    Returns a Plotly ``Figure`` with frames + play/pause buttons + a frame
+    slider. The 3D camera stays rotatable while the animation plays — so
+    the user can pick a profile angle, hit play, and watch the expression
+    morph from that viewpoint. Companion to ``plot_face_mesh_plotly`` (a
+    single static frame) and ``animate_face`` (legacy 2D matplotlib GIF).
+
+    Args:
+        start: AU intensity vector ``(20,)`` at the animation's first frame.
+        end: AU intensity vector ``(20,)`` at the peak.
+        num_frames: number of frames in the start→end half (cubic-eased).
+            Total frames is 2*num_frames if include_reverse, else num_frames.
+        fps: playback rate. Sets the per-frame ``duration`` (ms) in plotly's
+            animation transition.
+        include_reverse: append end→start so the loop returns to neutral.
+        model: optional ``PLSAUMeshModel`` (defaults to the cached v2 model).
+        mode: ``'tesselation'`` (default) or ``'contours'``. See
+            ``plot_face_mesh_plotly``.
+        color, line_width, opacity, background: scene styling, same as
+            ``plot_face_mesh_plotly``.
+
+    Returns:
+        ``plotly.graph_objects.Figure``. Call ``.show()`` to play in a
+        notebook, or ``.write_html(path)`` to save a standalone HTML file
+        with the animation controls embedded.
+    """
+    import plotly.graph_objects as go
+    from feat.utils.mp_plotting import FaceLandmarksConnections
+
+    if mode in ("tesselation", "tessellation"):
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION
+    elif mode == "contours":
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS
+    else:
+        raise ValueError(
+            f"mode must be 'tesselation' or 'contours'; got {mode!r}"
+        )
+
+    # Cubic-eased AU trajectory; reuses the helper that animate_face uses.
+    aus = interpolate_aus(
+        start=np.asarray(start, dtype=np.float32),
+        end=np.asarray(end, dtype=np.float32),
+        num_frames=num_frames,
+        include_reverse=include_reverse,
+    )
+
+    # Predict every frame's mesh in one batched call when supported, else loop.
+    if model is None:
+        model = load_face_mesh_viz_model()
+    meshes = predict_face_mesh(aus, model=model)  # (n_frames, 478, 3)
+
+    # Build all per-frame NaN-separated segment arrays up front so we can
+    # also compute global extents for a stable camera that doesn't rescale
+    # mid-animation.
+    n_edges = len(connections)
+    a_idx = np.array([c.start for c in connections])
+    b_idx = np.array([c.end for c in connections])
+    nan = np.float32(np.nan)
+
+    all_xs, all_ys, all_zs = [], [], []
+    for verts in meshes:
+        # Data (X, Y, Z) → plotly (X, Z, Y) for upright face orientation.
+        xs = verts[:, 0]
+        ys = verts[:, 2]
+        zs = verts[:, 1]
+        seg_x = np.empty(3 * n_edges, dtype=np.float32)
+        seg_y = np.empty(3 * n_edges, dtype=np.float32)
+        seg_z = np.empty(3 * n_edges, dtype=np.float32)
+        seg_x[0::3] = xs[a_idx]; seg_x[1::3] = xs[b_idx]; seg_x[2::3] = nan
+        seg_y[0::3] = ys[a_idx]; seg_y[1::3] = ys[b_idx]; seg_y[2::3] = nan
+        seg_z[0::3] = zs[a_idx]; seg_z[1::3] = zs[b_idx]; seg_z[2::3] = nan
+        all_xs.append(seg_x); all_ys.append(seg_y); all_zs.append(seg_z)
+
+    # Global extents across all frames so the camera doesn't jitter.
+    flat_verts = meshes.reshape(-1, 3)
+    glob_xs = flat_verts[:, 0]
+    glob_ys = flat_verts[:, 2]
+    glob_zs = flat_verts[:, 1]
+    extents = np.array([
+        [glob_xs.min(), glob_xs.max()],
+        [glob_ys.min(), glob_ys.max()],
+        [glob_zs.min(), glob_zs.max()],
+    ])
+    centers = extents.mean(axis=1)
+    half = (extents[:, 1] - extents[:, 0]).max() / 2
+
+    def _scatter(seg_x, seg_y, seg_z):
+        return go.Scatter3d(
+            x=seg_x, y=seg_y, z=seg_z,
+            mode="lines",
+            line=dict(color=color, width=line_width),
+            opacity=opacity,
+            showlegend=False,
+            hoverinfo="skip",
+        )
+
+    frames = [
+        go.Frame(data=[_scatter(all_xs[i], all_ys[i], all_zs[i])], name=str(i))
+        for i in range(len(meshes))
+    ]
+    frame_duration_ms = int(1000 / fps)
+
+    fig = go.Figure(
+        data=[_scatter(all_xs[0], all_ys[0], all_zs[0])],
+        frames=frames,
+    )
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(visible=False, range=[centers[0] - half, centers[0] + half]),
+            yaxis=dict(visible=False, range=[centers[1] - half, centers[1] + half]),
+            zaxis=dict(visible=False, range=[centers[2] - half, centers[2] + half]),
+            aspectmode="cube",
+            bgcolor=background,
+        ),
+        margin=dict(l=0, r=0, t=30, b=0),
+        paper_bgcolor=background,
+        updatemenus=[dict(
+            type="buttons", showactive=False, y=1.05, x=0.0, xanchor="left", yanchor="top",
+            buttons=[
+                dict(label="▶ Play", method="animate", args=[None, dict(
+                    frame=dict(duration=frame_duration_ms, redraw=True),
+                    fromcurrent=True, transition=dict(duration=0), mode="immediate"
+                )]),
+                dict(label="❚❚ Pause", method="animate", args=[[None], dict(
+                    frame=dict(duration=0, redraw=False), mode="immediate"
+                )]),
+            ],
+        )],
+        sliders=[dict(
+            active=0, y=0, x=0.05, len=0.9, xanchor="left", yanchor="top",
+            currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
+            steps=[dict(
+                method="animate", label=str(i),
+                args=[[str(i)], dict(frame=dict(duration=0, redraw=True),
+                                     mode="immediate", transition=dict(duration=0))]
+            ) for i in range(len(meshes))],
+        )],
     )
     return fig
 
