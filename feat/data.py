@@ -192,6 +192,22 @@ class FexSeries(Series):
 
         return self[self.facepose_columns]
 
+    @property
+    def gazes(self):
+        """Returns the gaze data (pitch, yaw, optionally combined angle).
+
+        Returns:
+            DataFrame: gaze data populated by the active gaze model
+            (L2CS by default in v0.7+). Empty / missing if no gaze model
+            was wired into the Detector.
+        """
+        if not self.gaze_columns:
+            raise AttributeError(
+                "No gaze columns are registered on this Fex. The active "
+                "Detector may have been built with gaze_model=None."
+            )
+        return self[self.gaze_columns]
+
     # DEPRECATE
     @property
     def facepose(self):
@@ -561,6 +577,22 @@ class Fex(DataFrame):
             DataFrame: facepose data
         """
         return self[self.facepose_columns]
+
+    @property
+    def gazes(self):
+        """Returns the gaze data (pitch, yaw, optionally combined angle).
+
+        Returns:
+            DataFrame: gaze data populated by the active gaze model
+            (L2CS by default in v0.7+). Raises AttributeError if the
+            Detector was built with gaze_model=None.
+        """
+        if not self.gaze_columns:
+            raise AttributeError(
+                "No gaze columns are registered on this Fex. The active "
+                "Detector may have been built with gaze_model=None."
+            )
+        return self[self.gaze_columns]
 
     # DEPRECATE
     @property
