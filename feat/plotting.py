@@ -1963,21 +1963,14 @@ def plot_face_mesh_plotly(
         hoverinfo="skip",
     )]
 
-    # Iris + pupil markers so the eyes don't look like empty sockets. When
-    # gaze is given, pupils additionally shift in the gaze direction so
-    # the eyes visually track the gaze arrow.
+    # Iris (true 3D Mesh3d disks — rotate with face, occluded properly
+    # when face turns to profile) + pupil (small Scatter3d marker at
+    # iris center, shifted by gaze if provided).
     _pitch = _yaw = None
     if gaze is not None:
         _pitch, _yaw = float(gaze[0]), float(gaze[1])
-    iris_centers, pupil_centers, _ = _iris_pupil_positions(verts, _pitch, _yaw)
-    # Iris (brown disk).
-    traces.append(go.Scatter3d(
-        x=iris_centers[:, 0], y=iris_centers[:, 2], z=iris_centers[:, 1],
-        mode="markers",
-        marker=dict(color="#5b3a29", size=12),
-        showlegend=False, hoverinfo="skip",
-    ))
-    # Pupil (smaller black dot on top of iris).
+    _, pupil_centers, _ = _iris_pupil_positions(verts, _pitch, _yaw)
+    traces.extend(_iris_mesh_traces_plotly(verts))
     traces.append(go.Scatter3d(
         x=pupil_centers[:, 0], y=pupil_centers[:, 2], z=pupil_centers[:, 1],
         mode="markers",
@@ -2054,6 +2047,38 @@ _MP_IRIS_LEFT_CENTER = 468
 _MP_IRIS_LEFT_RING = (469, 470, 471, 472)
 _MP_IRIS_RIGHT_CENTER = 473
 _MP_IRIS_RIGHT_RING = (474, 475, 476, 477)
+
+
+def _iris_mesh_traces_plotly(verts, color="#b08868"):
+    """Build go.Mesh3d traces for the iris disks (left + right).
+
+    Each iris is a small triangle fan: center landmark + 4 contour
+    landmarks, giving 4 triangles. Using true 3D surface geometry instead
+    of Scatter3d markers means the iris rotates with the face and gets
+    correctly occluded by the mesh when the face turns to profile.
+    Data → plotly axis swap (X, Y, Z) → (X, Z, Y).
+    """
+    import plotly.graph_objects as go
+    traces = []
+    for center_idx, ring_idx in (
+        (_MP_IRIS_LEFT_CENTER, _MP_IRIS_LEFT_RING),
+        (_MP_IRIS_RIGHT_CENTER, _MP_IRIS_RIGHT_RING),
+    ):
+        idx = (center_idx,) + ring_idx  # 5 vertices: center + 4 ring
+        pts = verts[list(idx)]
+        # Triangle fan: (0, 1, 2), (0, 2, 3), (0, 3, 4), (0, 4, 1)
+        i_tri = [0, 0, 0, 0]
+        j_tri = [1, 2, 3, 4]
+        k_tri = [2, 3, 4, 1]
+        traces.append(go.Mesh3d(
+            x=pts[:, 0], y=pts[:, 2], z=pts[:, 1],
+            i=i_tri, j=j_tri, k=k_tri,
+            color=color, opacity=1.0,
+            flatshading=True,
+            lighting=dict(ambient=0.9, diffuse=0.1, specular=0),
+            hoverinfo="skip",
+        ))
+    return traces
 
 
 def _iris_pupil_positions(verts, pitch_rad=None, yaw_rad=None):
@@ -2435,23 +2460,18 @@ def animate_face_mesh_plotly(
         )
 
     def _iris_traces(verts):
-        # Iris (brown disk) + pupil (small black dot). No gaze tracking
-        # in animations — gaze isn't a per-frame input here. Same axis
-        # swap (data X,Y,Z) → (plotly X, Z, Y).
-        iris_c, pupil_c, _ = _iris_pupil_positions(verts)
-        iris_trace = go.Scatter3d(
-            x=iris_c[:, 0], y=iris_c[:, 2], z=iris_c[:, 1],
-            mode="markers",
-            marker=dict(color="#5b3a29", size=12),
-            showlegend=False, hoverinfo="skip",
-        )
+        # Iris (true 3D Mesh3d disk that rotates with the face) + pupil
+        # (small marker at iris center). No gaze tracking in animations —
+        # gaze isn't a per-frame input here.
+        iris_meshes = _iris_mesh_traces_plotly(verts)
+        _, pupil_c, _ = _iris_pupil_positions(verts)
         pupil_trace = go.Scatter3d(
             x=pupil_c[:, 0], y=pupil_c[:, 2], z=pupil_c[:, 1],
             mode="markers",
             marker=dict(color="black", size=6),
             showlegend=False, hoverinfo="skip",
         )
-        return iris_trace, pupil_trace
+        return [*iris_meshes, pupil_trace]
 
     frames = [
         go.Frame(
