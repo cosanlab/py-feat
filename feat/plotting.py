@@ -2061,7 +2061,7 @@ def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
     )
     updatemenus = [dict(
         type="buttons", direction="right", showactive=False,
-        y=-0.10, x=0.5, xanchor="center", yanchor="top",
+        y=-0.30, x=0.5, xanchor="center", yanchor="top",
         pad=dict(t=10, r=10, b=10, l=10),
         buttons=[
             dict(label="▶ Play", method="animate", args=[None, play_opts]),
@@ -2071,7 +2071,7 @@ def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
         ],
     )]
     sliders = [dict(
-        active=0, y=0, x=0.05, len=0.9, xanchor="left", yanchor="top",
+        active=0, y=-0.05, x=0.05, len=0.9, xanchor="left", yanchor="top",
         currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
         steps=[dict(
             method="animate", label=name,
@@ -2162,7 +2162,7 @@ def animate_face_plotly(
     # Build NaN-separated polyline arrays per frame using the same line
     # paths draw_lineface walks. y-axis is inverted at layout level so
     # we get the image-coord convention used by plot_face.
-    def _pack(lm):
+    def _pack_lines(lm):
         xs, ys = [], []
         for path in _DLIB68_LINE_PATHS:
             xs.extend(lm[0, i] for i in path)
@@ -2171,7 +2171,21 @@ def animate_face_plotly(
             ys.append(np.nan)
         return np.array(xs, dtype=np.float32), np.array(ys, dtype=np.float32)
 
-    packed = [_pack(lm) for lm in frames_xy]
+    # Pupil centers + radii per frame, same math as draw_lineface.
+    # Left eye: mean of upper/lower inner-lid landmarks (37,38,40,41).
+    # Right eye: same mirror (43,44,46,47).
+    def _pupils(lm):
+        x, y = lm[0], lm[1]
+        lx = (x[37] + x[38] + x[40] + x[41]) / 4
+        ly = (y[37] + y[38] + y[40] + y[41]) / 4
+        l_radius = abs(-y[37] - y[38] + y[40] + y[41]) / 5
+        rx = (x[43] + x[44] + x[46] + x[47]) / 4
+        ry = (y[43] + y[44] + y[46] + y[47]) / 4
+        r_radius = abs(-y[43] - y[44] + y[46] + y[47]) / 5
+        return [lx, rx], [ly, ry], [l_radius, r_radius]
+
+    packed = [_pack_lines(lm) for lm in frames_xy]
+    pupils = [_pupils(lm) for lm in frames_xy]
 
     # Global extent across all frames → stable camera (no zoom jitter).
     all_xs = np.concatenate([p[0] for p in packed])
@@ -2183,7 +2197,7 @@ def animate_face_plotly(
     x_range = [finite_x.min() - x_pad, finite_x.max() + x_pad]
     y_range = [finite_y.max() + y_pad, finite_y.min() - y_pad]  # inverted
 
-    def _scatter(seg_x, seg_y):
+    def _lines_trace(seg_x, seg_y):
         return go.Scatter(
             x=seg_x, y=seg_y,
             mode="lines",
@@ -2191,21 +2205,37 @@ def animate_face_plotly(
             showlegend=False, hoverinfo="skip",
         )
 
+    def _pupil_trace(px, py, pradius):
+        # plotly markers use pixel-size, not data-units; convert by scaling
+        # mean radius to roughly pixel-equivalent at the current viewport.
+        # 2*radius covers the iris area; ~1.6x looks right with default sizes.
+        mean_r = float(np.mean(pradius))
+        marker_size = max(6.0, mean_r * 3.2)
+        return go.Scatter(
+            x=px, y=py,
+            mode="markers",
+            marker=dict(color="black", size=marker_size, line=dict(width=0)),
+            showlegend=False, hoverinfo="skip",
+        )
+
     frames = [
-        go.Frame(data=[_scatter(*packed[i])], name=str(i))
+        go.Frame(
+            data=[_lines_trace(*packed[i]), _pupil_trace(*pupils[i])],
+            name=str(i),
+        )
         for i in range(len(packed))
     ]
     frame_duration_ms = int(1000 / fps)
 
     fig = go.Figure(
-        data=[_scatter(*packed[0])],
+        data=[_lines_trace(*packed[0]), _pupil_trace(*pupils[0])],
         frames=frames,
     )
     updatemenus, sliders = _plotly_animation_controls(len(packed), fps)
     fig.update_layout(
         xaxis=dict(visible=False, range=x_range, scaleanchor="y", scaleratio=1),
         yaxis=dict(visible=False, range=y_range),
-        margin=dict(l=0, r=0, t=30, b=100),
+        margin=dict(l=0, r=0, t=30, b=150),
         paper_bgcolor=background,
         plot_bgcolor=background,
         updatemenus=updatemenus,
@@ -2342,7 +2372,7 @@ def animate_face_mesh_plotly(
             aspectmode="cube",
             bgcolor=background,
         ),
-        margin=dict(l=0, r=0, t=30, b=100),
+        margin=dict(l=0, r=0, t=30, b=150),
         paper_bgcolor=background,
         updatemenus=updatemenus,
         sliders=sliders,
