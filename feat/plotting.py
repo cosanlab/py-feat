@@ -1032,15 +1032,21 @@ def plot_face(
             vectorfield["reference"] = _symmetrize_dlib68(vectorfield["reference"])
             vectorfield["target"] = _symmetrize_dlib68(vectorfield["target"])
         ax = draw_vectorfield(ax=ax, **vectorfield)
-    # Auto-derive viewport from the actual landmark coords with padding.
-    # Hardcoded [25,172]/[240,50] was calibrated for the v1 viz model; the v2
-    # PLSAULandmarkModel (PR #301) returns landmarks in a different coordinate
-    # range, so a hardcoded viewport drew everything outside the visible area.
-    xs, ys = landmarks[0], landmarks[1]
-    x_pad = (xs.max() - xs.min()) * 0.12
-    y_pad = (ys.max() - ys.min()) * 0.08
-    ax.set_xlim(xs.min() - x_pad, xs.max() + x_pad)
-    ax.set_ylim(ys.max() + y_pad, ys.min() - y_pad)  # inverted (image coords)
+    # Auto-derive viewport from all drawn artists (landmarks + muscle patches
+    # + gaze quivers + vectorfield arrows), then add asymmetric padding so
+    # the forehead has room above the topmost landmark (no landmarks live
+    # above the eyebrows in the dlib-68 layout). Hardcoded [25,172]/[240,50]
+    # was calibrated for the v1 viz model; the v2 PLSAULandmarkModel
+    # (PR #301) returns landmarks in a different range, so a hardcoded
+    # viewport drew everything off-screen.
+    ax.relim(visible_only=True)
+    (xmin, xmax) = ax.dataLim.intervalx
+    (ymin, ymax) = ax.dataLim.intervaly
+    x_pad = (xmax - xmin) * 0.12
+    y_top_pad = (ymax - ymin) * 0.25  # forehead room above topmost landmark
+    y_bot_pad = (ymax - ymin) * 0.08
+    ax.set_xlim(xmin - x_pad, xmax + x_pad)
+    ax.set_ylim(ymax + y_bot_pad, ymin - y_top_pad)  # inverted (image coords)
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
