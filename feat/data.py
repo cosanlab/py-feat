@@ -34,6 +34,7 @@ from feat.plotting import (
     plot_face,
     draw_lineface,
     draw_facepose,
+    draw_facegaze,
     load_viz_model,
     draw_plotly_landmark,
     draw_plotly_au,
@@ -96,6 +97,7 @@ class FexSeries(Series):
         self.emotion_model = kwargs.pop("emotion_model", None)
         self.facepose_model = kwargs.pop("facepose_model", None)
         self.identity_model = kwargs.pop("identity_model", None)
+        self.gaze_model = kwargs.pop("gaze_model", None)
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
         super().__init__(*args, **kwargs)
@@ -122,6 +124,7 @@ class FexSeries(Series):
         "emotion_model",
         "facepose_model",
         "identity_model",
+        "gaze_model",
         "verbose",
     ]
 
@@ -382,6 +385,7 @@ class Fex(DataFrame):
         "emotion_model",
         "facepose_model",
         "identity_model",
+        "gaze_model",
         "verbose",
     ]
 
@@ -420,6 +424,7 @@ class Fex(DataFrame):
         self.emotion_model = kwargs.pop("emotion_model", None)
         self.facepose_model = kwargs.pop("facepose_model", None)
         self.identity_model = kwargs.pop("identity_model", None)
+        self.gaze_model = kwargs.pop("gaze_model", None)
         self.features = kwargs.pop("features", None)
         self.sessions = kwargs.pop("sessions", None)
 
@@ -1698,7 +1703,16 @@ class Fex(DataFrame):
         rrow = row.copy()
         au = rrow[feats].to_numpy().squeeze()
 
-        gaze = None if isinstance(gaze, bool) else gaze
+        # If the caller passed gaze=True (or any truthy flag) and the Fex has
+        # gaze_pitch / gaze_yaw columns, convert them to the 4-vector pupil
+        # offset format the synthetic AU face renderer expects. Pre-formatted
+        # 4-vectors are passed through.
+        if isinstance(gaze, bool):
+            if gaze and "gaze_pitch" in row.index and "gaze_yaw" in row.index:
+                from feat.plotting import _gaze_to_pupil_offsets
+                gaze = _gaze_to_pupil_offsets(row["gaze_pitch"], row["gaze_yaw"])
+            else:
+                gaze = None
         return au, gaze, muscles, model
 
     def plot_detections(
@@ -1732,7 +1746,12 @@ class Fex(DataFrame):
             applies if faces='aus'. Defaults to False.
             poses (bool, optional): Whether to draw facial poses. Only applies if
             faces='landmarks'. Defaults to False.
-            gazes (bool, optional): Whether to draw gaze vectors. Only applies if faces='aus'. Defaults to False.
+            gazes (bool, optional): Whether to draw gaze vectors. When
+            faces='landmarks', a yellow arrow is drawn from each face's
+            bbox center in the predicted gaze direction (using
+            ``gaze_pitch``/``gaze_yaw`` columns from the L2CS gaze detector).
+            When faces='aus', the gaze deflects the synthetic face's pupil
+            positions. Defaults to False.
             add_titles (bool, optional): Whether to add the file name as a title above
             the face. Defaults to True.
             au_barplot (bool, optional): Whether to include a subplot for au detections. Defaults to True.
@@ -1813,6 +1832,14 @@ class Fex(DataFrame):
                     if poses:
                         face_ax = draw_facepose(
                             pose=row[self.facepose_columns[:3]].values,
+                            facebox=facebox,
+                            ax=face_ax,
+                        )
+
+                    if gazes and "gaze_pitch" in row.index and "gaze_yaw" in row.index:
+                        face_ax = draw_facegaze(
+                            pitch_rad=row["gaze_pitch"],
+                            yaw_rad=row["gaze_yaw"],
                             facebox=facebox,
                             ax=face_ax,
                         )

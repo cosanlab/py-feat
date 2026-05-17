@@ -122,6 +122,7 @@ class XGBClassifier:
         scaler_full=None,
         pca_model_full=None,
         classifiers=None,
+        calibrators=None,
     ):
         self.scaler_upper = scaler_upper
         self.pca_model_upper = pca_model_upper
@@ -130,6 +131,12 @@ class XGBClassifier:
         self.scaler_full = scaler_full
         self.pca_model_full = pca_model_full
         self.classifiers = classifiers
+        # Optional per-AU probability calibrators (e.g. IsotonicRegression).
+        # Required for models trained with scale_pos_weight to map raw
+        # XGBoost probabilities back onto a calibrated 0..1 scale where
+        # threshold 0.5 corresponds to the natural decision boundary.
+        # None on legacy v2 weights — applied only when present.
+        self.calibrators = calibrators
         self.weights_loaded = True
 
     def pca_transform(self, frame, scaler, pca_model, landmarks):
@@ -167,6 +174,9 @@ class XGBClassifier:
                     au_pred = classifier.predict_proba(pca_transformed_lower)[:, 1]
                 else:
                     au_pred = classifier.predict_proba(pca_transformed_full)[:, 1]
+
+                if self.calibrators is not None and key in self.calibrators:
+                    au_pred = self.calibrators[key].transform(au_pred)
 
                 pred_aus.append(au_pred)
 

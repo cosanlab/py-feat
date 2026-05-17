@@ -140,6 +140,9 @@ def plot_face_landmarks(
     iris_color="skyblue",
     iris_linestyle="-",
     iris_linewidth=2,
+    gaze=False,
+    gaze_color="yellow",
+    gaze_linewidth=2,
 ):
     """Plots face landmarks on the given frame using specified styles for each part.
 
@@ -150,7 +153,10 @@ def plot_face_landmarks(
         oval_color, tesselation_color, mouth_color, eye_color, iris_color: Colors for each face part.
         oval_linestyle, tesselation_linestyle, mouth_linestyle, eye_linestyle, iris_linestyle: Linestyle for each face part.
         oval_linewidth, tesselation_linewidth, mouth_linewidth, eye_linewidth, iris_linewidth: Linewidth for each face part.
-        n_faces: Number of faces in the frame. If None, will be determined from fex.
+        gaze (bool): Whether to draw L2CS gaze arrows from each face's bbox
+            center. Requires ``gaze_pitch``/``gaze_yaw`` columns in ``fex``
+            (populated by ``MPDetector(gaze_model='l2cs')`` or `'geometric'`).
+        gaze_color, gaze_linewidth: gaze arrow style.
     """
     if ax is None:
         fig, ax = plt.subplots(figsize=(10, 10))
@@ -205,6 +211,21 @@ def plot_face_landmarks(
         for face in range(n_faces_frame):
             draw_connections(face, connections, color, linestyle, linewidth)
 
+    # Draw L2CS gaze arrows from each face's bbox center (if requested).
+    if gaze and "gaze_pitch" in fex_frame.columns and "gaze_yaw" in fex_frame.columns:
+        from feat.plotting import draw_facegaze
+        for _, row in fex_frame.iterrows():
+            facebox = [row.get(c) for c in ("FaceRectX", "FaceRectY", "FaceRectWidth", "FaceRectHeight")]
+            if all(v is not None and not np.isnan(v) for v in facebox):
+                draw_facegaze(
+                    pitch_rad=row["gaze_pitch"],
+                    yaw_rad=row["gaze_yaw"],
+                    facebox=facebox,
+                    ax=ax,
+                    color=gaze_color,
+                    linewidth=gaze_linewidth,
+                )
+
     # Optionally turn off axis for a clean plot
     ax.axis("off")
 
@@ -220,6 +241,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
         facepose_model=None,
         emotion_model=None,
         identity_model="arcface",
+        gaze_model="l2cs",
         device="cpu",
     ):
         super().__init__()
@@ -231,6 +253,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             facepose_model=facepose_model,
             au_model=au_model,
             identity_model=identity_model,
+            gaze_model=gaze_model,
         )
         self.device = set_torch_device(device)
 
@@ -497,6 +520,30 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 raise ValueError(f"{identity_model} is not currently supported.")
         else:
             self.identity_detector = None
+
+        # Initialize Gaze Detector. v0.7 switches the default from the
+        # geometric iris-vector path (estimate_gaze, MediaPipe-only) to
+        # L2CS-Net (Abdelrahman et al. 2022) — drops gaze MAE from ~10°
+        # to ~4° on Gaze360 and fixes the >100° error on off-frontal
+        # faces that the geometric path produced (see docstring of
+        # feat/tests/test_mpdetector_gaze.py). The geometric path stays
+        # available as gaze_model='geometric' for MPDetector users who
+        # need MediaPipe-iris-only inference (e.g. fully offline / no
+        # ResNet50 download).
+        self.info["gaze_model"] = gaze_model
+        if gaze_model is None:
+            self.gaze_detector = None
+        elif gaze_model == "l2cs":
+            from feat.gaze_detectors.l2cs import load_l2cs_from_hf
+            self.gaze_detector = load_l2cs_from_hf(device=self.device)
+        elif gaze_model == "geometric":
+            # No network model; estimate_gaze is called from detect()
+            # using MediaPipe iris landmarks + the rotation matrix R.
+            self.gaze_detector = None
+        else:
+            raise ValueError(
+                f"gaze_model must be 'l2cs', 'geometric', or None; got {gaze_model!r}"
+            )
 
     @torch.inference_mode()
     def detect_faces(self, images, face_size=256, face_detection_threshold=0.5):
@@ -812,6 +859,27 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             identity_embeddings.cpu().detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
         )
 
+        # Gaze: L2CS-Net on the face crops already on device. The
+        # geometric path (gaze_model='geometric') is computed later in
+        # detect() from MediaPipe iris landmarks because it needs the
+        # rotation matrix R, which isn't computed until after Fex
+        # assembly. Both paths populate the same FEAT_GAZE_COLUMNS.
+        if self.gaze_detector is not None and n_faces > 0:
+            pitch_rad, yaw_rad = self.gaze_detector(faces_dev)
+            cos_angle = np.clip(
+                np.cos(pitch_rad) * np.cos(yaw_rad), -1.0, 1.0
+            )
+            gaze_angle = np.arccos(cos_angle)
+            feat_gaze = pd.DataFrame(
+                np.column_stack([pitch_rad, yaw_rad, gaze_angle]),
+                columns=FEAT_GAZE_COLUMNS,
+            )
+        else:
+            feat_gaze = pd.DataFrame(
+                np.full((n_faces, len(FEAT_GAZE_COLUMNS)), np.nan),
+                columns=FEAT_GAZE_COLUMNS,
+            )
+
         # Frame metadata: original (pre-Rescale) frame dimensions per
         # face. Added here instead of in `invert_padding_to_results`
         # post-hoc so the entire DataFrame leaves forward() in
@@ -836,6 +904,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 feat_aus,
                 feat_emotions,
                 feat_identities,
+                feat_gaze,
                 feat_frame_meta,
             ],
             axis=1,
@@ -962,6 +1031,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             emotion_model=self.info["emotion_model"],
             facepose_model=self.info["facepose_model"],
             identity_model=self.info["identity_model"],
+            gaze_model=self.info["gaze_model"],
         )
         if data_type.lower() == "video":
             batch_output["approx_time"] = [
@@ -983,16 +1053,19 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             torch.cat((euler, t), dim=1).cpu().numpy()
         )
 
-        # Gaze in head-centric frame (compensated by R from above) with iris
-        # landmarks (478-pt mesh).
-        gaze = estimate_gaze(landmarks_3d, R=R)
-        py = gaze["combined_pitch_yaw"].cpu().numpy()
-        batch_output["gaze_pitch"] = py[:, 0]
-        batch_output["gaze_yaw"] = py[:, 1]
-        # Backward-compat: keep `gaze_angle` as the angle from head-forward.
-        combined_vec = gaze["combined_vector"].cpu().numpy()
-        forward = np.array([0.0, 0.0, 1.0])
-        cos_angle = np.clip((combined_vec * forward).sum(axis=1), -1.0, 1.0)
-        batch_output["gaze_angle"] = np.arccos(cos_angle)
+        # Gaze: L2CS-Net path (the default) has already populated
+        # `gaze_pitch`/`gaze_yaw`/`gaze_angle` per-batch in forward().
+        # The geometric path needs the full-batch rotation matrix R
+        # computed above, so we run it here when explicitly requested.
+        if self.info["gaze_model"] == "geometric":
+            gaze = estimate_gaze(landmarks_3d, R=R)
+            py = gaze["combined_pitch_yaw"].cpu().numpy()
+            batch_output["gaze_pitch"] = py[:, 0]
+            batch_output["gaze_yaw"] = py[:, 1]
+            # Backward-compat: keep `gaze_angle` as the angle from head-forward.
+            combined_vec = gaze["combined_vector"].cpu().numpy()
+            forward = np.array([0.0, 0.0, 1.0])
+            cos_angle = np.clip((combined_vec * forward).sum(axis=1), -1.0, 1.0)
+            batch_output["gaze_angle"] = np.arccos(cos_angle)
 
         return batch_output

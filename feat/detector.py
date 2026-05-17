@@ -38,6 +38,7 @@ from feat.utils import (
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FEAT_FACEPOSE_COLUMNS_6D,
+    FEAT_GAZE_COLUMNS,
     FEAT_IDENTITY_COLUMNS,
     hf_hub_download_with_fallback,
     N_OPENFACE_LANDMARKS,
@@ -114,13 +115,21 @@ class Detector(nn.Module, PyTorchModelHubMixin):
 
     def __init__(
         self,
-        face_model="img2pose",
+        face_model="retinaface",
         landmark_model="mobilefacenet",
         au_model="xgb",
         emotion_model="resmasknet",
         identity_model="arcface",
+        gaze_model="l2cs",
         device="cpu",
     ):
+        # v0.7 swaps the default face detector from img2pose to retinaface
+        # (ResNet34, py-feat/retinaface_r34): 88.9% WIDERFACE Hard AP vs
+        # img2pose's 55.5% (per Cheong et al. 2023), and ~5× faster at
+        # batch 32. Pose accuracy is preserved via the landmarks-to-pose
+        # MLP distilled from img2pose (~5° avg MAE vs img2pose) — see
+        # feat.utils.face_pose_mlp. Users who need bit-identical img2pose
+        # pose can still pass `face_model='img2pose'`.
         super().__init__()
 
         if face_model not in self._SUPPORTED_FACE_MODELS:
@@ -139,6 +148,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             facepose_model="pnp_dlt" if face_model == "retinaface" else "img2pose",
             au_model=None,
             identity_model=None,
+            gaze_model=None,
         )
         self.device = set_torch_device(device)
 
@@ -200,12 +210,12 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             self.facepose_detector = Retinaface(device=self.device)
             warnings.warn(
                 "face_model='retinaface' does not regress 6DoF head pose. "
-                "Pose columns are populated via DLT-PnP from the 68 landmarks "
-                "and may differ from img2pose's regressed pose by up to ~30 "
-                "degrees on Pitch (the axis with shallowest landmark "
-                "differentiation). Use face_model='img2pose' (default) if you "
-                "need pose values that match Cheong et al (Affective Science "
-                "2023). See feat.utils.face_pose_pnp for accuracy notes.",
+                "Pose columns are populated via the landmarks-to-pose MLP "
+                "(distilled from img2pose on CelebV-HQ, ~5° avg MAE vs "
+                "img2pose). PnP-DLT is used as a fallback when the MLP "
+                "weights aren't available. Use face_model='img2pose' for "
+                "the slowest, highest-accuracy path. See "
+                "feat.utils.face_pose_mlp for details.",
                 stacklevel=2,
             )
 
@@ -433,8 +443,35 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         else:
             self.identity_detector = None
 
+        # Initialize Gaze Detector. L2CS-Net (Abdelrahman et al. 2022)
+        # regresses (pitch, yaw) from the face crop via a 90-bin
+        # classification head per axis; reported ~3.92° MAE on Gaze360,
+        # ~4.16° on MPIIFaceGaze. Replaces the geometric iris-vector
+        # path that was previously available only in MPDetector and had
+        # known >100° errors on off-frontal faces.
+        self.info["gaze_model"] = gaze_model
+        if gaze_model is None:
+            self.gaze_detector = None
+        elif gaze_model == "l2cs":
+            from feat.gaze_detectors.l2cs import load_l2cs_from_hf
+            self.gaze_detector = load_l2cs_from_hf(device=self.device)
+        else:
+            raise ValueError(
+                f"gaze_model must be 'l2cs' or None for Detector; got {gaze_model!r}. "
+                f"The geometric path requires MediaPipe iris landmarks and is "
+                f"only available on MPDetector."
+            )
+
     def __repr__(self):
-        return f"Detector(face_model={self.info['face_model']}, landmark_model={self.info['landmark_model']}, au_model={self.info['au_model']}, emotion_model={self.info['emotion_model']}, facepose_model={self.info['facepose_model']}, identity_model={self.info['identity_model']})"
+        return (
+            f"Detector(face_model={self.info['face_model']}, "
+            f"landmark_model={self.info['landmark_model']}, "
+            f"au_model={self.info['au_model']}, "
+            f"emotion_model={self.info['emotion_model']}, "
+            f"facepose_model={self.info['facepose_model']}, "
+            f"identity_model={self.info['identity_model']}, "
+            f"gaze_model={self.info['gaze_model']})"
+        )
 
     @torch.inference_mode()
     def detect_faces(self, images, face_size=112, face_detection_threshold=0.5):
@@ -730,8 +767,6 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             and self.landmark_detector is not None
             and torch.isnan(poses).any()
         ):
-            from feat.utils.face_pose_pnp import pose_from_landmarks_2d
-
             # Skip faces with NaN landmarks (no detection in that frame).
             valid = ~torch.isnan(new_landmarks).any(dim=1)
             if valid.any():
@@ -740,11 +775,29 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     .reshape(-1, N_OPENFACE_LANDMARKS, 2)
                     .to(self.device)
                 )
-                # All faces share the same image_size since the DataLoader
-                # collates frames at one shape.
-                image_size = faces_data[0]["image_size"]
-                pnp_pose = pose_from_landmarks_2d(lmk, image_size)
-                poses[valid] = pnp_pose
+                # Pose-MLP path (replaces PnP-DLT default). The MLP was
+                # distilled from img2pose on CelebV-HQ (~570k frames) and
+                # matches img2pose's coordinate frame. It's bbox-relative
+                # rather than image-relative, so it doesn't suffer from
+                # PnP-DLT's "intrinsics from full image" bug — pose stays
+                # sensible on multi-face wide-angle images.
+                from feat.utils.face_pose_mlp import pose_from_landmarks_mlp
+
+                # Bbox-free: MLP normalizes landmarks by their own
+                # centroid + inter-eye distance, so it doesn't matter
+                # whether bbox conventions match the training-time
+                # detector (img2pose) or not.
+                mlp_pose = pose_from_landmarks_mlp(lmk)
+
+                if mlp_pose is not None:
+                    self.info["facepose_model"] = "pose_mlp"
+                    poses[valid] = mlp_pose
+                else:
+                    # MLP weights not available — fall back to PnP-DLT.
+                    from feat.utils.face_pose_pnp import pose_from_landmarks_2d
+                    image_size = faces_data[0]["image_size"]
+                    pnp_pose = pose_from_landmarks_2d(lmk, image_size)
+                    poses[valid] = pnp_pose
 
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
@@ -783,6 +836,26 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             identity_embeddings.cpu().detach().numpy(), columns=FEAT_IDENTITY_COLUMNS[1:]
         )
 
+        # Gaze: L2CS-Net on the face crops already on device. Returns
+        # head-centric (pitch, yaw) in radians; combined gaze_angle is
+        # the spherical-distance from straight-ahead.
+        if self.gaze_detector is not None and n_faces > 0:
+            pitch_rad, yaw_rad = self.gaze_detector(faces_dev)
+            # Angle from straight-ahead: arccos(cos(pitch) * cos(yaw)).
+            cos_angle = np.clip(
+                np.cos(pitch_rad) * np.cos(yaw_rad), -1.0, 1.0
+            )
+            gaze_angle = np.arccos(cos_angle)
+            feat_gaze = pd.DataFrame(
+                np.column_stack([pitch_rad, yaw_rad, gaze_angle]),
+                columns=FEAT_GAZE_COLUMNS,
+            )
+        else:
+            feat_gaze = pd.DataFrame(
+                np.full((n_faces, len(FEAT_GAZE_COLUMNS)), np.nan),
+                columns=FEAT_GAZE_COLUMNS,
+            )
+
         # Frame metadata: original (pre-Rescale) frame dimensions per
         # face. Added here instead of in `invert_padding_to_results`
         # post-hoc so the entire DataFrame leaves forward() in
@@ -806,6 +879,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 feat_aus,
                 feat_emotions,
                 feat_identities,
+                feat_gaze,
                 feat_frame_meta,
             ],
             axis=1,
@@ -945,6 +1019,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             facebox_columns=FEAT_FACEBOX_COLUMNS,
             landmark_columns=openface_2d_landmark_columns,
             facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
+            gaze_columns=FEAT_GAZE_COLUMNS,
             identity_columns=FEAT_IDENTITY_COLUMNS[1:],
             detector="Feat",
             face_model=self.info["face_model"],
@@ -953,6 +1028,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             emotion_model=self.info["emotion_model"],
             facepose_model=self.info["facepose_model"],
             identity_model=self.info["identity_model"],
+            gaze_model=self.info["gaze_model"],
         )
         if data_type.lower() == "video":
             batch_output["approx_time"] = [

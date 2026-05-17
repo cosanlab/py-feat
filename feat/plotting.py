@@ -1085,6 +1085,67 @@ def draw_facepose(pose, facebox, ax):
     return ax
 
 
+def draw_facegaze(pitch_rad, yaw_rad, facebox, ax, color="yellow", linewidth=2):
+    """Draw a single gaze arrow from the face-bbox center in the predicted
+    gaze direction.
+
+    Convention matches L2CS / Gaze360: +pitch = subject looks up;
+    +yaw = subject looks to camera's right (subject's left). The arrow is
+    drawn in image coords (y-down), so we flip the y component when
+    projecting the gaze unit vector onto the image plane.
+
+    Args:
+        pitch_rad: gaze pitch in radians (scalar or len-1 array)
+        yaw_rad: gaze yaw in radians
+        facebox: [x, y, w, h] of the detected face
+        ax: matplotlib axis
+        color: arrow color (default 'yellow' to stand out on most images)
+        linewidth: arrow line width
+    """
+    pitch = float(np.asarray(pitch_rad).ravel()[0])
+    yaw = float(np.asarray(yaw_rad).ravel()[0])
+    x, y, w, h = facebox[:4]
+    cx = x + w / 2.0
+    cy = y + h / 2.0
+    # Length proportional to facebox; full-deflection (~45°) maps to
+    # about half the face width.
+    length = min(w, h) * 1.1
+    # Project the 3D gaze unit vector onto the image plane:
+    #   dx_image = sin(yaw) * cos(pitch)   (+x = camera's right)
+    #   dy_image = -sin(pitch)             (image y is flipped; +pitch up
+    #                                       → arrow points UP, ie -y in pixels)
+    dx = length * np.sin(yaw) * np.cos(pitch)
+    dy = length * -np.sin(pitch)
+    ax.arrow(
+        cx, cy, dx, dy,
+        color=color, linewidth=linewidth,
+        head_width=length * 0.06, head_length=length * 0.08,
+        length_includes_head=True,
+    )
+    return ax
+
+
+def _gaze_to_pupil_offsets(pitch_rad, yaw_rad, scale=15.0):
+    """Convert head-centric (pitch, yaw) to the legacy 4-vector pupil-offset
+    format used by ``plot_face`` for synthetic AU-driven faces.
+
+    The synthetic-face renderer draws pupils at
+    ``[left_x + gaze[0], left_y - gaze[1]/2, right_x + gaze[2], right_y - gaze[3]/2]``
+    where the offsets are in pixel units of the canvas. We map symmetric
+    pupil offsets from gaze direction:
+      x-offset (both pupils): ``scale * sin(yaw)``
+      y-offset (both pupils): ``scale * sin(pitch)`` (+pitch = look up,
+        which is +y in the canvas frame the renderer uses for pupils)
+    """
+    pitch = float(np.asarray(pitch_rad).ravel()[0])
+    yaw = float(np.asarray(yaw_rad).ravel()[0])
+    if not np.isfinite(pitch) or not np.isfinite(yaw):
+        return None
+    xoff = scale * np.sin(yaw)
+    yoff = scale * np.sin(pitch)
+    return [xoff, yoff, xoff, yoff]
+
+
 def _create_empty_figure(
     figsize=(4, 5), xlim=[25, 172], ylim=[240, 50], return_fig=False
 ):
