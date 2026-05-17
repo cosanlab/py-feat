@@ -980,6 +980,7 @@ def plot_face(
         landmarks = _symmetrize_dlib68(landmarks)
     currx, curry = [landmarks[x, :] for x in range(2)]
 
+    owns_axis = ax is None
     if ax is None:
         ax = _create_empty_figure()
 
@@ -1033,20 +1034,37 @@ def plot_face(
             vectorfield["target"] = _symmetrize_dlib68(vectorfield["target"])
         ax = draw_vectorfield(ax=ax, **vectorfield)
     # Auto-derive viewport from all drawn artists (landmarks + muscle patches
-    # + gaze quivers + vectorfield arrows), then add asymmetric padding so
-    # the forehead has room above the topmost landmark (no landmarks live
-    # above the eyebrows in the dlib-68 layout). Hardcoded [25,172]/[240,50]
-    # was calibrated for the v1 viz model; the v2 PLSAULandmarkModel
-    # (PR #301) returns landmarks in a different range, so a hardcoded
-    # viewport drew everything off-screen.
-    ax.relim(visible_only=True)
-    (xmin, xmax) = ax.dataLim.intervalx
-    (ymin, ymax) = ax.dataLim.intervaly
-    x_pad = (xmax - xmin) * 0.12
-    y_top_pad = (ymax - ymin) * 0.25  # forehead room above topmost landmark
-    y_bot_pad = (ymax - ymin) * 0.08
-    ax.set_xlim(xmin - x_pad, xmax + x_pad)
-    ax.set_ylim(ymax + y_bot_pad, ymin - y_top_pad)  # inverted (image coords)
+    # + gaze quivers + vectorfield arrows). Hardcoded [25,172]/[240,50] was
+    # calibrated for the v1 viz model; the v2 PLSAULandmarkModel (PR #301)
+    # returns landmarks in a different range, so a hardcoded viewport drew
+    # everything off-screen.
+    if owns_axis:
+        # Only manage viewport/aspect when we created the figure ourselves.
+        # When plot_face is called with an externally-provided axis (e.g.,
+        # from Fex.plot_detections embedding the synthetic face inside an
+        # original-image axis), the caller controls scaling and positioning;
+        # touching it here would fight with their layout.
+        ax.relim(visible_only=True)
+        (xmin, xmax) = ax.dataLim.intervalx
+        (ymin, ymax) = ax.dataLim.intervaly
+        x_pad = (xmax - xmin) * 0.15
+        y_pad = (ymax - ymin) * 0.18
+        ax.set_xlim(xmin - x_pad, xmax + x_pad)
+        ax.set_ylim(ymin - y_pad, ymax + y_pad)
+        # Preserve true aspect ratio so the face isn't stretched by figsize
+        # mismatch (data is roughly square but default figsize=(4,5) is taller
+        # than wide, which used to produce a thin-and-tall face).
+        # adjustable='datalim' centers the face by expanding whichever axis
+        # needs more range to satisfy the aspect lock, giving symmetric
+        # whitespace around the face — including implicit forehead room
+        # above the brows where the dlib-68 layout has no landmarks.
+        ax.set_aspect("equal", adjustable="datalim")
+        # set_aspect resets any inverted ylim back to ascending, so we have
+        # to flip the y axis AFTER setting aspect to keep image-coords
+        # convention (forehead = small y appears at top, chin = large y
+        # appears at bottom).
+        if not ax.yaxis_inverted():
+            ax.invert_yaxis()
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
@@ -3578,9 +3596,19 @@ def draw_plotly_au(
             color = cmap.as_hex()[
                 int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
             ]
+            # The muscle-polygon path constants used to be defined as
+            # module-level locals here (masseter_l = face_polygon_svg(...));
+            # they got commented out (lines ~3072+) but the eval(muscle)
+            # callers were never updated. Skip cleanly when undefined so
+            # the eye/mouth/pupil regions below still render and
+            # iplot_detections doesn't NameError on first call.
+            try:
+                muscle_path = eval(muscle)
+            except NameError:
+                continue
             fig.add_shape(
                 type="path",
-                path=eval(muscle),
+                path=muscle_path,
                 line_color=color,
                 fillcolor=color,
                 opacity=au_opacity,
@@ -3617,10 +3645,17 @@ def draw_plotly_au(
             color = cmap.as_hex()[
                 int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
             ]
+            # See note in the "figure" branch above — muscle-polygon path
+            # constants are commented out in this module; skip cleanly so
+            # the rest of the dictionary output (regions, pupils) renders.
+            try:
+                muscle_path = eval(muscle)
+            except NameError:
+                continue
             muscles.append(
                 dict(
                     type="path",
-                    path=eval(muscle),
+                    path=muscle_path,
                     fillcolor=color,
                     opacity=au_opacity,
                     line=dict(color=color),

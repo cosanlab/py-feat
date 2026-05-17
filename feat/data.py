@@ -706,7 +706,12 @@ class Fex(DataFrame):
         Returns:
             DataFrame: identity data
         """
-        return self[self.identity_columns[1:]]
+        # Detector populates identity_columns with the 512 embedding cols
+        # (FEAT_IDENTITY_COLUMNS[1:] — the 'Identity' string-label column is
+        # already stripped upstream in detector.py), so don't slice again.
+        # The prior [1:] silently dropped Identity_1 and caused
+        # cluster_identities to error on the resulting 511-col frame.
+        return self[self.identity_columns]
 
     @property
     def time(self):
