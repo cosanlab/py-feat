@@ -1808,16 +1808,24 @@ def plot_face_mesh(
         segments, colors=color, linewidths=linewidth, alpha=alpha,
     ))
 
-    # Iris markers — small dark spheres at the MP iris-center landmarks so
-    # the eyes don't look empty. Same data → mpl axis swap (x, z, y).
-    iris_idx = [_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER]
+    # Iris + pupil markers so the eyes don't look like empty sockets. When
+    # gaze is given, the pupils additionally shift in the gaze direction
+    # so the eyes visually track the gaze arrow.
+    pitch_rad = yaw_rad = None
+    if gaze is not None:
+        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
+    iris_centers, pupil_centers, _ = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
+    # Same data → mpl axis swap (x, z, y).
     ax.scatter(
-        verts[iris_idx, 0], verts[iris_idx, 2], verts[iris_idx, 1],
-        c="black", s=40, depthshade=False,
+        iris_centers[:, 0], iris_centers[:, 2], iris_centers[:, 1],
+        c="#5b3a29", s=120, depthshade=False, alpha=0.9,  # iris: brown
+    )
+    ax.scatter(
+        pupil_centers[:, 0], pupil_centers[:, 2], pupil_centers[:, 1],
+        c="black", s=40, depthshade=False,  # pupil: smaller, black
     )
 
     if gaze is not None:
-        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
         origin, direction, length = _gaze_arrow_in_mesh_frame(
             verts, pitch_rad, yaw_rad, length_frac=gaze_length_frac,
         )
@@ -1955,13 +1963,23 @@ def plot_face_mesh_plotly(
         hoverinfo="skip",
     )]
 
-    # Iris markers — small dark dots at the MP iris-center landmarks so the
-    # eyes don't look like empty sockets. Data → plotly axis swap (x, z, y).
-    iris_x = verts[[_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER], 0]
-    iris_y = verts[[_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER], 2]
-    iris_z = verts[[_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER], 1]
+    # Iris + pupil markers so the eyes don't look like empty sockets. When
+    # gaze is given, pupils additionally shift in the gaze direction so
+    # the eyes visually track the gaze arrow.
+    _pitch = _yaw = None
+    if gaze is not None:
+        _pitch, _yaw = float(gaze[0]), float(gaze[1])
+    iris_centers, pupil_centers, _ = _iris_pupil_positions(verts, _pitch, _yaw)
+    # Iris (brown disk).
     traces.append(go.Scatter3d(
-        x=iris_x, y=iris_y, z=iris_z,
+        x=iris_centers[:, 0], y=iris_centers[:, 2], z=iris_centers[:, 1],
+        mode="markers",
+        marker=dict(color="#5b3a29", size=12),
+        showlegend=False, hoverinfo="skip",
+    ))
+    # Pupil (smaller black dot on top of iris).
+    traces.append(go.Scatter3d(
+        x=pupil_centers[:, 0], y=pupil_centers[:, 2], z=pupil_centers[:, 1],
         mode="markers",
         marker=dict(color="black", size=6),
         showlegend=False, hoverinfo="skip",
@@ -2038,6 +2056,39 @@ _MP_IRIS_RIGHT_CENTER = 473
 _MP_IRIS_RIGHT_RING = (474, 475, 476, 477)
 
 
+def _iris_pupil_positions(verts, pitch_rad=None, yaw_rad=None):
+    """Compute iris and pupil center positions for both eyes, optionally
+    shifted in the gaze direction so the eyes visually track the gaze.
+
+    Returns:
+        iris_centers: (2, 3) array of [left_iris, right_iris] center coords
+        pupil_centers: (2, 3) array — same as iris by default, shifted
+            laterally + vertically by ~40% of iris radius when gaze given
+        iris_radii: (2,) array of per-eye iris radii (mean distance from
+            iris-center landmark to its 4 ring landmarks)
+    """
+    iris_l = verts[_MP_IRIS_LEFT_CENTER]
+    iris_r = verts[_MP_IRIS_RIGHT_CENTER]
+    iris_centers = np.stack([iris_l, iris_r])
+    r_l = float(np.mean(np.linalg.norm(verts[list(_MP_IRIS_LEFT_RING)] - iris_l, axis=1)))
+    r_r = float(np.mean(np.linalg.norm(verts[list(_MP_IRIS_RIGHT_RING)] - iris_r, axis=1)))
+    iris_radii = np.array([r_l, r_r], dtype=np.float32)
+
+    pupil_centers = iris_centers.copy()
+    if pitch_rad is not None and yaw_rad is not None:
+        # Shift pupil within the iris by a fraction of iris radius, in the
+        # direction of gaze. Z component would push the pupil into/out of
+        # the face plane, which has no visible effect under the default
+        # front-on camera, so we drop it and use only the lateral + vertical
+        # components — same convention as matplotlib plot_face's gaze 4-vec.
+        cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
+        cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+        gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
+        shift_amount = iris_radii.mean() * 0.45
+        pupil_centers = pupil_centers + shift_amount * gaze_xy
+    return iris_centers, pupil_centers, iris_radii
+
+
 def _gaze_arrow_in_mesh_frame(verts, pitch_rad, yaw_rad, length_frac=0.3):
     """Return (origin, direction, length) for a gaze arrow on a 478-vertex MP mesh.
 
@@ -2090,7 +2141,7 @@ def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
     )
     updatemenus = [dict(
         type="buttons", direction="right", showactive=False,
-        y=-0.30, x=0.5, xanchor="center", yanchor="top",
+        y=-0.45, x=0.5, xanchor="center", yanchor="top",
         pad=dict(t=10, r=10, b=10, l=10),
         buttons=[
             dict(label="▶ Play", method="animate", args=[None, play_opts]),
@@ -2100,7 +2151,7 @@ def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
         ],
     )]
     sliders = [dict(
-        active=0, y=-0.05, x=0.05, len=0.9, xanchor="left", yanchor="top",
+        active=0, y=-0.10, x=0.05, len=0.9, xanchor="left", yanchor="top",
         currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
         steps=[dict(
             method="animate", label=name,
@@ -2264,7 +2315,7 @@ def animate_face_plotly(
     fig.update_layout(
         xaxis=dict(visible=False, range=x_range, scaleanchor="y", scaleratio=1),
         yaxis=dict(visible=False, range=y_range),
-        margin=dict(l=0, r=0, t=30, b=150),
+        margin=dict(l=0, r=0, t=30, b=200),
         paper_bgcolor=background,
         plot_bgcolor=background,
         updatemenus=updatemenus,
@@ -2383,27 +2434,35 @@ def animate_face_mesh_plotly(
             hoverinfo="skip",
         )
 
-    def _iris_trace(verts):
-        # Iris-center markers so the eyes aren't empty sockets. Same
-        # axis swap (data X,Y,Z) → (plotly X, Z, Y).
-        idx = [_MP_IRIS_LEFT_CENTER, _MP_IRIS_RIGHT_CENTER]
-        return go.Scatter3d(
-            x=verts[idx, 0], y=verts[idx, 2], z=verts[idx, 1],
+    def _iris_traces(verts):
+        # Iris (brown disk) + pupil (small black dot). No gaze tracking
+        # in animations — gaze isn't a per-frame input here. Same axis
+        # swap (data X,Y,Z) → (plotly X, Z, Y).
+        iris_c, pupil_c, _ = _iris_pupil_positions(verts)
+        iris_trace = go.Scatter3d(
+            x=iris_c[:, 0], y=iris_c[:, 2], z=iris_c[:, 1],
+            mode="markers",
+            marker=dict(color="#5b3a29", size=12),
+            showlegend=False, hoverinfo="skip",
+        )
+        pupil_trace = go.Scatter3d(
+            x=pupil_c[:, 0], y=pupil_c[:, 2], z=pupil_c[:, 1],
             mode="markers",
             marker=dict(color="black", size=6),
             showlegend=False, hoverinfo="skip",
         )
+        return iris_trace, pupil_trace
 
     frames = [
         go.Frame(
-            data=[_scatter(all_xs[i], all_ys[i], all_zs[i]), _iris_trace(meshes[i])],
+            data=[_scatter(all_xs[i], all_ys[i], all_zs[i]), *_iris_traces(meshes[i])],
             name=str(i),
         )
         for i in range(len(meshes))
     ]
 
     fig = go.Figure(
-        data=[_scatter(all_xs[0], all_ys[0], all_zs[0]), _iris_trace(meshes[0])],
+        data=[_scatter(all_xs[0], all_ys[0], all_zs[0]), *_iris_traces(meshes[0])],
         frames=frames,
     )
     updatemenus, sliders = _plotly_animation_controls(len(meshes), fps)
@@ -2415,7 +2474,7 @@ def animate_face_mesh_plotly(
             aspectmode="cube",
             bgcolor=background,
         ),
-        margin=dict(l=0, r=0, t=30, b=150),
+        margin=dict(l=0, r=0, t=30, b=200),
         paper_bgcolor=background,
         updatemenus=updatemenus,
         sliders=sliders,
