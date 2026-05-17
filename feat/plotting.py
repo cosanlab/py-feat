@@ -890,6 +890,43 @@ def get_heat(muscle, au, log):
     return color
 
 
+# dlib-68 mirror pairs (anatomical left ↔ right). Indices not listed here
+# sit on the facial midline and stay put under mirror-averaging.
+_DLIB68_MIRROR_PAIRS = (
+    (0, 16), (1, 15), (2, 14), (3, 13), (4, 12), (5, 11), (6, 10), (7, 9),
+    (17, 26), (18, 25), (19, 24), (20, 23), (21, 22),
+    (36, 45), (37, 44), (38, 43), (39, 42), (40, 47), (41, 46),
+    (31, 35), (32, 34),
+    (48, 54), (49, 53), (50, 52), (59, 55), (58, 56), (60, 64), (61, 63), (67, 65),
+)
+_DLIB68_MIDLINE_IDX = (27, 28, 29, 30, 33, 51, 62, 66, 57, 8)
+
+
+def _symmetrize_dlib68(landmarks):
+    """Mirror-average dlib-68 landmarks around the facial midline.
+
+    The v2 ``PLSAULandmarkModel`` (PR #301) was trained on real CelebV-HQ
+    faces and absorbs ~5-8% mirror-asymmetry even for symmetric AU input.
+    Since none of py-feat's 20 AUs are inherently lateralized, post-hoc
+    averaging around the midline restores the geometric symmetry users
+    expect from a visualization tool. v1 ``PLSRegression`` output is
+    already symmetric to ~0.5%, so this is essentially a no-op for v1.
+    """
+    out = np.asarray(landmarks, dtype=np.float32).copy()
+    x, y = out[0], out[1]
+    midline_x = float(np.mean([x[i] for i in _DLIB68_MIDLINE_IDX]))
+    for i in _DLIB68_MIDLINE_IDX:
+        x[i] = midline_x
+    for left, right in _DLIB68_MIRROR_PAIRS:
+        avg_x = (x[left] + (2 * midline_x - x[right])) / 2
+        avg_y = (y[left] + y[right]) / 2
+        x[left] = avg_x
+        x[right] = 2 * midline_x - avg_x
+        y[left] = avg_y
+        y[right] = avg_y
+    return out
+
+
 def plot_face(
     au=None,
     model=None,
@@ -903,6 +940,7 @@ def plot_face(
     border=True,
     gaze=None,
     muscle_scaler=None,
+    symmetrize=True,
     *args,
     **kwargs,
 ):
@@ -938,6 +976,8 @@ def plot_face(
         au = np.zeros(model.n_components)
 
     landmarks = predict(au, model, feature_range=feature_range)
+    if symmetrize:
+        landmarks = _symmetrize_dlib68(landmarks)
     currx, curry = [landmarks[x, :] for x in range(2)]
 
     if ax is None:
@@ -984,8 +1024,15 @@ def plot_face(
         if "target" not in vectorfield.keys():
             vectorfield["target"] = landmarks
         ax = draw_vectorfield(ax=ax, **vectorfield)
-    ax.set_xlim([25, 172])
-    ax.set_ylim((240, 50))
+    # Auto-derive viewport from the actual landmark coords with padding.
+    # Hardcoded [25,172]/[240,50] was calibrated for the v1 viz model; the v2
+    # PLSAULandmarkModel (PR #301) returns landmarks in a different coordinate
+    # range, so a hardcoded viewport drew everything outside the visible area.
+    xs, ys = landmarks[0], landmarks[1]
+    x_pad = (xs.max() - xs.min()) * 0.12
+    y_pad = (ys.max() - ys.min()) * 0.08
+    ax.set_xlim(xs.min() - x_pad, xs.max() + x_pad)
+    ax.set_ylim(ys.max() + y_pad, ys.min() - y_pad)  # inverted (image coords)
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
@@ -1611,17 +1658,27 @@ def plot_face_mesh(
     view_init=(0, -90),
     *,
     mesh=None,
+    mode="contours",
 ):
     """3D wireframe of the predicted face mesh. Opt-in alternative to ``plot_face``.
 
-    Renders the canonical MediaPipe contours (lips + eyes + eyebrows + face
-    oval) from a 478-vertex mesh. The mesh source is selected by what the
-    caller passes:
+    Renders a 478-vertex MediaPipe mesh as a 3D wireframe. The mesh source is
+    selected by what the caller passes:
 
     - ``mesh`` given: draw that mesh directly (e.g., output of
       ``predict_mesh_from_dlib68`` for a Detector Fex).
     - ``au`` given: predict via the AU→mesh PLS model (PR #304).
     - neither: draw the population-mean rest mesh.
+
+    Edge density is controlled by ``mode``:
+
+    - ``'contours'`` (default, ~124 edges): canonical contours — lips, eyes,
+      eyebrows, face oval. Fast and uncluttered; weak expressions can look
+      similar to rest.
+    - ``'tesselation'`` (~2,556 edges): full MediaPipe tessellation. Matches
+      what ``plot_face_mesh_plotly`` shows by default. Slower to render in
+      matplotlib but reveals nose, cheek, and inner-face structure that's
+      invisible in contours.
 
     Coordinate frame: the trained mesh uses standard math convention with
     ``+X`` lateral, ``+Y`` up (forehead at ~+8, chin at ~-8), ``+Z`` out of
@@ -1638,6 +1695,7 @@ def plot_face_mesh(
         color, linewidth, alpha: line styling.
         view_init: ``(elev, azim)`` matplotlib view angles. Default frames
             the face front-on; rotate ``azim`` to see profile.
+        mode: ``'contours'`` (default) or ``'tesselation'``.
 
     Returns:
         The matplotlib 3D axis with the wireframe drawn.
@@ -1671,18 +1729,33 @@ def plot_face_mesh(
         fig = plt.figure(figsize=(5, 5))
         ax = fig.add_subplot(111, projection="3d")
 
+    if mode in ("tesselation", "tessellation"):
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION
+    elif mode == "contours":
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS
+    else:
+        raise ValueError(
+            f"mode must be 'contours' or 'tesselation' (or 'tessellation'); "
+            f"got {mode!r}"
+        )
+
     # Map data (X, Y, Z) → matplotlib (X, Z, Y) so face renders upright with
     # depth into the screen under the default viewport.
     xs = verts[:, 0]
     ys_mpl = verts[:, 2]
     zs_mpl = verts[:, 1]
 
-    for conn in FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS:
-        a, b = conn.start, conn.end
-        ax.plot(
-            [xs[a], xs[b]], [ys_mpl[a], ys_mpl[b]], [zs_mpl[a], zs_mpl[b]],
-            color=color, linewidth=linewidth, alpha=alpha,
-        )
+    # Batch all edges into a single Line3DCollection — ~10-30x faster than
+    # looping ax.plot() per edge, which matters for tesselation (~2,556 edges).
+    from mpl_toolkits.mplot3d.art3d import Line3DCollection
+    segments = [
+        ((xs[c.start], ys_mpl[c.start], zs_mpl[c.start]),
+         (xs[c.end], ys_mpl[c.end], zs_mpl[c.end]))
+        for c in connections
+    ]
+    ax.add_collection3d(Line3DCollection(
+        segments, colors=color, linewidths=linewidth, alpha=alpha,
+    ))
 
     # Equal aspect ratio so the face isn't squashed by mpl3d's default scaling.
     extents = np.array([
