@@ -117,3 +117,25 @@ FNL_01.mp4
 
 .vscode/bookmarks.json
 feat/tests/*.prof
+
+# Per-run accuracy-benchmark JSON from scripts/bench_regression.py.
+# Headline numbers ship in docs/benchmarks/<date>-<sha>-accuracy.md.
+bench-results/
+
+# Local feature-extraction caches (chunks fed to AU classifier retraining).
+# Multi-hundred-GB; regenerated from /Storage/Data via
+# scripts/extract_au_training_features.py.
+bench-cache/
+
+# Local model training outputs (xgb_au_v3.x, pose_mlp, l2cs converted .safetensors).
+# The canonical distribution channel is HuggingFace (py-feat/* repos);
+# locally-trained artifacts must not be committed.
+models/
+
+# HuggingFace download cache. Auto-populated at runtime by hf_hub_download
+# in feat/utils/io.py; never tracked. Includes any model weights that the
+# detector pulls from py-feat/* (e.g. l2cs, xgb_au, img2pose, resmasknet).
+feat/resources/.locks/
+feat/resources/CACHEDIR.TAG
+feat/resources/models--*/
+feat/resources/*.npz
