@@ -1023,6 +1023,14 @@ def plot_face(
             raise ValueError("vectorfield must contain 'reference' key")
         if "target" not in vectorfield.keys():
             vectorfield["target"] = landmarks
+        # Symmetrize endpoints too so arrows land on the drawn (symmetric)
+        # face rather than the raw asymmetric model output — otherwise the
+        # tutorial pattern of `predict(au)` → vectorfield draws arrows
+        # offset from the visible features by ~5-10 px.
+        if symmetrize:
+            vectorfield = dict(vectorfield)
+            vectorfield["reference"] = _symmetrize_dlib68(vectorfield["reference"])
+            vectorfield["target"] = _symmetrize_dlib68(vectorfield["target"])
         ax = draw_vectorfield(ax=ax, **vectorfield)
     # Auto-derive viewport from the actual landmark coords with padding.
     # Hardcoded [25,172]/[240,50] was calibrated for the v1 viz model; the v2
