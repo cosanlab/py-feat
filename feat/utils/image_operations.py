@@ -1330,6 +1330,111 @@ def procrustes_align_2d_batched(coords, anchor_idx, ref_anchors):
     return aligned.astype(np.float32)
 
 
+def procrustes_similarity_torch(
+    src_landmarks: torch.Tensor, ref_template: torch.Tensor
+) -> torch.Tensor:
+    """Batched closed-form 2D similarity transform (Umeyama / Procrustes).
+
+    For each face's landmarks, finds the rotation + uniform scale +
+    translation that best maps src → ref_template in the least-squares
+    sense. Returns the forward-pixel-coord ``[B, 2, 3]`` matrix that
+    ``feat.utils.geometry.warp_affine`` consumes.
+
+    Pure torch, fully batched, GPU-friendly. No CPU detour — keeps the
+    forward graph intact, so this can be wired anywhere downstream of
+    the landmark detector without breaking batched inference.
+
+    Args:
+        src_landmarks: ``[B, K, 2]`` per-face landmark coordinates in
+            face-crop pixel space.
+        ref_template: ``[K, 2]`` canonical template landmark positions
+            (the target frame all faces align to).
+
+    Returns:
+        ``[B, 2, 3]`` affine matrices in pixel coordinates (src->dst),
+        ready for ``warp_affine(face_crops, M, dsize=...)``.
+    """
+    if src_landmarks.dim() != 3 or src_landmarks.shape[-1] != 2:
+        raise ValueError(
+            f"src_landmarks must be [B, K, 2]; got {tuple(src_landmarks.shape)}"
+        )
+    if ref_template.shape != (src_landmarks.shape[1], 2):
+        raise ValueError(
+            f"ref_template shape {tuple(ref_template.shape)} must be "
+            f"({src_landmarks.shape[1]}, 2)"
+        )
+
+    B = src_landmarks.shape[0]
+    device = src_landmarks.device
+    dtype = src_landmarks.dtype
+    P = src_landmarks  # [B, K, 2]
+    Q = ref_template.to(device=device, dtype=dtype)  # [K, 2]
+
+    P_mean = P.mean(dim=1, keepdim=True)  # [B, 1, 2]
+    Q_mean = Q.mean(dim=0)  # [2]
+    P_c = P - P_mean  # [B, K, 2]
+    Q_c = Q - Q_mean  # [K, 2]
+
+    # Cross-covariance H = Q_c^T @ P_c (target first, source second).
+    # Matches the convention of the existing numpy procrustes_align_2d_batched
+    # so the SVD-based R below comes out with the correct orientation.
+    H = torch.einsum("ki,bkj->bij", Q_c, P_c)  # [B, 2, 2]
+
+    # SVD (batched). [B, 2, 2], [B, 2], [B, 2, 2]
+    U, S, Vh = torch.linalg.svd(H)
+    UVt = U @ Vh
+    det = torch.linalg.det(UVt)
+    # Reflection correction: ensures R is a proper rotation (det = +1).
+    d = torch.where(det < 0, -torch.ones_like(det), torch.ones_like(det))
+    D = torch.zeros(B, 2, 2, dtype=dtype, device=device)
+    D[:, 0, 0] = 1.0
+    D[:, 1, 1] = d
+    R = U @ D @ Vh  # [B, 2, 2]
+
+    var_P = (P_c.pow(2).sum(dim=(1, 2))).clamp(min=1e-12)  # [B]
+    s_num = (S * torch.stack([torch.ones_like(d), d], dim=1)).sum(dim=1)  # [B]
+    s = s_num / var_P  # [B]
+
+    # Translation: t = Q_mean - s * R @ P_mean
+    Rp = torch.einsum("bij,bj->bi", R, P_mean.squeeze(1))  # [B, 2]
+    t = Q_mean.unsqueeze(0) - s.unsqueeze(-1) * Rp  # [B, 2]
+
+    # Build [B, 2, 3]: M = [s*R | t]
+    sR = s.view(B, 1, 1) * R  # [B, 2, 2]
+    M = torch.cat([sR, t.unsqueeze(-1)], dim=-1)  # [B, 2, 3]
+    return M
+
+
+def procrustes_warp_face_crops(
+    face_crops: torch.Tensor,
+    face_landmarks: torch.Tensor,
+    ref_template: torch.Tensor,
+    out_size: tuple[int, int] | None = None,
+) -> torch.Tensor:
+    """Warp face crops so their landmarks align with a canonical template.
+
+    Combines ``procrustes_similarity_torch`` (per-face similarity transform
+    from landmarks → template) with ``warp_affine`` (apply to images).
+    Output crops are shape-normalized: same anatomical features land on
+    the same pixel coordinates across faces.
+
+    Args:
+        face_crops: ``[B, C, H, W]`` source face crops.
+        face_landmarks: ``[B, K, 2]`` per-face landmarks in source pixel coords.
+        ref_template: ``[K, 2]`` canonical landmark template in target pixel coords.
+        out_size: ``(out_h, out_w)`` output size. Defaults to source ``(H, W)``.
+
+    Returns:
+        ``[B, C, out_h, out_w]`` shape-normalized face crops.
+    """
+    from feat.utils.geometry import warp_affine
+
+    if out_size is None:
+        out_size = (face_crops.shape[-2], face_crops.shape[-1])
+    M = procrustes_similarity_torch(face_landmarks, ref_template)
+    return warp_affine(face_crops, M, dsize=out_size, mode="bilinear")
+
+
 def extract_hog_features(extracted_faces, landmarks, hog_layer=None):
     """Extract HOG features for AU classification using torch-native HOGLayer.
 
