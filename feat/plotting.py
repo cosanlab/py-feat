@@ -1059,12 +1059,16 @@ def plot_face(
         # whitespace around the face — including implicit forehead room
         # above the brows where the dlib-68 layout has no landmarks.
         ax.set_aspect("equal", adjustable="datalim")
-        # set_aspect resets any inverted ylim back to ascending, so we have
-        # to flip the y axis AFTER setting aspect to keep image-coords
-        # convention (forehead = small y appears at top, chin = large y
-        # appears at bottom).
-        if not ax.yaxis_inverted():
-            ax.invert_yaxis()
+
+    # Always ensure image-coords y orientation (forehead = small y at top,
+    # chin = large y at bottom). plot_face's landmarks live in image-coord
+    # space; without this, plot_detections(faces='aus') renders the face
+    # upside-down because its host axis isn't inverted by default. This
+    # was previously a side-effect of plot_face's unconditional
+    # ax.set_ylim((240, 50)) — when we moved that into the owns_axis
+    # branch we accidentally dropped the y-flip for external-axis callers.
+    if not ax.yaxis_inverted():
+        ax.invert_yaxis()
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
