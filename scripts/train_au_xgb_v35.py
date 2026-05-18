@@ -38,7 +38,7 @@ warnings.simplefilter("ignore")
 import numpy as np
 import pandas as pd
 
-# Re-use the v3.1 helpers — they're the row-filtered PCA we want.
+# Reuse the v3.1 helpers — they're the row-filtered PCA we want.
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import importlib.util
@@ -160,7 +160,7 @@ def train_one_au_shared(
 ) -> tuple[object, dict]:
     """Run v3.1's per-AU training but with a fixed feature matrix X.
 
-    Re-uses v31.train_one_au by passing X under all three region keys
+    Reuses v31.train_one_au by passing X under all three region keys
     (it routes by AU_REGION but since every region maps to the same X,
     routing is a no-op).
     """

@@ -251,7 +251,7 @@ def evaluate_identity(
 
     if split.metric_kind == "identity_pairs":
         # Unique-path embedding: each image often appears in multiple
-        # pairs (LFW protocol re-uses images). Dedupe before embedding.
+        # pairs (LFW protocol reuses images). Dedupe before embedding.
         # Preserve the path -> landmark mapping for alignment.
         path_to_lm: dict[str, str] = {}
         if "landmark_a" in split.labels.columns:
