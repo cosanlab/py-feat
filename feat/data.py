@@ -1855,7 +1855,17 @@ class Fex(DataFrame):
                     else:
                         color = "k"  # drawing lineface but not on photo
 
-                    if faceboxes:
+                    # Bbox / pose-axes / gaze-arrow overlays are anchored to
+                    # the facebox in original-image coords. For faces='aus'
+                    # the displayed face is the synthetic AU schematic in
+                    # the viz model's own coord system, so the bbox/pose/
+                    # gaze overlays don't align with it and just confuse
+                    # the picture. Skip them in aus mode — gaze is still
+                    # rendered on the synthetic face via plot_face's
+                    # gaze= kwarg (handled by _prepare_plot_aus).
+                    aus_mode = faces == "aus"
+
+                    if faceboxes and not aus_mode:
                         rect = Rectangle(
                             (facebox[0], facebox[1]),
                             facebox[2],
@@ -1866,14 +1876,14 @@ class Fex(DataFrame):
                         )
                         face_ax.add_patch(rect)
 
-                    if poses:
+                    if poses and not aus_mode:
                         face_ax = draw_facepose(
                             pose=row[self.facepose_columns[:3]].values,
                             facebox=facebox,
                             ax=face_ax,
                         )
 
-                    if gazes and "gaze_pitch" in row.index and "gaze_yaw" in row.index:
+                    if gazes and not aus_mode and "gaze_pitch" in row.index and "gaze_yaw" in row.index:
                         face_ax = draw_facegaze(
                             pitch_rad=row["gaze_pitch"],
                             yaw_rad=row["gaze_yaw"],
