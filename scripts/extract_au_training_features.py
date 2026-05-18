@@ -526,7 +526,13 @@ def extract_features(
             face_size = ef.shape[-1]
             N = ef.shape[0]
             lm_pix = lm.view(N, 68, 2).to(ef.device, dtype=ef.dtype) * face_size
-            M = procrustes_similarity_torch(lm_pix, aligned_template)
+            # The template CSV is in a 256-pixel reference frame; face crops
+            # are 112x112 (mobilefacenet default). Scale template to the
+            # current face_size so Procrustes maps src→dst at the same scale.
+            # Without this, the warp scales the face up ~2x and clips most
+            # of it outside the output frame.
+            target_template = aligned_template * (face_size / 256.0)
+            M = procrustes_similarity_torch(lm_pix, target_template)
             ef = warp_affine(ef, M, dsize=(face_size, face_size), mode="bilinear")
             # Apply M to landmarks too so downstream HOG masking uses the
             # post-warp positions. M maps src_pix → dst_pix via M @ [x, y, 1].
