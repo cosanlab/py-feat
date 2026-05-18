@@ -1963,20 +1963,22 @@ def plot_face_mesh_plotly(
         hoverinfo="skip",
     )]
 
-    # Iris (true 3D Mesh3d disks — rotate with face, occluded properly
-    # when face turns to profile) + pupil (small Scatter3d marker at
-    # iris center, shifted by gaze if provided).
-    _pitch = _yaw = None
+    # Iris + pupil — both true 3D Mesh3d disks so they rotate with the
+    # face and properly occlude in profile view. Pupil drawn second so
+    # plotly trace ordering layers it on top of the iris at the same
+    # depth. If gaze is given, pupil shifts laterally + vertically (XY
+    # only) toward the gaze direction.
+    pupil_shift = None
     if gaze is not None:
-        _pitch, _yaw = float(gaze[0]), float(gaze[1])
-    _, pupil_centers, _ = _iris_pupil_positions(verts, _pitch, _yaw)
-    traces.extend(_iris_mesh_traces_plotly(verts))
-    traces.append(go.Scatter3d(
-        x=pupil_centers[:, 0], y=pupil_centers[:, 2], z=pupil_centers[:, 1],
-        mode="markers",
-        marker=dict(color="black", size=6),
-        showlegend=False, hoverinfo="skip",
-    ))
+        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
+        # Reuse iris radii for the per-eye shift magnitude.
+        _, _, iris_radii = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
+        cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
+        cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+        gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
+        shift_mag = iris_radii.mean() * 0.45
+        pupil_shift = np.tile(shift_mag * gaze_xy, (2, 1))
+    traces.extend(_iris_mesh_traces_plotly(verts, pupil_shift=pupil_shift))
 
     if gaze is not None:
         pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
@@ -2049,53 +2051,74 @@ _MP_IRIS_RIGHT_CENTER = 473
 _MP_IRIS_RIGHT_RING = (474, 475, 476, 477)
 
 
-def _iris_mesh_traces_plotly(verts, color="#b08868"):
-    """Build go.Mesh3d traces for the iris disks (left + right).
+def _disk_mesh3d_trace(center, ring_pts, color, opacity=1.0):
+    """Build a single go.Mesh3d triangle-fan disk in mesh coords.
 
-    MP supplies only 4 contour landmarks per iris, which fans to a
-    diamond shape with visible triangle edges. We interpolate midpoints
-    between adjacent contour landmarks (pulled out to the same radius
-    from center) to get an 8-vertex ring → 8-triangle fan that reads as
-    a smoother disk. True 3D Mesh3d surface so the iris rotates with
-    the face and gets correctly occluded in profile view.
+    ``center`` is a (3,) anchor; ``ring_pts`` is a (4, 3) array of
+    perimeter landmarks. We interpolate midpoints between adjacent
+    ring points (pulled out to the same radius from center) to get an
+    8-vertex perimeter → 8-triangle fan that reads as a smoother disk
+    than the bare 4-vertex diamond.
     Data → plotly axis swap (X, Y, Z) → (X, Z, Y).
     """
     import plotly.graph_objects as go
+    ring_radius = float(np.mean(np.linalg.norm(ring_pts - center, axis=1)))
+    mids = []
+    for k in range(4):
+        mid = (ring_pts[k] + ring_pts[(k + 1) % 4]) / 2.0
+        r_to_mid = mid - center
+        mid_pulled = center + r_to_mid * (ring_radius / max(np.linalg.norm(r_to_mid), 1e-6))
+        mids.append(mid_pulled)
+    mids = np.stack(mids)
+    pts = np.vstack([center[None, :], ring_pts, mids])  # 9 verts: center, 4 ring, 4 mids
+    ordered = [1, 5, 2, 6, 3, 7, 4, 8]  # perimeter walk order
+    i_tri, j_tri, k_tri = [], [], []
+    for k in range(8):
+        i_tri.append(0)
+        j_tri.append(ordered[k])
+        k_tri.append(ordered[(k + 1) % 8])
+    return go.Mesh3d(
+        x=pts[:, 0], y=pts[:, 2], z=pts[:, 1],
+        i=i_tri, j=j_tri, k=k_tri,
+        color=color, opacity=opacity,
+        flatshading=True,
+        lighting=dict(ambient=0.9, diffuse=0.1, specular=0),
+        hoverinfo="skip",
+    )
+
+
+def _iris_mesh_traces_plotly(verts, iris_color="#b08868", pupil_color="black",
+                              pupil_size_frac=0.35, pupil_shift=None):
+    """Build iris + pupil Mesh3d disks for both eyes.
+
+    Both rendered as triangle-fan Mesh3d so they rotate with the face
+    geometry and depth-occlude correctly (a Scatter3d marker would
+    drift across the iris in non-front-on camera angles). Pupil is a
+    smaller dark disk centered ON the iris center (same depth) and
+    drawn AFTER the iris so plotly's trace ordering layers it on top.
+
+    ``pupil_shift`` (optional): per-eye (2, 3) array of XY offsets to
+    apply to the pupil center, used for gaze tracking. Z component is
+    typically zero (drop depth to avoid the in-out-of-face shift that
+    confuses the visual layout from non-front cameras).
+    """
     traces = []
-    for center_idx, ring_idx in (
+    for eye_i, (center_idx, ring_idx) in enumerate((
         (_MP_IRIS_LEFT_CENTER, _MP_IRIS_LEFT_RING),
         (_MP_IRIS_RIGHT_CENTER, _MP_IRIS_RIGHT_RING),
-    ):
+    )):
         center = verts[center_idx]
-        ring = verts[list(ring_idx)]  # (4, 3)
-        # Midpoints between adjacent ring points, pulled out to the iris
-        # radius so they sit on the disk boundary instead of a chord.
-        ring_radius = float(np.mean(np.linalg.norm(ring - center, axis=1)))
-        mids = []
-        for k in range(4):
-            mid = (ring[k] + ring[(k + 1) % 4]) / 2.0
-            # Push midpoint outward from center to the ring radius.
-            r_to_mid = mid - center
-            mid_pulled = center + r_to_mid * (ring_radius / max(np.linalg.norm(r_to_mid), 1e-6))
-            mids.append(mid_pulled)
-        mids = np.stack(mids)
-        # 9 vertices: 0 = center, 1-4 = original ring, 5-8 = midpoints.
-        # Triangle fan in order: ring[0], mid[0], ring[1], mid[1], ..., ring[0]
-        pts = np.vstack([center[None, :], ring, mids])
-        ordered = [1, 5, 2, 6, 3, 7, 4, 8]  # indices in pts for the 8 perimeter points
-        i_tri, j_tri, k_tri = [], [], []
-        for k in range(8):
-            i_tri.append(0)
-            j_tri.append(ordered[k])
-            k_tri.append(ordered[(k + 1) % 8])
-        traces.append(go.Mesh3d(
-            x=pts[:, 0], y=pts[:, 2], z=pts[:, 1],
-            i=i_tri, j=j_tri, k=k_tri,
-            color=color, opacity=1.0,
-            flatshading=True,
-            lighting=dict(ambient=0.9, diffuse=0.1, specular=0),
-            hoverinfo="skip",
-        ))
+        ring = verts[list(ring_idx)]
+        # Iris (full-size disk).
+        traces.append(_disk_mesh3d_trace(center, ring, color=iris_color))
+        # Pupil (smaller dark disk centered on iris center, optionally
+        # shifted in the gaze direction). Build a scaled-down ring at the
+        # same plane orientation as the iris so both share depth.
+        pupil_center = center.copy()
+        if pupil_shift is not None:
+            pupil_center = pupil_center + pupil_shift[eye_i]
+        pupil_ring = pupil_center + (ring - center) * pupil_size_frac
+        traces.append(_disk_mesh3d_trace(pupil_center, pupil_ring, color=pupil_color))
     return traces
 
 
@@ -2485,18 +2508,10 @@ def animate_face_mesh_plotly(
         )
 
     def _iris_traces(verts):
-        # Iris (true 3D Mesh3d disk that rotates with the face) + pupil
-        # (small marker at iris center). No gaze tracking in animations —
-        # gaze isn't a per-frame input here.
-        iris_meshes = _iris_mesh_traces_plotly(verts)
-        _, pupil_c, _ = _iris_pupil_positions(verts)
-        pupil_trace = go.Scatter3d(
-            x=pupil_c[:, 0], y=pupil_c[:, 2], z=pupil_c[:, 1],
-            mode="markers",
-            marker=dict(color="black", size=6),
-            showlegend=False, hoverinfo="skip",
-        )
-        return [*iris_meshes, pupil_trace]
+        # Iris + pupil as true 3D Mesh3d disks that rotate with the face
+        # and properly occlude in profile views. No gaze tracking in
+        # animations — gaze isn't a per-frame input here.
+        return _iris_mesh_traces_plotly(verts)
 
     frames = [
         go.Frame(
