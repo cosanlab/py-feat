@@ -1808,21 +1808,28 @@ def plot_face_mesh(
         segments, colors=color, linewidths=linewidth, alpha=alpha,
     ))
 
-    # Iris + pupil markers so the eyes don't look like empty sockets. When
-    # gaze is given, the pupils additionally shift in the gaze direction
-    # so the eyes visually track the gaze arrow.
+    # Iris + pupil markers. matplotlib 3D scatter uses pixel-size markers
+    # — better small-feature visibility than Poly3DCollection (which is
+    # data-unit-sized and renders tiny on a small iris). matplotlib 3D
+    # ignores zorder when depth-sorting artists, so we push the pupil
+    # forward (+Z, out of face) by 25% of iris radius to ensure it
+    # renders in front of the iris regardless of camera angle.
     pitch_rad = yaw_rad = None
     if gaze is not None:
         pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
-    iris_centers, pupil_centers, _ = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
+    iris_centers, pupil_centers, iris_radii = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
+    pupil_centers_offset = pupil_centers.copy()
+    # mpl view_init(0,-90) puts the camera on the -Y mpl axis (= -data-Z),
+    # so data -Z is closer to camera. Push pupil in -Z to render in front.
+    pupil_centers_offset[:, 2] -= iris_radii * 0.25
     # Same data → mpl axis swap (x, z, y).
     ax.scatter(
         iris_centers[:, 0], iris_centers[:, 2], iris_centers[:, 1],
-        c="#5b3a29", s=120, depthshade=False, alpha=0.9,  # iris: brown
+        c="#b08868", s=300, depthshade=False, alpha=1.0,
     )
     ax.scatter(
-        pupil_centers[:, 0], pupil_centers[:, 2], pupil_centers[:, 1],
-        c="black", s=40, depthshade=False,  # pupil: smaller, black
+        pupil_centers_offset[:, 0], pupil_centers_offset[:, 2], pupil_centers_offset[:, 1],
+        c="black", s=150, depthshade=False, alpha=1.0,
     )
 
     if gaze is not None:
@@ -2051,6 +2058,65 @@ _MP_IRIS_RIGHT_CENTER = 473
 _MP_IRIS_RIGHT_RING = (474, 475, 476, 477)
 
 
+def _disk_triangles(center, ring_pts):
+    """Return (vertex_array, triangle_indices) for an 8-triangle fan disk.
+
+    Used by both plotly (_disk_mesh3d_trace) and matplotlib
+    (_add_iris_pupil_polys_mpl) so iris/pupil geometry stays consistent.
+    Interpolates midpoints between adjacent ring landmarks (pulled out
+    to the same radius from center) so we get 8 perimeter vertices →
+    8 triangles instead of the bare 4 (which would render as a diamond).
+    """
+    ring_radius = float(np.mean(np.linalg.norm(ring_pts - center, axis=1)))
+    mids = []
+    for k in range(4):
+        mid = (ring_pts[k] + ring_pts[(k + 1) % 4]) / 2.0
+        r_to_mid = mid - center
+        mid_pulled = center + r_to_mid * (ring_radius / max(np.linalg.norm(r_to_mid), 1e-6))
+        mids.append(mid_pulled)
+    mids = np.stack(mids)
+    pts = np.vstack([center[None, :], ring_pts, mids])  # 9 verts
+    ordered = [1, 5, 2, 6, 3, 7, 4, 8]  # perimeter walk
+    triangles = [(0, ordered[k], ordered[(k + 1) % 8]) for k in range(8)]
+    return pts, triangles
+
+
+def _add_iris_pupil_polys_mpl(ax, verts, iris_color="#b08868", pupil_color="black",
+                                pupil_size_frac=0.50, pupil_shift=None):
+    """Add iris + pupil disks to a matplotlib 3D axis as Poly3DCollections.
+
+    Mirrors _iris_mesh_traces_plotly: 8-triangle fan disks for each iris
+    and pupil, using the MP iris contour landmarks. Same data → mpl axis
+    swap (x, z, y) as the rest of plot_face_mesh.
+    """
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+    for eye_i, (center_idx, ring_idx) in enumerate((
+        (_MP_IRIS_LEFT_CENTER, _MP_IRIS_LEFT_RING),
+        (_MP_IRIS_RIGHT_CENTER, _MP_IRIS_RIGHT_RING),
+    )):
+        center = verts[center_idx]
+        ring = verts[list(ring_idx)]
+        # Iris (full-size disk).
+        pts, tris = _disk_triangles(center, ring)
+        # Apply data → mpl axis swap to each vertex: (x, y, z) → (x, z, y)
+        verts_mpl = np.stack([pts[:, 0], pts[:, 2], pts[:, 1]], axis=1)
+        faces = [[verts_mpl[a], verts_mpl[b], verts_mpl[c]] for a, b, c in tris]
+        ax.add_collection3d(Poly3DCollection(
+            faces, facecolor=iris_color, edgecolor="none", alpha=1.0, zsort="max",
+        ))
+        # Pupil (smaller disk at iris center, optionally shifted by gaze).
+        pupil_center = center.copy()
+        if pupil_shift is not None:
+            pupil_center = pupil_center + pupil_shift[eye_i]
+        pupil_ring = pupil_center + (ring - center) * pupil_size_frac
+        pts_p, tris_p = _disk_triangles(pupil_center, pupil_ring)
+        verts_p_mpl = np.stack([pts_p[:, 0], pts_p[:, 2], pts_p[:, 1]], axis=1)
+        faces_p = [[verts_p_mpl[a], verts_p_mpl[b], verts_p_mpl[c]] for a, b, c in tris_p]
+        ax.add_collection3d(Poly3DCollection(
+            faces_p, facecolor=pupil_color, edgecolor="none", alpha=1.0, zsort="max",
+        ))
+
+
 def _disk_mesh3d_trace(center, ring_pts, color, opacity=1.0):
     """Build a single go.Mesh3d triangle-fan disk in mesh coords.
 
@@ -2109,14 +2175,18 @@ def _iris_mesh_traces_plotly(verts, iris_color="#b08868", pupil_color="black",
     )):
         center = verts[center_idx]
         ring = verts[list(ring_idx)]
+        ring_radius = float(np.mean(np.linalg.norm(ring - center, axis=1)))
         # Iris (full-size disk).
         traces.append(_disk_mesh3d_trace(center, ring, color=iris_color))
         # Pupil (smaller dark disk centered on iris center, optionally
-        # shifted in the gaze direction). Build a scaled-down ring at the
-        # same plane orientation as the iris so both share depth.
+        # shifted in the gaze direction). Pupil is pushed forward (+Z)
+        # by 8% of iris radius — small enough to be visually unnoticeable
+        # but large enough to disambiguate plotly's depth test so the
+        # iris doesn't z-fight with the pupil during animations.
         pupil_center = center.copy()
         if pupil_shift is not None:
             pupil_center = pupil_center + pupil_shift[eye_i]
+        pupil_center[2] += ring_radius * 0.08
         pupil_ring = pupil_center + (ring - center) * pupil_size_frac
         traces.append(_disk_mesh3d_trace(pupil_center, pupil_ring, color=pupil_color))
     return traces
