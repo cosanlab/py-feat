@@ -1808,29 +1808,22 @@ def plot_face_mesh(
         segments, colors=color, linewidths=linewidth, alpha=alpha,
     ))
 
-    # Iris + pupil markers. matplotlib 3D scatter uses pixel-size markers
-    # — better small-feature visibility than Poly3DCollection (which is
-    # data-unit-sized and renders tiny on a small iris). matplotlib 3D
-    # ignores zorder when depth-sorting artists, so we push the pupil
-    # forward (+Z, out of face) by 25% of iris radius to ensure it
-    # renders in front of the iris regardless of camera angle.
-    pitch_rad = yaw_rad = None
+    # Iris + pupil as data-unit-sized Poly3DCollection disks (matches
+    # the plot_face_mesh_plotly Mesh3d treatment). Pixel-sized scatter
+    # markers don't scale with the face — in a 3-panel side-by-side
+    # layout the markers stay the same screen size while each face
+    # shrinks, so iris/pupil appear oversized relative to the eye
+    # sockets. Data-unit disks scale correctly with the face.
+    pupil_shift = None
     if gaze is not None:
         pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
-    iris_centers, pupil_centers, iris_radii = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
-    pupil_centers_offset = pupil_centers.copy()
-    # mpl view_init(0,-90) puts the camera on the -Y mpl axis (= -data-Z),
-    # so data -Z is closer to camera. Push pupil in -Z to render in front.
-    pupil_centers_offset[:, 2] -= iris_radii * 0.25
-    # Same data → mpl axis swap (x, z, y).
-    ax.scatter(
-        iris_centers[:, 0], iris_centers[:, 2], iris_centers[:, 1],
-        c="#b08868", s=300, depthshade=False, alpha=1.0,
-    )
-    ax.scatter(
-        pupil_centers_offset[:, 0], pupil_centers_offset[:, 2], pupil_centers_offset[:, 1],
-        c="black", s=150, depthshade=False, alpha=1.0,
-    )
+        _, _, iris_radii = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
+        cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
+        cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+        gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
+        shift_mag = iris_radii.mean() * 0.45
+        pupil_shift = np.tile(shift_mag * gaze_xy, (2, 1))
+    _add_iris_pupil_polys_mpl(ax, verts, pupil_shift=pupil_shift)
 
     if gaze is not None:
         origin, direction, length = _gaze_arrow_in_mesh_frame(
@@ -2087,7 +2080,9 @@ def _add_iris_pupil_polys_mpl(ax, verts, iris_color="#b08868", pupil_color="blac
 
     Mirrors _iris_mesh_traces_plotly: 8-triangle fan disks for each iris
     and pupil, using the MP iris contour landmarks. Same data → mpl axis
-    swap (x, z, y) as the rest of plot_face_mesh.
+    swap (x, z, y) as the rest of plot_face_mesh. Pupil is pushed in
+    -data-Z (toward camera under the default view_init(0, -90)) by 15%
+    of iris radius to disambiguate the depth test against the iris.
     """
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
     for eye_i, (center_idx, ring_idx) in enumerate((
@@ -2096,9 +2091,9 @@ def _add_iris_pupil_polys_mpl(ax, verts, iris_color="#b08868", pupil_color="blac
     )):
         center = verts[center_idx]
         ring = verts[list(ring_idx)]
+        ring_radius = float(np.mean(np.linalg.norm(ring - center, axis=1)))
         # Iris (full-size disk).
         pts, tris = _disk_triangles(center, ring)
-        # Apply data → mpl axis swap to each vertex: (x, y, z) → (x, z, y)
         verts_mpl = np.stack([pts[:, 0], pts[:, 2], pts[:, 1]], axis=1)
         faces = [[verts_mpl[a], verts_mpl[b], verts_mpl[c]] for a, b, c in tris]
         ax.add_collection3d(Poly3DCollection(
@@ -2108,6 +2103,7 @@ def _add_iris_pupil_polys_mpl(ax, verts, iris_color="#b08868", pupil_color="blac
         pupil_center = center.copy()
         if pupil_shift is not None:
             pupil_center = pupil_center + pupil_shift[eye_i]
+        pupil_center[2] -= ring_radius * 0.15  # toward camera in default view
         pupil_ring = pupil_center + (ring - center) * pupil_size_frac
         pts_p, tris_p = _disk_triangles(pupil_center, pupil_ring)
         verts_p_mpl = np.stack([pts_p[:, 0], pts_p[:, 2], pts_p[:, 1]], axis=1)
