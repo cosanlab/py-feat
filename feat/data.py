@@ -39,6 +39,7 @@ from feat.plotting import (
     draw_plotly_landmark,
     draw_plotly_au,
     draw_plotly_pose,
+    draw_plotly_gaze,
     emotion_annotation_position,
 )
 from feat.pretrained import AU_LANDMARK_MAP
@@ -2019,12 +2020,15 @@ class Fex(DataFrame):
         poses=False,
         emotions=False,
         aus=False,
+        gazes=False,
         image_opacity=0.9,
         facebox_color="cyan",
         facebox_width=3,
         pose_width=2,
         landmark_color="white",
         landmark_width=2,
+        gaze_color="yellow",
+        gaze_width=3,
         emotions_position="right",
         emotions_opacity=1.0,
         emotions_color="white",
@@ -2195,6 +2199,19 @@ class Fex(DataFrame):
             ]
         )
 
+        # Add Gaze arrows
+        gazes_path = flatten_list(
+            [
+                draw_plotly_gaze(
+                    row,
+                    img_height,
+                    color=gaze_color,
+                    line_width=gaze_width,
+                )
+                for i, row in frame_fex.iterrows()
+            ]
+        )
+
         # Configure other layout
         fig.update_layout(
             width=img_width,
@@ -2217,18 +2234,20 @@ class Fex(DataFrame):
         # (the prior approach of conditionally adding shapes meant clicking
         # one button replaced the entire `layout.shapes` array, so only
         # one overlay could be visible at a time).
-        group_indices = {"bbox": [], "landmarks": [], "poses": [], "aus": []}
+        group_indices = {"bbox": [], "landmarks": [], "poses": [], "aus": [], "gazes": []}
         initial_vis = {
             "bbox": bool(bounding_boxes),
             "landmarks": bool(landmarks),
             "poses": bool(poses),
             "aus": bool(aus),
+            "gazes": bool(gazes),
         }
         for group, shapes in (
             ("bbox", faceboxes_path),
             ("landmarks", landmarks_path),
             ("poses", poses_path),
             ("aus", aus_path),
+            ("gazes", gazes_path),
         ):
             for s in shapes:
                 idx = len(fig.layout.shapes)
@@ -2264,6 +2283,7 @@ class Fex(DataFrame):
             ("Landmarks", "landmarks"),
             ("Poses", "poses"),
             ("AU", "aus"),
+            ("Gaze", "gazes"),
         ):
             idxs = group_indices[group]
             if not idxs:
@@ -2308,6 +2328,7 @@ class Fex(DataFrame):
         aus=False,
         poses=False,
         emotions=False,
+        gazes=False,
         emotions_position="right",
         emotions_opacity=1.0,
         emotions_color="white",
@@ -2318,6 +2339,8 @@ class Fex(DataFrame):
         pose_width=2,
         landmark_color="white",
         landmark_width=2,
+        gaze_color="yellow",
+        gaze_width=3,
         au_cmap="Blues",
         au_heatmap_resolution=1000,
         au_opacity=0.9,
@@ -2359,11 +2382,14 @@ class Fex(DataFrame):
                 poses=poses,
                 emotions=emotions,
                 aus=aus,
+                gazes=gazes,
                 facebox_color=facebox_color,
                 facebox_width=facebox_width,
                 pose_width=pose_width,
                 landmark_color=landmark_color,
                 landmark_width=landmark_width,
+                gaze_color=gaze_color,
+                gaze_width=gaze_width,
                 emotions_position=emotions_position,
                 emotions_opacity=emotions_opacity,
                 emotions_color=emotions_color,

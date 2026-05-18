@@ -49,6 +49,7 @@ __all__ = [
     "face_polygon_svg",
     "draw_plotly_au",
     "draw_plotly_pose",
+    "draw_plotly_gaze",
     "emotion_annotation_position",
 ]
 
@@ -3237,6 +3238,65 @@ def draw_plotly_landmark(
 
     else:
         raise ValueError('output can only be ["figure","dictionary"]')
+
+
+def draw_plotly_gaze(row, img_height, color="yellow", line_width=3):
+    """Build plotly shape dicts for a gaze arrow on one face.
+
+    Mirrors draw_facegaze (matplotlib) for use inside iplot_detections.
+    Produces a list of 2 shapes per face: a line for the arrow shaft
+    and a filled triangle path for the arrowhead. Both shapes are in
+    plotly y-flipped image coords (y = img_height - image_y).
+
+    Args:
+        row: a Fex row with gaze_pitch, gaze_yaw, FaceRect{X,Y,Width,Height}.
+        img_height: height of the underlying image (for the y flip).
+        color: arrow color.
+        line_width: shaft thickness.
+
+    Returns:
+        list of plotly shape dicts (length 2 if gaze is finite, else []).
+    """
+    if "gaze_pitch" not in row.index or "gaze_yaw" not in row.index:
+        return []
+    pitch = float(row["gaze_pitch"])
+    yaw = float(row["gaze_yaw"])
+    if not (np.isfinite(pitch) and np.isfinite(yaw)):
+        return []
+    cx = float(row["FaceRectX"]) + float(row["FaceRectWidth"]) / 2.0
+    cy_img = float(row["FaceRectY"]) + float(row["FaceRectHeight"]) / 2.0
+    cy = img_height - cy_img  # plotly y-flip
+    length = min(float(row["FaceRectWidth"]), float(row["FaceRectHeight"])) * 1.1
+    dx = length * np.sin(yaw) * np.cos(pitch)
+    # +pitch = looking up = +plotly-y direction
+    dy = length * np.sin(pitch)
+    end_x = cx + dx
+    end_y = cy + dy
+    shaft = dict(
+        type="line",
+        x0=cx, y0=cy, x1=end_x, y1=end_y,
+        line=dict(color=color, width=line_width),
+    )
+    # Arrowhead: small triangle at the tip, oriented along the gaze vector.
+    norm = np.hypot(dx, dy)
+    if norm < 1e-6:
+        return [shaft]
+    ux, uy = dx / norm, dy / norm
+    head_len = length * 0.18
+    head_half_w = length * 0.07
+    # Tip
+    tx, ty = end_x, end_y
+    # Two base corners: back from tip by head_len, perpendicular by head_half_w
+    bx0 = tx - ux * head_len + (-uy) * head_half_w
+    by0 = ty - uy * head_len + (ux) * head_half_w
+    bx1 = tx - ux * head_len - (-uy) * head_half_w
+    by1 = ty - uy * head_len - (ux) * head_half_w
+    head = dict(
+        type="path",
+        path=f"M {tx},{ty} L {bx0},{by0} L {bx1},{by1} Z",
+        fillcolor=color, line=dict(color=color, width=0),
+    )
+    return [shaft, head]
 
 
 def face_polygon_svg(line_points, img_height):
