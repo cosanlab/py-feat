@@ -2088,7 +2088,7 @@ def _disk_mesh3d_trace(center, ring_pts, color, opacity=1.0):
 
 
 def _iris_mesh_traces_plotly(verts, iris_color="#b08868", pupil_color="black",
-                              pupil_size_frac=0.35, pupil_shift=None):
+                              pupil_size_frac=0.50, pupil_shift=None):
     """Build iris + pupil Mesh3d disks for both eyes.
 
     Both rendered as triangle-fan Mesh3d so they rotate with the face
