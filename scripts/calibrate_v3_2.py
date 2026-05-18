@@ -32,7 +32,7 @@ warnings.simplefilter("ignore")
 import joblib
 import numpy as np
 
-# Re-use training-script helpers so the CV split is bit-identical
+# Reuse training-script helpers so the CV split is bit-identical
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import importlib.util
 spec = importlib.util.spec_from_file_location(

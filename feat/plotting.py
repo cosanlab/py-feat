@@ -49,6 +49,7 @@ __all__ = [
     "face_polygon_svg",
     "draw_plotly_au",
     "draw_plotly_pose",
+    "draw_plotly_gaze",
     "emotion_annotation_position",
 ]
 
@@ -890,6 +891,43 @@ def get_heat(muscle, au, log):
     return color
 
 
+# dlib-68 mirror pairs (anatomical left ↔ right). Indices not listed here
+# sit on the facial midline and stay put under mirror-averaging.
+_DLIB68_MIRROR_PAIRS = (
+    (0, 16), (1, 15), (2, 14), (3, 13), (4, 12), (5, 11), (6, 10), (7, 9),
+    (17, 26), (18, 25), (19, 24), (20, 23), (21, 22),
+    (36, 45), (37, 44), (38, 43), (39, 42), (40, 47), (41, 46),
+    (31, 35), (32, 34),
+    (48, 54), (49, 53), (50, 52), (59, 55), (58, 56), (60, 64), (61, 63), (67, 65),
+)
+_DLIB68_MIDLINE_IDX = (27, 28, 29, 30, 33, 51, 62, 66, 57, 8)
+
+
+def _symmetrize_dlib68(landmarks):
+    """Mirror-average dlib-68 landmarks around the facial midline.
+
+    The v2 ``PLSAULandmarkModel`` (PR #301) was trained on real CelebV-HQ
+    faces and absorbs ~5-8% mirror-asymmetry even for symmetric AU input.
+    Since none of py-feat's 20 AUs are inherently lateralized, post-hoc
+    averaging around the midline restores the geometric symmetry users
+    expect from a visualization tool. v1 ``PLSRegression`` output is
+    already symmetric to ~0.5%, so this is essentially a no-op for v1.
+    """
+    out = np.asarray(landmarks, dtype=np.float32).copy()
+    x, y = out[0], out[1]
+    midline_x = float(np.mean([x[i] for i in _DLIB68_MIDLINE_IDX]))
+    for i in _DLIB68_MIDLINE_IDX:
+        x[i] = midline_x
+    for left, right in _DLIB68_MIRROR_PAIRS:
+        avg_x = (x[left] + (2 * midline_x - x[right])) / 2
+        avg_y = (y[left] + y[right]) / 2
+        x[left] = avg_x
+        x[right] = 2 * midline_x - avg_x
+        y[left] = avg_y
+        y[right] = avg_y
+    return out
+
+
 def plot_face(
     au=None,
     model=None,
@@ -903,6 +941,7 @@ def plot_face(
     border=True,
     gaze=None,
     muscle_scaler=None,
+    symmetrize=True,
     *args,
     **kwargs,
 ):
@@ -938,10 +977,22 @@ def plot_face(
         au = np.zeros(model.n_components)
 
     landmarks = predict(au, model, feature_range=feature_range)
+    if symmetrize:
+        landmarks = _symmetrize_dlib68(landmarks)
     currx, curry = [landmarks[x, :] for x in range(2)]
 
+    # Decide whether to manage viewport ourselves. Yes if we own the axis
+    # (created it) OR if the caller handed us a blank axis (e.g.,
+    # plt.subplots in the vectorfield demo). No if the host axis already
+    # has data (e.g., plot_detections having called imshow on the original
+    # image first — the host's coord system is intentional and we shouldn't
+    # override it).
+    owns_axis = ax is None
     if ax is None:
         ax = _create_empty_figure()
+        host_had_data = False
+    else:
+        host_had_data = ax.has_data()
 
     if muscles is not None:
         if muscles is True:
@@ -983,9 +1034,54 @@ def plot_face(
             raise ValueError("vectorfield must contain 'reference' key")
         if "target" not in vectorfield.keys():
             vectorfield["target"] = landmarks
+        # Symmetrize endpoints too so arrows land on the drawn (symmetric)
+        # face rather than the raw asymmetric model output — otherwise the
+        # tutorial pattern of `predict(au)` → vectorfield draws arrows
+        # offset from the visible features by ~5-10 px.
+        if symmetrize:
+            vectorfield = dict(vectorfield)
+            vectorfield["reference"] = _symmetrize_dlib68(vectorfield["reference"])
+            vectorfield["target"] = _symmetrize_dlib68(vectorfield["target"])
         ax = draw_vectorfield(ax=ax, **vectorfield)
-    ax.set_xlim([25, 172])
-    ax.set_ylim((240, 50))
+    # Auto-derive viewport from all drawn artists (landmarks + muscle patches
+    # + gaze quivers + vectorfield arrows). Hardcoded [25,172]/[240,50] was
+    # calibrated for the v1 viz model; the v2 PLSAULandmarkModel (PR #301)
+    # returns landmarks in a different range, so a hardcoded viewport drew
+    # everything off-screen.
+    if not host_had_data:
+        # Manage viewport/aspect when (a) we created the figure ourselves
+        # or (b) the caller passed an externally-allocated but empty axis
+        # (e.g., the vectorfield demo's plt.subplots axes). Skip when the
+        # host axis already has data — e.g., Fex.plot_detections having
+        # called imshow on the original image first — because the host's
+        # coord system is intentional and our viewport would fight it.
+        ax.relim(visible_only=True)
+        (xmin, xmax) = ax.dataLim.intervalx
+        (ymin, ymax) = ax.dataLim.intervaly
+        x_pad = (xmax - xmin) * 0.15
+        # Mostly symmetric padding with a slight top bias for forehead
+        # feel. adjustable='datalim' (below) keeps every axes the same
+        # physical size in the figure — so side-by-side plot_face panels
+        # have consistent dimensions even when their data ranges differ
+        # (e.g., vectorfield demo's Neutral vs Raised inner brow). The
+        # cost is that asymmetric padding gets partially eaten back by
+        # datalim's symmetric expansion to satisfy the aspect lock, so
+        # the eye position ends up close to vertical center regardless.
+        y_top_pad = (ymax - ymin) * 0.25
+        y_bot_pad = (ymax - ymin) * 0.15
+        ax.set_xlim(xmin - x_pad, xmax + x_pad)
+        ax.set_ylim(ymin - y_top_pad, ymax + y_bot_pad)
+        ax.set_aspect("equal", adjustable="datalim")
+
+    # Always ensure image-coords y orientation (forehead = small y at top,
+    # chin = large y at bottom). plot_face's landmarks live in image-coord
+    # space; without this, plot_detections(faces='aus') renders the face
+    # upside-down because its host axis isn't inverted by default. This
+    # was previously a side-effect of plot_face's unconditional
+    # ax.set_ylim((240, 50)) — when we moved that into the owns_axis
+    # branch we accidentally dropped the y-flip for external-axis callers.
+    if not ax.yaxis_inverted():
+        ax.invert_yaxis()
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
     if title is not None:
@@ -1611,17 +1707,30 @@ def plot_face_mesh(
     view_init=(0, -90),
     *,
     mesh=None,
+    mode="contours",
+    gaze=None,
+    gaze_color="gold",
+    gaze_length_frac=0.3,
 ):
     """3D wireframe of the predicted face mesh. Opt-in alternative to ``plot_face``.
 
-    Renders the canonical MediaPipe contours (lips + eyes + eyebrows + face
-    oval) from a 478-vertex mesh. The mesh source is selected by what the
-    caller passes:
+    Renders a 478-vertex MediaPipe mesh as a 3D wireframe. The mesh source is
+    selected by what the caller passes:
 
     - ``mesh`` given: draw that mesh directly (e.g., output of
       ``predict_mesh_from_dlib68`` for a Detector Fex).
     - ``au`` given: predict via the AU→mesh PLS model (PR #304).
     - neither: draw the population-mean rest mesh.
+
+    Edge density is controlled by ``mode``:
+
+    - ``'contours'`` (default, ~124 edges): canonical contours — lips, eyes,
+      eyebrows, face oval. Fast and uncluttered; weak expressions can look
+      similar to rest.
+    - ``'tesselation'`` (~2,556 edges): full MediaPipe tessellation. Matches
+      what ``plot_face_mesh_plotly`` shows by default. Slower to render in
+      matplotlib but reveals nose, cheek, and inner-face structure that's
+      invisible in contours.
 
     Coordinate frame: the trained mesh uses standard math convention with
     ``+X`` lateral, ``+Y`` up (forehead at ~+8, chin at ~-8), ``+Z`` out of
@@ -1638,6 +1747,7 @@ def plot_face_mesh(
         color, linewidth, alpha: line styling.
         view_init: ``(elev, azim)`` matplotlib view angles. Default frames
             the face front-on; rotate ``azim`` to see profile.
+        mode: ``'contours'`` (default) or ``'tesselation'``.
 
     Returns:
         The matplotlib 3D axis with the wireframe drawn.
@@ -1671,17 +1781,56 @@ def plot_face_mesh(
         fig = plt.figure(figsize=(5, 5))
         ax = fig.add_subplot(111, projection="3d")
 
+    if mode in ("tesselation", "tessellation"):
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION
+    elif mode == "contours":
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS
+    else:
+        raise ValueError(
+            f"mode must be 'contours' or 'tesselation' (or 'tessellation'); "
+            f"got {mode!r}"
+        )
+
     # Map data (X, Y, Z) → matplotlib (X, Z, Y) so face renders upright with
     # depth into the screen under the default viewport.
     xs = verts[:, 0]
     ys_mpl = verts[:, 2]
     zs_mpl = verts[:, 1]
 
-    for conn in FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS:
-        a, b = conn.start, conn.end
-        ax.plot(
-            [xs[a], xs[b]], [ys_mpl[a], ys_mpl[b]], [zs_mpl[a], zs_mpl[b]],
-            color=color, linewidth=linewidth, alpha=alpha,
+    # Batch all edges into a single Line3DCollection — ~10-30x faster than
+    # looping ax.plot() per edge, which matters for tesselation (~2,556 edges).
+    from mpl_toolkits.mplot3d.art3d import Line3DCollection
+    segments = [
+        ((xs[c.start], ys_mpl[c.start], zs_mpl[c.start]),
+         (xs[c.end], ys_mpl[c.end], zs_mpl[c.end]))
+        for c in connections
+    ]
+    ax.add_collection3d(Line3DCollection(
+        segments, colors=color, linewidths=linewidth, alpha=alpha,
+    ))
+
+    # Iris + pupil as data-unit-sized Poly3DCollection disks (matches
+    # the plot_face_mesh_plotly Mesh3d treatment). Pixel-sized scatter
+    # markers don't scale with the face — in a 3-panel side-by-side
+    # layout the markers stay the same screen size while each face
+    # shrinks, so iris/pupil appear oversized relative to the eye
+    # sockets. Data-unit disks scale correctly with the face.
+    pupil_shift = None
+    if gaze is not None:
+        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
+        pupil_shift = _pupil_gaze_shift(_iris_radii(verts), pitch_rad, yaw_rad)
+    _add_iris_pupil_polys_mpl(ax, verts, pupil_shift=pupil_shift)
+
+    if gaze is not None:
+        origin, direction, length = _gaze_arrow_in_mesh_frame(
+            verts, pitch_rad, yaw_rad, length_frac=gaze_length_frac,
+        )
+        end_pt = origin + length * direction
+        # Same data → mpl-axis swap (x, z, y) used for the mesh.
+        ax.quiver(
+            origin[0], origin[2], origin[1],
+            (end_pt[0] - origin[0]), (end_pt[2] - origin[2]), (end_pt[1] - origin[1]),
+            color=gaze_color, linewidth=2.0, arrow_length_ratio=0.25,
         )
 
     # Equal aspect ratio so the face isn't squashed by mpl3d's default scaling.
@@ -1711,6 +1860,9 @@ def plot_face_mesh_plotly(
     *,
     mesh=None,
     mode="tesselation",
+    gaze=None,
+    gaze_color="gold",
+    gaze_length_frac=0.3,
 ):
     """Interactive 3D face mesh as a Plotly figure. Opt-in alternative to ``plot_face_mesh``.
 
@@ -1798,16 +1950,59 @@ def plot_face_mesh_plotly(
         seg_y[3 * i] = ys[a]; seg_y[3 * i + 1] = ys[b]; seg_y[3 * i + 2] = nan
         seg_z[3 * i] = zs[a]; seg_z[3 * i + 1] = zs[b]; seg_z[3 * i + 2] = nan
 
-    fig = go.Figure(
-        data=go.Scatter3d(
-            x=seg_x, y=seg_y, z=seg_z,
-            mode="lines",
-            line=dict(color=color, width=line_width),
-            opacity=opacity,
-            showlegend=False,
-            hoverinfo="skip",
+    traces = [go.Scatter3d(
+        x=seg_x, y=seg_y, z=seg_z,
+        mode="lines",
+        line=dict(color=color, width=line_width),
+        opacity=opacity,
+        showlegend=False,
+        hoverinfo="skip",
+    )]
+
+    # Iris + pupil — both true 3D Mesh3d disks so they rotate with the
+    # face and properly occlude in profile view. Pupil drawn second so
+    # plotly trace ordering layers it on top of the iris at the same
+    # depth. If gaze is given, pupil shifts laterally + vertically (XY
+    # only) toward the gaze direction.
+    pupil_shift = None
+    if gaze is not None:
+        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
+        pupil_shift = _pupil_gaze_shift(_iris_radii(verts), pitch_rad, yaw_rad)
+    traces.extend(_iris_mesh_traces_plotly(verts, pupil_shift=pupil_shift))
+
+    if gaze is not None:
+        pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
+        origin, direction, length = _gaze_arrow_in_mesh_frame(
+            verts, pitch_rad, yaw_rad, length_frac=gaze_length_frac,
         )
-    )
+        # Shaft from origin to ~80% of the arrow length, then a Cone tip
+        # for the remaining 20%. Scatter3d alone has no arrowhead and
+        # marker symbols don't render as directional in 3D, so the cone
+        # is what makes this read as an arrow rather than a stick.
+        shaft_end = origin + length * 0.8 * direction
+        tip_base = origin + length * direction
+        face_h = float(verts[:, 1].max() - verts[:, 1].min())
+        cone_size = face_h * 0.08  # arrowhead diameter relative to face
+        # Data → plotly axis swap (x, z, y) for both traces.
+        traces.append(go.Scatter3d(
+            x=[origin[0], shaft_end[0]],
+            y=[origin[2], shaft_end[2]],
+            z=[origin[1], shaft_end[1]],
+            mode="lines",
+            line=dict(color=gaze_color, width=10),
+            showlegend=False, hoverinfo="skip",
+        ))
+        traces.append(go.Cone(
+            x=[shaft_end[0]], y=[shaft_end[2]], z=[shaft_end[1]],
+            u=[(tip_base[0] - shaft_end[0])],
+            v=[(tip_base[2] - shaft_end[2])],
+            w=[(tip_base[1] - shaft_end[1])],
+            sizemode="absolute", sizeref=cone_size, anchor="tail",
+            colorscale=[[0, gaze_color], [1, gaze_color]],
+            showscale=False, showlegend=False, hoverinfo="skip",
+        ))
+
+    fig = go.Figure(data=traces)
 
     # Equal-aspect bounds so the face isn't visually squashed.
     extents = np.array([
@@ -1827,6 +2022,561 @@ def plot_face_mesh_plotly(
         ),
         margin=dict(l=0, r=0, t=0, b=0),
         paper_bgcolor=background,
+    )
+    return fig
+
+
+# MP-478 mesh: outer-canthi landmark indices (anatomical-left / -right eye
+# outer corner). Midpoint is a stable origin for the gaze arrow in the
+# mesh's pose-canonical frame.
+_MP_OUTER_CANTHI = (33, 263)
+
+# MP-478 iris landmarks (the +10 vertices MediaPipe added when iris-tracking
+# is enabled). 468-472 = left iris (center + 4 contour ring points),
+# 473-477 = right iris. py-feat's au_to_mesh model is trained to output
+# these too, so we can render filled "eyes" instead of empty sockets.
+_MP_IRIS_LEFT_CENTER = 468
+_MP_IRIS_LEFT_RING = (469, 470, 471, 472)
+_MP_IRIS_RIGHT_CENTER = 473
+_MP_IRIS_RIGHT_RING = (474, 475, 476, 477)
+
+
+def _disk_triangles(center, ring_pts):
+    """Return (vertex_array, triangle_indices) for an 8-triangle fan disk.
+
+    Used by both plotly (_disk_mesh3d_trace) and matplotlib
+    (_add_iris_pupil_polys_mpl) so iris/pupil geometry stays consistent.
+    Interpolates midpoints between adjacent ring landmarks (pulled out
+    to the same radius from center) so we get 8 perimeter vertices →
+    8 triangles instead of the bare 4 (which would render as a diamond).
+    """
+    ring_radius = float(np.mean(np.linalg.norm(ring_pts - center, axis=1)))
+    mids = []
+    for k in range(4):
+        mid = (ring_pts[k] + ring_pts[(k + 1) % 4]) / 2.0
+        r_to_mid = mid - center
+        mid_pulled = center + r_to_mid * (ring_radius / max(np.linalg.norm(r_to_mid), 1e-6))
+        mids.append(mid_pulled)
+    mids = np.stack(mids)
+    pts = np.vstack([center[None, :], ring_pts, mids])  # 9 verts
+    ordered = [1, 5, 2, 6, 3, 7, 4, 8]  # perimeter walk
+    triangles = [(0, ordered[k], ordered[(k + 1) % 8]) for k in range(8)]
+    return pts, triangles
+
+
+def _add_iris_pupil_polys_mpl(ax, verts, iris_color="#b08868", pupil_color="black",
+                                pupil_size_frac=0.50, pupil_shift=None):
+    """Add iris + pupil disks to a matplotlib 3D axis as Poly3DCollections.
+
+    Mirrors _iris_mesh_traces_plotly: 8-triangle fan disks for each iris
+    and pupil, using the MP iris contour landmarks. Same data → mpl axis
+    swap (x, z, y) as the rest of plot_face_mesh. Pupil is pushed in
+    -data-Z (toward camera under the default view_init(0, -90)) by 15%
+    of iris radius to disambiguate the depth test against the iris.
+    """
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+    for eye_i, (center_idx, ring_idx) in enumerate((
+        (_MP_IRIS_LEFT_CENTER, _MP_IRIS_LEFT_RING),
+        (_MP_IRIS_RIGHT_CENTER, _MP_IRIS_RIGHT_RING),
+    )):
+        center = verts[center_idx]
+        ring = verts[list(ring_idx)]
+        ring_radius = float(np.mean(np.linalg.norm(ring - center, axis=1)))
+        # Iris (full-size disk).
+        pts, tris = _disk_triangles(center, ring)
+        verts_mpl = np.stack([pts[:, 0], pts[:, 2], pts[:, 1]], axis=1)
+        faces = [[verts_mpl[a], verts_mpl[b], verts_mpl[c]] for a, b, c in tris]
+        ax.add_collection3d(Poly3DCollection(
+            faces, facecolor=iris_color, edgecolor="none", alpha=1.0, zsort="max",
+        ))
+        # Pupil (smaller disk at iris center, optionally shifted by gaze).
+        pupil_center = center.copy()
+        if pupil_shift is not None:
+            pupil_center = pupil_center + pupil_shift[eye_i]
+        pupil_center[2] -= ring_radius * 0.15  # toward camera in default view
+        pupil_ring = pupil_center + (ring - center) * pupil_size_frac
+        pts_p, tris_p = _disk_triangles(pupil_center, pupil_ring)
+        verts_p_mpl = np.stack([pts_p[:, 0], pts_p[:, 2], pts_p[:, 1]], axis=1)
+        faces_p = [[verts_p_mpl[a], verts_p_mpl[b], verts_p_mpl[c]] for a, b, c in tris_p]
+        ax.add_collection3d(Poly3DCollection(
+            faces_p, facecolor=pupil_color, edgecolor="none", alpha=1.0, zsort="max",
+        ))
+
+
+def _disk_mesh3d_trace(center, ring_pts, color, opacity=1.0):
+    """Build a single go.Mesh3d triangle-fan disk in mesh coords.
+
+    Uses _disk_triangles for the 8-vertex perimeter fan geometry, so
+    plotly and matplotlib stay in sync on disk shape. Data → plotly
+    axis swap (X, Y, Z) → (X, Z, Y).
+    """
+    import plotly.graph_objects as go
+    pts, triangles = _disk_triangles(center, ring_pts)
+    i_tri = [t[0] for t in triangles]
+    j_tri = [t[1] for t in triangles]
+    k_tri = [t[2] for t in triangles]
+    return go.Mesh3d(
+        x=pts[:, 0], y=pts[:, 2], z=pts[:, 1],
+        i=i_tri, j=j_tri, k=k_tri,
+        color=color, opacity=opacity,
+        flatshading=True,
+        lighting=dict(ambient=0.9, diffuse=0.1, specular=0),
+        hoverinfo="skip",
+    )
+
+
+def _iris_mesh_traces_plotly(verts, iris_color="#b08868", pupil_color="black",
+                              pupil_size_frac=0.50, pupil_shift=None):
+    """Build iris + pupil Mesh3d disks for both eyes.
+
+    Both rendered as triangle-fan Mesh3d so they rotate with the face
+    geometry and depth-occlude correctly (a Scatter3d marker would
+    drift across the iris in non-front-on camera angles). Pupil is a
+    smaller dark disk centered ON the iris center (same depth) and
+    drawn AFTER the iris so plotly's trace ordering layers it on top.
+
+    ``pupil_shift`` (optional): per-eye (2, 3) array of XY offsets to
+    apply to the pupil center, used for gaze tracking. Z component is
+    typically zero (drop depth to avoid the in-out-of-face shift that
+    confuses the visual layout from non-front cameras).
+    """
+    traces = []
+    for eye_i, (center_idx, ring_idx) in enumerate((
+        (_MP_IRIS_LEFT_CENTER, _MP_IRIS_LEFT_RING),
+        (_MP_IRIS_RIGHT_CENTER, _MP_IRIS_RIGHT_RING),
+    )):
+        center = verts[center_idx]
+        ring = verts[list(ring_idx)]
+        ring_radius = float(np.mean(np.linalg.norm(ring - center, axis=1)))
+        # Iris (full-size disk).
+        traces.append(_disk_mesh3d_trace(center, ring, color=iris_color))
+        # Pupil (smaller dark disk centered on iris center, optionally
+        # shifted in the gaze direction). Pupil is pushed forward (+Z)
+        # by 15% of iris radius — enough to consistently disambiguate
+        # plotly's depth test (8% wasn't enough; static views still
+        # showed the interlaced z-fight pattern on some camera angles).
+        # Still small enough that the pupil reads as flush with the iris.
+        pupil_center = center.copy()
+        if pupil_shift is not None:
+            pupil_center = pupil_center + pupil_shift[eye_i]
+        pupil_center[2] += ring_radius * 0.15
+        pupil_ring = pupil_center + (ring - center) * pupil_size_frac
+        traces.append(_disk_mesh3d_trace(pupil_center, pupil_ring, color=pupil_color))
+    return traces
+
+
+def _iris_radii(verts):
+    """Return per-eye iris radii: mean landmark distance from each iris
+    center to its 4 contour landmarks. (2,) array, [left, right].
+
+    Used by callers to size pupil-shift magnitude relative to iris size.
+    The earlier _iris_pupil_positions helper also returned pupil centers
+    with the gaze shift baked in, but the actual iris/pupil disk traces
+    (_iris_mesh_traces_plotly, _add_iris_pupil_polys_mpl) need to apply
+    their own backend-specific Z offset to disambiguate the depth test,
+    so they end up computing pupil centers locally anyway — keeping the
+    shared helper just to the radii avoids three-way drift on the
+    pupil-position math.
+    """
+    iris_l = verts[_MP_IRIS_LEFT_CENTER]
+    iris_r = verts[_MP_IRIS_RIGHT_CENTER]
+    r_l = float(np.mean(np.linalg.norm(verts[list(_MP_IRIS_LEFT_RING)] - iris_l, axis=1)))
+    r_r = float(np.mean(np.linalg.norm(verts[list(_MP_IRIS_RIGHT_RING)] - iris_r, axis=1)))
+    return np.array([r_l, r_r], dtype=np.float32)
+
+
+def _pupil_gaze_shift(iris_radii, pitch_rad, yaw_rad):
+    """Convert (pitch, yaw) head-centric gaze to a per-eye XY shift array
+    for the pupil within the iris. Returns a (2, 3) array (left, right
+    eye) with zero Z component — Z is depth and has no visible 2D effect
+    under the default front-on cameras. Magnitude is 45% of mean iris
+    radius so the shifted pupil stays inside the iris ring.
+
+    Sign convention: matches matplotlib plot_face's pupil 4-vec.
+    """
+    cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
+    cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+    gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
+    shift_mag = float(np.mean(iris_radii)) * 0.45
+    return np.tile(shift_mag * gaze_xy, (2, 1))
+
+
+def _gaze_arrow_in_mesh_frame(verts, pitch_rad, yaw_rad, length_frac=0.3):
+    """Return (origin, direction, length) for a gaze arrow on a 478-vertex MP mesh.
+
+    Origin: midpoint of outer-canthi landmarks (33, 263) — a stable per-frame
+    anchor that doesn't drift with eyelid AUs.
+
+    Direction in the mesh's (+X lateral-to-viewer's-left, +Y up, +Z out-of-face)
+    frame from L2CS (pitch, yaw) head-centric Euler angles. Positive pitch =
+    looking up; positive yaw = turning head/eyes to the subject's right
+    (which is the viewer's left, i.e., -X in the mesh frame).
+
+    Length: ``length_frac`` of the face Y-extent (chin-to-forehead) so the
+    arrow scales with whatever face size the mesh model produces.
+    """
+    origin = (verts[_MP_OUTER_CANTHI[0]] + verts[_MP_OUTER_CANTHI[1]]) / 2.0
+    cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
+    cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+    # Subject's-right yaw → viewer's-left → -X direction in mesh frame.
+    direction = np.array([-sy * cp, sp, cy * cp], dtype=np.float32)
+    face_h = float(verts[:, 1].max() - verts[:, 1].min())
+    length = face_h * length_frac
+    return origin, direction, length
+
+
+def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
+    """Build the updatemenus + sliders block shared by all plotly animations.
+
+    Plotly has no native infinite-loop animation primitive in the Python API,
+    so the Loop button plays a sequence of ``loop_repeats`` cycles back-to-
+    back (essentially infinite for any practical viewing session, and only
+    adds a list of frame-name strings to the figure JSON — negligible bytes).
+
+    Buttons sit below the slider in a horizontal row so they don't overlap
+    the figure title (which y=1.05 placement collided with).
+    """
+    frame_names = [str(i) for i in range(n_frames)]
+    frame_duration_ms = int(1000 / fps)
+    play_opts = dict(
+        frame=dict(duration=frame_duration_ms, redraw=True),
+        transition=dict(duration=0),
+        fromcurrent=True,
+        mode="immediate",
+    )
+    pause_opts = dict(frame=dict(duration=0, redraw=False), mode="immediate")
+    loop_opts = dict(
+        frame=dict(duration=frame_duration_ms, redraw=True),
+        transition=dict(duration=0),
+        fromcurrent=False,
+        mode="immediate",
+    )
+    updatemenus = [dict(
+        type="buttons", direction="right", showactive=False,
+        y=-0.45, x=0.5, xanchor="center", yanchor="top",
+        pad=dict(t=10, r=10, b=10, l=10),
+        buttons=[
+            dict(label="▶ Play", method="animate", args=[None, play_opts]),
+            dict(label="❚❚ Pause", method="animate", args=[[None], pause_opts]),
+            dict(label="↻ Loop",  method="animate",
+                 args=[frame_names * loop_repeats, loop_opts]),
+        ],
+    )]
+    sliders = [dict(
+        active=0, y=-0.10, x=0.05, len=0.9, xanchor="left", yanchor="top",
+        currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
+        steps=[dict(
+            method="animate", label=name,
+            args=[[name], dict(frame=dict(duration=0, redraw=True),
+                               mode="immediate", transition=dict(duration=0))]
+        ) for name in frame_names],
+    )]
+    return updatemenus, sliders
+
+
+# dlib-68 line sequences used by draw_lineface(). Lifted here so the plotly
+# 2D animation can build the same face geometry without owning matplotlib state.
+# Each tuple is a polyline through landmark indices; NaN separates them when
+# packed into a single Plotly Scatter trace.
+_DLIB68_LINE_PATHS = (
+    tuple(range(0, 17)),                                            # jaw / face outline
+    (17, 18, 19, 20, 21),                                           # left eyebrow
+    (22, 23, 24, 25, 26),                                           # right eyebrow
+    (27, 28, 29, 30),                                               # nose bridge
+    (31, 32, 33, 34, 35),                                           # nose bottom
+    (36, 37, 38, 39, 40, 41, 36),                                   # left eye
+    (42, 43, 44, 45, 46, 47, 42),                                   # right eye
+    (48, 49, 50, 51, 52, 53, 54, 64, 63, 62, 61, 60, 48),           # lips outer top + inner top
+    (48, 60, 67, 66, 65, 64, 54, 55, 56, 57, 58, 59, 48),           # lips inner bottom + outer bottom
+)
+
+
+def animate_face_plotly(
+    start,
+    end,
+    num_frames=24,
+    fps=15,
+    include_reverse=True,
+    model=None,
+    color="black",
+    line_width=1.5,
+    background="white",
+    symmetrize=True,
+):
+    """Interactive 2D 68-pt face-landmark animation in Plotly.
+
+    Returns a Plotly ``Figure`` with frames + play/pause + slider, animating
+    the legacy ``plot_face`` line geometry between ``start`` and ``end`` AU
+    vectors. Complements ``animate_face`` (matplotlib GIF) and
+    ``animate_face_mesh_plotly`` (3D mesh).
+
+    The plotly version is handy for live notebook exploration when you
+    don't want to write a GIF file — and unlike matplotlib's celluloid
+    path, the animation keeps the figure interactive (pan, zoom, scrub
+    via the slider).
+
+    Args:
+        start: AU intensity vector ``(20,)`` at frame 0.
+        end: AU intensity vector ``(20,)`` at the peak.
+        num_frames: frames in the start→end half (cubic-eased).
+        fps: playback rate (sets per-frame transition duration).
+        include_reverse: append end→start so the loop returns to neutral.
+        model: optional viz model override (defaults to the cached v2
+            ``PLSAULandmarkModel``; same default as ``plot_face``).
+        color, line_width, background: scene styling.
+        symmetrize: mirror-average each frame's predicted landmarks so the
+            animation stays clean even when the underlying model is
+            mildly asymmetric (same default as ``plot_face``).
+
+    Returns:
+        ``plotly.graph_objects.Figure``.
+    """
+    import plotly.graph_objects as go
+
+    if model is None:
+        model = load_viz_model()
+
+    aus = interpolate_aus(
+        start=np.asarray(start, dtype=np.float32),
+        end=np.asarray(end, dtype=np.float32),
+        num_frames=num_frames,
+        include_reverse=include_reverse,
+    )
+
+    # Per-frame landmark prediction + optional symmetrize.
+    frames_xy = []
+    for au in aus:
+        lm = predict(au, model=model)
+        if symmetrize:
+            lm = _symmetrize_dlib68(lm)
+        frames_xy.append(lm)
+
+    # Build NaN-separated polyline arrays per frame using the same line
+    # paths draw_lineface walks. y-axis is inverted at layout level so
+    # we get the image-coord convention used by plot_face.
+    def _pack_lines(lm):
+        xs, ys = [], []
+        for path in _DLIB68_LINE_PATHS:
+            xs.extend(lm[0, i] for i in path)
+            xs.append(np.nan)
+            ys.extend(lm[1, i] for i in path)
+            ys.append(np.nan)
+        return np.array(xs, dtype=np.float32), np.array(ys, dtype=np.float32)
+
+    # Pupil centers + radii per frame, same math as draw_lineface.
+    # Left eye: mean of upper/lower inner-lid landmarks (37,38,40,41).
+    # Right eye: same mirror (43,44,46,47).
+    def _pupils(lm):
+        x, y = lm[0], lm[1]
+        lx = (x[37] + x[38] + x[40] + x[41]) / 4
+        ly = (y[37] + y[38] + y[40] + y[41]) / 4
+        l_radius = abs(-y[37] - y[38] + y[40] + y[41]) / 5
+        rx = (x[43] + x[44] + x[46] + x[47]) / 4
+        ry = (y[43] + y[44] + y[46] + y[47]) / 4
+        r_radius = abs(-y[43] - y[44] + y[46] + y[47]) / 5
+        return [lx, rx], [ly, ry], [l_radius, r_radius]
+
+    packed = [_pack_lines(lm) for lm in frames_xy]
+    pupils = [_pupils(lm) for lm in frames_xy]
+
+    # Global extent across all frames → stable camera (no zoom jitter).
+    all_xs = np.concatenate([p[0] for p in packed])
+    all_ys = np.concatenate([p[1] for p in packed])
+    finite_x = all_xs[np.isfinite(all_xs)]
+    finite_y = all_ys[np.isfinite(all_ys)]
+    x_pad = (finite_x.max() - finite_x.min()) * 0.10
+    y_pad = (finite_y.max() - finite_y.min()) * 0.08
+    x_range = [finite_x.min() - x_pad, finite_x.max() + x_pad]
+    y_range = [finite_y.max() + y_pad, finite_y.min() - y_pad]  # inverted
+
+    def _lines_trace(seg_x, seg_y):
+        return go.Scatter(
+            x=seg_x, y=seg_y,
+            mode="lines",
+            line=dict(color=color, width=line_width),
+            showlegend=False, hoverinfo="skip",
+        )
+
+    def _pupil_trace(px, py, pradius):
+        # plotly markers use pixel-size, not data-units; convert by scaling
+        # mean radius to roughly pixel-equivalent at the current viewport.
+        # 2*radius covers the iris area; ~1.6x looks right with default sizes.
+        mean_r = float(np.mean(pradius))
+        marker_size = max(6.0, mean_r * 3.2)
+        return go.Scatter(
+            x=px, y=py,
+            mode="markers",
+            marker=dict(color="black", size=marker_size, line=dict(width=0)),
+            showlegend=False, hoverinfo="skip",
+        )
+
+    frames = [
+        go.Frame(
+            data=[_lines_trace(*packed[i]), _pupil_trace(*pupils[i])],
+            name=str(i),
+        )
+        for i in range(len(packed))
+    ]
+    frame_duration_ms = int(1000 / fps)
+
+    fig = go.Figure(
+        data=[_lines_trace(*packed[0]), _pupil_trace(*pupils[0])],
+        frames=frames,
+    )
+    updatemenus, sliders = _plotly_animation_controls(len(packed), fps)
+    fig.update_layout(
+        xaxis=dict(visible=False, range=x_range, scaleanchor="y", scaleratio=1),
+        yaxis=dict(visible=False, range=y_range),
+        margin=dict(l=0, r=0, t=30, b=200),
+        paper_bgcolor=background,
+        plot_bgcolor=background,
+        updatemenus=updatemenus,
+        sliders=sliders,
+    )
+    return fig
+
+
+def animate_face_mesh_plotly(
+    start,
+    end,
+    num_frames=24,
+    fps=15,
+    include_reverse=True,
+    model=None,
+    mode="tesselation",
+    color="black",
+    line_width=1.5,
+    opacity=0.85,
+    background="white",
+):
+    """Interactive 3D face-mesh animation between two AU intensity vectors.
+
+    Returns a Plotly ``Figure`` with frames + play/pause buttons + a frame
+    slider. The 3D camera stays rotatable while the animation plays — so
+    the user can pick a profile angle, hit play, and watch the expression
+    morph from that viewpoint. Companion to ``plot_face_mesh_plotly`` (a
+    single static frame) and ``animate_face`` (legacy 2D matplotlib GIF).
+
+    Args:
+        start: AU intensity vector ``(20,)`` at the animation's first frame.
+        end: AU intensity vector ``(20,)`` at the peak.
+        num_frames: number of frames in the start→end half (cubic-eased).
+            Total frames is 2*num_frames if include_reverse, else num_frames.
+        fps: playback rate. Sets the per-frame ``duration`` (ms) in plotly's
+            animation transition.
+        include_reverse: append end→start so the loop returns to neutral.
+        model: optional ``PLSAUMeshModel`` (defaults to the cached v2 model).
+        mode: ``'tesselation'`` (default) or ``'contours'``. See
+            ``plot_face_mesh_plotly``.
+        color, line_width, opacity, background: scene styling, same as
+            ``plot_face_mesh_plotly``.
+
+    Returns:
+        ``plotly.graph_objects.Figure``. Call ``.show()`` to play in a
+        notebook, or ``.write_html(path)`` to save a standalone HTML file
+        with the animation controls embedded.
+    """
+    import plotly.graph_objects as go
+    from feat.utils.mp_plotting import FaceLandmarksConnections
+
+    if mode in ("tesselation", "tessellation"):
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION
+    elif mode == "contours":
+        connections = FaceLandmarksConnections.FACE_LANDMARKS_CONTOURS
+    else:
+        raise ValueError(
+            f"mode must be 'tesselation' or 'contours'; got {mode!r}"
+        )
+
+    # Cubic-eased AU trajectory; reuses the helper that animate_face uses.
+    aus = interpolate_aus(
+        start=np.asarray(start, dtype=np.float32),
+        end=np.asarray(end, dtype=np.float32),
+        num_frames=num_frames,
+        include_reverse=include_reverse,
+    )
+
+    # Predict every frame's mesh in one batched call when supported, else loop.
+    if model is None:
+        model = load_face_mesh_viz_model()
+    meshes = predict_face_mesh(aus, model=model)  # (n_frames, 478, 3)
+
+    # Build all per-frame NaN-separated segment arrays up front so we can
+    # also compute global extents for a stable camera that doesn't rescale
+    # mid-animation.
+    n_edges = len(connections)
+    a_idx = np.array([c.start for c in connections])
+    b_idx = np.array([c.end for c in connections])
+    nan = np.float32(np.nan)
+
+    all_xs, all_ys, all_zs = [], [], []
+    for verts in meshes:
+        # Data (X, Y, Z) → plotly (X, Z, Y) for upright face orientation.
+        xs = verts[:, 0]
+        ys = verts[:, 2]
+        zs = verts[:, 1]
+        seg_x = np.empty(3 * n_edges, dtype=np.float32)
+        seg_y = np.empty(3 * n_edges, dtype=np.float32)
+        seg_z = np.empty(3 * n_edges, dtype=np.float32)
+        seg_x[0::3] = xs[a_idx]; seg_x[1::3] = xs[b_idx]; seg_x[2::3] = nan
+        seg_y[0::3] = ys[a_idx]; seg_y[1::3] = ys[b_idx]; seg_y[2::3] = nan
+        seg_z[0::3] = zs[a_idx]; seg_z[1::3] = zs[b_idx]; seg_z[2::3] = nan
+        all_xs.append(seg_x); all_ys.append(seg_y); all_zs.append(seg_z)
+
+    # Global extents across all frames so the camera doesn't jitter.
+    flat_verts = meshes.reshape(-1, 3)
+    glob_xs = flat_verts[:, 0]
+    glob_ys = flat_verts[:, 2]
+    glob_zs = flat_verts[:, 1]
+    extents = np.array([
+        [glob_xs.min(), glob_xs.max()],
+        [glob_ys.min(), glob_ys.max()],
+        [glob_zs.min(), glob_zs.max()],
+    ])
+    centers = extents.mean(axis=1)
+    half = (extents[:, 1] - extents[:, 0]).max() / 2
+
+    def _scatter(seg_x, seg_y, seg_z):
+        return go.Scatter3d(
+            x=seg_x, y=seg_y, z=seg_z,
+            mode="lines",
+            line=dict(color=color, width=line_width),
+            opacity=opacity,
+            showlegend=False,
+            hoverinfo="skip",
+        )
+
+    def _iris_traces(verts):
+        # Iris + pupil as true 3D Mesh3d disks that rotate with the face
+        # and properly occlude in profile views. No gaze tracking in
+        # animations — gaze isn't a per-frame input here.
+        return _iris_mesh_traces_plotly(verts)
+
+    frames = [
+        go.Frame(
+            data=[_scatter(all_xs[i], all_ys[i], all_zs[i]), *_iris_traces(meshes[i])],
+            name=str(i),
+        )
+        for i in range(len(meshes))
+    ]
+
+    fig = go.Figure(
+        data=[_scatter(all_xs[0], all_ys[0], all_zs[0]), *_iris_traces(meshes[0])],
+        frames=frames,
+    )
+    updatemenus, sliders = _plotly_animation_controls(len(meshes), fps)
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(visible=False, range=[centers[0] - half, centers[0] + half]),
+            yaxis=dict(visible=False, range=[centers[1] - half, centers[1] + half]),
+            zaxis=dict(visible=False, range=[centers[2] - half, centers[2] + half]),
+            aspectmode="cube",
+            bgcolor=background,
+        ),
+        margin=dict(l=0, r=0, t=30, b=200),
+        paper_bgcolor=background,
+        updatemenus=updatemenus,
+        sliders=sliders,
     )
     return fig
 
@@ -2461,6 +3211,65 @@ def draw_plotly_landmark(
         raise ValueError('output can only be ["figure","dictionary"]')
 
 
+def draw_plotly_gaze(row, img_height, color="yellow", line_width=3):
+    """Build plotly shape dicts for a gaze arrow on one face.
+
+    Mirrors draw_facegaze (matplotlib) for use inside iplot_detections.
+    Produces a list of 2 shapes per face: a line for the arrow shaft
+    and a filled triangle path for the arrowhead. Both shapes are in
+    plotly y-flipped image coords (y = img_height - image_y).
+
+    Args:
+        row: a Fex row with gaze_pitch, gaze_yaw, FaceRect{X,Y,Width,Height}.
+        img_height: height of the underlying image (for the y flip).
+        color: arrow color.
+        line_width: shaft thickness.
+
+    Returns:
+        list of plotly shape dicts (length 2 if gaze is finite, else []).
+    """
+    if "gaze_pitch" not in row.index or "gaze_yaw" not in row.index:
+        return []
+    pitch = float(row["gaze_pitch"])
+    yaw = float(row["gaze_yaw"])
+    if not (np.isfinite(pitch) and np.isfinite(yaw)):
+        return []
+    cx = float(row["FaceRectX"]) + float(row["FaceRectWidth"]) / 2.0
+    cy_img = float(row["FaceRectY"]) + float(row["FaceRectHeight"]) / 2.0
+    cy = img_height - cy_img  # plotly y-flip
+    length = min(float(row["FaceRectWidth"]), float(row["FaceRectHeight"])) * 1.1
+    dx = length * np.sin(yaw) * np.cos(pitch)
+    # +pitch = looking up = +plotly-y direction
+    dy = length * np.sin(pitch)
+    end_x = cx + dx
+    end_y = cy + dy
+    shaft = dict(
+        type="line",
+        x0=cx, y0=cy, x1=end_x, y1=end_y,
+        line=dict(color=color, width=line_width),
+    )
+    # Arrowhead: small triangle at the tip, oriented along the gaze vector.
+    norm = np.hypot(dx, dy)
+    if norm < 1e-6:
+        return [shaft]
+    ux, uy = dx / norm, dy / norm
+    head_len = length * 0.18
+    head_half_w = length * 0.07
+    # Tip
+    tx, ty = end_x, end_y
+    # Two base corners: back from tip by head_len, perpendicular by head_half_w
+    bx0 = tx - ux * head_len + (-uy) * head_half_w
+    by0 = ty - uy * head_len + (ux) * head_half_w
+    bx1 = tx - ux * head_len - (-uy) * head_half_w
+    by1 = ty - uy * head_len - (ux) * head_half_w
+    head = dict(
+        type="path",
+        path=f"M {tx},{ty} L {bx0},{by0} L {bx1},{by1} Z",
+        fillcolor=color, line=dict(color=color, width=0),
+    )
+    return [shaft, head]
+
+
 def face_polygon_svg(line_points, img_height):
     """Helper function to draw SVG path for a polygon of a specific face part. Requires list of landmark x,y coordinate tuples (i.e., [(2,2),(5,33)]).
 
@@ -2613,414 +3422,414 @@ def draw_plotly_au(
         "AU43",
     ]
 
-    # masseter_l = face_polygon_svg(
-    #     [
-    #         (row["x_2"], row["y_2"]),
-    #         (row["x_3"], row["y_3"]),
-    #         (row["x_4"], row["y_4"]),
-    #         (row["x_5"], row["y_5"]),
-    #         (row["x_6"], row["y_6"]),
-    #         (row["x_5"], row["y_33"]),
-    #     ],
-    #     img_height,
-    # )
+    masseter_l = face_polygon_svg(
+        [
+            (row["x_2"], row["y_2"]),
+            (row["x_3"], row["y_3"]),
+            (row["x_4"], row["y_4"]),
+            (row["x_5"], row["y_5"]),
+            (row["x_6"], row["y_6"]),
+            (row["x_5"], row["y_33"]),
+        ],
+        img_height,
+    )
 
-    # masseter_r = face_polygon_svg(
-    #     [
-    #         (row["x_14"], row["y_14"]),
-    #         (row["x_13"], row["y_13"]),
-    #         (row["x_12"], row["y_12"]),
-    #         (row["x_11"], row["y_11"]),
-    #         (row["x_10"], row["y_10"]),
-    #         (row["x_11"], row["y_33"]),
-    #     ],
-    #     img_height,
-    # )
+    masseter_r = face_polygon_svg(
+        [
+            (row["x_14"], row["y_14"]),
+            (row["x_13"], row["y_13"]),
+            (row["x_12"], row["y_12"]),
+            (row["x_11"], row["y_11"]),
+            (row["x_10"], row["y_10"]),
+            (row["x_11"], row["y_33"]),
+        ],
+        img_height,
+    )
 
-    # temporalis_l = face_polygon_svg(
-    #     [
-    #         (row["x_2"], row["y_2"]),
-    #         (row["x_1"], row["y_1"]),
-    #         (row["x_0"], row["y_0"]),
-    #         (row["x_17"], row["y_17"]),
-    #         (row["x_36"], row["y_36"]),
-    #     ],
-    #     img_height,
-    # )
+    temporalis_l = face_polygon_svg(
+        [
+            (row["x_2"], row["y_2"]),
+            (row["x_1"], row["y_1"]),
+            (row["x_0"], row["y_0"]),
+            (row["x_17"], row["y_17"]),
+            (row["x_36"], row["y_36"]),
+        ],
+        img_height,
+    )
 
-    # temporalis_r = face_polygon_svg(
-    #     [
-    #         (row["x_14"], row["y_14"]),
-    #         (row["x_15"], row["y_15"]),
-    #         (row["x_16"], row["y_16"]),
-    #         (row["x_26"], row["y_26"]),
-    #         (row["x_45"], row["y_45"]),
-    #     ],
-    #     img_height,
-    # )
+    temporalis_r = face_polygon_svg(
+        [
+            (row["x_14"], row["y_14"]),
+            (row["x_15"], row["y_15"]),
+            (row["x_16"], row["y_16"]),
+            (row["x_26"], row["y_26"]),
+            (row["x_45"], row["y_45"]),
+        ],
+        img_height,
+    )
 
-    # dep_lab_inf_l = face_polygon_svg(
-    #     [
-    #         (row["x_57"], row["y_57"]),
-    #         (row["x_58"], row["y_58"]),
-    #         (row["x_59"], row["y_59"]),
-    #         (row["x_6"], row["y_6"]),
-    #         (row["x_7"], row["y_7"]),
-    #     ],
-    #     img_height,
-    # )
+    dep_lab_inf_l = face_polygon_svg(
+        [
+            (row["x_57"], row["y_57"]),
+            (row["x_58"], row["y_58"]),
+            (row["x_59"], row["y_59"]),
+            (row["x_6"], row["y_6"]),
+            (row["x_7"], row["y_7"]),
+        ],
+        img_height,
+    )
 
-    # dep_lab_inf_r = face_polygon_svg(
-    #     [
-    #         (row["x_57"], row["y_57"]),
-    #         (row["x_56"], row["y_56"]),
-    #         (row["x_55"], row["y_55"]),
-    #         (row["x_10"], row["y_10"]),
-    #         (row["x_9"], row["y_9"]),
-    #     ],
-    #     img_height,
-    # )
+    dep_lab_inf_r = face_polygon_svg(
+        [
+            (row["x_57"], row["y_57"]),
+            (row["x_56"], row["y_56"]),
+            (row["x_55"], row["y_55"]),
+            (row["x_10"], row["y_10"]),
+            (row["x_9"], row["y_9"]),
+        ],
+        img_height,
+    )
 
-    # dep_ang_or_l = face_polygon_svg(
-    #     [
-    #         (row["x_48"], row["y_48"]),
-    #         (row["x_7"], row["y_7"]),
-    #         (row["x_6"], row["y_6"]),
-    #     ],
-    #     img_height,
-    # )
+    dep_ang_or_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_7"], row["y_7"]),
+            (row["x_6"], row["y_6"]),
+        ],
+        img_height,
+    )
 
-    # dep_ang_or_r = face_polygon_svg(
-    #     [
-    #         (row["x_54"], row["y_54"]),
-    #         (row["x_9"], row["y_9"]),
-    #         (row["x_10"], row["y_10"]),
-    #     ],
-    #     img_height,
-    # )
+    dep_ang_or_r = face_polygon_svg(
+        [
+            (row["x_54"], row["y_54"]),
+            (row["x_9"], row["y_9"]),
+            (row["x_10"], row["y_10"]),
+        ],
+        img_height,
+    )
 
-    # mentalis_l = face_polygon_svg(
-    #     [
-    #         (row["x_58"], row["y_58"]),
-    #         (row["x_7"], row["y_7"]),
-    #         (row["x_8"], row["y_8"]),
-    #     ],
-    #     img_height,
-    # )
+    mentalis_l = face_polygon_svg(
+        [
+            (row["x_58"], row["y_58"]),
+            (row["x_7"], row["y_7"]),
+            (row["x_8"], row["y_8"]),
+        ],
+        img_height,
+    )
 
-    # mentalis_r = face_polygon_svg(
-    #     [
-    #         (row["x_56"], row["y_56"]),
-    #         (row["x_9"], row["y_9"]),
-    #         (row["x_8"], row["y_8"]),
-    #     ],
-    #     img_height,
-    # )
+    mentalis_r = face_polygon_svg(
+        [
+            (row["x_56"], row["y_56"]),
+            (row["x_9"], row["y_9"]),
+            (row["x_8"], row["y_8"]),
+        ],
+        img_height,
+    )
 
-    # risorius_l = face_polygon_svg(
-    #     [
-    #         (row["x_4"], row["y_4"]),
-    #         (row["x_5"], row["y_5"]),
-    #         (row["x_48"], row["y_48"]),
-    #     ],
-    #     img_height,
-    # )
+    risorius_l = face_polygon_svg(
+        [
+            (row["x_4"], row["y_4"]),
+            (row["x_5"], row["y_5"]),
+            (row["x_48"], row["y_48"]),
+        ],
+        img_height,
+    )
 
-    # risorius_r = face_polygon_svg(
-    #     [
-    #         (row["x_11"], row["y_11"]),
-    #         (row["x_12"], row["y_12"]),
-    #         (row["x_54"], row["y_54"]),
-    #     ],
-    #     img_height,
-    # )
+    risorius_r = face_polygon_svg(
+        [
+            (row["x_11"], row["y_11"]),
+            (row["x_12"], row["y_12"]),
+            (row["x_54"], row["y_54"]),
+        ],
+        img_height,
+    )
 
-    # bottom = (row["y_8"] - row["y_57"]) / 2
+    bottom = (row["y_8"] - row["y_57"]) / 2
 
-    # orb_oris_l = face_polygon_svg(
-    #     [
-    #         (row["x_48"], row["y_48"]),
-    #         (row["x_59"], row["y_59"]),
-    #         (row["x_58"], row["y_58"]),
-    #         (row["x_57"], row["y_57"]),
-    #         (row["x_56"], row["y_56"]),
-    #         (row["x_55"], row["y_55"] + bottom),
-    #         (row["x_54"], row["y_54"] + bottom),
-    #         (row["x_55"], row["y_55"] + bottom),
-    #         (row["x_56"], row["y_56"] + bottom),
-    #         (row["x_57"], row["y_57"] + bottom),
-    #         (row["x_58"], row["y_58"] + bottom),
-    #         (row["x_59"], row["y_59"] + bottom),
-    #     ],
-    #     img_height,
-    # )
+    orb_oris_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_59"], row["y_59"]),
+            (row["x_58"], row["y_58"]),
+            (row["x_57"], row["y_57"]),
+            (row["x_56"], row["y_56"]),
+            (row["x_55"], row["y_55"] + bottom),
+            (row["x_54"], row["y_54"] + bottom),
+            (row["x_55"], row["y_55"] + bottom),
+            (row["x_56"], row["y_56"] + bottom),
+            (row["x_57"], row["y_57"] + bottom),
+            (row["x_58"], row["y_58"] + bottom),
+            (row["x_59"], row["y_59"] + bottom),
+        ],
+        img_height,
+    )
 
-    # orb_oris_u = face_polygon_svg(
-    #     [
-    #         (row["x_48"], row["y_48"]),
-    #         (row["x_49"], row["y_49"]),
-    #         (row["x_50"], row["y_50"]),
-    #         (row["x_51"], row["y_51"]),
-    #         (row["x_52"], row["y_52"]),
-    #         (row["x_53"], row["y_53"]),
-    #         (row["x_54"], row["y_54"]),
-    #         (row["x_33"], row["y_33"]),
-    #     ],
-    #     img_height,
-    # )
+    orb_oris_u = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_49"], row["y_49"]),
+            (row["x_50"], row["y_50"]),
+            (row["x_51"], row["y_51"]),
+            (row["x_52"], row["y_52"]),
+            (row["x_53"], row["y_53"]),
+            (row["x_54"], row["y_54"]),
+            (row["x_33"], row["y_33"]),
+        ],
+        img_height,
+    )
 
-    # frontalis_l = face_polygon_svg(
-    #     [
-    #         (row["x_27"], row["y_27"]),
-    #         (row["x_39"], row["y_39"]),
-    #         (row["x_38"], row["y_38"]),
-    #         (row["x_37"], row["y_37"]),
-    #         (row["x_36"], row["y_36"]),
-    #         (row["x_17"], row["y_17"]),
-    #         (row["x_18"], row["y_18"]),
-    #         (row["x_19"], row["y_19"]),
-    #         (row["x_20"], row["y_20"]),
-    #         (row["x_21"], row["y_21"]),
-    #     ],
-    #     img_height,
-    # )
+    frontalis_l = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_39"], row["y_39"]),
+            (row["x_38"], row["y_38"]),
+            (row["x_37"], row["y_37"]),
+            (row["x_36"], row["y_36"]),
+            (row["x_17"], row["y_17"]),
+            (row["x_18"], row["y_18"]),
+            (row["x_19"], row["y_19"]),
+            (row["x_20"], row["y_20"]),
+            (row["x_21"], row["y_21"]),
+        ],
+        img_height,
+    )
 
-    # frontalis_r = face_polygon_svg(
-    #     [
-    #         (row["x_27"], row["y_27"]),
-    #         (row["x_22"], row["y_22"]),
-    #         (row["x_23"], row["y_23"]),
-    #         (row["x_24"], row["y_24"]),
-    #         (row["x_25"], row["y_25"]),
-    #         (row["x_26"], row["y_26"]),
-    #         (row["x_45"], row["y_45"]),
-    #         (row["x_44"], row["y_44"]),
-    #         (row["x_43"], row["y_43"]),
-    #         (row["x_42"], row["y_42"]),
-    #     ],
-    #     img_height,
-    # )
+    frontalis_r = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_22"], row["y_22"]),
+            (row["x_23"], row["y_23"]),
+            (row["x_24"], row["y_24"]),
+            (row["x_25"], row["y_25"]),
+            (row["x_26"], row["y_26"]),
+            (row["x_45"], row["y_45"]),
+            (row["x_44"], row["y_44"]),
+            (row["x_43"], row["y_43"]),
+            (row["x_42"], row["y_42"]),
+        ],
+        img_height,
+    )
 
-    # frontalis_inner_l = face_polygon_svg(
-    #     [
-    #         (row["x_27"], row["y_27"]),
-    #         (row["x_39"], row["y_39"]),
-    #         (row["x_21"], row["y_21"]),
-    #     ],
-    #     img_height,
-    # )
+    frontalis_inner_l = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_39"], row["y_39"]),
+            (row["x_21"], row["y_21"]),
+        ],
+        img_height,
+    )
 
-    # frontalis_inner_r = face_polygon_svg(
-    #     [
-    #         (row["x_27"], row["y_27"]),
-    #         (row["x_42"], row["y_42"]),
-    #         (row["x_22"], row["y_22"]),
-    #     ],
-    #     img_height,
-    # )
+    frontalis_inner_r = face_polygon_svg(
+        [
+            (row["x_27"], row["y_27"]),
+            (row["x_42"], row["y_42"]),
+            (row["x_22"], row["y_22"]),
+        ],
+        img_height,
+    )
 
-    # cor_sup_l = face_polygon_svg(
-    #     [
-    #         (row["x_28"], row["y_28"]),
-    #         (row["x_19"], row["y_19"]),
-    #         (row["x_20"], row["y_20"]),
-    #     ],
-    #     img_height,
-    # )
+    cor_sup_l = face_polygon_svg(
+        [
+            (row["x_28"], row["y_28"]),
+            (row["x_19"], row["y_19"]),
+            (row["x_20"], row["y_20"]),
+        ],
+        img_height,
+    )
 
-    # cor_sup_r = face_polygon_svg(
-    #     [
-    #         (row["x_28"], row["y_28"]),
-    #         (row["x_23"], row["y_23"]),
-    #         (row["x_24"], row["y_24"]),
-    #     ],
-    #     img_height,
-    # )
+    cor_sup_r = face_polygon_svg(
+        [
+            (row["x_28"], row["y_28"]),
+            (row["x_23"], row["y_23"]),
+            (row["x_24"], row["y_24"]),
+        ],
+        img_height,
+    )
 
-    # lev_lab_sup_l = face_polygon_svg(
-    #     [
-    #         (row["x_41"], row["y_41"]),
-    #         (row["x_40"], row["y_40"]),
-    #         (row["x_49"], row["y_49"]),
-    #     ],
-    #     img_height,
-    # )
+    lev_lab_sup_l = face_polygon_svg(
+        [
+            (row["x_41"], row["y_41"]),
+            (row["x_40"], row["y_40"]),
+            (row["x_49"], row["y_49"]),
+        ],
+        img_height,
+    )
 
-    # lev_lab_sup_r = face_polygon_svg(
-    #     [
-    #         (row["x_47"], row["y_47"]),
-    #         (row["x_46"], row["y_46"]),
-    #         (row["x_53"], row["y_53"]),
-    #     ],
-    #     img_height,
-    # )
+    lev_lab_sup_r = face_polygon_svg(
+        [
+            (row["x_47"], row["y_47"]),
+            (row["x_46"], row["y_46"]),
+            (row["x_53"], row["y_53"]),
+        ],
+        img_height,
+    )
 
-    # lev_lab_sup_an_l = face_polygon_svg(
-    #     [
-    #         (row["x_39"], row["y_39"]),
-    #         (row["x_49"], row["y_49"]),
-    #         (row["x_31"], row["y_31"]),
-    #     ],
-    #     img_height,
-    # )
+    lev_lab_sup_an_l = face_polygon_svg(
+        [
+            (row["x_39"], row["y_39"]),
+            (row["x_49"], row["y_49"]),
+            (row["x_31"], row["y_31"]),
+        ],
+        img_height,
+    )
 
-    # lev_lab_sup_an_r = face_polygon_svg(
-    #     [
-    #         (row["x_35"], row["y_35"]),
-    #         (row["x_42"], row["y_42"]),
-    #         (row["x_53"], row["y_53"]),
-    #     ],
-    #     img_height,
-    # )
+    lev_lab_sup_an_r = face_polygon_svg(
+        [
+            (row["x_35"], row["y_35"]),
+            (row["x_42"], row["y_42"]),
+            (row["x_53"], row["y_53"]),
+        ],
+        img_height,
+    )
 
-    # zyg_maj_l = face_polygon_svg(
-    #     [
-    #         (row["x_48"], row["y_48"]),
-    #         (row["x_3"], row["y_3"]),
-    #         (row["x_2"], row["y_2"]),
-    #     ],
-    #     img_height,
-    # )
+    zyg_maj_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_3"], row["y_3"]),
+            (row["x_2"], row["y_2"]),
+        ],
+        img_height,
+    )
 
-    # zyg_maj_r = face_polygon_svg(
-    #     [
-    #         (row["x_54"], row["y_54"]),
-    #         (row["x_13"], row["y_13"]),
-    #         (row["x_14"], row["y_14"]),
-    #     ],
-    #     img_height,
-    # )
+    zyg_maj_r = face_polygon_svg(
+        [
+            (row["x_54"], row["y_54"]),
+            (row["x_13"], row["y_13"]),
+            (row["x_14"], row["y_14"]),
+        ],
+        img_height,
+    )
 
-    # bucc_l = face_polygon_svg(
-    #     [
-    #         (row["x_48"], row["y_48"]),
-    #         (row["x_5"], row["y_50"]),
-    #         (row["x_5"], row["y_57"]),
-    #     ],
-    #     img_height,
-    # )
+    bucc_l = face_polygon_svg(
+        [
+            (row["x_48"], row["y_48"]),
+            (row["x_5"], row["y_50"]),
+            (row["x_5"], row["y_57"]),
+        ],
+        img_height,
+    )
 
-    # bucc_r = face_polygon_svg(
-    #     [
-    #         (row["x_54"], row["y_54"]),
-    #         (row["x_11"], row["y_52"]),
-    #         (row["x_11"], row["y_57"]),
-    #     ],
-    #     img_height,
-    # )
+    bucc_r = face_polygon_svg(
+        [
+            (row["x_54"], row["y_54"]),
+            (row["x_11"], row["y_52"]),
+            (row["x_11"], row["y_57"]),
+        ],
+        img_height,
+    )
 
-    # width_l = (row["y_21"] - row["y_39"]) / 2
+    width_l = (row["y_21"] - row["y_39"]) / 2
 
-    # orb_oc_l = face_polygon_svg(
-    #     [
-    #         (row["x_36"] - width_l / 3, row["y_36"] + width_l / 2),
-    #         (row["x_36"], row["y_36"] + width_l),
-    #         (row["x_37"], row["y_37"] + width_l),
-    #         (row["x_38"], row["y_38"] + width_l),
-    #         (row["x_39"], row["y_39"] + width_l),
-    #         (row["x_39"] + width_l / 3, row["y_39"] + width_l / 2),
-    #         (row["x_39"] + width_l / 2, row["y_39"]),
-    #         (row["x_39"] + width_l / 3, row["y_39"] - width_l / 2),
-    #         (row["x_39"], row["y_39"] - width_l),
-    #         (row["x_40"], row["y_40"] - width_l),
-    #         (row["x_41"], row["y_41"] - width_l),
-    #         (row["x_36"], row["y_36"] - width_l),
-    #         (row["x_36"] - width_l / 3, row["y_36"] - width_l / 2),
-    #         (row["x_36"] - width_l / 2, row["y_36"]),
-    #     ],
-    #     img_height,
-    # )
+    orb_oc_l = face_polygon_svg(
+        [
+            (row["x_36"] - width_l / 3, row["y_36"] + width_l / 2),
+            (row["x_36"], row["y_36"] + width_l),
+            (row["x_37"], row["y_37"] + width_l),
+            (row["x_38"], row["y_38"] + width_l),
+            (row["x_39"], row["y_39"] + width_l),
+            (row["x_39"] + width_l / 3, row["y_39"] + width_l / 2),
+            (row["x_39"] + width_l / 2, row["y_39"]),
+            (row["x_39"] + width_l / 3, row["y_39"] - width_l / 2),
+            (row["x_39"], row["y_39"] - width_l),
+            (row["x_40"], row["y_40"] - width_l),
+            (row["x_41"], row["y_41"] - width_l),
+            (row["x_36"], row["y_36"] - width_l),
+            (row["x_36"] - width_l / 3, row["y_36"] - width_l / 2),
+            (row["x_36"] - width_l / 2, row["y_36"]),
+        ],
+        img_height,
+    )
 
-    # orb_oc_l_inner = face_polygon_svg(
-    #     [
-    #         (row["x_36"] - width_l / 6, row["y_36"] + width_l / 5),
-    #         (row["x_36"], row["y_36"] + width_l / 2),
-    #         (row["x_37"], row["y_37"] + width_l / 2),
-    #         (row["x_38"], row["y_38"] + width_l / 2),
-    #         (row["x_39"], row["y_39"] + width_l / 2),
-    #         (row["x_39"] + width_l / 6, row["y_39"] + width_l / 5),
-    #         (row["x_39"] + width_l / 5, row["y_39"]),
-    #         (row["x_39"] + width_l / 6, row["y_39"] - width_l / 5),
-    #         (row["x_39"], row["y_39"] - width_l),
-    #         (row["x_40"], row["y_40"] - width_l),
-    #         (row["x_41"], row["y_41"] - width_l),
-    #         (row["x_36"], row["y_36"] - width_l),
-    #         (row["x_36"] - width_l / 6, row["y_36"] - width_l / 5),
-    #         (row["x_36"] - width_l / 5, row["y_36"]),
-    #     ],
-    #     img_height,
-    # )
+    orb_oc_l_inner = face_polygon_svg(
+        [
+            (row["x_36"] - width_l / 6, row["y_36"] + width_l / 5),
+            (row["x_36"], row["y_36"] + width_l / 2),
+            (row["x_37"], row["y_37"] + width_l / 2),
+            (row["x_38"], row["y_38"] + width_l / 2),
+            (row["x_39"], row["y_39"] + width_l / 2),
+            (row["x_39"] + width_l / 6, row["y_39"] + width_l / 5),
+            (row["x_39"] + width_l / 5, row["y_39"]),
+            (row["x_39"] + width_l / 6, row["y_39"] - width_l / 5),
+            (row["x_39"], row["y_39"] - width_l),
+            (row["x_40"], row["y_40"] - width_l),
+            (row["x_41"], row["y_41"] - width_l),
+            (row["x_36"], row["y_36"] - width_l),
+            (row["x_36"] - width_l / 6, row["y_36"] - width_l / 5),
+            (row["x_36"] - width_l / 5, row["y_36"]),
+        ],
+        img_height,
+    )
 
-    # width_l2 = (row["y_38"] - row["y_2"]) / 1.5
+    width_l2 = (row["y_38"] - row["y_2"]) / 1.5
 
-    # orb_oc_l_outer = face_polygon_svg(
-    #     [
-    #         (row["x_39"] + width_l / 2, row["y_39"] + width_l / 2),
-    #         (row["x_39"], row["y_39"] - width_l),
-    #         (row["x_40"], row["y_40"] - width_l2),
-    #         (row["x_41"], row["y_41"] - width_l2),
-    #         (row["x_36"], row["y_36"] - width_l2),
-    #         (row["x_36"] - width_l2 / 3, row["y_36"] - width_l2 / 2),
-    #         (row["x_36"] - width_l / 2, row["y_36"]),
-    #     ],
-    #     img_height,
-    # )
+    orb_oc_l_outer = face_polygon_svg(
+        [
+            (row["x_39"] + width_l / 2, row["y_39"] + width_l / 2),
+            (row["x_39"], row["y_39"] - width_l),
+            (row["x_40"], row["y_40"] - width_l2),
+            (row["x_41"], row["y_41"] - width_l2),
+            (row["x_36"], row["y_36"] - width_l2),
+            (row["x_36"] - width_l2 / 3, row["y_36"] - width_l2 / 2),
+            (row["x_36"] - width_l / 2, row["y_36"]),
+        ],
+        img_height,
+    )
 
-    # width_r = (row["y_23"] - row["y_43"]) / 2
+    width_r = (row["y_23"] - row["y_43"]) / 2
 
-    # orb_oc_r = face_polygon_svg(
-    #     [
-    #         (row["x_42"] - width_r / 3, row["y_42"] + width_r / 2),
-    #         (row["x_42"], row["y_42"] + width_r),
-    #         (row["x_43"], row["y_43"] + width_r),
-    #         (row["x_44"], row["y_44"] + width_r),
-    #         (row["x_45"], row["y_45"] + width_r),
-    #         (row["x_45"] + width_r / 3, row["y_45"] + width_r / 2),
-    #         (row["x_45"] + width_r / 2, row["y_45"]),
-    #         (row["x_45"] + width_r / 3, row["y_45"] - width_r / 2),
-    #         (row["x_45"], row["y_45"] - width_r),
-    #         (row["x_46"], row["y_46"] - width_r),
-    #         (row["x_47"], row["y_47"] - width_r),
-    #         (row["x_42"], row["y_42"] - width_r),
-    #         (row["x_42"] - width_l / 3, row["y_42"] - width_r / 2),
-    #         (row["x_42"] - width_r / 2, row["y_42"]),
-    #     ],
-    #     img_height,
-    # )
+    orb_oc_r = face_polygon_svg(
+        [
+            (row["x_42"] - width_r / 3, row["y_42"] + width_r / 2),
+            (row["x_42"], row["y_42"] + width_r),
+            (row["x_43"], row["y_43"] + width_r),
+            (row["x_44"], row["y_44"] + width_r),
+            (row["x_45"], row["y_45"] + width_r),
+            (row["x_45"] + width_r / 3, row["y_45"] + width_r / 2),
+            (row["x_45"] + width_r / 2, row["y_45"]),
+            (row["x_45"] + width_r / 3, row["y_45"] - width_r / 2),
+            (row["x_45"], row["y_45"] - width_r),
+            (row["x_46"], row["y_46"] - width_r),
+            (row["x_47"], row["y_47"] - width_r),
+            (row["x_42"], row["y_42"] - width_r),
+            (row["x_42"] - width_l / 3, row["y_42"] - width_r / 2),
+            (row["x_42"] - width_r / 2, row["y_42"]),
+        ],
+        img_height,
+    )
 
-    # orb_oc_r_inner = face_polygon_svg(
-    #     [
-    #         (row["x_42"] - width_r / 6, row["y_42"] + width_r / 5),
-    #         (row["x_42"], row["y_42"] + width_r / 2),
-    #         (row["x_43"], row["y_43"] + width_r / 2),
-    #         (row["x_44"], row["y_44"] + width_r / 2),
-    #         (row["x_45"], row["y_45"] + width_r / 2),
-    #         (row["x_45"] + width_r / 6, row["y_45"] + width_r / 5),
-    #         (row["x_45"] + width_r / 5, row["y_45"]),
-    #         (row["x_45"] + width_r / 6, row["y_45"] - width_r / 5),
-    #         (row["x_45"], row["y_45"] - width_r / 2),
-    #         (row["x_46"], row["y_46"] - width_r / 2),
-    #         (row["x_47"], row["y_47"] - width_r / 2),
-    #         (row["x_42"], row["y_42"] - width_r / 2),
-    #         (row["x_42"] - width_l / 6, row["y_42"] - width_r / 5),
-    #         (row["x_42"] - width_r / 5, row["y_42"]),
-    #     ],
-    #     img_height,
-    # )
+    orb_oc_r_inner = face_polygon_svg(
+        [
+            (row["x_42"] - width_r / 6, row["y_42"] + width_r / 5),
+            (row["x_42"], row["y_42"] + width_r / 2),
+            (row["x_43"], row["y_43"] + width_r / 2),
+            (row["x_44"], row["y_44"] + width_r / 2),
+            (row["x_45"], row["y_45"] + width_r / 2),
+            (row["x_45"] + width_r / 6, row["y_45"] + width_r / 5),
+            (row["x_45"] + width_r / 5, row["y_45"]),
+            (row["x_45"] + width_r / 6, row["y_45"] - width_r / 5),
+            (row["x_45"], row["y_45"] - width_r / 2),
+            (row["x_46"], row["y_46"] - width_r / 2),
+            (row["x_47"], row["y_47"] - width_r / 2),
+            (row["x_42"], row["y_42"] - width_r / 2),
+            (row["x_42"] - width_l / 6, row["y_42"] - width_r / 5),
+            (row["x_42"] - width_r / 5, row["y_42"]),
+        ],
+        img_height,
+    )
 
-    # width_r2 = (row["y_44"] - row["y_14"]) / 1.5
+    width_r2 = (row["y_44"] - row["y_14"]) / 1.5
 
-    # orb_oc_r_outer = face_polygon_svg(
-    #     [
-    #         (row["x_42"] - width_r / 2, row["y_42"]),
-    #         (row["x_47"], row["y_47"] - width_r2),
-    #         (row["x_46"], row["y_46"] - width_r2),
-    #         (row["x_45"], row["y_45"] - width_r2),
-    #         (row["x_45"] + width_r2 / 3, row["y_45"] - width_r2 / 2),
-    #         (row["x_45"] + width_r / 2, row["y_45"]),
-    #     ],
-    #     img_height,
-    # )
+    orb_oc_r_outer = face_polygon_svg(
+        [
+            (row["x_42"] - width_r / 2, row["y_42"]),
+            (row["x_47"], row["y_47"] - width_r2),
+            (row["x_46"], row["y_46"] - width_r2),
+            (row["x_45"], row["y_45"] - width_r2),
+            (row["x_45"] + width_r2 / 3, row["y_45"] - width_r2 / 2),
+            (row["x_45"] + width_r / 2, row["y_45"]),
+        ],
+        img_height,
+    )
 
     eye_l = face_polygon_svg(
         [
@@ -3122,36 +3931,44 @@ def draw_plotly_au(
             color = cmap.as_hex()[
                 int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
             ]
+            # Defensive: if a future refactor removes a muscle-polygon
+            # local, skip cleanly rather than NameError.
+            try:
+                muscle_path = eval(muscle)
+            except NameError:
+                continue
             fig.add_shape(
                 type="path",
-                path=eval(muscle),
+                path=muscle_path,
                 line_color=color,
                 fillcolor=color,
                 opacity=au_opacity,
             )
 
-            for region in [eye_l, eye_r, mouth]:
-                fig.add_shape(
-                    type="path",
-                    path=region,
-                    line_color="black",
-                    line_width=2,
-                    fillcolor="white",
-                )
-
-            for pupil in [pupil_l, pupil_r]:
-                fig.add_shape(
-                    type="circle",
-                    xref="x",
-                    yref="y",
-                    fillcolor="black",
-                    x0=pupil[0][0],
-                    y0=pupil[0][1],
-                    x1=pupil[1][0],
-                    y1=pupil[1][1],
-                    line_color="black",
-                    line_width=3,
-                )
+        # Draw eye / mouth / pupil regions once after the muscle loop —
+        # previously these sat INSIDE the muscle loop and got added 34
+        # times (once per muscle).
+        for region in [eye_l, eye_r, mouth]:
+            fig.add_shape(
+                type="path",
+                path=region,
+                line_color="black",
+                line_width=2,
+                fillcolor="white",
+            )
+        for pupil in [pupil_l, pupil_r]:
+            fig.add_shape(
+                type="circle",
+                xref="x",
+                yref="y",
+                fillcolor="black",
+                x0=pupil[0][0],
+                y0=pupil[0][1],
+                x1=pupil[1][0],
+                y1=pupil[1][1],
+                line_color="black",
+                line_width=3,
+            )
 
         return fig
 
@@ -3161,10 +3978,16 @@ def draw_plotly_au(
             color = cmap.as_hex()[
                 int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
             ]
+            # Defensive: skip cleanly if a future refactor removes a
+            # muscle-polygon local. Same convention as the "figure" branch.
+            try:
+                muscle_path = eval(muscle)
+            except NameError:
+                continue
             muscles.append(
                 dict(
                     type="path",
-                    path=eval(muscle),
+                    path=muscle_path,
                     fillcolor=color,
                     opacity=au_opacity,
                     line=dict(color=color),

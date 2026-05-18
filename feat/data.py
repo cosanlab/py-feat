@@ -39,6 +39,7 @@ from feat.plotting import (
     draw_plotly_landmark,
     draw_plotly_au,
     draw_plotly_pose,
+    draw_plotly_gaze,
     emotion_annotation_position,
 )
 from feat.pretrained import AU_LANDMARK_MAP
@@ -191,6 +192,22 @@ class FexSeries(Series):
         """
 
         return self[self.facepose_columns]
+
+    @property
+    def gazes(self):
+        """Returns the gaze data (pitch, yaw, optionally combined angle).
+
+        Returns:
+            DataFrame: gaze data populated by the active gaze model
+            (L2CS by default in v0.7+). Raises AttributeError if the
+            Detector was built with gaze_model=None.
+        """
+        if not self.gaze_columns:
+            raise AttributeError(
+                "No gaze columns are registered on this Fex. The active "
+                "Detector may have been built with gaze_model=None."
+            )
+        return self[self.gaze_columns]
 
     # DEPRECATE
     @property
@@ -562,6 +579,22 @@ class Fex(DataFrame):
         """
         return self[self.facepose_columns]
 
+    @property
+    def gazes(self):
+        """Returns the gaze data (pitch, yaw, optionally combined angle).
+
+        Returns:
+            DataFrame: gaze data populated by the active gaze model
+            (L2CS by default in v0.7+). Raises AttributeError if the
+            Detector was built with gaze_model=None.
+        """
+        if not self.gaze_columns:
+            raise AttributeError(
+                "No gaze columns are registered on this Fex. The active "
+                "Detector may have been built with gaze_model=None."
+            )
+        return self[self.gaze_columns]
+
     # DEPRECATE
     @property
     def facepose(self):
@@ -706,7 +739,12 @@ class Fex(DataFrame):
         Returns:
             DataFrame: identity data
         """
-        return self[self.identity_columns[1:]]
+        # Detector populates identity_columns with the 512 embedding cols
+        # (FEAT_IDENTITY_COLUMNS[1:] — the 'Identity' string-label column is
+        # already stripped upstream in detector.py), so don't slice again.
+        # The prior [1:] silently dropped Identity_1 and caused
+        # cluster_identities to error on the resulting 511-col frame.
+        return self[self.identity_columns]
 
     @property
     def time(self):
@@ -759,7 +797,9 @@ class Fex(DataFrame):
             "facebox_columns",
             "landmark_columns",
             "facepose_columns",
-            # "gaze_columns", # doesn't currently exist
+            # "gaze_columns" intentionally excluded — gaze isn't summarized
+            # the same way the other metric groups are (no aggregation
+            # makes sense over pitch/yaw radians per session).
             "time_columns",
         ]
 
@@ -1818,7 +1858,17 @@ class Fex(DataFrame):
                     else:
                         color = "k"  # drawing lineface but not on photo
 
-                    if faceboxes:
+                    # Bbox / pose-axes / gaze-arrow overlays are anchored to
+                    # the facebox in original-image coords. For faces='aus'
+                    # the displayed face is the synthetic AU schematic in
+                    # the viz model's own coord system, so the bbox/pose/
+                    # gaze overlays don't align with it and just confuse
+                    # the picture. Skip them in aus mode — gaze is still
+                    # rendered on the synthetic face via plot_face's
+                    # gaze= kwarg (handled by _prepare_plot_aus).
+                    aus_mode = faces == "aus"
+
+                    if faceboxes and not aus_mode:
                         rect = Rectangle(
                             (facebox[0], facebox[1]),
                             facebox[2],
@@ -1829,14 +1879,14 @@ class Fex(DataFrame):
                         )
                         face_ax.add_patch(rect)
 
-                    if poses:
+                    if poses and not aus_mode:
                         face_ax = draw_facepose(
                             pose=row[self.facepose_columns[:3]].values,
                             facebox=facebox,
                             ax=face_ax,
                         )
 
-                    if gazes and "gaze_pitch" in row.index and "gaze_yaw" in row.index:
+                    if gazes and not aus_mode and "gaze_pitch" in row.index and "gaze_yaw" in row.index:
                         face_ax = draw_facegaze(
                             pitch_rad=row["gaze_pitch"],
                             yaw_rad=row["gaze_yaw"],
@@ -1972,12 +2022,15 @@ class Fex(DataFrame):
         poses=False,
         emotions=False,
         aus=False,
+        gazes=False,
         image_opacity=0.9,
         facebox_color="cyan",
         facebox_width=3,
         pose_width=2,
         landmark_color="white",
         landmark_width=2,
+        gaze_color="yellow",
+        gaze_width=3,
         emotions_position="right",
         emotions_opacity=1.0,
         emotions_color="white",
@@ -2148,6 +2201,19 @@ class Fex(DataFrame):
             ]
         )
 
+        # Add Gaze arrows
+        gazes_path = flatten_list(
+            [
+                draw_plotly_gaze(
+                    row,
+                    img_height,
+                    color=gaze_color,
+                    line_width=gaze_width,
+                )
+                for i, row in frame_fex.iterrows()
+            ]
+        )
+
         # Configure other layout
         fig.update_layout(
             width=img_width,
@@ -2164,58 +2230,87 @@ class Fex(DataFrame):
             scaleanchor="x",  # the scaleanchor attribute ensures that the aspect ratio stays constant
         )
 
-        if bounding_boxes:
-            _ = [fig.add_shape(face) for face in faceboxes_path]
-        if landmarks:
-            _ = [fig.add_shape(landmark) for landmark in landmarks_path]
-        if poses:
-            _ = [fig.add_shape(pose) for pose in poses_path]
-        if aus:
-            _ = [fig.add_shape(aus) for aus in aus_path]
-        if emotions:
-            _ = [fig.add_annotation(emotion) for emotion in emotions_annotations]
+        # Add ALL overlays unconditionally with per-shape `visible` flags
+        # set from the corresponding function arguments — that way each
+        # overlay group can be toggled independently via the buttons below
+        # (the prior approach of conditionally adding shapes meant clicking
+        # one button replaced the entire `layout.shapes` array, so only
+        # one overlay could be visible at a time).
+        group_indices = {"bbox": [], "landmarks": [], "poses": [], "aus": [], "gazes": []}
+        initial_vis = {
+            "bbox": bool(bounding_boxes),
+            "landmarks": bool(landmarks),
+            "poses": bool(poses),
+            "aus": bool(aus),
+            "gazes": bool(gazes),
+        }
+        for group, shapes in (
+            ("bbox", faceboxes_path),
+            ("landmarks", landmarks_path),
+            ("poses", poses_path),
+            ("aus", aus_path),
+            ("gazes", gazes_path),
+        ):
+            for s in shapes:
+                idx = len(fig.layout.shapes)
+                # add_shape() emits an immutable Shape; clone the dict so
+                # we can include the `visible` field per our group flag.
+                s = dict(s)
+                s["visible"] = initial_vis[group]
+                fig.add_shape(s)
+                group_indices[group].append(idx)
 
-        fig.update_shapes()
-        # Add a button to the figure
+        # Emotions are annotations (not shapes); track separately.
+        emotion_indices = []
+        for ann in emotions_annotations:
+            idx = len(fig.layout.annotations)
+            ann = dict(ann)
+            ann["visible"] = bool(emotions)
+            fig.add_annotation(ann)
+            emotion_indices.append(idx)
+
+        # Build toggle buttons. Each button's args (first click) sets the
+        # group's visibility to the OPPOSITE of its initial state, and
+        # args2 (second click) sets it back. Effectively per-group toggle,
+        # independent across groups.
+        def _shape_toggle_args(indices, target):
+            return [{f"shapes[{i}].visible": target for i in indices}]
+
+        def _annot_toggle_args(indices, target):
+            return [{f"annotations[{i}].visible": target for i in indices}]
+
+        buttons = []
+        for label, group in (
+            ("Bounding Box", "bbox"),
+            ("Landmarks", "landmarks"),
+            ("Poses", "poses"),
+            ("AU", "aus"),
+            ("Gaze", "gazes"),
+        ):
+            idxs = group_indices[group]
+            if not idxs:
+                continue
+            init = initial_vis[group]
+            buttons.append(dict(
+                method="relayout",
+                label=label,
+                args=_shape_toggle_args(idxs, not init),
+                args2=_shape_toggle_args(idxs, init),
+            ))
+        if emotion_indices:
+            buttons.append(dict(
+                method="relayout",
+                label="Emotion",
+                args=_annot_toggle_args(emotion_indices, not emotions),
+                args2=_annot_toggle_args(emotion_indices, bool(emotions)),
+            ))
+
         fig.update_layout(
             updatemenus=[
                 dict(
                     type="buttons",
                     direction="left",
-                    buttons=list(
-                        [
-                            dict(
-                                method="relayout",
-                                label="Bounding Box",
-                                args=["shapes", faceboxes_path],
-                                args2=["shapes", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="Landmarks",
-                                args=["shapes", landmarks_path],
-                                args2=["shapes", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="Poses",
-                                args=["shapes", poses_path],
-                                args2=["shapes", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="Emotion",
-                                args=["annotations", emotions_annotations],
-                                args2=["annotations", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="AU",
-                                args=["shapes", aus_path],
-                                args2=["shapes", []],
-                            ),
-                        ]
-                    ),
+                    buttons=buttons,
                     pad={"r": 10, "t": 10},
                     showactive=False,
                     x=0.1,
@@ -2235,6 +2330,7 @@ class Fex(DataFrame):
         aus=False,
         poses=False,
         emotions=False,
+        gazes=False,
         emotions_position="right",
         emotions_opacity=1.0,
         emotions_color="white",
@@ -2245,6 +2341,8 @@ class Fex(DataFrame):
         pose_width=2,
         landmark_color="white",
         landmark_width=2,
+        gaze_color="yellow",
+        gaze_width=3,
         au_cmap="Blues",
         au_heatmap_resolution=1000,
         au_opacity=0.9,
@@ -2286,11 +2384,14 @@ class Fex(DataFrame):
                 poses=poses,
                 emotions=emotions,
                 aus=aus,
+                gazes=gazes,
                 facebox_color=facebox_color,
                 facebox_width=facebox_width,
                 pose_width=pose_width,
                 landmark_color=landmark_color,
                 landmark_width=landmark_width,
+                gaze_color=gaze_color,
+                gaze_width=gaze_width,
                 emotions_position=emotions_position,
                 emotions_opacity=emotions_opacity,
                 emotions_color=emotions_color,

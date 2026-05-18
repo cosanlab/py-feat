@@ -59,12 +59,17 @@ class TestReturnType:
         fig = plot_face_mesh_plotly()
         assert isinstance(fig, go.Figure)
 
-    def test_has_single_scatter3d_trace(self, stub_mesh_model):
+    def test_has_mesh_and_eye_traces(self, stub_mesh_model):
+        # Returns: 1 Scatter3d (mesh wireframe) + 4 Mesh3d (left iris,
+        # left pupil, right iris, right pupil). Iris/pupil were added in
+        # the v0.7 plotting overhaul to give the mesh visible eyes.
         fig = plot_face_mesh_plotly()
-        assert len(fig.data) == 1
-        trace = fig.data[0]
-        assert trace.type == "scatter3d"
-        assert trace.mode == "lines"
+        types = [t.type for t in fig.data]
+        assert types.count("scatter3d") == 1
+        assert types.count("mesh3d") == 4
+        wireframe = fig.data[0]
+        assert wireframe.type == "scatter3d"
+        assert wireframe.mode == "lines"
 
 
 # ---------------------------------------------------------------------
@@ -226,8 +231,10 @@ class TestRealModelSmoke:
         # AU12 (smile) — index 9 in AU_LANDMARK_MAP['Feat']
         au[9] = 3.0
         fig = plot_face_mesh_plotly(au=au)
-        # One trace, dense tessellation by default
-        assert len(fig.data) == 1
+        # 5 traces: 1 mesh wireframe (dense tessellation by default) +
+        # 4 iris/pupil Mesh3d disks. wireframe is data[0].
+        assert len(fig.data) == 5
+        assert fig.data[0].type == "scatter3d"
         assert len(fig.data[0].x) == 3 * N_TESSELATION_EDGES
         # Sanity: scene has finite axis ranges (no NaN propagation)
         z_range = fig.layout.scene.zaxis.range

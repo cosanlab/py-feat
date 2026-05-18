@@ -998,7 +998,18 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             # exported for any external caller that depended on it.)
 
             if save:
-                batch_results.to_csv(save, mode="a", index=False, header=batch_id == 0)
+                # First batch truncates any pre-existing file; later batches
+                # append. mode="a" on every batch would let stale data from
+                # a previous detect() call survive — and the new run's
+                # header row would then be appended as a real row, which
+                # pd.read_csv later parses as a data row with column-name
+                # strings as values (poisoning compute_identities).
+                batch_results.to_csv(
+                    save,
+                    mode="w" if batch_id == 0 else "a",
+                    index=False,
+                    header=batch_id == 0,
+                )
             else:
                 batch_output.append(batch_results)
             # Use the actual batch size (may be smaller than `batch_size` for the
