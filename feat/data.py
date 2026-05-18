@@ -199,8 +199,8 @@ class FexSeries(Series):
 
         Returns:
             DataFrame: gaze data populated by the active gaze model
-            (L2CS by default in v0.7+). Empty / missing if no gaze model
-            was wired into the Detector.
+            (L2CS by default in v0.7+). Raises AttributeError if the
+            Detector was built with gaze_model=None.
         """
         if not self.gaze_columns:
             raise AttributeError(
@@ -797,7 +797,9 @@ class Fex(DataFrame):
             "facebox_columns",
             "landmark_columns",
             "facepose_columns",
-            # "gaze_columns", # doesn't currently exist
+            # "gaze_columns" intentionally excluded — gaze isn't summarized
+            # the same way the other metric groups are (no aggregation
+            # makes sense over pitch/yaw radians per session).
             "time_columns",
         ]
 

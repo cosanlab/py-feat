@@ -1818,12 +1818,7 @@ def plot_face_mesh(
     pupil_shift = None
     if gaze is not None:
         pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
-        _, _, iris_radii = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
-        cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
-        cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
-        gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
-        shift_mag = iris_radii.mean() * 0.45
-        pupil_shift = np.tile(shift_mag * gaze_xy, (2, 1))
+        pupil_shift = _pupil_gaze_shift(_iris_radii(verts), pitch_rad, yaw_rad)
     _add_iris_pupil_polys_mpl(ax, verts, pupil_shift=pupil_shift)
 
     if gaze is not None:
@@ -1972,13 +1967,7 @@ def plot_face_mesh_plotly(
     pupil_shift = None
     if gaze is not None:
         pitch_rad, yaw_rad = float(gaze[0]), float(gaze[1])
-        # Reuse iris radii for the per-eye shift magnitude.
-        _, _, iris_radii = _iris_pupil_positions(verts, pitch_rad, yaw_rad)
-        cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
-        cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
-        gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
-        shift_mag = iris_radii.mean() * 0.45
-        pupil_shift = np.tile(shift_mag * gaze_xy, (2, 1))
+        pupil_shift = _pupil_gaze_shift(_iris_radii(verts), pitch_rad, yaw_rad)
     traces.extend(_iris_mesh_traces_plotly(verts, pupil_shift=pupil_shift))
 
     if gaze is not None:
@@ -2117,29 +2106,15 @@ def _add_iris_pupil_polys_mpl(ax, verts, iris_color="#b08868", pupil_color="blac
 def _disk_mesh3d_trace(center, ring_pts, color, opacity=1.0):
     """Build a single go.Mesh3d triangle-fan disk in mesh coords.
 
-    ``center`` is a (3,) anchor; ``ring_pts`` is a (4, 3) array of
-    perimeter landmarks. We interpolate midpoints between adjacent
-    ring points (pulled out to the same radius from center) to get an
-    8-vertex perimeter → 8-triangle fan that reads as a smoother disk
-    than the bare 4-vertex diamond.
-    Data → plotly axis swap (X, Y, Z) → (X, Z, Y).
+    Uses _disk_triangles for the 8-vertex perimeter fan geometry, so
+    plotly and matplotlib stay in sync on disk shape. Data → plotly
+    axis swap (X, Y, Z) → (X, Z, Y).
     """
     import plotly.graph_objects as go
-    ring_radius = float(np.mean(np.linalg.norm(ring_pts - center, axis=1)))
-    mids = []
-    for k in range(4):
-        mid = (ring_pts[k] + ring_pts[(k + 1) % 4]) / 2.0
-        r_to_mid = mid - center
-        mid_pulled = center + r_to_mid * (ring_radius / max(np.linalg.norm(r_to_mid), 1e-6))
-        mids.append(mid_pulled)
-    mids = np.stack(mids)
-    pts = np.vstack([center[None, :], ring_pts, mids])  # 9 verts: center, 4 ring, 4 mids
-    ordered = [1, 5, 2, 6, 3, 7, 4, 8]  # perimeter walk order
-    i_tri, j_tri, k_tri = [], [], []
-    for k in range(8):
-        i_tri.append(0)
-        j_tri.append(ordered[k])
-        k_tri.append(ordered[(k + 1) % 8])
+    pts, triangles = _disk_triangles(center, ring_pts)
+    i_tri = [t[0] for t in triangles]
+    j_tri = [t[1] for t in triangles]
+    k_tri = [t[2] for t in triangles]
     return go.Mesh3d(
         x=pts[:, 0], y=pts[:, 2], z=pts[:, 1],
         i=i_tri, j=j_tri, k=k_tri,
@@ -2190,44 +2165,40 @@ def _iris_mesh_traces_plotly(verts, iris_color="#b08868", pupil_color="black",
     return traces
 
 
-def _iris_pupil_positions(verts, pitch_rad=None, yaw_rad=None):
-    """Compute iris and pupil center positions for both eyes, optionally
-    shifted in the gaze direction so the eyes visually track the gaze.
+def _iris_radii(verts):
+    """Return per-eye iris radii: mean landmark distance from each iris
+    center to its 4 contour landmarks. (2,) array, [left, right].
 
-    The pupil is also pushed forward (+Z, out of face) by 20% of iris
-    radius so it consistently renders in front of the iris Mesh3d disk
-    instead of getting partially clipped by plotly's depth test when
-    iris and pupil share the same Z plane.
-
-    Returns:
-        iris_centers: (2, 3) array of [left_iris, right_iris] center coords
-        pupil_centers: (2, 3) array — iris centers + forward Z offset,
-            additionally shifted laterally + vertically when gaze given
-        iris_radii: (2,) array of per-eye iris radii (mean distance from
-            iris-center landmark to its 4 ring landmarks)
+    Used by callers to size pupil-shift magnitude relative to iris size.
+    The earlier _iris_pupil_positions helper also returned pupil centers
+    with the gaze shift baked in, but the actual iris/pupil disk traces
+    (_iris_mesh_traces_plotly, _add_iris_pupil_polys_mpl) need to apply
+    their own backend-specific Z offset to disambiguate the depth test,
+    so they end up computing pupil centers locally anyway — keeping the
+    shared helper just to the radii avoids three-way drift on the
+    pupil-position math.
     """
     iris_l = verts[_MP_IRIS_LEFT_CENTER]
     iris_r = verts[_MP_IRIS_RIGHT_CENTER]
-    iris_centers = np.stack([iris_l, iris_r])
     r_l = float(np.mean(np.linalg.norm(verts[list(_MP_IRIS_LEFT_RING)] - iris_l, axis=1)))
     r_r = float(np.mean(np.linalg.norm(verts[list(_MP_IRIS_RIGHT_RING)] - iris_r, axis=1)))
-    iris_radii = np.array([r_l, r_r], dtype=np.float32)
+    return np.array([r_l, r_r], dtype=np.float32)
 
-    pupil_centers = iris_centers.copy()
-    # Push pupil forward (out of face) so it renders cleanly in front of
-    # the iris Mesh3d regardless of camera angle.
-    pupil_centers[:, 2] += iris_radii * 0.20
-    if pitch_rad is not None and yaw_rad is not None:
-        # Shift pupil within the iris by a fraction of iris radius, in the
-        # direction of gaze. Drop the Z component — Z is depth and has no
-        # visible 2D effect under the default front-on camera; same
-        # convention as matplotlib plot_face's gaze 4-vec.
-        cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
-        cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
-        gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
-        shift_amount = iris_radii.mean() * 0.45
-        pupil_centers = pupil_centers + shift_amount * gaze_xy
-    return iris_centers, pupil_centers, iris_radii
+
+def _pupil_gaze_shift(iris_radii, pitch_rad, yaw_rad):
+    """Convert (pitch, yaw) head-centric gaze to a per-eye XY shift array
+    for the pupil within the iris. Returns a (2, 3) array (left, right
+    eye) with zero Z component — Z is depth and has no visible 2D effect
+    under the default front-on cameras. Magnitude is 45% of mean iris
+    radius so the shifted pupil stays inside the iris ring.
+
+    Sign convention: matches matplotlib plot_face's pupil 4-vec.
+    """
+    cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
+    cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+    gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
+    shift_mag = float(np.mean(iris_radii)) * 0.45
+    return np.tile(shift_mag * gaze_xy, (2, 1))
 
 
 def _gaze_arrow_in_mesh_frame(verts, pitch_rad, yaw_rad, length_frac=0.3):
@@ -3960,12 +3931,8 @@ def draw_plotly_au(
             color = cmap.as_hex()[
                 int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
             ]
-            # The muscle-polygon path constants used to be defined as
-            # module-level locals here (masseter_l = face_polygon_svg(...));
-            # they got commented out (lines ~3072+) but the eval(muscle)
-            # callers were never updated. Skip cleanly when undefined so
-            # the eye/mouth/pupil regions below still render and
-            # iplot_detections doesn't NameError on first call.
+            # Defensive: if a future refactor removes a muscle-polygon
+            # local, skip cleanly rather than NameError.
             try:
                 muscle_path = eval(muscle)
             except NameError:
@@ -3978,28 +3945,30 @@ def draw_plotly_au(
                 opacity=au_opacity,
             )
 
-            for region in [eye_l, eye_r, mouth]:
-                fig.add_shape(
-                    type="path",
-                    path=region,
-                    line_color="black",
-                    line_width=2,
-                    fillcolor="white",
-                )
-
-            for pupil in [pupil_l, pupil_r]:
-                fig.add_shape(
-                    type="circle",
-                    xref="x",
-                    yref="y",
-                    fillcolor="black",
-                    x0=pupil[0][0],
-                    y0=pupil[0][1],
-                    x1=pupil[1][0],
-                    y1=pupil[1][1],
-                    line_color="black",
-                    line_width=3,
-                )
+        # Draw eye / mouth / pupil regions once after the muscle loop —
+        # previously these sat INSIDE the muscle loop and got added 34
+        # times (once per muscle).
+        for region in [eye_l, eye_r, mouth]:
+            fig.add_shape(
+                type="path",
+                path=region,
+                line_color="black",
+                line_width=2,
+                fillcolor="white",
+            )
+        for pupil in [pupil_l, pupil_r]:
+            fig.add_shape(
+                type="circle",
+                xref="x",
+                yref="y",
+                fillcolor="black",
+                x0=pupil[0][0],
+                y0=pupil[0][1],
+                x1=pupil[1][0],
+                y1=pupil[1][1],
+                line_color="black",
+                line_width=3,
+            )
 
         return fig
 
@@ -4009,9 +3978,8 @@ def draw_plotly_au(
             color = cmap.as_hex()[
                 int(row[aus[muscle_au_dict[muscle]]] * heatmap_resolution)
             ]
-            # See note in the "figure" branch above — muscle-polygon path
-            # constants are commented out in this module; skip cleanly so
-            # the rest of the dictionary output (regions, pupils) renders.
+            # Defensive: skip cleanly if a future refactor removes a
+            # muscle-polygon local. Same convention as the "figure" branch.
             try:
                 muscle_path = eval(muscle)
             except NameError:

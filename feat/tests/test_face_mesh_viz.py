@@ -170,14 +170,16 @@ class TestPlotFaceMesh:
     def test_plots_rest_mesh_without_au(self, stub_mesh_model):
         ax = plot_face_mesh(au=None, model=stub_mesh_model)
         assert ax is not None
-        # Lines drawn for each canonical contour connection
-        assert len(ax.get_lines()) > 0
+        # plot_face_mesh batches all edges into a Line3DCollection (single
+        # ax.add_collection3d call) rather than emitting one Line2D per
+        # edge, so the artists live in ax.collections, not ax.get_lines().
+        assert len(ax.collections) > 0
 
     def test_plots_with_au_activation(self, stub_mesh_model):
         au = np.zeros(20)
         au[stub_mesh_model.au_columns.index("AU12")] = 2.0
         ax = plot_face_mesh(au=au, model=stub_mesh_model)
-        assert len(ax.get_lines()) > 0
+        assert len(ax.collections) > 0
 
     def test_rejects_batched_au(self, stub_mesh_model):
         with pytest.raises(ValueError, match=r"single AU vector"):
