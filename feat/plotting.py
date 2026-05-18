@@ -2180,13 +2180,14 @@ def _iris_mesh_traces_plotly(verts, iris_color="#b08868", pupil_color="black",
         traces.append(_disk_mesh3d_trace(center, ring, color=iris_color))
         # Pupil (smaller dark disk centered on iris center, optionally
         # shifted in the gaze direction). Pupil is pushed forward (+Z)
-        # by 8% of iris radius — small enough to be visually unnoticeable
-        # but large enough to disambiguate plotly's depth test so the
-        # iris doesn't z-fight with the pupil during animations.
+        # by 15% of iris radius — enough to consistently disambiguate
+        # plotly's depth test (8% wasn't enough; static views still
+        # showed the interlaced z-fight pattern on some camera angles).
+        # Still small enough that the pupil reads as flush with the iris.
         pupil_center = center.copy()
         if pupil_shift is not None:
             pupil_center = pupil_center + pupil_shift[eye_i]
-        pupil_center[2] += ring_radius * 0.08
+        pupil_center[2] += ring_radius * 0.15
         pupil_ring = pupil_center + (ring - center) * pupil_size_frac
         traces.append(_disk_mesh3d_trace(pupil_center, pupil_ring, color=pupil_color))
     return traces
