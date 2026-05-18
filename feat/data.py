@@ -2211,58 +2211,84 @@ class Fex(DataFrame):
             scaleanchor="x",  # the scaleanchor attribute ensures that the aspect ratio stays constant
         )
 
-        if bounding_boxes:
-            _ = [fig.add_shape(face) for face in faceboxes_path]
-        if landmarks:
-            _ = [fig.add_shape(landmark) for landmark in landmarks_path]
-        if poses:
-            _ = [fig.add_shape(pose) for pose in poses_path]
-        if aus:
-            _ = [fig.add_shape(aus) for aus in aus_path]
-        if emotions:
-            _ = [fig.add_annotation(emotion) for emotion in emotions_annotations]
+        # Add ALL overlays unconditionally with per-shape `visible` flags
+        # set from the corresponding function arguments — that way each
+        # overlay group can be toggled independently via the buttons below
+        # (the prior approach of conditionally adding shapes meant clicking
+        # one button replaced the entire `layout.shapes` array, so only
+        # one overlay could be visible at a time).
+        group_indices = {"bbox": [], "landmarks": [], "poses": [], "aus": []}
+        initial_vis = {
+            "bbox": bool(bounding_boxes),
+            "landmarks": bool(landmarks),
+            "poses": bool(poses),
+            "aus": bool(aus),
+        }
+        for group, shapes in (
+            ("bbox", faceboxes_path),
+            ("landmarks", landmarks_path),
+            ("poses", poses_path),
+            ("aus", aus_path),
+        ):
+            for s in shapes:
+                idx = len(fig.layout.shapes)
+                # add_shape() emits an immutable Shape; clone the dict so
+                # we can include the `visible` field per our group flag.
+                s = dict(s)
+                s["visible"] = initial_vis[group]
+                fig.add_shape(s)
+                group_indices[group].append(idx)
 
-        fig.update_shapes()
-        # Add a button to the figure
+        # Emotions are annotations (not shapes); track separately.
+        emotion_indices = []
+        for ann in emotions_annotations:
+            idx = len(fig.layout.annotations)
+            ann = dict(ann)
+            ann["visible"] = bool(emotions)
+            fig.add_annotation(ann)
+            emotion_indices.append(idx)
+
+        # Build toggle buttons. Each button's args (first click) sets the
+        # group's visibility to the OPPOSITE of its initial state, and
+        # args2 (second click) sets it back. Effectively per-group toggle,
+        # independent across groups.
+        def _shape_toggle_args(indices, target):
+            return [{f"shapes[{i}].visible": target for i in indices}]
+
+        def _annot_toggle_args(indices, target):
+            return [{f"annotations[{i}].visible": target for i in indices}]
+
+        buttons = []
+        for label, group in (
+            ("Bounding Box", "bbox"),
+            ("Landmarks", "landmarks"),
+            ("Poses", "poses"),
+            ("AU", "aus"),
+        ):
+            idxs = group_indices[group]
+            if not idxs:
+                continue
+            init = initial_vis[group]
+            buttons.append(dict(
+                method="relayout",
+                label=label,
+                args=_shape_toggle_args(idxs, not init),
+                args2=_shape_toggle_args(idxs, init),
+            ))
+        if emotion_indices:
+            buttons.append(dict(
+                method="relayout",
+                label="Emotion",
+                args=_annot_toggle_args(emotion_indices, not emotions),
+                args2=_annot_toggle_args(emotion_indices, bool(emotions)),
+            ))
+
         fig.update_layout(
             updatemenus=[
                 dict(
                     type="buttons",
                     direction="left",
-                    buttons=list(
-                        [
-                            dict(
-                                method="relayout",
-                                label="Bounding Box",
-                                args=["shapes", faceboxes_path],
-                                args2=["shapes", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="Landmarks",
-                                args=["shapes", landmarks_path],
-                                args2=["shapes", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="Poses",
-                                args=["shapes", poses_path],
-                                args2=["shapes", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="Emotion",
-                                args=["annotations", emotions_annotations],
-                                args2=["annotations", []],
-                            ),
-                            dict(
-                                method="relayout",
-                                label="AU",
-                                args=["shapes", aus_path],
-                                args2=["shapes", []],
-                            ),
-                        ]
-                    ),
+                    buttons=buttons,
                     pad={"r": 10, "t": 10},
                     showactive=False,
                     x=0.1,
