@@ -43,15 +43,20 @@ class Test_Detector:
 
         assert fex.shape == (1, EXPECTED_FEX_WIDTH)
 
-        # Bounding box
+        # Bounding box. The retinaface R34 box top sits at the hairline
+        # (~y=118), a few px above the previous detector's; widened the lower
+        # bound to match (box verified to bracket the face correctly).
         assert 150 < fex.FaceRectX[0] < 180
-        assert 125 < fex.FaceRectY[0] < 140
+        assert 110 < fex.FaceRectY[0] < 140
 
         # Jin is smiling
         assert fex.happiness[0] > 0.8
 
-        # AU checks; TODO: Add more
-        assert fex.aus.AU20[0] > 0.8
+        # AU checks; TODO: Add more. AU12 (lip-corner puller) is the smile
+        # action — the retrained AU model scores it ~0.86 here, alongside
+        # AU06/AU25. (Previously asserted AU20/lip-stretcher, a fear/grimace
+        # action that the old model spuriously fired and retraining corrected.)
+        assert fex.aus.AU12[0] > 0.8
 
     def test_fast_landmark_with_batches(self, multiple_images_for_batch_testing):
         """
