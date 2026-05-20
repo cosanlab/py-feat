@@ -9,7 +9,10 @@ import os
 from feat.utils.io import read_feat
 import torch
 
-EXPECTED_FEX_WIDTH = 691
+# 20 AU + 7 emotion + 5 facebox + 136 landmark + 6 facepose + 3 gaze
+# (gaze_pitch/gaze_yaw/gaze_angle, L2CS default) + 512 identity + 5 meta
+# (FrameHeight, FrameWidth, input, frame, Identity)
+EXPECTED_FEX_WIDTH = 694
 
 
 @pytest.mark.usefixtures(
@@ -38,7 +41,6 @@ class Test_Detector:
         # No bad predictions on default image
         assert not fex.isnull().any().any()
 
-        # Default output is 689 features
         assert fex.shape == (1, EXPECTED_FEX_WIDTH)
 
         # Bounding box
