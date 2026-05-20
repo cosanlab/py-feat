@@ -50,8 +50,6 @@ from feat.utils.image_operations import (
     extract_face_from_bbox_torch,
     inverse_transform_landmarks_torch,
     convert_bbox_output,
-    compute_original_image_size,
-    invert_padding_to_results,
     per_face_padding_inversion_terms,
     HOGLayer,
 )

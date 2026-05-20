@@ -374,8 +374,8 @@ def load_affectnet_val(
         labels=labels,
         metric_kind="emotion_class",
         notes=(
-            f"AffectNet manual val; classes 0..6 (7 emotions); "
-            f"full detector pipeline on original images."
+            "AffectNet manual val; classes 0..6 (7 emotions); "
+            "full detector pipeline on original images."
         ),
         extras={"has_valence_arousal": True},
     )

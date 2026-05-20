@@ -18,7 +18,6 @@ import os
 import numpy as np
 import pytest
 
-from feat.utils import FEAT_FACEPOSE_COLUMNS_6D
 from feat.utils.io import get_test_data_path
 
 

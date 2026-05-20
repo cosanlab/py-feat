@@ -11,7 +11,6 @@ import warnings
 from tqdm import tqdm
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -59,13 +58,10 @@ from feat.utils.image_operations import (
     extract_face_from_bbox_torch,
     inverse_transform_landmarks_torch,
     convert_bbox_output,
-    compute_original_image_size,
-    invert_padding_to_results,
     per_face_padding_inversion_terms,
     HOGLayer,
 )
 from feat.utils.blendshape_to_au import pls_predict_batch, _load_pls_weights
-from feat.utils.face_mask import extract_hog_features_batched
 from feat.utils.io import get_resource_path
 
 # One-time guard: confirm the PLS regressor's au_columns are in

@@ -12,7 +12,6 @@ held to ~1e-5 absolute tolerance.
 
 import math
 
-import numpy as np
 import pytest
 import torch
 

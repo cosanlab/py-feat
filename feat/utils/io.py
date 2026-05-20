@@ -25,7 +25,6 @@ from torchvision.datasets.utils import download_url as tv_download_url
 from torchvision.io import read_image
 from torchvision.transforms.functional import to_pil_image
 import warnings
-import torch
 from torchcodec.decoders import VideoDecoder
 
 __all__ = [
