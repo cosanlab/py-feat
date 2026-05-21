@@ -2717,6 +2717,7 @@ class VideoDataset(Dataset):
         self.skip_frames = skip_frames
         self.output_size = output_size
         self._decoder = None
+        self._decoder_pid = None
         self.get_video_metadata(video_file)
         # This is the list of frame ids used to slice the video not video_frames
         self.video_frames = np.arange(
@@ -2767,9 +2768,17 @@ class VideoDataset(Dataset):
         is dropped on pickling (see ``__getstate__``) so each DataLoader
         worker reopens its own; the underlying torchcodec C++ stream
         registration does not survive a serialization round-trip.
+
+        Also reopen when the owning PID changes: Linux DataLoader workers
+        are *forked*, not pickled, so ``__getstate__`` never runs and the
+        parent's live decoder would otherwise be shared across workers —
+        corrupting its ffmpeg stream state ("Invalid data found when
+        processing input"). The PID guard forces a per-process decoder.
         """
-        if self._decoder is None:
+        pid = os.getpid()
+        if self._decoder is None or self._decoder_pid != pid:
             self._decoder = VideoDecoder(self.file_name)
+            self._decoder_pid = pid
         return self._decoder
 
     def __getstate__(self):
