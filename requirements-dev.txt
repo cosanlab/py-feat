@@ -6,5 +6,5 @@ coveralls
 sphinx<6
 sphinx-rtd-theme
 sphinxcontrib-napoleon
-jupyter-book
+jupyter-book<2
 plotly>=5.6.0

@@ -987,7 +987,6 @@ def plot_face(
     # has data (e.g., plot_detections having called imshow on the original
     # image first — the host's coord system is intentional and we shouldn't
     # override it).
-    owns_axis = ax is None
     if ax is None:
         ax = _create_empty_figure()
         host_had_data = False
@@ -1946,9 +1945,15 @@ def plot_face_mesh_plotly(
     nan = np.float32(np.nan)
     for i, conn in enumerate(connections):
         a, b = conn.start, conn.end
-        seg_x[3 * i] = xs[a]; seg_x[3 * i + 1] = xs[b]; seg_x[3 * i + 2] = nan
-        seg_y[3 * i] = ys[a]; seg_y[3 * i + 1] = ys[b]; seg_y[3 * i + 2] = nan
-        seg_z[3 * i] = zs[a]; seg_z[3 * i + 1] = zs[b]; seg_z[3 * i + 2] = nan
+        seg_x[3 * i] = xs[a]
+        seg_x[3 * i + 1] = xs[b]
+        seg_x[3 * i + 2] = nan
+        seg_y[3 * i] = ys[a]
+        seg_y[3 * i + 1] = ys[b]
+        seg_y[3 * i + 2] = nan
+        seg_z[3 * i] = zs[a]
+        seg_z[3 * i + 1] = zs[b]
+        seg_z[3 * i + 2] = nan
 
     traces = [go.Scatter3d(
         x=seg_x, y=seg_y, z=seg_z,
@@ -2195,7 +2200,7 @@ def _pupil_gaze_shift(iris_radii, pitch_rad, yaw_rad):
     Sign convention: matches matplotlib plot_face's pupil 4-vec.
     """
     cp, sp = np.cos(pitch_rad), np.sin(pitch_rad)
-    cy, sy = np.cos(yaw_rad), np.sin(yaw_rad)
+    sy = np.sin(yaw_rad)
     gaze_xy = np.array([-sy * cp, sp, 0.0], dtype=np.float32)
     shift_mag = float(np.mean(iris_radii)) * 0.45
     return np.tile(shift_mag * gaze_xy, (2, 1))
@@ -2417,7 +2422,6 @@ def animate_face_plotly(
         )
         for i in range(len(packed))
     ]
-    frame_duration_ms = int(1000 / fps)
 
     fig = go.Figure(
         data=[_lines_trace(*packed[0]), _pupil_trace(*pupils[0])],
@@ -2518,10 +2522,18 @@ def animate_face_mesh_plotly(
         seg_x = np.empty(3 * n_edges, dtype=np.float32)
         seg_y = np.empty(3 * n_edges, dtype=np.float32)
         seg_z = np.empty(3 * n_edges, dtype=np.float32)
-        seg_x[0::3] = xs[a_idx]; seg_x[1::3] = xs[b_idx]; seg_x[2::3] = nan
-        seg_y[0::3] = ys[a_idx]; seg_y[1::3] = ys[b_idx]; seg_y[2::3] = nan
-        seg_z[0::3] = zs[a_idx]; seg_z[1::3] = zs[b_idx]; seg_z[2::3] = nan
-        all_xs.append(seg_x); all_ys.append(seg_y); all_zs.append(seg_z)
+        seg_x[0::3] = xs[a_idx]
+        seg_x[1::3] = xs[b_idx]
+        seg_x[2::3] = nan
+        seg_y[0::3] = ys[a_idx]
+        seg_y[1::3] = ys[b_idx]
+        seg_y[2::3] = nan
+        seg_z[0::3] = zs[a_idx]
+        seg_z[1::3] = zs[b_idx]
+        seg_z[2::3] = nan
+        all_xs.append(seg_x)
+        all_ys.append(seg_y)
+        all_zs.append(seg_z)
 
     # Global extents across all frames so the camera doesn't jitter.
     flat_verts = meshes.reshape(-1, 3)
@@ -3422,7 +3434,7 @@ def draw_plotly_au(
         "AU43",
     ]
 
-    masseter_l = face_polygon_svg(
+    masseter_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_2"], row["y_2"]),
             (row["x_3"], row["y_3"]),
@@ -3434,7 +3446,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    masseter_r = face_polygon_svg(
+    masseter_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_14"], row["y_14"]),
             (row["x_13"], row["y_13"]),
@@ -3446,7 +3458,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    temporalis_l = face_polygon_svg(
+    temporalis_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_2"], row["y_2"]),
             (row["x_1"], row["y_1"]),
@@ -3457,7 +3469,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    temporalis_r = face_polygon_svg(
+    temporalis_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_14"], row["y_14"]),
             (row["x_15"], row["y_15"]),
@@ -3468,7 +3480,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    dep_lab_inf_l = face_polygon_svg(
+    dep_lab_inf_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_57"], row["y_57"]),
             (row["x_58"], row["y_58"]),
@@ -3479,7 +3491,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    dep_lab_inf_r = face_polygon_svg(
+    dep_lab_inf_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_57"], row["y_57"]),
             (row["x_56"], row["y_56"]),
@@ -3490,7 +3502,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    dep_ang_or_l = face_polygon_svg(
+    dep_ang_or_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_48"], row["y_48"]),
             (row["x_7"], row["y_7"]),
@@ -3499,7 +3511,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    dep_ang_or_r = face_polygon_svg(
+    dep_ang_or_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_54"], row["y_54"]),
             (row["x_9"], row["y_9"]),
@@ -3508,7 +3520,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    mentalis_l = face_polygon_svg(
+    mentalis_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_58"], row["y_58"]),
             (row["x_7"], row["y_7"]),
@@ -3517,7 +3529,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    mentalis_r = face_polygon_svg(
+    mentalis_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_56"], row["y_56"]),
             (row["x_9"], row["y_9"]),
@@ -3526,7 +3538,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    risorius_l = face_polygon_svg(
+    risorius_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_4"], row["y_4"]),
             (row["x_5"], row["y_5"]),
@@ -3535,7 +3547,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    risorius_r = face_polygon_svg(
+    risorius_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_11"], row["y_11"]),
             (row["x_12"], row["y_12"]),
@@ -3546,7 +3558,7 @@ def draw_plotly_au(
 
     bottom = (row["y_8"] - row["y_57"]) / 2
 
-    orb_oris_l = face_polygon_svg(
+    orb_oris_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_48"], row["y_48"]),
             (row["x_59"], row["y_59"]),
@@ -3564,7 +3576,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    orb_oris_u = face_polygon_svg(
+    orb_oris_u = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_48"], row["y_48"]),
             (row["x_49"], row["y_49"]),
@@ -3578,7 +3590,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    frontalis_l = face_polygon_svg(
+    frontalis_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_27"], row["y_27"]),
             (row["x_39"], row["y_39"]),
@@ -3594,7 +3606,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    frontalis_r = face_polygon_svg(
+    frontalis_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_27"], row["y_27"]),
             (row["x_22"], row["y_22"]),
@@ -3610,7 +3622,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    frontalis_inner_l = face_polygon_svg(
+    frontalis_inner_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_27"], row["y_27"]),
             (row["x_39"], row["y_39"]),
@@ -3619,7 +3631,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    frontalis_inner_r = face_polygon_svg(
+    frontalis_inner_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_27"], row["y_27"]),
             (row["x_42"], row["y_42"]),
@@ -3628,7 +3640,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    cor_sup_l = face_polygon_svg(
+    cor_sup_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_28"], row["y_28"]),
             (row["x_19"], row["y_19"]),
@@ -3637,7 +3649,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    cor_sup_r = face_polygon_svg(
+    cor_sup_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_28"], row["y_28"]),
             (row["x_23"], row["y_23"]),
@@ -3646,7 +3658,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    lev_lab_sup_l = face_polygon_svg(
+    lev_lab_sup_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_41"], row["y_41"]),
             (row["x_40"], row["y_40"]),
@@ -3655,7 +3667,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    lev_lab_sup_r = face_polygon_svg(
+    lev_lab_sup_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_47"], row["y_47"]),
             (row["x_46"], row["y_46"]),
@@ -3664,7 +3676,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    lev_lab_sup_an_l = face_polygon_svg(
+    lev_lab_sup_an_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_39"], row["y_39"]),
             (row["x_49"], row["y_49"]),
@@ -3673,7 +3685,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    lev_lab_sup_an_r = face_polygon_svg(
+    lev_lab_sup_an_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_35"], row["y_35"]),
             (row["x_42"], row["y_42"]),
@@ -3682,7 +3694,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    zyg_maj_l = face_polygon_svg(
+    zyg_maj_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_48"], row["y_48"]),
             (row["x_3"], row["y_3"]),
@@ -3691,7 +3703,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    zyg_maj_r = face_polygon_svg(
+    zyg_maj_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_54"], row["y_54"]),
             (row["x_13"], row["y_13"]),
@@ -3700,7 +3712,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    bucc_l = face_polygon_svg(
+    bucc_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_48"], row["y_48"]),
             (row["x_5"], row["y_50"]),
@@ -3709,7 +3721,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    bucc_r = face_polygon_svg(
+    bucc_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_54"], row["y_54"]),
             (row["x_11"], row["y_52"]),
@@ -3720,7 +3732,7 @@ def draw_plotly_au(
 
     width_l = (row["y_21"] - row["y_39"]) / 2
 
-    orb_oc_l = face_polygon_svg(
+    orb_oc_l = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_36"] - width_l / 3, row["y_36"] + width_l / 2),
             (row["x_36"], row["y_36"] + width_l),
@@ -3740,7 +3752,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    orb_oc_l_inner = face_polygon_svg(
+    orb_oc_l_inner = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_36"] - width_l / 6, row["y_36"] + width_l / 5),
             (row["x_36"], row["y_36"] + width_l / 2),
@@ -3762,7 +3774,7 @@ def draw_plotly_au(
 
     width_l2 = (row["y_38"] - row["y_2"]) / 1.5
 
-    orb_oc_l_outer = face_polygon_svg(
+    orb_oc_l_outer = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_39"] + width_l / 2, row["y_39"] + width_l / 2),
             (row["x_39"], row["y_39"] - width_l),
@@ -3777,7 +3789,7 @@ def draw_plotly_au(
 
     width_r = (row["y_23"] - row["y_43"]) / 2
 
-    orb_oc_r = face_polygon_svg(
+    orb_oc_r = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_42"] - width_r / 3, row["y_42"] + width_r / 2),
             (row["x_42"], row["y_42"] + width_r),
@@ -3797,7 +3809,7 @@ def draw_plotly_au(
         img_height,
     )
 
-    orb_oc_r_inner = face_polygon_svg(
+    orb_oc_r_inner = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_42"] - width_r / 6, row["y_42"] + width_r / 5),
             (row["x_42"], row["y_42"] + width_r / 2),
@@ -3819,7 +3831,7 @@ def draw_plotly_au(
 
     width_r2 = (row["y_44"] - row["y_14"]) / 1.5
 
-    orb_oc_r_outer = face_polygon_svg(
+    orb_oc_r_outer = face_polygon_svg(  # noqa: F841 (referenced dynamically via eval(muscle) below)
         [
             (row["x_42"] - width_r / 2, row["y_42"]),
             (row["x_47"], row["y_47"] - width_r2),

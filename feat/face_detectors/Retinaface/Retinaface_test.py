@@ -138,6 +138,14 @@ class Retinaface:
 
     @torch.inference_mode()
     def __call__(self, img: torch.Tensor) -> List[List[List[float]]]:
+        # Delegate to forward() so this wrapper exposes the same `.forward`
+        # entry point as nn.Module-based detectors (e.g. img2pose's
+        # FasterDoFRCNN). Python resolves obj() via type(obj).__call__, so
+        # existing `detector.facepose_detector(frames)` call sites are
+        # unaffected, but tests/hooks can patch `.forward` uniformly.
+        return self.forward(img)
+
+    def forward(self, img: torch.Tensor) -> List[List[List[float]]]:
         """Detect faces in a batch of images.
 
         Args:

@@ -25,7 +25,6 @@ from feat.evaluation.datasets import (
     DatasetSplit,
 )
 from feat.evaluation.metrics import (
-    concordance_correlation_coefficient,
     cosine_similarity_pairs,
     emotion_accuracy,
     emotion_f1_macro,
@@ -128,7 +127,6 @@ def evaluate_dataset(
 
 def _load_arcface_direct(device: str = "cpu"):
     """Load ArcFace and its weights without spinning up the full Detector."""
-    import torch
     from huggingface_hub import hf_hub_download
     from safetensors.torch import load_file
 

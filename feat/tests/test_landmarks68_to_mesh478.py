@@ -157,10 +157,18 @@ class TestPredictMeshFromDlib68:
 
 class TestPlotFaceMeshWithMesh:
     def test_accepts_precomputed_mesh(self, stub_bridge_model):
+        from mpl_toolkits.mplot3d.art3d import Line3DCollection
+
         mesh = stub_bridge_model.mean_predicted_mesh
         ax = plot_face_mesh(mesh=mesh)
         assert ax is not None
-        assert len(ax.get_lines()) > 0
+        # plot_face_mesh batches the wireframe edges into one Line3DCollection
+        # (faster than per-edge ax.plot), so the mesh lands in ax.collections,
+        # not ax.get_lines(). Draw once so segment projection is populated.
+        wireframes = [c for c in ax.collections if isinstance(c, Line3DCollection)]
+        assert wireframes, "no mesh wireframe (Line3DCollection) was drawn"
+        ax.figure.canvas.draw()
+        assert len(wireframes[0].get_segments()) > 0
 
     def test_rejects_both_au_and_mesh(self, stub_bridge_model):
         mesh = stub_bridge_model.mean_predicted_mesh

@@ -30,6 +30,32 @@ from feat.utils.face_pose_pnp import (
 )
 
 
+# Real 68 landmarks of the right-most face in feat/tests/data/multi_face.jpg
+# (face index 4), detected via Detector(face_model="retinaface"). This
+# forward-facing face is near-planar enough that DLT is ill-conditioned: the
+# old det(R_raw)>0 sign rule selected the mirror "behind the camera" solution
+# (t_z<0, yaw ~= -166 deg). It is the regression fixture for the cheirality fix.
+_LANDMARKS_FACE4 = [
+    (436.07, 249.09), (437.02, 260.49), (438.45, 271.94), (440.38, 283.26),
+    (443.63, 293.41), (449.55, 301.53), (458.02, 306.81), (467.73, 309.61),
+    (477.89, 310.36), (487.92, 309.21), (496.84, 305.18), (504.26, 299.08),
+    (509.43, 290.72), (512.50, 280.87), (514.64, 270.33), (516.17, 259.56),
+    (516.91, 248.71), (445.64, 240.35), (451.52, 236.26), (458.62, 235.29),
+    (465.89, 236.76), (472.55, 239.50), (484.92, 239.60), (491.14, 237.13),
+    (497.93, 235.69), (504.53, 236.60), (509.62, 240.75), (478.68, 246.10),
+    (478.57, 252.33), (478.51, 258.10), (478.52, 263.99), (470.00, 271.58),
+    (474.01, 272.96), (478.52, 273.89), (483.02, 273.19), (487.05, 271.92),
+    (453.34, 248.87), (458.74, 247.38), (463.33, 247.40), (467.84, 249.47),
+    (463.24, 250.08), (458.65, 249.95), (488.83, 249.78), (493.69, 247.76),
+    (498.19, 247.88), (502.94, 249.67), (498.09, 250.74), (493.63, 250.69),
+    (461.92, 283.72), (468.39, 280.23), (474.59, 278.11), (478.60, 279.22),
+    (482.63, 278.36), (488.28, 280.61), (493.50, 284.37), (488.04, 286.47),
+    (482.95, 287.84), (478.37, 288.10), (473.88, 287.57), (468.10, 285.88),
+    (463.56, 283.64), (474.43, 282.27), (478.62, 282.79), (482.88, 282.52),
+    (491.82, 284.22), (482.76, 282.93), (478.45, 283.15), (474.25, 282.76),
+]
+
+
 def _build_test_rotation(pitch_deg: float, yaw_deg: float, roll_deg: float) -> torch.Tensor:
     """Build a [3, 3] rotation matrix from XYZ-intrinsic Euler angles."""
     p, y, r = (math.radians(a) for a in (pitch_deg, yaw_deg, roll_deg))
@@ -96,6 +122,26 @@ def test_dlt_translation_z_positive():
     assert t_rec[0, 2] > 0, f"recovered tz must be positive, got {t_rec[0, 2]:.3f}"
 
 
+def test_dlt_no_cheirality_flip_on_real_frontal_face():
+    """Regression: a near-frontal real face must not be solved to the mirror
+    "behind the camera" pose. The old det(R_raw)>0 sign rule selected t_z<0
+    for this face (yaw flipped to ~-166 deg); cheirality-based sign keeps the
+    face in front (t_z>0) and yaw within a sane frontal range."""
+    template = load_img2pose_3d_template()
+    # multi_face.jpg is 667x1000 (H, W); intrinsics derive from this.
+    K = default_intrinsics((667, 1000))
+    landmarks = torch.tensor(_LANDMARKS_FACE4, dtype=torch.float32).unsqueeze(0)
+
+    R, t = solve_dlt_pnp(landmarks, template, K)
+
+    assert t[0, 2] > 0, f"face placed behind camera (t_z={t[0, 2]:.2f}); cheirality flip"
+    yaw = rotation_matrix_to_img2pose_euler(R)[0, 2]
+    assert yaw.abs() < math.radians(90), (
+        f"yaw {math.degrees(yaw):.1f} deg indicates a ~180 deg pose flip on a "
+        "forward-facing face"
+    )
+
+
 def test_dlt_batched_independence():
     """Batched input: each face's solution must be independent of the
     others. Run two distinct synthetic poses through one batched call
@@ -125,7 +171,6 @@ def test_euler_conversion_round_trip():
     precision). Doesn't pin a specific axis convention - just locks down
     that the conversion is consistent."""
     from feat.utils.geometry import (
-        axis_angle_to_rotation_matrix,
         rotation_matrix_to_quaternion,
         euler_from_quaternion,
     )

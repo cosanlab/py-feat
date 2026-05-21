@@ -193,14 +193,12 @@ class TestPlotFaceMesh:
         ax = plot_face_mesh(au=None, model=stub_mesh_model)
         verts = stub_mesh_model.mean_aligned_mesh
         zlim = ax.get_zlim()
-        ylim = ax.get_ylim()
         # The data-Y range must align with matplotlib's Z axis (the swap
         # target). Compare span widths since matplotlib re-centers via
         # set_zlim — small float32-vs-float64 rounding is absorbed.
         data_y_span = float(verts[:, 1].max() - verts[:, 1].min())
         data_z_span = float(verts[:, 2].max() - verts[:, 2].min())
         mpl_z_span = zlim[1] - zlim[0]
-        mpl_y_span = ylim[1] - ylim[0]
         # The largest data span is data-Y (~17). After the swap it lands on
         # mpl-Z. Equal-aspect makes all three mpl axes share that max span.
         assert mpl_z_span >= data_y_span - 1e-3, \

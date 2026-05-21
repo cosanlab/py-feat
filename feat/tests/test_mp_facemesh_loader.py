@@ -21,7 +21,6 @@ download helper to return a path the test controls.
 
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -101,7 +100,6 @@ def test_loader_errors_helpfully_when_legacy_path_and_no_onnx2torch(monkeypatch)
     )
 
     # Block onnx2torch from importing.
-    blocked = {"onnx2torch": None}
     real_import = __builtins__["__import__"] if isinstance(__builtins__, dict) else __builtins__.__import__
 
     def import_blocker(name, globals=None, locals=None, fromlist=(), level=0):

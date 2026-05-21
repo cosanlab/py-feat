@@ -139,3 +139,7 @@ feat/resources/.locks/
 feat/resources/CACHEDIR.TAG
 feat/resources/models--*/
 feat/resources/*.npz
+# Locally-built viz/model artifacts (canonical copies live in the HF cache
+# under models--py-feat--* and are lazy-downloaded; never track loose copies).
+feat/resources/*.h5
+feat/resources/*.joblib

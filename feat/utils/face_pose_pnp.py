@@ -186,23 +186,29 @@ def solve_dlt_pnp(
     R_raw = P[:, :, :3]  # [B, 3, 3]
     t_raw = P[:, :, 3]  # [B, 3]
 
-    # DLT solves A @ p = 0 up to a sign — both p and -p are solutions, but
-    # only one corresponds to "face in front of camera". The wrong sign
-    # gives a mirror configuration with det(R_raw) < 0, which Procrustes
-    # would project to a rotation about the wrong axis. Resolve the sign
-    # before Procrustes by checking det(R_raw): for a face in front of
-    # camera, det(R_raw) = scale^3 * det(R) = scale^3 (since det(R) = 1
-    # for a proper rotation). We need scale > 0 — equivalently det(R_raw)
-    # > 0 — so flip the sign of P when it's negative.
-    det_raw = torch.linalg.det(R_raw)
-    sign_p = torch.sign(det_raw)
+    # DLT solves A @ p = 0 up to a global sign — both p and -p satisfy it,
+    # but only one places the face IN FRONT of the camera (positive depth).
+    # Flipping the global sign flips the sign of t_raw[:, 2] (the camera-frame
+    # depth), so resolve the ambiguity by cheirality: pick the sign that
+    # makes t_z > 0.
+    #
+    # We previously keyed on det(R_raw) > 0 (proper rotation vs. reflection).
+    # In a clean factorization det(R_raw) > 0 <=> t_z > 0, so it usually
+    # agrees — but for near-frontal / near-planar faces DLT is ill-conditioned
+    # and the two decouple: det(R_raw) > 0 while t_z < 0, i.e. the mirror
+    # "face behind the camera" solution, which surfaces as a ~180 deg yaw flip
+    # (e.g. a forward-facing face reported at yaw ~= -166 deg). Cheirality is
+    # the physically correct disambiguator; the Procrustes step below still
+    # guarantees a proper rotation regardless of R_raw's sign.
+    sign_p = torch.sign(t_raw[:, 2])
     sign_p = torch.where(sign_p == 0, torch.ones_like(sign_p), sign_p)
     R_raw = R_raw * sign_p.view(B, 1, 1)
     t_raw = t_raw * sign_p.unsqueeze(-1)
 
     # Project R_raw onto the closest rotation matrix via SVD (Procrustes).
-    # det(U V^T) is +1 here (since we already flipped sign so det(R_raw) > 0),
-    # but we keep the determinant-fix for numerical robustness.
+    # The determinant-fix (flip diag) forces a proper rotation (det +1)
+    # regardless of R_raw's sign — important now that the global sign is
+    # resolved by cheirality (t_z) rather than by det(R_raw).
     U, _, Vt = torch.linalg.svd(R_raw)
     det = torch.linalg.det(U @ Vt)
     flip = torch.diag_embed(

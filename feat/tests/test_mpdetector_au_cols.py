@@ -17,7 +17,6 @@ from __future__ import annotations
 import os
 
 import numpy as np
-import pandas as pd
 import pytest
 
 from feat.pretrained import AU_LANDMARK_MAP
