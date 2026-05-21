@@ -4,13 +4,15 @@ Replaces ``feat.utils.face_pose_pnp`` for non-img2pose face_model paths.
 Loaded MLP takes 68 face landmarks (normalized to the face bbox) and
 emits 6DoF head pose calibrated to img2pose's coordinate frame.
 
-Training: distillation from img2pose on CelebV-HQ (~570k frames). See
-``scripts/train_pose_mlp.py``. Validation MAE on held-out CelebV-HQ:
-pitch 2.78°, roll 2.05°, yaw 1.64° — comparable to img2pose's reported
-~4° avg MAE on BIWI (different dataset; smaller is better).
+Training: distillation from img2pose on CelebV-HQ. v2 (default) was
+trained on 2.78M frames / 35K clips with a 512→256→128 hidden + LayerNorm
++ GELU + Dropout stack; v1 was the smaller 256→128→64 ReLU baseline on
+~570k frames. v2 validation MAE on held-out CelebV-HQ: pitch 2.66°,
+roll 2.34°, yaw 1.58° — comparable to img2pose's reported ~4° avg MAE
+on BIWI (different dataset; smaller is better).
 
-Weights: ``models/pose_mlp_v1.safetensors`` locally, will be at
-``py-feat/pose_mlp_v1`` on HuggingFace.
+Weights: ``models/pose_mlp_v2.safetensors`` locally (v1 supported as
+fallback for legacy), HuggingFace ``py-feat/pose_mlp_v2``.
 """
 from __future__ import annotations
 
@@ -61,18 +63,20 @@ def _resolve_weights_path() -> Path | None:
 
     Lookup order:
       1. ``FEAT_POSE_MLP_PATH`` env var (full path to .safetensors)
-      2. ``models/pose_mlp_v1.safetensors`` relative to repo root
-      3. HuggingFace ``py-feat/pose_mlp_v1`` (when uploaded)
+      2. ``models/pose_mlp_v2.safetensors`` relative to repo root (preferred)
+      3. ``models/pose_mlp_v1.safetensors`` relative to repo root (legacy)
+      4. HuggingFace ``py-feat/pose_mlp_v2`` (handled by _load_pose_mlp)
     """
     env = os.environ.get("FEAT_POSE_MLP_PATH")
     if env and Path(env).exists():
         return Path(env)
-    # Repo-relative
+    # Repo-relative — prefer v2, fall back to v1 for older checkouts
     here = Path(__file__).resolve()
     repo_root = here.parents[2]
-    local = repo_root / "models" / "pose_mlp_v1.safetensors"
-    if local.exists():
-        return local
+    for fname in ("pose_mlp_v2.safetensors", "pose_mlp_v1.safetensors"):
+        local = repo_root / "models" / fname
+        if local.exists():
+            return local
     # HuggingFace fallback (handled by caller)
     return None
 
@@ -89,27 +93,32 @@ def _load_pose_mlp(device: str = "cpu") -> tuple[PoseMLP, np.ndarray, np.ndarray
         meta_path = weights_path.with_suffix(".json")
 
     if weights_path is None or not meta_path.exists():
-        # Try HuggingFace
+        # Try HuggingFace — prefer v2, fall back to v1 if v2 unavailable.
+        from feat.utils.io import get_resource_path
         try:
             from huggingface_hub import hf_hub_download
-
-            from feat.utils.io import get_resource_path
-
-            weights_path = Path(
-                hf_hub_download(
-                    repo_id="py-feat/pose_mlp_v1",
-                    filename="pose_mlp_v1.safetensors",
-                    cache_dir=get_resource_path(),
-                )
-            )
-            meta_path = Path(
-                hf_hub_download(
-                    repo_id="py-feat/pose_mlp_v1",
-                    filename="pose_mlp_v1.json",
-                    cache_dir=get_resource_path(),
-                )
-            )
         except Exception:
+            return None
+        for version in ("v2", "v1"):
+            try:
+                weights_path = Path(
+                    hf_hub_download(
+                        repo_id=f"py-feat/pose_mlp_{version}",
+                        filename=f"pose_mlp_{version}.safetensors",
+                        cache_dir=get_resource_path(),
+                    )
+                )
+                meta_path = Path(
+                    hf_hub_download(
+                        repo_id=f"py-feat/pose_mlp_{version}",
+                        filename=f"pose_mlp_{version}.json",
+                        cache_dir=get_resource_path(),
+                    )
+                )
+                break
+            except Exception:
+                continue
+        else:
             return None
 
     if weights_path is None or meta_path is None or not meta_path.exists():

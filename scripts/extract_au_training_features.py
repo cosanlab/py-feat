@@ -68,12 +68,25 @@ DATA_ROOT = Path(os.environ.get("PYFEAT_DATA_ROOT", "/Storage/Data"))
 
 
 def load_disfa18_labels() -> pd.DataFrame:
-    """DISFA original, excluding the 9 subjects that overlap with DISFA+."""
+    """DISFA original. By default excludes the 9 subjects that overlap with
+    DISFA+ to avoid subject-level leakage into the DISFA+ benchmark.
+
+    Set PYFEAT_INCLUDE_DISFA_OVERLAP=1 in the environment to include those
+    9 subjects (SN001/003/004/007/009/010/013/025/027) for full-corpus
+    training experiments. WARNING: doing so creates subject leakage with
+    DISFA+ bench; the resulting model's DISFA+ F1 is partly memorization.
+    """
     csv = DATA_ROOT / "DISFA_" / "DISFA_main_New.csv"
     if not csv.exists():
         return pd.DataFrame()
     df = pd.read_csv(csv, index_col=0, low_memory=False)
-    df = df[~df["subject"].isin(DISFAPLUS_SUBJECTS)].copy()
+    include_overlap = os.environ.get("PYFEAT_INCLUDE_DISFA_OVERLAP", "0") == "1"
+    if not include_overlap:
+        df = df[~df["subject"].isin(DISFAPLUS_SUBJECTS)].copy()
+    else:
+        print("  WARNING: DISFA loader including DISFA+ overlap subjects "
+              f"({sorted(DISFAPLUS_SUBJECTS)}) — leakage risk if benching on DISFA+")
+        df = df.copy()
     if df.empty:
         return df
 
@@ -237,12 +250,17 @@ def _parse_bp4d_au_occ_csv(csv_path: Path, columns_are_au_index: bool) -> pd.Dat
     """Parse a single BP4D / BP4D+ AU_OCC CSV.
 
     Two header conventions are seen:
-    - BP4D: header is the integer range 0..99 where N>=1 means "AU N";
-      col 0 is the frame_id. (per UserGuide: "each column corresponds to
-      a single action unit", "column 12 = AU12".) Pass columns_are_au_index=True.
-    - BP4D+: header explicitly names the scored AUs, e.g.
-      `1,1,2,4,5,...`. Col 0 is the frame_id (header value is ignored).
-      Pass columns_are_au_index=False — we read the header.
+    - BP4D (legacy): header is the integer range 0..99 where N>=1 means
+      "AU N"; col 0 is the frame_id. Pass columns_are_au_index=True.
+    - BP4D+ / BP4D-2016-rerelease: header explicitly names the scored AUs,
+      e.g. `1,1,2,4,5,...` (35-ish cols). Col 0 is the frame_id (header
+      value ignored). Pass columns_are_au_index=False.
+
+    The `columns_are_au_index` hint is overridden by an auto-detect that
+    counts header columns — files with <50 columns are treated as named.
+    (Legacy BP4D files have 100 cols; named-AU files have ~35.) This lets
+    us mix the original BP4D AU_OCC with re-released F013-style files
+    transparently.
 
     Returns a DataFrame with columns [frame, AU01, AU02, ..., AU43] where
     AUs are 0/1 or NaN (9 codes are converted to NaN). Only AUs in
@@ -250,6 +268,11 @@ def _parse_bp4d_au_occ_csv(csv_path: Path, columns_are_au_index: bool) -> pd.Dat
     """
     with csv_path.open() as f:
         header_line = f.readline().strip().split(",")
+    # Auto-detect format: legacy BP4D files have 100 columns (header
+    # 0..99). Named-AU files (BP4D+ / F013 re-release) have ~35. Override
+    # caller's hint if header column count makes it obvious.
+    if len(header_line) < 50:
+        columns_are_au_index = False
     # Read with positional column indices so duplicate names in the header
     # (BP4D+ has `1,1,2,4,...` where col 0 frame-id and col 1 AU1 both
     # display as "1") don't break the parse.
@@ -335,7 +358,13 @@ def load_bp4d_labels() -> pd.DataFrame:
 
 
 def load_bp4dplus_labels() -> pd.DataFrame:
-    """BP4D+ — 140 subjects, AU_OCC binary labels."""
+    """BP4D+ — 140 subjects, AU_OCC binary labels.
+
+    Frame filenames use mixed padding across subjects: 99 of 140 use 3-digit
+    (``000.jpg``), 41 use 4-digit (``0000.jpg``). Auto-detect per task dir
+    (same as BP4D loader). Without this, labels referencing low frame numbers
+    miss their JPGs and ~48K rows get filtered out by the existence check.
+    """
     occ_dir = DATA_ROOT / "BP4D+_v0.2" / "AUCoding" / "AU_OCC"
     img_root = DATA_ROOT / "BP4D+_v0.2" / "2D+3D"
     if not occ_dir.exists() or not img_root.exists():
@@ -344,11 +373,21 @@ def load_bp4dplus_labels() -> pd.DataFrame:
     for csv_path in sorted(occ_dir.glob("*.csv")):
         stem = csv_path.stem
         subject, task = stem.split("_", 1)
+        task_dir = img_root / subject / task
+        try:
+            sample = next((p for p in task_dir.iterdir() if p.suffix == ".jpg"), None)
+        except FileNotFoundError:
+            sample = None
+        pad_width = 4
+        if sample is not None:
+            stem_digits = "".join(c for c in sample.stem if c.isdigit())
+            if stem_digits:
+                pad_width = len(stem_digits)
         labels = _parse_bp4d_au_occ_csv(csv_path, columns_are_au_index=False)
         labels["subject"] = subject
         labels["source"] = "bp4dplus"
         labels["image_path"] = labels["frame"].apply(
-            lambda f: str(img_root / subject / task / f"{int(f)}.jpg")
+            lambda f, td=task_dir, w=pad_width: str(td / f"{int(f):0{w}d}.jpg")
         )
         labels = labels.drop(columns=["frame"])
         parts.append(labels)
@@ -427,6 +466,71 @@ def load_pain_labels() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def load_disfaplus_labels() -> pd.DataFrame:
+    """DISFA+ posed-peak — 9 subjects, 12 AUs, intensity 0..5.
+
+    Used for v3.11+ Cheong-replication training. Including DISFA+ in the
+    training corpus is a data leak (it's the bench dataset), but Cheong's
+    published pipeline fit PCA on all 7 datasets including DISFA+, so
+    we replicate that to test whether the leak explains his F1 gap.
+    """
+    root = DATA_ROOT / "DISFAPlusDataset"
+    labels_root = root / "Labels"
+    img_root = root / "Aligned"
+    if not labels_root.exists() or not img_root.exists():
+        return pd.DataFrame()
+
+    au_names = ["AU1", "AU2", "AU4", "AU5", "AU6", "AU9", "AU12",
+                "AU15", "AU17", "AU20", "AU25", "AU26"]
+    rows = []
+    for subj_dir in sorted(labels_root.iterdir()):
+        if not subj_dir.is_dir():
+            continue
+        subject = subj_dir.name
+        for trial_dir in sorted(subj_dir.iterdir()):
+            if not trial_dir.is_dir():
+                continue
+            trial = trial_dir.name
+            au_dict: dict[str, dict[str, int]] = {}
+            valid = True
+            for au in au_names:
+                au_path = trial_dir / f"{au}.txt"
+                if not au_path.exists():
+                    valid = False
+                    break
+                with au_path.open() as f:
+                    fr_to_v = {}
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            fr_to_v[parts[0]] = int(parts[1])
+                au_dict[au] = fr_to_v
+            if not valid:
+                continue
+            common_frames = set.intersection(*(set(d) for d in au_dict.values()))
+            for fid in sorted(common_frames):
+                img_path = img_root / subject / trial / fid
+                if not img_path.exists():
+                    continue
+                row = {
+                    "image_path": str(img_path),
+                    "subject": subject,
+                    "source": "disfaplus",
+                }
+                for au in PYFEAT_AU_COLS:
+                    # Map "AU1" → "AU01" naming convention
+                    src_name = f"AU{int(au[2:])}"
+                    if src_name in au_dict:
+                        row[au] = float(au_dict[src_name].get(fid, 0))
+                    else:
+                        row[au] = np.nan
+                rows.append(row)
+    return pd.DataFrame(rows)
+
+
 SOURCE_LOADERS = {
     "disfa18": load_disfa18_labels,
     "ckplus": load_ckplus_labels,
@@ -434,6 +538,7 @@ SOURCE_LOADERS = {
     "bp4d": load_bp4d_labels,
     "bp4dplus": load_bp4dplus_labels,
     "pain": load_pain_labels,
+    "disfaplus": load_disfaplus_labels,
 }
 
 
@@ -450,6 +555,9 @@ def extract_features(
     batch_size: int = 32,
     chunk_size: int = 2000,
     align_faces: bool = False,
+    face_model: str = "retinaface",
+    num_workers: int = 0,
+    detect_call_size: int = 5000,
 ) -> None:
     """Run the v0.7 pipeline + corrected HOG over labels_df and cache to disk.
 
@@ -482,9 +590,9 @@ def extract_features(
     # Build detector with au_model='xgb' so the AU path (and thus HOG
     # extraction) actually runs. AU outputs themselves are discarded; we
     # capture HOG features via the monkey-patch below.
-    print(f"loading Detector on {device}...", flush=True)
+    print(f"loading Detector on {device} (face_model={face_model})...", flush=True)
     detector = Detector(
-        face_model="img2pose",
+        face_model=face_model,
         au_model="xgb",
         emotion_model=None,
         identity_model=None,
@@ -597,20 +705,21 @@ def extract_features(
         pending_sources.clear()
         pending_paths.clear()
 
-    # Process the labels in mini-batches. For each batch of images,
-    # detector.detect runs face + landmark + (discarded) AU, calls our
-    # monkey-patched HOG extractor, and returns a Fex DataFrame. We then
-    # match each detected face back to its input image via the `frame`
-    # column.
-    for start in range(0, n, batch_size):
-        end = min(start + batch_size, n)
+    # Process in two-level batching:
+    # - Outer "detect_call_size" group passes many paths to a single
+    #   detector.detect() call so its DataLoader workers stay alive across
+    #   ~5000 images (instead of being respawned every batch_size images).
+    # - detector.detect() internally batches at `batch_size` for the GPU.
+    # This avoids DataLoader fork overhead when num_workers > 0.
+    for start in range(0, n, detect_call_size):
+        end = min(start + detect_call_size, n)
         batch_paths = paths_arr[start:end].tolist()
         capture_buf.clear()
         try:
             fex = detector.detect(
                 batch_paths, data_type="image",
                 output_size=512, batch_size=batch_size,
-                num_workers=0, progress_bar=False,
+                num_workers=num_workers, progress_bar=False,
             )
         except Exception as e:
             print(f"  detect failed on batch [{start}:{end}]: {e}", flush=True)
@@ -651,18 +760,17 @@ def extract_features(
             n_faces_total += 1
 
         n_processed += len(batch_paths)
-        if len(pending_hog) >= chunk_size:
+        while len(pending_hog) >= chunk_size:
             flush_chunk()
 
-        if (start // batch_size) % 10 == 0:
-            elapsed = time.perf_counter() - t0
-            rate = n_processed / max(elapsed, 1e-3)
-            eta = (n - n_processed) / max(rate, 1e-3)
-            print(
-                f"  {n_processed}/{n} images, {n_faces_total} faces captured, "
-                f"{rate:.1f} img/s, elapsed {elapsed:.0f}s, ETA {eta:.0f}s",
-                flush=True,
-            )
+        elapsed = time.perf_counter() - t0
+        rate = n_processed / max(elapsed, 1e-3)
+        eta = (n - n_processed) / max(rate, 1e-3)
+        print(
+            f"  {n_processed}/{n} images, {n_faces_total} faces captured, "
+            f"{rate:.1f} img/s, elapsed {elapsed:.0f}s, ETA {eta:.0f}s",
+            flush=True,
+        )
 
     # Final flush + manifest
     flush_chunk()
@@ -694,6 +802,17 @@ def main():
                    choices=list(SOURCE_LOADERS))
     p.add_argument("--device", default="cuda")
     p.add_argument("--batch-size", type=int, default=32)
+    p.add_argument("--num-workers", type=int, default=0,
+                   help="DataLoader workers for image loading. Set >0 to parallelize "
+                        "disk I/O (especially helpful on NAS). 4-8 typically saturates.")
+    p.add_argument("--detect-call-size", type=int, default=5000,
+                   help="Number of paths to pass to each detector.detect() call. "
+                        "DataLoader workers stay alive across this many images, "
+                        "amortizing fork overhead. Detector still batches internally "
+                        "at --batch-size for GPU work.")
+    p.add_argument("--face-model", default="retinaface",
+                   help="Face detector: 'retinaface' (v0.7 default, batched) or "
+                        "'img2pose' (v0.6 default, matches existing chunks).")
     p.add_argument("--limit", type=int, default=None,
                    help="cap on total training rows (for quick smoke tests)")
     p.add_argument("--inventory-only", action="store_true",
@@ -745,6 +864,9 @@ def main():
         device=args.device,
         batch_size=args.batch_size,
         align_faces=args.align_faces,
+        face_model=args.face_model,
+        num_workers=args.num_workers,
+        detect_call_size=args.detect_call_size,
     )
 
     return 0

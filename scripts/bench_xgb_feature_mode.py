@@ -73,7 +73,11 @@ class FeatureModeXGBClassifier:
         # Optional: training-time transform info recorded in mode_info.
         # Apply the same spatial cell zeroing the PCA was fit on.
         transforms = self._mode_info.get("transforms", {}) if hasattr(self, "_mode_info") else {}
-        feats = []
+        feature_mode = self._mode_info.get("feature_mode")
+        au_region = self._mode_info.get("au_region", {})
+
+        # Per-region transformed feature matrices [N, D_region+136]
+        feats_by_region = {}
         for region in self.regions_used:
             hog_t = frame
             t = transforms.get(region)
@@ -81,16 +85,31 @@ class FeatureModeXGBClassifier:
                 hog_t = frame.copy()
                 _, start, end = t
                 hog_t[:, start:end] = 0.0
-            feats.append(self.pcas[region].transform(self.scalers[region].transform(hog_t)))
-        feats.append(landmarks)
-        X = np.concatenate(feats, axis=1)
+            pca_feat = self.pcas[region].transform(self.scalers[region].transform(hog_t))
+            feats_by_region[region] = np.concatenate([pca_feat, landmarks], axis=1)
+
+        # Default concat for non-per-AU modes
+        if feature_mode != "per_au":
+            X_concat = np.concatenate(
+                [feats_by_region[r][:, :-landmarks.shape[1]] for r in self.regions_used]
+                + [landmarks], axis=1,
+            )
+
         out = []
         for key in self.au_keys:
             clf = self.classifiers.get(key)
             if clf is None:
-                out.append(np.full(X.shape[0], np.nan))
+                out.append(np.full(landmarks.shape[0], np.nan))
+                continue
+            if feature_mode == "per_au":
+                # Per-AU routing: pick the single region this AU was trained on.
+                # au_region keys are padded ("AU01"); self.au_keys are unpadded ("AU1").
+                padded = f"AU{int(key[2:]):02d}"
+                region = au_region.get(padded, self.regions_used[0])
+                X_au = feats_by_region[region]
             else:
-                out.append(clf.predict_proba(X)[:, 1])
+                X_au = X_concat
+            out.append(clf.predict_proba(X_au)[:, 1])
         return np.array(out).T
 
 
@@ -106,6 +125,9 @@ def main():
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--face-model", default="img2pose")  # match prior v3.x benches
     p.add_argument("--landmark-model", default="mobilefacenet")
+    p.add_argument("--align-faces", action="store_true",
+                   help="Procrustes-warp face crops to canonical template before HOG "
+                        "(required for v3.8+ models trained on aligned features).")
     args = p.parse_args()
 
     print(f"=== bench [{args.label}] on {args.dataset} ({args.device}) ===")
@@ -129,6 +151,41 @@ def main():
         device=args.device,
     )
     det.au_detector = FeatureModeXGBClassifier(scalers, pcas, classifiers, mode_info)
+
+    if args.align_faces:
+        import pandas as _pd
+        from feat.utils import face_mask
+        from feat.utils.image_operations import procrustes_similarity_torch
+        from feat.utils.geometry import warp_affine
+
+        tpl_path = REPO_ROOT / "feat" / "resources" / "neutral_face_coordinates.csv"
+        tpl_df = _pd.read_csv(tpl_path)
+        aligned_template = torch.tensor(
+            tpl_df[["x", "y"]].to_numpy(), dtype=torch.float32, device=args.device,
+        )
+        print(f"    Procrustes alignment ON (template: {tpl_path.name})")
+
+        orig_extract = face_mask.extract_hog_features_batched
+
+        def aligned_extract(extracted_faces, landmarks, hog_layer=None):
+            ef = extracted_faces
+            lm = landmarks
+            if ef.shape[0] > 0:
+                face_size = ef.shape[-1]
+                N = ef.shape[0]
+                lm_pix = lm.view(N, 68, 2).to(ef.device, dtype=ef.dtype) * face_size
+                target_template = aligned_template.to(ef.device) * (face_size / 256.0)
+                M = procrustes_similarity_torch(lm_pix, target_template)
+                ef = warp_affine(ef, M, dsize=(face_size, face_size), mode="bilinear")
+                ones = torch.ones(N, 68, 1, device=lm_pix.device, dtype=lm_pix.dtype)
+                lm_hom = torch.cat([lm_pix, ones], dim=-1)
+                lm_warped = torch.einsum("bij,bkj->bki", M, lm_hom)
+                lm = (lm_warped / face_size).reshape(N, 136)
+            return orig_extract(ef, lm, hog_layer=hog_layer)
+
+        face_mask.extract_hog_features_batched = aligned_extract
+        import feat.detector as _det_mod
+        _det_mod.extract_hog_features_batched = aligned_extract
 
     if args.dataset == "disfa":
         split = datasets.load_disfa(split="P3", subset_size=args.subset_size, seed=args.seed)
