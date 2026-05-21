@@ -57,9 +57,10 @@ jobs:
         run: |
           conda activate test
           conda env list
-          # torchcodec (video reader) dlopen's FFmpeg's libav* at import time;
-          # install them into the conda env so the test suite can be collected.
-          conda install -c conda-forge -y "ffmpeg<8"
+          # torchcodec dlopen's FFmpeg's libav* at import time; the pip
+          # xgboost wheel dlopen's libomp.dylib on macOS. Install both into
+          # the conda env so the test suite can be collected on all platforms.
+          conda install -c conda-forge -y "ffmpeg<8" llvm-openmp
           pip install . -r requirements-dev.txt
       # Actually run the tests with coverage
       - name: Run Tests
