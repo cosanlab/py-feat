@@ -57,6 +57,9 @@ jobs:
         run: |
           conda activate test
           conda env list
+          # torchcodec (video reader) dlopen's FFmpeg's libav* at import time;
+          # install them into the conda env so the test suite can be collected.
+          conda install -c conda-forge -y "ffmpeg<8"
           pip install . -r requirements-dev.txt
       # Actually run the tests with coverage
       - name: Run Tests
@@ -77,7 +80,9 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          # 3.12, not 3.13: jupyter-book 1.x pulls sphinx<6 whose epub3
+          # builder imports the stdlib `imghdr` module, removed in 3.13.
+          python-version: "3.12"
 
       - name: Upgrade pip
         run: |
