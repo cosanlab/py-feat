@@ -72,7 +72,12 @@ def _assert_frame_results_equal(a, b):
         assert torch.equal(nan_a, nan_b), f"{key}: NaN masks differ"
         finite_a = ta[~nan_a]
         finite_b = tb[~nan_b]
-        assert torch.equal(finite_a, finite_b), (
+        # Not bit-exact: batched conv/matmul reorders float reductions vs the
+        # 1-frame path, so finite values can differ by ~1e-5 on some CPUs/BLAS
+        # backends. The tolerance still catches the gross cross-batch errors
+        # this guards against (shared NMS, shape collapse) — those diverge by
+        # orders of magnitude, not 1e-5.
+        assert torch.allclose(finite_a, finite_b, rtol=1e-4, atol=1e-3), (
             f"{key}: finite values differ; "
             f"max diff = {(finite_a - finite_b).abs().max().item()}"
         )
@@ -82,10 +87,11 @@ def test_detect_faces_batched_matches_singleton(detector, two_face_images):
     """Numerical parity: a 2-frame batch produces the same per-frame
     output as two successive 1-frame calls.
 
-    img2pose is deterministic at inference time, so this should be bit-
-    identical (no floating-point reordering). If a future change introduces
-    cross-batch interactions (e.g. shared NMS, a wrong shape collapse), this
-    test will catch it."""
+    Batched conv/matmul reorders float reductions vs the 1-frame path, so
+    results match within float tolerance rather than bit-exactly. If a future
+    change introduces cross-batch interactions (e.g. shared NMS, a wrong shape
+    collapse), the values diverge far beyond that tolerance and this catches
+    it."""
     batched = detector.detect_faces(two_face_images)
 
     singletons = []
