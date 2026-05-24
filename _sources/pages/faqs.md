@@ -23,6 +23,6 @@ You can control parallelization of data loading using the `num_workers` argument
 
 This was a deliberate design-tradeoff to ensure a seamless experience when processing videos of any length on any computer, regardless of memory limits or GPU availability. By default, Py-feat avoids loading an entire video into memory, only loading frames as-needed, similar to Pytorch's [unofficial video API](https://pytorch.org/vision/main/auto_examples/others/plot_video_api.html#building-a-sample-read-video-function). 
 
-This means that you don't need to worry about your computer crashing if you're trying to process a video that doesn't fit into memory! However, it also means that there's a small latency overhead that increases with the length of the video, i.e. later frames take longer to load than earlier frames as the video needs to be "seeked" to the correct time-point.
+This means that you don't need to worry about your computer crashing if you're trying to process a video that doesn't fit into memory! However, it also means that theres a small latency overhead that increases with the length of the video, i.e. later frames take longer to load than earlier frames as the video needs to be "seeked" to the correct time-point.
 
 If you already know that you have enough system memory to load the entire video at once, you can instead manually call `video_to_tensor('videofile.mp4')` from `feat.utils.io`. Then you can process the tensor by passing `data_type='tensor'` to `Detector.detect()` and proceed with batching as usual.

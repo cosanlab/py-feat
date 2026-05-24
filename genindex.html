@@ -14,49 +14,52 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
 
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
     <link rel="index" title="Index" href="#" />
@@ -70,23 +73,28 @@
 
   
   
-  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
+
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -108,22 +116,12 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
-
-  <div class="pst-async-banner-revealer d-none">
-  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
-</div>
-
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
-    </header>
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
   
-
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
-      
-      
-      
-        
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -139,8 +137,6 @@
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
-  
-    
   
 
 <a class="navbar-brand logo" href="pages/intro.html">
@@ -159,18 +155,7 @@
   
   
 </a></div>
-        <div class="sidebar-primary-item">
-
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
-        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -228,11 +213,6 @@
 
 
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="benchmarks/accuracy.html">Accuracy benchmarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="benchmarks/throughput.html">Throughput benchmarks</a></li>
-</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="pages/contribute.html">General contributions guidelines</a></li>
@@ -263,7 +243,7 @@
 
       </div>
       
-      <main id="main-content" class="bd-main" role="main">
+      <main id="main-content" class="bd-main">
         
         
 
@@ -272,14 +252,14 @@
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article d-print-none">
+              <div class="bd-header-article">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</button></div>
+</label></div>
       
     </div>
   
@@ -356,10 +336,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
@@ -367,7 +347,7 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
@@ -395,23 +375,199 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article">
+                <article class="bd-article" role="main">
                   
 
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#F"><strong>F</strong></a>
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
- | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  
 </div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.plotting.animate_face">animate_face() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.append">append() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.aus">aus (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.aus">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.baseline">baseline() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.VideoDataset.calc_approx_frame_time">calc_approx_frame_time() (feat.data.VideoDataset method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.clean">clean() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.compute_identities">compute_identities() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.VideoDataset.convert_sec_to_min_sec">convert_sec_to_min_sec() (feat.data.VideoDataset static method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.decompose">decompose() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.design">design (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.design">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.detector.Detector.detect">detect() (feat.detector.Detector method)</a>
+</li>
+      <li><a href="pages/api.html#feat.detector.Detector.detect_faces">detect_faces() (feat.detector.Detector method)</a>
+</li>
+      <li><a href="pages/api.html#feat.detector.Detector">Detector (class in feat.detector)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.distance">distance() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.downsample">downsample() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_lineface">draw_lineface() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_muscles">draw_muscles() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_plotly_au">draw_plotly_au() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_plotly_landmark">draw_plotly_landmark() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_plotly_pose">draw_plotly_pose() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.draw_vectorfield">draw_vectorfield() (in module feat.plotting)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.plotting.emotion_annotation_position">emotion_annotation_position() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.emotions">emotions (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.emotions">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_boft">extract_boft() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_max">extract_max() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_mean">extract_mean() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.extract_min">extract_min() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_multi_wavelet">extract_multi_wavelet() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_sem">extract_sem() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_std">extract_std() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_summary">extract_summary() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.extract_wavelet">extract_wavelet() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.plotting.face_part_path">face_part_path() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.face_polygon_svg">face_polygon_svg() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.facebox">facebox (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.facebox">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.faceboxes">faceboxes (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.faceboxes">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.facepose">facepose (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.facepose">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li>
+    feat.data
+
+      <ul>
+        <li><a href="pages/api.html#module-feat.data">module</a>
+</li>
+      </ul></li>
+      <li>
+    feat.detector
+
+      <ul>
+        <li><a href="pages/api.html#module-feat.detector">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    feat.plotting
+
+      <ul>
+        <li><a href="pages/api.html#module-feat.plotting">module</a>
+</li>
+      </ul></li>
+      <li>
+    feat.pretrained
+
+      <ul>
+        <li><a href="pages/api.html#module-feat.pretrained">module</a>
+</li>
+      </ul></li>
       <li>
     feat.utils
 
@@ -419,9 +575,15 @@ document.write(`
         <li><a href="pages/api.html#module-feat.utils">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.pretrained.fetch_model">fetch_model() (in module feat.pretrained)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex">Fex (class in feat.data)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.FexSeries">FexSeries (class in feat.data)</a>
+</li>
       <li><a href="pages/api.html#feat.utils.flatten_list">flatten_list() (in module feat.utils)</a>
+</li>
+      <li><a href="pages/api.html#feat.detector.Detector.forward">forward() (feat.detector.Detector method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -431,13 +593,13 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.utils.generate_coordinate_names">generate_coordinate_names() (in module feat.utils)</a>
 </li>
+      <li><a href="pages/api.html#feat.plotting.get_heat">get_heat() (in module feat.plotting)</a>
+</li>
   </ul></td>
-</tr></table>
-
-<h2 id="H">H</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pages/api.html#feat.utils.hf_hub_download_with_fallback">hf_hub_download_with_fallback() (in module feat.utils)</a>
+      <li><a href="pages/api.html#feat.pretrained.get_pretrained_models">get_pretrained_models() (in module feat.pretrained)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.VideoDataset.get_video_metadata">get_video_metadata() (feat.data.VideoDataset method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -445,7 +607,93 @@ document.write(`
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.identities">identities (feat.data.Fex property)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.FexSeries.identity">identity (feat.data.FexSeries property)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.identity_embeddings">identity_embeddings (feat.data.Fex property)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.ImageDataset">ImageDataset (class in feat.data)</a>
+</li>
+      <li><a href="pages/api.html#feat.plotting.imshow">imshow() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.info">info (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.info">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.input">input (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.input">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.inputs">inputs (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.inputs">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.plotting.interpolate_aus">interpolate_aus() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.iplot_detections">iplot_detections() (feat.data.Fex method)</a>
+</li>
       <li><a href="pages/api.html#feat.utils.is_list_of_lists_empty">is_list_of_lists_empty() (in module feat.utils)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.isc">isc() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.itersessions">itersessions() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.landmark">landmark (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmark">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.landmark_x">landmark_x (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmark_x">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.landmark_y">landmark_y (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmark_y">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.landmarks">landmarks (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmarks">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.landmarks_x">landmarks_x (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmarks_x">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.landmarks_y">landmarks_y (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.landmarks_y">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.VideoDataset.load_frame">load_frame() (feat.data.VideoDataset method)</a>
+</li>
+      <li><a href="pages/api.html#feat.pretrained.load_model_weights">load_model_weights() (in module feat.pretrained)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -457,9 +705,65 @@ document.write(`
     module
 
       <ul>
+        <li><a href="pages/api.html#module-feat.data">feat.data</a>
+</li>
+        <li><a href="pages/api.html#module-feat.detector">feat.detector</a>
+</li>
+        <li><a href="pages/api.html#module-feat.plotting">feat.plotting</a>
+</li>
+        <li><a href="pages/api.html#module-feat.pretrained">feat.pretrained</a>
+</li>
         <li><a href="pages/api.html#module-feat.utils">feat.utils</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.plot_detections">plot_detections() (feat.data.Fex method)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.plot_detections">(feat.data.FexSeries method)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.plotting.plot_face">plot_face() (in module feat.plotting)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.plot_singleframe_detections">plot_singleframe_detections() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.poses">poses (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.poses">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+      <li><a href="pages/api.html#feat.data.Fex.predict">predict() (feat.data.Fex method)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.plotting.predict">(in module feat.plotting)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.read_feat">read_feat() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.read_file">read_file() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.read_openface">read_openface() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.rectification">rectification() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.regress">regress() (feat.data.Fex method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -467,6 +771,46 @@ document.write(`
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pages/api.html#feat.utils.set_torch_device">set_torch_device() (in module feat.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.time">time (feat.data.Fex property)</a>
+
+      <ul>
+        <li><a href="pages/api.html#feat.data.FexSeries.time">(feat.data.FexSeries property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.detector.Detector.training">training (feat.detector.Detector attribute)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.ttest_1samp">ttest_1samp() (feat.data.Fex method)</a>
+</li>
+      <li><a href="pages/api.html#feat.data.Fex.ttest_ind">ttest_ind() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.update_sessions">update_sessions() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.Fex.upsample">upsample() (feat.data.Fex method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pages/api.html#feat.data.VideoDataset">VideoDataset (class in feat.data)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -480,7 +824,7 @@ document.write(`
               
               
               
-                <footer class="prev-next-footer d-print-none">
+                <footer class="prev-next-footer">
                   
 <div class="prev-next-area">
 </div>
@@ -533,8 +877,8 @@ By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
 
   <footer class="bd-footer">
   </footer>
