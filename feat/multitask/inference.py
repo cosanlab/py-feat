@@ -19,7 +19,7 @@ import torch
 import torch.nn.functional as F
 import torchvision.transforms.v2.functional as TF
 
-from feat.multitask.model_v2 import MEGraphAUv2, ModelV2Config, AU_NAMES, N_MESH
+from feat.multitask.model_v2 import MEGraphAUv2, ModelV2Config, AU_NAMES
 from feat.multitask import EMOTION_NAMES
 from feat.utils.blendshape_to_au import DLIB68_FROM_MP478
 
