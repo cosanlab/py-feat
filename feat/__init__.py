@@ -48,4 +48,10 @@ __all__ = ["detector", "data", "utils", "plotting", "transforms", "__version__"]
 
 from .data import Fex  # noqa: F401, E402
 from .detector import Detector  # noqa: F401, E402
+from .detector_v2 import Detectorv2  # noqa: F401, E402
+
+# Explicit version alias: Detectorv1 == the original Detector (XGB/SVM AU +
+# ResMaskNet emotion + L2CS gaze). Detector is kept for backward compat.
+Detectorv1 = Detector
+
 from .version import __version__  # noqa: E402
