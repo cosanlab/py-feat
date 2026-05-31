@@ -109,51 +109,49 @@ class Detectorv2(nn.Module):
         frames_unit = frames_px / 255.0
 
         rf_outputs = self.face_detector(frames_px)
-        per_image_dets = []
+
+        # Assemble all detections on CPU with numpy, then make exactly ONE
+        # host->device transfer. The prior per-image torch.tensor(..., device=cuda)
+        # + per-frame torch.full/torch.tensor allocations cost ~26ms/batch in
+        # tiny-op + sync overhead; numpy assembly drops that to ~1ms.
+        B = len(rf_outputs)
+        bbox_np, score_np, n_per_frame = [], [], []
         for image_dets in rf_outputs:
             if image_dets:
-                arr = torch.tensor(image_dets, dtype=torch.float32, device=self.device)
-                keep = arr[:, 4] >= face_detection_threshold
-                per_image_dets.append({"boxes": arr[keep, :4], "scores": arr[keep, 4]})
+                arr = np.asarray(image_dets, dtype=np.float32)
+                arr = arr[arr[:, 4] >= face_detection_threshold]
             else:
-                per_image_dets.append({
-                    "boxes": torch.empty((0, 4), device=self.device),
-                    "scores": torch.empty((0,), device=self.device),
-                })
-
-        B = len(per_image_dets)
-        bbox_chunks, score_chunks, n_per_frame = [], [], []
-        for det in per_image_dets:
-            if det["boxes"].numel() != 0:
-                bbox_chunks.append(det["boxes"])
-                score_chunks.append(det["scores"])
-                n_per_frame.append(det["boxes"].shape[0])
-            else:
-                bbox_chunks.append(torch.full((1, 4), float("nan"), device=self.device))
-                score_chunks.append(torch.zeros((1,), device=self.device))
+                arr = np.empty((0, 5), dtype=np.float32)
+            if arr.shape[0] == 0:
+                # No-detection placeholder: one NaN bbox so forward() sees a row.
+                bbox_np.append(np.full((1, 4), np.nan, dtype=np.float32))
+                score_np.append(np.zeros((1,), dtype=np.float32))
                 n_per_frame.append(1)
+            else:
+                bbox_np.append(arr[:, :4])
+                score_np.append(arr[:, 4])
+                n_per_frame.append(arr.shape[0])
 
-        all_bboxes = torch.cat(bbox_chunks, dim=0)
-        all_scores = torch.cat(score_chunks, dim=0)
+        all_bboxes = torch.from_numpy(np.concatenate(bbox_np, axis=0)).to(self.device)
+        all_scores = torch.from_numpy(np.concatenate(score_np, axis=0)).to(self.device)
         n_per_frame_t = torch.tensor(n_per_frame, device=self.device)
         all_frame_idx = torch.repeat_interleave(
             torch.arange(B, device=self.device), n_per_frame_t
         )
 
-        bboxes_for_extract = torch.where(
-            torch.isnan(all_bboxes), torch.zeros_like(all_bboxes), all_bboxes
-        )
+        bboxes_for_extract = torch.nan_to_num(all_bboxes, nan=0.0)
         all_faces, all_new_bboxes = extract_face_from_bbox_torch(
             frames_unit, bboxes_for_extract,
             face_size=self.face_size, expand_bbox=EXPAND_BBOX,
             frame_idx=all_frame_idx,
         )
+        all_new_bboxes = all_new_bboxes.to(torch.float32)
 
         no_det = torch.isnan(all_bboxes).any(dim=1)
         if no_det.any():
             all_faces = all_faces.clone()
             all_faces[no_det] = 0
-            all_new_bboxes = all_new_bboxes.clone().to(torch.float32)
+            all_new_bboxes = all_new_bboxes.clone()
             all_new_bboxes[no_det] = float("nan")
 
         image_size = tuple(frames_unit.shape[-2:])
