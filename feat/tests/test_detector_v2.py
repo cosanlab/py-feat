@@ -47,7 +47,9 @@ def test_single_face_schema(detector, single_face_img):
 def test_single_face_values(detector, single_face_img):
     fex = detector.detect(single_face_img, progress_bar=False)
     emo = fex[EMOTION_COLUMNS_V2].iloc[0].to_numpy(dtype=float)
-    assert np.isclose(emo.sum(), 1.0, atol=1e-4)
+    # Softmax runs under bf16 autocast by default, so the sum is 1.0 only to
+    # bf16 precision (~1e-2), not fp32.
+    assert np.isclose(emo.sum(), 1.0, atol=2e-2)
     aus = fex[AU_COLUMNS_V2].iloc[0].to_numpy(dtype=float)
     assert aus.min() >= 0.0 and aus.max() <= 1.0
     assert -1.0 <= float(fex["valence"].iloc[0]) <= 1.0
