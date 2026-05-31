@@ -162,10 +162,19 @@ def _build_mp_detector(device):
     )
 
 
+def _build_detectorv2(device):
+    from feat.detector_v2 import Detectorv2
+    # Single multitask model (RetinaFace -> ConvNeXt-V2 multitask head) +
+    # arcface identity. AU/emotion/gaze/landmark/pose all come from one
+    # forward pass, so this is a different cost profile from the v1 stack.
+    return Detectorv2(device=device, identity_model="arcface")
+
+
 CONFIGS = [
     ("img2pose", _build_d_img2pose),
     ("retinaface", _build_d_retinaface),
     ("MPDetector retinaface", _build_mp_detector),
+    ("Detectorv2 multitask", _build_detectorv2),
 ]
 
 
@@ -523,6 +532,16 @@ def _parse_args() -> argparse.Namespace:
         help="Skip the image-batch sweep.",
     )
     p.add_argument(
+        "--configs",
+        nargs="+",
+        default=None,
+        help=(
+            "Substring filter on config labels to run a subset, e.g. "
+            "`--configs Detectorv2` or `--configs retinaface Detectorv2`. "
+            "Default: all configs."
+        ),
+    )
+    p.add_argument(
         "--markdown",
         nargs="?",
         const="__default__",
@@ -582,6 +601,17 @@ def _gpu_summary() -> str:
 
 def main() -> None:
     args = _parse_args()
+
+    # Optionally restrict which detector configs run (substring match on label).
+    if args.configs is not None:
+        global CONFIGS
+        selected = [c for c in CONFIGS
+                    if any(s.lower() in c[0].lower() for s in args.configs)]
+        if not selected:
+            raise SystemExit(
+                f"--configs {args.configs} matched no configs; available: "
+                f"{[c[0] for c in CONFIGS]}")
+        CONFIGS = selected
 
     all_devices = _resolve_devices(args.devices)
 
