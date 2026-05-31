@@ -57,17 +57,37 @@ def test_single_face_values(detector, single_face_img):
 
 def test_landmarks_inside_facebox(detector, single_face_img):
     """The dlib-68 block (derived from the 478 mesh) must land within the
-    detected facebox — guards the mesh->original-frame coordinate inversion."""
+    detected facebox — guards the mesh->original-frame coordinate transform.
+
+    Tolerance is tight (strictly inside, +/-5% margin): a looser bound hid a
+    real axis-major/interleaved scramble bug that put landmarks ~48px off on
+    non-square crops while still landing inside a 1.3x-padded box.
+    """
     fex = detector.detect(single_face_img, progress_bar=False)
     xs = fex[[f"x_{i}" for i in range(68)]].iloc[0].to_numpy(dtype=float)
     ys = fex[[f"y_{i}" for i in range(68)]].iloc[0].to_numpy(dtype=float)
     x0 = float(fex["FaceRectX"].iloc[0]); y0 = float(fex["FaceRectY"].iloc[0])
     w = float(fex["FaceRectWidth"].iloc[0]); h = float(fex["FaceRectHeight"].iloc[0])
     inside = (
-        (xs >= x0 - 0.3 * w) & (xs <= x0 + 1.3 * w)
-        & (ys >= y0 - 0.3 * h) & (ys <= y0 + 1.3 * h)
+        (xs >= x0 - 0.05 * w) & (xs <= x0 + 1.05 * w)
+        & (ys >= y0 - 0.05 * h) & (ys <= y0 + 1.05 * h)
     )
-    assert inside.mean() > 0.95
+    assert inside.mean() > 0.9
+
+
+def test_no_face_returns_nan_predictions(detector):
+    """A face-less image yields one row with NaN facebox AND NaN predictions
+    (AU/emotion/identity/landmarks) — not fabricated values from the zeroed
+    placeholder crop."""
+    import os
+    from feat.utils.io import get_test_data_path
+    no_face = os.path.join(get_test_data_path(), "free-mountain-vector-01.jpg")
+    fex = detector.detect(no_face, progress_bar=False)
+    assert fex["FaceRectX"].isna().all()
+    assert fex[AU_COLUMNS_V2].isna().all().all()
+    assert fex[EMOTION_COLUMNS_V2].isna().all().all()
+    assert fex["Identity_1"].isna().all()
+    assert fex["x_0"].isna().all()
 
 
 def test_multi_face(detector, multi_face_img):

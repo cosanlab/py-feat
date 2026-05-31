@@ -260,6 +260,16 @@ class Detectorv2(nn.Module):
             "FrameWidth": frame_w.cpu().detach().numpy().astype(np.float64),
         })
 
+        # No-detection rows carry a NaN placeholder bbox (see detect_faces).
+        # The model + ArcFace still ran on a zeroed crop, so blank out every
+        # prediction for those rows — only the (already-NaN) facebox and the
+        # frame metadata stay meaningful, matching Detectorv1's behavior.
+        no_det = np.isnan(new_bboxes.cpu().numpy()).any(axis=1)
+        if no_det.any():
+            for df in (feat_landmarks, feat_poses, feat_aus, feat_emotions,
+                       feat_va, feat_gaze, feat_identities, feat_mesh):
+                df.loc[no_det, :] = np.nan
+
         return pd.concat(
             [feat_faceboxes, feat_landmarks, feat_poses, feat_aus, feat_emotions,
              feat_va, feat_gaze, feat_identities, feat_mesh, feat_frame_meta],
@@ -269,17 +279,24 @@ class Detectorv2(nn.Module):
     def _mesh_to_original_frame(self, mesh, new_bboxes, pad_left, pad_top, scale):
         """[N,478,3] mesh in 224-chip coords -> original-frame coords.
 
-        x,y go chip(224) -> +offset -> normalize by 256 -> inverse_transform via
-        new_bboxes (padded frame) -> invert DataLoader Rescale. z (relative
-        depth) is passed through unchanged.
+        Per-vertex affine: chip(224) px -> +center-crop offset -> normalize by the
+        256 chip size -> map into the padded-frame crop box (new_bboxes) ->
+        invert the DataLoader Rescale (pad + scale). z (relative depth) passes
+        through unchanged.
+
+        NB: do the affine directly rather than via
+        ``inverse_transform_landmarks_torch`` — that helper reshapes its input as
+        interleaved (x0,y0,x1,y1,...) pairs, but our coords are axis-major, so
+        feeding it here would scramble x/y scaling on non-square boxes.
         """
-        N = mesh.shape[0]
         xy01 = (mesh[:, :, :2] + _CROP_OFFSET) / float(CHIP_SIZE)   # [N,478,2] in [0,1]
-        flat = torch.cat([xy01[:, :, 0], xy01[:, :, 1]], dim=1)     # [N, 2*478] axis-major
-        padded = inverse_transform_landmarks_torch(flat, new_bboxes)  # padded frame
-        padded = padded.reshape(N, 2, N_MESH).permute(0, 2, 1)     # [N,478,2] (x,y)
-        x = (padded[:, :, 0] - pad_left[:, None]) / scale[:, None]
-        y = (padded[:, :, 1] - pad_top[:, None]) / scale[:, None]
+        left = new_bboxes[:, 0]                                     # [N]
+        top = new_bboxes[:, 1]
+        w = new_bboxes[:, 2] - left
+        h = new_bboxes[:, 3] - top
+        # padded-frame coords, then invert Rescale to original frame.
+        x = (xy01[:, :, 0] * w[:, None] + left[:, None] - pad_left[:, None]) / scale[:, None]
+        y = (xy01[:, :, 1] * h[:, None] + top[:, None] - pad_top[:, None]) / scale[:, None]
         return torch.stack([x, y, mesh[:, :, 2]], dim=-1)          # [N,478,3]
 
     # ------------------------------------------------------------------ #
