@@ -12,8 +12,6 @@ training chips were produced; preprocessing to the 224 model input is handled by
 """
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import torch
@@ -27,7 +25,6 @@ from feat.utils.image_operations import (
     extract_face_from_bbox_torch,
     convert_image_to_tensor,
     convert_bbox_output,
-    inverse_transform_landmarks_torch,
     per_face_padding_inversion_terms,
 )
 from feat.utils import (
@@ -36,14 +33,12 @@ from feat.utils import (
     FEAT_IDENTITY_COLUMNS,
     FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_GAZE_COLUMNS,
-    N_OPENFACE_LANDMARKS,
 )
 from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 from feat.identity_detectors.arcface.arcface_model import (
     load_arcface_identity_detector,
 )
 from feat.multitask import (
-    N_MESH,
     AU_COLUMNS_V2,
     EMOTION_COLUMNS_V2,
     VA_COLUMNS_V2,

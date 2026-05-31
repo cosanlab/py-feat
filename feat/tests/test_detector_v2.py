@@ -68,8 +68,10 @@ def test_landmarks_inside_facebox(detector, single_face_img):
     fex = detector.detect(single_face_img, progress_bar=False)
     xs = fex[[f"x_{i}" for i in range(68)]].iloc[0].to_numpy(dtype=float)
     ys = fex[[f"y_{i}" for i in range(68)]].iloc[0].to_numpy(dtype=float)
-    x0 = float(fex["FaceRectX"].iloc[0]); y0 = float(fex["FaceRectY"].iloc[0])
-    w = float(fex["FaceRectWidth"].iloc[0]); h = float(fex["FaceRectHeight"].iloc[0])
+    x0 = float(fex["FaceRectX"].iloc[0])
+    y0 = float(fex["FaceRectY"].iloc[0])
+    w = float(fex["FaceRectWidth"].iloc[0])
+    h = float(fex["FaceRectHeight"].iloc[0])
     inside = (
         (xs >= x0 - 0.05 * w) & (xs <= x0 + 1.05 * w)
         & (ys >= y0 - 0.05 * h) & (ys <= y0 + 1.05 * h)
