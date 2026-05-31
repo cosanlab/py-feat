@@ -104,8 +104,13 @@ class Detectorv2(nn.Module):
         call across all faces in the batch, with no-detection frames carrying a
         single NaN-bbox placeholder so forward() sees >= 1 row per frame.
         """
-        # Convert once on device. RetinaFace wants [0,255]; crops want [0,1].
-        frames_px = convert_image_to_tensor(images, img_type="float32").to(self.device)
+        # The DataLoader hands us a uint8 [B,3,H,W] tensor. Cast to float on the
+        # GPU, not the CPU: transferring uint8 moves 1/4 the bytes and the float
+        # cast is ~free on-device. (convert_image_to_tensor with img_type set
+        # casts to float32 on CPU first — ~19ms + a 4x-larger H2D copy on the
+        # multi-face bench.) Keep the helper only for the dim/format handling.
+        frames = convert_image_to_tensor(images)              # uint8, no cast
+        frames_px = frames.to(self.device, non_blocking=True).float()
         frames_unit = frames_px / 255.0
 
         rf_outputs = self.face_detector(frames_px)
