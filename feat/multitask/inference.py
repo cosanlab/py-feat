@@ -63,10 +63,12 @@ class MultitaskModel:
         # while running ~3x faster on GPU. Default on for CUDA, off on CPU
         # (CPU autocast is slow/uneven for these ops). Pass amp=False to force fp32.
         self.amp = (self.device.type == "cuda") if amp is None else amp
-        # torch.compile gives a further ~3x on CUDA (the MEFL edge loop fuses
-        # well), AU max-diff ~8e-4 vs eager. Off by default: the first call pays
-        # a multi-second compile and each new batch size recompiles, which is a
-        # footgun for interactive use. Turn on for batch/throughput jobs.
+        # torch.compile fuses the MEFL edge loop for ~1.7x on the model forward
+        # (90->53ms on Blackwell, batch 80). Off by default: (a) the first call
+        # pays multi-second compile and each new batch size recompiles, a footgun
+        # for interactive use; (b) compiled-vs-eager AU output diverges ~0.16 in
+        # default mode under bf16 autocast — not yet validated as safe. Enable
+        # only for throughput jobs where that drift has been checked acceptable.
         self.compile = compile
         ckpt = torch.load(self._resolve_weights(weights_path),
                           map_location=self.device, weights_only=False)
