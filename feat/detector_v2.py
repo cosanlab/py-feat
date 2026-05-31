@@ -104,9 +104,9 @@ class Detectorv2(nn.Module):
         call across all faces in the batch, with no-detection frames carrying a
         single NaN-bbox placeholder so forward() sees >= 1 row per frame.
         """
-        frames_unit = convert_image_to_tensor(images, img_type="float32") / 255.0
-        frames_unit = frames_unit.to(self.device)
+        # Convert once on device. RetinaFace wants [0,255]; crops want [0,1].
         frames_px = convert_image_to_tensor(images, img_type="float32").to(self.device)
+        frames_unit = frames_px / 255.0
 
         rf_outputs = self.face_detector(frames_px)
         per_image_dets = []
