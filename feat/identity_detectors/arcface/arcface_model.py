@@ -42,6 +42,8 @@ inherited a similar VGGFace2 research-only restriction, so this is
 not a new license category for py-feat.
 """
 
+import os
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -110,3 +112,45 @@ class ArcFace(nn.Module):
         # MPS / CUDA rather than a separate sub + div.
         x = face_crops * 2.0 - 1.0
         return self.net(x)
+
+
+def load_arcface_identity_detector(device, backbone: str = "r50"):
+    """Build an ArcFace detector with the trained w600k_r50 weights loaded.
+
+    ``ArcFace.__init__`` only constructs the architecture (random init), so the
+    embeddings are meaningless until the checkpoint is loaded. Both Detector and
+    Detectorv2 need that load; keep it here as the single source of truth.
+
+    strict=False because BatchNorm's ``num_batches_tracked`` buffer isn't in the
+    converted safetensors (it's absent from the source ONNX). The missing/
+    unexpected keys are validated so a wrong- or empty-file load fails loudly
+    rather than silently producing garbage embeddings.
+    """
+    from huggingface_hub import hf_hub_download
+    from safetensors.torch import load_file
+
+    from feat.utils.io import get_resource_path
+
+    detector = ArcFace(backbone=backbone)
+    arcface_path = os.environ.get("FEAT_ARCFACE_R50_PATH")
+    if arcface_path is None:
+        arcface_path = hf_hub_download(
+            repo_id="py-feat/arcface_r50",
+            filename="arcface_r50.safetensors",
+            cache_dir=get_resource_path(),
+        )
+    missing, unexpected = detector.net.load_state_dict(
+        load_file(arcface_path), strict=False
+    )
+    real_missing = [k for k in missing if "num_batches_tracked" not in k]
+    if real_missing or unexpected:
+        raise RuntimeError(
+            f"ArcFace weights at {arcface_path!r} are inconsistent "
+            f"with the architecture. Missing: {real_missing}; "
+            f"unexpected: {list(unexpected)}. Re-download from "
+            f"py-feat/arcface_r50 or re-run "
+            f"scripts/convert_arcface_onnx_to_safetensors.py."
+        )
+    detector.eval()
+    detector.to(device)
+    return detector

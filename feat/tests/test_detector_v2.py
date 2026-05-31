@@ -106,3 +106,39 @@ def test_batch_size_consistency(detector, single_face_img):
     a = fex[AU_COLUMNS_V2].iloc[0].to_numpy(dtype=float)
     b = fex[AU_COLUMNS_V2].iloc[1].to_numpy(dtype=float)
     np.testing.assert_allclose(a, b, atol=1e-4)
+
+
+def test_arcface_weights_loaded_not_random():
+    """Guard the trained-weights load: a bare ``ArcFace(backbone='r50')`` (the
+    bug this fixes) ships *random* init, so every construction would embed the
+    same face differently. Loaded weights are deterministic — two independent
+    loads must agree — and carry real signal (embeddings aren't ~0)."""
+    from feat.identity_detectors.arcface.arcface_model import (
+        load_arcface_identity_detector,
+    )
+    torch.manual_seed(0)
+    x = torch.rand(2, 3, 112, 112)
+    a = load_arcface_identity_detector("cpu")
+    b = load_arcface_identity_detector("cpu")
+    with torch.no_grad():
+        ea = a(x).numpy()
+        eb = b(x).numpy()
+    np.testing.assert_allclose(ea, eb, atol=1e-5)
+    assert np.abs(ea).mean() > 1e-3
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(),
+                    reason="bf16 autocast default is CUDA-only")
+def test_bf16_matches_fp32(single_face_img):
+    """bf16 autocast is the default on CUDA, but the CPU test run never
+    exercises it. Pin the bf16-vs-fp32 agreement (AU within model noise, emotion
+    still a valid simplex) so a real bf16 regression can't pass silently."""
+    fex16 = Detectorv2(device="cuda", amp=True).detect(
+        single_face_img, progress_bar=False)
+    fex32 = Detectorv2(device="cuda", amp=False).detect(
+        single_face_img, progress_bar=False)
+    au16 = fex16[AU_COLUMNS_V2].iloc[0].to_numpy(dtype=float)
+    au32 = fex32[AU_COLUMNS_V2].iloc[0].to_numpy(dtype=float)
+    np.testing.assert_allclose(au16, au32, atol=0.05)
+    emo16 = fex16[EMOTION_COLUMNS_V2].iloc[0].to_numpy(dtype=float)
+    assert np.isclose(emo16.sum(), 1.0, atol=2e-2)

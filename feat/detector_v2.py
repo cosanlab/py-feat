@@ -39,7 +39,9 @@ from feat.utils import (
     N_OPENFACE_LANDMARKS,
 )
 from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
-from feat.identity_detectors.arcface.arcface_model import ArcFace
+from feat.identity_detectors.arcface.arcface_model import (
+    load_arcface_identity_detector,
+)
 from feat.multitask import (
     N_MESH,
     AU_COLUMNS_V2,
@@ -79,11 +81,9 @@ class Detectorv2(nn.Module):
                                         weights_path=multitask_weights,
                                         amp=amp, compile=compile)
         self.identity_detector = (
-            ArcFace(backbone="r50") if identity_model == "arcface" else None
+            load_arcface_identity_detector(self.device)
+            if identity_model == "arcface" else None
         )
-        if self.identity_detector is not None:
-            self.identity_detector.to(self.device)
-            self.identity_detector.eval()
 
         self._idx68 = _DLIB68_IDX.to(self.device)
         self.info = dict(
