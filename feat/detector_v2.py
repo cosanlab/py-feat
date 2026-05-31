@@ -67,7 +67,7 @@ class Detectorv2(nn.Module):
     """
 
     def __init__(self, device="cpu", face_detection_threshold=0.5,
-                 identity_model="arcface", multitask_weights=None):
+                 identity_model="arcface", multitask_weights=None, amp=None):
         super().__init__()
         self.device = set_torch_device(device)
         self.face_size = CHIP_SIZE
@@ -75,7 +75,7 @@ class Detectorv2(nn.Module):
 
         self.face_detector = Retinaface(device=self.device)
         self.multitask = MultitaskModel(device=self.device,
-                                        weights_path=multitask_weights)
+                                        weights_path=multitask_weights, amp=amp)
         self.identity_detector = (
             ArcFace(backbone="r50") if identity_model == "arcface" else None
         )
