@@ -56,13 +56,18 @@ class MultitaskModel:
     """Loads + runs the v2.3 multitask model. Detection-agnostic: it consumes
     256x256 face chips and returns decoded predictions."""
 
-    def __init__(self, device="cpu", weights_path=None, amp=None):
+    def __init__(self, device="cpu", weights_path=None, amp=None, compile=False):
         self.device = torch.device(device)
         # Mixed precision: the model was trained with bf16 autocast, and bf16
         # inference matches fp32 to within model noise (AU <0.01, gaze <0.03 deg)
         # while running ~3x faster on GPU. Default on for CUDA, off on CPU
         # (CPU autocast is slow/uneven for these ops). Pass amp=False to force fp32.
         self.amp = (self.device.type == "cuda") if amp is None else amp
+        # torch.compile gives a further ~3x on CUDA (the MEFL edge loop fuses
+        # well), AU max-diff ~8e-4 vs eager. Off by default: the first call pays
+        # a multi-second compile and each new batch size recompiles, which is a
+        # footgun for interactive use. Turn on for batch/throughput jobs.
+        self.compile = compile
         ckpt = torch.load(self._resolve_weights(weights_path),
                           map_location=self.device, weights_only=False)
         saved_cfg = ckpt["config"]
@@ -79,6 +84,8 @@ class MultitaskModel:
                 f"multitask checkpoint mismatch: {len(missing)} missing, "
                 f"{len(unexpected)} unexpected keys")
         self.model = model.to(self.device).eval()
+        if self.compile:
+            self.model = torch.compile(self.model)
         self._mean = torch.tensor(IMAGENET_MEAN, device=self.device).view(3, 1, 1)
         self._std = torch.tensor(IMAGENET_STD, device=self.device).view(3, 1, 1)
         self._idx68 = _DLIB68_IDX.to(self.device)
