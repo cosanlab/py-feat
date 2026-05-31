@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>4. Running a full analysis &#8212; Py-Feat</title>
   
@@ -15,52 +15,49 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_tutorials/04_fex_analysis';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -76,28 +73,23 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -119,12 +111,20 @@ const thebe_selector_output = ".output, .cell_output"
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -140,6 +140,8 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="../pages/intro.html">
@@ -158,7 +160,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -216,6 +229,11 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../benchmarks/accuracy.html">Accuracy benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmarks/throughput.html">Throughput benchmarks</a></li>
+</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../pages/contribute.html">General contributions guidelines</a></li>
@@ -246,7 +264,7 @@ const thebe_selector_output = ".output, .cell_output"
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -255,14 +273,14 @@ const thebe_selector_output = ".output, .cell_output"
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -287,14 +305,14 @@ const thebe_selector_output = ".output, .cell_output"
       
       <li><a href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/basic_tutorials/04_fex_analysis.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch onBinder"
+   title="Launch on Binder"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img src="../_static/images/logo_binder.svg">
+    <img alt="Binder logo" src="../_static/images/logo_binder.svg">
   </span>
 <span class="btn__text-container">Binder</span>
 </a>
@@ -305,14 +323,14 @@ const thebe_selector_output = ".output, .cell_output"
       
       <li><a href="https://jhub.dartmouth.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/basic_tutorials/04_fex_analysis.ipynb&branch=master" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch onJupyterHub"
+   title="Launch on JupyterHub"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img src="../_static/images/logo_jupyterhub.svg">
+    <img alt="JupyterHub logo" src="../_static/images/logo_jupyterhub.svg">
   </span>
 <span class="btn__text-container">JupyterHub</span>
 </a>
@@ -323,14 +341,14 @@ const thebe_selector_output = ".output, .cell_output"
       
       <li><a href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/basic_tutorials/04_fex_analysis.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch onColab"
+   title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img src="../_static/images/logo_colab.png">
+    <img alt="Colab logo" src="../_static/images/logo_colab.png">
   </span>
 <span class="btn__text-container">Colab</span>
 </a>
@@ -454,10 +472,10 @@ const thebe_selector_output = ".output, .cell_output"
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -465,14 +483,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -515,21 +533,21 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="running-a-full-analysis">
 <h1>4. Running a full analysis<a class="headerlink" href="#running-a-full-analysis" title="Permalink to this heading">#</a></h1>
 <p><em>Written by Jin Hyun Cheong and Eshin Jolly</em></p>
 <p>In this tutorial we’ll perform a real analysis on part of the open dataset from <a class="reference external" href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335">“A Data-Driven Characterisation Of Natural Facial Expressions When Giving Good And Bad News”</a> by Watson &amp; Johnston 2020.  You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/04_fex_analysis.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>In the original paper the authors had 3 speakers deliver <em>good</em> or <em>bad</em> news while filming their facial expressions. They found that could accurately “decode” each condition based on participants’ facial expressions extracted either using a custom multi-chanel-gradient model or action units (AUs) extracted using <a class="reference external" href="https://github.com/TadasBaltrusaitis/OpenFace">Open Face</a>.</p>
-<p>In this tutorial we’ll show how easiy it is to not only reproduce their decoding analysis with py-feat, but just as easily perform additional analyses. Specifically we’ll:</p>
+<p>In this tutorial we’ll show how easily it is to not only reproduce their decoding analysis with py-feat, but just as easily perform additional analyses. Specifically we’ll:</p>
 <ol class="arabic simple">
 <li><p>Download 20 of the first subject’s videos (the full dataset is available on <a class="reference external" href="https://osf.io/6tbwj/">OSF</a></p></li>
 <li><p>Extract facial features using the <code class="docutils literal notranslate"><span class="pre">Detector</span></code></p></li>
 <li><p>Aggregate and summarize detections per video using <code class="docutils literal notranslate"><span class="pre">Fex</span></code></p></li>
 <li><p>Train and test a decoder to classify <em>good</em> vs <em>bad</em> news using extracted emotions, AUs, and poses</p></li>
 <li><p>Run a fMRI style “mass-univariate” comparison across all AUs between conditions</p></li>
-<li><p>Run a time-series analysis comparing videos based on the time-courses of extracted facial fatures</p></li>
+<li><p>Run a time-series analysis comparing videos based on the time-courses of extracted facial features</p></li>
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -541,7 +559,7 @@ document.write(`
 </div>
 <section id="download-the-data">
 <h2>4.1 Download the data<a class="headerlink" href="#download-the-data" title="Permalink to this heading">#</a></h2>
-<p>Here’s we’ll download and save the first 20 video files and their corresponding attributes from OSF. The next cell should run quickly on Google Collab, but will depend on your own internet conection if you’re executing this notebook locally. You can rerun this cell in case the download fails for any reason, as it should skip downloading existing files:</p>
+<p>Here’s we’ll download and save the first 20 video files and their corresponding attributes from OSF. The next cell should run quickly on Google Collab, but will depend on your own internet connection if you’re executing this notebook locally. You can rerun this cell in case the download fails for any reason, as it should skip downloading existing files:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -1394,7 +1412,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/365d9c6c6798c72c7116ab8b657fec9fc31e7609bb5f7f411cf33c57f8f399e1.png" src="../_images/365d9c6c6798c72c7116ab8b657fec9fc31e7609bb5f7f411cf33c57f8f399e1.png" />
+<a class="reference internal image-reference" href="../_images/365d9c6c6798c72c7116ab8b657fec9fc31e7609bb5f7f411cf33c57f8f399e1.png"><img alt="../_images/365d9c6c6798c72c7116ab8b657fec9fc31e7609bb5f7f411cf33c57f8f399e1.png" src="../_images/365d9c6c6798c72c7116ab8b657fec9fc31e7609bb5f7f411cf33c57f8f399e1.png" style="width: 599px; height: 572px;" /></a>
 </div>
 </div>
 </section>
@@ -1413,7 +1431,7 @@ Avg frames per video: 47.35
     <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="c1"># Update sesssions to group by condition, compute means (per condition), and make a</span>
+<span class="c1"># Update sessions to group by condition, compute means (per condition), and make a</span>
 <span class="c1"># barplot of the mean AUs for each condition</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">by_video</span><span class="o">.</span><span class="n">update_sessions</span><span class="p">(</span><span class="n">video2condition</span><span class="p">)</span>
@@ -1427,7 +1445,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/2f668549e32dfc3e7a820d9f3f29f5ebe34fdea426f41bdd58571f09e65c4c1a.png" src="../_images/2f668549e32dfc3e7a820d9f3f29f5ebe34fdea426f41bdd58571f09e65c4c1a.png" />
+<a class="reference internal image-reference" href="../_images/2f668549e32dfc3e7a820d9f3f29f5ebe34fdea426f41bdd58571f09e65c4c1a.png"><img alt="../_images/2f668549e32dfc3e7a820d9f3f29f5ebe34fdea426f41bdd58571f09e65c4c1a.png" src="../_images/2f668549e32dfc3e7a820d9f3f29f5ebe34fdea426f41bdd58571f09e65c4c1a.png" style="width: 599px; height: 456px;" /></a>
 </div>
 </div>
 <p>We can also focus in on the AUs associated with happiness:</p>
@@ -1463,7 +1481,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/acc224f1e10121820ad399bffb251924e71c4ccce37e2e3338424351d3d6e89b.png" src="../_images/acc224f1e10121820ad399bffb251924e71c4ccce37e2e3338424351d3d6e89b.png" />
+<a class="reference internal image-reference" href="../_images/acc224f1e10121820ad399bffb251924e71c4ccce37e2e3338424351d3d6e89b.png"><img alt="../_images/acc224f1e10121820ad399bffb251924e71c4ccce37e2e3338424351d3d6e89b.png" src="../_images/acc224f1e10121820ad399bffb251924e71c4ccce37e2e3338424351d3d6e89b.png" style="width: 341px; height: 339px;" /></a>
 </div>
 </div>
 </section>
@@ -1485,7 +1503,7 @@ Avg frames per video: 47.35
     <span class="n">X</span><span class="o">=</span><span class="s2">&quot;sessions&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;aus&quot;</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 
-<span class="c1"># We can perform bonferroni correction for multiple comparisions:</span>
+<span class="c1"># We can perform bonferroni correction for multiple comparisons:</span>
 <span class="n">p_bonf</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
@@ -1516,7 +1534,7 @@ Avg frames per video: 47.35
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/595e7591d9157f6da50ab0f055f7d6b7fa4f72387f1d8056dfc0eaf6444e19bf.png" src="../_images/595e7591d9157f6da50ab0f055f7d6b7fa4f72387f1d8056dfc0eaf6444e19bf.png" />
+<a class="reference internal image-reference" href="../_images/595e7591d9157f6da50ab0f055f7d6b7fa4f72387f1d8056dfc0eaf6444e19bf.png"><img alt="../_images/595e7591d9157f6da50ab0f055f7d6b7fa4f72387f1d8056dfc0eaf6444e19bf.png" src="../_images/595e7591d9157f6da50ab0f055f7d6b7fa4f72387f1d8056dfc0eaf6444e19bf.png" style="width: 618px; height: 523px;" /></a>
 </div>
 </div>
 </section>
@@ -1606,7 +1624,7 @@ emotions,poses model accuracy: 95% +/- 15%
 aus,poses model accuracy: 95% +/- 15%
 </pre></div>
 </div>
-<img alt="../_images/c1de55c5ba2d1cba15a80d734c701d850d698f105263be50921d5ff7f5994fa5.png" src="../_images/c1de55c5ba2d1cba15a80d734c701d850d698f105263be50921d5ff7f5994fa5.png" />
+<a class="reference internal image-reference" href="../_images/c1de55c5ba2d1cba15a80d734c701d850d698f105263be50921d5ff7f5994fa5.png"><img alt="../_images/c1de55c5ba2d1cba15a80d734c701d850d698f105263be50921d5ff7f5994fa5.png" src="../_images/c1de55c5ba2d1cba15a80d734c701d850d698f105263be50921d5ff7f5994fa5.png" style="width: 380px; height: 366px;" /></a>
 </div>
 </div>
 <section id="visualizing-decoder-weights">
@@ -1630,7 +1648,7 @@ aus,poses model accuracy: 95% +/- 15%
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/2431e668a201e4207c712df7c5ef937c57c0f01918356a8561c76eb1c7d60c60.png" src="../_images/2431e668a201e4207c712df7c5ef937c57c0f01918356a8561c76eb1c7d60c60.png" />
+<a class="reference internal image-reference" href="../_images/2431e668a201e4207c712df7c5ef937c57c0f01918356a8561c76eb1c7d60c60.png"><img alt="../_images/2431e668a201e4207c712df7c5ef937c57c0f01918356a8561c76eb1c7d60c60.png" src="../_images/2431e668a201e4207c712df7c5ef937c57c0f01918356a8561c76eb1c7d60c60.png" style="width: 403px; height: 460px;" /></a>
 </div>
 </div>
 <p>Even cooler we can <em>animate</em> that face expression to <strong>emphasize what’s changing.</strong> Here we start from a neutral face:</p>
@@ -1711,7 +1729,7 @@ aus,poses model accuracy: 95% +/- 15%
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/d3e038c766e590a57e82299643a72a62d43a707b5be90730c702a0bd0970dd03.png" src="../_images/d3e038c766e590a57e82299643a72a62d43a707b5be90730c702a0bd0970dd03.png" />
+<a class="reference internal image-reference" href="../_images/d3e038c766e590a57e82299643a72a62d43a707b5be90730c702a0bd0970dd03.png"><img alt="../_images/d3e038c766e590a57e82299643a72a62d43a707b5be90730c702a0bd0970dd03.png" src="../_images/d3e038c766e590a57e82299643a72a62d43a707b5be90730c702a0bd0970dd03.png" style="width: 694px; height: 618px;" /></a>
 </div>
 </div>
 </section>
@@ -1744,7 +1762,7 @@ aus,poses model accuracy: 95% +/- 15%
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -1773,6 +1791,7 @@ aus,poses model accuracy: 95% +/- 15%
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -1841,8 +1860,8 @@ By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>
