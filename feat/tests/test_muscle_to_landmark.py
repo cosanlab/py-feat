@@ -12,14 +12,22 @@ from __future__ import annotations
 import pytest
 
 from feat.utils import muscle_to_landmark as m2l
+from feat.utils.mp_plotting import FaceLandmarksConnections as F
 
-# Eye-lid + inner-lip aperture rings — no muscle region may cover these
-# (the openings themselves). Mirrors the generator's APERTURE set.
-APERTURE = set(
-    [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7]
-    + [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
-    + [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 95, 88, 178, 87, 14, 317,
-       402, 318, 324]
+
+def _group_verts(name):
+    return {v for c in getattr(F, name) for v in (c.start, c.end)}
+
+
+# Eye-lid + inner-lip aperture rings — no muscle region may cover these (the
+# openings themselves). Eye rings are pulled from MediaPipe's canonical groups
+# (the authoritative source the generator also uses); the inner-lip ring has no
+# dedicated group so it's listed explicitly.
+APERTURE = (
+    _group_verts("FACE_LANDMARKS_RIGHT_EYE")
+    | _group_verts("FACE_LANDMARKS_LEFT_EYE")
+    | {78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 95, 88, 178, 87, 14, 317,
+       402, 318, 324}
 )
 
 
@@ -43,6 +51,7 @@ class TestLoad:
             assert spec["au"].startswith("AU")
             assert isinstance(spec["mp478_vertices"], list)
             assert spec["n_vertices"] == len(spec["mp478_vertices"])
+            assert spec["n_vertices"] > 0, f"{name} has an empty region"
             assert spec["mp478_vertices"] == sorted(set(spec["mp478_vertices"]))
 
 

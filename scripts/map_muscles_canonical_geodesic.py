@@ -33,11 +33,19 @@ import numpy as np
 
 from feat.utils.io import get_resource_path
 from feat.utils.face_pose import load_canonical_face_model
+from feat.utils.mp_plotting import FaceLandmarksConnections as _F
 
 
 def load_geometry():
     """Canonical mesh verts (468,3) + triangle topology (898,3) from the
-    bundled py-feat resources — natively upright, no frontalization."""
+    bundled py-feat resources — natively upright, no frontalization.
+
+    NOTE the topology source is ``canonical_face_tessellation.json`` (the full
+    898-triangle triangulation of MediaPipe's canonical_face_model.obj), NOT
+    ``FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION`` — the latter is
+    MediaPipe's curated *drawing* edge list and is an incomplete triangulation
+    (it differs by ~250 edges), so it would give the wrong surface adjacency for
+    a geodesic grow. The two are intentionally distinct artifacts."""
     V = load_canonical_face_model().detach().cpu().numpy()
     tess_path = os.path.join(get_resource_path(), "canonical_face_tessellation.json")
     with open(tess_path) as f:
@@ -71,8 +79,15 @@ def geodesic_grow(seeds, adj, hops, blocked):
 
 
 # Aperture rings (MP indices) — these WALL OFF growth and are excluded.
-RIGHT_EYE = [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7]
-LEFT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
+# Eye rings come straight from MediaPipe's canonical landmark groups (single
+# source of truth). The inner-lip ring has no dedicated group (FACE_LANDMARKS_LIPS
+# bundles inner+outer), so it stays explicit.
+def _group_verts(name):
+    return sorted({v for c in getattr(_F, name) for v in (c.start, c.end)})
+
+
+RIGHT_EYE = _group_verts("FACE_LANDMARKS_RIGHT_EYE")
+LEFT_EYE = _group_verts("FACE_LANDMARKS_LEFT_EYE")
 INNER_LIP = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308,
              95, 88, 178, 87, 14, 317, 402, 318, 324]
 IRIS = list(range(468, 478))   # not in 468-mesh, harmless
@@ -151,8 +166,10 @@ def main():
 
     covered = sorted(set(v for r in result.values() for v in r["mp478_vertices"]))
     leaks = set(covered) & blocked
+    empty = [m for m, r in result.items() if r["n_vertices"] == 0]
     print(f"muscles: {len(result)}  covered: {len(covered)}/{n}  "
-          f"aperture leaks: {len(leaks)}", flush=True)
+          f"aperture leaks: {len(leaks)}  "
+          f"empty regions: {empty if empty else 'NONE'}", flush=True)
     bad = 0
     for m in result:
         if m.endswith("_L"):
