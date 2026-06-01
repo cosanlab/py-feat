@@ -76,14 +76,23 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--dataset", choices=("disfa", "disfaplus"), default="disfaplus")
     p.add_argument("--subset-size", type=int, default=4500)
     p.add_argument("--device", default=_device_default())
-    p.add_argument("--batch-size", type=int, default=4)
-    p.add_argument("--num-workers", type=int, default=0)
+    p.add_argument("--batch-size", type=int, default=32,
+                   help="Detector forward-pass batch (retinaface bench was ~2 it/s at "
+                        "batch=4; batch=32+num_workers=8 brings it to ~10+ it/s).")
+    p.add_argument("--num-workers", type=int, default=8,
+                   help="DataLoader workers for image loading from disk/NAS.")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--face-model", default="img2pose")
     p.add_argument("--landmark-model", default="mobilefacenet")
     p.add_argument("--emotion-model", default=None,
                    help="Set to 'resmasknet' to mirror prod bench; None speeds up.")
     p.add_argument("--identity-model", default=None)
+    p.add_argument("--use-aligned", action=argparse.BooleanOptionalAction, default=False,
+                   help="DISFA+ only: use pre-aligned face crops (Aligned/) instead of "
+                        "originals (Images/). Default False — tests the full pipeline "
+                        "end-to-end (face detection on original image) which is the "
+                        "production scenario. Pass --use-aligned to match the older "
+                        "v3.x benchmarks that bypassed face detection on the test set.")
     args = p.parse_args(argv)
 
     from feat.detector import Detector
@@ -108,7 +117,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.dataset == "disfa":
         split = datasets.load_disfa(split="P3", subset_size=args.subset_size, seed=args.seed)
     else:
-        split = datasets.load_disfaplus(subset_size=args.subset_size, seed=args.seed)
+        split = datasets.load_disfaplus(
+            subset_size=args.subset_size, seed=args.seed, use_aligned=args.use_aligned,
+        )
     if split is None:
         print(f"error: dataset {args.dataset} not available", file=sys.stderr)
         return 1

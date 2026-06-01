@@ -116,7 +116,7 @@ def _load_subset_index(dataset_name: str) -> list[str] | None:
 def load_disfaplus(
     subset_size: int | None = None,
     seed: int = 42,
-    use_aligned: bool = True,
+    use_aligned: bool = False,
 ) -> DatasetSplit | None:
     """Load DISFA+ — 9 posed-peak subjects, 12 AUs.
 

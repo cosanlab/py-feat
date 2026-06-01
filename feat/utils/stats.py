@@ -399,7 +399,7 @@ def clean_signal(
     return signals.squeeze(-1) if one_d else signals
 
 
-def cluster_identities(face_embeddings, threshold=0.8):
+def cluster_identities(face_embeddings, threshold=0.8, chunk_size: int = 4096):
     """Cluster face identities based on cosine similarity of embeddings.
 
     Treats the thresholded cosine-similarity matrix as the adjacency matrix
@@ -413,6 +413,8 @@ def cluster_identities(face_embeddings, threshold=0.8):
             embeddings.
         threshold: cosine-similarity cutoff above which two embeddings are
             considered the same person.
+        chunk_size: number of rows per matmul block when ``N`` is large.
+            Memory peak per block is O(chunk_size × N) bytes. Default 4096.
 
     Returns:
         list of length ``N`` with strings ``"Person_<k>"``, where the
@@ -425,11 +427,31 @@ def cluster_identities(face_embeddings, threshold=0.8):
     elif isinstance(face_embeddings, np.ndarray):
         face_embeddings = torch.tensor(face_embeddings)
 
-    similarity_matrix = cosine_similarity(
-        face_embeddings[None, :], face_embeddings[:, None], dim=-1
-    )
-    thresholded_matrix = similarity_matrix > threshold
-    N = thresholded_matrix.size(0)
+    # Build the boolean adjacency matrix via L2-normalized matmul, in
+    # row-chunks. Previous implementation used broadcasted cosine_similarity
+    # which materialized a (N, N, D) tensor — at N=57k that's ~14 TB and OOMs.
+    # The matmul form is O(N×N) memory (~13 GB at N=57k, fp32) plus one
+    # bool matrix of the same shape (~3 GB). The chunked write avoids two
+    # full fp32 copies (raw sim then threshold) sitting in RAM together.
+    if face_embeddings.dim() != 2:
+        raise ValueError(
+            f"face_embeddings must be [N, D]; got shape {tuple(face_embeddings.shape)}"
+        )
+    N = face_embeddings.size(0)
+    if N == 0:
+        return []
+    if face_embeddings.dtype != torch.float32:
+        face_embeddings = face_embeddings.float()
+    norms = face_embeddings.norm(dim=1, keepdim=True).clamp_min(1e-12)
+    normed = face_embeddings / norms
+    # Keep the dense bool adjacency on CPU (per-row chunked write).
+    normed_cpu = normed.cpu()
+    thresholded_matrix = torch.zeros((N, N), dtype=torch.bool)
+    for start in range(0, N, chunk_size):
+        end = min(start + chunk_size, N)
+        sim_chunk = normed_cpu[start:end] @ normed_cpu.T  # (chunk, N)
+        thresholded_matrix[start:end] = sim_chunk > threshold
+        del sim_chunk
 
     # Track visited as a bool tensor instead of a Python set. The previous
     # implementation rebuilt `~torch.tensor([idx in visited for idx ...])`
