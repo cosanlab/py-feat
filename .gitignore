@@ -24,6 +24,8 @@ resources/*
 !resources/model_list.json
 !resources/neutral_face_coordinates.csv
 !resources/canonical_face_model.pt
+!resources/canonical_face_tessellation.json
+!resources/muscle_to_mesh_map.json
 
 # PytestCache
 .pytest_cache/
