@@ -39,7 +39,8 @@ def stub_v2_model(monkeypatch):
         "AU25", "AU26", "AU28", "AU43",
     ]
     model = PLSAULandmarkModel(coef, intercept, au_cols)
-    monkeypatch.setattr(plt_mod, "_PLS_V2_VIZ_MODEL", model)
+    # Loader caches by version in a dict now; inject the stub under "v2".
+    monkeypatch.setattr(plt_mod, "_PLS_LMK_MODELS", {"v2": model})
     return model
 
 
@@ -135,7 +136,7 @@ class TestLoadVizModelDefault:
 class TestRealVizLoad:
     def test_load_real_v2_model(self, monkeypatch):
         # Force a fresh load by clearing the module-level cache
-        monkeypatch.setattr(plt_mod, "_PLS_V2_VIZ_MODEL", None)
+        monkeypatch.setattr(plt_mod, "_PLS_LMK_MODELS", {})
         m = load_viz_model()
         assert isinstance(m, PLSAULandmarkModel)
         assert m.n_components == 20
@@ -149,7 +150,7 @@ class TestRealVizLoad:
     def test_legacy_v1_load_via_hf_hub(self, monkeypatch):
         """Legacy ``pyfeat_aus_to_landmarks`` filename should fetch from
         py-feat/au_to_landmarks and return a PLSRegression instance."""
-        monkeypatch.setattr(plt_mod, "_PLS_V2_VIZ_MODEL", None)
+        monkeypatch.setattr(plt_mod, "_PLS_LMK_MODELS", {})
         m = load_viz_model(file_name="pyfeat_aus_to_landmarks")
         assert isinstance(m, PLSRegression)
         assert m.n_components == 20

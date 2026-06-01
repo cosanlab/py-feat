@@ -56,7 +56,8 @@ def stub_mesh_model(monkeypatch):
         au_columns=au_cols, pose_columns=pose_cols,
         mean_aligned_mesh=mean_mesh,
     )
-    monkeypatch.setattr(plt_mod, "_PLS_V2_MESH_MODEL", model)
+    # Loader caches by version in a dict now; inject the stub under "v2".
+    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {"v2": model})
     return model
 
 
@@ -237,11 +238,11 @@ class TestAuColumnDriftGuard:
         )
 
         # Bypass HF download: make hf_hub_download return our fake path
-        monkeypatch.setattr(plt_mod, "_PLS_V2_MESH_MODEL", None)
+        monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {})
         monkeypatch.setattr(plt_mod, "hf_hub_download",
                             lambda **kwargs: str(bad_path))
 
-        with pytest.raises(RuntimeError, match=r"au_columns drifted"):
+        with pytest.raises(RuntimeError, match=r"au_columns.*drifted"):
             plt_mod._load_pls_au_to_mesh_v2_from_hub()
 
 
@@ -249,7 +250,7 @@ class TestAuColumnDriftGuard:
 class TestRealMeshLoad:
     def test_load_real_v2_model(self, monkeypatch):
         # Force a fresh load by clearing the module-level cache
-        monkeypatch.setattr(plt_mod, "_PLS_V2_MESH_MODEL", None)
+        monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {})
         m = load_face_mesh_viz_model()
         assert isinstance(m, PLSAUMeshModel)
         assert m.n_components == 20

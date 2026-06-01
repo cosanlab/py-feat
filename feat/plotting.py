@@ -1471,8 +1471,10 @@ class PLSAULandmarkModel:
         self._coef = np.asarray(coef, dtype=np.float32)
         self._intercept = np.asarray(intercept, dtype=np.float32)
         self.au_columns = list(au_columns)
-        # Number of AU input features the user passes (pose is implicit-zero)
-        self.n_components = 20
+        # Number of AU input features the user passes (pose is implicit-zero).
+        # v2 = 20 AUs; v3 = Detectorv2's 24 AUs. Derive from au_columns so the
+        # input-length check matches whichever model version was loaded.
+        self.n_components = len(self.au_columns)
         self.model_name_ = model_name
 
     def predict(self, au):
@@ -1501,30 +1503,33 @@ class PLSAULandmarkModel:
 # Module-level cache for the v2 wrapper. Avoids re-deserializing the NPZ
 # (and re-allocating the coef/intercept arrays) on every load_viz_model() call.
 # The HF download itself is already cached by huggingface_hub.
-_PLS_V2_VIZ_MODEL = None
 
 
-def _load_pls_v2_from_hub(verbose=False):
-    """Download (cached) and wrap the v2 AU → 68-pt landmark PLS NPZ from HuggingFace Hub."""
-    global _PLS_V2_VIZ_MODEL
-    if _PLS_V2_VIZ_MODEL is not None:
-        return _PLS_V2_VIZ_MODEL
+_PLS_LMK_MODELS = {}       # version -> PLSAULandmarkModel
 
+
+def _load_pls_v2_from_hub(verbose=False, model_version="v2"):
+    """Download (cached) and wrap the AU → 68-pt landmark PLS NPZ from HF Hub.
+
+    model_version: "v2" (20 AU, original) or "v3" (24 AU, Detectorv2 space)."""
+    if model_version in _PLS_LMK_MODELS:
+        return _PLS_LMK_MODELS[model_version]
+
+    fname = f"au_to_landmarks_pls_{model_version}.npz"
     if verbose:
-        print("Loading v2 PLS landmarks model from HuggingFace Hub")
+        print(f"Loading {model_version} PLS landmarks model from HuggingFace Hub")
     path = hf_hub_download(
-        repo_id="py-feat/au_to_landmarks",
-        filename="au_to_landmarks_pls_v2.npz",
+        repo_id="py-feat/au_to_landmarks", filename=fname,
         cache_dir=get_resource_path(),
     )
     z = np.load(path, allow_pickle=False)
-    _PLS_V2_VIZ_MODEL = PLSAULandmarkModel(
-        coef=z["coef"],
-        intercept=z["intercept"],
+    model = PLSAULandmarkModel(
+        coef=z["coef"], intercept=z["intercept"],
         au_columns=[str(s) for s in z["au_columns"]],
-        model_name="au_to_landmarks_pls_v2",
+        model_name=f"au_to_landmarks_pls_{model_version}",
     )
-    return _PLS_V2_VIZ_MODEL
+    _PLS_LMK_MODELS[model_version] = model
+    return model
 
 
 # ---------------------------------------------------------------------
@@ -1604,46 +1609,55 @@ class PLSAUMeshModel:
 
 
 # Module-level cache; the HF download is already cached by huggingface_hub.
-_PLS_V2_MESH_MODEL = None
 
 
-def _load_pls_au_to_mesh_v2_from_hub(verbose=False):
-    """Download (cached) and wrap the v2 AU→mesh PLS NPZ from HuggingFace Hub."""
-    global _PLS_V2_MESH_MODEL
-    if _PLS_V2_MESH_MODEL is not None:
-        return _PLS_V2_MESH_MODEL
+# v3 = Detectorv2's native 24-AU space (identity-removed fit, neutral folded
+# into intercept). v2 = the original 20-AU models. The two take different-length
+# AU vectors, so the version is explicit, not auto-detected. Detectorv2 output →
+# use model_version="v3"; Detector/v1 (20 AU) → "v2" (the default).
+AU_COLUMNS_V3 = [
+    "AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU11",
+    "AU12", "AU14", "AU15", "AU16", "AU17", "AU18", "AU20", "AU23", "AU24",
+    "AU25", "AU26", "AU27", "AU28", "AU43", "AU45",
+]
+_PLS_MESH_MODELS = {}      # version -> PLSAUMeshModel
 
+
+def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v2"):
+    """Download (cached) and wrap the AU→mesh PLS NPZ from HuggingFace Hub.
+
+    model_version: "v2" (20 AU, original) or "v3" (24 AU, Detectorv2 space)."""
+    if model_version in _PLS_MESH_MODELS:
+        return _PLS_MESH_MODELS[model_version]
+
+    fname = f"au_to_mesh_pls_{model_version}.npz"
     if verbose:
-        print("Loading v2 PLS AU→mesh model from HuggingFace Hub")
+        print(f"Loading {model_version} PLS AU→mesh model from HuggingFace Hub")
     path = hf_hub_download(
-        repo_id="py-feat/au_to_mesh",
-        filename="au_to_mesh_pls_v2.npz",
+        repo_id="py-feat/au_to_mesh", filename=fname,
         cache_dir=get_resource_path(),
     )
     z = np.load(path, allow_pickle=False)
     au_columns = [str(s) for s in z["au_columns"]]
-    # Guard against silent mislabeling: callers pass `au` as a 20-d vector
-    # assuming index i corresponds to AU_LANDMARK_MAP["Feat"][i]. A re-trained
-    # npz with a shuffled column order would silently use wrong AU positions
-    # and produce subtly wrong mesh deformations. Refuse to load instead.
-    if au_columns != AU_LANDMARK_MAP["Feat"]:
+    # Guard against silent column-order drift: index i must mean the i-th AU the
+    # caller passes. v2 -> AU_LANDMARK_MAP["Feat"] (20); v3 -> AU_COLUMNS_V3 (24).
+    expected = AU_COLUMNS_V3 if model_version == "v3" else AU_LANDMARK_MAP["Feat"]
+    if au_columns != expected:
         raise RuntimeError(
-            "AU→mesh PLS au_columns drifted from AU_LANDMARK_MAP['Feat']. "
-            f"NPZ: {au_columns}; canonical: {AU_LANDMARK_MAP['Feat']}. "
-            "Re-train or update the canonical AU list."
+            f"AU→mesh PLS au_columns ({model_version}) drifted. "
+            f"NPZ: {au_columns}; expected: {expected}."
         )
-    _PLS_V2_MESH_MODEL = PLSAUMeshModel(
-        coef=z["coef"],
-        intercept=z["intercept"],
-        au_columns=au_columns,
+    model = PLSAUMeshModel(
+        coef=z["coef"], intercept=z["intercept"], au_columns=au_columns,
         pose_columns=[str(s) for s in z["pose_columns"]],
         mean_aligned_mesh=z["mean_aligned_mesh"],
-        model_name="au_to_mesh_pls_v2",
+        model_name=f"au_to_mesh_pls_{model_version}",
     )
-    return _PLS_V2_MESH_MODEL
+    _PLS_MESH_MODELS[model_version] = model
+    return model
 
 
-def load_face_mesh_viz_model(verbose=False):
+def load_face_mesh_viz_model(verbose=False, model_version="v2"):
     """Load the AU + pose → 478-pt MediaPipe FaceMesh PLS visualization model.
 
     Returns a ``PLSAUMeshModel`` whose ``.predict(au)`` produces the 478-vertex
@@ -1653,11 +1667,15 @@ def load_face_mesh_viz_model(verbose=False):
 
     Args:
         verbose: print a status line when first downloading.
+        model_version: ``"v2"`` (20-AU, the default — for Detector/v1 output) or
+            ``"v3"`` (24-AU, trained on Detectorv2's native AU space; pass a
+            24-length AU vector from a Detectorv2 Fex).
 
     Returns:
         PLSAUMeshModel
     """
-    return _load_pls_au_to_mesh_v2_from_hub(verbose=verbose)
+    return _load_pls_au_to_mesh_v2_from_hub(verbose=verbose,
+                                            model_version=model_version)
 
 
 def predict_face_mesh(au, model=None):
@@ -2780,6 +2798,7 @@ def load_viz_model(
     file_name=None,
     prefer_joblib_if_version_match=True,
     verbose=False,
+    model_version="v2",
 ):
     """Load the AU → 68-pt facial landmark PLS visualization model.
 
@@ -2810,9 +2829,10 @@ def load_viz_model(
             ``feat.plotting.predict()`` works transparently with either.
     """
 
-    # New default: v2 PLS NPZ from HuggingFace Hub.
+    # New default: v2 PLS NPZ from HuggingFace Hub. model_version="v3" loads the
+    # 24-AU Detectorv2-space landmark model instead (pass a 24-length AU vector).
     if file_name is None:
-        return _load_pls_v2_from_hub(verbose=verbose)
+        return _load_pls_v2_from_hub(verbose=verbose, model_version=model_version)
 
     if "." in file_name:
         raise TypeError("Please use a file name with no extension")
