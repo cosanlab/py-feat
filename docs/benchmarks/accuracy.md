@@ -1,6 +1,6 @@
 # Accuracy benchmarks
 
-Tracks per-release accuracy of py-feat detectors against held-out labeled datasets. Each entry is a single run produced by `python scripts/bench_regression.py --markdown`. Throughput benchmarks live in [throughput.md](throughput.md).
+Tracks per-release accuracy of py-feat detectors against held-out labeled datasets. Per-dataset accuracy is produced by the AU/dataset bench scripts under `scripts/` (e.g. `scripts/bench_xgb_local.py` and `scripts/bench_xgb_feature_mode.py` for DISFA / DISFA+). The previous unified `bench_regression.py --markdown` harness has been retired. Throughput benchmarks live in [throughput.md](throughput.md).
 
 ## Latest
 

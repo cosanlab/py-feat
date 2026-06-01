@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from scipy.integrate import simpson as simps
 import torch
-from torch.nn.functional import cosine_similarity
 
 __all__ = [
     "wavelet",

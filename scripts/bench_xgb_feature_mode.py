@@ -128,6 +128,11 @@ def main():
     p.add_argument("--align-faces", action="store_true",
                    help="Procrustes-warp face crops to canonical template before HOG "
                         "(required for v3.8+ models trained on aligned features).")
+    p.add_argument("--use-aligned", action=argparse.BooleanOptionalAction, default=False,
+                   help="DISFA+ only: load pre-aligned crops (Aligned/) instead of "
+                        "originals (Images/). Default False runs the full detection "
+                        "pipeline on original images; pass --use-aligned to match the "
+                        "older v3.x benches that scored pre-aligned crops.")
     args = p.parse_args()
 
     print(f"=== bench [{args.label}] on {args.dataset} ({args.device}) ===")
@@ -190,7 +195,9 @@ def main():
     if args.dataset == "disfa":
         split = datasets.load_disfa(split="P3", subset_size=args.subset_size, seed=args.seed)
     else:
-        split = datasets.load_disfaplus(subset_size=args.subset_size, seed=args.seed)
+        split = datasets.load_disfaplus(
+            subset_size=args.subset_size, seed=args.seed, use_aligned=args.use_aligned,
+        )
     if split is None:
         print(f"error: dataset {args.dataset} not available", file=sys.stderr)
         return 1
