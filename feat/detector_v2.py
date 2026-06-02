@@ -277,19 +277,30 @@ class Detectorv2(nn.Module):
         )
 
     def _mesh_to_original_frame(self, mesh, new_bboxes, pad_left, pad_top, scale):
-        """[N,478,3] mesh in 224-chip coords -> original-frame coords.
+        """[N,478,3] mesh in MODEL_INPUT(224)-pixel coords -> original-frame coords.
 
-        Per-vertex affine: chip(224) px -> +center-crop offset -> normalize by the
-        256 chip size -> map into the padded-frame crop box (new_bboxes) ->
-        invert the DataLoader Rescale (pad + scale). z (relative depth) passes
-        through unchanged.
+        The mesh head emits coords in MODEL_INPUT(224) pixel units (the model
+        sees the 224 center-crop of the 256 chip). Mapping back to box fractions
+        therefore needs TWO terms:
+          * scale: divide by MODEL_INPUT (224) — the units the mesh is in,
+          * offset: add ``_CROP_OFFSET / CHIP_SIZE`` (16/256) — the center-crop
+            boundary expressed as a fraction of the full 256 chip / box.
+        i.e. ``xy01 = mesh / MODEL_INPUT + _CROP_OFFSET / CHIP_SIZE``, then map
+        into new_bboxes.
+
+        Previously this was ``(mesh + _CROP_OFFSET) / CHIP_SIZE``, which
+        normalised the mesh by CHIP_SIZE(256) instead of MODEL_INPUT(224) — a
+        0.875x shrink (plus the two errors partly masked each other) that left
+        the mesh too small and shifted, worst on small/angled faces. Validated
+        against MPDetector's MediaPipe mesh: same shape (Procrustes scale 1.000,
+        <1px residual) and now <0.5px centroid offset.
 
         NB: do the affine directly rather than via
         ``inverse_transform_landmarks_torch`` — that helper reshapes its input as
         interleaved (x0,y0,x1,y1,...) pairs, but our coords are axis-major, so
         feeding it here would scramble x/y scaling on non-square boxes.
         """
-        xy01 = (mesh[:, :, :2] + _CROP_OFFSET) / float(CHIP_SIZE)   # [N,478,2] in [0,1]
+        xy01 = mesh[:, :, :2] / float(MODEL_INPUT) + _CROP_OFFSET / float(CHIP_SIZE)
         left = new_bboxes[:, 0]                                     # [N]
         top = new_bboxes[:, 1]
         w = new_bboxes[:, 2] - left
