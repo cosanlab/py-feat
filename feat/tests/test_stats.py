@@ -236,10 +236,9 @@ def test_cluster_identities_three_distinct():
     assert len(set(out)) == 3
 
 
-def test_cluster_identities_transitive_chain():
-    """A-B and B-C similarity above threshold; A-C below. All three should
-    still cluster together via transitivity (B bridges them)."""
-    # cos(A,B) = cos(B,C) ~ 0.93; cos(A,C) ~ 0.74
+def test_cluster_identities_connected_transitive_chain():
+    """method='connected' is single-linkage: A-B and B-C above threshold (A-C
+    below) still cluster together via transitivity (B bridges them)."""
     emb = torch.tensor(
         [
             [1.0, 0.0, 0.0],   # A
@@ -247,13 +246,46 @@ def test_cluster_identities_transitive_chain():
             [0.0, 1.0, 0.0],   # C
         ]
     )
-    cluster_identities(emb, threshold=0.8)
-    # Threshold 0.8: A-B (0.7) below, B-C (0.7) below — actually all separate.
-    # Use a lower threshold to test transitivity.
-    out2 = cluster_identities(emb, threshold=0.6)
-    # cos(A,B) = 0.7, cos(B,C) = 0.7, cos(A,C) = 0
-    # At 0.6: A connects to B, B connects to C. A-C transitively.
-    assert out2[0] == out2[1] == out2[2]
+    out = cluster_identities(emb, threshold=0.6, method="connected")
+    # cos(A,B)=cos(B,C)=0.7 > 0.6, cos(A,C)=0 — A-C linked transitively via B.
+    assert out[0] == out[1] == out[2]
+
+
+def test_cluster_identities_gallery_not_transitive():
+    """The default gallery method is NOT transitive: once A and B merge, the
+    centroid drifts, so a chained-but-distant C starts its own identity."""
+    emb = torch.tensor([[1.0, 0.0, 0.0], [0.7, 0.7, 0.0], [0.0, 1.0, 0.0]])
+    out = cluster_identities(emb, threshold=0.6, method="gallery")
+    assert out[0] == out[1]
+    assert out[2] != out[0]
+
+
+def test_cluster_identities_hdbscan_basic():
+    """HDBSCAN groups two tight clusters and labels a lone outlier 'Unknown'."""
+    rng = np.random.default_rng(0)
+    a = rng.normal(0, 0.01, (8, 4)) + np.array([1.0, 0, 0, 0])
+    b = rng.normal(0, 0.01, (8, 4)) + np.array([0, 1.0, 0, 0])
+    outlier = np.array([[0.0, 0.0, 1.0, 0.0]])
+    emb = np.vstack([a, b, outlier])
+    out = cluster_identities(emb, threshold=0.5, method="hdbscan", min_cluster_size=3)
+    assert len(set(out[:8])) == 1                      # cluster A is one identity
+    assert len(set(out[8:16])) == 1                    # cluster B is one identity
+    assert out[0] != out[8]                            # A and B are distinct
+    assert out[-1] == "Unknown"                        # the outlier is noise
+
+
+def test_cluster_identities_nan_rows_labelled_nan():
+    """Rows with non-finite embeddings (no-detection frames) get a NaN label
+    and don't participate in clustering."""
+    emb = np.array([[1.0, 0.0], [1.0, 0.0], [np.nan, np.nan]])
+    out = cluster_identities(emb, threshold=0.5)
+    assert out[0] == out[1]
+    assert isinstance(out[2], float) and np.isnan(out[2])
+
+
+def test_cluster_identities_bad_method():
+    with pytest.raises(ValueError, match="unknown method"):
+        cluster_identities(torch.eye(2), method="nope")
 
 
 def test_cluster_identities_format():

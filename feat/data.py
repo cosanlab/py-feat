@@ -1966,18 +1966,27 @@ class Fex(DataFrame):
             all_figs.append(f)
         return all_figs
 
-    def compute_identities(self, threshold=0.8, inplace=False):
-        """Compute Identities using face embeddings from identity detector using threshold"""
-        if inplace:
-            self["Identity"] = cluster_identities(
-                self.identity_embeddings, threshold=threshold
-            )
-        else:
-            out = self.copy()
-            out["Identity"] = cluster_identities(
-                out.identity_embeddings, threshold=threshold
-            )
-            return out
+    def compute_identities(self, threshold=0.8, method="gallery",
+                           min_cluster_size=2, inplace=False):
+        """Compute Identities from face-identity embeddings.
+
+        Args:
+            threshold: cosine-similarity cutoff for the same person.
+            method: ``"gallery"`` (default; single-pass, memory-efficient,
+                scales to large videos), ``"hdbscan"`` (density-based, emits
+                ``"Unknown"`` for outliers), or ``"connected"`` (legacy exact
+                single-linkage — O(N²) memory, can OOM on long videos).
+            min_cluster_size: minimum cluster size for ``method="hdbscan"``.
+            inplace: write the ``Identity`` column in place instead of returning
+                a copy.
+        """
+        target = self if inplace else self.copy()
+        target["Identity"] = cluster_identities(
+            target.identity_embeddings, threshold=threshold,
+            method=method, min_cluster_size=min_cluster_size,
+        )
+        if not inplace:
+            return target
 
     # TODO: turn this into a property using a @property and @sessions.settr decorators
     # Tried it but was running into maximum recursion depth errors. Maybe some

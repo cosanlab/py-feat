@@ -398,82 +398,173 @@ def clean_signal(
     return signals.squeeze(-1) if one_d else signals
 
 
-def cluster_identities(face_embeddings, threshold=0.8, chunk_size: int = 4096):
-    """Cluster face identities based on cosine similarity of embeddings.
+def _normalize_rows(emb):
+    """L2-normalize each row of an ``[N, D]`` float array."""
+    norms = np.linalg.norm(emb, axis=1, keepdims=True)
+    norms[norms < 1e-12] = 1e-12
+    return emb / norms
 
-    Treats the thresholded cosine-similarity matrix as the adjacency matrix
-    of an undirected graph, and labels each connected component as one
-    identity. Two embeddings need not be directly above-threshold to share
-    a label - any chain of above-threshold edges puts them in the same
-    cluster (transitivity).
 
-    Args:
-        face_embeddings: ``[N, D]`` tensor (or Fex / numpy array) of
-            embeddings.
-        threshold: cosine-similarity cutoff above which two embeddings are
-            considered the same person.
-        chunk_size: number of rows per matmul block when ``N`` is large.
-            Memory peak per block is O(chunk_size × N) bytes. Default 4096.
+def _cluster_gallery(normed, threshold):
+    """Incremental 'leader' clustering. Each embedding (in order) joins the
+    nearest running identity centroid whose cosine similarity is >= threshold,
+    otherwise it starts a new identity; the matched centroid is updated as a
+    running mean and re-normalized.
 
-    Returns:
-        list of length ``N`` with strings ``"Person_<k>"``, where the
-        cluster ids ``k`` follow the order in which clusters first appear.
+    O(N·K) time and O(K·D) memory (K = number of identities) — no N×N matrix,
+    so it scales to arbitrarily large inputs. Single-pass, so labels are
+    order-dependent (a property shared by any streaming scheme).
     """
-    from feat.data import Fex
+    N, D = normed.shape
+    labels = np.empty(N, dtype=np.int64)
+    cap = 64
+    cent = np.zeros((cap, D), dtype=normed.dtype)   # normalized running-mean centroids
+    counts = np.zeros(cap, dtype=np.int64)
+    K = 0
+    for i in range(N):
+        e = normed[i]
+        if K:
+            sims = cent[:K] @ e
+            k = int(sims.argmax())
+            if sims[k] >= threshold:
+                labels[i] = k
+                counts[k] += 1
+                c = cent[k] + (e - cent[k]) / counts[k]
+                n = float(np.linalg.norm(c))
+                cent[k] = c / (n if n > 1e-12 else 1e-12)
+                continue
+        if K == cap:
+            cap *= 2
+            new_cent = np.zeros((cap, D), dtype=normed.dtype); new_cent[:K] = cent[:K]
+            new_counts = np.zeros(cap, dtype=np.int64); new_counts[:K] = counts[:K]
+            cent, counts = new_cent, new_counts
+        cent[K] = e
+        counts[K] = 1
+        labels[i] = K
+        K += 1
+    return labels
 
-    if isinstance(face_embeddings, Fex):
-        face_embeddings = torch.tensor(face_embeddings.astype(float).values)
-    elif isinstance(face_embeddings, np.ndarray):
-        face_embeddings = torch.tensor(face_embeddings)
 
-    # Build the boolean adjacency matrix via L2-normalized matmul, in
-    # row-chunks. Previous implementation used broadcasted cosine_similarity
-    # which materialized a (N, N, D) tensor — at N=57k that's ~14 TB and OOMs.
-    # The matmul form is O(N×N) memory (~13 GB at N=57k, fp32) plus one
-    # bool matrix of the same shape (~3 GB). The chunked write avoids two
-    # full fp32 copies (raw sim then threshold) sitting in RAM together.
-    if face_embeddings.dim() != 2:
-        raise ValueError(
-            f"face_embeddings must be [N, D]; got shape {tuple(face_embeddings.shape)}"
-        )
-    N = face_embeddings.size(0)
-    if N == 0:
-        return []
-    if face_embeddings.dtype != torch.float32:
-        face_embeddings = face_embeddings.float()
-    norms = face_embeddings.norm(dim=1, keepdim=True).clamp_min(1e-12)
-    normed = face_embeddings / norms
-    # Keep the dense bool adjacency on CPU (per-row chunked write).
-    normed_cpu = normed.cpu()
-    thresholded_matrix = torch.zeros((N, N), dtype=torch.bool)
+def _cluster_hdbscan(normed, threshold, min_cluster_size):
+    """Density-based clustering (HDBSCAN). On L2-normalized vectors squared
+    Euclidean distance is monotonic in cosine similarity (||a-b||² = 2-2·cos),
+    so we use the Euclidean metric — letting HDBSCAN use a space tree instead
+    of a dense cosine matrix — and map the cosine threshold to a cluster-
+    selection epsilon. Returns -1 for noise points (low-confidence / outliers),
+    surfaced to the caller as ``"Unknown"``.
+    """
+    import math
+    from sklearn.cluster import HDBSCAN
+
+    eps = math.sqrt(max(0.0, 2.0 - 2.0 * threshold))
+    clusterer = HDBSCAN(
+        min_cluster_size=max(2, int(min_cluster_size)),
+        metric="euclidean",
+        cluster_selection_epsilon=eps,
+        copy=False,                 # `normed` is a fresh array; no need to copy
+    )
+    return clusterer.fit_predict(normed).astype(np.int64)
+
+
+def _cluster_connected_components(normed, threshold, chunk_size):
+    """Single-linkage connected components on the thresholded cosine graph.
+    Transitive (A~B, B~C ⇒ A,B,C share a label). EXACT (matches pre-0.7
+    labels) but materializes an N×N boolean adjacency — O(N²) memory, so it
+    OOMs on long videos. Kept for backwards-compatible / exact results; prefer
+    'gallery' or 'hdbscan' at scale.
+    """
+    t = torch.from_numpy(np.ascontiguousarray(normed))
+    N = t.shape[0]
+    thresholded = torch.zeros((N, N), dtype=torch.bool)
     for start in range(0, N, chunk_size):
         end = min(start + chunk_size, N)
-        sim_chunk = normed_cpu[start:end] @ normed_cpu.T  # (chunk, N)
-        thresholded_matrix[start:end] = sim_chunk > threshold
-        del sim_chunk
-
-    # Track visited as a bool tensor instead of a Python set. The previous
-    # implementation rebuilt `~torch.tensor([idx in visited for idx ...])`
-    # on every BFS pop, costing O(N) per pop and overall O(N^3) worst case
-    # plus N+ tensor allocations per detect() call.
-    visited = torch.zeros(N, dtype=torch.bool, device=thresholded_matrix.device)
-    cluster_indices = [-1] * N
-    next_cluster_idx = 0
-
+        thresholded[start:end] = (t[start:end] @ t.T) > threshold
+    visited = torch.zeros(N, dtype=torch.bool)
+    labels = np.full(N, -1, dtype=np.int64)
+    nxt = 0
     for i in range(N):
         if visited[i]:
             continue
         stack = [i]
         visited[i] = True
-        cluster_indices[i] = next_cluster_idx
+        labels[i] = nxt
         while stack:
-            current = stack.pop()
-            # Neighbors above threshold AND not yet visited.
-            mask = thresholded_matrix[current] & ~visited
-            neighbors = mask.nonzero(as_tuple=True)[0].tolist()
-            for neighbor in neighbors:
-                stack.append(neighbor)
-                visited[neighbor] = True
-                cluster_indices[neighbor] = next_cluster_idx
-        next_cluster_idx += 1
-    return [f"Person_{x}" for x in cluster_indices]
+            cur = stack.pop()
+            neighbors = (thresholded[cur] & ~visited).nonzero(as_tuple=True)[0].tolist()
+            for j in neighbors:
+                visited[j] = True
+                labels[j] = nxt
+                stack.append(j)
+        nxt += 1
+    return labels
+
+
+def cluster_identities(face_embeddings, threshold=0.8, method="gallery",
+                       min_cluster_size=2, chunk_size: int = 4096):
+    """Cluster face identities from their embeddings.
+
+    Args:
+        face_embeddings: ``[N, D]`` Fex / numpy array / torch tensor of
+            embeddings. Rows with non-finite values (e.g. no-detection frames)
+            are labelled ``NaN`` and excluded from clustering.
+        threshold: cosine-similarity cutoff for the same person (``gallery`` /
+            ``connected``; also mapped to an epsilon for ``hdbscan``).
+        method: ``"gallery"`` (default) — single-pass incremental clustering,
+            O(K·D) memory, scales to huge inputs; ``"hdbscan"`` — density-based,
+            emits ``"Unknown"`` for noise; ``"connected"`` — legacy exact
+            single-linkage connected components (O(N²) memory, can OOM).
+        min_cluster_size: minimum cluster size for ``hdbscan``.
+        chunk_size: matmul block size for ``connected``.
+
+    Returns:
+        list of length ``N`` of ``"Person_<k>"`` (k by first appearance),
+        ``"Unknown"`` (hdbscan noise), or ``float('nan')`` (non-finite row).
+    """
+    from feat.data import Fex
+
+    if isinstance(face_embeddings, Fex):
+        emb = face_embeddings.astype(float).values
+    elif isinstance(face_embeddings, np.ndarray):
+        emb = face_embeddings
+    elif isinstance(face_embeddings, torch.Tensor):
+        emb = face_embeddings.detach().cpu().numpy()
+    else:
+        emb = np.asarray(face_embeddings)
+    emb = np.asarray(emb, dtype=np.float64)
+    if emb.ndim != 2:
+        raise ValueError(f"face_embeddings must be [N, D]; got shape {emb.shape}")
+    N = emb.shape[0]
+    if N == 0:
+        return []
+
+    finite = np.isfinite(emb).all(axis=1)
+    out = [float("nan")] * N            # non-finite (no-detection) rows -> NaN
+    if not finite.any():
+        return out
+    normed = _normalize_rows(emb[finite]).astype(np.float32)
+
+    if method == "gallery":
+        raw = _cluster_gallery(normed, threshold)
+    elif method == "hdbscan":
+        raw = _cluster_hdbscan(normed, threshold, min_cluster_size)
+    elif method == "connected":
+        raw = _cluster_connected_components(normed, threshold, chunk_size)
+    else:
+        raise ValueError(
+            f"unknown method {method!r}; use 'gallery', 'hdbscan', or 'connected'"
+        )
+
+    # Renumber to Person_<k> by order of first appearance (stable across
+    # methods); HDBSCAN noise (-1) -> 'Unknown'.
+    remap = {}
+    nxt = 0
+    for pos, lab in zip(np.nonzero(finite)[0], raw):
+        lab = int(lab)
+        if lab == -1:
+            out[pos] = "Unknown"
+            continue
+        if lab not in remap:
+            remap[lab] = nxt
+            nxt += 1
+        out[pos] = f"Person_{remap[lab]}"
+    return out
