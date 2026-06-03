@@ -20,7 +20,9 @@ import torch.nn.functional as F
 import torchvision.transforms.v2.functional as TF
 
 from feat.multitask.model_v2 import MEGraphAUv2, ModelV2Config, AU_NAMES
-from feat.multitask import EMOTION_NAMES
+from feat.multitask import (
+    EMOTION_NAMES, AU_NAMES_V24, EMOTION_NAMES_V24,
+)
 from feat.utils.blendshape_to_au import DLIB68_FROM_MP478
 
 # Chip geometry — fixed by how training chips were produced.
@@ -30,8 +32,8 @@ EXPAND_BBOX = 1.2        # bbox margin multiplier used at extraction
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
-HF_REPO = "py-feat/face_multitask_v1"
-HF_WEIGHTS_FILE = "face_multitask_v1.pt"
+HF_REPO = "py-feat/face_multitask_v2"
+HF_WEIGHTS_FILE = "face_multitask_v2.pt"
 
 # dlib-68 vertex indices into the MediaPipe-478 mesh (py-feat canonical map).
 _DLIB68_IDX = torch.tensor(DLIB68_FROM_MP478, dtype=torch.long)
@@ -79,6 +81,10 @@ class MultitaskModel:
         cfg = ModelV2Config(**filtered, pretrained=False,
                             use_head_v2=saved_cfg.get("use_head_v2", False))
         self.cfg = cfg
+        # AU / emotion names depend on the head dims (v2.4 = 20 AU / 7 emotion;
+        # v2.3 = 24 / 8). Derive from cfg so this loader handles both.
+        self.au_names = AU_NAMES_V24 if cfg.n_au == 20 else list(AU_NAMES)
+        self.emotion_names = EMOTION_NAMES_V24 if cfg.n_emotion == 7 else list(EMOTION_NAMES)
         model = MEGraphAUv2(cfg)
         missing, unexpected = model.load_state_dict(ckpt["model"], strict=False)
         if missing or unexpected:
@@ -96,6 +102,13 @@ class MultitaskModel:
     def _resolve_weights(weights_path):
         if weights_path is not None:
             return weights_path
+        # Bridge until v2.4 weights are on HF: allow a local override via env
+        # (FEAT_MULTITASK_WEIGHTS). Lets tests / users run the v2.4 checkpoint
+        # before the HF default is bumped from face_multitask_v1.pt (v2.3).
+        import os
+        env_w = os.environ.get("FEAT_MULTITASK_WEIGHTS")
+        if env_w:
+            return env_w
         from huggingface_hub import hf_hub_download
         from feat.utils.io import get_resource_path
         return hf_hub_download(repo_id=HF_REPO, filename=HF_WEIGHTS_FILE,
@@ -128,9 +141,9 @@ class MultitaskModel:
 
         return MultitaskOutput(
             au=out["p_au"].float().cpu().numpy(),
-            au_names=list(AU_NAMES),
+            au_names=list(self.au_names),
             emotion=emotion.float().cpu().numpy(),
-            emotion_names=list(EMOTION_NAMES),
+            emotion_names=list(self.emotion_names),
             valence=va[:, 0].float().cpu().numpy(),
             arousal=va[:, 1].float().cpu().numpy(),
             gaze=out["gaze"].float().cpu().numpy(),

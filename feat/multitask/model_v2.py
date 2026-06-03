@@ -65,6 +65,17 @@ class ModelV2Config:
                                 #   - EmotionVAHeadV2: stronger backbone GAP path + 2-trunk fusion
                                 #   - GazeHeadV2: backbone GAP + landmark cross-attn, NO AU gating,
                                 #     separate yaw/pitch heads (L2CS-Net pattern)
+    # v2.4 flags (Experiment A verdict + emotion fix). All default to v2.3 behavior.
+    drop_mefl: bool = False     # v2.4: remove the MEFL edge head; SC reads FGG output
+                                #   directly. Experiment A (ablate_mefl_v23.json) showed
+                                #   MEFL's α had collapsed to ~7e-5 and removing it holds
+                                #   AU-F1 while running ~4× faster (model-internal forward).
+    emotion_use_au_prob: bool = False  # v2.4: concat the n_au AU probabilities into the
+                                #   emotion head input (FACS-grounded). NOT the old heavy
+                                #   AU-node attention (which was AU04-degenerate in v2).
+    emotion_au_prob_detach: bool = True  # detach p_au before the emotion head so emotion
+                                #   gradients do NOT flow back into the AU head — protects
+                                #   the "maintain AU" goal. Set False to co-train.
 
 
 # ============================ ANFL (unchanged from v1) ============================
@@ -560,8 +571,12 @@ class MEGraphAUv2(nn.Module):
         )
         self.afg = AFG(cfg.afg_channels, cfg.afg_channels, cfg.n_au)
         self.fgg = FGG(cfg.afg_channels, k=cfg.knn_k)
-        self.mefl = MEFL(cfg.mefl_channels, cfg.n_au, cfg.gcn_layers,
-                         use_layer_scale=cfg.mefl_use_layer_scale)
+        # v2.4: drop_mefl removes the heavy O(N²) edge head entirely. SC then
+        # reads the FGG output directly (Experiment A: AU-F1 held, ~4× faster).
+        self.drop_mefl = getattr(cfg, "drop_mefl", False)
+        self.mefl = (None if self.drop_mefl
+                     else MEFL(cfg.mefl_channels, cfg.n_au, cfg.gcn_layers,
+                               use_layer_scale=cfg.mefl_use_layer_scale))
         self.sc = SCHead(cfg.n_au, cfg.mefl_channels)
         # Cooccurrence head: only present in v2 / v2.1 / v2.2 (use_head_v3=False).
         # v2.3 drops it entirely — BP4D-skewed priors hurt DISFA+ transfer.
@@ -581,6 +596,7 @@ class MEGraphAUv2(nn.Module):
                 in_dim=self.unified.out_dim,
                 n_classes=cfg.n_emotion,
                 dropout=cfg.emotion_head_dropout,
+                n_au_prob=(cfg.n_au if getattr(cfg, "emotion_use_au_prob", False) else 0),
             )
             self.gaze = GazeHeadV3(in_dim=self.unified.out_dim)
         elif cfg.use_head_v2:
@@ -618,7 +634,10 @@ class MEGraphAUv2(nn.Module):
         X = self.proj(feats)                         # [B, afg_ch, H, W]
         U, v = self.afg(X)                           # [B, N, C, H, W], [B, N, C]
         v_fgg = self.fgg(v)                          # [B, N, C]
-        h, e = self.mefl(U, X, v_fgg)                # [B, N, C], [B, N, N, C]
+        if self.drop_mefl:
+            h, e = v_fgg, None                       # v2.4: SC reads FGG output
+        else:
+            h, e = self.mefl(U, X, v_fgg)            # [B, N, C], [B, N, N, C]
 
         p_au = self.sc(h)                            # [B, N]
         mesh = self.lmk(X)                           # [B, 478, 3]
@@ -628,7 +647,11 @@ class MEGraphAUv2(nn.Module):
         if self.cfg.use_head_v3:
             # v2.3: unified features = backbone GAP ∥ proj(mesh_xy)
             unified = self.unified(feats, mesh)      # [B, bb_ch + lmk_dim]
-            emotion_out = self.emotion(unified)
+            if getattr(self.cfg, "emotion_use_au_prob", False):
+                ap = p_au.detach() if getattr(self.cfg, "emotion_au_prob_detach", True) else p_au
+                emotion_out = self.emotion(unified, ap)
+            else:
+                emotion_out = self.emotion(unified)
             gaze = self.gaze(unified)
             cooc_logits = None
         else:

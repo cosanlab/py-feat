@@ -17,11 +17,17 @@ EMOTION_NAMES = [
     "Fear", "Disgust", "Anger", "Contempt",
 ]
 
-# --- Native-v2 Fex column schema ---
-# AUs: 24 columns, names already "AU01".."AU45".
-AU_COLUMNS_V2 = list(AU_NAMES)
-# Emotion: 8 columns (includes Contempt, unlike v1's 7).
-EMOTION_COLUMNS_V2 = list(EMOTION_NAMES)
+# --- v2.4 head dims ---
+# v2.4 drops 4 poorly-represented AUs (AU16/18/27/45 -> back to v1's 20-AU set)
+# and drops Contempt from emotion (7-class). The model emits AU probs / emotion
+# logits in exactly these orders.
+DROP_AU_V24 = {"AU16", "AU18", "AU27", "AU45"}
+AU_NAMES_V24 = [a for a in AU_NAMES if a not in DROP_AU_V24]   # 20
+EMOTION_NAMES_V24 = EMOTION_NAMES[:7]                          # drop Contempt
+
+# --- Native-v2 Fex column schema (v2.4 = shipped model: 20 AU / 7 emotion) ---
+AU_COLUMNS_V2 = list(AU_NAMES_V24)
+EMOTION_COLUMNS_V2 = list(EMOTION_NAMES_V24)
 # Valence / arousal regression (continuous, [-1, 1]).
 VA_COLUMNS_V2 = ["valence", "arousal"]
 # 478-point MediaPipe mesh in original-frame coords (x,y) + relative depth (z).
@@ -33,7 +39,9 @@ MESH_COLUMNS_V2 = (
 
 __all__ = [
     "AU_NAMES",
+    "AU_NAMES_V24",
     "EMOTION_NAMES",
+    "EMOTION_NAMES_V24",
     "N_AU",
     "N_EMOTION",
     "N_MESH",

@@ -98,13 +98,22 @@ class EmotionVAHeadV3(nn.Module):
     doesn't need to special-case.
     """
 
-    def __init__(self, in_dim: int, n_classes: int = 8, dropout: float = 0.2):
+    def __init__(self, in_dim: int, n_classes: int = 8, dropout: float = 0.2,
+                 n_au_prob: int = 0):
         super().__init__()
+        # v2.4: optionally append the n_au_prob AU probabilities to the input
+        # (FACS-grounded emotion conditioning). Warm-started from v2.3 by
+        # zero-initing the new AU columns, so it starts as the v2.3 head.
+        self.n_au_prob = n_au_prob
         self.dropout = nn.Dropout(dropout)
-        self.cls_head = nn.Linear(in_dim, n_classes)
-        self.va_head  = nn.Linear(in_dim, 2)
+        self.cls_head = nn.Linear(in_dim + n_au_prob, n_classes)
+        self.va_head  = nn.Linear(in_dim + n_au_prob, 2)
 
-    def forward(self, unified: torch.Tensor) -> dict:
+    def forward(self, unified: torch.Tensor, p_au: torch.Tensor | None = None) -> dict:
+        if self.n_au_prob > 0:
+            if p_au is None:
+                raise ValueError("EmotionVAHeadV3 built with n_au_prob>0 but p_au not passed")
+            unified = torch.cat([unified, p_au], dim=-1)
         u = self.dropout(unified)
         return {
             "emotion_logits": self.cls_head(u),
