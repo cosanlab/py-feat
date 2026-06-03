@@ -865,6 +865,17 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             }
         )
 
+        # No-detection rows carry a NaN placeholder bbox (see detect_faces).
+        # AU / gaze / identity (and pose) still ran on the zeroed crop, so they
+        # hold fabricated values; blank every prediction for those rows so empty
+        # frames don't surface plausible-looking numbers. The (already-NaN)
+        # facebox and the frame metadata stay meaningful. Matches Detectorv2.
+        no_det = torch.isnan(new_bboxes).any(dim=1).cpu().numpy()
+        if no_det.any():
+            for _df in (feat_landmarks, feat_poses, feat_aus, feat_emotions,
+                        feat_identities, feat_gaze):
+                _df.loc[no_det, :] = np.nan
+
         # Return a plain pd.DataFrame; detect() wraps the concatenated
         # result in a single Fex at the end. Avoids Fex.__init__'s
         # O(n_columns) metadata loop (see Fex.__init__ in data.py) firing

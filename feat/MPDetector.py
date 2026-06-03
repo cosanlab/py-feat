@@ -581,15 +581,23 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 arr = torch.tensor(
                     image_dets, dtype=torch.float32, device=self.device
                 )
-                bbox_chunks.append(arr[:, :4])
-                score_chunks.append(arr[:, 4])
-                n_per_frame.append(arr.shape[0])
+                # Drop detections below the score threshold (was ignored — every
+                # detection was kept regardless of confidence). Mirrors Detector
+                # / Detectorv2; the placeholder branch then treats a frame whose
+                # detections are all sub-threshold as a no-detection frame.
+                arr = arr[arr[:, 4] >= face_detection_threshold]
             else:
+                arr = torch.empty((0, 5), device=self.device)
+            if arr.shape[0] == 0:
                 # No detection: contribute one zero-bbox placeholder so
                 # downstream forward() always has >= 1 row per frame.
                 bbox_chunks.append(torch.zeros((1, 4), device=self.device))
                 score_chunks.append(torch.zeros((1,), device=self.device))
                 n_per_frame.append(1)
+            else:
+                bbox_chunks.append(arr[:, :4])
+                score_chunks.append(arr[:, 4])
+                n_per_frame.append(arr.shape[0])
 
         all_bboxes = torch.cat(bbox_chunks, dim=0)
         all_scores = torch.cat(score_chunks, dim=0)
@@ -887,6 +895,18 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             }
         )
 
+        # No-detection rows carry a zero-bbox / zero-score placeholder (see
+        # detect_faces). Blank the final predictions that ran on the zeroed crop
+        # so they don't surface fabricated numbers. Landmarks are left finite
+        # here because detect() recomputes pose/gaze from the mesh; landmarks,
+        # pose and gaze are blanked together at the end of detect().
+        scores = torch.cat([face["scores"] for face in faces_data], dim=0)
+        no_det = (scores == 0).cpu().numpy()
+        if no_det.any():
+            for _df in (feat_blendshapes, feat_aus, feat_emotions,
+                        feat_identities, feat_gaze):
+                _df.loc[no_det, :] = np.nan
+
         # Return a plain pd.DataFrame; detect() wraps the concatenated
         # result in a single Fex at the end. Avoids Fex.__init__'s
         # O(n_columns) metadata loop (see Fex.__init__ in data.py) firing
@@ -1063,5 +1083,21 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             forward = np.array([0.0, 0.0, 1.0])
             cos_angle = np.clip((combined_vec * forward).sum(axis=1), -1.0, 1.0)
             batch_output["gaze_angle"] = np.arccos(cos_angle)
+
+        # Pose / gaze / landmarks above were (re)computed from the no-detection
+        # placeholder crop's mesh; blank them for those rows so empty frames
+        # carry NaN throughout (the predictions were already blanked in
+        # forward()). No-detection rows carry a zero FaceScore placeholder —
+        # a detector-independent signal (AU columns may be absent if au_model
+        # is None).
+        no_det = (batch_output["FaceScore"].to_numpy() == 0)
+        if no_det.any():
+            blank_cols = [
+                c for c in (list(FEAT_FACEPOSE_COLUMNS_6D)
+                            + list(MP_LANDMARK_COLUMNS)
+                            + list(FEAT_GAZE_COLUMNS))
+                if c in batch_output.columns
+            ]
+            batch_output.loc[no_det, blank_cols] = np.nan
 
         return batch_output

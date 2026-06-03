@@ -145,6 +145,11 @@ class Test_Detector:
         assert isinstance(out, Fex)
         assert out.shape == (1, EXPECTED_FEX_WIDTH)
         assert np.isnan(out.happiness.values[0])
+        # No face -> predictions NaN, not fabricated from the zeroed crop
+        # (regression: AU / pose / gaze / identity ran on the empty crop and
+        # emitted plausible non-NaN values; only emotion + landmarks were NaN).
+        assert out.aus.isnull().all(axis=None)
+        assert out.poses.isnull().all(axis=None)
 
     def test_fast_detect_multi_img_no_face(self, no_face_img):
         """Test detection of a multiple images with no face. Default detector returns EXPECTED_FEX_WIDTH attributes"""

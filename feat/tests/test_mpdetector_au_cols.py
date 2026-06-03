@@ -117,3 +117,21 @@ class TestMpdetectorAuOutput:
         bs_set = set(MP_BLENDSHAPE_NAMES)
         au_set = set(AU_LANDMARK_MAP["Feat"])
         assert bs_set.isdisjoint(au_set)
+
+
+@pytest.mark.network
+@pytest.mark.skipif(not _have_test_image(), reason="test images missing")
+def test_mpdetector_no_face_nan_predictions():
+    """No-face image -> NaN AU / blendshape predictions, not values fabricated
+    from the zeroed placeholder crop (regression for the no-detection blanking;
+    the face_detection_threshold was also previously ignored)."""
+    from feat.MPDetector import MPDetector
+    from feat.utils.io import get_test_data_path
+
+    det = MPDetector(face_model="retinaface", device="cpu")
+    fex = det.detect(
+        os.path.join(get_test_data_path(), "free-mountain-vector-01.jpg"),
+        data_type="image",
+    )
+    assert fex[AU_LANDMARK_MAP["Feat"]].isna().all().all()
+    assert fex[MP_BLENDSHAPE_NAMES].isna().all().all()
