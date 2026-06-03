@@ -192,9 +192,12 @@ class Detectorv2(nn.Module):
 
         out = self.multitask(faces)  # MultitaskOutput; faces already [0,1] 256 crops
 
-        # ---- AUs (24), emotion (8 softmax), valence/arousal ----
-        feat_aus = pd.DataFrame(out.au, columns=AU_COLUMNS_V2)
-        feat_emotions = pd.DataFrame(out.emotion, columns=EMOTION_COLUMNS_V2)
+        # ---- AUs, emotion (softmax), valence/arousal ----
+        # Column names come from the loaded checkpoint (out.au_names /
+        # out.emotion_names), not hardcoded constants, so this stays correct if
+        # a different-width checkpoint is loaded via FEAT_MULTITASK_WEIGHTS.
+        feat_aus = pd.DataFrame(out.au, columns=out.au_names)
+        feat_emotions = pd.DataFrame(out.emotion, columns=out.emotion_names)
         feat_va = pd.DataFrame(
             np.column_stack([out.valence, out.arousal]), columns=VA_COLUMNS_V2
         )
@@ -360,8 +363,8 @@ class Detectorv2(nn.Module):
         concat_df = pd.concat(batch_output).reset_index(drop=True)
         fex = Fex(
             concat_df,
-            au_columns=AU_COLUMNS_V2,
-            emotion_columns=EMOTION_COLUMNS_V2,
+            au_columns=self.multitask.au_names,
+            emotion_columns=self.multitask.emotion_names,
             facebox_columns=FEAT_FACEBOX_COLUMNS,
             landmark_columns=openface_2d_landmark_columns,
             facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
