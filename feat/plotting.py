@@ -51,6 +51,10 @@ __all__ = [
     "draw_plotly_pose",
     "draw_plotly_gaze",
     "emotion_annotation_position",
+    "load_face_mesh_viz_model",
+    "predict_face_mesh",
+    "plot_face_mesh",
+    "plot_face_mesh_plotly",
 ]
 
 

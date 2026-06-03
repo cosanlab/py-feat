@@ -36,7 +36,7 @@ class PNet(nn.Module):
 
         if pretrained:
             state_dict_path = os.path.join(get_resource_path(), "pnet.pt")
-            state_dict = torch.load(state_dict_path)
+            state_dict = torch.load(state_dict_path, map_location="cpu")
             self.load_state_dict(state_dict)
 
     def forward(self, x):
@@ -81,7 +81,7 @@ class RNet(nn.Module):
 
         if pretrained:
             state_dict_path = os.path.join(get_resource_path(), "rnet.pt")
-            state_dict = torch.load(state_dict_path)
+            state_dict = torch.load(state_dict_path, map_location="cpu")
             self.load_state_dict(state_dict)
 
     def forward(self, x):
@@ -134,7 +134,7 @@ class ONet(nn.Module):
 
         if pretrained:
             state_dict_path = os.path.join(get_resource_path(), "onet.pt")
-            state_dict = torch.load(state_dict_path)
+            state_dict = torch.load(state_dict_path, map_location="cpu")
             self.load_state_dict(state_dict)
 
     def forward(self, x):

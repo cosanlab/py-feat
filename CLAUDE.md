@@ -61,9 +61,10 @@ it's a 1000× speedup on construction.
 ### `face_model` kwarg
 
 `'retinaface_r34'` was dropped in v0.7.0. Only `'retinaface'` is accepted.
-Both detectors validate this. The HuggingFace repo is still named
-`py-feat/retinaface_r34` (we kept the backbone-tagged storage name) — the
-two are intentionally different.
+`Detector` / `MPDetector` validate the `face_model` kwarg; `Detectorv2` takes
+no `face_model` kwarg at all (it hardcodes `'retinaface'`). The HuggingFace repo
+is still named `py-feat/retinaface_r34` (we kept the backbone-tagged storage
+name) — the two are intentionally different.
 
 ### `identity_model` default
 

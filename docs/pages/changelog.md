@@ -12,7 +12,7 @@ Highlights:
 - Pure-PyTorch head-pose and gaze for the MediaPipe Face Mesh detector. No OpenCV dependency.
 - Modern video decoding via torchcodec (CPU + CUDA; CPU on Apple Silicon, transfer to MPS for inference).
 - Fixed `HOGLayer` (previously broken; now matches `skimage.feature.hog` to ~5e-8 absolute tolerance) and wired it into `extract_hog_features` so the SVM AU and SVM emotion paths actually use the corrected GPU implementation instead of the legacy CPU `skimage` round-trip.
-- New `face_model='retinaface_r34'` opt-in: 88.9% WIDERFACE Hard AP (vs img2pose's 55.5%), batched-by-default with on-device NMS, ~210 detections/sec on Apple Silicon at batch 32.
+- New `face_model='retinaface'` opt-in: 88.9% WIDERFACE Hard AP (vs img2pose's 55.5%), batched-by-default with on-device NMS, ~210 detections/sec on Apple Silicon at batch 32.
 - Batched `img2pose` forward pass: the legacy default detector now runs all frames in a batch through one network call instead of looping per-frame, with vectorized prior generation and on-device postprocessing. ~3-10x faster on multi-frame inputs.
 - Removed `nltools`, `nilearn`, `av`, `kornia`, and `onnx2torch` as runtime dependencies.
 

@@ -235,13 +235,13 @@ def get_pretrained_models(
     # Face Identity model
     if identity_model is None:
         raise ValueError(
-            f"representation_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['representation_model']]}"
+            f"identity_model must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['identity_model']]}"
         )
     else:
         identity_model = identity_model.lower()
         if identity_model not in get_names("identity_model"):
             raise ValueError(
-                f"Requested representation_model was {identity_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['identity_model']]}"
+                f"Requested identity_model was {identity_model}. Must be one of {[list(e.keys())[0] for e in PRETRAINED_MODELS['identity_model']]}"
             )
         for url in model_urls["identity_detectors"][identity_model]["urls"]:
             download_url(url, get_resource_path(), verbose=verbose)
