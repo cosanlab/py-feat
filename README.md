@@ -11,23 +11,28 @@ Py-FEAT is a suite for facial expressions (FEX) research written in Python. This
 For detailed examples, tutorials, contribution guidelines, and API please refer to the [Py-FEAT website](https://cosanlab.github.io/py-feat/). 
 
 ## Installation
-Option 1: Easy installation for quick use
-Clone the repository    
-`pip install py-feat`  
+Py-Feat requires **Python 3.11+** (3.11, 3.12, and 3.13 are tested). We recommend
+[uv](https://docs.astral.sh/uv/):
 
-Option 2: Installation in development mode
 ```
-git clone https://github.com/cosanlab/feat.git
-cd feat && python setup.py install -e . 
+uv venv --python 3.13
+uv pip install py-feat
 ```
 
-If you're running into issues on arm-based macOS (e.g. m1, m2) you should install pytables using one of the methods below *before* installing py-feat:
+Plain `pip` works too: `pip install py-feat`.
 
-`pip install git+https://github.com/PyTables/PyTables.git`  
-OR  
-`conda install pytables`
+Development install (editable):
+```
+git clone https://github.com/cosanlab/py-feat.git
+cd py-feat
+uv venv
+uv pip install -e .
+uv pip install -r requirements-dev.txt
+```
 
-Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have **experimental** support for GPUs on macOS which you can try with `device='auto'`. However, we currently advise using the default (`cpu`) on macOS until PyTorch support stabilizes.
+Py-Feat runs on CPU, NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon GPUs
+via Metal (MPS). Pass `device='auto'` (or `'cuda'` / `'mps'`) when constructing a
+`Detector`; the default is `cpu`.
 
 ## Contributing
 
