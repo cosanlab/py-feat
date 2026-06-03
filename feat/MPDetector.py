@@ -740,21 +740,18 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 emotions = torch.softmax(emotions, 1)
             elif self.info["emotion_model"] == "svm":
                 # MPDetector's landmark detector is mp_facemesh_v2, which
-                # outputs 478 mediapipe landmarks. The HOG / SVM emotion
-                # path requires 68 OpenFace-layout landmarks for align_face
-                # to work. We don't ship a 478->68 translator yet (see
-                # issue #294), so this combination is unreachable for now.
-                # Note: the legacy code at this site was equivalently
-                # broken (extract_hog_features hard-codes landmark_type=68),
-                # but produced a confusing reshape crash instead of a
-                # clean error.
+                # outputs 478 mediapipe landmarks. The HOG / SVM emotion path
+                # needs 68 OpenFace-layout landmarks at align_face quality; the
+                # DLIB68_FROM_MP478 subsample is dlib-layout but not validated
+                # for HOG alignment, and MPDetector already surfaces AUs via the
+                # blendshape->AU model and supports 3D mesh visualization, so we
+                # don't wire SVM emotion here. Use Detector(emotion_model='svm')
+                # for the HOG/SVM path, or MPDetector(emotion_model='resmasknet').
                 raise NotImplementedError(
-                    "MPDetector(emotion_model='svm') is not supported: "
-                    "the SVM emotion classifier requires 68 OpenFace-layout "
-                    "landmarks but MPDetector produces 478 MediaPipe "
-                    "landmarks. A 478->68 translator is tracked in issue "
-                    "#294. Use Detector(emotion_model='svm') instead, or "
-                    "MPDetector(emotion_model='resmasknet')."
+                    "MPDetector(emotion_model='svm') is not supported: the SVM "
+                    "emotion classifier needs 68 OpenFace-layout landmarks at "
+                    "HOG-alignment quality. Use Detector(emotion_model='svm') "
+                    "instead, or MPDetector(emotion_model='resmasknet')."
                 )
         else:
             emotions = torch.full((n_faces, 7), float("nan"))
