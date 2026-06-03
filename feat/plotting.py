@@ -887,8 +887,9 @@ def get_heat(muscle, au, log):
         num = int(100 * (1.0 / (1 + 10.0 ** -(au[unit]))))
     else:
         num = int(au[unit])
-    # set alpha (opacity)
-    alpha = au[unit] / 100
+    # set alpha (opacity); clip to [0, 1] so out-of-range AU values (e.g.
+    # intensities >100, or negative) don't make to_rgba raise.
+    alpha = float(np.clip(au[unit] / 100, 0.0, 1.0))
     # color = colors.to_hex(q[num])
     # return str(color)
     color = colors.to_rgba(q[num], alpha=alpha)
@@ -1155,11 +1156,13 @@ def draw_facepose(pose, facebox, ax):
     # Make rotation axis lines proportional to facebox size
     size = min(x2 - x1, y2 - y1) // 2
 
-    # Get pose axes
+    # Get pose axes. FEAT pose columns are RADIANS (img2pose 6DoF dofs, the
+    # pose-MLP/PnP path, and the mesh Umeyama path all emit radians; OpenFace
+    # imports are radians too), so use them directly. The old `* np.pi / 180`
+    # treated them as degrees, collapsing the rotation to ~0 and leaving the
+    # axes unrotated / misaligned with the face (#248).
     pitch, roll, yaw = pose
-    pitch = pitch * np.pi / 180
-    yaw = -(yaw * np.pi / 180)
-    roll = roll * np.pi / 180
+    yaw = -yaw
 
     # X-Axis pointing to right. drawn in red
     x1 = size * (cos(yaw) * cos(roll)) + tdx
@@ -4107,11 +4110,10 @@ def draw_plotly_pose(row, img_height, fig, line_width=2, output="dictionary"):
     # Make rotation axis lines proportional to facebox size
     size = min(x2 - x1, y2 - y1) // 2
 
-    # Get pose axes
+    # Get pose axes. Pose columns are radians (see draw_facepose) — use them
+    # directly; the old deg->rad scaling misaligned the axes (#248).
     pitch, roll, yaw = row[["Pitch", "Roll", "Yaw"]]
-    pitch = pitch * np.pi / 180
-    yaw = -(yaw * np.pi / 180)
-    roll = roll * np.pi / 180
+    yaw = -yaw
 
     # X-Axis pointing to right. drawn in red
     x1 = size * (np.cos(yaw) * np.cos(roll)) + tdx

@@ -1837,7 +1837,7 @@ class Fex(DataFrame):
                 emo_ax = f.add_subplot(spec[0, col_count])
                 col_count += 1
 
-            for _, row in plot_data.iterrows():
+            for _face_i, (_, row) in enumerate(plot_data.iterrows()):
                 # DRAW LANDMARKS ON IMAGE OR AU FACE
                 if face_ax is not None:
                     facebox = row[self.facebox_columns].values
@@ -1880,6 +1880,19 @@ class Fex(DataFrame):
                             fill=False,
                         )
                         face_ax.add_patch(rect)
+                        # Label each box with its face number (1-based, in
+                        # detection order) and identity if available, so
+                        # multi-face frames are readable (#198). Single-face
+                        # frames stay unlabelled.
+                        if len(plot_data) > 1:
+                            label = str(_face_i + 1)
+                            if "Identity" in row.index and pd.notna(row["Identity"]):
+                                label += f": {row['Identity']}"
+                            face_ax.text(
+                                facebox[0], facebox[1] - 4, label,
+                                color="cyan", fontsize=12, fontweight="bold",
+                                va="bottom", ha="left",
+                            )
 
                     if poses and not aus_mode:
                         face_ax = draw_facepose(
