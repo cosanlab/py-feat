@@ -2,7 +2,11 @@
 
 ### Py-feat is detecting multiple faces in an image with a single face
 
-This can happen sometimes particularly for videos as our current models don't use information from one frame to inform predictions for another frame. Try increasing the `face_detection_threshold` argument to `Detector.detect()` from the default of `0.5` to something like `0.8` or `0.9`. This will make the detector more conservative in what it considers a face.
+This can happen sometimes, particularly for videos, as our current models don't use information from one frame to inform predictions for another frame. Try increasing the `face_detection_threshold` argument to `Detector.detect()` from the default of `0.5` to something like `0.8` or `0.9`. This will make the detector more conservative in what it considers a face. You can also switch to the more accurate detector with `Detector(face_model='retinaface')` (88.9% vs 55.5% WIDERFACE-Hard AP), or use `Detectorv2`, which also uses RetinaFace.
+
+### In what order are detected faces returned?
+
+Within a frame, faces are returned in the order the face detector emits them — this order is **not** guaranteed to be stable across frames, and a given person will not necessarily occupy the same row position from frame to frame. To group detections by person across a video, use the identity labels (`Fex.identities`, computed via `Fex.compute_identities()`) rather than row position. If you need a deterministic per-frame order, sort each frame's rows yourself (e.g. by `FaceRectX`).
 
 ### Py-feat is treating the same person as multiple identities or treating different people as the same identity
 
