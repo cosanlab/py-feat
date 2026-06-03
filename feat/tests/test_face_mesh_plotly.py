@@ -45,7 +45,9 @@ def stub_mesh_model(monkeypatch):
         au_columns=au_cols, pose_columns=["Pitch", "Yaw", "Roll"],
         mean_aligned_mesh=mean_mesh,
     )
-    monkeypatch.setattr(plt_mod, "_PLS_V2_MESH_MODEL", model)
+    # Loader caches by version in a dict; inject under the default version
+    # ("v4") so the bare plot_face_mesh_plotly() uses this stub offline.
+    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {"v4": model})
     return model
 
 
@@ -224,9 +226,10 @@ class TestLayout:
 class TestRealModelSmoke:
     def test_renders_with_real_au_mesh_model(self, monkeypatch):
         """End-to-end: clear the cached PLS model so load_face_mesh_viz_model
-        actually fetches from HF Hub, then render a figure with a non-trivial
-        AU activation. Verifies real predict + figure construction round-trips."""
-        monkeypatch.setattr(plt_mod, "_PLS_V2_MESH_MODEL", None)
+        actually loads the real model (bundled v4, or HF Hub), then render a
+        figure with a non-trivial AU activation. Verifies real predict + figure
+        construction round-trips."""
+        monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {})
         au = np.zeros(20, dtype=np.float32)
         # AU12 (smile) — index 9 in AU_LANDMARK_MAP['Feat']
         au[9] = 3.0
