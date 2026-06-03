@@ -16,6 +16,10 @@ Highlights:
 - Batched `img2pose` forward pass: the legacy default detector now runs all frames in a batch through one network call instead of looping per-frame, with vectorized prior generation and on-device postprocessing. ~3-10x faster on multi-frame inputs.
 - Removed `nltools`, `nilearn`, `av`, `kornia`, and `onnx2torch` as runtime dependencies.
 
+## Planned removals
+
+- **`MPDetector` is likely to be removed in a future release.** The new `Detectorv2` now covers its core functionality (478-point 3D mesh, AUs, emotion, valence/arousal, gaze, head pose, identity) from a single multi-task model and is the recommended path. `MPDetector` remains available and unchanged in 0.7.
+
 ## Breaking API changes
 
 - `Detector.detect_image()` and `Detector.detect_video()` are removed; both flows go through a single `Detector.detect()` with `data_type` in `{'image', 'tensor', 'video'}`.

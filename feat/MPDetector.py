@@ -3,6 +3,11 @@ This is an experimental module written primarily by @ljchang porting over
 Tensorflow's MediaPipe face mesh model to PyTorch for better real-time
 performance. It is not currently recommended for use. See this (closed) PR
 for more discussion: https://github.com/cosanlab/py-feat/pull/228
+
+NOTE: ``MPDetector`` is likely to be removed in a future release. ``Detectorv2``
+now covers its core functionality (478-point 3D mesh, AUs, emotion, valence/
+arousal, gaze, head pose, identity) from a single multi-task model and is the
+recommended path going forward.
 """
 
 import os
