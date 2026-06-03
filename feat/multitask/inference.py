@@ -1,7 +1,8 @@
-"""Inference wrapper for the v2.3 multitask model inside py-feat.
+"""Inference wrapper for the multitask model inside py-feat.
 
-Loads the checkpoint from the HuggingFace hub (``py-feat/face_multitask_v1``),
-preprocesses RetinaFace face crops into model chips *exactly* as training did,
+Loads the checkpoint from the HuggingFace hub (``py-feat/face_multitask_v2``,
+the v2.4 model: 20 AUs / 7 emotions), preprocesses RetinaFace face crops into
+model chips *exactly* as training did,
 runs a forward pass, and decodes the raw output dict into labelled arrays.
 
 Preprocessing contract (must match training — deep/augment.py SyncedAugment,
@@ -42,10 +43,10 @@ _DLIB68_IDX = torch.tensor(DLIB68_FROM_MP478, dtype=torch.long)
 @dataclass
 class MultitaskOutput:
     """Decoded, labelled model output for a batch of N faces."""
-    au: np.ndarray              # [N, 24] probabilities in [0, 1]
-    au_names: list              # 24 AU names
-    emotion: np.ndarray         # [N, 8] softmax probabilities
-    emotion_names: list         # 8 emotion names
+    au: np.ndarray              # [N, n_au] probabilities in [0, 1] (v2.4: 20)
+    au_names: list              # n_au AU names (derived from the checkpoint)
+    emotion: np.ndarray         # [N, n_emotion] softmax probabilities (v2.4: 7)
+    emotion_names: list         # n_emotion emotion names
     valence: np.ndarray         # [N] in [-1, 1]
     arousal: np.ndarray         # [N] in [-1, 1]
     gaze: np.ndarray            # [N, 2] (yaw, pitch) radians
@@ -102,9 +103,8 @@ class MultitaskModel:
     def _resolve_weights(weights_path):
         if weights_path is not None:
             return weights_path
-        # Bridge until v2.4 weights are on HF: allow a local override via env
-        # (FEAT_MULTITASK_WEIGHTS). Lets tests / users run the v2.4 checkpoint
-        # before the HF default is bumped from face_multitask_v1.pt (v2.3).
+        # Optional local override via env (FEAT_MULTITASK_WEIGHTS) — lets users
+        # point at a local checkpoint instead of the HF default (HF_REPO below).
         import os
         env_w = os.environ.get("FEAT_MULTITASK_WEIGHTS")
         if env_w:

@@ -83,14 +83,14 @@ class Detectorv2(nn.Module):
         self._idx68 = _DLIB68_IDX.to(self.device)
         self.info = dict(
             face_model="retinaface",
-            multitask_model="face_multitask_v1",
+            multitask_model="face_multitask_v2",
             identity_model=identity_model,
             facepose_model="multitask",
             gaze_model="multitask",
         )
 
     def __repr__(self):
-        return (f"Detectorv2(face=retinaface, multitask=face_multitask_v1, "
+        return (f"Detectorv2(face=retinaface, multitask=face_multitask_v2, "
                 f"identity={self.info['identity_model']}, device={self.device})")
 
     # ------------------------------------------------------------------ #
