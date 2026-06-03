@@ -446,6 +446,7 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Change Log</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">0.7.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#planned-removals">Planned removals</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-api-changes">Breaking API changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New features</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bug-fixes">Bug fixes</a></li>
@@ -528,6 +529,12 @@ document.write(`
 <li><p>New <code class="docutils literal notranslate"><span class="pre">face_model='retinaface'</span></code> opt-in: 88.9% WIDERFACE Hard AP (vs img2pose’s 55.5%), batched-by-default with on-device NMS, ~210 detections/sec on Apple Silicon at batch 32.</p></li>
 <li><p>Batched <code class="docutils literal notranslate"><span class="pre">img2pose</span></code> forward pass: the legacy default detector now runs all frames in a batch through one network call instead of looping per-frame, with vectorized prior generation and on-device postprocessing. ~3-10x faster on multi-frame inputs.</p></li>
 <li><p>Removed <code class="docutils literal notranslate"><span class="pre">nltools</span></code>, <code class="docutils literal notranslate"><span class="pre">nilearn</span></code>, <code class="docutils literal notranslate"><span class="pre">av</span></code>, <code class="docutils literal notranslate"><span class="pre">kornia</span></code>, and <code class="docutils literal notranslate"><span class="pre">onnx2torch</span></code> as runtime dependencies.</p></li>
+</ul>
+</section>
+<section id="planned-removals">
+<h2>Planned removals<a class="headerlink" href="#planned-removals" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">MPDetector</span></code> is likely to be removed in a future release.</strong> The new <code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code> now covers its core functionality (478-point 3D mesh, AUs, emotion, valence/arousal, gaze, head pose, identity) from a single multi-task model and is the recommended path. <code class="docutils literal notranslate"><span class="pre">MPDetector</span></code> remains available and unchanged in 0.7.</p></li>
 </ul>
 </section>
 <section id="breaking-api-changes">
@@ -887,6 +894,7 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Change Log</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">0.7.0</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#planned-removals">Planned removals</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-api-changes">Breaking API changes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New features</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bug-fixes">Bug fixes</a></li>
