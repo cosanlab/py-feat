@@ -38,6 +38,34 @@ For other installation methods (e.g. Google Collab, development) see the [how to
 
 Check out our [FAQS](./faqs.md) for common issues and solutions.
 
+## Two detectors: `Detector` and `Detectorv2`
+Py-Feat ships **two** detectors. They return the same kind of `Fex` data structure, so downstream analysis and plotting code is largely shared, but they take different approaches.
+
+**`Detector` (v1)** is a *modular pipeline*. You choose the model for each stage — face detection, facial landmarks, Action Units, emotions, and identity — and you can swap any of them or turn one off (pass `None`). It produces the classic **68-point** facial landmarks and runs separate models (e.g. an XGBoost AU classifier, ResMaskNet emotions) one after another. That flexibility comes at a cost: running several models in sequence makes it **slower on a single frame**.
+
+**`Detectorv2` (v2)** runs a single **multi-task neural network** that predicts Action Units, emotions, valence/arousal, gaze, head pose, and a **478-point 3D MediaPipe FaceMesh** in *one* forward pass (plus face detection and optional identity embeddings). Because one network replaces the per-task model chain, it is **much faster — especially on single frames** — and adds continuous valence/arousal and gaze that v1 does not produce. The trade-off is that the model set is fixed: you don't pick or disable individual components.
+
+| | `Detector` (v1) | `Detectorv2` (v2) |
+|---|---|---|
+| Architecture | modular, one model per task | single multi-task network |
+| Swap / disable models | ✅ yes | ❌ fixed set |
+| Landmarks | 68-point (dlib-style) | 478-point 3D MediaPipe FaceMesh |
+| Valence/arousal, gaze | — | ✅ built-in |
+| Single-frame speed | slower | **fast** |
+| Best for | specific models, 68-pt conventions, published Cheong et al. benchmarks | speed, video, 3D mesh, valence/arousal + gaze |
+
+```python
+from feat import Detector, Detectorv2
+
+# v1 — modular: pick or disable models, 68-point landmarks
+detector = Detector(au_model="xgb", emotion_model="resmasknet", identity_model=None)
+fex = detector.detect("face.jpg", data_type="image")
+
+# v2 — one fast multi-task model, 478-point 3D mesh + valence/arousal + gaze
+detector_v2 = Detectorv2(device="cuda")        # or device="cpu" / "mps"
+fex = detector_v2.detect("face.jpg", data_type="image")
+```
+
 ## Available models
 Py-feat includes several **pre-trained** models for Action Unit detection, Emotion detection, Face detection, Facial Landmark detection, and Face/Head post estimation. 
 
