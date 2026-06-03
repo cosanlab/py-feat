@@ -1611,10 +1611,17 @@ class PLSAUMeshModel:
 # Module-level cache; the HF download is already cached by huggingface_hub.
 
 
-# v3 = Detectorv2's native 24-AU space (identity-removed fit, neutral folded
-# into intercept). v2 = the original 20-AU models. The two take different-length
-# AU vectors, so the version is explicit, not auto-detected. Detectorv2 output →
-# use model_version="v3"; Detector/v1 (20 AU) → "v2" (the default).
+# This is the 478-vertex 3D MESH viz, for the MediaPipe-mesh detectors
+# (Detectorv2, MPDetector). Detector/v1 emits 68-pt landmarks, so its AU
+# visualization uses the 68-pt au_to_landmarks model (see plot_face), NOT this.
+# v4  = Detectorv2 v2.4 20-AU space (== AU_LANDMARK_MAP["Feat"]); the DEFAULT.
+#       standard AU+pose->absolute fit on the model's own mesh, frontalized to
+#       the canonical MediaPipe pose + aspect-corrected. Bundled in
+#       feat/resources and hosted at py-feat/au_to_mesh.
+# v3  = Detectorv2 v2.3 native 24-AU space (identity-removed fit).
+# v2  = original 20-AU model.
+# Versions take different-length AU vectors, so the choice is explicit, not
+# auto-detected.
 AU_COLUMNS_V3 = [
     "AU01", "AU02", "AU04", "AU05", "AU06", "AU07", "AU09", "AU10", "AU11",
     "AU12", "AU14", "AU15", "AU16", "AU17", "AU18", "AU20", "AU23", "AU24",
@@ -1623,24 +1630,34 @@ AU_COLUMNS_V3 = [
 _PLS_MESH_MODELS = {}      # version -> PLSAUMeshModel
 
 
-def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v2"):
+def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v4"):
     """Download (cached) and wrap the AU→mesh PLS NPZ from HuggingFace Hub.
 
-    model_version: "v2" (20 AU, original) or "v3" (24 AU, Detectorv2 space)."""
+    model_version: "v4" (default; 20-AU Detectorv2 v2.4 space), "v2" (20-AU
+    original), or "v3" (24-AU Detectorv2 v2.3 space)."""
     if model_version in _PLS_MESH_MODELS:
         return _PLS_MESH_MODELS[model_version]
 
     fname = f"au_to_mesh_pls_{model_version}.npz"
-    if verbose:
-        print(f"Loading {model_version} PLS AU→mesh model from HuggingFace Hub")
-    path = hf_hub_download(
-        repo_id="py-feat/au_to_mesh", filename=fname,
-        cache_dir=get_resource_path(),
-    )
+    # v4 (Detectorv2 v2.4) ships inside the package (feat/resources) until it
+    # lands on the Hub, so load it locally without a download. v2/v3 are
+    # Hub-hosted.
+    local = os.path.join(get_resource_path(), fname)
+    if model_version == "v4" and os.path.exists(local):
+        if verbose:
+            print(f"Loading {model_version} PLS AU→mesh model from {local}")
+        path = local
+    else:
+        if verbose:
+            print(f"Loading {model_version} PLS AU→mesh model from HuggingFace Hub")
+        path = hf_hub_download(
+            repo_id="py-feat/au_to_mesh", filename=fname,
+            cache_dir=get_resource_path(),
+        )
     z = np.load(path, allow_pickle=False)
     au_columns = [str(s) for s in z["au_columns"]]
     # Guard against silent column-order drift: index i must mean the i-th AU the
-    # caller passes. v2 -> AU_LANDMARK_MAP["Feat"] (20); v3 -> AU_COLUMNS_V3 (24).
+    # caller passes. v2/v4 -> AU_LANDMARK_MAP["Feat"] (20); v3 -> AU_COLUMNS_V3 (24).
     expected = AU_COLUMNS_V3 if model_version == "v3" else AU_LANDMARK_MAP["Feat"]
     if au_columns != expected:
         raise RuntimeError(
@@ -1657,7 +1674,7 @@ def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v2"):
     return model
 
 
-def load_face_mesh_viz_model(verbose=False, model_version="v2"):
+def load_face_mesh_viz_model(verbose=False, model_version="v4"):
     """Load the AU + pose → 478-pt MediaPipe FaceMesh PLS visualization model.
 
     Returns a ``PLSAUMeshModel`` whose ``.predict(au)`` produces the 478-vertex
@@ -1667,9 +1684,13 @@ def load_face_mesh_viz_model(verbose=False, model_version="v2"):
 
     Args:
         verbose: print a status line when first downloading.
-        model_version: ``"v2"`` (20-AU, the default — for Detector/v1 output) or
-            ``"v3"`` (24-AU, trained on Detectorv2's native AU space; pass a
-            24-length AU vector from a Detectorv2 Fex).
+        model_version: ``"v4"`` (default; 20-AU Detectorv2 v2.4 space —
+            ``AU_LANDMARK_MAP['Feat']`` order, fit on the model's own mesh,
+            frontal + aspect-corrected; the 478-mesh model for ``Detectorv2``
+            and ``MPDetector``), ``"v2"`` (the original 20-AU model), or
+            ``"v3"`` (24-AU Detectorv2 v2.3 space; pass a 24-length AU vector).
+            ``Detector`` (v1) emits 68-point landmarks — visualize its AUs with
+            the 68-pt ``au_to_landmarks`` model via ``plot_face`` instead.
 
     Returns:
         PLSAUMeshModel

@@ -56,8 +56,9 @@ def stub_mesh_model(monkeypatch):
         au_columns=au_cols, pose_columns=pose_cols,
         mean_aligned_mesh=mean_mesh,
     )
-    # Loader caches by version in a dict now; inject the stub under "v2".
-    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {"v2": model})
+    # Loader caches by version in a dict now; inject the stub under the default
+    # version ("v4") so the bare load_face_mesh_viz_model() returns it offline.
+    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {"v4": model})
     return model
 
 
@@ -242,8 +243,38 @@ class TestAuColumnDriftGuard:
         monkeypatch.setattr(plt_mod, "hf_hub_download",
                             lambda **kwargs: str(bad_path))
 
+        # v2 goes through the Hub path (v4 would short-circuit to the bundled
+        # local file); the drift guard is version-agnostic.
         with pytest.raises(RuntimeError, match=r"au_columns.*drifted"):
-            plt_mod._load_pls_au_to_mesh_v2_from_hub()
+            plt_mod._load_pls_au_to_mesh_v2_from_hub(model_version="v2")
+
+
+class TestV4BundledModel:
+    """The Detectorv2 v2.4 mesh model (v4) ships in feat/resources and loads
+    offline (no HF fetch), in AU_LANDMARK_MAP['Feat'] (20-AU) order."""
+
+    def test_v4_loads_locally_and_deforms(self, monkeypatch):
+        from feat.pretrained import AU_LANDMARK_MAP
+
+        # ensure no cache hit and that we never reach the Hub for v4
+        monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {})
+        monkeypatch.setattr(plt_mod, "hf_hub_download", lambda **k: pytest.fail(
+            "v4 must load from feat/resources, not the Hub"))
+
+        m = load_face_mesh_viz_model(model_version="v4")
+        feat20 = AU_LANDMARK_MAP["Feat"]
+        assert m.au_columns == feat20
+        assert m.n_components == 20
+
+        neutral = predict_face_mesh(np.zeros(20), model=m)
+        assert neutral.shape == (478, 3)
+
+        au = np.zeros(20)
+        au[feat20.index("AU12")] = 1.0
+        disp = np.linalg.norm(predict_face_mesh(au, model=m) - neutral, axis=1)
+        # AU12 (lip-corner pull) must move a mouth-corner vertex far more than
+        # the mid-forehead vertex (10).
+        assert disp[291] > 3 * disp[10]
 
 
 @pytest.mark.network
@@ -251,7 +282,7 @@ class TestRealMeshLoad:
     def test_load_real_v2_model(self, monkeypatch):
         # Force a fresh load by clearing the module-level cache
         monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {})
-        m = load_face_mesh_viz_model()
+        m = load_face_mesh_viz_model(model_version="v2")
         assert isinstance(m, PLSAUMeshModel)
         assert m.n_components == 20
         assert m.mean_aligned_mesh.shape == (478, 3)
