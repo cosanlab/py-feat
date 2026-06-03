@@ -339,3 +339,61 @@ def test_fex_preserves_model_identity_metadata():
     sliced = fex.iloc[:0].copy()
     assert sliced.face_model == "img2pose"
     assert sliced.au_model == "xgb"
+
+
+def test_append_concatenates_features():
+    """Regression: Fex.append must use pd.concat, not the removed
+    DataFrame.append (gone in pandas 2.0). Also guards the bare-DataFrame
+    assignment when only the appended Fex carries features."""
+    df = pd.DataFrame({"AU01": [0.1, 0.2], "AU02": [0.3, 0.4]})
+    feats = pd.DataFrame({"f0": [1.0, 2.0]})
+    a = Fex(df.copy(), sampling_freq=30, au_columns=["AU01", "AU02"],
+            features=feats.copy())
+    b = Fex(df.copy(), sampling_freq=30, au_columns=["AU01", "AU02"],
+            features=feats.copy())
+
+    out = a.append(b)                       # axis=0
+    assert isinstance(out, Fex)
+    assert len(out) == 4
+    assert out.features is not None and out.features.shape == (4, 1)
+
+    # only the appended Fex has features: out must stay the concatenated Fex
+    # (the bug did `out = data.features`, replacing it with a bare DataFrame)
+    c = Fex(df.copy(), sampling_freq=30, au_columns=["AU01", "AU02"])
+    out2 = c.append(b)
+    assert isinstance(out2, Fex)
+    assert len(out2) == 4
+    assert out2.features is not None
+
+
+def test_baseline_db_branch_applied():
+    """Regression: normalize='db' must return the dB transform, not be
+    overwritten by the plain-subtraction `else` branch."""
+    df = pd.DataFrame({"A": [2.0, 4.0, 6.0], "B": [3.0, 5.0, 7.0]})
+    dat = Fex(df, sampling_freq=30, au_columns=["A", "B"])
+    base = dat.mean() * 0 + 1.0                      # constant baseline of 1.0
+    db = dat.baseline(baseline=base, normalize="db", ignore_sessions=True)
+    plain = dat.baseline(baseline=base, normalize=None, ignore_sessions=True)
+    expected = 10 * np.log10(df - 1.0) / 1.0
+    assert np.allclose(db.values, expected.values)
+    assert not np.allclose(db.values, plain.values)
+
+
+def test_baseline_db_per_session_no_double_append():
+    """Regression: the per-session 'db' path must not also run the `else`
+    subtraction (which doubled the row count)."""
+    df = pd.DataFrame({"A": [2.0, 4.0, 6.0, 8.0], "B": [3.0, 5.0, 7.0, 9.0]})
+    dat = Fex(df, sampling_freq=30, sessions=np.array([0, 0, 1, 1]),
+              au_columns=["A", "B"])
+    out = dat.baseline(baseline="mean", normalize="db")    # per-session branch
+    assert len(out) == len(dat)
+
+
+def test_clean_preserves_metadata():
+    """Regression: Fex.clean() must __finalize__ so column metadata survives."""
+    df = pd.DataFrame({"AU01": np.linspace(0, 1, 50), "AU02": np.linspace(1, 0, 50)})
+    dat = Fex(df, sampling_freq=30, au_columns=["AU01", "AU02"])
+    cleaned = dat.clean()
+    assert isinstance(cleaned, Fex)
+    assert cleaned.au_columns == ["AU01", "AU02"]
+    assert cleaned.sampling_freq == dat.sampling_freq

@@ -959,8 +959,8 @@ class Fex(DataFrame):
                 if self.features is not None:
                     if data.features is not None:
                         if self.features.shape[1] == data.features.shape[1]:
-                            out.features = self.features.append(
-                                data.features, ignore_index=True
+                            out.features = pd.concat(
+                                [self.features, data.features], ignore_index=True
                             )
                         else:
                             raise ValueError(
@@ -969,7 +969,7 @@ class Fex(DataFrame):
                     else:
                         out.features = self.features
                 elif data.features is not None:
-                    out = data.features
+                    out.features = data.features
             elif axis == 1:
                 out = self.__class__(
                     pd.concat([self, data], axis=axis), sampling_freq=self.sampling_freq
@@ -987,7 +987,9 @@ class Fex(DataFrame):
                 if self.features is not None:
                     out.features = self.features
                     if data.features is not None:
-                        out.features.append(data.features, axis=1, ignore_index=True)
+                        out.features = pd.concat(
+                            [self.features, data.features], axis=1
+                        )
                 elif data.features is not None:
                     out.features = data.features
             else:
@@ -1242,7 +1244,7 @@ class Fex(DataFrame):
 
             if normalize == "db":
                 out = 10 * np.log10(out - baseline_values) / baseline_values
-            if normalize == "pct":
+            elif normalize == "pct":
                 out = 100 * (out - baseline_values) / baseline_values
             else:
                 out = out - baseline_values
@@ -1271,7 +1273,7 @@ class Fex(DataFrame):
                         10 * np.log10(v - baseline_values) / baseline_values,
                         session_id=k,
                     )
-                if normalize == "pct":
+                elif normalize == "pct":
                     out = out.append(
                         100 * (v - baseline_values) / baseline_values, session_id=k
                     )
@@ -1329,7 +1331,7 @@ class Fex(DataFrame):
             sampling_freq=self.sampling_freq,
             features=self.features,
             sessions=self.sessions,
-        )
+        ).__finalize__(self)
 
     def decompose(self, algorithm="pca", axis=1, n_components=None, *args, **kwargs):
         """Decompose Fex instance
