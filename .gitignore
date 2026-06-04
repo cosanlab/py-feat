@@ -92,6 +92,11 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# marimo-book build outputs (the committed _rendered/ artifact is NOT ignored)
+docs/_site/
+docs/_site_src/
+docs/.marimo_book_cache/
+
 # PyBuilder
 target/
 

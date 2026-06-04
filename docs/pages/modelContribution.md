@@ -26,9 +26,8 @@ We benchmark each model on a standard datasets used in the field. We employ an h
 
 Adding a new model to the Py-FEAT toolbox is easy if you are familiar with Python, Github, package development, and follow the steps below.
 
-```{note}
-It can be helpful to install Py-Feat in development mode so that changes to source files are immediately reflected in any scripts or notebooks that import Py-Feat. To do so, after cloning the code base, install Py-Feat using: `pip install -e .` For more details see the [general contribution guidelines](./contribute.md)
-```
+!!! note
+    It can be helpful to install Py-Feat in development mode so that changes to source files are immediately reflected in any scripts or notebooks that import Py-Feat. To do so, after cloning the code base, install Py-Feat using: `pip install -e .` For more details see the [general contribution guidelines](./contribute.md)
 
 Pre-trained models in Py-Feat are organized into sub-folders in the source code based on the detector type:
 
@@ -61,8 +60,7 @@ feat/
 6. Follow the [general contribution guidelines](./contribute.md) to add tests and format your code
 7. When your tests pass create a pull-request against the `master`/`main` branch on github!
 
-```{note}
-If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don't require you to restart the kernel:   
-`%load_ext autoreload`  
-`%autoreload 2`
-```
+!!! note
+    If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don't require you to restart the kernel:   
+    `%load_ext autoreload`  
+    `%autoreload 2`
