@@ -25,6 +25,10 @@ Usage:
     # Custom markdown path
     python scripts/bench_detectors.py --markdown docs/benchmarks/my-run.md
 
+    # Emit a structured JSON record (for the live-benchmarks data pipeline)
+    python scripts/bench_detectors.py --json
+    python scripts/bench_detectors.py --json results/run.json
+
 What it covers (all three configurations process the same input with
 full-pipeline emotion + identity enabled, matching default user setup):
     1. Detector(face_model='img2pose', au_model='xgb',
@@ -64,9 +68,11 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import json
 import os
 import platform
 import subprocess
+import sys
 import time
 import warnings
 from pathlib import Path
@@ -479,6 +485,67 @@ def write_markdown(
 
 
 # ---------------------------------------------------------------------------
+# JSON rendering — structured records for the live-benchmarks data pipeline
+# ---------------------------------------------------------------------------
+
+
+def _run_metadata(args, all_devices) -> dict:
+    """Run-level provenance shared by every record in a JSON report.
+
+    Host/machine/cpu_count are kept as separate fields (not a single
+    pre-formatted string) so the benchmarks dashboard can group throughput
+    by hardware — fps is only comparable within a fixed (host, gpu) pair.
+    """
+    return {
+        "date": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
+        "feat_version": _feat_version,
+        "git_commit": _git_commit_short(),
+        "host": platform.node(),
+        "machine": platform.machine(),
+        "cpu_count": os.cpu_count(),
+        "python": ".".join(str(x) for x in sys.version_info[:3]),
+        "pytorch": torch.__version__,
+        "gpu": _gpu_summary(),
+        "omp_num_threads": os.environ.get("OMP_NUM_THREADS", "unset"),
+        "devices_swept": list(all_devices),
+        "batch_sizes": list(args.batches),
+        "workers": list(args.workers),
+    }
+
+
+def write_json(rows: list, out_path: Path, args, all_devices) -> None:
+    """Render the run as a single JSON file: {schema_version, metadata, records}.
+
+    One record per measured (section, config, device, batch, workers) cell.
+    ``schema_version`` is explicit because this feeds an append-only results
+    store; readers can dispatch on it as the schema evolves.
+    """
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": 1,
+        "metadata": _run_metadata(args, all_devices),
+        "records": [
+            {
+                "section_kind": r.section_kind,
+                "section_label": r.section_label,
+                "config": r.cfg_label,
+                "device": r.device,
+                "batch": r.batch,
+                "workers": r.workers,
+                "sec": round(r.sec, 6),
+                "n_rows": r.n_rows,
+                "n_units": r.n_units,
+                "per_unit_ms": round(r.per_unit_ms, 4),
+                "fps": round(r.fps, 4),
+            }
+            for r in rows
+        ],
+    }
+    out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"\n# JSON report written to {out_path}", flush=True)
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -550,6 +617,18 @@ def _parse_args() -> argparse.Namespace:
             "Write a markdown report. Pass with no argument for the default "
             "path (`docs/benchmarks/<YYYY-MM-DD>-<git-sha>.md`), or supply "
             "an explicit path."
+        ),
+    )
+    p.add_argument(
+        "--json",
+        nargs="?",
+        const="__default__",
+        default=None,
+        help=(
+            "Write a structured JSON report for the live-benchmarks data "
+            "pipeline. Pass with no argument for the default path "
+            "(`docs/benchmarks/<YYYY-MM-DD>-<git-sha>.json`), or supply an "
+            "explicit path. Can be combined with --markdown."
         ),
     )
     return p.parse_args()
@@ -665,6 +744,16 @@ def main() -> None:
         else:
             out_path = Path(args.markdown)
         write_markdown(rows, out_path, args, all_devices, has_workers_axis)
+
+    # Optionally render a structured JSON report (live-benchmarks pipeline).
+    if args.json is not None:
+        if args.json == "__default__":
+            sha = _git_commit_short()
+            today = datetime.date.today().isoformat()
+            out_path = Path("docs/benchmarks") / f"{today}-{sha}.json"
+        else:
+            out_path = Path(args.json)
+        write_json(rows, out_path, args, all_devices)
 
 
 if __name__ == "__main__":
