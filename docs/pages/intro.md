@@ -34,9 +34,9 @@ You can easily install the latest stable version from PyPi:
 pip install py-feat
 ```
 
-For other installation methods (e.g. Google Collab, development) see the [how to install page](./installation.md)
+For other installation methods (e.g. Google Collab, development) see the [how to install page](pages/installation.md)
 
-Check out our [FAQS](./faqs.md) for common issues and solutions.
+Check out our [FAQS](pages/faqs.md) for common issues and solutions.
 
 ## Two detectors: `Detector` and `Detectorv2`
 Py-Feat ships **two** detectors. They return the same kind of `Fex` data structure, so downstream analysis and plotting code is largely shared, but they take different approaches.
@@ -69,7 +69,7 @@ fex = detector_v2.detect("face.jpg", data_type="image")
 ## Available models
 Py-feat includes several **pre-trained** models for Action Unit detection, Emotion detection, Face detection, Facial Landmark detection, and Face/Head post estimation. 
 
-You can check out the full list on the [pre-trained models page](./models.md).
+You can check out the full list on the [pre-trained models page](pages/models.md).
 
 ## Contributions 
 We are excited for people to add new models and features to Py-Feat. Please see the [contribution guides](https://cosanlab.github.io/feat/content/contribute.html). 

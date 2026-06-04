@@ -27,7 +27,7 @@ detector
 # detector = Detector(emotion_model='svm')
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">/tmp/claude-1000/marimo_2444147/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
+<pre class="marimo-book-output-text marimo-stream-stderr">/tmp/claude-1000/marimo_2445846/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
   detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
 </pre>
 
@@ -1309,7 +1309,7 @@ single_face_prediction
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]
   0%|          | 0/1 [00:00&lt;?, ?it/s][A  0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:01&lt;00:00,  1.26s/it]100%|██████████| 1/1 [00:01&lt;00:00,  1.26s/it]
+100%|██████████| 1/1 [00:01&lt;00:00,  1.21s/it]100%|██████████| 1/1 [00:01&lt;00:00,  1.22s/it]
 </pre>
 
 <div class="marimo-book-output">
@@ -1410,7 +1410,7 @@ fex.head()
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]
   0%|          | 0/1 [00:00&lt;?, ?it/s][A  0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  7.03it/s]100%|██████████| 1/1 [00:00&lt;00:00,  7.02it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 17.97it/s]
 /home/ljchang/Github/py-feat/feat/data.py:1997: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
   target[&quot;Identity&quot;] = cluster_identities(
 </pre>
@@ -1442,7 +1442,7 @@ subprocess.run('head detections.csv', shell=True)
 _figs = single_face_prediction.plot_detections(poses=True)
 ```
 
-By default `.plot_detections()` will overlay facial lines on top of the input image. However, it's also possible to visualize a face using Py-Feat's standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting `faces='aus'` instead of the default `faces='landmarks'`. For more details about this kind of visualization see the [visualizing facial expressions](./04_plotting.ipynb) and the [creating an AU visualization model](../extra_tutorials/06_trainAUvisModel.ipynb) tutorials:
+By default `.plot_detections()` will overlay facial lines on top of the input image. However, it's also possible to visualize a face using Py-Feat's standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting `faces='aus'` instead of the default `faces='landmarks'`. For more details about this kind of visualization see the [visualizing facial expressions](https://github.com/cosanlab/py-feat/blob/main/docs/basic_tutorials/03_plotting.ipynb) and the [creating an AU visualization model](https://github.com/cosanlab/py-feat/blob/main/docs/extra_tutorials/06_trainAUvisModel.ipynb) tutorials:
 
 ```python
 _figs = single_face_prediction.plot_detections(faces='aus', muscles=True)
@@ -1504,7 +1504,7 @@ multi_face_prediction
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]
   0%|          | 0/1 [00:00&lt;?, ?it/s][A  0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  4.18it/s]100%|██████████| 1/1 [00:00&lt;00:00,  4.17it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  6.71it/s]100%|██████████| 1/1 [00:00&lt;00:00,  6.69it/s]
 </pre>
 
 <div class="marimo-book-output">
@@ -1536,7 +1536,7 @@ mixed_prediction
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/2 [00:00&lt;?, ?it/s]
   0%|          | 0/2 [00:00&lt;?, ?it/s][A  0%|          | 0/2 [00:00&lt;?, ?it/s]
-100%|██████████| 2/2 [00:00&lt;00:00, 11.69it/s]100%|██████████| 2/2 [00:00&lt;00:00, 11.63it/s]
+100%|██████████| 2/2 [00:00&lt;00:00, 14.83it/s]100%|██████████| 2/2 [00:00&lt;00:00, 14.78it/s]
 </pre>
 
 <div class="marimo-book-output">

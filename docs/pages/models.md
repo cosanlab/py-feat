@@ -3,7 +3,7 @@
 Below is a list of detectors included in Py-Feat and ready to use. The model names are in the titles followed by the reference publications. Bolded models are defaults.
 
 !!! note
-    The face / landmark / AU / emotion / identity models in the sections below are the *swappable components of the modular* **`Detector` (v1)**. **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [two-detector overview](./intro.md#two-detectors-detector-and-detectorv2).
+    The face / landmark / AU / emotion / identity models in the sections below are the *swappable components of the modular* **`Detector` (v1)**. **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [two-detector overview](/#two-detectors-detector-and-detectorv2).
 
 You can specify any of these models for use in the `Detector` class by passing in the name as a string, e.g.
 

@@ -26,9 +26,9 @@ Swept axes: `device × batch_size × num_workers`.
 
 | date | run |
 |---|---|
-| 2026-05-14 | [2026-05-14-c716340.md](2026-05-14-c716340.md) |
-| 2026-05-04 | [2026-05-04-f44ccb1.md](2026-05-04-f44ccb1.md) |
-| 2026-05-03 | [2026-05-03-d71c0d7.md](2026-05-03-d71c0d7.md) |
-| 2026-05-03 | [2026-05-03-864962c.md](2026-05-03-864962c.md) |
-| 2026-05-03 | [2026-05-03-437b651.md](2026-05-03-437b651.md) |
-| 2026-05-03 | [2026-05-03-09980f9.md](2026-05-03-09980f9.md) |
+| 2026-05-14 | [2026-05-14-c716340.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-14-c716340.md) |
+| 2026-05-04 | [2026-05-04-f44ccb1.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-04-f44ccb1.md) |
+| 2026-05-03 | [2026-05-03-d71c0d7.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-d71c0d7.md) |
+| 2026-05-03 | [2026-05-03-864962c.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-864962c.md) |
+| 2026-05-03 | [2026-05-03-437b651.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-437b651.md) |
+| 2026-05-03 | [2026-05-03-09980f9.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-09980f9.md) |

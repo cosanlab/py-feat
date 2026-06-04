@@ -7,8 +7,18 @@ app = marimo.App()
 @app.cell
 def _():
     import marimo as mo
+    import torch
 
-    return (mo,)
+    # Use the best available device: CUDA (NVIDIA) > MPS (Apple Silicon) > CPU.
+    # Pass this to Detector(device=...) so the tutorial uses your GPU when present.
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
+    return device, mo
 
 
 @app.cell(hide_code=True)
@@ -151,12 +161,16 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(device):
+    import os as _os
     from feat.detector import Detector
+    from feat.utils.io import get_test_data_path as _gtdp
 
     # Run the Detector on a real image. gaze_model='l2cs' is the default in v0.7.
-    gaze_detector = Detector(au_model="xgb", emotion_model=None, identity_model=None)
-    fex_real = gaze_detector.detect(["../../feat/tests/data/multi_face.jpg"])
+    gaze_detector = Detector(
+        au_model="xgb", emotion_model=None, identity_model=None, device=device
+    )
+    fex_real = gaze_detector.detect([_os.path.join(_gtdp(), "multi_face.jpg")])
 
     # fex_real has gaze_pitch / gaze_yaw columns (radians) for each detected face.
     print("gaze columns:", fex_real.gaze_columns)
@@ -445,10 +459,14 @@ def _(mo):
 
 
 @app.cell
-def _(Detector, np, plot_face_mesh, plt):
+def _(Detector, device, np, plot_face_mesh, plt):
+    import os as _os
     from feat.plotting import predict_mesh_from_dlib68
-    detector = Detector(au_model='xgb', emotion_model=None, identity_model=None)
-    fex = detector.detect(['../../feat/tests/data/single_face.jpg'])
+    from feat.utils.io import get_test_data_path as _gtdp
+    detector = Detector(
+        au_model='xgb', emotion_model=None, identity_model=None, device=device
+    )
+    fex = detector.detect([_os.path.join(_gtdp(), "single_face.jpg")])
     x, y = fex.landmarks_dlib68_xy()
     landmarks_68 = np.column_stack([x[0], y[0]])
     mesh = predict_mesh_from_dlib68(landmarks_68)

@@ -60,8 +60,10 @@ toc:
         mode: cached
       - file: basic_tutorials/02_detector_vids.py
         mode: cached
-  # 03/04 deferred: 03 uses relative ../../ data paths + multi-param cells;
-  # 04 reads example CSVs not bundled in the repo. Re-enable once fixed.
+  # 03/04 deferred. 03 (device + data-path fixes done) still needs each plotting
+  # cell to end with the figure as its last expression — marimo, unlike Jupyter,
+  # does not auto-display matplotlib — plus an animation cell to handle. 04
+  # downloads 20 OSF videos / reads per-video CSVs absent at build time.
   #     - file: basic_tutorials/03_plotting.py
   #       mode: cached
   #     - file: basic_tutorials/04_fex_analysis.py

@@ -4,7 +4,7 @@ Tracks per-release accuracy of py-feat detectors against held-out labeled datase
 
 ## Latest
 
-See [2026-05-15-67cd7d9-accuracy.md](2026-05-15-67cd7d9-accuracy.md).
+See [2026-05-15-67cd7d9-accuracy.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-15-67cd7d9-accuracy.md).
 
 ## Methodology
 
@@ -17,4 +17,4 @@ See [2026-05-15-67cd7d9-accuracy.md](2026-05-15-67cd7d9-accuracy.md).
 
 | date | run |
 |---|---|
-| 2026-05-15-67cd7d9 | [2026-05-15-67cd7d9-accuracy.md](2026-05-15-67cd7d9-accuracy.md) |
+| 2026-05-15-67cd7d9 | [2026-05-15-67cd7d9-accuracy.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-15-67cd7d9-accuracy.md) |

@@ -55,7 +55,7 @@ feat/
         
             return [array with probabilities for 7 emotions]
     ```
-4. In `feat/pretrained.py`, add your model to the `PRETRAINED_MODELS` dictionary. If you're adding a new AU detector and it only supports specific AUs make sure to also add it to the `AU_LANDMARK_MAP`. You may also want to train a new `PLS` visualization model and save it as `.h5` file. See [this tutorial](../extra_tutorials/trainAUvisModel.ipynb) for details.
+4. In `feat/pretrained.py`, add your model to the `PRETRAINED_MODELS` dictionary. If you're adding a new AU detector and it only supports specific AUs make sure to also add it to the `AU_LANDMARK_MAP`. You may also want to train a new `PLS` visualization model and save it as `.h5` file. See [this tutorial](https://github.com/cosanlab/py-feat/blob/main/docs/extra_tutorials/06_trainAUvisModel.ipynb) for details.
 5. Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to `feat/resources/model_list.json`. 
 6. Follow the [general contribution guidelines](./contribute.md) to add tests and format your code
 7. When your tests pass create a pull-request against the `master`/`main` branch on github!
