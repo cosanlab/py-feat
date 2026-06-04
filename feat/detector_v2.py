@@ -141,6 +141,13 @@ class Detectorv2(nn.Module):
             torch.arange(B, device=self.device), n_per_frame_t
         )
 
+        # Temporal bbox stabilization (EMA) for streaming: smooth the box
+        # BEFORE the crop so the chip — and therefore the mesh, AUs, gaze
+        # and pose predicted from it — stop jittering on a still face.
+        # Off unless `bbox_smoothing_alpha` is set by the caller (e.g. a
+        # live stream); batch/offline runs leave it disabled.
+        all_bboxes = self._smooth_bboxes(all_bboxes)
+
         bboxes_for_extract = torch.nan_to_num(all_bboxes, nan=0.0)
         all_faces, all_new_bboxes = extract_face_from_bbox_torch(
             frames_unit, bboxes_for_extract,
@@ -171,6 +178,51 @@ class Detectorv2(nn.Module):
             })
             cursor += n
         return results
+
+    def _smooth_bboxes(self, all_bboxes):
+        """Exponential-moving-average smoothing of the RetinaFace boxes
+        across calls, to stabilize a live stream's crop (and thus the
+        mesh/AUs/gaze/pose) on a still face.
+
+        Disabled unless ``self.bbox_smoothing_alpha`` is set > 0 by the
+        caller. Faces are matched frame-to-frame by box-center proximity;
+        a new/unmatched face (or a no-detection NaN placeholder) passes
+        through unsmoothed. Assumes a streaming batch of one image.
+        ``alpha`` is the weight on the *current* frame (lower = smoother
+        but laggier).
+        """
+        import numpy as np
+
+        alpha = float(getattr(self, "bbox_smoothing_alpha", 0.0) or 0.0)
+        if alpha <= 0.0:
+            self._prev_boxes = None
+            return all_bboxes
+
+        cur = all_bboxes.detach().to("cpu", torch.float32).numpy()
+        out = cur.copy()
+        valid = np.isfinite(cur).all(axis=1)
+        prev = getattr(self, "_prev_boxes", None)
+        if prev is not None and len(prev):
+            prev_c = (prev[:, :2] + prev[:, 2:]) / 2.0
+            cur_c = (cur[:, :2] + cur[:, 2:]) / 2.0
+            used: set = set()
+            for i in range(cur.shape[0]):
+                if not valid[i]:
+                    continue
+                dist = np.linalg.norm(prev_c - cur_c[i], axis=1)
+                for j in used:
+                    dist[j] = np.inf
+                if dist.size == 0:
+                    continue
+                j = int(np.argmin(dist))
+                width = float(cur[i, 2] - cur[i, 0])
+                # Only fuse when the nearest previous box is plausibly the
+                # same face (within half its width) — else it's a new face.
+                if np.isfinite(dist[j]) and dist[j] < 0.5 * max(width, 1.0):
+                    used.add(j)
+                    out[i] = alpha * cur[i] + (1.0 - alpha) * prev[j]
+        self._prev_boxes = out[valid].copy() if valid.any() else None
+        return torch.from_numpy(out).to(all_bboxes.device)
 
     # ------------------------------------------------------------------ #
     @torch.inference_mode()
