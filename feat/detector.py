@@ -343,7 +343,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     cache_dir=get_resource_path(),
                 )
                 emotion_checkpoint = torch.load(
-                    emotion_model_file, map_location=device, weights_only=True
+                    emotion_model_file, map_location=self.device, weights_only=True
                 )["net"]
                 self.emotion_detector.load_state_dict(emotion_checkpoint)
                 self.emotion_detector.eval()
@@ -395,7 +395,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 )
                 self.identity_detector.load_state_dict(
                     torch.load(
-                        identity_model_file, map_location=device, weights_only=True
+                        identity_model_file, map_location=self.device, weights_only=True
                     )
                 )
                 self.identity_detector.eval()
