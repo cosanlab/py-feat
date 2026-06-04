@@ -54,10 +54,10 @@ toc:
       - file: pages/faqs.md
 
   # Tutorials — added incrementally as each notebook is rendered to _rendered/.
-  # - section: Tutorials
-  #   children:
-  #     - file: basic_tutorials/01_basics.py
-  #       mode: cached
+  - section: Tutorials
+    children:
+      - file: basic_tutorials/01_basics.py
+        mode: cached
   #     - file: basic_tutorials/02_detector_vids.py
   #       mode: cached
   #     - file: basic_tutorials/03_plotting.py
