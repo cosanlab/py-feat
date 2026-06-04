@@ -129,6 +129,49 @@ def test_arcface_weights_loaded_not_random():
     assert np.abs(ea).mean() > 1e-3
 
 
+def test_crop_faces_from_boxes_shape_and_forward(detector, single_face_img):
+    """crop_faces_from_boxes mirrors detect_faces' structure without
+    RetinaFace, and forward() consumes it to a populated mesh."""
+    from torchvision.io import read_image
+
+    # Get a real face box from a normal detect, then re-crop from it.
+    fex = detector.detect(single_face_img, progress_bar=False)
+    x = float(fex["FaceRectX"].iloc[0])
+    y = float(fex["FaceRectY"].iloc[0])
+    w = float(fex["FaceRectWidth"].iloc[0])
+    h = float(fex["FaceRectHeight"].iloc[0])
+    box = torch.tensor([[x, y, x + w, y + h]], dtype=torch.float32)
+
+    img_t = read_image(single_face_img).unsqueeze(0).float()  # [1,3,H,W], 0-255
+
+    faces_data = detector.crop_faces_from_boxes(img_t, box)
+    assert isinstance(faces_data, list) and len(faces_data) == 1
+    d = faces_data[0]
+    assert set(d) == {"face_id", "faces", "boxes", "new_boxes", "scores", "image_size"}
+    assert d["faces"].shape == (1, 3, detector.face_size, detector.face_size)
+    assert d["new_boxes"].shape == (1, 4)
+    assert d["scores"].shape == (1,)
+    assert float(d["scores"][0]) == 1.0  # placeholder confidence
+
+    batch_data = {
+        "Image": img_t,
+        "Scale": torch.ones(1),
+        "Padding": {"Left": torch.zeros(1), "Top": torch.zeros(1),
+                    "Right": torch.zeros(1), "Bottom": torch.zeros(1)},
+        "FileName": ["x"],
+    }
+    df = detector.forward(faces_data, batch_data)
+    mesh_cols = [c for c in df.columns if c.startswith("mesh_x_")]
+    assert len(mesh_cols) == 478
+    assert df["mesh_x_0"].notna().all()
+
+    # Box came from detect(), so the re-cropped mesh should land on the same
+    # face: centroid within a few px of the detect() mesh centroid.
+    cx_detect = fex[[f"mesh_x_{i}" for i in range(478)]].iloc[0].to_numpy(float).mean()
+    cx_track = df[[f"mesh_x_{i}" for i in range(478)]].iloc[0].to_numpy(float).mean()
+    assert abs(cx_detect - cx_track) < 15.0
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(),
                     reason="bf16 autocast default is CUDA-only")
 def test_bf16_matches_fp32(single_face_img):

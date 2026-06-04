@@ -179,6 +179,95 @@ class Detectorv2(nn.Module):
             cursor += n
         return results
 
+    def crop_faces_from_boxes(self, images, boxes):
+        """Crop faces at caller-supplied boxes WITHOUT running RetinaFace.
+
+        A streaming counterpart to :meth:`detect_faces`: when the caller
+        already knows where each face is (e.g. a tracker deriving a ROI
+        from the previous frame's mesh), this skips the expensive
+        RetinaFace pass and only does the 256-chip crop, returning the
+        SAME per-frame ``faces_data`` structure ``forward`` consumes.
+        ``scores`` are 1.0 placeholders (no detection confidence exists).
+
+        Args:
+            images: ``[B,C,H,W]`` tensor (or anything
+                ``convert_image_to_tensor`` accepts) of source frames,
+                pixel range 0-255 — same as :meth:`detect_faces` expects.
+            boxes: a single ``[N,4]`` tensor (one-frame batch, ``B==1``)
+                or a length-``B`` list of ``[Ni,4]`` tensors, each in
+                ``[x1,y1,x2,y2]`` source-frame pixel coords.
+                Must be torch tensors (numpy arrays are not accepted).
+
+        Returns:
+            list of ``B`` per-frame dicts keyed
+            ``face_id/faces/boxes/new_boxes/scores/image_size`` —
+            identical in shape to :meth:`detect_faces` output.
+        """
+        frames = convert_image_to_tensor(images)
+        frames_px = frames.to(self.device, non_blocking=True).float()
+        frames_unit = frames_px / 255.0
+        B = frames_unit.shape[0]
+
+        if torch.is_tensor(boxes):
+            boxes = [boxes]
+        if len(boxes) != B:
+            raise ValueError(
+                f"crop_faces_from_boxes: {len(boxes)} box-lists for {B} frames"
+            )
+
+        per_frame = []
+        for b in boxes:
+            b = b.to(self.device, torch.float32)
+            if b.ndim == 1:
+                b = b.reshape(1, 4)
+            if b.shape[-1] != 4:
+                raise ValueError(
+                    f"crop_faces_from_boxes: each box tensor must be [N,4], got {tuple(b.shape)}"
+                )
+            per_frame.append(b)
+        n_per_frame = [int(b.shape[0]) for b in per_frame]
+        all_boxes = torch.cat(per_frame, dim=0)
+        image_size = tuple(frames_unit.shape[-2:])
+
+        if all_boxes.shape[0] == 0:
+            # Defensive: no faces to crop on any frame.
+            empty = torch.empty((0,), device=self.device)
+            return [{
+                "face_id": i, "faces": torch.empty((0, 3, self.face_size,
+                                                    self.face_size), device=self.device),
+                "boxes": torch.empty((0, 4), device=self.device),
+                "new_boxes": torch.empty((0, 4), device=self.device),
+                "scores": empty, "image_size": image_size,
+            } for i in range(B)]
+
+        n_per_frame_t = torch.tensor(n_per_frame, device=self.device)
+        all_frame_idx = torch.repeat_interleave(
+            torch.arange(B, device=self.device), n_per_frame_t
+        )
+
+        all_faces, all_new_bboxes = extract_face_from_bbox_torch(
+            frames_unit, all_boxes,
+            face_size=self.face_size, expand_bbox=EXPAND_BBOX,
+            frame_idx=all_frame_idx,
+        )
+        all_new_bboxes = all_new_bboxes.to(torch.float32)
+        all_scores = torch.ones(all_boxes.shape[0], device=self.device)
+
+        results, cursor = [], 0
+        for i in range(B):
+            n = n_per_frame[i]
+            sl = slice(cursor, cursor + n)
+            results.append({
+                "face_id": i,
+                "faces": all_faces[sl],
+                "boxes": all_boxes[sl],
+                "new_boxes": all_new_bboxes[sl],
+                "scores": all_scores[sl],
+                "image_size": image_size,
+            })
+            cursor += n
+        return results
+
     def _smooth_bboxes(self, all_bboxes):
         """Exponential-moving-average smoothing of the RetinaFace boxes
         across calls, to stabilize a live stream's crop (and thus the
