@@ -3,8 +3,14 @@
     "basic_tutorials/01_basics.py": {
       "body_path": "basic_tutorials/01_basics.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-04T22:53:29+00:00",
-      "src_hash": "0817b92d14c1d4aa47951d0b00594d79678d74d6408d8a98a9fe2a7bed891156"
+      "rendered_at": "2026-06-04T23:26:11+00:00",
+      "src_hash": "b65600814a3ba32132b8d3e869e381cc1a2666a72082848616415fd767059fc4"
+    },
+    "basic_tutorials/02_detector_vids.py": {
+      "body_path": "basic_tutorials/02_detector_vids.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-04T23:26:26+00:00",
+      "src_hash": "45bf8740cbb98251aa76eb14b31eef771d5688d9b12433f4fc23467501ea81b5"
     }
   },
   "schema_version": 1

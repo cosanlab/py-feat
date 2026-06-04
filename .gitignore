@@ -150,3 +150,6 @@ feat/resources/*.npz
 # under models--py-feat--* and are lazy-downloaded; never track loose copies).
 feat/resources/*.h5
 feat/resources/*.joblib
+
+# marimo runtime cache (created next to notebooks during render)
+**/__marimo__/

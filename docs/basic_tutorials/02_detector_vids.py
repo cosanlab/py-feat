@@ -7,8 +7,18 @@ app = marimo.App()
 @app.cell
 def _():
     import marimo as mo
+    import torch
 
-    return (mo,)
+    # Use the best available device: CUDA (NVIDIA) > MPS (Apple Silicon) > CPU.
+    # Pass this to Detector(device=...) so the tutorial uses your GPU when present.
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
+    return device, mo
 
 
 @app.cell(hide_code=True)
@@ -41,10 +51,10 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(device):
     from feat import Detector
 
-    detector = Detector()
+    detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
 
     detector
     return (detector,)
@@ -68,10 +78,9 @@ def _():
     test_data_dir = get_test_data_path()
     test_video_path = os.path.join(test_data_dir, "WolfgangLanger_Pexels.mp4")
 
-    # Show video
-    from IPython.core.display import Video
-
-    Video(test_video_path, embed=False)
+    # (The input video is processed below; an inline preview is omitted in the
+    # static docs. Download the notebook or open it in molab to view it.)
+    test_video_path
     return (test_video_path,)
 
 
@@ -82,6 +91,8 @@ def _(mo):
 
     Here we also set `skip_frames=24` which tells the detector to process only every 24th frame for the sake of speed.
 
+    We also pass `batch_size=8` so frames are processed in batches rather than one at a time — this is much faster on a GPU. Combined with `device="auto"` above (which selects CUDA/MPS when available), this is the recommended way to process video.
+
     We also set `face_detection_threshold=0.95` which tells the detector to be extremely conservative in what it considers a face. Since we already know that this video is a continuous front-on shot of one person, raising this value from the default of 0.5 will result in a much fewer false positive detections of more than one face per frame.
     """)
     return
@@ -90,7 +101,11 @@ def _(mo):
 @app.cell
 def _(detector, test_video_path):
     video_prediction = detector.detect(
-        test_video_path, data_type="video", skip_frames=24, face_detection_threshold=0.95
+        test_video_path,
+        data_type="video",
+        batch_size=8,
+        skip_frames=24,
+        face_detection_threshold=0.95,
     )
     video_prediction.head()
     return (video_prediction,)

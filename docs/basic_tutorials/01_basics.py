@@ -7,8 +7,18 @@ app = marimo.App()
 @app.cell
 def _():
     import marimo as mo
+    import torch
 
-    return (mo,)
+    # Use the best available device: CUDA (NVIDIA) > MPS (Apple Silicon) > CPU.
+    # Pass this to Detector(device=...) so the tutorial uses your GPU when present.
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
+    return device, mo
 
 
 @app.cell(hide_code=True)
@@ -45,10 +55,10 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(device):
     from feat import Detector
 
-    detector = Detector()
+    detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
     detector
 
     # You can change which models you want during initialization, e.g.
@@ -69,11 +79,11 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(device):
     from feat import Detectorv2
 
     # One multi-task model: AUs, emotions, valence/arousal, gaze, 478-pt 3D mesh, head pose
-    detector_v2 = Detectorv2(device="cpu")  # use device="cuda" or "mps" if available
+    detector_v2 = Detectorv2(device=device)  # device selected above (cuda/mps/cpu)
     detector_v2
 
     # Detect exactly like the v1 Detector — same Fex output:

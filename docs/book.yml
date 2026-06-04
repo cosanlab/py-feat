@@ -58,8 +58,10 @@ toc:
     children:
       - file: basic_tutorials/01_basics.py
         mode: cached
-  #     - file: basic_tutorials/02_detector_vids.py
-  #       mode: cached
+      - file: basic_tutorials/02_detector_vids.py
+        mode: cached
+  # 03/04 deferred: 03 uses relative ../../ data paths + multi-param cells;
+  # 04 reads example CSVs not bundled in the repo. Re-enable once fixed.
   #     - file: basic_tutorials/03_plotting.py
   #       mode: cached
   #     - file: basic_tutorials/04_fex_analysis.py
