@@ -435,8 +435,10 @@ def _cluster_gallery(normed, threshold):
                 continue
         if K == cap:
             cap *= 2
-            new_cent = np.zeros((cap, D), dtype=normed.dtype); new_cent[:K] = cent[:K]
-            new_counts = np.zeros(cap, dtype=np.int64); new_counts[:K] = counts[:K]
+            new_cent = np.zeros((cap, D), dtype=normed.dtype)
+            new_cent[:K] = cent[:K]
+            new_counts = np.zeros(cap, dtype=np.int64)
+            new_counts[:K] = counts[:K]
             cent, counts = new_cent, new_counts
         cent[K] = e
         counts[K] = 1

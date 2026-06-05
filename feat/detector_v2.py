@@ -39,8 +39,6 @@ from feat.identity_detectors.arcface.arcface_model import (
     load_arcface_identity_detector,
 )
 from feat.multitask import (
-    AU_COLUMNS_V2,
-    EMOTION_COLUMNS_V2,
     VA_COLUMNS_V2,
     MESH_COLUMNS_V2,
 )

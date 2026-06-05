@@ -5,7 +5,6 @@ flatten/append functions against a sample matching bench_detectors.py --json.
 No network / HF access.
 """
 
-import argparse
 import importlib.util
 from pathlib import Path
 
