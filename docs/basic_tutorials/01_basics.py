@@ -43,37 +43,13 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1.1 Downloading models from HuggingFace and setting up a `Detector`
+    ## 1.1 Setting up a detector
 
-    A `Detector` is a swiss-army-knife class that "glues" together a combination of *pre-trained* Face, Emotion, Pose, etc detection models into a single Python object. This allows us to provide a very easy-to-use high-level API, e.g. `detector.detect('my_image.jpg',data_type='image')`, which will automatically make use of the correct underlying model to solve the sub-tasks of identifying face locations, getting landmarks, extracting action units, etc.
+    The recommended way to extract facial features in Py-Feat 0.7+ is **`Detectorv2`** — a single **multi-task neural network** that, in one forward pass, predicts Action Units, emotions, **valence/arousal**, **gaze**, head pose, 68-point landmarks, and a **478-point 3D MediaPipe FaceMesh**. It's fast (especially on single frames) and is what the rest of this tutorial uses. Passing `identity_model="arcface"` also adds a face-identity embedding.
 
-    The first time you initialize a `Detector` instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you from [our HuggingFace Repository](https://huggingface.co/py-feat) and save them to disk. Everytime after that it will use existing model weights.
+    The first time you initialize a detector, Py-Feat downloads the required pretrained weights from [our HuggingFace Repository](https://huggingface.co/py-feat) and caches them to disk; subsequent runs reuse the cached weights.
 
-    You can find a list of default models [on this page](/models.md).
-    """)
-    return
-
-
-@app.cell
-def _(device):
-    from feat import Detector
-
-    detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
-    detector
-
-    # You can change which models you want during initialization, e.g.
-    # detector = Detector(emotion_model='svm')
-    return (detector,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 1.1b A faster alternative: `Detectorv2`
-
-    Py-Feat also ships **`Detectorv2`**, which runs a single **multi-task neural network** instead of the modular pipeline above. In one forward pass it predicts Action Units, emotions, valence/arousal, gaze, head pose, and a **478-point 3D MediaPipe FaceMesh** — so it is **much faster, especially on single frames**, and adds valence/arousal + gaze that `Detector` does not produce.
-
-    Use **`Detector` (v1)** when you want to pick or disable specific models or need the classic 68-point landmarks; use **`Detectorv2` (v2)** when you want speed, the 478-point 3D mesh, or valence/arousal + gaze. Both return the same kind of `Fex` object, so the rest of this tutorial applies to either. See the [two-detector overview](/intro.md#two-detectors-detector-and-detectorv2) for a full comparison.
+    You can find a list of default models [on this page](/models.md). For the older modular detector, see the [legacy `Detector` (v1)](#legacy-the-modular-detector-v1) section just below.
     """)
     return
 
@@ -82,13 +58,35 @@ def _(mo):
 def _(device):
     from feat import Detectorv2
 
-    # One multi-task model: AUs, emotions, valence/arousal, gaze, 478-pt 3D mesh, head pose
-    detector_v2 = Detectorv2(device=device)  # device selected above (cuda/mps/cpu)
+    # One multi-task model: AUs, emotions, valence/arousal, gaze, head pose,
+    # 68-pt landmarks, and a 478-pt 3D FaceMesh. identity_model="arcface" adds a
+    # face-identity embedding. device was selected above (cuda/mps/cpu).
+    detector_v2 = Detectorv2(device=device, identity_model="arcface")
     detector_v2
+    return (detector_v2,)
 
-    # Detect exactly like the v1 Detector — same Fex output:
-    # fex = detector_v2.detect(single_face_img_path, data_type="image")
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Legacy: the modular `Detector` (v1)
+
+    Before `Detectorv2`, Py-Feat used **`Detector`** — a *modular* pipeline that glues together a **separate pre-trained model per sub-task** (face, landmarks, Action Units, emotion, head pose, identity). Reach for it when you want to **swap or disable a specific model** (e.g. `Detector(emotion_model='svm')`) or need the classic modular behavior. It exposes the **same `.detect()` API** and returns the same kind of `Fex` object, so everything below works with either detector.
+
+    `Detectorv2` is the recommended default for new work; see the [two-detector overview](/intro.md#two-detectors-detector-and-detectorv2) for a full comparison.
+    """)
     return
+
+
+@app.cell
+def _(device):
+    from feat import Detector
+
+    # The modular v1 Detector. Swap individual models via kwargs, e.g.
+    # Detector(emotion_model='svm'). device was selected above (cuda/mps/cpu).
+    detector = Detector(device=device)
+    detector
+    return (detector,)
 
 
 @app.cell(hide_code=True)
@@ -133,8 +131,8 @@ def _(mo):
 
 
 @app.cell
-def _(detector, single_face_img_path):
-    single_face_prediction = detector.detect(single_face_img_path, data_type="image")
+def _(detector_v2, single_face_img_path):
+    single_face_prediction = detector_v2.detect(single_face_img_path, data_type="image")
 
     type(single_face_prediction)  # instace of a Fex class
 
@@ -254,8 +252,8 @@ def _(mo):
 
 
 @app.cell
-def _(detector, single_face_img_path):
-    fex = detector.detect(inputs=single_face_img_path, data_type="image", save='detections.csv')
+def _(detector_v2, single_face_img_path):
+    fex = detector_v2.detect(inputs=single_face_img_path, data_type="image", save='detections.csv')
 
     fex.head()
     return
@@ -301,8 +299,13 @@ def _(mo):
 
 
 @app.cell
-def _(single_face_prediction):
-    _figs = single_face_prediction.plot_detections(faces='aus', muscles=True)
+def _(detector, single_face_img_path):
+    # AU-projection visualization (faces='aus') uses the v1 Detector's named xgb
+    # AU model and its trained landmark viz model; Detectorv2's AUs have no
+    # projection model, so we use the legacy detector here. See tutorial 03 for
+    # more on AU visualization.
+    _v1_fex = detector.detect(single_face_img_path, data_type="image")
+    _figs = _v1_fex.plot_detections(faces='aus', muscles=True)
     return
 
 
@@ -345,8 +348,11 @@ def _(mo):
 
 
 @app.cell
-def _(single_face_prediction):
-    single_face_prediction.iplot_detections(bounding_boxes=True, emotions=True)
+def _(detector, single_face_img_path):
+    # Interactive plotting uses the v1 detector here: Detectorv2's emotion
+    # columns (Neutral/Happy/...) aren't yet wired into iplot_detections.
+    _v1_fex = detector.detect(single_face_img_path, data_type="image")
+    _v1_fex.iplot_detections(bounding_boxes=True, emotions=True)
     return
 
 
@@ -363,9 +369,9 @@ def _(mo):
 
 
 @app.cell
-def _(detector, os, test_data_dir):
+def _(detector_v2, os, test_data_dir):
     multi_face_image_path = os.path.join(test_data_dir, "multi_face.jpg")
-    multi_face_prediction = detector.detect(multi_face_image_path, data_type="image")
+    multi_face_prediction = detector_v2.detect(multi_face_image_path, data_type="image")
 
     # Show results
     multi_face_prediction
@@ -385,7 +391,7 @@ def _(mo):
 
     `Detector` is also flexible enough to process multiple image files if `.detect()` is passed a list of images. By default images will be processed serially, but you can set `batch_size > 1` to process multiple images in a *batch* and speed up processing. **NOTE: All images in a batch must have the same dimensions for batch processing.** This is because behind the scenes, `Detector` is assembling a *tensor* by stacking images together. You can ask `Detector` to rescale images by padding and preserving proportions using the `output_size` in conjunction with `batch_size`. For example, the following would process a list of images in batches of 5 images at a time resizing each so one axis is 512:
 
-    `detector.detect(img_list, batch_size=5, output_size=512) # without output_size this would raise an error if image sizes differ!`
+    `detector_v2.detect(img_list, batch_size=5, output_size=512) # without output_size this would raise an error if image sizes differ!`
 
     In the example below we keep things simple, by process both our single and multi-face example serislly by setting `batch_size = 1`.
 
@@ -403,10 +409,10 @@ def _(mo):
 
 
 @app.cell
-def _(detector, multi_face_image_path, single_face_img_path):
+def _(detector_v2, multi_face_image_path, single_face_img_path):
     img_list = [single_face_img_path, multi_face_image_path]
 
-    mixed_prediction = detector.detect(img_list, batch_size=1, data_type="image")
+    mixed_prediction = detector_v2.detect(img_list, batch_size=1, data_type="image")
     mixed_prediction
     return (mixed_prediction,)
 
