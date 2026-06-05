@@ -800,15 +800,6 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
-        # Canonical pose convention (consistent across all detectors): +Pitch =
-        # up, +Yaw = turn to subject's right, +Roll = tilt to subject's right.
-        # The img2pose / Pose-MLP / PnP paths (which share img2pose's frame)
-        # mislabel the columns: pitch comes out with the opposite sign (up =
-        # negative), and the Roll and Yaw columns are swapped (turning the head
-        # moves the Roll column, tilting moves the Yaw column). Flip pitch and
-        # swap Roll/Yaw so each column holds its physical quantity.
-        feat_poses["Pitch"] = -feat_poses["Pitch"]
-        feat_poses[["Roll", "Yaw"]] = feat_poses[["Yaw", "Roll"]].to_numpy()
 
         # Invert the DataLoader's Rescale on the 68 (x, y) landmark pairs.
         # The PnP block above (when active) already consumed the

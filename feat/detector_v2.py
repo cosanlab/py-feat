@@ -394,13 +394,9 @@ class Detectorv2(nn.Module):
         )
 
         # ---- Pose: model [yaw,pitch,roll,tx,ty,tz] -> Fex [Pitch,Roll,Yaw,X,Y,Z] ----
-        # Canonical convention (consistent across all detectors): +Pitch = up,
-        # +Yaw = turn to subject's right, +Roll = tilt to subject's right. The
-        # multitask head emits the columns correctly labelled but with Yaw and
-        # Roll signed the opposite way (right = negative), so negate both.
         p = out.pose
         feat_poses = pd.DataFrame(
-            np.column_stack([p[:, 1], -p[:, 2], -p[:, 0], p[:, 3], p[:, 4], p[:, 5]]),
+            np.column_stack([p[:, 1], p[:, 2], p[:, 0], p[:, 3], p[:, 4], p[:, 5]]),
             columns=FEAT_FACEPOSE_COLUMNS_6D,
         )
 
