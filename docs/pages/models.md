@@ -3,7 +3,11 @@
 Below is a list of detectors included in Py-Feat and ready to use. The model names are in the titles followed by the reference publications. Bolded models are defaults.
 
 ```{note}
-The face / landmark / AU / emotion / identity models in the sections below are the *swappable components of the modular* **`Detector` (v1)**. **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [two-detector overview](./intro.md#two-detectors-detector-and-detectorv2).
+All py-feat models are hosted on the [**`py-feat` organization on HuggingFace**](https://huggingface.co/py-feat) and downloaded automatically to a local cache the first time they are used. Each model below links to its HuggingFace model card, where you can find the upstream code, reference paper, and full license terms. The project homepage is [py-feat.org](https://py-feat.org/).
+```
+
+```{note}
+The face / landmark / AU / emotion / identity / gaze models in the sections below are the *swappable components of the modular* **`Detector` (v1)** (also importable as `Detectorv1`). **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [Py-Feat v2 overview](./intro.md#introducing-py-feat-v2).
 ```
 
 You can specify any of these models for use in the `Detector` class by passing in the name as a string, e.g.
@@ -18,20 +22,29 @@ detector = Detector(emotion_model='svm')
 Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 ```
 
-## Face and Facial Pose detection
+## Face detection
 
-- **`img2pose`: Face Alignment and Detection via 6DoF, Face Pose Estimation** ([Albiero et al., 2020](https://arxiv.org/pdf/2012.07791v2.pdf)). Performs simultaneous (one-shot) face detection and head pose estimation
+- **`retinaface`: RetinaFace: Single-Shot Multi-Level Face Localisation in the Wild** ([Deng et al., 2019](https://arxiv.org/abs/1905.00641)). A single-shot detector (ResNet-34 backbone) that localizes faces and five facial keypoints in one pass. This is the default face detector as of v0.7. [Model card](https://huggingface.co/py-feat/retinaface_r34) · License: MIT.
+- `img2pose`: Face Alignment and Detection via 6DoF, Face Pose Estimation ([Albiero et al., 2020](https://arxiv.org/abs/2012.07791)). Performs simultaneous (one-shot) face detection **and** 6DoF head-pose estimation. [Model card](https://huggingface.co/py-feat/img2pose) · License: CC BY-NC 4.0 (non-commercial).
+
+```{note}
+The `face_model` kwarg accepts `'retinaface'` or `'img2pose'`. (`'retinaface_r34'`, a v0.6 alias, was removed in v0.7 — use `'retinaface'`. The HuggingFace repo keeps the backbone-tagged name `py-feat/retinaface_r34`.)
+```
+
+```{note}
+`retinaface` detects faces only, so when it is selected py-feat estimates **6DoF head pose** from the detected facial landmarks using a small pose MLP ([`py-feat/pose_mlp_v2`](https://huggingface.co/py-feat/pose_mlp_v2)). `img2pose` instead returns head pose directly from its single forward pass.
+```
 
 ## Facial landmark detection
 
-- **`mobilefacenet`: Efficient CNNs for accurate real time face verification on mobile devices** ([Chen et al, 2018](https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf))
-- `mobilenet`: Efficient convolutional neural networks for mobile vision applications ([Howard et al, 2017](https://arxiv.org/pdf/1704.04861v1.pdf))
-- `pfld`: Practical Facial Landmark Detector by ([Guo et al, 2019](https://arxiv.org/pdf/1902.10859.pdf))
+- **`mobilefacenet`: Efficient CNNs for accurate real time face verification on mobile devices** ([Chen et al, 2018](https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf)). [Model card](https://huggingface.co/py-feat/mobilefacenet).
+- `mobilenet`: Efficient convolutional neural networks for mobile vision applications ([Howard et al, 2017](https://arxiv.org/pdf/1704.04861v1.pdf)). [Model card](https://huggingface.co/py-feat/mobilenet).
+- `pfld`: Practical Facial Landmark Detector by ([Guo et al, 2019](https://arxiv.org/pdf/1902.10859.pdf)). [Model card](https://huggingface.co/py-feat/pfld).
 
 ## Action Unit detection
 
-- **`xgb`: XGBoost Classifier model trained on Histogram of Oriented Gradients\*** extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
-- `svm`: SVM model trained on Histogram of Oriented Gradients\*\* extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets
+- **`xgb`: XGBoost Classifier model trained on Histogram of Oriented Gradients\*** extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets. [Model card](https://huggingface.co/py-feat/xgb_au) · License: MIT.
+- `svm`: SVM model trained on Histogram of Oriented Gradients\*\* extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets. [Model card](https://huggingface.co/py-feat/svm_au) · License: MIT.
 
 ```{note}
 \*For AU07, our `xbg` detector was trained with hinge-loss instead of cross-entropy loss like other AUs as this yielded substantially better detection performance given the labeled data available for this AU. This means that while it returns continuous probability predictions,  these are more likely to appear binary in practice (i.e. be 0 or 1) and should be interpreted as *proportion of decision-trees with a detection* rather than *average decision-tree confidence* like other AU values.
@@ -43,16 +56,30 @@ Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 
 ## Emotion detection
 
-- **`resmasknet`: Facial expression recognition using residual masking network** by ([Pham et al., 2020](https://ieeexplore.ieee.org/document/9411919))
-- `svm`: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets
+- **`resmasknet`: Facial expression recognition using residual masking network** by ([Pham et al., 2020](https://ieeexplore.ieee.org/document/9411919)). [Model card](https://huggingface.co/py-feat/resmasknet) · License: MIT.
+- `svm`: SVM model trained on Histogram of Oriented Gradients extracted from ExpW, CK+, and JAFFE datasets. [Model card](https://huggingface.co/py-feat/svm_emo) · License: MIT.
 
 ## Identity detection
 
-- **`facenet`: FaceNet: A unified embedding for face recognition and clustering ([Schroff et al, 2015](https://arxiv.org/abs/1503.03832))**. Inception Resnet (V1) pretrained on VGGFace2 and CASIA-Webface.
+- **`arcface`: ArcFace: Additive Angular Margin Loss for Deep Face Recognition** ([Deng et al., 2019](https://arxiv.org/abs/1801.07698)). InsightFace's ResNet-50 recognition model (the `buffalo_l` `w600k_r50` weights, trained on WebFace600K), producing 512-d embeddings. Its angular-margin objective disentangles identity from pose and expression far better than triplet-loss embeddings, which makes it the default for clustering identities across video frames. [Model card](https://huggingface.co/py-feat/arcface_r50) · License: code MIT; **pretrained weights are non-commercial research only** (InsightFace terms; the WebFace600K training data is also research-only). Flag this for any commercial deployment.
+- `facenet`: FaceNet: A unified embedding for face recognition and clustering ([Schroff et al, 2015](https://arxiv.org/abs/1503.03832)). Inception Resnet (V1) pretrained on VGGFace2 and CASIA-Webface; the v0.6 default, still available via `identity_model='facenet'`. [Model card](https://huggingface.co/py-feat/facenet) · License: MIT.
+
+## Gaze estimation
+
+- **`l2cs`: L2CS-Net: Fine-Grained Gaze Estimation in Unconstrained Environments** ([Abdelrahman et al., 2022](https://arxiv.org/abs/2203.03339)). A ResNet-based gaze regressor (trained on Gaze360 + MPIIFaceGaze) that predicts pitch/yaw gaze angles from a face crop. Default gaze model for both `Detector` and `MPDetector`. [Model card](https://huggingface.co/py-feat/l2cs) · License: MIT.
+
+```{note}
+`MPDetector` can alternatively compute a lightweight **geometric** gaze estimate directly from the MediaPipe iris landmarks (no extra model) via `gaze_model='geometric'`. `Detectorv2` produces gaze as one of the outputs of its single multi-task network — see below.
+```
 
 ## Detectorv2: the multi-task model
 
-- **`face_multitask_v2`** ([`py-feat/face_multitask_v2`](https://huggingface.co/py-feat/face_multitask_v2)). The single network behind **`Detectorv2`**. A ConvNeXt V2-Tiny backbone with lightweight task heads jointly predicts, from one forward pass: **20 Action Units**, **7-class emotion** (Neutral, Happy, Sad, Surprise, Fear, Disgust, Anger), continuous **valence / arousal**, **gaze**, a **478-point 3D MediaPipe FaceMesh**, and **6-DoF head pose**. Face detection is handled by RetinaFace and identity by an optional ArcFace branch (`identity_model='arcface'`, the default). Replacing v1's per-task model chain with one network makes `Detectorv2` substantially faster — especially on single frames — and adds valence/arousal + gaze that v1 does not produce. Input is a 256×256 aligned face crop (center-cropped to 224, ImageNet-normalized). Trained on a mix of public AU, emotion, gaze, and landmark datasets. On py-feat's end-to-end harness it beats the v1 (`xgb` + `resmasknet`) detector on AU (DISFA+ 8-AU F1 0.756 vs 0.588) and RAF-DB emotion (0.849 vs 0.542), and is competitive with OpenFace 3.0. The ArcFace identity weights are non-commercial-research only.
+- **`face_multitask_v2`** ([`py-feat/face_multitask_v2`](https://huggingface.co/py-feat/face_multitask_v2)). The single network behind **`Detectorv2`**. A ConvNeXt V2-Tiny backbone with lightweight task heads jointly predicts, from one forward pass: **20 Action Units**, **7-class emotion** (Neutral, Happy, Sad, Surprise, Fear, Disgust, Anger), continuous **valence / arousal**, **gaze**, a **478-point 3D MediaPipe FaceMesh**, and **6-DoF head pose**. Input is a 256×256 aligned face crop (center-cropped to 224, ImageNet-normalized). Trained on a mix of public AU, emotion, gaze, and landmark datasets. [Model card](https://huggingface.co/py-feat/face_multitask_v2) · License: non-commercial research only.
+
+  - **Face detection** is handled by **RetinaFace** (`Detectorv2` does not take a `face_model` kwarg — it hardcodes `'retinaface'`).
+  - **Identity** is an optional branch: the default is `identity_model='arcface'`, and `identity_model='facenet'` is also supported (or `None` to skip identity embeddings). See the [Identity detection](#identity-detection) section above for the model cards and licenses. The ArcFace identity weights are non-commercial-research only.
+
+  Replacing v1's per-task model chain with one network makes `Detectorv2` substantially faster — especially on single frames — and adds valence/arousal + gaze that v1 does not produce. For up-to-date accuracy and speed comparisons against `Detector` (v1) and other toolkits, see the [accuracy](../benchmarks/accuracy.md) and [throughput](../benchmarks/throughput.md) benchmarks.
 
 ```python
 from feat import Detectorv2

@@ -1,4 +1,12 @@
-# FAQS
+# FAQs, Tips & Known Issues
+
+Here are a few general guidelines and common questions when using `py-feat`. We are always actively trying to improve the toolbox and make it easier to use — please help us out by contributing on GitHub!
+
+```{note}
+**Always spot-check your detections!** While we've done our best to thoroughly test, benchmark, and document all the [pre-trained models](models.md) included in Py-Feat, it's always possible that real-world images and videos reveal a quirk or limitation of an otherwise high-performing detector.
+```
+
+## Common questions
 
 ### Py-feat is detecting multiple faces in an image with a single face
 
@@ -30,3 +38,12 @@ This was a deliberate design-tradeoff to ensure a seamless experience when proce
 This means that you don't need to worry about your computer crashing if you're trying to process a video that doesn't fit into memory! However, it also means that there's a small latency overhead that increases with the length of the video, i.e. later frames take longer to load than earlier frames as the video needs to be "seeked" to the correct time-point.
 
 If you already know that you have enough system memory to load the entire video at once, you can instead manually call `video_to_tensor('videofile.mp4')` from `feat.utils.io`. Then you can process the tensor by passing `data_type='tensor'` to `Detector.detect()` and proceed with batching as usual.
+
+## Known issues
+
+- Detectors can be sensitive to differences in image sizes, such that very large or very small images result in very different predictions. This is largely due to differences in the hyper-parameters and image sizes used to train the underlying pre-trained models. To partially help with this issue, since `0.5.0` Py-Feat supports passing keyword arguments to underlying models during initialization or detection, e.g. `detector = Detector(facepose_model_kwargs={'keep_top_k': 500})`. You can follow [this issue](https://github.com/cosanlab/py-feat/issues/135) for more details.
+
+## Community & getting help
+
+- [Discourse Community](https://www.askpbs.org/c/py-feat/26): a Stack Overflow-like forum where you can view, contribute, and vote on questions regarding `py-feat` usage. Please ask questions here first so other users can benefit from the answers!
+- [Open a GitHub issue](https://github.com/cosanlab/py-feat/issues) for all code-related problems. You can also do so by clicking the GitHub icon at the top of any page.
