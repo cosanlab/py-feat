@@ -35,11 +35,11 @@ The `face_model` kwarg accepts `'retinaface'` or `'img2pose'`. (`'retinaface_r34
 `retinaface` detects faces only, so when it is selected py-feat estimates **6DoF head pose** from the detected facial landmarks using a small pose MLP ([`py-feat/pose_mlp_v2`](https://huggingface.co/py-feat/pose_mlp_v2)). `img2pose` instead returns head pose directly from its single forward pass.
 ```
 
-All three landmark models use weights adapted from [`cunjian/pytorch_face_landmark`](https://github.com/cunjian/pytorch_face_landmark), which does not declare a license upstream (see [Model licenses](#model-licenses) below).
+All three landmark models use weights adapted from [`cunjian/pytorch_face_landmark`](https://github.com/cunjian/pytorch_face_landmark) and are redistributed under Py-Feat's [MIT license](https://github.com/cosanlab/py-feat/blob/master/LICENSE).
 
-- **`mobilefacenet`: Efficient CNNs for accurate real time face verification on mobile devices** ([Chen et al, 2018](https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf)). [Model card](https://huggingface.co/py-feat/mobilefacenet) · License: not declared upstream.
-- `mobilenet`: Efficient convolutional neural networks for mobile vision applications ([Howard et al, 2017](https://arxiv.org/pdf/1704.04861v1.pdf)). [Model card](https://huggingface.co/py-feat/mobilenet) · License: not declared upstream.
-- `pfld`: Practical Facial Landmark Detector by ([Guo et al, 2019](https://arxiv.org/pdf/1902.10859.pdf)). [Model card](https://huggingface.co/py-feat/pfld) · License: not declared upstream.
+- **`mobilefacenet`: Efficient CNNs for accurate real time face verification on mobile devices** ([Chen et al, 2018](https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf)). [Model card](https://huggingface.co/py-feat/mobilefacenet) · License: MIT.
+- `mobilenet`: Efficient convolutional neural networks for mobile vision applications ([Howard et al, 2017](https://arxiv.org/pdf/1704.04861v1.pdf)). [Model card](https://huggingface.co/py-feat/mobilenet) · License: MIT.
+- `pfld`: Practical Facial Landmark Detector by ([Guo et al, 2019](https://arxiv.org/pdf/1902.10859.pdf)). [Model card](https://huggingface.co/py-feat/pfld) · License: MIT.
 
 ## Action Unit detection
 
@@ -107,7 +107,7 @@ Py-Feat itself is [MIT-licensed](https://github.com/cosanlab/py-feat/blob/master
 |---|---|---|
 | `retinaface` | MIT | [biubug6/Pytorch_Retinaface](https://github.com/biubug6/Pytorch_Retinaface/blob/master/LICENSE.MIT) |
 | `img2pose` | **CC BY-NC 4.0** | Non-commercial ([upstream license](https://github.com/vitoralbiero/img2pose/blob/main/license.md)) |
-| `mobilefacenet`, `mobilenet`, `pfld` | **Not declared** | Weights from [cunjian/pytorch_face_landmark](https://github.com/cunjian/pytorch_face_landmark), which declares no license upstream |
+| `mobilefacenet`, `mobilenet`, `pfld` | MIT | Weights from [cunjian/pytorch_face_landmark](https://github.com/cunjian/pytorch_face_landmark), redistributed under Py-Feat's MIT license |
 | `xgb`, `svm` (AU & emotion) | MIT | Trained by the Py-Feat team |
 | `resmasknet` | MIT | [phamquiluan/ResidualMaskingNetwork](https://github.com/phamquiluan/ResidualMaskingNetwork) |
 | `arcface` | Code MIT; **weights non-commercial research** | InsightFace code is MIT; the `w600k_r50` weights and WebFace600K training data are research-only |
