@@ -74,6 +74,8 @@ toc:
 
   - section: Benchmarks
     children:
+      - file: benchmarks/live.py
+        mode: cached
       - file: benchmarks/accuracy.md
       - file: benchmarks/throughput.md
 
