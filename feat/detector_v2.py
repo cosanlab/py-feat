@@ -1,8 +1,9 @@
-"""Detectorv2 — RetinaFace + the v2.3 multitask model + ArcFace identity.
+"""Detectorv2 — RetinaFace + the v2.3 multitask model + ArcFace/FaceNet identity.
 
 A single forward of the multitask model yields AU (24), emotion (8), valence/
-arousal, gaze, head pose, and a 478-point face mesh; ArcFace adds identity
-embeddings. Outputs a native-v2 :class:`~feat.data.Fex` whose landmark block is
+arousal, gaze, head pose, and a 478-point face mesh; an identity branch
+(``identity_model='arcface'`` by default, or ``'facenet'``) adds embeddings.
+Outputs a native-v2 :class:`~feat.data.Fex` whose landmark block is
 the dlib-68 subset derived from the 478 mesh (so Fex helpers expecting 68
 points keep working), with the full 478 mesh available in ``mesh_*`` columns.
 
@@ -38,6 +39,9 @@ from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 from feat.identity_detectors.arcface.arcface_model import (
     load_arcface_identity_detector,
 )
+from feat.identity_detectors.facenet.facenet_model import (
+    load_facenet_identity_detector,
+)
 from feat.multitask import (
     VA_COLUMNS_V2,
     MESH_COLUMNS_V2,
@@ -58,7 +62,7 @@ class Detectorv2(nn.Module):
     """Multitask face-behavior detector (v2.3 model).
 
     Pipeline: RetinaFace -> 256 crop -> multitask model (AU/emotion/V-A/gaze/
-    mesh/pose) + ArcFace identity -> Fex.
+    mesh/pose) + ArcFace/FaceNet identity -> Fex.
     """
 
     def __init__(self, device="cpu", face_detection_threshold=0.5,
@@ -73,10 +77,17 @@ class Detectorv2(nn.Module):
         self.multitask = MultitaskModel(device=self.device,
                                         weights_path=multitask_weights,
                                         amp=amp, compile=compile)
-        self.identity_detector = (
-            load_arcface_identity_detector(self.device)
-            if identity_model == "arcface" else None
-        )
+        if identity_model in ("arcface", "arcface_r50"):
+            self.identity_detector = load_arcface_identity_detector(self.device)
+        elif identity_model == "facenet":
+            self.identity_detector = load_facenet_identity_detector(self.device)
+        elif identity_model is None:
+            self.identity_detector = None
+        else:
+            raise ValueError(
+                f"{identity_model!r} is not a supported identity_model for "
+                "Detectorv2; expected 'arcface' (default), 'facenet', or None."
+            )
 
         self._idx68 = _DLIB68_IDX.to(self.device)
         self.info = dict(
@@ -341,7 +352,7 @@ class Detectorv2(nn.Module):
             np.column_stack([out.valence, out.arousal]), columns=VA_COLUMNS_V2
         )
 
-        # ---- Identity (ArcFace on the same crops) ----
+        # ---- Identity (ArcFace/FaceNet on the same crops) ----
         if self.identity_detector is not None and n_faces > 0:
             emb = self.identity_detector.forward(faces)
             emb = emb.cpu().detach().numpy() if torch.is_tensor(emb) else np.asarray(emb)
