@@ -2168,18 +2168,11 @@ class Fex(DataFrame):
         # Add Emotions
         emotions_annotations = []
         for i, row in frame_fex.iterrows():
+            # Use this Fex's own emotion columns rather than a hardcoded v1
+            # list — Detectorv2 emits capitalized names (Neutral/Happy/...),
+            # so hardcoding the lowercase v1 set KeyErrors on v2 detections.
             emotion_dict = (
-                row[
-                    [
-                        "anger",
-                        "disgust",
-                        "fear",
-                        "happiness",
-                        "sadness",
-                        "surprise",
-                        "neutral",
-                    ]
-                ]
+                row[self.emotion_columns]
                 .sort_values(ascending=False)
                 .to_dict()
             )
