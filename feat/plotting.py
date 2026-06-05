@@ -350,13 +350,14 @@ def draw_vectorfield(
     return ax
 
 
-def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
+def draw_muscles(currx, curry, au=None, ax=None, cmap="Blues", *args, **kwargs):
     """Draw Muscles
 
     Args:
         currx: vector (len(68)) of x coordinates
         curry: vector (len(68)) of y coordinates
         ax: matplotlib axis to add
+        cmap: seaborn/matplotlib colormap name (or palette) for heatmap muscles
     """
     masseter_l = plt.Polygon(
         [
@@ -776,7 +777,7 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
                 del kwargs[muscle]
     for muscle in todraw.keys():
         if todraw[muscle] == "heatmap":
-            muscles[muscle].set_color(get_heat(muscle, au, facet))
+            muscles[muscle].set_color(get_heat(muscle, au, facet, cmap))
         else:
             muscles[muscle].set_color(todraw[muscle])
         ax.add_patch(muscles[muscle], *args, **kwargs)
@@ -825,19 +826,19 @@ def draw_muscles(currx, curry, au=None, ax=None, *args, **kwargs):
     return ax
 
 
-def get_heat(muscle, au, log):
+def get_heat(muscle, au, log, cmap="Blues"):
     """Function to create heatmap from au vector
 
     Args:
         muscle (string): string representation of a muscle
         au (list): vector of action units
         log (boolean): whether the action unit values are on a log scale
-
+        cmap: seaborn/matplotlib colormap name (or palette) for the heatmap
 
     Returns:
         color of muscle according to its au value
     """
-    q = sns.color_palette("Blues", 151)
+    q = sns.color_palette(cmap, 151)
     unit = 0
     aus = {
         "masseter_l": 15,
@@ -947,6 +948,7 @@ def plot_face(
     gaze=None,
     muscle_scaler=None,
     symmetrize=True,
+    cmap="Blues",
     *args,
     **kwargs,
 ):
@@ -964,6 +966,7 @@ def plot_face(
         linewidth: matplotlib linewidth
         linestyle: matplotlib linestyle
         gaze: array of gaze vectors (len(4))
+        cmap: seaborn/matplotlib colormap name (or palette) for muscle heatmaps; default "Blues"
 
     Returns:
         ax: plot handle
@@ -1010,7 +1013,7 @@ def plot_face(
             au = minmax_scale(au, feature_range=(0, 100 * muscle_scaler))
         else:
             au = muscle_scaler.transform(np.array(au).reshape(-1, 1)).squeeze()
-        ax = draw_muscles(currx, curry, ax=ax, au=au, **muscles)
+        ax = draw_muscles(currx, curry, ax=ax, au=au, cmap=cmap, **muscles)
 
     if gaze is not None and len((gaze)) != 4:
         warnings.warn(
