@@ -287,6 +287,7 @@ def _(mo):
 @app.cell
 def _(single_face_prediction):
     _figs = single_face_prediction.plot_detections(poses=True)
+    _figs[0]
     return
 
 
@@ -306,6 +307,7 @@ def _(detector, single_face_img_path):
     # more on AU visualization.
     _v1_fex = detector.detect(single_face_img_path, data_type="image")
     _figs = _v1_fex.plot_detections(faces='aus', muscles=True)
+    _figs[0]
     return
 
 
@@ -334,6 +336,7 @@ def _(single_face_prediction):
     print('gaze columns:', single_face_prediction.gaze_columns)
     print(single_face_prediction[['gaze_pitch', 'gaze_yaw']])
     _figs = single_face_prediction.plot_detections(faces='landmarks', gazes=True, muscles=False)
+    _figs[0]
     return
 
 
@@ -381,6 +384,7 @@ def _(detector_v2, os, test_data_dir):
 @app.cell
 def _(multi_face_prediction):
     _figs = multi_face_prediction.plot_detections(add_titles=False)
+    _figs[0]
     return
 
 
@@ -428,6 +432,7 @@ def _(mo):
 @app.cell
 def _(mixed_prediction):
     _figs = mixed_prediction.plot_detections()
+    _figs[0]
     return
 
 
@@ -443,6 +448,7 @@ def _(mo):
 def _(mixed_prediction):
     # Just plot the detection corresponding to the first row in the Fex data
     _figs = mixed_prediction.loc[0].plot_detections()
+    _figs[0]
     return
 
 
@@ -459,6 +465,7 @@ def _(mixed_prediction):
     # Choose plot based on image file name
     img_name = mixed_prediction["input"].unique()[1]
     axes = mixed_prediction.query("input == @img_name").plot_detections()
+    axes[0]
     return
 
 
