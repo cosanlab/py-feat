@@ -8,6 +8,7 @@ from feat.plotting import (
     draw_vectorfield,
     predict,
     animate_face,
+    get_heat,
 )
 import matplotlib
 import pytest
@@ -90,6 +91,21 @@ def test_plot_face(au, au2):
     with pytest.raises(ValueError):
         plot_face(model=au, au=au, vectorfield={"noreference": predict(au2)})
 
+    plt.close("all")
+
+
+def test_plot_face_cmap(au):
+    # cmap threads through plot_face -> draw_muscles -> get_heat. Default is
+    # "Blues"; a custom cmap must change the heatmap colors and still render.
+    import numpy as np
+
+    active = np.full(20, 50.0)
+    default = get_heat("zyg_maj_l", active, False)
+    assert get_heat("zyg_maj_l", active, False, "Blues") == default
+    assert get_heat("zyg_maj_l", active, False, "Reds") != default
+
+    plot_face(au=au, muscles={"all": "heatmap"}, cmap="Reds")
+    assert_plot_face_visible(plt.gca())
     plt.close("all")
 
 
