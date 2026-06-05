@@ -60,16 +60,14 @@ toc:
         mode: cached
       - file: basic_tutorials/02_detector_vids.py
         mode: cached
+      - file: basic_tutorials/03_plotting.py
+        mode: cached
       - file: basic_tutorials/05_detectorv2.py
         mode: cached
       - file: basic_tutorials/06_performance.py
         mode: cached
-  # 03/04 deferred. 03 (device + data-path fixes done) still needs each plotting
-  # cell to end with the figure as its last expression — marimo, unlike Jupyter,
-  # does not auto-display matplotlib — plus an animation cell to handle. 04
-  # downloads 20 OSF videos / reads per-video CSVs absent at build time.
-  #     - file: basic_tutorials/03_plotting.py
-  #       mode: cached
+  # 04 deferred: it downloads 20 OSF videos and reads per-video CSVs absent at
+  # build time. Needs a sample-data approach before it can render.
   #     - file: basic_tutorials/04_fex_analysis.py
   #       mode: cached
 

@@ -62,6 +62,7 @@ def _():
     # AUs ordered as:
     # 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43
     _ax = plot_face(au=neutral, title='Neutral')
+    _ax.figure
     return neutral, np, plot_face
 
 
@@ -83,7 +84,8 @@ def _(np, plot_face):
     # Increase AU1 intensity: Inner brow raiser (1.0 = fully activated on xgb's scale)
     raised_inner_brow[0] = 1
 
-    _ = plot_face(au=raised_inner_brow, title="Raised inner brow")
+    _ax = plot_face(au=raised_inner_brow, title="Raised inner brow")
+    _ax.figure
     return (raised_inner_brow,)
 
 
@@ -105,7 +107,8 @@ def _(np, plot_face):
     smiling = np.array([0.5, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     _muscles = {'all': 'heatmap'}
     # Overlay muscles 
-    _ = plot_face(au=smiling, muscles=_muscles, title='Smiling')
+    _ax = plot_face(au=smiling, muscles=_muscles, title='Smiling')
+    _ax.figure
     return (smiling,)
 
 
@@ -120,7 +123,8 @@ def _(mo):
 @app.cell
 def _(neutral, plot_face):
     _muscles = {'temporalis_r_rel': 'red', 'pars_palp_l': 'green'}
-    _ = plot_face(au=neutral, muscles=_muscles)
+    _ax = plot_face(au=neutral, muscles=_muscles)
+    _ax.figure
     return
 
 
@@ -140,7 +144,8 @@ def _(neutral, plot_face):
     # Add some gaze vectors: (lefteye_x, lefteye_y, righteye_x, righteye_y)
     gaze = [-1, 5, 1, 5]
 
-    _ = plot_face(au=neutral, gaze=gaze, title='Looking up')
+    _ax = plot_face(au=neutral, gaze=gaze, title='Looking up')
+    _ax.figure
     return
 
 
@@ -178,7 +183,8 @@ def _(device):
 
     # plot_detections renders a yellow gaze arrow from each face's bbox center
     # in the predicted direction, overlaid on the detected landmarks.
-    _ = fex_real.plot_detections(faces="landmarks", gazes=True, muscles=False)
+    _figs = fex_real.plot_detections(faces="landmarks", gazes=True, muscles=False)
+    _figs[0]
     return (Detector,)
 
 
@@ -210,6 +216,7 @@ def _(neutral, plot_face, raised_inner_brow):
     # Vectorfield goes from neutral -> target on neutral face
     # Vectorfield goes target -> neutral on target face
     _ = plot_face(ax=axes[1], au=raised_inner_brow, title='Raised inner brow', vectorfield=target_to_neutral)
+    _fig
     return (plt,)
 
 
@@ -242,7 +249,7 @@ def _(mo):
     mo.md(r"""
     Now we can load the GIF and see the animation:
 
-    ![](../images/AU1.gif)
+    ![](/images/AU1.gif)
     """)
     return
 
@@ -271,7 +278,7 @@ def _(animate_face, neutral, smiling):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ![](../images/smiling.gif)
+    ![](/images/smiling.gif)
     """)
     return
 
@@ -300,7 +307,7 @@ def _(animate_face, neutral):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ![](../images/looking_up.gif)
+    ![](/images/looking_up.gif)
     """)
     return
 
@@ -351,7 +358,7 @@ def _(np, plot_face, plt):
     # Close the source figure — celluloid leaves the figure in an inconsistent
     # state after animate()+save() so the inline jupyter display renders as
     # empty axis boxes. The all.gif on disk is the working artifact; embed it
-    # via the next cell's `![](../images/all.gif)` markdown reference.
+    # via the next cell's `![](/images/all.gif)` markdown reference.
     plt.close(_fig)
     return
 
@@ -359,7 +366,7 @@ def _(np, plot_face, plt):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ![](../images/all.gif)
+    ![](/images/all.gif)
     """)
     return
 
@@ -392,7 +399,7 @@ def _(neutral, smiling):
         fps=15,
     )
     fig_2d_anim.update_layout(width=400, height=500, title_text="Smiling (rest → peak → rest)")
-    fig_2d_anim.show()
+    fig_2d_anim
     return
 
 
@@ -435,6 +442,7 @@ def _(np, plt):
         plot_face_mesh(au=au, ax=_ax, model=mesh_model, mode='tesselation')
         _ax.set_title(label)
     plt.tight_layout()
+    _fig
     return plot_face_mesh, rest, smile
 
 
@@ -475,6 +483,7 @@ def _(Detector, device, np, plot_face_mesh, plt):
     _ax = _fig.add_subplot(111, projection='3d')
     plot_face_mesh(mesh=mesh, ax=_ax, mode='tesselation')
     _ = _ax.set_title('3D mesh reconstructed from Detector 68-pt landmarks')
+    _fig
     return
 
 
@@ -504,7 +513,7 @@ def _(smile):
     # Same smile activation as 3.4
     fig_plotly = plot_face_mesh_plotly(au=smile, mode="tesselation")
     fig_plotly.update_layout(width=500, height=500)
-    fig_plotly.show()
+    fig_plotly
     return (plot_face_mesh_plotly,)
 
 
@@ -556,7 +565,7 @@ def _(np, plot_face_mesh_plotly):
     # enough of the face (nose, cheeks, eyes) for the gaze arrow to read
     # anatomically — contours leaves too few landmarks for the eye to be
     # obvious.
-    fig_gaze.show()
+    fig_gaze
     return
 
 
@@ -600,7 +609,7 @@ def _(rest, smile):
         mode="tesselation",
     )
     fig_anim.update_layout(width=500, height=600, title_text="AU12 smile (rest → peak → rest)")
-    fig_anim.show()
+    fig_anim
     return
 
 

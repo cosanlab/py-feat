@@ -153,3 +153,6 @@ feat/resources/*.joblib
 
 # marimo runtime cache (created next to notebooks during render)
 **/__marimo__/
+
+# Stray gifs animate_face writes to the render cwd (the real ones live in docs/images/)
+/docs/*.gif

@@ -20,7 +20,7 @@ fex = detector.detect(img_path, data_type="image")
 fex.head()
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:02&lt;00:00,  2.58s/it]100%|██████████| 1/1 [00:02&lt;00:00,  2.58s/it]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:02&lt;00:00,  2.59s/it]100%|██████████| 1/1 [00:02&lt;00:00,  2.59s/it]
 </pre>
 
 <div class="marimo-book-output">

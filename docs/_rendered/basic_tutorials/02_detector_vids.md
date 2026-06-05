@@ -21,7 +21,7 @@ detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
 detector
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">/tmp/claude-1000/marimo_2448518/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
+<pre class="marimo-book-output-text marimo-stream-stderr">/tmp/claude-1000/marimo_2450515/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
   detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
 </pre>
 
@@ -895,7 +895,7 @@ video_prediction.head()
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/3 [00:00&lt;?, ?it/s]
   0%|          | 0/3 [00:00&lt;?, ?it/s][A  0%|          | 0/3 [00:00&lt;?, ?it/s]
- 33%|███▎      | 1/3 [00:01&lt;00:02,  1.50s/it] 67%|██████▋   | 2/3 [00:01&lt;00:00,  1.41it/s]100%|██████████| 3/3 [00:01&lt;00:00,  1.95it/s]100%|██████████| 3/3 [00:01&lt;00:00,  1.55it/s]
+ 33%|███▎      | 1/3 [00:01&lt;00:02,  1.40s/it] 67%|██████▋   | 2/3 [00:01&lt;00:00,  1.49it/s]100%|██████████| 3/3 [00:01&lt;00:00,  2.23it/s]100%|██████████| 3/3 [00:01&lt;00:00,  1.72it/s]
 </pre>
 
 <div class="marimo-book-output">
