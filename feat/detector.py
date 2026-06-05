@@ -779,19 +779,31 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 # rather than image-relative, so it doesn't suffer from
                 # PnP-DLT's "intrinsics from full image" bug — pose stays
                 # sensible on multi-face wide-angle images.
-                from feat.utils.face_pose_mlp import pose_from_landmarks_mlp
+                #
+                # facepose_method (optional instance attribute) lets callers
+                # force a specific backend:
+                #   "pnp_dlt"  → skip MLP, use PnP-DLT directly.
+                #   "pose_mlp" / None → current behaviour (MLP if available,
+                #                       PnP-DLT fallback).
+                _facepose_method = getattr(self, "facepose_method", None)
+                if _facepose_method == "pnp_dlt":
+                    mlp_pose = None
+                    self.info["facepose_model"] = "pnp_dlt"
+                else:
+                    from feat.utils.face_pose_mlp import pose_from_landmarks_mlp
 
-                # Bbox-free: MLP normalizes landmarks by their own
-                # centroid + inter-eye distance, so it doesn't matter
-                # whether bbox conventions match the training-time
-                # detector (img2pose) or not.
-                mlp_pose = pose_from_landmarks_mlp(lmk)
+                    # Bbox-free: MLP normalizes landmarks by their own
+                    # centroid + inter-eye distance, so it doesn't matter
+                    # whether bbox conventions match the training-time
+                    # detector (img2pose) or not.
+                    mlp_pose = pose_from_landmarks_mlp(lmk)
 
                 if mlp_pose is not None:
                     self.info["facepose_model"] = "pose_mlp"
                     poses[valid] = mlp_pose
                 else:
-                    # MLP weights not available — fall back to PnP-DLT.
+                    # MLP weights not available (or pnp_dlt forced) —
+                    # fall back to PnP-DLT.
                     from feat.utils.face_pose_pnp import pose_from_landmarks_2d
                     image_size = faces_data[0]["image_size"]
                     pnp_pose = pose_from_landmarks_2d(lmk, image_size)
