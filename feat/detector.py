@@ -800,6 +800,12 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
+        # Canonical pose convention (consistent across all detectors): +Pitch =
+        # up, +Yaw = turn to subject's right, +Roll = tilt to subject's right.
+        # The img2pose / Pose-MLP / PnP paths (which share img2pose's frame) all
+        # emit pitch with the opposite sign (up = negative), so flip it. Yaw and
+        # Roll already match the canonical convention.
+        feat_poses["Pitch"] = -feat_poses["Pitch"]
 
         # Invert the DataLoader's Rescale on the 68 (x, y) landmark pairs.
         # The PnP block above (when active) already consumed the
