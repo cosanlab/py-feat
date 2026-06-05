@@ -1,0 +1,16 @@
+# Pre-commit hooks for py-feat. Install once with:
+#   pip install pre-commit && pre-commit install
+#
+# The ruff hook runs the SAME check the CI "Run Tests" step does
+# (ruff check --ignore=W292,E402,E501,E731,E741 feat), so a lint error
+# fails locally at commit time instead of silently aborting CI before
+# pytest ever runs. Keep the ignore list and ruff version in sync with
+# requirements-dev.txt and the test workflows.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.6
+    hooks:
+      - id: ruff
+        name: ruff (feat/)
+        args: ["check", "--ignore=W292,E402,E501,E731,E741"]
+        files: ^feat/

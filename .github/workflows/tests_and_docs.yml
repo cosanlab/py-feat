@@ -64,8 +64,24 @@ jobs:
           # the conda env so the test suite can be collected on all platforms.
           conda install -c conda-forge -y "ffmpeg<8" llvm-openmp
           pip install . -r requirements-dev.txt
+
+      # Persist HF model downloads across runs. Without this every matrix job
+      # pulls retinaface/xgb/resmasknet from the Hub at test-collection time on
+      # a cold cache, and the parallel jobs intermittently trip HTTP 429
+      # (Too Many Requests), failing collection. A warm cache skips the fetch.
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: feat/resources/models--*
+          key: hf-models-${{ runner.os }}-${{ hashFiles('feat/pretrained.py', 'feat/resources/model_list.json') }}
+          restore-keys: |
+            hf-models-${{ runner.os }}-
       # Actually run the tests with coverage
       - name: Run Tests
+        env:
+          # Authenticated requests get a far higher Hub rate limit; harmless
+          # (anonymous) if the secret isn't set.
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           conda activate test
           conda env list
