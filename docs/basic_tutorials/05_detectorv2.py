@@ -151,10 +151,10 @@ def _(mo):
         r"""
         ## 5.5 The 478-point 3D FaceMesh
 
-        v2 also returns a dense 478-point 3D MediaPipe FaceMesh. `plot_face_mesh`
-        draws it as a 3D wireframe (here driven by the detected Action Units); for
-        an interactive version use `plot_face_mesh_plotly` and open this notebook
-        in molab to spin it around.
+        v2 also returns a dense 478-point 3D MediaPipe FaceMesh.
+        `plot_face_mesh_plotly` renders it as an **interactive** 3D mesh — drag to
+        rotate, scroll to zoom — right here in the page, no kernel required (here
+        driven by the detected Action Units):
         """
     )
     return
@@ -162,10 +162,11 @@ def _(mo):
 
 @app.cell
 def _(fex):
-    from feat.plotting import plot_face_mesh
+    from feat.plotting import plot_face_mesh_plotly
 
-    _ax = plot_face_mesh(au=fex.aus.iloc[0].to_numpy())
-    _ax.figure
+    _mesh = plot_face_mesh_plotly(au=fex.aus.iloc[0].to_numpy(), mode="tesselation")
+    _mesh.update_layout(width=520, height=520)
+    _mesh
     return
 
 

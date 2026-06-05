@@ -48,7 +48,7 @@ print(f"single-image detect: {time.perf_counter() - _t0:.3f}s on {device}")
 ```
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:02&lt;00:00,  2.59s/it]100%|██████████| 1/1 [00:02&lt;00:00,  2.59s/it]
-  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 37.50it/s]
+  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 37.18it/s]
 </pre>
 
 <pre class="marimo-book-output-text marimo-stream-stdout">single-image detect: 0.029s on cuda
@@ -78,18 +78,18 @@ for _bs in (1, 8):
     print(f"8 images, batch_size={_bs}: {time.perf_counter() - _t0:.3f}s")
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/8 [00:00&lt;?, ?it/s] 12%|█▎        | 1/8 [00:01&lt;00:11,  1.57s/it] 62%|██████▎   | 5/8 [00:01&lt;00:00,  3.84it/s]100%|██████████| 8/8 [00:01&lt;00:00,  4.48it/s]
-  0%|          | 0/8 [00:00&lt;?, ?it/s] 50%|█████     | 4/8 [00:00&lt;00:00, 33.19it/s]100%|██████████| 8/8 [00:00&lt;00:00, 33.14it/s]100%|██████████| 8/8 [00:00&lt;00:00, 33.10it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/8 [00:00&lt;?, ?it/s] 12%|█▎        | 1/8 [00:01&lt;00:10,  1.56s/it] 62%|██████▎   | 5/8 [00:01&lt;00:00,  3.86it/s]100%|██████████| 8/8 [00:01&lt;00:00,  4.50it/s]
+  0%|          | 0/8 [00:00&lt;?, ?it/s] 50%|█████     | 4/8 [00:00&lt;00:00, 32.91it/s]100%|██████████| 8/8 [00:00&lt;00:00, 32.91it/s]100%|██████████| 8/8 [00:00&lt;00:00, 32.86it/s]
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.246s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.248s
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:03&lt;00:00,  3.80s/it]100%|██████████| 1/1 [00:03&lt;00:00,  3.80s/it]
-  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 10.45it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:03&lt;00:00,  3.81s/it]100%|██████████| 1/1 [00:03&lt;00:00,  3.81s/it]
+  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 10.57it/s]
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.101s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.097s
 </pre>
 
 ## 6.4 Leave `num_workers=0`

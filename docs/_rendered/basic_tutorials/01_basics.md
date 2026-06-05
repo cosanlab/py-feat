@@ -442,7 +442,7 @@ detector = Detector(device=device)
 detector
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">/tmp/claude-1000/marimo_2451660/__marimo__cell_Xref_.py:5: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
+<pre class="marimo-book-output-text marimo-stream-stderr">/tmp/claude-1000/marimo_2453162/__marimo__cell_Xref_.py:5: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
   detector = Detector(device=device)
 </pre>
 
@@ -1305,7 +1305,7 @@ type(single_face_prediction)  # instace of a Fex class
 single_face_prediction
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:02&lt;00:00,  2.62s/it]100%|██████████| 1/1 [00:02&lt;00:00,  2.62s/it]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:02&lt;00:00,  2.56s/it]100%|██████████| 1/1 [00:02&lt;00:00,  2.57s/it]
 </pre>
 
 <div class="marimo-book-output">
@@ -1404,7 +1404,7 @@ fex = detector_v2.detect(inputs=single_face_img_path, data_type="image", save='d
 fex.head()
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 37.14it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 36.28it/s]
 </pre>
 
 <div class="marimo-book-output">
@@ -1451,7 +1451,7 @@ _figs[0]
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]
   0%|          | 0/1 [00:00&lt;?, ?it/s][A  0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  1.81it/s]100%|██████████| 1/1 [00:00&lt;00:00,  1.81it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  2.02it/s]100%|██████████| 1/1 [00:00&lt;00:00,  2.02it/s]
 Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
 Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
 </pre>
@@ -1499,7 +1499,7 @@ _v1_fex.iplot_detections(bounding_boxes=True, emotions=True)
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]
   0%|          | 0/1 [00:00&lt;?, ?it/s][A  0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00, 16.56it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 12.79it/s]
 </pre>
 
 <div class="marimo-book-output">
@@ -1553,7 +1553,7 @@ mixed_prediction = detector_v2.detect(img_list, batch_size=1, data_type="image")
 mixed_prediction
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/2 [00:00&lt;?, ?it/s]100%|██████████| 2/2 [00:00&lt;00:00, 34.62it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/2 [00:00&lt;?, ?it/s]100%|██████████| 2/2 [00:00&lt;00:00, 34.36it/s]
 </pre>
 
 <div class="marimo-book-output">
