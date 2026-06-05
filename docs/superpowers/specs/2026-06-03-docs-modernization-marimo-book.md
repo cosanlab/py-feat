@@ -276,7 +276,7 @@ docstrings (currently rendered via Sphinx napoleon).
 - **Generate Markdown from docstrings externally** (`pydoc-markdown`/`griffe`)
   and feed as plain Markdown pages — middle ground.
 
-**Open question (E-1):** sidecar `pdoc` for v2.0 + build-in autodoc as a
+**Open question (E-1):** sidecar `pdoc` for v2.0 + built-in autodoc as a
 fast-follow marimo-book release? (Maintainer wants more research before deciding.)
 
 ---
@@ -413,7 +413,7 @@ only the benchmark *content/harness* and project config.
 
 **Open:**
 - C-1: static-fresh vs Firebase real-time for v2.0.
-- E-1: API reference approach (sidecar `pdoc` vs build-in autodoc) — needs research.
+- E-1: API reference approach (sidecar `pdoc` vs built-in autodoc) — needs research.
 - F-1: when to transfer `py-feat` to the new org.
 - F-2: docs in-repo vs standalone portal repo.
 
