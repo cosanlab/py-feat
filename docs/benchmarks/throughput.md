@@ -1,8 +1,13 @@
 # Throughput benchmarks
 
+> See the interactive **[live benchmarks dashboard](live.md)** for current
+> frames-per-second by detector config and GPU. This page documents the
+> methodology and archives individual runs.
+
 Tracks per-release wall-time of `Detector` and `MPDetector` over time. Each
-entry is a single run produced by `python scripts/bench_detectors.py
---markdown`. Accuracy benchmarks live in [accuracy.md](accuracy.md).
+entry is a single run produced by `python scripts/bench_detectors.py --markdown`
+(or `--json`, which is ingested into the live dashboard via
+`scripts/ingest_benchmarks.py`). Accuracy benchmarks live in [accuracy.md](accuracy.md).
 
 ## Methodology
 

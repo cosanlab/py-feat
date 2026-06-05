@@ -18,7 +18,7 @@ def _(mo):
 
     *Written by Jin Hyun Cheong and Eshin Jolly*
 
-    In this tutorial we'll perform a real analysis on part of the open dataset from ["A Data-Driven Characterisation Of Natural Facial Expressions When Giving Good And Bad News"](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335) by Watson & Johnston 2020.  You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/04_fex_analysis.ipynb)
+    In this tutorial we'll perform a real analysis on part of the open dataset from ["A Data-Driven Characterisation Of Natural Facial Expressions When Giving Good And Bad News"](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335) by Watson & Johnston 2020.
 
     In the original paper the authors had 3 speakers deliver *good* or *bad* news while filming their facial expressions. They found that could accurately "decode" each condition based on participants' facial expressions extracted either using a custom multi-chanel-gradient model or action units (AUs) extracted using [Open Face](https://github.com/TadasBaltrusaitis/OpenFace).
 

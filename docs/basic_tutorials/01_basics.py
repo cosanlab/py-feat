@@ -28,7 +28,7 @@ def _(mo):
 
     *Written by Jin Hyun Cheong and Eshin Jolly*
 
-    In this tutorial we'll explore the `Detector` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/02_detector_imgs.ipynb)
+    In this tutorial we'll explore the `Detector` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images.
     """)
     return
 
@@ -125,7 +125,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Now we use our initialized `detector` instance to make predictions with the `detect_image()` method. This is the main workhorse method that will perform face, landmark, au, and emotion detection using the loaded models. It always returns a `Fex` data instance:
+    Now we use our initialized `detector` instance to make predictions with the `.detect()` method, passing `data_type="image"`. This is the main workhorse method that will perform face, landmark, au, and emotion detection using the loaded models. It always returns a `Fex` data instance:
     """)
     return
 
@@ -294,7 +294,7 @@ def _(single_face_prediction):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    By default `.plot_detections()` will overlay facial lines on top of the input image. However, it's also possible to visualize a face using Py-Feat's standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You an control this by change by setting `faces='aus'` instead of the default `faces='landmarks'`. For more details about this kind of visualization see the [visualizing facial expressions](https://github.com/cosanlab/py-feat/blob/main/docs/basic_tutorials/03_plotting.ipynb) and the [creating an AU visualization model](https://github.com/cosanlab/py-feat/blob/main/docs/extra_tutorials/06_trainAUvisModel.ipynb) tutorials:
+    By default `.plot_detections()` will overlay facial lines on top of the input image. However, it's also possible to visualize a face using Py-Feat's standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You can control this by setting `faces='aus'` instead of the default `faces='landmarks'`. For more details about this kind of visualization see the [visualizing facial expressions](03_plotting.md) tutorial:
     """)
     return
 

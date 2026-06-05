@@ -3,44 +3,44 @@
     "basic_tutorials/01_basics.py": {
       "body_path": "basic_tutorials/01_basics.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T08:32:19+00:00",
-      "src_hash": "dca60a0ff4df6094e61e637e231908e117c5c0ca42495f3cf3a654313f9f1085"
+      "rendered_at": "2026-06-05T19:41:30+00:00",
+      "src_hash": "1b17a16f1e4f1bb94690a90b3cf9f2a750402145d5754224c16ef6e4f8aae9b2"
     },
     "basic_tutorials/02_detector_vids.py": {
       "body_path": "basic_tutorials/02_detector_vids.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T08:32:33+00:00",
-      "src_hash": "45bf8740cbb98251aa76eb14b31eef771d5688d9b12433f4fc23467501ea81b5"
+      "rendered_at": "2026-06-05T19:41:45+00:00",
+      "src_hash": "0e1e608ab208713857642ae1a4889eb97dd7f532a80cda71c96ed58ac2357c9c"
     },
     "basic_tutorials/03_plotting.py": {
       "body_path": "basic_tutorials/03_plotting.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T08:33:04+00:00",
-      "src_hash": "e923265cd7e8322924f74482bbfd43a80715edcb027a0725ed904053181d9197"
+      "rendered_at": "2026-06-05T19:42:15+00:00",
+      "src_hash": "709b79f78653fca4b7c1d5cb13c7256655a267c5be77a5fbe41e7c96e01245b9"
     },
     "basic_tutorials/04_fex_analysis.py": {
       "body_path": "basic_tutorials/04_fex_analysis.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T08:33:28+00:00",
-      "src_hash": "45b62c1e1597039b8099e593c6f60c108f2b4ddfcee5225d86111131210725e0"
+      "rendered_at": "2026-06-05T19:42:39+00:00",
+      "src_hash": "0c9a6acfd1bff633a4ecc7cfdd032dc702fde3d1985d7940f0a44cc01782e19c"
     },
     "basic_tutorials/05_detectorv2.py": {
       "body_path": "basic_tutorials/05_detectorv2.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T08:33:17+00:00",
+      "rendered_at": "2026-06-05T19:42:28+00:00",
       "src_hash": "8a8473a00ba76d12a4346649477f57ebf54961e58ae6eb976122ada45beaf933"
     },
     "basic_tutorials/06_performance.py": {
       "body_path": "basic_tutorials/06_performance.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T08:33:46+00:00",
+      "rendered_at": "2026-06-05T19:42:57+00:00",
       "src_hash": "dc8e25a161d8d6bbbaa4e57976c45a8880256af9b7e020cc03ea958bdf81104c"
     },
     "benchmarks/live.py": {
       "body_path": "benchmarks/live.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T08:33:48+00:00",
-      "src_hash": "a5520a48b2e60e91a4855f3c080a04b7d69bf38cf14c075f0396e3bb023d0b9e"
+      "rendered_at": "2026-06-05T19:42:59+00:00",
+      "src_hash": "cb605d7a38e7dbff9ea43902d80ed3a10384c76a18bd0cb8961e434d52efc74b"
     }
   },
   "schema_version": 1

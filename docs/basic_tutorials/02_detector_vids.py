@@ -28,7 +28,7 @@ def _(mo):
 
     *Written by Jin Hyun Cheong and Eshin Jolly*
 
-    In this tutorial we'll explore how to use the `Detector` class to process video files. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/03_detector_vids.ipynb)
+    In this tutorial we'll explore how to use the `Detector` class to process video files.
     """)
     return
 
@@ -65,7 +65,7 @@ def _(mo):
     mo.md(r"""
     ## 2.2 Processing videos
 
-    Detecting facial expressions in videos is easy to do using the `.detect_video()` method. This sample video included in Py-Feat is by [Wolfgang Langer](https://www.pexels.com/@wolfgang-langer-1415383?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels) from [Pexels](https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/).
+    Detecting facial expressions in videos is easy to do using the `.detect()` method with `data_type="video"`. This sample video included in Py-Feat is by [Wolfgang Langer](https://www.pexels.com/@wolfgang-langer-1415383?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels) from [Pexels](https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/).
     """)
     return
 
@@ -144,12 +144,12 @@ def _(mo):
 
 
 @app.cell
-def _(video_prediction):
-    # Frame 48 = ~0:02
-    # Frame 408 = ~0:14
-    video_prediction.query("frame in [48, 408]").plot_detections(
+def _(mo, video_prediction):
+    # Frame 48 = ~0:02 (sadness), Frame 408 = ~0:14 (happiness)
+    _figs = video_prediction.query("frame in [48, 408]").plot_detections(
         faceboxes=False, add_titles=False
     )
+    mo.vstack(_figs)
     return
 
 
@@ -163,7 +163,8 @@ def _(mo):
 
 @app.cell
 def _(video_prediction):
-    axes = video_prediction.emotions.plot()
+    _ax = video_prediction.emotions.plot()
+    _ax.figure
     return
 
 
