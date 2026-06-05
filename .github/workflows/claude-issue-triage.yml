@@ -1,0 +1,58 @@
+# Automatic first-pass triage when a new issue is opened: categorize, request a
+# reproduction when missing, flag likely duplicates, and suggest labels. Issue
+# text is not executable fork code, so this is safe to run automatically.
+#
+# Requires `issues: write` so Claude can apply labels / post a comment (via the
+# `gh` CLI authenticated by GITHUB_TOKEN). Steering lives in REVIEW.md + CLAUDE.md.
+#
+# NOTE: `issues`-triggered workflows run from the workflow file on the DEFAULT
+# branch — this file must be on `main` to fire.
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: claude-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    if: github.event.issue.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Triage GitHub issue #${{ github.event.issue.number }} in this repo.
+            Follow REVIEW.md (triage section) and CLAUDE.md.
+
+            Do the following, using the `gh` CLI for any label/comment writes:
+            1. Categorize: bug, feature-request, question, or documentation.
+            2. If it's a bug without clear reproduction steps, add the
+               `needs-repro` label and post ONE concise comment asking for a
+               minimal repro (version, OS, code snippet, expected vs actual).
+            3. Search existing OPEN and recently CLOSED issues; if it looks like
+               a duplicate, say which issue and add `possible-duplicate`.
+            4. Be aware many v0.6-era requests are already resolved in v0.7 —
+               check before treating something as new (see CLAUDE.md roadmap).
+            5. Apply at most 2-3 labels total. Only use labels that already
+               exist in the repo (list them with `gh label list` first; do not
+               create new labels).
+
+            Keep any comment short and friendly. Do not close the issue.
+          claude_args: |
+            --max-turns 6
+            --model claude-sonnet-4-6
+            --allowedTools read,bash

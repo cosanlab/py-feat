@@ -1,0 +1,56 @@
+# On-demand Claude Code assistant, triggered by an `@claude` mention in an
+# issue or PR comment. This is the backbone of the setup: it works for any
+# issue/PR (including PRs from forks, because comment events run in the base
+# repo with secrets), and it is gated to maintainers so fork authors can't
+# trigger runs against the maintainer's Max credits or reach the token.
+#
+# SETUP (one-time, done by a maintainer with a Claude Pro/Max subscription):
+#   1. Run `claude setup-token` locally to mint an OAuth token.
+#   2. Add it as the repo secret CLAUDE_CODE_OAUTH_TOKEN
+#      (Settings -> Secrets and variables -> Actions).
+#   3. Run `/install-github-app` (or install https://github.com/apps/claude).
+#
+# NOTE: issue_comment-triggered workflows always run from the workflow file on
+# the DEFAULT branch. This file must be on `main` to fire for comments.
+#
+# USAGE: comment `@claude <request>` on an issue or PR. Add the word `opus`
+# (e.g. `@claude opus, review the concurrency logic`) to use Opus for a harder
+# task; otherwise it runs on Sonnet.
+name: Claude (@claude mention)
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: claude-mention-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    # Only maintainers (repo owner / org members / collaborators) can trigger,
+    # and only when the comment actually contains `@claude`.
+    if: >-
+      contains(github.event.comment.body, '@claude') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Balanced posture: Sonnet by default; Opus on request via `opus` in
+          # the comment. Read-only tools — no commits/pushes from CI.
+          claude_args: |
+            --max-turns 14
+            --model ${{ contains(github.event.comment.body, 'opus') && 'claude-opus-4-8' || 'claude-sonnet-4-6' }}
+            --allowedTools read,bash
