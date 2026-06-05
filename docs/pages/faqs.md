@@ -22,14 +22,14 @@ Similar to the previous issue, you can control the sensitivity of how confidentl
 
 ### How can I speed things up and control memory usage?
 
-By default all images or videos frames are processed independently in batches of size 1 using your CPU. If you have access to a CUDA-enabled GPU, you can use the `device` argument when initializing a detector instance to make use of it: `Detector(device='cuda')`. Unfortunately, macOS `'mps'` is not supported on our current model versions, but we hope to add it soon. To perform detections in parallel increase the `batch_size` argument to `Detector.detect()` from the default of 1. The largest batch size you can use without crashing your kernel is limited by the amount of VRAM available to your GPU (or RAM if you're using CPU).
+By default all images or video frames are processed independently in batches of size 1 using your CPU. If you have a GPU, use the `device` argument when initializing a detector to make use of it — `Detector(device='cuda')` for NVIDIA GPUs or `Detector(device='mps')` for Apple Silicon. Both `Detector` and `Detectorv2` support CUDA and MPS. To perform detections in parallel, increase the `batch_size` argument to `Detector.detect()` from the default of 1. The largest batch size you can use without crashing your kernel is limited by the amount of VRAM available to your GPU (or RAM if you're using CPU).
 
 In order to use batching you must either:
 - use a video - where frames are all assumed to have the same dimensions
 - use a list of images - where each image has the same dimensions
 - use a list of images and set `output_size=(width, height)` in `.detect()` to resize all images to the same dimensions before processing
 
-You can control parallelization of data loading using the `num_workers` argument to `.detect()`, which gets directly passed to pytorch's [DataLoader](https://pytorch.org/tutorials/beginner/basics/data_tutorial.html)
+You can control parallelization of data loading using the `num_workers` argument to `.detect()`, which gets directly passed to pytorch's [DataLoader](https://pytorch.org/tutorials/beginner/basics/data_tutorial.html). Note that on Apple Silicon `num_workers > 0` is frequently *slower* than the default of `0`, so we recommend leaving it at `0` unless you've benchmarked a speedup on your own hardware.
 
 ### Why does video processing take so long?
 

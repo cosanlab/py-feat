@@ -35,11 +35,11 @@ The `face_model` kwarg accepts `'retinaface'` or `'img2pose'`. (`'retinaface_r34
 `retinaface` detects faces only, so when it is selected py-feat estimates **6DoF head pose** from the detected facial landmarks using a small pose MLP ([`py-feat/pose_mlp_v2`](https://huggingface.co/py-feat/pose_mlp_v2)). `img2pose` instead returns head pose directly from its single forward pass.
 ```
 
-## Facial landmark detection
+All three landmark models use weights adapted from [`cunjian/pytorch_face_landmark`](https://github.com/cunjian/pytorch_face_landmark), which does not declare a license upstream (see [Model licenses](#model-licenses) below).
 
-- **`mobilefacenet`: Efficient CNNs for accurate real time face verification on mobile devices** ([Chen et al, 2018](https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf)). [Model card](https://huggingface.co/py-feat/mobilefacenet).
-- `mobilenet`: Efficient convolutional neural networks for mobile vision applications ([Howard et al, 2017](https://arxiv.org/pdf/1704.04861v1.pdf)). [Model card](https://huggingface.co/py-feat/mobilenet).
-- `pfld`: Practical Facial Landmark Detector by ([Guo et al, 2019](https://arxiv.org/pdf/1902.10859.pdf)). [Model card](https://huggingface.co/py-feat/pfld).
+- **`mobilefacenet`: Efficient CNNs for accurate real time face verification on mobile devices** ([Chen et al, 2018](https://arxiv.org/ftp/arxiv/papers/1804/1804.07573.pdf)). [Model card](https://huggingface.co/py-feat/mobilefacenet) · License: not declared upstream.
+- `mobilenet`: Efficient convolutional neural networks for mobile vision applications ([Howard et al, 2017](https://arxiv.org/pdf/1704.04861v1.pdf)). [Model card](https://huggingface.co/py-feat/mobilenet) · License: not declared upstream.
+- `pfld`: Practical Facial Landmark Detector by ([Guo et al, 2019](https://arxiv.org/pdf/1902.10859.pdf)). [Model card](https://huggingface.co/py-feat/pfld) · License: not declared upstream.
 
 ## Action Unit detection
 
@@ -98,3 +98,19 @@ These linear PLS / PCA models translate between the different feature spaces py-
 - **`au_to_mesh`** ([`py-feat/au_to_mesh`](https://huggingface.co/py-feat/au_to_mesh)). PLS regression for AU → 478-vertex MediaPipe FaceMesh, consumed by `plot_face_mesh` and `predict_face_mesh`. This is the **478-mesh** visualization for the MediaPipe-mesh detectors — **`Detectorv2` and `MPDetector`**. (`Detector` (v1) emits 68-point landmarks, so its AU visualization uses the 68-point **`au_to_landmarks`** model above, *not* this mesh model.) Output lives in a pose-canonical, Procrustes-aligned, frontalized frame. The **default is `v4`** (`model_version="v4"`), fit from `Detectorv2`'s own predicted mesh on ~733K CelebV-HQ frames in the 20-AU `AU_LANDMARK_MAP['Feat']` space; the neutral mesh is aligned to the canonical MediaPipe face (frontal) and aspect-corrected to natural proportions. Earlier `v2` (original 20-AU) and `v3` (Detectorv2 24-AU) models remain available via `model_version=`.
 
 - **`landmarks68_to_mesh478`** ([`py-feat/landmarks68_to_mesh478`](https://huggingface.co/py-feat/landmarks68_to_mesh478)). PCA-bottleneck linear regression mapping 68-pt dlib landmarks (`Detector` output) to the 478-vertex MP mesh. Used by `predict_mesh_from_dlib68` so users with a `Detector` Fex can render the 3D mesh without a separate `MPDetector` pass. Trained on ~340K paired frames; OOS R² = 0.479 — substantially higher than the AU → mesh model because dlib landmarks share rich spatial information with the MP mesh that 20 AU intensities can't encode.
+
+## Model licenses
+
+Py-Feat itself is [MIT-licensed](https://github.com/cosanlab/py-feat/blob/master/LICENSE), but **each bundled model carries its own license**, and you must cite and respect the license of every model you use. The repository [`LICENSE`](https://github.com/cosanlab/py-feat/blob/master/LICENSE) file is the authoritative source and links to each upstream license; the table below summarizes it. **Several models are non-commercial only** — validate license compatibility before any commercial deployment.
+
+| Model | License | Notes |
+|---|---|---|
+| `retinaface` | MIT | [biubug6/Pytorch_Retinaface](https://github.com/biubug6/Pytorch_Retinaface/blob/master/LICENSE.MIT) |
+| `img2pose` | **CC BY-NC 4.0** | Non-commercial ([upstream license](https://github.com/vitoralbiero/img2pose/blob/main/license.md)) |
+| `mobilefacenet`, `mobilenet`, `pfld` | **Not declared** | Weights from [cunjian/pytorch_face_landmark](https://github.com/cunjian/pytorch_face_landmark), which declares no license upstream |
+| `xgb`, `svm` (AU & emotion) | MIT | Trained by the Py-Feat team |
+| `resmasknet` | MIT | [phamquiluan/ResidualMaskingNetwork](https://github.com/phamquiluan/ResidualMaskingNetwork) |
+| `arcface` | Code MIT; **weights non-commercial research** | InsightFace code is MIT; the `w600k_r50` weights and WebFace600K training data are research-only |
+| `facenet` | MIT | [timesler/facenet-pytorch](https://github.com/timesler/facenet-pytorch/blob/master/LICENSE.md) |
+| `l2cs` | MIT | [Ahmednull/L2CS-Net](https://github.com/Ahmednull/L2CS-Net) |
+| `face_multitask_v2` (`Detectorv2`) | **Non-commercial research** | Inherits the non-commercial restriction of its ArcFace identity branch and research-only training data |
