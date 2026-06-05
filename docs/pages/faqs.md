@@ -31,13 +31,15 @@ In order to use batching you must either:
 
 You can control parallelization of data loading using the `num_workers` argument to `.detect()`, which gets directly passed to pytorch's [DataLoader](https://pytorch.org/tutorials/beginner/basics/data_tutorial.html). Note that on Apple Silicon `num_workers > 0` is frequently *slower* than the default of `0`, so we recommend leaving it at `0` unless you've benchmarked a speedup on your own hardware.
 
-### Why does video processing take so long?
+### How fast is video processing?
 
-This was a deliberate design-tradeoff to ensure a seamless experience when processing videos of any length on any computer, regardless of memory limits or GPU availability. By default, Py-feat avoids loading an entire video into memory, only loading frames as-needed, similar to Pytorch's [unofficial video API](https://pytorch.org/vision/main/auto_examples/others/plot_video_api.html#building-a-sample-read-video-function). 
+Py-Feat's original release prioritized correctness and a seamless out-of-the-box experience over raw speed, and was quite slow (roughly 1–3 fps). That is no longer the case: **`Detector` (v1) is now much faster, supports batching, and runs on the GPU (CUDA and MPS)**, and **`Detectorv2` is faster still** — it computes its whole multi-task output in a single forward pass. For current speed and accuracy numbers, see the [accuracy](../benchmarks/accuracy.md) and [throughput](../benchmarks/throughput.md) benchmarks.
 
-This means that you don't need to worry about your computer crashing if you're trying to process a video that doesn't fit into memory! However, it also means that there's a small latency overhead that increases with the length of the video, i.e. later frames take longer to load than earlier frames as the video needs to be "seeked" to the correct time-point.
+To get the most throughput, run on a GPU (`device='cuda'` or `device='mps'`) and increase `batch_size` in `.detect()` (see the question above).
 
-If you already know that you have enough system memory to load the entire video at once, you can instead manually call `video_to_tensor('videofile.mp4')` from `feat.utils.io`. Then you can process the tensor by passing `data_type='tensor'` to `Detector.detect()` and proceed with batching as usual.
+By default, Py-feat avoids loading an entire video into memory, only loading frames as-needed, similar to Pytorch's [unofficial video API](https://pytorch.org/vision/main/auto_examples/others/plot_video_api.html#building-a-sample-read-video-function). This means you don't need to worry about your computer crashing if you're processing a video that doesn't fit into memory; the tradeoff is a small per-frame seek latency that grows with video length (later frames take slightly longer to load as the video is "seeked" to the correct time-point).
+
+If you already know you have enough system memory to load the entire video at once, you can instead manually call `video_to_tensor('videofile.mp4')` from `feat.utils.io` and process the resulting tensor by passing `data_type='tensor'` to `Detector.detect()`, batching as usual.
 
 ## Known issues
 
