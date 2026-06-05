@@ -44,99 +44,66 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4.1 Download the data
+    ## 4.1 The data
 
-    Here's we'll download and save the first 20 video files and their corresponding attributes from OSF. The next cell should run quickly on Google Collab, but will depend on your own internet connection if you're executing this notebook locally. You can rerun this cell in case the download fails for any reason, as it should skip downloading existing files:
+    We'll analyze 20 short clips from the [Watson & Johnston (2020)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335) "good news vs bad news" dataset — 10 of each. To keep this tutorial fast and offline, the per-frame `Detector` outputs are **pre-computed and bundled with the docs** under `docs/data/news_sample/`, so we load them directly instead of downloading videos and re-running detection. The full dataset is on [OSF](https://osf.io/6tbwj/).
     """)
     return
 
 
 @app.cell
 def _():
-    import os
-    import subprocess
+    from glob import glob
+    from pathlib import Path
+
+    import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
-    import matplotlib.pyplot as plt
-    from glob import glob
     import seaborn as sns
-    from tqdm import tqdm
+
     sns.set_context("talk")
 
-    files_to_download = {
-        "4c5mb": 'clip_attrs.csv',
-        "n6rt3": '001.mp4',
-        "3gh8v": '002.mp4',
-        "twqxs": '003.mp4',
-        "nc7d9": '004.mp4',
-        "nrwcm": '005.mp4',
-        "2rk9c": '006.mp4',
-        "mxkzq": '007.mp4',
-        "c2na7": '008.mp4',
-        "wj7zy": '009.mp4',
-        "mxywn": '010.mp4',
-        "6bn3g": '011.mp4',
-        "jkwsp": '012.mp4',
-        "54gtv": '013.mp4',
-        "c3hpm": '014.mp4',
-        "utdqj": '015.mp4',
-        "hpw4a": '016.mp4',
-        "94swe": '017.mp4',
-        "qte5y": '018.mp4',
-        "aykvu": '019.mp4',
-        "3d5ry": '020.mp4',
-    }
+    # Pre-computed per-frame Detector outputs (xgb AUs + resmasknet emotions +
+    # head pose) for the 20 bundled clips. Generated once with
+    # `detector.detect(video, data_type="video", skip_frames=2)` and committed
+    # under docs/data/news_sample/ so this tutorial runs offline.
+    data_dir = Path(__file__).resolve().parent.parent / "data" / "news_sample"
+    videos = [Path(c).stem + ".mp4" for c in sorted(glob(str(data_dir / "0*.csv")))]
 
-    for fid, fname in files_to_download.items():
-        if not os.path.exists(fname):
-            print(f"Downloading: {fname}")
-            subprocess.run(f"wget -O {fname} --content-disposition https://osf.io/{fid}/download".split())
-
-    videos = np.sort(glob("*.mp4"))
-
-    # Load in attributes
-    clip_attrs = pd.read_csv("clip_attrs.csv")
-
-    # Add in file names and rename conditions
-    clip_attrs = clip_attrs.assign(
-        input=clip_attrs.clipN.apply(lambda x: str(x).zfill(3) + ".mp4"),
-        condition=clip_attrs["class"].replace({"gn": "goodNews", "ists": "badNews"}),
+    clip_attrs = pd.read_csv(data_dir / "clip_attrs.csv").assign(
+        input=lambda d: d.clipN.apply(lambda x: str(x).zfill(3) + ".mp4"),
+        condition=lambda d: d["class"].replace({"gn": "goodNews", "ists": "badNews"}),
     )
-
-    # We're only using a subset of videos for this tutorial so drop the rest
     clip_attrs = clip_attrs.query("input in @videos")
 
-    print(f"Downloaded {len(videos)} videos")
-    print(f"Downloaded attributes files with {clip_attrs.shape[0]} rows")
-    return clip_attrs, np, os, pd, plt, sns, tqdm, videos
+    print(
+        f"{len(videos)} clips: "
+        f"{(clip_attrs.condition == 'goodNews').sum()} good news, "
+        f"{(clip_attrs.condition == 'badNews').sum()} bad news"
+    )
+    return clip_attrs, data_dir, np, pd, plt, sns, videos
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4.2 Extract facial features using `Detector`
+    ## 4.2 How the detections were generated
 
-    Now we'll initialize a new `Detector`, process each frame of each video using `.detect_video()`, and save the results to csv files named after the video.
-    """)
-    return
+    The bundled CSVs were produced by running the `Detector` over each clip and saving its per-frame output. You don't need to run this — we load the saved CSVs in the next section — but here's the code that made them:
 
-
-@app.cell
-def _(os, tqdm, videos):
+    ```python
     from feat import Detector
 
-    # Initialize the default detector
-    detector = Detector()
-
-    # Loop over and process each video and save results to csv
-    for video in tqdm(videos):
-        out_name = video.replace(".mp4", ".csv")
-        if not os.path.exists(out_name):
-
-            print(f"Processing: {video}")
-
-            # This is the line that does detection and auto-saving!
-            fex = detector.detect(video, data_type="video", save=out_name)
+    detector = Detector(
+        au_model="xgb", emotion_model="resmasknet", identity_model=None, device="auto"
+    )
+    for video in videos:
+        detector.detect(
+            video, data_type="video", batch_size=8, skip_frames=2,
+            save=video.replace(".mp4", ".csv"),
+        )
+    ```
+    """)
     return
 
 
@@ -157,9 +124,11 @@ def _(mo):
 
 
 @app.cell
-def _(pd, videos):
+def _(data_dir, pd, videos):
     from feat.utils.io import read_feat
-    fex_1 = pd.concat(map(lambda video: read_feat(video.replace('.mp4', '.csv')), videos))
+    fex_1 = pd.concat(
+        read_feat(str(data_dir / video.replace(".mp4", ".csv"))) for video in videos
+    )
     print(f'Unique videos: {fex_1.inputs.nunique()}')
     print(f'Total processed frames: {fex_1.shape[0]}')
     print(f"Avg frames per video: {fex_1.groupby('input').size().mean()}")
@@ -219,6 +188,7 @@ def _(sns, video_means):
     # Plot them
     _ax.set(ylabel='Average Probability')
     sns.despine()
+    _ax.figure
     return
 
 
@@ -248,6 +218,7 @@ def _(by_video, clip_attrs, plt, sns):
     # Update sessions to group by condition, compute means (per condition), and make a
     # barplot of the mean AUs for each condition
     sns.despine()
+    _ax.figure
     return (video2condition,)
 
 
@@ -281,7 +252,7 @@ def _(by_video, np, plt, sns, video2condition):
     sns.despine()
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('./fig_maker/au_diffs.pdf', bbox_inches='tight')
+    fig
     return
 
 
@@ -314,6 +285,7 @@ def _(pd, sns, video2condition, video_means):
     _ax.set_xticklabels(xticks)
     _ax.set_ylabel('Beta +/- SE')
     sns.despine()
+    _ax.figure
     return (by_condition,)
 
 
@@ -346,7 +318,9 @@ def _(by_condition, pd, plt, sns):
     _results = pd.concat(_results).assign(Features=lambda df: df.Features.map({'emotions': 'Emotions', 'poses': 'Pose', 'aus': 'AUs', 'emotions,poses': 'Emotions\n+ Pose', 'aus,poses': 'AUs+Pose'}))
     f, _ax = plt.subplots(1, 1, figsize=(3.75, 4))  # .predict is just like .regress, but this time session is our y.
     _ax = sns.barplot(x='Features', y='Accuracy', errorbar='sd', dodge=False, hue='Features', data=_results, ax=_ax, order=['Emotions', 'Emotions\n+ Pose', 'AUs+Pose', 'AUs', 'Pose'])
-    _ax.get_legend().remove()
+    _legend = _ax.get_legend()
+    if _legend is not None:
+        _legend.remove()
     _ax.set_title('Good News vs Bad News\nClassifier Performance')
     _ax.set(ylabel='Accuracy', xlabel='')
     sns.despine()
@@ -356,7 +330,7 @@ def _(by_condition, pd, plt, sns):
     # Concat results into a single dataframe and tweak column names
     # Plot it
     # with sns.plotting_context("talk", font_scale=1.8):
-    plt.savefig('./fig_maker/decoding_acc.pdf', bbox_inches='tight')  # Save the performance for plotting  # Print performance
+    f
     return (models,)
 
 
@@ -373,45 +347,25 @@ def _(mo):
 def _(models, plt, sns):
     from feat.plotting import plot_face
 
-    plot_face(
+    _ax = plot_face(
         au=models['aus'][1].coef_.squeeze(), # the LDA coefs from the AUs pipeline model
         feature_range=(0, 1),
         muscles={"all": "heatmap"},
         title="Expression reconstructed from\nAU classifier weights",
         title_kwargs={'wrap':False}
-    );
+    )
     sns.despine(left=True,bottom=True);
 
-    plt.savefig('./fig_maker/weights.pdf', bbox_inches='tight');
+    _ax.figure
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Even cooler we can *animate* that face expression to **emphasize what's changing.** Here we start from a neutral face:
-    """)
-    return
-
-
-@app.cell
-def _(models):
-    from feat.plotting import animate_face
-
-    animation = animate_face(
-        end=models['aus'][1].coef_.squeeze(), # same as before
-        feature_range=(0, 1),
-        muscles={'all': 'heatmap'},
-        title="Good vs Bad News Classifier Weights",
-        save="weights.gif",
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ![](./weights.gif)
+    You can also *animate* this expression to emphasize what's changing — pass the
+    same classifier-weight vector as `end` (and a neutral face as `start`) to
+    `animate_face`. See [tutorial 3](03_plotting.md) for animation examples.
     """)
     return
 
@@ -464,7 +418,7 @@ def _(isc, np, plt, sns, video2condition):
     _ax = add_cond_to_ticks(_ax)
     _ax.set(xlabel='', ylabel='', title='Inter-video Happiness\ntimeseries correlation')
     # Plot it
-    plt.savefig('./fig_maker/isc.pdf', bbox_inches='tight')
+    _ax.figure
     return
 
 

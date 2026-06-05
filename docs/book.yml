@@ -64,12 +64,10 @@ toc:
         mode: cached
       - file: basic_tutorials/05_detectorv2.py
         mode: cached
+      - file: basic_tutorials/04_fex_analysis.py
+        mode: cached
       - file: basic_tutorials/06_performance.py
         mode: cached
-  # 04 deferred: it downloads 20 OSF videos and reads per-video CSVs absent at
-  # build time. Needs a sample-data approach before it can render.
-  #     - file: basic_tutorials/04_fex_analysis.py
-  #       mode: cached
 
   # API reference deferred (Workstream E): MyST/marimo-book have no docstring
   # autodoc; pages/api.md (Sphinx eval_rst) is omitted until that's resolved.

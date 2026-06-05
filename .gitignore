@@ -13,6 +13,8 @@ feat/tests/data/cond_pain_2017-03-30_s20_r01.txt
 # Ignore jupyter-book build artifacts as they'll get auto-built via github actions
 docs/**/*.csv
 docs/**/*.mp4
+# ...except the small bundled sample dataset the 04_fex_analysis tutorial loads.
+!docs/data/news_sample/*.csv
 docs/_build
 docs/basic_tutorials/*.jpg
 docs/basic_tutorials/*.gif

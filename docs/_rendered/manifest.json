@@ -3,31 +3,37 @@
     "basic_tutorials/01_basics.py": {
       "body_path": "basic_tutorials/01_basics.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T01:41:08+00:00",
+      "rendered_at": "2026-06-05T02:14:31+00:00",
       "src_hash": "dca60a0ff4df6094e61e637e231908e117c5c0ca42495f3cf3a654313f9f1085"
     },
     "basic_tutorials/02_detector_vids.py": {
       "body_path": "basic_tutorials/02_detector_vids.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T01:41:22+00:00",
+      "rendered_at": "2026-06-05T02:14:46+00:00",
       "src_hash": "45bf8740cbb98251aa76eb14b31eef771d5688d9b12433f4fc23467501ea81b5"
     },
     "basic_tutorials/03_plotting.py": {
       "body_path": "basic_tutorials/03_plotting.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T01:41:53+00:00",
+      "rendered_at": "2026-06-05T02:15:16+00:00",
       "src_hash": "e923265cd7e8322924f74482bbfd43a80715edcb027a0725ed904053181d9197"
+    },
+    "basic_tutorials/04_fex_analysis.py": {
+      "body_path": "basic_tutorials/04_fex_analysis.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T02:15:41+00:00",
+      "src_hash": "45b62c1e1597039b8099e593c6f60c108f2b4ddfcee5225d86111131210725e0"
     },
     "basic_tutorials/05_detectorv2.py": {
       "body_path": "basic_tutorials/05_detectorv2.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T01:42:06+00:00",
+      "rendered_at": "2026-06-05T02:15:29+00:00",
       "src_hash": "8a8473a00ba76d12a4346649477f57ebf54961e58ae6eb976122ada45beaf933"
     },
     "basic_tutorials/06_performance.py": {
       "body_path": "basic_tutorials/06_performance.md",
       "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
-      "rendered_at": "2026-06-05T01:42:24+00:00",
+      "rendered_at": "2026-06-05T02:15:59+00:00",
       "src_hash": "dc8e25a161d8d6bbbaa4e57976c45a8880256af9b7e020cc03ea958bdf81104c"
     }
   },
