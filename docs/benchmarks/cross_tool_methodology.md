@@ -77,6 +77,18 @@ from py-feat's `feat.evaluation` loaders into shared manifests
 because each tool's *own* face detector decides which faces it finds — that
 detection robustness is itself part of the comparison.
 
+**Strictly out-of-sample.** Every number is on a held-out **validation/test**
+split — no tool is ever scored on images from its own training set:
+
+| Dataset | Split scored | Held out for |
+|---|---|---|
+| AffectNet | official **validation** (`validation_aligned.csv`) | all (tools train on AffectNet-train) |
+| RAF-DB | **test** split | all (tools train on RAF-train) |
+| DISFA+ | full posed-peak eval set | **all** — no tool trains on DISFA+ (we avoid DISFA, which several train on) |
+| Columbia Gaze | full eval set | all |
+| MPIIFaceGaze | held-out subsample | all |
+| Gaze360 | **`bench`/test** split | all — incl. py-feat, whose L2CS trains only on Gaze360-train |
+
 ### Emotion — 7-class, top-1 accuracy / macro-F1
 
 Held-out **AffectNet-val** (994 imgs, classes 0–6) and **RAF-DB test** (3,068).
@@ -100,7 +112,7 @@ leads on both accuracy and the balanced macro-F1 (LibreFace's 0.646 accuracy but
 arousal at all** — so this isn't a head-to-head, it's a capability the others
 lack. On AffectNet-val: **valence CCC 0.535, arousal CCC 0.482**.
 
-### Gaze — Columbia Gaze, mean angular error (head-frontal subset, 1,176 imgs)
+### Gaze — mean angular error across three datasets
 
 Each tool emits gaze in its own (yaw, pitch) frame, sign, and unit, mostly
 undocumented. We resolve that I/O convention **identically and in every tool's
@@ -108,16 +120,25 @@ favor** — the single best discrete (axis × sign × unit) mapping to the GT fr
 (`shared/gaze_convention.py`) — so no tool is penalised for an opaque output
 convention. The same procedure is applied to py-feat.
 
-| Tool | angular MAE | median |
-|------|:---:|:---:|
-| **py-feat v2** | **2.72°** | 2.21° |
-| **OpenFace 3.0** | 12.05° | 11.34° |
-| **LibreFace** | 15.40° | 14.33° |
+| Tool | Columbia (1.2k) | MPIIFaceGaze (3k) | Gaze360 test (2.5k) |
+|------|:---:|:---:|:---:|
+| **py-feat v2** | **2.72°** | **2.80°** | **9.42°** |
+| **OpenFace 3.0** | 12.05° | 7.03° | 41.09° |
+| **LibreFace** | 15.40° | 19.49° | 32.08° |
 
-py-feat's L2CS gaze is dramatically more accurate on Columbia. (The Columbia
-loader's yaw-sign convention was corrected in `feat.evaluation` as part of this
-work — it had previously reported 17.5° from a sign mismatch, not a model error;
-py-feat's stock harness now reports the same 2.72°.)
+py-feat's L2CS gaze leads on all three, and is strikingly stable (~2.7–2.8°) on
+the two in-the-wild/lab sets where the competitors swing widely. Two caveats,
+both stated rather than hidden:
+
+- **Columbia loader fix.** The Columbia yaw-sign convention was corrected in
+  `feat.evaluation` as part of this work (it had reported 17.5° from a sign
+  mismatch, not a model error); py-feat's stock harness now reports 2.72°.
+- **Gaze360 is in-distribution for py-feat.** Its L2CS model trains on
+  Gaze360-*train*; we score the held-out `bench`/test split (no train leakage),
+  but the *distribution* is still home-field for py-feat and out-of-distribution
+  for OF3/LibreFace — so read Gaze360 as "how far OOD pushes each tool" (OF3
+  collapses to 41° on the ±170° poses), not a like-for-like ranking. Columbia
+  and MPIIFaceGaze are held out for everyone equally.
 
 > Reproduce: `tools/<tool>/run_accuracy.py` (OF3/PyAFAR), `run_modalities.py`
 > (LibreFace), `run_gaze.py` + `run_pyfeat_modalities.py` (py-feat). Consolidated
