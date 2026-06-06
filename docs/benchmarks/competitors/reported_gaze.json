@@ -1,0 +1,11 @@
+{
+  "_comment": "Gaze accuracy as REPORTED by each method (within-dataset, the standard normalized protocol), for context vs our held-out cross-tool harness. py-feat figures are self-reported from the au_deep training repo (in-distribution: it trained on these datasets); OF3 and L2CS are from their papers. LibreFace does not report gaze. mean angular error, degrees.",
+  "reported": [
+    {"tool": "pyfeat_v2", "dataset": "mpiigaze", "value": 3.92, "source": "au_deep v2.4 final (shipped ckpt v24fix_s3; self-reported, in-distribution)"},
+    {"tool": "pyfeat_v2", "dataset": "gaze360", "value": 6.81, "source": "au_deep v2.4 final (shipped ckpt v24fix_s3; self-reported, in-distribution)"},
+    {"tool": "openface3", "dataset": "mpiifacegaze", "value": 2.56, "source": "OpenFace 3.0 paper (arXiv:2506.02891)"},
+    {"tool": "openface3", "dataset": "gaze360", "value": 10.6, "source": "OpenFace 3.0 paper (arXiv:2506.02891)"},
+    {"tool": "l2cs_net", "dataset": "mpiigaze", "value": 3.92, "source": "L2CS-Net paper (arXiv:2203.03339); py-feat's gaze lineage"},
+    {"tool": "l2cs_net", "dataset": "gaze360", "value": 10.41, "source": "L2CS-Net paper (arXiv:2203.03339); py-feat's gaze lineage"}
+  ]
+}
