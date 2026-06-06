@@ -165,3 +165,4 @@ feat/resources/*.joblib
 weights_libreface/
 /tmp/
 scripts/competitors/*manifest*.csv
+/weights/

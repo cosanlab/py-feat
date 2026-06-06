@@ -51,11 +51,17 @@ per-tool note); treat as indicative until a single-protocol recompute lands.
 
 | Tool | DISFA+ mean F1 | AUs scored | binarization | source |
 |------|:---:|:---:|---|---|
-| **py-feat v1** (`Detector`, xgb) | _pending_ | 12 | truth ≥2, prob ≥0.5 | `bench_accuracy` |
-| **py-feat v2** (`Detectorv2`) | _pending_ | 12 | truth ≥2, prob ≥0.5 | `bench_accuracy` |
-| **OpenFace 3.0** | 0.488 | 8 | their `evaluation.py` | `openface3_*.json` |
+| **py-feat v2** (`Detectorv2`) | **0.540** | 12 | truth ≥2, prob ≥0.5 | `pyfeat_disfaplus_au.json` |
+| **OpenFace 3.0** | 0.488 | 8 | their `evaluation.py` | `openface3_disfaplus.json` |
 | **LibreFace** (research RepVGG) | 0.461 | 12 | truth ≥2, intensity ≥2 | `libreface_repvgg_disfaplus.json` |
+| **py-feat v1** (`Detector`, xgb) | 0.250 | 12 | truth ≥2, prob ≥0.5 | `pyfeat_disfaplus_au.json` |
 | **PyAFAR** | _n/a_ | ≤7 overlap | — | not runnable (see notes) |
+
+**py-feat v2 (Detectorv2) leads** the held-out DISFA+ AU benchmark (0.54), ahead
+of OpenFace 3.0 (0.49) and LibreFace (0.46) — and recall DISFA+ is held out for
+*all* tools, while DISFA (LibreFace's/OF3's training set) is excluded. py-feat
+v1's xgb path is weaker here (0.25) on the strict 12-AU / ≥2 protocol; it's the
+legacy modular detector, and v2 is the recommended path.
 
 LibreFace also gives mean intensity **PCC = 0.73** (its native DISFA metric).
 A follow-up will recompute all tools on one AU set + threshold for an
@@ -171,9 +177,23 @@ collapse, out-of-distribution collapse) are themselves the usability story:
 without careful per-frame validation you'd ship wrong numbers.
 
 ### OpenFace 3.0
-Research repo + checkpoints; outputs 8 AUs via a sigmoid head. Protocol from
-their `evaluation.py` (above). Existing run:
-`bench-results/au_local/openface3_*.json`.
+Cleaner to install than LibreFace/PyAFAR (`pip install openface-test` +
+`openface download`), but the shipped pip CLI has **three blocking bugs**:
+1. A **hardcoded developer path** baked into the STAR landmark config
+   (`ckpt_dir = '/work/jiewenh/openFace/OpenFace-3.0/STAR'`) → `Permission
+   denied: '/work'` on any other machine until patched.
+2. `openface detect-video` throws an **OpenCV `imread` error** (mishandles video
+   frames) — video mode is unusable.
+3. `openface ... -d cuda` always raises *"provide at least one valid device
+   ID"* — the CLI never passes `device_ids`, so **GPU mode is broken** from the
+   CLI.
+
+After patching the `/work` path, single-image `openface detect` works and emits
+faces + 68 landmarks + emotion + gaze + 8 AUs. AU accuracy on DISFA+ (mean F1
+**0.488**, 8 AUs) is in `competitors/openface3_disfaplus.json`. Clean *speed*
+timing wasn't possible via the supported CLI (video + GPU paths broken; per-call
+model load obscures per-frame throughput), so OF3's speed row is left blank —
+which, again, is part of the comparison.
 
 ### PyAFAR — dependency rot + API/coverage mismatch
 Another multi-obstacle integration (its own MediaPipe + TensorFlow env, kept
