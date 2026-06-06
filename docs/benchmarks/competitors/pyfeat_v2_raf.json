@@ -1,0 +1,15 @@
+{
+  "model": "pyfeat_v2",
+  "date": "2026-06-06T10:17:33.861126",
+  "host": "liquidswords2",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+  "results": {
+    "raf_test": {
+      "n_samples": 3068,
+      "n_scored": 3019,
+      "emotion_accuracy": 0.6555,
+      "emotion_f1_macro": 0.5275,
+      "valence_arousal_supported": false
+    }
+  }
+}

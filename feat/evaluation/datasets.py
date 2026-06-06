@@ -625,13 +625,14 @@ def load_columbia_gaze(
                 # Columbia's +V = subject looks up; L2CS-Gaze360 convention
                 # matches (+pitch = up). No flip needed.
                 "gaze_pitch_rad": np.deg2rad(vert_deg),
-                # Columbia's +H = subject looks to their LEFT (camera's right);
-                # L2CS-Gaze360's +yaw is opposite convention. Empirically
-                # confirmed: flipping yaw sign drops MAE from ~25.5° to
-                # ~21.2° on the head-frontal subset (sign-flip sweep on 100
-                # samples, May 2026). See feat/evaluation/metrics.py for
-                # the angular error definition.
-                "gaze_yaw_rad": -np.deg2rad(horiz_deg),
+                # Columbia's +H = subject looks to their LEFT (camera's right).
+                # The full-set convention sweep (all axis/sign/unit combos vs
+                # L2CS output, June 2026) shows +H maps to L2CS-Gaze360's +yaw
+                # directly: mean angular error drops to ~2.7° with this sign and
+                # ~17.5° with the opposite. (The earlier 100-sample sweep that
+                # preferred the flip was underpowered.) See
+                # feat/evaluation/metrics.py for the angular error definition.
+                "gaze_yaw_rad": np.deg2rad(horiz_deg),
             })
 
     if not rows:

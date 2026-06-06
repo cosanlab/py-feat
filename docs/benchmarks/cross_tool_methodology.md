@@ -67,6 +67,63 @@ LibreFace also gives mean intensity **PCC = 0.73** (its native DISFA metric).
 A follow-up will recompute all tools on one AU set + threshold for an
 apples-to-apples table.
 
+## Accuracy — beyond AU: emotion, valence/arousal, gaze
+
+AU is only one of the modalities these toolkits ship. We benchmark the rest on
+the datasets that carry the right labels, each tool run **end-to-end as
+written** (its own detector → its own model), on identical images/labels frozen
+from py-feat's `feat.evaluation` loaders into shared manifests
+(`shared/export_emotion_gaze_manifest.py`). Per-tool sample counts (`n`) differ
+because each tool's *own* face detector decides which faces it finds — that
+detection robustness is itself part of the comparison.
+
+### Emotion — 7-class, top-1 accuracy / macro-F1
+
+Held-out **AffectNet-val** (994 imgs, classes 0–6) and **RAF-DB test** (3,068).
+All three emotion-capable tools argmax their own emotion head; OF3/LibreFace
+emit 8 classes (incl. Contempt) — scored on the shared 7, a Contempt prediction
+counts as wrong. (PyAFAR has no emotion head.)
+
+| Tool | AffectNet acc / F1 | RAF-DB acc / F1 |
+|------|:---:|:---:|
+| **py-feat v2** | 0.492 / **0.479** | **0.656 / 0.528** |
+| **OpenFace 3.0** | **0.493** / **0.520** | 0.513 / 0.469 |
+| **LibreFace** | 0.455 / 0.403 | 0.646 / 0.386 |
+
+py-feat v2 and OF3 are neck-and-neck on AffectNet (0.49); on RAF-DB py-feat
+leads on both accuracy and the balanced macro-F1 (LibreFace's 0.646 accuracy but
+0.386 macro-F1 is the majority-class/Happiness skew).
+
+### Valence / arousal — CCC (AffectNet-val)
+
+**py-feat v2 is the only tool of the four that predicts continuous valence and
+arousal at all** — so this isn't a head-to-head, it's a capability the others
+lack. On AffectNet-val: **valence CCC 0.535, arousal CCC 0.482**.
+
+### Gaze — Columbia Gaze, mean angular error (head-frontal subset, 1,176 imgs)
+
+Each tool emits gaze in its own (yaw, pitch) frame, sign, and unit, mostly
+undocumented. We resolve that I/O convention **identically and in every tool's
+favor** — the single best discrete (axis × sign × unit) mapping to the GT frame
+(`shared/gaze_convention.py`) — so no tool is penalised for an opaque output
+convention. The same procedure is applied to py-feat.
+
+| Tool | angular MAE | median |
+|------|:---:|:---:|
+| **py-feat v2** | **2.72°** | 2.21° |
+| **OpenFace 3.0** | 12.05° | 11.34° |
+| **LibreFace** | 15.40° | 14.33° |
+
+py-feat's L2CS gaze is dramatically more accurate on Columbia. (The Columbia
+loader's yaw-sign convention was corrected in `feat.evaluation` as part of this
+work — it had previously reported 17.5° from a sign mismatch, not a model error;
+py-feat's stock harness now reports the same 2.72°.)
+
+> Reproduce: `tools/<tool>/run_accuracy.py` (OF3/PyAFAR), `run_modalities.py`
+> (LibreFace), `run_gaze.py` + `run_pyfeat_modalities.py` (py-feat). Consolidated
+> by `ingest_accuracy.py` into `accuracy.csv`; published to the
+> `py-feat/benchmarks` HF dataset.
+
 ## Speed
 
 Throughput on the **shared test fixtures** (`single_face.mp4` video + a

@@ -1,0 +1,12 @@
+{
+  "model": "libreface",
+  "task": "emotion",
+  "dataset": "affectnet_val",
+  "n_scored": 984,
+  "emotion_accuracy": 0.4553,
+  "emotion_f1_macro": 0.4026,
+  "note": "LibreFace pip get_facial_attributes facial_expression (8-class, AffectNet order); scored on shared 7 classes.",
+  "date": "2026-06-06T10:52:30.453577",
+  "host": "liquidswords2",
+  "device": "cuda"
+}
