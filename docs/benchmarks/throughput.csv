@@ -1,292 +1,65 @@
-feat_version,date,host,gpu,config,device,batch,section_kind,fps
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,1,video,1.3
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,4,video,1.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,16,video,1.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,1,video,10.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,4,video,15.8
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,16,video,17.8
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,1,video,3.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,4,video,9.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,16,video,11.6
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,1,video,16.1
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,4,video,27.8
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,16,video,59.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,1,video,7.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,4,video,14.6
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,16,video,30.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,video,23.6
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,4,video,87.3
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,video,93.4
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,1,video,12.3
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,1,video,6.6
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,4,video,12.4
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,4,video,6.8
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,16,video,3.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,16,video,2.5
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,1,video,27.6
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,1,video,9.4
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,4,video,60.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,4,video,11.7
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,16,video,91.4
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,16,video,14.4
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,1,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,1,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,4,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,4,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,16,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,cpu,16,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,1,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,1,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,4,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,4,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,16,images,80.0
-0.7.0,2026-05-03,Mac,cpu,retinaface,mps,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,1,video,1.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,4,video,1.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,16,video,1.6
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,1,video,9.3
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,4,video,16.5
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,16,video,20.9
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,1,video,3.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,4,video,8.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,16,video,10.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,1,video,12.3
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,4,video,48.1
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,16,video,94.5
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,1,video,7.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,4,video,15.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,16,video,27.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,video,25.6
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,4,video,42.2
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,video,86.7
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cpu,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",img2pose,cuda,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cpu,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",retinaface,cuda,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cpu,16,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,4,images,80.0
-0.7.0,2026-05-03,liquidswords2,"CUDA 12.4, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,1,video,8.8
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,4,video,12.4
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,16,video,13.8
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,1,video,18.5
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,4,video,45.6
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,16,video,73.2
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,1,video,7.1
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,4,video,22.2
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,16,video,44.2
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,1,video,5.7
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,4,video,8.3
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,16,video,8.8
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,1,video,16.1
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,4,video,39.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,16,video,53.3
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,1,video,6.1
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,4,video,20.4
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,16,video,42.6
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,1,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,4,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,mps,16,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,1,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,4,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,mps,16,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,1,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,4,images,80.0
-0.7.0,2026-05-03,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,mps,16,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,1,video,2.5
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,4,video,2.6
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,16,video,0.8
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,1,video,5.8
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,4,video,5.9
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,16,video,1.2
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,1,video,5.2
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,4,video,5.1
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,16,video,1.1
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,1,video,2.6
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,4,video,2.6
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,16,video,0.7
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,1,video,5.7
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,4,video,5.9
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,16,video,1.1
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,1,video,5.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,4,video,5.1
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,16,video,1.1
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,1,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,4,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,img2pose,cpu,16,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,1,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,4,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,retinaface,cpu,16,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,1,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,4,images,80.0
-0.7.0,2026-05-04,vpn-two-factor-general-228-129-185.dartmouth.edu,MPS available,MPDetector retinaface,cpu,16,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,8.3
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,video,18.8
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,32.6
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,9.4
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,video,29.6
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,134.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,26.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,video,91.7
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,110.2
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,8.6
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,video,18.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,29.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,11.9
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,video,38.5
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,87.1
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,24.4
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,video,83.4
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,174.4
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,images,80.0
-0.7.0,2026-05-14,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,1,video,8.4
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,4,video,11.4
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,16,video,15.3
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,1,video,12.4
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,4,video,21.5
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,16,video,37.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,1,video,17.2
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,4,video,36.1
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,16,video,38.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,1,video,7.6
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,4,video,10.6
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,16,video,11.9
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,1,video,11.9
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,4,video,20.3
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,16,video,30.7
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,1,video,16.2
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,4,video,33.4
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,16,video,34.7
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,1,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,4,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",img2pose,cuda,16,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,1,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,4,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",retinaface,cuda,16,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,1,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,4,images,80.0
-0.7.0,2026-05-15,spark-8c43,"CUDA 13.0, NVIDIA GB10",MPDetector retinaface,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,13.7
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,video,27.9
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,41.4
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,19.7
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,video,68.4
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,132.1
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,23.6
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,video,85.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,101.5
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,30.8
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,4,video,105.7
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,223.1
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,13.3
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,video,25.2
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,30.8
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,20.4
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,video,64.3
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,161.5
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,23.3
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,video,80.7
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,194.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,29.8
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,4,video,100.3
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,215.5
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,74.3
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,50.2
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,216.7
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,115.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,150.6
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,239.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,15.7
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,video,31.6
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,38.1
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,21.1
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,video,45.1
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,129.4
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,23.5
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,video,84.3
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,99.2
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,27.3
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,4,video,101.9
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,280.6
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,13.4
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,video,20.2
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,29.4
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,19.5
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,video,63.9
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,154.8
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,23.5
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,video,83.9
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,194.9
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,26.5
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,4,video,98.7
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,285.6
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,video,29.6
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,4,video,67.8
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,video,86.8
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,4,images,80.0
-0.7.0,2026-05-31,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,images,80.0
+feat_version,date,host,gpu,config,device,batch,section_kind,section_label,fps
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,short,11.5
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,short,39.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,short,17.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,short,107.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,short,23.4
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,short,43.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,short,38.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,short,270.6
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,long,11.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,long,31.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,long,20.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,long,167.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,long,23.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,long,141.8
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,long,37.6
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,long,355.5
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,video,short,14.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,video,short,30.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,video,short,21.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,video,short,86.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,video,short,23.8
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,video,short,39.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,video,short,39.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,video,short,202.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,video,long,12.3
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,video,long,23.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,video,long,20.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,video,long,98.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,video,long,23.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,video,long,88.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,video,long,37.9
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,video,long,202.5
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,1,video,short,1.6
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,16,video,short,1.8
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,1,video,short,4.3
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,16,video,short,10.5
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,1,video,short,4.2
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,16,video,short,10.9
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,1,video,short,9.0
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,16,video,short,12.9
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,1,video,long,1.5
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,16,video,long,1.8
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,1,video,long,4.2
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,16,video,long,10.3
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,1,video,long,4.1
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,16,video,long,14.0
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,1,video,long,8.9
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,16,video,long,17.6

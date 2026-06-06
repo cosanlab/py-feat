@@ -1,0 +1,10 @@
+{
+  "tool": "libreface",
+  "fixture": "single_face.mp4 (72 frames)",
+  "metric": "end-to-end fps (MediaPipe align + AU model)",
+  "note": "GPU barely helps: CPU MediaPipe alignment is the bottleneck. Cannot run on Blackwell (sm_120) or (untested) M5.",
+  "fps": {
+    "cpu_batch1": 2.7, "cpu_batch16": 3.9,
+    "rtx3090_batch1": 3.8, "rtx3090_batch16": 4.5
+  }
+}

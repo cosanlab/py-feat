@@ -1,0 +1,42 @@
+{
+  "model": "openface3",
+  "date": "2026-05-21T14:04:57.899902",
+  "host": "liquidswords2",
+  "dataset": "disfaplus",
+  "subset_size": 0,
+  "n_predicted": 57668,
+  "au_threshold": 0.5,
+  "predicted_aus": [
+    "AU01",
+    "AU02",
+    "AU04",
+    "AU06",
+    "AU09",
+    "AU12",
+    "AU25",
+    "AU26"
+  ],
+  "missing_aus": [
+    "AU05",
+    "AU15",
+    "AU17",
+    "AU20"
+  ],
+  "per_au_f1": {
+    "AU01": 0.847568800798517,
+    "AU02": 0.6899455684502414,
+    "AU04": 0.835449130617893,
+    "AU05": NaN,
+    "AU06": 0.4202059833251594,
+    "AU09": 0.8015983321751217,
+    "AU12": 0.737450462351387,
+    "AU15": NaN,
+    "AU17": NaN,
+    "AU20": NaN,
+    "AU25": 0.9338434560816197,
+    "AU26": 0.5919395465994962
+  },
+  "mean_f1_predicted_aus_only": 0.7322501600499294,
+  "mean_f1_12au_treating_missing_as_zero": 0.48816677336661957,
+  "note": "Earlier run double-sigmoided the model output. Corrected: MLT's au_regressor Head returns [0,1] probabilities, use directly."
+}

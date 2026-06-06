@@ -160,3 +160,8 @@ feat/resources/*.joblib
 
 # Stray gifs animate_face writes to the render cwd (the real ones live in docs/images/)
 /docs/*.gif
+
+# Competitor model weights downloaded at runtime (LibreFace, etc.)
+weights_libreface/
+/tmp/
+scripts/competitors/*manifest*.csv

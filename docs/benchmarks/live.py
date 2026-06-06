@@ -99,9 +99,10 @@ def _(mo):
         r"""
         ## Throughput by detector and hardware
 
-        Frames per second per detector config (video, CUDA, largest batch). Bars are
-        grouped by GPU — fps is only comparable within the same hardware. As more
-        releases land this becomes a trend; for now it's the current v0.7.0 snapshot.
+        End-to-end frames per second for the **v1 `Detector`** (img2pose and
+        retinaface face models) and **v2 `Detectorv2`**, on the shared test video.
+        Left panel is single-frame (batch 1); right is batch 16. Bars are grouped
+        by hardware — fps is only comparable within the same device.
         """
     )
     return
@@ -111,26 +112,36 @@ def _(mo):
 def _(throughput):
     import plotly.express as px
 
+    # v1 Detector (two face models) + v2 Detectorv2; MPDetector excluded.
+    _RELABEL = {
+        "img2pose": "Detector · img2pose",
+        "retinaface": "Detector · retinaface",
+        "Detectorv2 multitask": "Detectorv2",
+    }
     df = throughput.copy()
-    for col, val in [("section_kind", "video"), ("device", "cuda")]:
-        if col in df.columns:
-            df = df[df[col] == val]
-    if "batch" in df.columns and len(df):
-        df = df[df["batch"] == df["batch"].max()]
-    # One bar per (config, GPU): keep the most recent run for each.
-    if {"date", "config", "gpu"}.issubset(df.columns):
-        df = df.sort_values("date").drop_duplicates(["config", "gpu"], keep="last")
-    if "gpu" in df.columns:
-        df["GPU"] = df["gpu"].astype(str).str.replace(r"CUDA[^,]*,\s*", "", regex=True)
+    if "section_kind" in df.columns:
+        df = df[df["section_kind"] == "video"]
+    if "section_label" in df.columns and (df["section_label"] == "long").any():
+        df = df[df["section_label"] == "long"]
+    if "batch" in df.columns:
+        df = df[df["batch"].isin([1, 16])]
+    df = df[df["config"].isin(_RELABEL)].copy()
+    df["detector"] = df["config"].map(_RELABEL)
+    df["hardware"] = [
+        "CPU" if dev == "cpu" else str(g).split(",")[-1].strip()
+        for dev, g in zip(df.get("device", ""), df["gpu"])
+    ]
+    df["panel"] = "batch " + df["batch"].astype(str)
 
     fig = px.bar(
-        df.sort_values("fps"),
-        x="fps", y="config", color="GPU",
-        orientation="h", barmode="group",
-        labels={"fps": "frames / sec (video · CUDA · largest batch)", "config": ""},
-        title="Detector throughput by config and GPU",
+        df.sort_values(["batch", "fps"]),
+        x="fps", y="detector", color="hardware",
+        orientation="h", barmode="group", facet_col="panel",
+        labels={"fps": "frames / sec (long test video)", "detector": ""},
+        title="End-to-end detector throughput — py-feat v0.7.0",
     )
-    fig.update_layout(width=820, height=480, legend_title_text="")
+    fig.update_layout(width=900, height=420, legend_title_text="")
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     fig
     return
 

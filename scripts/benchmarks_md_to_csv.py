@@ -19,6 +19,9 @@ import re
 
 BENCH_DIR = os.path.join(os.path.dirname(__file__), "..", "docs", "benchmarks")
 OUT = os.path.join(BENCH_DIR, "throughput.csv")
+# Only the clean, single-machine regen runs feed the dashboard (one commit,
+# consistent configs). The older heterogeneous run dumps stay as history.
+GLOB = "speed-clean-*.md"
 
 # Only these ### configs carry a device|batch|fps table we want.
 KNOWN_CONFIGS = {
@@ -53,10 +56,13 @@ def parse_file(path):
     host = (_meta(text, "Host") or "").split(" ")[0]
     gpu = _meta(text, "GPU") or "cpu"
 
-    rows, kind, config = [], None, None
+    rows, kind, label, config = [], None, "", None
     for line in text.splitlines():
         if line.startswith("## "):
-            kind = section_kind(line[3:].strip())
+            hdr = line[3:].strip()
+            kind = section_kind(hdr)
+            h = hdr.lower()
+            label = "long" if "long" in h else "short" if "short" in h else hdr
             config = None
         elif line.startswith("### "):
             config = KNOWN_CONFIGS.get(line[4:].strip())
@@ -70,20 +76,23 @@ def parse_file(path):
                 fps = float(cells[-1])
             except ValueError:
                 continue
+            device = cells[0]
+            # The GPU metadata names the *visible* device; CPU rows aren't on it.
+            row_gpu = "CPU" if device == "cpu" else gpu
             rows.append(dict(
-                feat_version=version, date=date, host=host, gpu=gpu,
-                config=config, device=cells[0], batch=batch,
-                section_kind=kind, fps=fps,
+                feat_version=version, date=date, host=host, gpu=row_gpu,
+                config=config, device=device, batch=batch,
+                section_kind=kind, section_label=label, fps=fps,
             ))
     return rows
 
 
 def main():
     all_rows = []
-    for path in sorted(glob.glob(os.path.join(BENCH_DIR, "*.md"))):
+    for path in sorted(glob.glob(os.path.join(BENCH_DIR, GLOB))):
         all_rows.extend(parse_file(path))
     cols = ["feat_version", "date", "host", "gpu", "config",
-            "device", "batch", "section_kind", "fps"]
+            "device", "batch", "section_kind", "section_label", "fps"]
     with open(OUT, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()

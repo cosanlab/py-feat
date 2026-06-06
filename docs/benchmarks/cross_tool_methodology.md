@@ -1,0 +1,225 @@
+# Cross-tool AU benchmark — methodology & integration notes
+
+This documents how py-feat is compared against other open-source Python facial
+action-unit (AU) toolkits, and — just as importantly — **what it took to run
+each competitor**. The integration effort is itself a result: it shows the
+usability gap between py-feat (`pip install py-feat`, one `Detector` /
+`Detectorv2` call, runs on any GPU) and the alternatives.
+
+## Feature comparison
+
+Across the open-source Python facial-behavior toolkits. ✅ = supported,
+❌ = not supported, ⚠️ = supported with a caveat (see notes).
+
+| | **py-feat** | **OpenFace 3.0** | **LibreFace** | **PyAFAR** |
+|---|:---:|:---:|:---:|:---:|
+| **Install** | `pip install py-feat` ✅ | clone repo + checkpoints | `pip install libreface` ⚠️¹ | ❌ broken deps² |
+| **Single images** | ✅ | ✅ | ✅ | ❌ **video only** |
+| **Video** | ✅ | ✅ | ✅ | ✅ |
+| **Action units** | ✅ 20 | ✅ 8 | ✅ 12 (+5 occ.) | ⚠️ 12 occ. / 5 int. |
+| **AU intensity** | ✅ | ❌ occ. only | ✅ | ⚠️ 5 AUs |
+| **Emotion** | ✅ 7-class | ✅ | ✅ | ❌ |
+| **Valence / arousal** | ✅ (v2) | ❌ | ❌ | ❌ |
+| **Gaze** | ✅ | ✅ | ✅ | ❌ |
+| **Head pose (6DoF)** | ✅ | ✅ | ✅ | ❌ |
+| **Landmarks** | ✅ 68 + 478 mesh | ✅ | ✅ 478 mesh | ❌ |
+| **Identity / face ID** | ✅ ArcFace | ❌ | ❌ | ❌ |
+| **One-call API** | ✅ `Detector().detect()` | ❌ custom scripts | ✅ ⚠️¹ | ⚠️ video only |
+| **Latest GPUs (Blackwell)** | ✅ | ✅ | ❌ pinned old torch³ | ❌ dlib/CUDA³ |
+| **License** | permissive⁴ | academic | USC research-only | non-commercial |
+
+¹ The `pip` model is a distilled all-in-one net that **underperforms its own
+  paper**; reproducing published AU numbers requires cloning the research repo +
+  checkpoints (see LibreFace notes).
+² Release wheel pins `pysimplegui==4.60.5`, which was pulled from PyPI — install
+  fails; needs `--no-deps` + hand-resolving TF/MediaPipe/dlib + `download_models`.
+³ LibreFace's pinned PyTorch lacks Blackwell (sm_120) kernels (≤ Ampere only);
+  PyAFAR's dlib build fails compiling CUDA kernels.
+⁴ py-feat is permissively licensed; a few downloadable weights (e.g. ArcFace
+  identity) are research-only and clearly flagged.
+
+**Takeaway:** py-feat is the only one of the four that installs with a single
+`pip` command, takes both images and video, runs on current-generation GPUs, and
+covers the full feature set (AUs + intensity, emotion, valence/arousal, gaze,
+6DoF pose, 68/478 landmarks, identity) behind one API.
+
+## Accuracy — AU detection on DISFA+ (held-out)
+
+Mean per-AU **F1** on the DISFA+ benchmark (57,150 frames). **Protocols are not
+yet fully harmonized** across tools (AU subset + binarization differ — see the
+per-tool note); treat as indicative until a single-protocol recompute lands.
+
+| Tool | DISFA+ mean F1 | AUs scored | binarization | source |
+|------|:---:|:---:|---|---|
+| **py-feat v1** (`Detector`, xgb) | _pending_ | 12 | truth ≥2, prob ≥0.5 | `bench_accuracy` |
+| **py-feat v2** (`Detectorv2`) | _pending_ | 12 | truth ≥2, prob ≥0.5 | `bench_accuracy` |
+| **OpenFace 3.0** | 0.488 | 8 | their `evaluation.py` | `openface3_*.json` |
+| **LibreFace** (research RepVGG) | 0.461 | 12 | truth ≥2, intensity ≥2 | `libreface_repvgg_disfaplus.json` |
+| **PyAFAR** | _n/a_ | ≤7 overlap | — | not runnable (see notes) |
+
+LibreFace also gives mean intensity **PCC = 0.73** (its native DISFA metric).
+A follow-up will recompute all tools on one AU set + threshold for an
+apples-to-apples table.
+
+## Speed
+
+Throughput on the **shared test fixtures** (`single_face.mp4` video + a
+`multi_face.jpg` image batch — *not* the accuracy datasets), each tool timed
+end-to-end (detect → AU), across a hardware × batch matrix:
+
+**Hardware:** CPU · RTX 3090 (sm_86) · RTX PRO 6000 Blackwell (sm_120) · Apple M5 (MPS)
+**Batch:** 1 (single frame) and 16
+
+**A blank cell is data.** If a tool can't run on a given device it gets *no
+number* — that absence documents the tool's hardware reach. Expected coverage:
+
+| Tool | CPU | 3090 | Blackwell | M5 (MPS) |
+|------|:---:|:---:|:---:|:---:|
+| **py-feat** | ✅ | ✅ | ✅ | ✅ |
+| **OpenFace 3.0** | ✅ | ✅ | ? | ? |
+| **LibreFace** | ✅ | ✅ | ❌ (no sm_120) | ? (cuda/cpu API) |
+| **PyAFAR** | ✅? | ? | ❌ (dlib/CUDA) | ❌ (Ubuntu/WSL2 only) |
+
+py-feat's own CPU/3090/Blackwell numbers are in the **[live dashboard](live.md)**
+(e.g. Detectorv2 ≈ 285 fps on Blackwell batch 16); M5 is added from a Mac run.
+
+**First head-to-head (RTX 3090, `single_face.mp4`, end-to-end fps):**
+
+| Tool / config | CPU b1 | CPU b16 | 3090 b1 | 3090 b16 | Blackwell | M5 |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **py-feat Detectorv2** | — | — | — | **202** | 285 | _pending_ |
+| **py-feat retinaface (v1)** | — | — | — | **98** | 155 | _pending_ |
+| **LibreFace** | 2.7 | 3.9 | 3.8 | **4.5** | ❌ no sm_120 | ❌? |
+
+So on the **same 3090**, py-feat's Detectorv2 is **~45× faster** than LibreFace
+(202 vs 4.5 fps) and even v1/retinaface is **~22×**. LibreFace's GPU barely helps
+its own pipeline (3.8 → 4.5 fps) because its **MediaPipe alignment runs on CPU**
+and dominates. (py-feat CPU/Blackwell/M5 cells and OF3/PyAFAR rows fill in as
+those runs land; LibreFace's Blackwell blank is the sm_120 wall.)
+
+The point of the matrix is exactly the blanks: py-feat is the only toolkit that
+runs across CPU, current-gen GPUs, *and* Apple Silicon — and is one-to-two orders
+of magnitude faster where competitors do run.
+
+## Datasets & metric protocol — and why **DISFA+**, not DISFA
+
+The cross-tool comparison runs on **DISFA+** (posed-peak, 12-AU intensity), the
+held-out benchmark py-feat reports against (Cheong et al. 2023) and the dataset
+our existing OpenFace 3.0 result already uses (`"dataset": "disfaplus"`).
+
+**We deliberately do *not* evaluate on DISFA.** DISFA is the **training set** for
+LibreFace (and is used by OpenFace 3.0), so scoring those tools on DISFA is
+in-distribution — a home-field advantage and effective train/test contamination.
+DISFA+ is held out for all tools, so it measures **generalization**: a tool that
+only does well on its own training distribution is exactly what a fair benchmark
+should expose. (We verified the in-distribution case as a *sanity check* — the
+LibreFace RepVGG model tracks AU intensity cleanly on DISFA — then evaluate the
+real comparison on DISFA+.)
+
+Metrics: per-AU **PCC** (intensity, threshold-free — LibreFace's native metric)
+and binary **F1** at intensity **≥ 2** on both prediction and ground truth
+(matching `feat.evaluation.metrics`' truth convention). Where a tool emits
+probabilities (py-feat, OF3) rather than intensities, its native binarization is
+noted per table so protocols are never silently mixed.
+
+## Per-tool integration experience
+
+### py-feat (v1 / v2)
+`pip install py-feat`; one call returns AUs (+ emotion, pose, gaze, landmarks,
+identity). Runs on CPU, CUDA (incl. **Blackwell / RTX PRO 6000**, sm_120, on
+torch 2.11+cu128), and Apple MPS. No per-tool preprocessing to match.
+
+### LibreFace — could **not** reproduce published numbers locally
+A multi-day saga that is worth recording in full:
+
+1. **The pip API (`libreface.get_facial_attributes`) collapses on this data.**
+   Its `au_intensities` are near the noise floor for clearly-active AUs — e.g.
+   a DISFA+ frame labeled AU12 intensity 4 (a posed smile) returns
+   `au_12 ≈ 0.015` (it correctly returns ~2.5 on a normal smiling photo).
+   No threshold/normalization recovers a signal that isn't there.
+2. The LibreFace **paper** reports DISFA AU *intensity* via **PCC** (0.63) from a
+   **separate research module** (`AU_Recognition`, RepVGG checkpoint), not the
+   distilled all-in-one pip model. So we cloned the repo and loaded
+   `new_checkpoints_fm_repvgg/DISFA/all/repvgg.pt` (output `×5 → [0,5]`).
+3. **The research checkpoint can't run on Blackwell.** LibreFace pins an old
+   PyTorch built for **sm_37…sm_86**; Blackwell is **sm_120**. Weights copy to
+   the GPU ("loaded"), then the first compute kernel aborts (no sm_120 binary).
+   **LibreFace is therefore restricted to ≤ Ampere GPUs** — we benchmark it on
+   the RTX 3090 (sm_86). py-feat runs on Blackwell unchanged.
+4. **It is fragile to out-of-distribution data and alignment.** On **DISFA+**
+   (posed-peak) the research checkpoint *also* collapsed (AU12 ramp 0→4 stayed
+   ~0.1–0.5, non-monotonic) — under both LibreFace's own MediaPipe alignment and
+   DISFA+ native `Aligned/` crops. It only works on **DISFA itself**, fed
+   **DISFA's own aligned crops** (`DISFA_/aligned/...`): there the AU12 ramp is
+   clean and monotonic — GT 0→0.05, 1→~0.5, 2→~1.2, 3→~2.7, 4→~3.5, 5→~4.4.
+
+**Status:** the research RepVGG checkpoint runs correctly. On the held-out
+**DISFA+** set (its own aligned crops, LibreFace's test transform, 57,150 frames)
+it generalizes reasonably: **mean F1 = 0.46, mean PCC = 0.73** over 12 AUs
+(`run_libreface_repvgg_disfaplus.py` → `libreface_repvgg_disfaplus.json`).
+Strong on AU25 (F1 0.91), AU04/09 (0.75); weak on AU06 (0.11), AU15/17/20
+(~0.06). Note: earlier single-frame probes suggested a "collapse" — that was an
+artifact of unrepresentative frames and the broken *pip* model; the full-dataset
+research-model run is the truth, and it's fine. (The lesson — over-concluding
+from a handful of frames — is why we report the whole-benchmark output.)
+
+Getting even this far required: discovering the pip model is a different
+(weaker) net than the paper's, cloning the research repo + checkpoints, working
+around a Blackwell-incompatible torch (3090-only), and matching the alignment —
+vs. py-feat's `pip install` + one call. The silent failure modes (pip-model
+collapse, out-of-distribution collapse) are themselves the usability story:
+without careful per-frame validation you'd ship wrong numbers.
+
+### OpenFace 3.0
+Research repo + checkpoints; outputs 8 AUs via a sigmoid head. Protocol from
+their `evaluation.py` (above). Existing run:
+`bench-results/au_local/openface3_*.json`.
+
+### PyAFAR — dependency rot + API/coverage mismatch
+Another multi-obstacle integration (its own MediaPipe + TensorFlow env, kept
+away from the torch stack):
+
+1. **Won't `pip install`.** The release wheel pins `pysimplegui==4.60.5`, a GUI
+   library that PySimpleGUI **pulled from PyPI** (2024 licensing change), so the
+   dependency is unsatisfiable — a GUI pin blocks a headless benchmark. Workaround:
+   install the wheel `--no-deps` and hand-resolve the real runtime deps
+   (`tqdm`, `scipy`, `h5py`, `tensorflow`, `mediapipe`, `opencv`, …) one ImportError
+   at a time.
+2. **dlib won't build.** `pip install dlib` compiles from source and fails on its
+   **CUDA** kernels (same Blackwell sm_120 wall); the documented path is a **conda**
+   env with conda-forge's precompiled dlib.
+3. **Video-only API.** `adult_afar(filename=<video>, …)` takes a video file —
+   DISFA+ is per-frame stills, so frames must be re-assembled into per-trial
+   videos to feed it.
+4. **Partial AU coverage.** Its occurrence AUs {1,2,4,6,7,10,12,14,15,17,23,24}
+   overlap DISFA's 12 on only **7** (1,2,4,6,12,15,17); intensity on **3**
+   (6,12,17). It cannot score the full DISFA AU set.
+5. Non-commercial license; GPU only on Ubuntu/WSL2.
+
+Contrast: py-feat is one `pip install`, works headless, takes images or video,
+and reports all 20 AUs. [PyAFAR DISFA+ numbers — pending the conda env + a
+frame-to-video adapter; coverage limited to the 7 overlapping AUs.]
+
+## Hardware notes
+
+- **LibreFace can only be benchmarked on ≤ Ampere GPUs (e.g. RTX 3090, sm_86)**
+  because its pinned PyTorch lacks Blackwell (sm_120) kernels. All LibreFace
+  numbers here are 3090 runs.
+- py-feat and the competitor runs that use modern torch run on Blackwell
+  (RTX PRO 6000) and the 3090 alike.
+
+## License caveats (research benchmark only)
+
+- LibreFace: USC research-only. PyAFAR: non-commercial. OpenFace 3.0: check its
+  license. py-feat's competitors are **never** added as py-feat dependencies —
+  each runs in its own isolated env (`~/benchmark-envs/<tool>`), consuming a
+  frozen DISFA manifest (`scripts/competitors/`) so the comparison shares
+  identical frames/labels without coupling envs.
+
+## Reproducing
+
+- Manifest (py-feat env): `scripts/competitors/export_disfaplus_manifest.py`
+  (DISFA equivalent forthcoming).
+- LibreFace research model: clone `ihp-lab/LibreFace`, use `AU_Recognition`
+  RepVGG checkpoint, **on a 3090**.
+- py-feat v1/v2 accuracy: `scripts/bench_accuracy.py --detector v1|v2`.
