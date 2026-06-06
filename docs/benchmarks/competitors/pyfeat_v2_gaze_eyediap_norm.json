@@ -1,0 +1,13 @@
+{
+  "model": "pyfeat_v2",
+  "task": "gaze",
+  "dataset": "eyediap_norm",
+  "n_scored": 800,
+  "gaze_angular_mae_deg": 19.418,
+  "gaze_angular_mae_median": 18.88,
+  "gaze_convention_resolved": "a=pitch,b=yaw;sign_pitch=-1;sign_yaw=1;unit=rad",
+  "date": "2026-06-06T17:34:09.647166",
+  "host": "liquidswords2",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+  "note": "py-feat raw (gaze_pitch,gaze_yaw) favor-resolved identically to OF3/LibreFace for an apples-to-apples gaze number."
+}

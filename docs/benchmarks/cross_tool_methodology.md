@@ -188,9 +188,28 @@ normalized gaze); (2) the **FT_S floating-target session** sweeps ±49° yaw / �
 pitch, wider than the screen-target sessions usually benchmarked; (3) these are
 general-purpose facial-analysis tools, not dedicated cross-dataset gaze nets.
 So the absolute number is inflated vs literature; the relative ordering is what
-holds. A normalized-protocol pass (apply EYEDIAP's head-pose + intrinsics
-normalization, use screen-target sessions) is the way to get literature-comparable
-numbers — see `tools/*/run_gaze_normalized.py`.
+holds.
+
+**We ran the normalized-protocol pass too** (Sugano/Zhang data-normalization:
+warp each face to a canonical virtual camera using EYEDIAP's head pose +
+intrinsics, predict in the normalized frame — `shared/build_eyediap_normalized.py`).
+It barely moved the numbers:
+
+| Protocol | py-feat v2 | OpenFace 3.0 | LibreFace |
+|---|:---:|:---:|:---:|
+| camera-frame (raw crop) | 20.0° | 21.3° | 23.7° |
+| **normalized** | **19.4°** | 21.5° | 28.1° |
+
+py-feat stays marginally best under **both** protocols. Normalization didn't
+help because **FT_S is a static-head session** — the head is already frontal, so
+the normalization warp is near-identity. (It slightly hurt LibreFace, whose
+landmark/geometric gaze dislikes the tight 448² crop.) So the ~20° is **robust,
+not a frame artifact** — it's the genuine cross-dataset error of these
+general-purpose tools on a wide-range floating-target session, ~2× the
+gaze-specialist cross-dataset SOTA (~8–10°). The remaining gap would close with
+EYEDIAP's screen-target (CS/DS) sessions (smaller gaze range) and dedicated
+gaze nets — but the relative ordering (the three within a few °, py-feat ahead)
+is stable across raw, normalized, and ETH-XGaze frames alike.
 
 > Reproduce: `tools/<tool>/run_accuracy.py` (OF3/PyAFAR), `run_modalities.py`
 > (LibreFace), `run_gaze.py` + `run_pyfeat_modalities.py` (py-feat). Consolidated
