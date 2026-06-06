@@ -97,10 +97,10 @@ split — no tool is ever scored on images from its own training set:
 | MPIIFaceGaze | held-out subsample | LibreFace only — ⚠️ **py-feat and OF3 both trained on it** |
 | Gaze360 | **`bench`/test** split | LibreFace; held-out-in-distribution for py-feat & OF3 (both trained Gaze360-train) |
 
-⚠️ The gaze rows are contaminated (see the gaze section): py-feat trained on
-all three gaze datasets, so there is **no out-of-sample gaze set for py-feat**
-here — a clean ETH-XGaze/EYEDIAP benchmark is being added. AU and emotion are
-genuinely held-out.
+⚠️ Most gaze rows are contaminated (see the gaze section): py-feat trained on
+Columbia/MPIIFaceGaze/Gaze360. The clean, frame-matched gaze benchmark is
+**EYEDIAP** (out-of-sample for all, camera-frame). AU and emotion are genuinely
+held-out.
 
 ### Emotion — 7-class, top-1 accuracy / macro-F1
 
@@ -125,66 +125,56 @@ leads on both accuracy and the balanced macro-F1 (LibreFace's 0.646 accuracy but
 arousal at all** — so this isn't a head-to-head, it's a capability the others
 lack. On AffectNet-val: **valence CCC 0.535, arousal CCC 0.482**.
 
-### Gaze — ⚠️ training contamination makes these three **not** a fair comparison
+### Gaze — use EYEDIAP; the rest are contaminated or frame-confounded
 
-**Do not read this as a gaze ranking.** After running it we audited what each
-model trained on, and py-feat v2 trained on **all three** of these gaze datasets
-(its `au_deep` training set includes the full Columbia and MPIIFaceGaze sets and
-Gaze360-train). So py-feat's numbers below are **in-distribution**, not
-generalization. The training status of each cell:
+This is the subtlest comparison and took the most care. py-feat v2 trained on
+**all four** of Columbia / MPIIFaceGaze / MPIIGaze / Gaze360 (confirmed in its
+`au_deep` per-source training log), so those are in-distribution; ETH-XGaze is
+out-of-sample but in a *normalized frame* py-feat never trained for. The one
+benchmark that is **both out-of-sample for every tool and frame-matched** is
+**EYEDIAP** (camera-frame gaze, no normalization), so that is the column to read:
 
-| Tool | Columbia (1.2k) | MPIIFaceGaze (3k) | Gaze360 test (2.5k) | **ETH-XGaze (2.8k)** |
-|------|:---:|:---:|:---:|:---:|
-| **py-feat v2** | 2.72° · *in-sample* | 2.80° · *in-sample* | 9.42° · *held-out, in-dist* | **44.6° · out-of-sample** |
-| **OpenFace 3.0** | 12.05° · *out-of-sample* | 7.03° · *in-sample* | 41.09° · *in-sample* | **37.7° · out-of-sample** |
-| **LibreFace** | 15.40° · *not trained* | 19.49° · *not trained* | 32.08° · *not trained* | **40.5° · out-of-sample** |
+| Tool | **EYEDIAP (clean)** | Columbia | MPIIFaceGaze | Gaze360 test | ETH-XGaze |
+|------|:---:|:---:|:---:|:---:|:---:|
+| **py-feat v2** | **20.0°** ✅ | 2.72° ❌over | 2.80° ❌over | 9.42° ⚠️in-dist | 44.6° ⚠️frame |
+| **OpenFace 3.0** | 21.3° ✅ | 12.05° | 7.03° ❌over | 41.09° ❌over | 37.7° ⚠️frame |
+| **LibreFace** | 23.7° ✅ | 15.40° | 19.49° | 32.08° | 40.5° |
 
-**ETH-XGaze is the only column out-of-sample for all three** (none trained on
-it). It cleanly establishes one thing — **py-feat's 2.7–2.8° on Columbia/MPII is
-overfitting** (it trained on those images) — but it does **not** support ranking
-the tools against each other, for two diagnosed reasons:
+✅ out-of-sample & frame-matched · ❌over = in-sample/overfit · ⚠️ = confounded
 
-- **Frame mismatch (hurts py-feat).** ETH-XGaze gaze labels are in the dataset's
-  *normalized* frame (each face warped by head pose to canonical). OpenFace 3.0
-  trained on normalized MPII and *expects* that frame; py-feat trained on
-  Gaze360 and never saw it. Diagnostic: on a frontal subset, py-feat's pitch
-  correlates 0.76 with GT but its **yaw is −0.38** (the head-normalization
-  rotation maps into yaw) — even after the convention resolver picks py-feat's
-  best global sign/axis. So py-feat's 44.6° is a frame artifact that
-  **understates it**, and OF3's 37.7° is flattered by the matching frame.
-- **Output-range saturation.** py-feat's L2CS pitch saturates at ±~40°; ETH-XGaze
-  GT spans ±75°, so it physically can't represent the extreme poses. On a
-  frontal subset (|gaze|<30°) py-feat is 17.6°, not 44.6°.
+**EYEDIAP is the one clean, fair gaze comparison** — out-of-sample for all three
+*and* in the camera frame (no head-normalization warp, unlike ETH-XGaze). On it,
+the three tools are **within ~4° of each other (py-feat 20.0° ≤ OF3 21.3° ≤
+LibreFace 23.7°)** — py-feat marginally best, none dominant. That is the honest
+gaze result. The other four columns are each compromised:
 
-**Conclusion: gaze is not fairly rankable across these tools with this setup.**
-Columbia/MPII are contaminated for py-feat; Gaze360 is in-distribution for
-py-feat and OF3; ETH-XGaze is frame-mismatched against py-feat. A fair gaze
-benchmark needs each tool evaluated in *its own* expected (normalized) frame —
-a separate effort. The numbers above are provenance with the confounds named,
-not a ranking. (The earlier draft of this section claimed py-feat was "worse" on
-ETH-XGaze; that was withdrawn after the correlation diagnostic above.)
+Why each of the other columns is compromised:
 
-Why each number is what it is — and why none of this ranks the models:
+- **Columbia & MPIIFaceGaze — py-feat overfit.** py-feat trained on *all* images
+  of both, so its 2.7–2.8° is fitting its own training set, not generalization.
+  (OF3 also trained on MPIIFaceGaze; Columbia is OF3's one out-of-sample set, at
+  12°.) These cannot be read as a py-feat win.
+- **Gaze360 — in-distribution for py-feat *and* OF3** (both trained on
+  Gaze360-train; we score the held-out `bench` split). OF3's 41° is its shipped
+  `detect→crop` not reproducing the normalized crop its head trained on (paper:
+  10.6°) — a real pipeline limit, but it means the cell understates OF3's model.
+- **ETH-XGaze — frame-mismatched against py-feat.** Its labels are in a
+  head-*normalized* frame OF3 trained on (normalized MPII) but py-feat did not
+  (Gaze360). Diagnostic: feeding py-feat's gaze head the patch directly (no
+  re-crop) still gives MAE ~44° with **yaw correlation ≈0** against GT — so it's
+  the frame, not the model. py-feat's L2CS also saturates at ±~40° pitch vs
+  ETH-XGaze's ±75°. So 44.6° understates py-feat; the earlier "py-feat worse than
+  OF3" read was withdrawn after this diagnostic.
+- LibreFace gaze isn't a documented trained model (its paper is AU + expression);
+  its 15–40° across sets is consistent with a geometric/landmark estimate.
+- The Columbia loader yaw-sign convention was fixed in `feat.evaluation` as part
+  of this work (had reported 17.5° from a sign mismatch; now 2.72°).
 
-- **py-feat trained on Columbia + MPIIFaceGaze (all images) + Gaze360-train.** Its
-  2.7–2.8° is fitting its own training distribution. **No gaze dataset here is
-  out-of-sample for py-feat**, so we cannot claim py-feat "wins" gaze from this.
-- **OpenFace 3.0 trained on MPIIFaceGaze + Gaze360** (paper: 2.56° MPII, 10.6°
-  Gaze360). Our *end-to-end* numbers are far worse (7°, 41°) because OF3's
-  shipped `detect→crop` doesn't reproduce the normalized crop its gaze head
-  trained on — a real pipeline limitation, but it means even OF3's "in-sample"
-  cells understate its model. Columbia is its one genuinely out-of-sample set.
-- **LibreFace** gaze isn't a documented trained model (its paper is AU +
-  expression); the 15–32° is consistent with a geometric/landmark estimate.
-- The Columbia loader yaw-sign convention was corrected in `feat.evaluation` as
-  part of this work (it had reported 17.5° from a sign mismatch; now 2.72°).
-
-**ETH-XGaze** (rightmost column) is out-of-sample for all three, but as the
-diagnostics above show it's frame-mismatched against py-feat, so it disproves the
-contaminated "py-feat wins" claim **without** licensing the opposite claim
-either. Net: the cross-tool gaze ranking is **unresolved** pending a
-frame-matched evaluation. The `train_status` column in `accuracy.csv` flags
-in-sample / held-out / out-of-sample for every cell so no number is read as
+**Net:** on the only clean, frame-matched, out-of-sample gaze benchmark
+(EYEDIAP), py-feat, OF3, and LibreFace are within ~4° (20.0/21.3/23.7°) — gaze is
+roughly a wash, py-feat slightly ahead. The headline 2.7° "win" was overfitting;
+the 44° "loss" was a frame artifact. The `train_status` column in `accuracy.csv`
+flags in-sample / held-out / out-of-sample for every cell so no number is read as
 clean when it isn't.
 
 > Reproduce: `tools/<tool>/run_accuracy.py` (OF3/PyAFAR), `run_modalities.py`
