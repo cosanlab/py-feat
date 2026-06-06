@@ -18,4 +18,10 @@ dependencies:
 toc:
   - file: content/intro.md
   - file: content/01_basics.py
+  - file: content/02_detector_vids.py
   - file: content/03_plotting.py
+  # 04 downloads 20 videos from OSF and processes them fully — too heavy to
+  # execute in CI. Render once locally with the data (`marimo-book render`)
+  # and commit the cached output, then enable it here as `mode: cached`.
+  # - file: content/04_fex_analysis.py
+  #   mode: cached
