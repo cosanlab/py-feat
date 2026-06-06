@@ -18,3 +18,4 @@ dependencies:
 toc:
   - file: content/intro.md
   - file: content/01_basics.py
+  - file: content/03_plotting.py
