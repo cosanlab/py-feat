@@ -2366,7 +2366,13 @@ class Fex(DataFrame):
         *args,
         **kwargs,
     ):
-        """Plot Py-FEAT detection results using plotly backend. There are currently two different types of plots implemented. For single Frames, uses plot_singleframe_detections() to create an interactive plot where different detector outputs can be toggled on or off.  For multiple frames, uses plot_multipleframes_detections() to create a plotly animation to scroll through multiple frames. However, we currently are unable to interactively toggle on and off the detectors, so the detector output must be prespecified when generating the plot.
+        """Plot Py-FEAT detection results using the plotly backend. Only
+        single-frame detections are currently supported: uses
+        plot_singleframe_detections() to create an interactive plot where the
+        different detector outputs can be toggled on or off. Multi-frame (video)
+        input raises NotImplementedError — slice your Fex to a single frame
+        first (e.g. ``fex.query("frame == 0")``), or use plot_detections() for
+        static per-frame figures.
 
         Args:
             bounding_boxes (bool): will include faceboxes when plotting detector output for multiple frames.
