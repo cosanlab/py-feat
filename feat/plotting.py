@@ -1468,6 +1468,10 @@ def animate_face(
     animation = camera.animate()
     animation.save(save, fps=fps)
     plt.close("all")
+    # Return the Animation (the docstring documents this) so callers can embed
+    # it — e.g. notebooks rendering it via the animation's HTML repr — instead
+    # of only getting the saved file. Previously this returned None.
+    return animation
 
 
 class PLSAULandmarkModel:
