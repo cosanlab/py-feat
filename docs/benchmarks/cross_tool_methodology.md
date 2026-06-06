@@ -89,19 +89,23 @@ number* — that absence documents the tool's hardware reach. Expected coverage:
 py-feat's own CPU/3090/Blackwell numbers are in the **[live dashboard](live.md)**
 (e.g. Detectorv2 ≈ 285 fps on Blackwell batch 16); M5 is added from a Mac run.
 
-**First head-to-head (RTX 3090, `single_face.mp4`, end-to-end fps):**
+**Head-to-head** (`single_face.mp4`, end-to-end fps; py-feat at batch 16, the
+competitors are per-frame). A blank = the tool can't run on that device.
 
-| Tool / config | CPU b1 | CPU b16 | 3090 b1 | 3090 b16 | Blackwell | M5 |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **py-feat Detectorv2** | — | — | — | **202** | 285 | _pending_ |
-| **py-feat retinaface (v1)** | — | — | — | **98** | 155 | _pending_ |
-| **LibreFace** | 2.7 | 3.9 | 3.8 | **4.5** | ❌ no sm_120 | ❌? |
+| Tool | CPU | 3090 | Blackwell | M5 |
+|---|:---:|:---:|:---:|:---:|
+| **py-feat Detectorv2** | — | **202** | **285** | _pending_ |
+| **py-feat retinaface (v1)** | — | **98** | 155 | _pending_ |
+| **OpenFace 3.0** | 6.1 | 17.5 | 18.7 | _pending_ |
+| **LibreFace** | 2.7–3.9 | 4.5 | ❌ no sm_120 | ❌? |
+| **PyAFAR** | — | — | ❌ | ❌ |
 
-So on the **same 3090**, py-feat's Detectorv2 is **~45× faster** than LibreFace
-(202 vs 4.5 fps) and even v1/retinaface is **~22×**. LibreFace's GPU barely helps
-its own pipeline (3.8 → 4.5 fps) because its **MediaPipe alignment runs on CPU**
-and dominates. (py-feat CPU/Blackwell/M5 cells and OF3/PyAFAR rows fill in as
-those runs land; LibreFace's Blackwell blank is the sm_120 wall.)
+On the **same 3090**, py-feat's Detectorv2 (202 fps) is **~12× faster than
+OpenFace 3.0** (17.5) and **~45× faster than LibreFace** (4.5). At batch 1
+Detectorv2 is ~39 fps on the 3090 — still ahead of both. **OF3 runs on Blackwell;
+LibreFace and PyAFAR can't.** LibreFace's GPU barely helps (3.8 → 4.5 fps) — its
+MediaPipe alignment is CPU-bound and dominates. (py-feat CPU + M5 cells fill in
+from the Mac run.)
 
 The point of the matrix is exactly the blanks: py-feat is the only toolkit that
 runs across CPU, current-gen GPUs, *and* Apple Silicon — and is one-to-two orders
@@ -188,12 +192,18 @@ Cleaner to install than LibreFace/PyAFAR (`pip install openface-test` +
    ID"* — the CLI never passes `device_ids`, so **GPU mode is broken** from the
    CLI.
 
-After patching the `/work` path, single-image `openface detect` works and emits
-faces + 68 landmarks + emotion + gaze + 8 AUs. AU accuracy on DISFA+ (mean F1
-**0.488**, 8 AUs) is in `competitors/openface3_disfaplus.json`. Clean *speed*
-timing wasn't possible via the supported CLI (video + GPU paths broken; per-call
-model load obscures per-frame throughput), so OF3's speed row is left blank —
-which, again, is part of the comparison.
+Critically, **the CLI also hardcodes `device='cpu'`** inside `process_image`
+(line 23) — so `openface detect -d cuda` silently runs on CPU. The fix is to
+**bypass the CLI** and construct the pipeline objects directly with real device
+handling: `FaceDetector(device='cuda')`, `LandmarkDetector(device='cuda',
+device_ids=[0])`, `MultitaskPredictor(device='cuda')`. Done that way OF3 runs
+fine on GPU **including Blackwell** (modern torch).
+
+Once the CLI is bypassed, OF3 is solid: AU accuracy on DISFA+ **0.488** (8 AUs,
+`competitors/openface3_disfaplus.json`) and end-to-end speed **6.1 / 17.5 / 18.7
+fps** on CPU / 3090 / Blackwell (`competitors/openface3_speed.json`). So OF3 is
+the *least* broken competitor — it just needs the CLI worked around. (The actual
+running, once set up, is reliable — the friction is all in packaging.)
 
 ### PyAFAR — dependency rot + API/coverage mismatch
 Another multi-obstacle integration (its own MediaPipe + TensorFlow env, kept
