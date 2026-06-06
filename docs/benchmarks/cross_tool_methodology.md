@@ -177,6 +177,21 @@ the 44° "loss" was a frame artifact. The `train_status` column in `accuracy.csv
 flags in-sample / held-out / out-of-sample for every cell so no number is read as
 clean when it isn't.
 
+**How does ~20° compare to the literature?** Published EYEDIAP gaze error is
+**~5–6° within-dataset** (trained on EYEDIAP, standard normalized protocol —
+MAFI-Gaze 5.0°, RT-Gene 6.3°) and **~8–10° cross-dataset** (zero-shot, normalized
+— GMMGaze 8.1°, GazeNet 9.6°). Our 20° is ~2× the cross-dataset reference, for
+three protocol reasons, not model failure: (1) we run **end-to-end on raw
+camera frames with no gaze data-normalization** (every literature number applies
+the Sugano/Zhang normalization — warp face to canonical pose/distance, predict
+normalized gaze); (2) the **FT_S floating-target session** sweeps ±49° yaw / ±44°
+pitch, wider than the screen-target sessions usually benchmarked; (3) these are
+general-purpose facial-analysis tools, not dedicated cross-dataset gaze nets.
+So the absolute number is inflated vs literature; the relative ordering is what
+holds. A normalized-protocol pass (apply EYEDIAP's head-pose + intrinsics
+normalization, use screen-target sessions) is the way to get literature-comparable
+numbers — see `tools/*/run_gaze_normalized.py`.
+
 > Reproduce: `tools/<tool>/run_accuracy.py` (OF3/PyAFAR), `run_modalities.py`
 > (LibreFace), `run_gaze.py` + `run_pyfeat_modalities.py` (py-feat). Consolidated
 > by `ingest_accuracy.py` into `accuracy.csv`; published to the
