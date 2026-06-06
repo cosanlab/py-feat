@@ -125,11 +125,20 @@ model trained on, and py-feat v2 trained on **all three** of these gaze datasets
 Gaze360-train). So py-feat's numbers below are **in-distribution**, not
 generalization. The training status of each cell:
 
-| Tool | Columbia (1.2k) | MPIIFaceGaze (3k) | Gaze360 test (2.5k) |
-|------|:---:|:---:|:---:|
-| **py-feat v2** | 2.72° · *in-sample* | 2.80° · *in-sample* | 9.42° · *held-out, in-distribution* |
-| **OpenFace 3.0** | 12.05° · *out-of-sample* | 7.03° · *in-sample* | 41.09° · *in-sample* |
-| **LibreFace** | 15.40° · *not trained* | 19.49° · *not trained* | 32.08° · *not trained* |
+| Tool | Columbia (1.2k) | MPIIFaceGaze (3k) | Gaze360 test (2.5k) | **ETH-XGaze (2.8k)** |
+|------|:---:|:---:|:---:|:---:|
+| **py-feat v2** | 2.72° · *in-sample* | 2.80° · *in-sample* | 9.42° · *held-out, in-dist* | **44.6° · out-of-sample** |
+| **OpenFace 3.0** | 12.05° · *out-of-sample* | 7.03° · *in-sample* | 41.09° · *in-sample* | **37.7° · out-of-sample** |
+| **LibreFace** | 15.40° · *not trained* | 19.49° · *not trained* | 32.08° · *not trained* | **40.5° · out-of-sample** |
+
+**ETH-XGaze is the only column out-of-sample for all three** (none trained on
+it), and it tells the real story: py-feat's 2.7–2.8° on Columbia/MPII is
+**overfitting** — on data it never saw, py-feat (44.6°) is **no better than, and
+slightly behind, OpenFace 3.0 (37.7°)**. Gaze is *not* a py-feat strength once
+contamination is removed. (Caveats: ETH-XGaze spans extreme ±120° poses that are
+hard for everyone, and its gaze labels live in a per-image *normalized* frame
+that no tool's output matches exactly, so the absolute degrees are inflated for
+all three — the *relative* ordering is the takeaway, not the magnitude.)
 
 Why each number is what it is — and why none of this ranks the models:
 
@@ -146,11 +155,11 @@ Why each number is what it is — and why none of this ranks the models:
 - The Columbia loader yaw-sign convention was corrected in `feat.evaluation` as
   part of this work (it had reported 17.5° from a sign mismatch; now 2.72°).
 
-**A clean cross-tool gaze benchmark needs a dataset *no* tool trained on** — we
-are adding **ETH-XGaze / EYEDIAP** (out-of-sample for py-feat, OF3, and
-LibreFace alike) for exactly this. Until then, treat the table above as
-provenance, not a result. The `train_status` column in `accuracy.csv` flags
-in-sample / held-out / out-of-sample for every cell.
+**A clean cross-tool gaze benchmark needs a dataset *no* tool trained on** — that
+is **ETH-XGaze** (rightmost column above), out-of-sample for py-feat, OF3, and
+LibreFace alike. It overturns the contaminated ranking: py-feat does not lead
+gaze once you score it on data it never saw. The `train_status` column in
+`accuracy.csv` flags in-sample / held-out / out-of-sample for every cell.
 
 > Reproduce: `tools/<tool>/run_accuracy.py` (OF3/PyAFAR), `run_modalities.py`
 > (LibreFace), `run_gaze.py` + `run_pyfeat_modalities.py` (py-feat). Consolidated
