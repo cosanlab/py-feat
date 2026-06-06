@@ -24,7 +24,20 @@ from skops.io import load, get_untrusted_types
 from huggingface_hub import hf_hub_download
 import xgboost as xgb
 
-__all__ = ["get_pretrained_models", "fetch_model", "load_model_weights"]
+__all__ = ["get_pretrained_models", "fetch_model", "load_model_weights", "detector_capabilities"]
+
+
+def detector_capabilities():
+    """Per-detector supported models, the single source of truth for what each
+    detector class accepts. JSON-serializable (None stays None -> null)."""
+    from feat.detector import Detector
+    from feat.detector_v2 import Detectorv2
+    from feat.MPDetector import MPDetector
+    return {
+        "Detector": Detector.SUPPORTED_MODELS,
+        "Detectorv2": Detectorv2.SUPPORTED_MODELS,
+        "MPDetector": MPDetector.SUPPORTED_MODELS,
+    }
 # Currently supported pre-trained detectors
 PRETRAINED_MODELS = {
     "face_model": [

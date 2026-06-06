@@ -234,6 +234,13 @@ def plot_face_landmarks(
 
 
 class MPDetector(nn.Module, PyTorchModelHubMixin):
+    SUPPORTED_MODELS = {
+        "face_model":     {"options": ["retinaface"],               "default": "retinaface"},
+        "au_model":       {"options": ["mp_blendshapes", None],     "default": "mp_blendshapes"},
+        "emotion_model":  {"options": ["resmasknet", "svm", None],  "default": "resmasknet"},
+        "identity_model": {"options": ["arcface", "facenet", None], "default": "arcface"},
+    }
+
     def __init__(
         self,
         face_model="retinaface",

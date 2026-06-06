@@ -111,6 +111,16 @@ warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 class Detector(nn.Module, PyTorchModelHubMixin):
     _SUPPORTED_FACE_MODELS = ("img2pose", "retinaface")
 
+    SUPPORTED_MODELS = {
+        "face_model":     {"options": ["retinaface", "img2pose"],             "default": "retinaface"},
+        "facepose_model": {"options": ["pose_mlp", "pnp_dlt", "img2pose"],    "default": "pose_mlp"},
+        "landmark_model": {"options": ["mobilefacenet", "mobilenet", "pfld"], "default": "mobilefacenet"},
+        "au_model":       {"options": ["xgb", "svm", None],                  "default": "xgb"},
+        "emotion_model":  {"options": ["resmasknet", "svm", None],           "default": "resmasknet"},
+        "identity_model": {"options": ["arcface", "facenet", None],          "default": "arcface"},
+        "gaze_model":     {"options": ["l2cs", None],                        "default": "l2cs"},
+    }
+
     def __init__(
         self,
         face_model="retinaface",

@@ -65,6 +65,11 @@ class Detectorv2(nn.Module):
     mesh/pose) + ArcFace/FaceNet identity -> Fex.
     """
 
+    SUPPORTED_MODELS = {
+        "face_model":     {"options": ["retinaface"],               "default": "retinaface"},
+        "identity_model": {"options": ["arcface", "facenet", None], "default": "arcface"},
+    }
+
     def __init__(self, device="cpu", face_detection_threshold=0.5,
                  identity_model="arcface", multitask_weights=None, amp=None,
                  compile=False):
