@@ -1,0 +1,9 @@
+{
+  "metric_kind": "speed",
+  "fixture": "WolfgangLanger_Pexels.mp4 (472 frames)",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "method": "end-to-end (decode->detect->AU), batch 1, warmup + 3 repeats, median, torch.cuda.synchronize",
+  "fps_batch1": {"pyfeat_detectorv2": 38.4, "openface3": 18.3, "libreface": 4.7},
+  "pyfeat_batch_scaling_note": "Detectorv2 detect() natively batches: 38.4 (b1) -> 202 (b16) on 3090. OF3/LibreFace have no batch path in their shipped API.",
+  "note": "Supersedes earlier per-frame single-clip numbers (openface3_speed.json, libreface_speed.json), which mixed batch settings/harnesses and were unreliable."
+}

@@ -89,23 +89,33 @@ number* — that absence documents the tool's hardware reach. Expected coverage:
 py-feat's own CPU/3090/Blackwell numbers are in the **[live dashboard](live.md)**
 (e.g. Detectorv2 ≈ 285 fps on Blackwell batch 16); M5 is added from a Mac run.
 
-**Head-to-head** (`single_face.mp4`, end-to-end fps; py-feat at batch 16, the
-competitors are per-frame). A blank = the tool can't run on that device.
+**Methodology** (this matters — naive timing is misleading): every tool is timed
+**end-to-end** (decode → detect → AU, the full pipeline it ships), on the **same
+video** (`WolfgangLanger_Pexels.mp4`, 472 frames), with **warmup + 3 repeats**
+(median reported) and `torch.cuda.synchronize()` around GPU work. Crucially, the
+head-to-head is at **batch 1** — OpenFace 3.0 and LibreFace process per-frame
+(their APIs don't expose batching), so comparing them to py-feat's batched
+throughput would be apples-to-oranges.
 
-| Tool | CPU | 3090 | Blackwell | M5 |
-|---|:---:|:---:|:---:|:---:|
-| **py-feat Detectorv2** | — | **202** | **285** | _pending_ |
-| **py-feat retinaface (v1)** | — | **98** | 155 | _pending_ |
-| **OpenFace 3.0** | 6.1 | 17.5 | 18.7 | _pending_ |
-| **LibreFace** | 2.7–3.9 | 4.5 | ❌ no sm_120 | ❌? |
-| **PyAFAR** | — | — | ❌ | ❌ |
+**Head-to-head — RTX 3090, end-to-end, batch 1:**
 
-On the **same 3090**, py-feat's Detectorv2 (202 fps) is **~12× faster than
-OpenFace 3.0** (17.5) and **~45× faster than LibreFace** (4.5). At batch 1
-Detectorv2 is ~39 fps on the 3090 — still ahead of both. **OF3 runs on Blackwell;
-LibreFace and PyAFAR can't.** LibreFace's GPU barely helps (3.8 → 4.5 fps) — its
-MediaPipe alignment is CPU-bound and dominates. (py-feat CPU + M5 cells fill in
-from the Mac run.)
+| Tool | fps | vs py-feat |
+|---|:---:|:---:|
+| **py-feat Detectorv2** | **38.4** | — |
+| **OpenFace 3.0** | 18.3 | 2.1× slower |
+| **LibreFace** | 4.7 | 8.2× slower |
+| **PyAFAR** | n/a | — |
+
+**py-feat's batching is a separate advantage:** its `detect()` natively batches,
+so Detectorv2 scales **38 → 202 fps** from batch 1 to 16 on the 3090. OF3 and
+LibreFace have no batch path in their APIs (their *models* can batch, but the
+shipped pipeline doesn't), so they stay at the per-frame rate. LibreFace's GPU
+barely helps it at all — its MediaPipe alignment is CPU-bound and dominates.
+
+The CPU / Blackwell / M5 cells need the same rigorous harness (folded into the
+suite's `run_speed.py`); the earlier single-clip per-frame numbers there are
+**not** trustworthy and were withdrawn. Hardware reach is still data: **OF3 runs
+on Blackwell; LibreFace and PyAFAR cannot** (no sm_120 / dlib-CUDA).
 
 The point of the matrix is exactly the blanks: py-feat is the only toolkit that
 runs across CPU, current-gen GPUs, *and* Apple Silicon — and is one-to-two orders
@@ -199,11 +209,13 @@ handling: `FaceDetector(device='cuda')`, `LandmarkDetector(device='cuda',
 device_ids=[0])`, `MultitaskPredictor(device='cuda')`. Done that way OF3 runs
 fine on GPU **including Blackwell** (modern torch).
 
-Once the CLI is bypassed, OF3 is solid: AU accuracy on DISFA+ **0.488** (8 AUs,
-`competitors/openface3_disfaplus.json`) and end-to-end speed **6.1 / 17.5 / 18.7
-fps** on CPU / 3090 / Blackwell (`competitors/openface3_speed.json`). So OF3 is
-the *least* broken competitor — it just needs the CLI worked around. (The actual
-running, once set up, is reliable — the friction is all in packaging.)
+Once the CLI is bypassed, OF3 is solid: AU accuracy on DISFA+ **0.488** (8 AUs)
+and end-to-end speed **18.3 fps** on the 3090 (batch 1, rigorous harness —
+warmup + repeats, median). So OF3 is the *least* broken competitor — it just
+needs the CLI worked around. (The running, once set up, is reliable — the
+friction is all in packaging.) Note its **MTL AU model batches fine** (the model
+takes `[B,…]`; the shipped pipeline just feeds one face at a time), so OF3 *could*
+be sped up with a custom batched runner — its API simply doesn't.
 
 ### PyAFAR — dependency rot + API/coverage mismatch
 Another multi-obstacle integration (its own MediaPipe + TensorFlow env, kept
