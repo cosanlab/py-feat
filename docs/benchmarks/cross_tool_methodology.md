@@ -55,13 +55,21 @@ per-tool note); treat as indicative until a single-protocol recompute lands.
 | **OpenFace 3.0** | 0.488 | 8 | their `evaluation.py` | `openface3_disfaplus.json` |
 | **LibreFace** (research RepVGG) | 0.461 | 12 | truth ≥2, intensity ≥2 | `libreface_repvgg_disfaplus.json` |
 | **py-feat v1** (`Detector`, xgb) | 0.250 | 12 | truth ≥2, prob ≥0.5 | `pyfeat_disfaplus_au.json` |
-| **PyAFAR** | _n/a_ | ≤7 overlap | — | not runnable (see notes) |
+| **PyAFAR** | 0.260 | **7 only** | occ ≥0.5, truth ≥2 | `pyafar_accuracy_disfaplus.json` |
 
 **py-feat v2 (Detectorv2) leads** the held-out DISFA+ AU benchmark (0.54), ahead
 of OpenFace 3.0 (0.49) and LibreFace (0.46) — and recall DISFA+ is held out for
 *all* tools, while DISFA (LibreFace's/OF3's training set) is excluded. py-feat
 v1's xgb path is weaker here (0.25) on the strict 12-AU / ≥2 protocol; it's the
 legacy modular detector, and v2 is the recommended path.
+
+**PyAFAR** now runs (its conda env rebuilt to its own declared TF-2.12 stack;
+see notes) over all 57,150 frames, unmodified. It covers only **7 of the 12
+DISFA AUs** (it has no AU05/09/20/25/26), and mean F1 over those 7 is **0.26** —
+strong on the smile AUs (AU06 0.61, AU12 0.55) but failing AU01/AU04 (≈0). Its
+video-only API required re-assembling DISFA+ stills into per-trial clips. The
+0.26 is **not comparable to the 12-AU numbers above** (different, easier AU
+subset); it's reported on PyAFAR's own 7-AU overlap.
 
 LibreFace also gives mean intensity **PCC = 0.73** (its native DISFA metric).
 A follow-up will recompute all tools on one AU set + threshold for an
@@ -338,8 +346,17 @@ away from the torch stack):
 5. Non-commercial license; GPU only on Ubuntu/WSL2.
 
 Contrast: py-feat is one `pip install`, works headless, takes images or video,
-and reports all 20 AUs. [PyAFAR DISFA+ numbers — pending the conda env + a
-frame-to-video adapter; coverage limited to the 7 overlapping AUs.]
+and reports all 20 AUs.
+
+**Resolved (the friction was the result).** We did get PyAFAR running: a conda
+env rebuilt to its *own* declared stack (`tensorflow==2.12`, a working
+`mediapipe.solutions`, `numpy<2`, matching protobuf/opencv — the shipped combo
+was internally inconsistent), `download_models`, plus a frame→per-trial-video
+adapter for its video-only API. Run unmodified over all 57,150 DISFA+ frames it
+scores **mean F1 0.26 on its 7 overlapping AUs** (AU06 0.61, AU12 0.55; AU01/04
+≈0), and cannot predict 5 of the 12 DISFA AUs at all. Every obstacle above had
+to be cleared just to get that partial number — the contrast with py-feat's one
+`pip install` stands.
 
 ## Hardware notes
 
