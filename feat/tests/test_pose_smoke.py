@@ -2,8 +2,7 @@
 
 img2pose: pose comes from the regression head built into the face detector.
 retinaface: pose comes from the landmarks-MLP (``feat.utils.face_pose_mlp``)
-when its weights are available, or PnP-DLT (``feat.utils.face_pose_pnp``)
-as a fallback.
+when its weights are available; otherwise pose stays NaN.
 
 These tests don't assert accuracy — they check that the columns are
 populated, values are finite radians within their mathematical range,
@@ -56,7 +55,7 @@ def test_detector_img2pose_pose_columns_populated():
 
 @pytest.mark.skipif(not _have_test_image(), reason="multi_face.jpg fixture missing")
 def test_detector_retinaface_pose_agrees_with_img2pose():
-    """retinaface pose path (MLP or PnP fallback) should agree with img2pose to ~10°."""
+    """retinaface pose path (Pose-MLP) should agree with img2pose to ~10°."""
     from feat.detector import Detector
 
     img = os.path.join(get_test_data_path(), "multi_face.jpg")
@@ -76,10 +75,9 @@ def test_detector_retinaface_pose_agrees_with_img2pose():
     if len(fex_ref) != len(fex_alt):
         pytest.skip("face counts differ between img2pose and retinaface")
 
-    # Compare in degrees — when pose-MLP weights are present the path
-    # should agree to ~10° MAE max. When falling back to PnP-DLT it'll
-    # be looser; we only enforce no per-axis catastrophic-flip
-    # (>90° errors that the smoke test caught on PnP-DLT historically).
+    # Compare in degrees — with pose-MLP weights present the path should
+    # agree to ~10° MAE max. We enforce no per-axis catastrophic flip
+    # (>90° errors), which guards against a pose-pipeline regression.
     for col in ("Pitch", "Roll", "Yaw"):
         diff_deg = np.degrees(np.abs(fex_ref[col].to_numpy() - fex_alt[col].to_numpy()))
         assert diff_deg.max() < 90.0, (

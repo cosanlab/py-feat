@@ -319,6 +319,65 @@ class InceptionResnetV1(nn.Module, PyTorchModelHubMixin):
         return x
 
 
+# FaceNet was trained on 160x160 chips, but py-feat's Detector (v1) has always
+# fed it the same 112x112 [0,1] crops it uses everywhere else. Detectorv2 carries
+# faces at 256, so this wrapper resizes to 112 to keep v2's facenet embeddings
+# identical to v1's. Mirrors the ArcFace wrapper's resize-then-run contract so
+# Detectorv2's identity call site stays backbone-agnostic.
+_FACENET_INPUT_SIZE = 112
+
+
+class FaceNet(nn.Module):
+    """InceptionResnetV1 wrapper exposing ``forward(face_crops) -> [N, 512]``,
+    matching the ArcFace identity-detector contract."""
+
+    def __init__(self, device="cpu"):
+        super().__init__()
+        self.net = InceptionResnetV1(
+            pretrained=None,
+            classify=False,
+            num_classes=None,
+            dropout_prob=0.6,
+            device=device,
+        )
+        self.net.logits = nn.Linear(512, 8631)
+        self.input_size = _FACENET_INPUT_SIZE
+
+    def forward(self, face_crops):
+        if (
+            face_crops.shape[-1] != self.input_size
+            or face_crops.shape[-2] != self.input_size
+        ):
+            face_crops = F.interpolate(
+                face_crops,
+                size=(self.input_size, self.input_size),
+                mode="bilinear",
+                align_corners=False,
+            )
+        return self.net(face_crops)
+
+
+def load_facenet_identity_detector(device):
+    """Build a FaceNet detector with the VGGFace2 weights loaded.
+
+    The single source of truth for the FaceNet load shared by Detector and
+    Detectorv2 (parallels ``load_arcface_identity_detector``)."""
+    from huggingface_hub import hf_hub_download
+
+    detector = FaceNet(device=device)
+    weights = hf_hub_download(
+        repo_id="py-feat/facenet",
+        filename="facenet_20180402_114759_vggface2.pth",
+        cache_dir=get_resource_path(),
+    )
+    detector.net.load_state_dict(
+        torch.load(weights, map_location=device, weights_only=True)
+    )
+    detector.eval()
+    detector.to(device)
+    return detector
+
+
 # def load_weights(mdl, name):
 #     """Download pretrained state_dict and load into model.
 

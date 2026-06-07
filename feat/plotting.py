@@ -1160,7 +1160,7 @@ def draw_facepose(pose, facebox, ax):
     size = min(x2 - x1, y2 - y1) // 2
 
     # Get pose axes. FEAT pose columns are RADIANS (img2pose 6DoF dofs, the
-    # pose-MLP/PnP path, and the mesh Umeyama path all emit radians; OpenFace
+    # pose-MLP path, and the mesh Umeyama path all emit radians; OpenFace
     # imports are radians too), so use them directly. The old `* np.pi / 180`
     # treated them as degrees, collapsing the rotation to ~0 and leaving the
     # axes unrotated / misaligned with the face (#248).
@@ -1219,10 +1219,16 @@ def draw_facegaze(pitch_rad, yaw_rad, facebox, ax, color="yellow", linewidth=2):
     #                                       → arrow points UP, ie -y in pixels)
     dx = length * np.sin(yaw) * np.cos(pitch)
     dy = length * -np.sin(pitch)
+    # Size the arrowhead off the actual arrow length, not the face size: a
+    # near-frontal gaze yields a short arrow, and a face-sized head then
+    # swallows the whole shaft. Cap at the old face-based size.
+    norm = float(np.hypot(dx, dy))
+    head_length = min(norm * 0.35, length * 0.08)
+    head_width = head_length * 0.75
     ax.arrow(
         cx, cy, dx, dy,
         color=color, linewidth=linewidth,
-        head_width=length * 0.06, head_length=length * 0.08,
+        head_width=head_width, head_length=head_length,
         length_includes_head=True,
     )
     return ax
@@ -1273,6 +1279,12 @@ def imshow(obj, figsize=(3, 3), aspect="equal"):
         obj (str/Path/PIL.Imag): string or Path to image file or pre-loaded PIL.Image instance
         figsize (tuple, optional): matplotlib figure size. Defaults to None.
         aspect (str, optional): passed to matplotlib imshow. Defaults to "equal".
+
+    Returns:
+        matplotlib.axes.Axes: the axis the image was drawn on. Returned (rather
+        than relying on the inline backend's implicit figure display) so reactive
+        notebooks like marimo, which render the value of a cell's last
+        expression, can show the image.
     """
     if isinstance(obj, (str, Path)):
         obj = Image.open(obj)
@@ -1280,6 +1292,7 @@ def imshow(obj, figsize=(3, 3), aspect="equal"):
     _, ax = plt.subplots(figsize=figsize)
     _ = ax.imshow(obj, aspect=aspect)
     _ = ax.axis("off")
+    return ax
 
 
 def interpolate_aus(
@@ -1455,6 +1468,10 @@ def animate_face(
     animation = camera.animate()
     animation.save(save, fps=fps)
     plt.close("all")
+    # Return the Animation (the docstring documents this) so callers can embed
+    # it — e.g. notebooks rendering it via the animation's HTML repr — instead
+    # of only getting the saved file. Previously this returned None.
+    return animation
 
 
 class PLSAULandmarkModel:
@@ -3046,12 +3063,12 @@ def plot_frame(
                     [
                         draw_keypoints(
                             f,
-                            l.unsqueeze(0),
+                            lm.unsqueeze(0),
                             radius=landmarks_radius,
                             width=landmarks_width,
                             colors=landmarks_colors,
                         )
-                        for f, l in zip(
+                        for f, lm in zip(
                             frame.unbind(dim=0),
                             landmarks.reshape(landmarks.shape[0], -1, 2).unbind(dim=0),
                         )
@@ -3065,12 +3082,12 @@ def plot_frame(
                     [
                         draw_keypoints(
                             fr,
-                            l.unsqueeze(0),
+                            lm.unsqueeze(0),
                             radius=landmarks_radius,
                             width=landmarks_width,
                             colors=landmarks_colors,
                         )
-                        for fr, l in zip(
+                        for fr, lm in zip(
                             [
                                 draw_bounding_boxes(
                                     f,
@@ -3314,8 +3331,12 @@ def draw_plotly_gaze(row, img_height, color="yellow", line_width=3):
     if norm < 1e-6:
         return [shaft]
     ux, uy = dx / norm, dy / norm
-    head_len = length * 0.18
-    head_half_w = length * 0.07
+    # Size the arrowhead off the actual arrow length (norm), not the face
+    # size: a near-frontal gaze yields a short shaft, and a face-sized head
+    # then dwarfs it (the "giant triangle near the nose"). Cap at the old
+    # face-based size so a strong gaze doesn't render an oversized head.
+    head_len = min(norm * 0.35, length * 0.18)
+    head_half_w = head_len * 0.55
     # Tip
     tx, ty = end_x, end_y
     # Two base corners: back from tip by head_len, perpendicular by head_half_w

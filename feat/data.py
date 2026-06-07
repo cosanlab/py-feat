@@ -2340,6 +2340,154 @@ class Fex(DataFrame):
 
         return fig
 
+    def plot_multipleframes_detections(
+        self,
+        bounding_boxes=False,
+        landmarks=False,
+        aus=False,
+        poses=False,
+        emotions=False,
+        gazes=False,
+        image_opacity=0.9,
+        facebox_color="cyan",
+        facebox_width=3,
+        pose_width=2,
+        landmark_color="white",
+        landmark_width=2,
+        gaze_color="yellow",
+        gaze_width=3,
+        emotions_position="right",
+        emotions_opacity=1.0,
+        emotions_color="white",
+        emotions_size=12,
+        au_cmap="Blues",
+        au_heatmap_resolution=1000,
+        au_opacity=0.9,
+        frame_duration=1000,
+        *args,
+        **kwargs,
+    ):
+        """Plotly animation across the frames of a multi-frame (video) Fex.
+
+        Each frame shows the underlying image with the *prespecified* overlays
+        (unlike the single-frame plot, overlays can't be toggled live here — pass
+        the ones you want). A play/pause control and a frame slider scrub through
+        the detections. Overlay coordinates use the same y-flipped image space as
+        ``plot_singleframe_detections``. Assumes all frames share one image size
+        (true for a video).
+
+        Returns:
+            a plotly figure instance
+        """
+        frame_ids = sorted(self["frame"].unique())
+
+        def _build(frame_id):
+            ff = self.query("frame == @frame_id")
+            img = load_pil_img(ff["input"].unique()[0], frame_id)
+            w, h = img.width, img.height
+            image = dict(
+                x=0, sizex=w, y=h, sizey=h, xref="x", yref="y",
+                opacity=image_opacity, layer="below", sizing="stretch", source=img,
+            )
+            shapes = []
+            if bounding_boxes:
+                shapes += [
+                    dict(
+                        type="rect",
+                        x0=r["FaceRectX"], y0=h - r["FaceRectY"],
+                        x1=r["FaceRectX"] + r["FaceRectWidth"],
+                        y1=h - r["FaceRectY"] - r["FaceRectHeight"],
+                        line=dict(color=facebox_color, width=facebox_width),
+                    )
+                    for _, r in ff.iterrows()
+                ]
+            if landmarks:
+                shapes += [
+                    draw_plotly_landmark(r, h, None, line_color=landmark_color,
+                                         line_width=landmark_width)
+                    for _, r in ff.iterrows()
+                ]
+            if poses:
+                shapes += flatten_list(
+                    [draw_plotly_pose(r, h, None, line_width=pose_width)
+                     for _, r in ff.iterrows()]
+                )
+            if aus:
+                shapes += flatten_list(
+                    [draw_plotly_au(r, h, None, cmap=au_cmap, au_opacity=au_opacity,
+                                    heatmap_resolution=au_heatmap_resolution)
+                     for _, r in ff.iterrows()]
+                )
+            if gazes:
+                shapes += flatten_list(
+                    [draw_plotly_gaze(r, h, color=gaze_color, line_width=gaze_width)
+                     for _, r in ff.iterrows()]
+                )
+            annotations = []
+            if emotions:
+                for _, r in ff.iterrows():
+                    emo = r[self.emotion_columns].sort_values(ascending=False).to_dict()
+                    xp, yp, align, valign = emotion_annotation_position(
+                        r, h, w, emotions_size=emotions_size,
+                        emotions_position=emotions_position,
+                    )
+                    text = "".join(f"{e}: <i>{v:.2f}</i><br>" for e, v in emo.items())
+                    annotations.append(dict(
+                        text=text, x=xp, y=yp, opacity=emotions_opacity,
+                        showarrow=False, align=align, valign=valign, bgcolor="black",
+                        font=dict(color=emotions_color, size=emotions_size),
+                    ))
+            return image, shapes, annotations, w, h
+
+        image0, shapes0, annotations0, img_width, img_height = _build(frame_ids[0])
+
+        fig = go.Figure()
+        # Invisible trace anchors the axis range so layout images/shapes line up.
+        fig.add_trace(go.Scatter(
+            x=[0, img_width], y=[0, img_height], mode="markers", marker_opacity=0,
+        ))
+        fig.update_layout(
+            images=[image0], shapes=shapes0, annotations=annotations0,
+            width=img_width, height=img_height,
+            margin={"l": 0, "r": 0, "t": 0, "b": 0},
+        )
+
+        plotly_frames = []
+        for frame_id in frame_ids:
+            image, shapes, annotations, _, _ = _build(frame_id)
+            plotly_frames.append(go.Frame(
+                name=str(int(frame_id)),
+                layout=dict(images=[image], shapes=shapes, annotations=annotations),
+            ))
+        fig.frames = plotly_frames
+
+        fig.update_layout(
+            updatemenus=[dict(
+                type="buttons", direction="left", showactive=False,
+                x=0.1, xanchor="left", y=1.12, yanchor="top",
+                pad={"r": 10, "t": 10},
+                buttons=[
+                    dict(label="Play", method="animate",
+                         args=[None, {"frame": {"duration": frame_duration, "redraw": True},
+                                      "fromcurrent": True}]),
+                    dict(label="Pause", method="animate",
+                         args=[[None], {"frame": {"duration": 0, "redraw": False},
+                                        "mode": "immediate"}]),
+                ],
+            )],
+            sliders=[dict(
+                active=0, x=0.1, len=0.9, pad={"b": 10, "t": 10},
+                steps=[dict(
+                    method="animate", label=str(int(fid)),
+                    args=[[str(int(fid))], {"frame": {"duration": 0, "redraw": True},
+                                            "mode": "immediate"}],
+                ) for fid in frame_ids],
+            )],
+        )
+        fig.update_xaxes(visible=False, range=[0, img_width])
+        fig.update_yaxes(visible=False, range=[0, img_height], scaleanchor="x")
+        return fig
+
     def iplot_detections(
         self,
         bounding_boxes=False,
@@ -2366,7 +2514,13 @@ class Fex(DataFrame):
         *args,
         **kwargs,
     ):
-        """Plot Py-FEAT detection results using plotly backend. There are currently two different types of plots implemented. For single Frames, uses plot_singleframe_detections() to create an interactive plot where different detector outputs can be toggled on or off.  For multiple frames, uses plot_multipleframes_detections() to create a plotly animation to scroll through multiple frames. However, we currently are unable to interactively toggle on and off the detectors, so the detector output must be prespecified when generating the plot.
+        """Plot Py-FEAT detection results using the plotly backend. There are
+        two plot types. For a single frame, uses plot_singleframe_detections()
+        to create an interactive plot where the different detector outputs can
+        be toggled on or off. For multiple frames (a video), uses
+        plot_multipleframes_detections() to create a plotly animation with a
+        play/pause control and a frame slider; overlays can't be toggled live
+        in the animation, so the detector outputs to draw must be prespecified.
 
         Args:
             bounding_boxes (bool): will include faceboxes when plotting detector output for multiple frames.
@@ -2420,8 +2574,29 @@ class Fex(DataFrame):
                 **kwargs,
             )
             return fig
-        raise NotImplementedError(
-            "iplot_detections only works for a single frame. Try slicing your Fex object to a single frame and then calling iplot_detections on that frame."
+        return self.plot_multipleframes_detections(
+            bounding_boxes=bounding_boxes,
+            landmarks=landmarks,
+            aus=aus,
+            poses=poses,
+            emotions=emotions,
+            gazes=gazes,
+            image_opacity=kwargs.pop("image_opacity", 0.9),
+            facebox_color=facebox_color,
+            facebox_width=facebox_width,
+            pose_width=pose_width,
+            landmark_color=landmark_color,
+            landmark_width=landmark_width,
+            gaze_color=gaze_color,
+            gaze_width=gaze_width,
+            emotions_position=emotions_position,
+            emotions_opacity=emotions_opacity,
+            emotions_color=emotions_color,
+            emotions_size=emotions_size,
+            au_cmap=au_cmap,
+            au_heatmap_resolution=au_heatmap_resolution,
+            au_opacity=au_opacity,
+            frame_duration=frame_duration,
         )
 
 
