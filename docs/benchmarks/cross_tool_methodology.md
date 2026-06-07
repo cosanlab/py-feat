@@ -156,16 +156,28 @@ show the models' gaze is strong when evaluated the way the field reports it:
 
 | Tool | MPII(Gaze) | Gaze360 | source |
 |------|:---:|:---:|---|
-| **py-feat v2.4** | 3.92° | **6.81°** | au_deep v2.4 (shipped ckpt; in-distribution) |
+| **py-feat v2.4** | **4.24°** | **9.40°** | au_deep v2.4 (shipped v24_s3 ckpt; in-distribution) |
 | **OpenFace 3.0** | **2.56°** | 10.6° | OF3 paper (arXiv 2506.02891) |
 | **L2CS-Net** (py-feat's gaze lineage) | 3.92° | 10.41° | L2CS paper (arXiv 2203.03339) |
-| LibreFace | — | — | gaze not reported |
+| **LibreFace 2.0** | — | 14.68° | landmark-MLP, "Is Geometry Enough?" (arXiv 2603.24724) |
 
-py-feat v2.4's gaze is **competitive with or better than the published baselines
-on their own benchmarks** — it matches L2CS on MPIIGaze (3.92°) and beats both
-OF3 and L2CS on Gaze360 (6.81° vs ~10.4–10.6°). The poor cross-tool numbers
-(20–44°) are the *out-of-distribution + cross-frame* harness, not a weak gaze
-model: run in-distribution/normalized, py-feat gaze is 4–7°. (As
+py-feat v2.4's gaze is **competitive with the published appearance-based
+baselines on their own benchmarks** — MPIIGaze 4.24° (vs L2CS 3.92°, OF3 2.56°)
+and Gaze360 9.40° (vs L2CS 10.41°, OF3 10.6°). LibreFace 2.0's gaze is a
+**MediaPipe-landmark MLP** (not appearance-based), which it reports at 14.68° on
+Gaze360 — weaker by design, consistent with it being last in our harness. (One
+as-shipped detail, not a knock: the pip `get_facial_attributes`/`estimate_gaze`
+returns LibreFace's *raw* gaze; the paper's bias correction (~+6.5° yaw / +5°
+pitch) is **not** applied by the shipped API — so our end-to-end number reflects
+what the software actually outputs, while the published table to the left shows
+their corrected best case. This is the point of having both.)
+
+The two tables answer different questions. **Reported (above):** each model on
+its home dataset, normalized, best case — what it *can* do. **Measured
+cross-tool (the main gaze table):** every model run end-to-end as shipped on
+held-out data — what you *get*. The big measured numbers (20–44°) are the
+out-of-distribution + cross-frame penalty, not weak models: in-distribution,
+py-feat gaze is 4–9°. (As
 a cross-check, our harness re-evaluating OF3 *outside* its normalized protocol
 reproduced the same collapse — OF3 20.4° on MPIIGaze, 49.9° on Gaze360 vs its
 paper's 2.56°/10.6°.)
@@ -199,18 +211,26 @@ the 44° "loss" was a frame artifact. The `train_status` column in `accuracy.csv
 flags in-sample / held-out / out-of-sample for every cell so no number is read as
 clean when it isn't.
 
-**How does ~20° compare to the literature?** Published EYEDIAP gaze error is
-**~5–6° within-dataset** (trained on EYEDIAP, standard normalized protocol —
-MAFI-Gaze 5.0°, RT-Gene 6.3°) and **~8–10° cross-dataset** (zero-shot, normalized
-— GMMGaze 8.1°, GazeNet 9.6°). Our 20° is ~2× the cross-dataset reference, for
+**How does ~20° compare to the literature?**
+
+| EYEDIAP gaze | angular error | who |
+|---|:---:|---|
+| Published, **within-dataset** | ~5–6° | MAFI-Gaze 5.0°, RT-Gene 6.3° (gaze nets trained on EYEDIAP) |
+| Published, **cross-dataset** (zero-shot) | ~8–10° | GMMGaze 8.1°, GazeNet 9.6° (gaze nets, not our tools) |
+| **Our measured (end-to-end, held-out)** | **20.0 / 21.3 / 23.7°** | py-feat / OF3 / LibreFace |
+
+None of our three tools report EYEDIAP in their papers (they report MPII/Gaze360),
+so the published rows are general gaze-SOTA references. Our 20° is ~2× the
+cross-dataset reference, for
 three protocol reasons, not model failure: (1) we run **end-to-end on raw
 camera frames with no gaze data-normalization** (every literature number applies
 the Sugano/Zhang normalization — warp face to canonical pose/distance, predict
 normalized gaze); (2) the **FT_S floating-target session** sweeps ±49° yaw / ±44°
 pitch, wider than the screen-target sessions usually benchmarked; (3) these are
 general-purpose facial-analysis tools, not dedicated cross-dataset gaze nets.
-So the absolute number is inflated vs literature; the relative ordering is what
-holds.
+So the absolute number is higher than the normalized-protocol literature because
+we measure **end-to-end as shipped** — that's the answer a user actually gets,
+not a failure; the relative ordering is what holds.
 
 **We ran the normalized-protocol pass too** (Sugano/Zhang data-normalization:
 warp each face to a canonical virtual camera using EYEDIAP's head pose +
