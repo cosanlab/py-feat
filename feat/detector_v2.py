@@ -398,10 +398,15 @@ class Detectorv2(nn.Module):
             columns=MESH_COLUMNS_V2,
         )
 
-        # ---- Pose: model [yaw,pitch,roll,tx,ty,tz] -> Fex [Pitch,Roll,Yaw,X,Y,Z] ----
+        # ---- Pose: multitask head [yaw,pitch,roll,tx,ty,tz] -> canonical Fex
+        # [Pitch,Roll,Yaw,X,Y,Z]. The multitask head's pitch/yaw are swapped and
+        # its yaw/roll signs are inverted relative to the canonical convention
+        # (+pitch=up, +yaw=turn to subject's right, +roll=tilt to subject's
+        # right), verified by on-camera calibration. Mapping:
+        #   Pitch = +model_yaw(p0)   Roll = -model_roll(p2)   Yaw = -model_pitch(p1)
         p = out.pose
         feat_poses = pd.DataFrame(
-            np.column_stack([p[:, 1], p[:, 2], p[:, 0], p[:, 3], p[:, 4], p[:, 5]]),
+            np.column_stack([p[:, 0], -p[:, 2], -p[:, 1], p[:, 3], p[:, 4], p[:, 5]]),
             columns=FEAT_FACEPOSE_COLUMNS_6D,
         )
 

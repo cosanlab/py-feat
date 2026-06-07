@@ -1160,7 +1160,7 @@ def draw_facepose(pose, facebox, ax):
     size = min(x2 - x1, y2 - y1) // 2
 
     # Get pose axes. FEAT pose columns are RADIANS (img2pose 6DoF dofs, the
-    # pose-MLP/PnP path, and the mesh Umeyama path all emit radians; OpenFace
+    # pose-MLP path, and the mesh Umeyama path all emit radians; OpenFace
     # imports are radians too), so use them directly. The old `* np.pi / 180`
     # treated them as degrees, collapsing the rotation to ~0 and leaving the
     # axes unrotated / misaligned with the face (#248).

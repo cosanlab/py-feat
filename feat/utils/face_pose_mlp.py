@@ -1,8 +1,8 @@
 """Landmark-only pose MLP inference.
 
-Replaces ``feat.utils.face_pose_pnp`` for non-img2pose face_model paths.
-Loaded MLP takes 68 face landmarks (normalized to the face bbox) and
-emits 6DoF head pose calibrated to img2pose's coordinate frame.
+The sole 6DoF-pose backend for non-img2pose face_model paths. The loaded
+MLP takes 68 face landmarks (normalized to the face bbox) and emits 6DoF
+head pose calibrated to img2pose's coordinate frame.
 
 Training: distillation from img2pose on CelebV-HQ. v2 (default) was
 trained on 2.78M frames / 35K clips with a 512→256→128 hidden + LayerNorm
