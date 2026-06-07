@@ -122,6 +122,45 @@ separator and document the dual-source pattern (see `docs/benchmarks/README.md`)
   density that's appropriate when there's real load-bearing context to
   preserve.
 
+## Detectorv2 chip extraction & head pose (v0.8 redesign in flight)
+
+### Head-pose convention (all detectors, RADIANS)
+
+Canonical convention across every detector: **+pitch = look up, +yaw = turn to
+the subject's right, +roll = tilt to the subject's right**, in **radians** (Fex
+columns are radians everywhere — img2pose dofs, Pose-MLP, mesh Umeyama, OpenFace
+imports). Consumers convert to degrees for display only.
+
+- **Classic `Detector`** (img2pose + Pose-MLP, which share img2pose's frame):
+  normalized at the `feat_poses` assembly — `Pitch=-Pitch_raw, Yaw=+Roll_raw,
+  Roll=-Yaw_raw`.
+- **`Detectorv2`** (multitask head): mapped at the Fex assembly —
+  `Pitch=-head[0], Roll=-head[2], Yaw=+head[1]`. NOTE the head's index 0 tracks
+  PITCH and index 1 tracks YAW (the inference docstring's `[yaw,pitch,…]` order
+  is mislabeled) — verified on-camera, don't trust the docstring order.
+- **PnP-DLT removed** (geometrically unreliable, heavy cross-axis bleed).
+  retinaface always uses the Pose-MLP; `facepose_model` options are
+  `["pose_mlp", "img2pose"]` only; pose stays NaN if MLP weights are missing.
+- Calibrate pose signs by reading **raw numeric Fex values**, never by eyeballing
+  an overlay against a selfie-mirrored video (the mirror flips left/right and
+  will send you in circles).
+
+### v2 pitch is compressed — anisotropic chip is the root cause
+
+`Detectorv2`'s pitch reads ~0.4–0.6× of img2pose, and its 478-mesh z axis is
+mis-scaled. Both come from **`extract_face_from_bbox_torch`** squashing the
+rectangular RetinaFace box into a *square* chip with independent x/y scales (plus
+an edge `clamp` instead of pad). This is invisible to v1 (2D landmarks un-squish
+exactly) but destroys v2's chip-space 3D/angle inference. **ConvNeXt V2 is
+size-agnostic** (GAP before every head in `model_v2.py`, ÷32 stride) so the
+square chip is a convention, not a requirement. The interim `[-head0,…]` pose
+map and any "scale z by w/MODEL_INPUT" mesh patch are stopgaps. The real fix —
+an isotropic aspect-preserving (square+pad) chip, used identically for training
+re-extraction and inference, with a full v2 retrain from the IN22k backbone — is
+specced at `docs/superpowers/specs/2026-06-06-v2-chip-extraction-redesign-design.md`.
+Do NOT just tweak signs/scales to paper over the pitch compression; it needs the
+chip fix + retrain.
+
 ## Repo-specific gotchas
 
 - **`mp_facemesh_v2` legacy file**: `face_landmarks_detector_Nx3x256x256_onnx.pth`
