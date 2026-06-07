@@ -18,6 +18,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 concurrency:
   group: claude-pr-review-${{ github.event.pull_request.number }}
