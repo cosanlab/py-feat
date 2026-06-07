@@ -111,6 +111,16 @@ warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 class Detector(nn.Module, PyTorchModelHubMixin):
     _SUPPORTED_FACE_MODELS = ("img2pose", "retinaface")
 
+    SUPPORTED_MODELS = {
+        "face_model":     {"options": ["retinaface", "img2pose"],             "default": "retinaface"},
+        "facepose_model": {"options": ["pose_mlp", "img2pose"],               "default": "pose_mlp"},
+        "landmark_model": {"options": ["mobilefacenet", "mobilenet", "pfld"], "default": "mobilefacenet"},
+        "au_model":       {"options": ["xgb", "svm", None],                  "default": "xgb"},
+        "emotion_model":  {"options": ["resmasknet", "svm", None],           "default": "resmasknet"},
+        "identity_model": {"options": ["arcface", "facenet", None],          "default": "arcface"},
+        "gaze_model":     {"options": ["l2cs", None],                        "default": "l2cs"},
+    }
+
     def __init__(
         self,
         face_model="retinaface",
@@ -141,9 +151,10 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             landmark_model=None,
             emotion_model=None,
             # facepose_model tracks where 6DoF pose comes from. img2pose
-            # regresses pose natively; retinaface derives pose via DLT-PnP
-            # from the 68 landmarks (see feat.utils.face_pose_pnp).
-            facepose_model="pnp_dlt" if face_model == "retinaface" else "img2pose",
+            # regresses pose natively; retinaface derives pose via the Pose-MLP
+            # (see feat.utils.face_pose_mlp). Overwritten in detect() once the
+            # backend that actually ran is known.
+            facepose_model="pose_mlp" if face_model == "retinaface" else "img2pose",
             au_model=None,
             identity_model=None,
             gaze_model=None,
@@ -210,10 +221,10 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 "face_model='retinaface' does not regress 6DoF head pose. "
                 "Pose columns are populated via the landmarks-to-pose MLP "
                 "(distilled from img2pose on CelebV-HQ, ~5° avg MAE vs "
-                "img2pose). PnP-DLT is used as a fallback when the MLP "
-                "weights aren't available. Use face_model='img2pose' for "
-                "the slowest, highest-accuracy path. See "
-                "feat.utils.face_pose_mlp for details.",
+                "img2pose). Pose stays NaN if the MLP weights aren't "
+                "available. Use face_model='img2pose' for the slowest, "
+                "highest-accuracy path. See feat.utils.face_pose_mlp for "
+                "details.",
                 stacklevel=2,
             )
 
@@ -343,7 +354,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     cache_dir=get_resource_path(),
                 )
                 emotion_checkpoint = torch.load(
-                    emotion_model_file, map_location=device, weights_only=True
+                    emotion_model_file, map_location=self.device, weights_only=True
                 )["net"]
                 self.emotion_detector.load_state_dict(emotion_checkpoint)
                 self.emotion_detector.eval()
@@ -395,7 +406,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                 )
                 self.identity_detector.load_state_dict(
                     torch.load(
-                        identity_model_file, map_location=device, weights_only=True
+                        identity_model_file, map_location=self.device, weights_only=True
                     )
                 )
                 self.identity_detector.eval()
@@ -753,13 +764,9 @@ class Detector(nn.Module, PyTorchModelHubMixin):
 
         # When face_model='retinaface' (or any future detector that
         # doesn't natively regress 6DoF pose), the per-frame `poses` tensors
-        # are NaN-padded. Replace with PnP-derived pose from the 68 landmarks
-        # we just computed, using img2pose's published 3D template (so the
-        # output lives in the same head-centric coordinate frame).
-        #
-        # All frames in a single detect() share the same H/W (collated by
-        # DataLoader), so default intrinsics are constant across the batch
-        # and PnP can be one batched call across every face in every frame.
+        # are NaN-padded. Replace with the Pose-MLP's estimate from the 68
+        # landmarks we just computed; it was distilled from img2pose, so the
+        # output lives in the same head-centric coordinate frame.
         if (
             self.info["face_model"] != "img2pose"
             and self.landmark_detector is not None
@@ -773,36 +780,38 @@ class Detector(nn.Module, PyTorchModelHubMixin):
                     .reshape(-1, N_OPENFACE_LANDMARKS, 2)
                     .to(self.device)
                 )
-                # Pose-MLP path (replaces PnP-DLT default). The MLP was
-                # distilled from img2pose on CelebV-HQ (~570k frames) and
-                # matches img2pose's coordinate frame. It's bbox-relative
-                # rather than image-relative, so it doesn't suffer from
-                # PnP-DLT's "intrinsics from full image" bug — pose stays
-                # sensible on multi-face wide-angle images.
+                # Pose-MLP: distilled from img2pose on CelebV-HQ (~570k
+                # frames), matches img2pose's coordinate frame. Bbox-relative
+                # (normalizes landmarks by their own centroid + inter-eye
+                # distance), so it avoids PnP-DLT's "intrinsics from full image"
+                # bug and stays sensible on multi-face wide-angle images. The
+                # PnP-DLT backend was removed (geometrically unreliable —
+                # heavy cross-axis bleed); if the MLP weights are unavailable
+                # the pose simply stays NaN for these faces.
                 from feat.utils.face_pose_mlp import pose_from_landmarks_mlp
 
-                # Bbox-free: MLP normalizes landmarks by their own
-                # centroid + inter-eye distance, so it doesn't matter
-                # whether bbox conventions match the training-time
-                # detector (img2pose) or not.
                 mlp_pose = pose_from_landmarks_mlp(lmk)
-
                 if mlp_pose is not None:
                     self.info["facepose_model"] = "pose_mlp"
                     poses[valid] = mlp_pose
-                else:
-                    # MLP weights not available — fall back to PnP-DLT.
-                    from feat.utils.face_pose_pnp import pose_from_landmarks_2d
-                    image_size = faces_data[0]["image_size"]
-                    pnp_pose = pose_from_landmarks_2d(lmk, image_size)
-                    poses[valid] = pnp_pose
 
         feat_poses = pd.DataFrame(
             poses.cpu().detach().numpy(), columns=FEAT_FACEPOSE_COLUMNS_6D
         )
+        # Normalize img2pose / pose_mlp output (both share img2pose's frame) to
+        # the canonical convention: +pitch=up, +yaw=turn to subject's right,
+        # +roll=tilt to subject's right. img2pose mislabels roll<->yaw and needs
+        # sign flips on pitch and roll, verified by on-camera calibration:
+        #   Pitch = -Pitch_raw,  Yaw = +Roll_raw,  Roll = -Yaw_raw
+        _pitch = feat_poses["Pitch"].to_numpy(copy=True)
+        _roll = feat_poses["Roll"].to_numpy(copy=True)
+        _yaw = feat_poses["Yaw"].to_numpy(copy=True)
+        feat_poses["Pitch"] = -_pitch
+        feat_poses["Yaw"] = _roll
+        feat_poses["Roll"] = -_yaw
 
         # Invert the DataLoader's Rescale on the 68 (x, y) landmark pairs.
-        # The PnP block above (when active) already consumed the
+        # The Pose-MLP block above (when active) already consumed the
         # padded-frame landmarks; invert here for the user-visible
         # output. In-place is safe — `new_landmarks` is not used after
         # the DataFrame is built. NaN landmarks (no-detection rows)

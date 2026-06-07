@@ -1167,8 +1167,11 @@ def extract_face_from_bbox_torch(
     new_x2 = (center_x + width / 2).clamp(max=W)
     new_y2 = (center_y + height / 2).clamp(max=H)
 
-    # Cast the bounding box coordinates to long for indexing
-    new_bboxes = torch.stack([new_x1, new_y1, new_x2, new_y2], dim=-1).long()
+    # Cast the bounding box coordinates to long for indexing. Round (not
+    # truncate): plain .long() floors, so a sub-pixel-jittering box snaps
+    # between e.g. 213 and 214 across frames, adding a ±1px step to the
+    # crop + mesh transform. Rounding removes that discrete flicker.
+    new_bboxes = torch.stack([new_x1, new_y1, new_x2, new_y2], dim=-1).round().long()
 
     # Create a mesh grid for the face size
     yy, xx = torch.meshgrid(

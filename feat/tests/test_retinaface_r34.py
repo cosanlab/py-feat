@@ -232,11 +232,10 @@ def test_detector_with_retinaface_detects_multi_face():
 
         det = Detector(face_model="retinaface", device="cpu", au_model="svm")
         assert det.info["face_model"] == "retinaface"
-        # facepose_model = 'pnp_dlt' indicates pose came from DLT-PnP rather
-        # than img2pose's regressed values. Tracked separately so downstream
-        # code can decide whether the pose values are trustworthy enough for
-        # its application.
-        assert det.info["facepose_model"] == "pnp_dlt"
+        # facepose_model = 'pose_mlp' indicates pose came from the Pose-MLP
+        # (distilled from img2pose) rather than img2pose's native regression.
+        # The legacy DLT-PnP backend was removed; retinaface always uses the MLP.
+        assert det.info["facepose_model"] == "pose_mlp"
 
         path = os.path.join(get_test_data_path(), "multi_face.jpg")
         if not os.path.exists(path):
@@ -244,8 +243,8 @@ def test_detector_with_retinaface_detects_multi_face():
 
         fex = det.detect(path)
         assert len(fex) >= 4, f"expected >=4 faces, got {len(fex)}"
-        # Pose columns are populated via PnP. Each angle must be a finite
-        # number in radians (between -pi and +pi).
+        # Pose columns are populated via the Pose-MLP. Each angle must be a
+        # finite number in radians (between -pi and +pi).
         import math
         for col in ("Pitch", "Roll", "Yaw"):
             vals = fex[col]

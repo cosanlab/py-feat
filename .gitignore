@@ -154,6 +154,11 @@ feat/resources/*.npz
 # under models--py-feat--* and are lazy-downloaded; never track loose copies).
 feat/resources/*.h5
 feat/resources/*.joblib
+# Exception: the v2.4 AU->mesh PLS model (v4) ships bundled in the package
+# (see feat/plotting.py load_face_mesh_viz_model) so it loads offline; the
+# offline contract is enforced by test_face_mesh_viz.TestV4BundledModel.
+# It is not yet on the Hub. ~146KB. Mirrors the other bundled viz assets above.
+!feat/resources/au_to_mesh_pls_v4.npz
 
 # marimo runtime cache (created next to notebooks during render)
 **/__marimo__/

@@ -1,0 +1,50 @@
+# Automatic PR review on open, for SAME-REPO branches only. Fork PRs are
+# intentionally skipped here (GitHub withholds secrets from fork-triggered
+# `pull_request` runs anyway, and running the credentialed action on untrusted
+# fork code is unsafe) — review those on demand by commenting `@claude review`
+# (see claude-mention.yml).
+#
+# `pull_request` workflows run from the PR's BASE branch, so this fires for PRs
+# targeting whatever branch carries this file (e.g. v0.7-dev).
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: claude-pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Same-repo PRs only; forks are handled on-demand via @claude.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Review this pull request. Follow REVIEW.md and CLAUDE.md.
+            Focus on correctness/logic bugs, missing test coverage, breaking
+            API changes without deprecation, and consistency with existing
+            patterns. Respect the load-bearing gotchas in CLAUDE.md (do not
+            suggest removing OMP_NUM_THREADS, the skops/xgb fallbacks, etc.).
+            Be concise and actionable; lead with anything important, keep nits
+            few. This is advisory — do not approve or request-changes formally.
+          claude_args: |
+            --max-turns 12
+            --model claude-sonnet-4-6
+            --allowedTools read,bash

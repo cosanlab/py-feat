@@ -1,0 +1,27 @@
+title: Py-Feat
+description: Python Facial Expression Analysis Toolbox — tutorials.
+authors:
+  - name: Py-Feat Team
+
+repo: https://github.com/cosanlab/py-feat
+branch: v0.7-dev
+
+launch_buttons:
+  molab: true
+  github: true
+  download: true
+
+# Reuse the environment running marimo-book (it has feat + torch installed).
+dependencies:
+  mode: env
+
+toc:
+  - file: content/intro.md
+  - file: content/01_basics.py
+  - file: content/02_detector_vids.py
+  - file: content/03_plotting.py
+  # 04 downloads 20 videos from OSF and processes them fully — too heavy to
+  # execute in CI. Render once locally with the data (`marimo-book render`)
+  # and commit the cached output, then enable it here as `mode: cached`.
+  # - file: content/04_fex_analysis.py
+  #   mode: cached

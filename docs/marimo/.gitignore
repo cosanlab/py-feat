@@ -1,0 +1,9 @@
+_site/
+_site_src/
+__marimo__/
+.cache/
+.marimo_book_cache/
+*.gif
+output.csv
+detections.csv
+*.csv

@@ -1,8 +1,9 @@
-"""Detectorv2 — RetinaFace + the v2.3 multitask model + ArcFace identity.
+"""Detectorv2 — RetinaFace + the v2.3 multitask model + ArcFace/FaceNet identity.
 
 A single forward of the multitask model yields AU (24), emotion (8), valence/
-arousal, gaze, head pose, and a 478-point face mesh; ArcFace adds identity
-embeddings. Outputs a native-v2 :class:`~feat.data.Fex` whose landmark block is
+arousal, gaze, head pose, and a 478-point face mesh; an identity branch
+(``identity_model='arcface'`` by default, or ``'facenet'``) adds embeddings.
+Outputs a native-v2 :class:`~feat.data.Fex` whose landmark block is
 the dlib-68 subset derived from the 478 mesh (so Fex helpers expecting 68
 points keep working), with the full 478 mesh available in ``mesh_*`` columns.
 
@@ -38,9 +39,10 @@ from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 from feat.identity_detectors.arcface.arcface_model import (
     load_arcface_identity_detector,
 )
+from feat.identity_detectors.facenet.facenet_model import (
+    load_facenet_identity_detector,
+)
 from feat.multitask import (
-    AU_COLUMNS_V2,
-    EMOTION_COLUMNS_V2,
     VA_COLUMNS_V2,
     MESH_COLUMNS_V2,
 )
@@ -60,8 +62,13 @@ class Detectorv2(nn.Module):
     """Multitask face-behavior detector (v2.3 model).
 
     Pipeline: RetinaFace -> 256 crop -> multitask model (AU/emotion/V-A/gaze/
-    mesh/pose) + ArcFace identity -> Fex.
+    mesh/pose) + ArcFace/FaceNet identity -> Fex.
     """
+
+    SUPPORTED_MODELS = {
+        "face_model":     {"options": ["retinaface"],               "default": "retinaface"},
+        "identity_model": {"options": ["arcface", "facenet", None], "default": "arcface"},
+    }
 
     def __init__(self, device="cpu", face_detection_threshold=0.5,
                  identity_model="arcface", multitask_weights=None, amp=None,
@@ -75,10 +82,17 @@ class Detectorv2(nn.Module):
         self.multitask = MultitaskModel(device=self.device,
                                         weights_path=multitask_weights,
                                         amp=amp, compile=compile)
-        self.identity_detector = (
-            load_arcface_identity_detector(self.device)
-            if identity_model == "arcface" else None
-        )
+        if identity_model in ("arcface", "arcface_r50"):
+            self.identity_detector = load_arcface_identity_detector(self.device)
+        elif identity_model == "facenet":
+            self.identity_detector = load_facenet_identity_detector(self.device)
+        elif identity_model is None:
+            self.identity_detector = None
+        else:
+            raise ValueError(
+                f"{identity_model!r} is not a supported identity_model for "
+                "Detectorv2; expected 'arcface' (default), 'facenet', or None."
+            )
 
         self._idx68 = _DLIB68_IDX.to(self.device)
         self.info = dict(
@@ -141,6 +155,13 @@ class Detectorv2(nn.Module):
             torch.arange(B, device=self.device), n_per_frame_t
         )
 
+        # Temporal bbox stabilization (EMA) for streaming: smooth the box
+        # BEFORE the crop so the chip — and therefore the mesh, AUs, gaze
+        # and pose predicted from it — stop jittering on a still face.
+        # Off unless `bbox_smoothing_alpha` is set by the caller (e.g. a
+        # live stream); batch/offline runs leave it disabled.
+        all_bboxes = self._smooth_bboxes(all_bboxes)
+
         bboxes_for_extract = torch.nan_to_num(all_bboxes, nan=0.0)
         all_faces, all_new_bboxes = extract_face_from_bbox_torch(
             frames_unit, bboxes_for_extract,
@@ -172,6 +193,140 @@ class Detectorv2(nn.Module):
             cursor += n
         return results
 
+    def crop_faces_from_boxes(self, images, boxes):
+        """Crop faces at caller-supplied boxes WITHOUT running RetinaFace.
+
+        A streaming counterpart to :meth:`detect_faces`: when the caller
+        already knows where each face is (e.g. a tracker deriving a ROI
+        from the previous frame's mesh), this skips the expensive
+        RetinaFace pass and only does the 256-chip crop, returning the
+        SAME per-frame ``faces_data`` structure ``forward`` consumes.
+        ``scores`` are 1.0 placeholders (no detection confidence exists).
+
+        Args:
+            images: ``[B,C,H,W]`` tensor (or anything
+                ``convert_image_to_tensor`` accepts) of source frames,
+                pixel range 0-255 — same as :meth:`detect_faces` expects.
+            boxes: a single ``[N,4]`` tensor (one-frame batch, ``B==1``)
+                or a length-``B`` list of ``[Ni,4]`` tensors, each in
+                ``[x1,y1,x2,y2]`` source-frame pixel coords.
+                Must be torch tensors (numpy arrays are not accepted).
+
+        Returns:
+            list of ``B`` per-frame dicts keyed
+            ``face_id/faces/boxes/new_boxes/scores/image_size`` —
+            identical in shape to :meth:`detect_faces` output.
+        """
+        frames = convert_image_to_tensor(images)
+        frames_px = frames.to(self.device, non_blocking=True).float()
+        frames_unit = frames_px / 255.0
+        B = frames_unit.shape[0]
+
+        if torch.is_tensor(boxes):
+            boxes = [boxes]
+        if len(boxes) != B:
+            raise ValueError(
+                f"crop_faces_from_boxes: {len(boxes)} box-lists for {B} frames"
+            )
+
+        per_frame = []
+        for b in boxes:
+            b = b.to(self.device, torch.float32)
+            if b.ndim == 1:
+                b = b.reshape(1, 4)
+            if b.shape[-1] != 4:
+                raise ValueError(
+                    f"crop_faces_from_boxes: each box tensor must be [N,4], got {tuple(b.shape)}"
+                )
+            per_frame.append(b)
+        n_per_frame = [int(b.shape[0]) for b in per_frame]
+        all_boxes = torch.cat(per_frame, dim=0)
+        image_size = tuple(frames_unit.shape[-2:])
+
+        if all_boxes.shape[0] == 0:
+            # Defensive: no faces to crop on any frame.
+            empty = torch.empty((0,), device=self.device)
+            return [{
+                "face_id": i, "faces": torch.empty((0, 3, self.face_size,
+                                                    self.face_size), device=self.device),
+                "boxes": torch.empty((0, 4), device=self.device),
+                "new_boxes": torch.empty((0, 4), device=self.device),
+                "scores": empty, "image_size": image_size,
+            } for i in range(B)]
+
+        n_per_frame_t = torch.tensor(n_per_frame, device=self.device)
+        all_frame_idx = torch.repeat_interleave(
+            torch.arange(B, device=self.device), n_per_frame_t
+        )
+
+        all_faces, all_new_bboxes = extract_face_from_bbox_torch(
+            frames_unit, all_boxes,
+            face_size=self.face_size, expand_bbox=EXPAND_BBOX,
+            frame_idx=all_frame_idx,
+        )
+        all_new_bboxes = all_new_bboxes.to(torch.float32)
+        all_scores = torch.ones(all_boxes.shape[0], device=self.device)
+
+        results, cursor = [], 0
+        for i in range(B):
+            n = n_per_frame[i]
+            sl = slice(cursor, cursor + n)
+            results.append({
+                "face_id": i,
+                "faces": all_faces[sl],
+                "boxes": all_boxes[sl],
+                "new_boxes": all_new_bboxes[sl],
+                "scores": all_scores[sl],
+                "image_size": image_size,
+            })
+            cursor += n
+        return results
+
+    def _smooth_bboxes(self, all_bboxes):
+        """Exponential-moving-average smoothing of the RetinaFace boxes
+        across calls, to stabilize a live stream's crop (and thus the
+        mesh/AUs/gaze/pose) on a still face.
+
+        Disabled unless ``self.bbox_smoothing_alpha`` is set > 0 by the
+        caller. Faces are matched frame-to-frame by box-center proximity;
+        a new/unmatched face (or a no-detection NaN placeholder) passes
+        through unsmoothed. Assumes a streaming batch of one image.
+        ``alpha`` is the weight on the *current* frame (lower = smoother
+        but laggier).
+        """
+        import numpy as np
+
+        alpha = float(getattr(self, "bbox_smoothing_alpha", 0.0) or 0.0)
+        if alpha <= 0.0:
+            self._prev_boxes = None
+            return all_bboxes
+
+        cur = all_bboxes.detach().to("cpu", torch.float32).numpy()
+        out = cur.copy()
+        valid = np.isfinite(cur).all(axis=1)
+        prev = getattr(self, "_prev_boxes", None)
+        if prev is not None and len(prev):
+            prev_c = (prev[:, :2] + prev[:, 2:]) / 2.0
+            cur_c = (cur[:, :2] + cur[:, 2:]) / 2.0
+            used: set = set()
+            for i in range(cur.shape[0]):
+                if not valid[i]:
+                    continue
+                dist = np.linalg.norm(prev_c - cur_c[i], axis=1)
+                for j in used:
+                    dist[j] = np.inf
+                if dist.size == 0:
+                    continue
+                j = int(np.argmin(dist))
+                width = float(cur[i, 2] - cur[i, 0])
+                # Only fuse when the nearest previous box is plausibly the
+                # same face (within half its width) — else it's a new face.
+                if np.isfinite(dist[j]) and dist[j] < 0.5 * max(width, 1.0):
+                    used.add(j)
+                    out[i] = alpha * cur[i] + (1.0 - alpha) * prev[j]
+        self._prev_boxes = out[valid].copy() if valid.any() else None
+        return torch.from_numpy(out).to(all_bboxes.device)
+
     # ------------------------------------------------------------------ #
     @torch.inference_mode()
     def forward(self, faces_data, batch_data):
@@ -202,7 +357,7 @@ class Detectorv2(nn.Module):
             np.column_stack([out.valence, out.arousal]), columns=VA_COLUMNS_V2
         )
 
-        # ---- Identity (ArcFace on the same crops) ----
+        # ---- Identity (ArcFace/FaceNet on the same crops) ----
         if self.identity_detector is not None and n_faces > 0:
             emb = self.identity_detector.forward(faces)
             emb = emb.cpu().detach().numpy() if torch.is_tensor(emb) else np.asarray(emb)
@@ -243,10 +398,18 @@ class Detectorv2(nn.Module):
             columns=MESH_COLUMNS_V2,
         )
 
-        # ---- Pose: model [yaw,pitch,roll,tx,ty,tz] -> Fex [Pitch,Roll,Yaw,X,Y,Z] ----
+        # ---- Pose: multitask head -> canonical Fex [Pitch,Roll,Yaw,X,Y,Z].
+        # Empirically the head's index 0 responds to PITCH and index 1 to YAW
+        # (the inference docstring's [yaw,pitch,...] order is mislabeled),
+        # verified on-camera against the classic Detector (img2pose / Pose-MLP).
+        # Map to the canonical convention (+pitch=up, +yaw=turn to subject's
+        # right, +roll=tilt to subject's right) with sign flips on pitch/roll:
+        #   Pitch = -head[0]   Roll = -head[2]   Yaw = +head[1]
+        # NOTE: the head under-predicts pitch magnitude (a fit limitation, not
+        # a labeling bug) — pitch reads smaller than img2pose for the same nod.
         p = out.pose
         feat_poses = pd.DataFrame(
-            np.column_stack([p[:, 1], p[:, 2], p[:, 0], p[:, 3], p[:, 4], p[:, 5]]),
+            np.column_stack([-p[:, 0], -p[:, 2], p[:, 1], p[:, 3], p[:, 4], p[:, 5]]),
             columns=FEAT_FACEPOSE_COLUMNS_6D,
         )
 
