@@ -22,25 +22,19 @@ To get the latest development version instead, install directly from GitHub:
 uv pip install "git+https://github.com/cosanlab/py-feat.git"
 ```
 
-```{note}
-Prefer plain `pip`? Every command above works by dropping `uv`:
-`pip install py-feat` or `pip install "git+https://github.com/cosanlab/py-feat.git"`.
-```
+!!! note
+    Prefer plain `pip`? Every command above works by dropping `uv`:
+    `pip install py-feat` or `pip install "git+https://github.com/cosanlab/py-feat.git"`.
 
-```{note}
-Py-Feat supports CPU and NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon
-GPUs via Metal (MPS). Pass `device='auto'` (or `device='mps'` / `device='cuda'`)
-when constructing a `Detector` to use the GPU; the default is `cpu`.
-```
+!!! note
+    Py-Feat supports CPU and NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon
+    GPUs via Metal (MPS). Pass `device='auto'` (or `device='mps'` / `device='cuda'`)
+    when constructing a `Detector` to use the GPU; the default is `cpu`.
 
-## Using Google Colab
-On any page in these docs you can click the
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]()
-badge to open it in [Google Colab](http://colab.research.google.com/).
-```{note}
-Add and run `!pip install py-feat` as the **first** cell of the Colab notebook
-before running any other code.
-```
+## Running tutorials online (molab)
+Every tutorial page has an **Open in molab** button at the top that opens the
+notebook in [molab](https://molab.marimo.io), marimo's free hosted runtime — run
+the tutorials in your browser with no local install required.
 
 ## Development setup
 

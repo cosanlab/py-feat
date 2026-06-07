@@ -1,8 +1,13 @@
 # Throughput benchmarks
 
+> See the interactive **[live benchmarks dashboard](live.md)** for current
+> frames-per-second by detector config and GPU. This page documents the
+> methodology and archives individual runs.
+
 Tracks per-release wall-time of `Detector` and `MPDetector` over time. Each
-entry is a single run produced by `python scripts/bench_detectors.py
---markdown`. Accuracy benchmarks live in [accuracy.md](accuracy.md).
+entry is a single run produced by `python scripts/bench_detectors.py --markdown`
+(or `--json`, which is ingested into the live dashboard via
+`scripts/ingest_benchmarks.py`). Accuracy benchmarks live in [accuracy.md](accuracy.md).
 
 ## Methodology
 
@@ -26,9 +31,9 @@ Swept axes: `device × batch_size × num_workers`.
 
 | date | run |
 |---|---|
-| 2026-05-14 | [2026-05-14-c716340.md](2026-05-14-c716340.md) |
-| 2026-05-04 | [2026-05-04-f44ccb1.md](2026-05-04-f44ccb1.md) |
-| 2026-05-03 | [2026-05-03-d71c0d7.md](2026-05-03-d71c0d7.md) |
-| 2026-05-03 | [2026-05-03-864962c.md](2026-05-03-864962c.md) |
-| 2026-05-03 | [2026-05-03-437b651.md](2026-05-03-437b651.md) |
-| 2026-05-03 | [2026-05-03-09980f9.md](2026-05-03-09980f9.md) |
+| 2026-05-14 | [2026-05-14-c716340.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-14-c716340.md) |
+| 2026-05-04 | [2026-05-04-f44ccb1.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-04-f44ccb1.md) |
+| 2026-05-03 | [2026-05-03-d71c0d7.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-d71c0d7.md) |
+| 2026-05-03 | [2026-05-03-864962c.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-864962c.md) |
+| 2026-05-03 | [2026-05-03-437b651.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-437b651.md) |
+| 2026-05-03 | [2026-05-03-09980f9.md](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-09980f9.md) |

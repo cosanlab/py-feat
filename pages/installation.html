@@ -444,7 +444,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-setup">Basic setup</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-google-colab">Using Google Colab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-tutorials-online-molab">Running tutorials online (molab)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development-setup">Development setup</a></li>
 </ul>
             </nav>
@@ -475,28 +475,19 @@ commands through it with <code class="docutils literal notranslate"><span class=
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;git+https://github.com/cosanlab/py-feat.git&quot;</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Prefer plain <code class="docutils literal notranslate"><span class="pre">pip</span></code>? Every command above works by dropping <code class="docutils literal notranslate"><span class="pre">uv</span></code>:
+<p>!!! note
+Prefer plain <code class="docutils literal notranslate"><span class="pre">pip</span></code>? Every command above works by dropping <code class="docutils literal notranslate"><span class="pre">uv</span></code>:
 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">py-feat</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;git+https://github.com/cosanlab/py-feat.git&quot;</span></code>.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Py-Feat supports CPU and NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon
+<p>!!! note
+Py-Feat supports CPU and NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon
 GPUs via Metal (MPS). Pass <code class="docutils literal notranslate"><span class="pre">device='auto'</span></code> (or <code class="docutils literal notranslate"><span class="pre">device='mps'</span></code> / <code class="docutils literal notranslate"><span class="pre">device='cuda'</span></code>)
 when constructing a <code class="docutils literal notranslate"><span class="pre">Detector</span></code> to use the GPU; the default is <code class="docutils literal notranslate"><span class="pre">cpu</span></code>.</p>
-</div>
 </section>
-<section id="using-google-colab">
-<h2>Using Google Colab<a class="headerlink" href="#using-google-colab" title="Permalink to this heading">#</a></h2>
-<p>On any page in these docs you can click the
-<a class="reference internal" href="#"><span class="xref myst"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></span></a>
-badge to open it in <a class="reference external" href="http://colab.research.google.com/">Google Colab</a>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Add and run <code class="docutils literal notranslate"><span class="pre">!pip</span> <span class="pre">install</span> <span class="pre">py-feat</span></code> as the <strong>first</strong> cell of the Colab notebook
-before running any other code.</p>
-</div>
+<section id="running-tutorials-online-molab">
+<h2>Running tutorials online (molab)<a class="headerlink" href="#running-tutorials-online-molab" title="Permalink to this heading">#</a></h2>
+<p>Every tutorial page has an <strong>Open in molab</strong> button at the top that opens the
+notebook in <a class="reference external" href="https://molab.marimo.io">molab</a>, marimo’s free hosted runtime — run
+the tutorials in your browser with no local install required.</p>
 </section>
 <section id="development-setup">
 <h2>Development setup<a class="headerlink" href="#development-setup" title="Permalink to this heading">#</a></h2>
@@ -579,7 +570,7 @@ that download models from the HuggingFace Hub).</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-setup">Basic setup</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-google-colab">Using Google Colab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-tutorials-online-molab">Running tutorials online (molab)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development-setup">Development setup</a></li>
 </ul>
   </nav></div>

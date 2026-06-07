@@ -458,8 +458,15 @@ document.write(`
                   
   <section id="throughput-benchmarks">
 <h1>Throughput benchmarks<a class="headerlink" href="#throughput-benchmarks" title="Permalink to this heading">#</a></h1>
+<blockquote>
+<div><p>See the interactive <strong><a class="reference internal" href="#live.md"><span class="xref myst">live benchmarks dashboard</span></a></strong> for current
+frames-per-second by detector config and GPU. This page documents the
+methodology and archives individual runs.</p>
+</div></blockquote>
 <p>Tracks per-release wall-time of <code class="docutils literal notranslate"><span class="pre">Detector</span></code> and <code class="docutils literal notranslate"><span class="pre">MPDetector</span></code> over time. Each
-entry is a single run produced by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/bench_detectors.py</span> <span class="pre">--markdown</span></code>. Accuracy benchmarks live in <a class="reference internal" href="accuracy.html"><span class="std std-doc">accuracy.md</span></a>.</p>
+entry is a single run produced by <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/bench_detectors.py</span> <span class="pre">--markdown</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">--json</span></code>, which is ingested into the live dashboard via
+<code class="docutils literal notranslate"><span class="pre">scripts/ingest_benchmarks.py</span></code>). Accuracy benchmarks live in <a class="reference internal" href="accuracy.html"><span class="std std-doc">accuracy.md</span></a>.</p>
 <section id="methodology">
 <h2>Methodology<a class="headerlink" href="#methodology" title="Permalink to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">scripts/bench_detectors.py</span></code> measures the <strong>detection + landmark + AU +
@@ -488,22 +495,22 @@ emotion + identity</strong> path on reproducible test fixtures from
 </thead>
 <tbody>
 <tr class="row-even"><td><p>2026-05-14</p></td>
-<td><p><a class="reference internal" href="2026-05-14-c716340.html"><span class="std std-doc">2026-05-14-c716340.md</span></a></p></td>
+<td><p><a class="reference external" href="https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-14-c716340.md">2026-05-14-c716340.md</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>2026-05-04</p></td>
-<td><p><a class="reference internal" href="2026-05-04-f44ccb1.html"><span class="std std-doc">2026-05-04-f44ccb1.md</span></a></p></td>
+<td><p><a class="reference external" href="https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-04-f44ccb1.md">2026-05-04-f44ccb1.md</a></p></td>
 </tr>
 <tr class="row-even"><td><p>2026-05-03</p></td>
-<td><p><a class="reference internal" href="2026-05-03-d71c0d7.html"><span class="std std-doc">2026-05-03-d71c0d7.md</span></a></p></td>
+<td><p><a class="reference external" href="https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-d71c0d7.md">2026-05-03-d71c0d7.md</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>2026-05-03</p></td>
-<td><p><a class="reference internal" href="2026-05-03-864962c.html"><span class="std std-doc">2026-05-03-864962c.md</span></a></p></td>
+<td><p><a class="reference external" href="https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-864962c.md">2026-05-03-864962c.md</a></p></td>
 </tr>
 <tr class="row-even"><td><p>2026-05-03</p></td>
-<td><p><a class="reference internal" href="2026-05-03-437b651.html"><span class="std std-doc">2026-05-03-437b651.md</span></a></p></td>
+<td><p><a class="reference external" href="https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-437b651.md">2026-05-03-437b651.md</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>2026-05-03</p></td>
-<td><p><a class="reference internal" href="2026-05-03-09980f9.html"><span class="std std-doc">2026-05-03-09980f9.md</span></a></p></td>
+<td><p><a class="reference external" href="https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-09980f9.md">2026-05-03-09980f9.md</a></p></td>
 </tr>
 </tbody>
 </table>

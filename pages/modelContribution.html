@@ -486,10 +486,8 @@ document.write(`
 <section id="add-your-code-to-py-feat">
 <h2>3. Add your code to Py-Feat<a class="headerlink" href="#add-your-code-to-py-feat" title="Permalink to this heading">#</a></h2>
 <p>Adding a new model to the Py-FEAT toolbox is easy if you are familiar with Python, Github, package development, and follow the steps below.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It can be helpful to install Py-Feat in development mode so that changes to source files are immediately reflected in any scripts or notebooks that import Py-Feat. To do so, after cloning the code base, install Py-Feat using: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> For more details see the <a class="reference internal" href="contribute.html"><span class="std std-doc">general contribution guidelines</span></a></p>
-</div>
+<p>!!! note
+It can be helpful to install Py-Feat in development mode so that changes to source files are immediately reflected in any scripts or notebooks that import Py-Feat. To do so, after cloning the code base, install Py-Feat using: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> For more details see the <a class="reference internal" href="contribute.html"><span class="std std-doc">general contribution guidelines</span></a></p>
 <p>Pre-trained models in Py-Feat are organized into sub-folders in the source code based on the detector type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feat</span><span class="o">/</span>
   <span class="n">au_detectors</span><span class="o">/</span>
@@ -519,17 +517,15 @@ document.write(`
 </pre></div>
 </div>
 </li>
-<li><p>In <code class="docutils literal notranslate"><span class="pre">feat/pretrained.py</span></code>, add your model to the <code class="docutils literal notranslate"><span class="pre">PRETRAINED_MODELS</span></code> dictionary. If you’re adding a new AU detector and it only supports specific AUs make sure to also add it to the <code class="docutils literal notranslate"><span class="pre">AU_LANDMARK_MAP</span></code>. You may also want to train a new <code class="docutils literal notranslate"><span class="pre">PLS</span></code> visualization model and save it as <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file. See <a class="reference internal" href="#../extra_tutorials/trainAUvisModel.ipynb"><span class="xref myst">this tutorial</span></a> for details.</p></li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">feat/pretrained.py</span></code>, add your model to the <code class="docutils literal notranslate"><span class="pre">PRETRAINED_MODELS</span></code> dictionary. If you’re adding a new AU detector and it only supports specific AUs make sure to also add it to the <code class="docutils literal notranslate"><span class="pre">AU_LANDMARK_MAP</span></code>. You may also want to train a new <code class="docutils literal notranslate"><span class="pre">PLS</span></code> visualization model and save it as <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file. See <a class="reference external" href="https://github.com/cosanlab/py-feat/blob/main/docs/extra_tutorials/06_trainAUvisModel.ipynb">this tutorial</a> for details.</p></li>
 <li><p>Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to <code class="docutils literal notranslate"><span class="pre">feat/resources/model_list.json</span></code>.</p></li>
 <li><p>Follow the <a class="reference internal" href="contribute.html"><span class="std std-doc">general contribution guidelines</span></a> to add tests and format your code</p></li>
 <li><p>When your tests pass create a pull-request against the <code class="docutils literal notranslate"><span class="pre">master</span></code>/<code class="docutils literal notranslate"><span class="pre">main</span></code> branch on github!</p></li>
 </ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don’t require you to restart the kernel:<br />
+<p>!!! note
+If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don’t require you to restart the kernel:<br />
 <code class="docutils literal notranslate"><span class="pre">%load_ext</span> <span class="pre">autoreload</span></code><br />
 <code class="docutils literal notranslate"><span class="pre">%autoreload</span> <span class="pre">2</span></code></p>
-</div>
 </section>
 </section>
 
