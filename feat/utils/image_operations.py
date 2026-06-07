@@ -1122,6 +1122,16 @@ def extract_face_from_bbox_torch(
 ):
     """Extract face from image and resize using pytorch.
 
+    NOTE (crop convention, 2026-06): this is the LEGACY *anisotropic* crop —
+    it resizes a rectangular box into a square chip with independent x/y scales
+    (it stretches the face). v1 ``Detector`` and ``MPDetector`` keep using it
+    because their landmark inverse-transform is built around that (invertible)
+    squish. Detectorv2 / v2.5-training use ``extract_face_square_pad_torch``
+    (isotropic square-pad), which fixes pose/mesh-depth — v2 is the default once
+    the v2.5 pipeline lands. We deliberately DON'T migrate v1 here to avoid
+    perturbing its numbers; revisit migrating v1 to the square-pad crop only if
+    v1 performance regresses or we drop v1.
+
     Args:
         frame: ``[B, C, H, W]`` tensor of source frames.
         detected_faces: ``[N, 4]`` tensor of bboxes in ``[x1, y1, x2, y2]``
@@ -1215,6 +1225,97 @@ def extract_face_from_bbox_torch(
 
     # The output shape should be (N, C, face_size, face_size)
     return cropped_faces, new_bboxes
+
+
+def extract_face_square_pad_torch(
+    frame, detected_faces, face_size=256, expand_bbox=1.2, frame_idx=None
+):
+    """Isotropic square-pad face crop (Detectorv2 / v2.5 training).
+
+    Forked from ``extract_face_from_bbox_torch`` (which v1 ``Detector`` and
+    ``MPDetector`` still use). That one resizes a rectangular box into a square
+    chip with *independent* x/y scales — it stretches the face, erasing the
+    vertical foreshortening the v2 model needs to infer 3D pose / mesh-depth.
+
+    This version instead:
+      * squares the expanded box to its *longer* side (single scale, no stretch),
+      * resizes isotropically to ``face_size``,
+      * reflect-pads any region that falls outside the source frame (the square
+        is NOT clamped to the frame — off-frame pixels are reflected, so the
+        face stays centred and correctly scaled even at frame edges).
+
+    The crop is a single isotropic affine, so mesh/landmark/pose targets map back
+    to frame coords with one transform and the mesh z-axis stays consistent with
+    x/y. A normalised chip coord ``(u, v) in [0, 1]`` maps to the source frame as
+    ``(origin_x + u * side, origin_y + v * side)``.
+
+    Args:
+        frame: ``[B, C, H, W]`` source frames.
+        detected_faces: ``[N, 4]`` bboxes ``[x1, y1, x2, y2]``.
+        face_size: output spatial size (square).
+        expand_bbox: margin multiplier applied before squaring.
+        frame_idx: ``[N]`` face->frame map (see ``extract_face_from_bbox_torch``).
+
+    Returns:
+        cropped_faces: ``[N, C, face_size, face_size]``.
+        crop_affine: ``[N, 3]`` float ``(origin_x, origin_y, side)`` — the
+            inverse map from normalised chip coords to source-frame pixels.
+    """
+    device = frame.device
+    B, C, H, W = frame.shape
+    N = detected_faces.shape[0]
+    detected_faces = detected_faces.to(device).float()
+
+    x1, y1, x2, y2 = (
+        detected_faces[:, 0],
+        detected_faces[:, 1],
+        detected_faces[:, 2],
+        detected_faces[:, 3],
+    )
+    center_x = (x1 + x2) / 2
+    center_y = (y1 + y2) / 2
+    # Square to the longer side so neither axis is stretched. Unlike the legacy
+    # crop, do NOT clamp the square to the frame — off-frame area is reflected
+    # below, which keeps the face centred + at the right scale near edges.
+    side = torch.maximum((x2 - x1), (y2 - y1)) * expand_bbox
+    side = side.clamp(min=1.0)
+    origin_x = center_x - side / 2
+    origin_y = center_y - side / 2
+    crop_affine = torch.stack([origin_x, origin_y, side], dim=-1)
+
+    # Sample grid: output pixel (i, j) -> source coord origin + (idx+0.5)/face_size*side.
+    yy, xx = torch.meshgrid(
+        torch.arange(face_size, device=device),
+        torch.arange(face_size, device=device),
+        indexing="ij",
+    )
+    yy = yy.float()
+    xx = xx.float()
+    grid_x = origin_x.view(N, 1, 1) + (xx + 0.5) / face_size * side.view(N, 1, 1)
+    grid_y = origin_y.view(N, 1, 1) + (yy + 0.5) / face_size * side.view(N, 1, 1)
+
+    # Normalise to [-1, 1] for grid_sample with align_corners=False: a source
+    # pixel-centre s maps to g = 2*(s+0.5)/W - 1. Using the exact convention (not
+    # the legacy 2*s/(W-1)-1) makes grid_sample sample exactly `grid_x`, so the
+    # returned crop_affine describes the crop with no position-dependent offset.
+    grid_x = 2 * (grid_x + 0.5) / W - 1
+    grid_y = 2 * (grid_y + 0.5) / H - 1
+    grid = torch.stack((grid_x, grid_y), dim=-1).float()
+
+    frame = frame.float()
+    if frame_idx is None:
+        face_indices = torch.arange(N, device=device) % B
+    else:
+        face_indices = frame_idx.to(device=device, dtype=torch.long)
+    frame_expanded = frame[face_indices]
+
+    # reflection padding: off-frame square regions sample mirrored interior pixels
+    # (vs the legacy default 'zeros'), so the GAP-pooled chip isn't diluted by
+    # black borders at frame edges.
+    cropped_faces = F.grid_sample(
+        frame_expanded, grid, padding_mode="reflection", align_corners=False
+    )
+    return cropped_faces, crop_affine
 
 
 def inverse_transform_landmarks_torch(landmarks, boxes):
