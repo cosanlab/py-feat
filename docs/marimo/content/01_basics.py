@@ -37,7 +37,7 @@ def _(mo):
 
     A `Detector` is a swiss-army-knife class that "glues" together a combination of *pre-trained* Face, Emotion, Pose, etc detection models into a single Python object. This allows us to provide a very easy-to-use high-level API, e.g. `detector.detect('my_image.jpg',data_type='image')`, which will automatically make use of the correct underlying model to solve the sub-tasks of identifying face locations, getting landmarks, extracting action units, etc.
 
-    The first time you initialize a `Detector` instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you from [our HuggingFace Repository](https://huggingface.co/py-feat) and save them to disk. Everytime after that it will use existing model weights.
+    The first time you initialize a `Detector` instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you from [our HuggingFace Repository](https://huggingface.co/py-feat) and save them to disk. Every time after that it will use existing model weights.
 
     You can find a list of default models [on this page](/models.md).
     """)
@@ -124,7 +124,7 @@ def _(mo):
 def _(detector, single_face_img_path):
     single_face_prediction = detector.detect(single_face_img_path, data_type="image")
 
-    type(single_face_prediction)  # instace of a Fex class
+    type(single_face_prediction)  # instance of a Fex class
 
     # Show results
     single_face_prediction
@@ -225,7 +225,7 @@ def _():
 
     input_prediction = read_feat("output.csv")
 
-    # We we can quick access features like beofre
+    # We can quick access features like before
     input_prediction.aus
     return
 
@@ -416,7 +416,7 @@ def _(mixed_prediction):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    However, it's easy to use pandas slicing sytax to just grab predictions for the image you want. For example you can use `.loc` and chain it to `.plot_detections()`:
+    However, it's easy to use pandas slicing syntax to just grab predictions for the image you want. For example you can use `.loc` and chain it to `.plot_detections()`:
     """)
     return
 
