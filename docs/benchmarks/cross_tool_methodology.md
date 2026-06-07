@@ -156,14 +156,14 @@ show the models' gaze is strong when evaluated the way the field reports it:
 
 | Tool | MPII(Gaze) | Gaze360 | source |
 |------|:---:|:---:|---|
-| **py-feat v2.4** | **4.24°** | **9.40°** | au_deep v2.4 (shipped v24_s3 ckpt; in-distribution) |
+| **py-feat v2.4** | **3.92°** | **6.81°** | au_deep v2.4 (deployed v24fix ckpt, weight-verified; in-distribution) |
 | **OpenFace 3.0** | **2.56°** | 10.6° | OF3 paper (arXiv 2506.02891) |
 | **L2CS-Net** (py-feat's gaze lineage) | 3.92° | 10.41° | L2CS paper (arXiv 2203.03339) |
 | **LibreFace 2.0** | — | 14.68° | landmark-MLP, "Is Geometry Enough?" (arXiv 2603.24724) |
 
 py-feat v2.4's gaze is **competitive with the published appearance-based
-baselines on their own benchmarks** — MPIIGaze 4.24° (vs L2CS 3.92°, OF3 2.56°)
-and Gaze360 9.40° (vs L2CS 10.41°, OF3 10.6°). LibreFace 2.0's gaze is a
+baselines on their own benchmarks** — MPIIGaze 3.92° (matching L2CS, vs OF3
+2.56°) and Gaze360 6.81° (beating L2CS 10.41° and OF3 10.6°). LibreFace 2.0's gaze is a
 **MediaPipe-landmark MLP** (not appearance-based), which it reports at 14.68° on
 Gaze360 — weaker by design, consistent with it being last in our harness. (One
 as-shipped detail, not a knock: the pip `get_facial_attributes`/`estimate_gaze`
@@ -177,7 +177,7 @@ its home dataset, normalized, best case — what it *can* do. **Measured
 cross-tool (the main gaze table):** every model run end-to-end as shipped on
 held-out data — what you *get*. The big measured numbers (20–44°) are the
 out-of-distribution + cross-frame penalty, not weak models: in-distribution,
-py-feat gaze is 4–9°. (As
+py-feat gaze is 4–7°. (As
 a cross-check, our harness re-evaluating OF3 *outside* its normalized protocol
 reproduced the same collapse — OF3 20.4° on MPIIGaze, 49.9° on Gaze360 vs its
 paper's 2.56°/10.6°.)
