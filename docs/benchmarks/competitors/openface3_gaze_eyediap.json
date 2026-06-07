@@ -1,0 +1,14 @@
+{
+  "model": "openface3",
+  "task": "gaze",
+  "dataset": "eyediap",
+  "n_scored": 800,
+  "gaze_angular_mae_deg": 21.257,
+  "gaze_angular_mae_median": 19.289,
+  "gaze_convention_resolved": "a=pitch,b=yaw;sign_pitch=1;sign_yaw=1;unit=rad",
+  "note": "OF3 raw 2-scalar gaze; I/O convention resolved in OF3's favor against GT (see shared/gaze_convention.py).",
+  "date": "2026-06-06T17:02:15.127324",
+  "host": "liquidswords2",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+  "device": "cuda"
+}

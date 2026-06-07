@@ -1,0 +1,13 @@
+{
+  "model": "openface3",
+  "task": "emotion",
+  "dataset": "affectnet_val",
+  "n_scored": 2233,
+  "emotion_accuracy": 0.5132,
+  "emotion_f1_macro": 0.469,
+  "note": "OF3 8-class (AffectNet order) argmax; scored on shared 7 classes (Contempt prediction counts as wrong).",
+  "date": "2026-06-06T10:25:34.519275",
+  "host": "liquidswords2",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+  "device": "cuda"
+}

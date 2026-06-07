@@ -1,0 +1,20 @@
+{
+  "model": "pyfeat_v2",
+  "task": "gaze",
+  "dataset": "ethxgaze",
+  "mode": "model_direct",
+  "n_scored": 2800,
+  "gaze_angular_mae_deg": 44.464,
+  "gaze_angular_mae_median": 44.054,
+  "gaze_convention_resolved": "a=yaw,b=pitch;sign_pitch=1;sign_yaw=1;unit=rad",
+  "frontal_mae_deg": 20.443,
+  "correlations": {
+    "g0_vs_GTpitch": 0.171,
+    "g0_vs_GTyaw": 0.409,
+    "g1_vs_GTyaw": 0.01,
+    "g1_vs_GTpitch": -0.096
+  },
+  "date": "2026-06-06T16:55:27.024520",
+  "host": "liquidswords2",
+  "note": "Multitask gaze head fed the ETH-XGaze normalized patch directly (no RetinaFace re-crop), to test the model in ETH-XGaze's frame."
+}

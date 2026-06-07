@@ -1,0 +1,13 @@
+{
+  "model": "libreface",
+  "task": "gaze",
+  "dataset": "mpiifacegaze",
+  "n_scored": 2987,
+  "gaze_angular_mae_deg": 19.487,
+  "gaze_angular_mae_median": 17.984,
+  "gaze_convention_resolved": "a=yaw,b=pitch;sign_pitch=1;sign_yaw=1;unit=deg",
+  "note": "LibreFace pip gaze_yaw/gaze_pitch (degrees); I/O convention resolved in LibreFace's favor against GT.",
+  "date": "2026-06-06T12:40:28.555782",
+  "host": "liquidswords2",
+  "device": "cuda"
+}

@@ -13,6 +13,10 @@ feat/tests/data/cond_pain_2017-03-30_s20_r01.txt
 # Ignore jupyter-book build artifacts as they'll get auto-built via github actions
 docs/**/*.csv
 docs/**/*.mp4
+# ...except the small bundled sample dataset the 04_fex_analysis tutorial loads.
+!docs/data/news_sample/*.csv
+# ...and the committed benchmark seed the live dashboard reads (live.py).
+!docs/benchmarks/throughput.csv
 docs/_build
 docs/basic_tutorials/*.jpg
 docs/basic_tutorials/*.gif
@@ -92,6 +96,11 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# marimo-book build outputs (the committed _rendered/ artifact is NOT ignored)
+docs/_site/
+docs/_site_src/
+docs/.marimo_book_cache/
+
 # PyBuilder
 target/
 
@@ -150,3 +159,15 @@ feat/resources/*.joblib
 # offline contract is enforced by test_face_mesh_viz.TestV4BundledModel.
 # It is not yet on the Hub. ~146KB. Mirrors the other bundled viz assets above.
 !feat/resources/au_to_mesh_pls_v4.npz
+
+# marimo runtime cache (created next to notebooks during render)
+**/__marimo__/
+
+# Stray gifs animate_face writes to the render cwd (the real ones live in docs/images/)
+/docs/*.gif
+
+# Competitor model weights downloaded at runtime (LibreFace, etc.)
+weights_libreface/
+/tmp/
+scripts/competitors/*manifest*.csv
+/weights/

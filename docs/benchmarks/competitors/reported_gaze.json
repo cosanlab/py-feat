@@ -1,0 +1,16 @@
+{
+  "_comment": "Gaze accuracy as REPORTED by each method (within-dataset / in-distribution, the standard normalized protocol), for context vs our held-out cross-tool harness. py-feat is from the au_deep v24_s3 run that produced the SHIPPED v2.4 checkpoint; OF3 and L2CS from their papers; LibreFace from its landmark-gaze paper. mean angular error degrees (LibreFace's is per-axis-MAE-derived, landmark-based). LibreFace 2.0 DOES report gaze (a MediaPipe-landmark MLP), contrary to an earlier note here.",
+  "reported": [
+    {"tool": "pyfeat_v2", "dataset": "mpiigaze", "value": 3.92, "source": "au_deep v2.4 DEPLOYED ckpt (v24fix_s3, weight-verified 50/50 match to HF face_multitask_v2.pt); in-distribution"},
+    {"tool": "pyfeat_v2", "dataset": "gaze360", "value": 6.81, "source": "au_deep v2.4 DEPLOYED ckpt (v24fix_s3, weight-verified); in-distribution"},
+    {"tool": "openface3", "dataset": "mpiifacegaze", "value": 2.56, "source": "OpenFace 3.0 paper (arXiv:2506.02891)"},
+    {"tool": "openface3", "dataset": "gaze360", "value": 10.6, "source": "OpenFace 3.0 paper (arXiv:2506.02891)"},
+    {"tool": "l2cs_net", "dataset": "mpiigaze", "value": 3.92, "source": "L2CS-Net paper (arXiv:2203.03339); py-feat's gaze lineage"},
+    {"tool": "l2cs_net", "dataset": "gaze360", "value": 10.41, "source": "L2CS-Net paper (arXiv:2203.03339); py-feat's gaze lineage"},
+    {"tool": "libreface", "dataset": "gaze360", "value": 14.68, "source": "LibreFace 2.0 landmark-MLP, 'Is Geometry Enough?' (arXiv:2603.24724); within-domain; landmark-based"},
+    {"tool": "lit_sota_within", "dataset": "eyediap", "value": 5.0, "source": "EYEDIAP within-dataset SOTA: MAFI-Gaze 5.0, RT-Gene 6.3 (general gaze nets, not our tools)"},
+    {"tool": "lit_sota_crossds", "dataset": "eyediap", "value": 8.1, "source": "EYEDIAP cross-dataset zero-shot: GMMGaze 8.1, GazeNet 9.6 (general gaze nets)"},
+    {"tool": "lit_sota_within", "dataset": "mpiigaze", "value": 3.3, "source": "MPIIGaze within-dataset SOTA range ~3-4 deg (appearance-based)"},
+    {"tool": "lit_sota_within", "dataset": "gaze360", "value": 10.0, "source": "Gaze360 within-dataset SOTA ~10 deg (original baseline); ~9 with recent nets"}
+  ]
+}

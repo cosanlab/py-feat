@@ -157,7 +157,7 @@ def main() -> None:
     )
     args = p.parse_args()
 
-    from feat.evaluation.runner import evaluate_all_datasets
+    from feat.evaluation.runner import evaluate_all as evaluate_all_datasets
 
     detector, tool = _build_detector(args.detector, args.device)
     splits = _discover_splits()

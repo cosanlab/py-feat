@@ -1,0 +1,26 @@
+{
+  "model": "pyfeat_v2",
+  "date": "2026-06-06T10:00:30.910648",
+  "host": "liquidswords2",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "results": {
+    "affectnet_val": {
+      "n_samples": 994,
+      "n_scored": 992,
+      "emotion_accuracy": 0.4919,
+      "emotion_f1_macro": 0.4787,
+      "valence_ccc": 0.5349,
+      "arousal_ccc": 0.4822,
+      "valence_arousal_supported": true
+    },
+    "columbia_gaze": {
+      "n_samples": 1176,
+      "n_scored": 1176,
+      "gaze_angular_mae_deg": 17.536,
+      "gaze_angular_mae_std": 9.847,
+      "gaze_angular_mae_median": 18.821,
+      "gaze_pitch_mae_deg": 1.853,
+      "gaze_yaw_mae_deg": 17.365
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "entries": {
+    "basic_tutorials/01_basics.py": {
+      "body_path": "basic_tutorials/01_basics.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T21:41:43+00:00",
+      "src_hash": "1b17a16f1e4f1bb94690a90b3cf9f2a750402145d5754224c16ef6e4f8aae9b2"
+    },
+    "basic_tutorials/02_detector_vids.py": {
+      "body_path": "basic_tutorials/02_detector_vids.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T21:41:57+00:00",
+      "src_hash": "0e1e608ab208713857642ae1a4889eb97dd7f532a80cda71c96ed58ac2357c9c"
+    },
+    "basic_tutorials/03_plotting.py": {
+      "body_path": "basic_tutorials/03_plotting.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T21:42:27+00:00",
+      "src_hash": "709b79f78653fca4b7c1d5cb13c7256655a267c5be77a5fbe41e7c96e01245b9"
+    },
+    "basic_tutorials/04_fex_analysis.py": {
+      "body_path": "basic_tutorials/04_fex_analysis.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T21:42:52+00:00",
+      "src_hash": "0c9a6acfd1bff633a4ecc7cfdd032dc702fde3d1985d7940f0a44cc01782e19c"
+    },
+    "basic_tutorials/05_detectorv2.py": {
+      "body_path": "basic_tutorials/05_detectorv2.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T21:42:41+00:00",
+      "src_hash": "8a8473a00ba76d12a4346649477f57ebf54961e58ae6eb976122ada45beaf933"
+    },
+    "basic_tutorials/06_performance.py": {
+      "body_path": "basic_tutorials/06_performance.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T21:43:10+00:00",
+      "src_hash": "dc8e25a161d8d6bbbaa4e57976c45a8880256af9b7e020cc03ea958bdf81104c"
+    },
+    "benchmarks/live.py": {
+      "body_path": "benchmarks/live.md",
+      "marimo_book_version": "0.1.18.post1.dev2+g8dab50fda",
+      "rendered_at": "2026-06-05T21:43:12+00:00",
+      "src_hash": "13e6ed94d2a8613678a051c063852d7054518b4ca5227a1fd0c8ae39c2587800"
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,65 @@
+feat_version,date,host,gpu,config,device,batch,section_kind,section_label,fps
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,short,11.5
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,short,39.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,short,17.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,short,107.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,short,23.4
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,short,43.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,short,38.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,short,270.6
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,video,long,11.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,video,long,31.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,video,long,20.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,video,long,167.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,video,long,23.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,long,141.8
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,long,37.6
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,long,355.5
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,video,short,14.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,video,short,30.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,video,short,21.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,video,short,86.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,video,short,23.8
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,video,short,39.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,video,short,39.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,video,short,202.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,video,long,12.3
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,video,long,23.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,video,long,20.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,video,long,98.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,video,long,23.2
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,video,long,88.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,video,long,37.9
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,video,long,202.5
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,1,video,short,1.6
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,16,video,short,1.8
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,1,video,short,4.3
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,16,video,short,10.5
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,1,video,short,4.2
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,16,video,short,10.9
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,1,video,short,9.0
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,16,video,short,12.9
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,1,video,long,1.5
+0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,16,video,long,1.8
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,1,video,long,4.2
+0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,16,video,long,10.3
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,1,video,long,4.1
+0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,16,video,long,14.0
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,1,video,long,8.9
+0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,16,video,long,17.6

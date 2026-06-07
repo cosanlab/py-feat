@@ -1,0 +1,7 @@
+{
+  "tool": "openface3",
+  "fixture": "single_face.mp4 (40 frames)",
+  "metric": "end-to-end fps (RetinaFace detect + STAR landmark + MTL AU/emotion/gaze)",
+  "note": "Per-frame pipeline (no batching). Runs on Blackwell (modern torch), unlike LibreFace. The pip CLI hardcodes device='cpu' and never passes device_ids; constructed the FaceDetector/LandmarkDetector(device_ids=[0])/MultitaskPredictor objects directly for real GPU.",
+  "fps": {"rtx3090": 17.5, "blackwell": 18.7}
+}

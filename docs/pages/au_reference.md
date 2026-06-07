@@ -9,9 +9,8 @@ You can sort the table by clicking on any column (shift+click to sort by multipl
 - which muscles are associated with which AUs (e.g. search "corrugator")
 - which Py-Feat models support which AUs (e.g. search "svm")
 
-```{note}
-Emotion expressions (e.g. *sadness*) are often characterized by patterns of AUs (AU1 + AU4 + AU15), but **individuals vary** in the way the exact ways that they emote. For this reason, some AUs may not be observed on some faces for the same expression and some expressions may consists of *additional* AUs.
-```
+!!! note
+    Emotion expressions (e.g. *sadness*) are often characterized by patterns of AUs (AU1 + AU4 + AU15), but **individuals vary** in the way the exact ways that they emote. For this reason, some AUs may not be observed on some faces for the same expression and some expressions may consists of *additional* AUs.
 
 <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <div id="wrapper"></div>

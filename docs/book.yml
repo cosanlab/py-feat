@@ -1,0 +1,88 @@
+# marimo-book config for the Py-Feat documentation site.
+# Migrated from jupyter-book (_config.yml + _toc.yml) on the docs-marimo branch.
+title: Py-Feat
+description: >
+  Python Facial Expression Analysis Toolbox — detect and analyze facial
+  action units, emotions, landmarks, identity, and head pose from images
+  and videos.
+authors:
+  - name: Eshin Jolly
+  - name: Jin Hyun Cheong
+  - name: Tiankang Xie
+  - name: Luke J. Chang
+    affiliation: Dartmouth College
+copyright: "2022"
+repo: https://github.com/cosanlab/py-feat
+# molab / "edit this page" / download links resolve against this branch.
+# Update to `main` at the v2.0 cutover.
+branch: v0.7-dev
+url: https://py-feat.org/
+logo: images/logo/pyfeat_logo_small.png
+favicon: images/logo/favicon.ico
+# Large logo above the left nav, matching the previous jupyter-book site.
+logo_placement: sidebar
+
+launch_buttons:
+  molab: true
+  github: true
+  download: true
+
+# The docs build environment has py-feat installed; notebooks render against it.
+dependencies:
+  mode: env
+
+# Resolve [Heading text][] cross-page references (MyST {ref} analog).
+cross_references: true
+
+# NOTE: Google Analytics (old UA-113777015-5) is Universal Analytics, which
+# Google retired. Wire a GA4 property here when one exists:
+#   analytics: { provider: google, property: G-XXXXXXXX }
+
+# Heavy detector tutorials render with `mode: cached`: executed once locally
+# with a GPU via `marimo-book render`, committed to _rendered/, then reused on
+# CI without executing. defaults.mode stays static for the prose pages.
+
+toc:
+  - file: pages/intro.md
+
+  - section: Getting Started
+    children:
+      - file: pages/installation.md
+      - file: pages/models.md
+      - file: pages/au_reference.md
+      - file: pages/usage_guide.md
+      - file: pages/faqs.md
+
+  # Tutorials — added incrementally as each notebook is rendered to _rendered/.
+  - section: Tutorials
+    children:
+      - file: basic_tutorials/01_basics.py
+        mode: cached
+      - file: basic_tutorials/02_detector_vids.py
+        mode: cached
+      - file: basic_tutorials/03_plotting.py
+        mode: cached
+      - file: basic_tutorials/05_detectorv2.py
+        mode: cached
+      - file: basic_tutorials/04_fex_analysis.py
+        mode: cached
+      - file: basic_tutorials/06_performance.py
+        mode: cached
+
+  # API reference deferred (Workstream E): MyST/marimo-book have no docstring
+  # autodoc; pages/api.md (Sphinx eval_rst) is omitted until that's resolved.
+
+  - section: Benchmarks
+    children:
+      - file: benchmarks/live.py
+        mode: cached
+      - file: benchmarks/accuracy.md
+      - file: benchmarks/throughput.md
+
+  - section: Contributing
+    children:
+      - file: pages/contribute.md
+      - file: pages/modelContribution.md
+      - file: pages/changelog.md
+      - url: https://github.com/cosanlab/py-feat
+        title: GitHub Repository

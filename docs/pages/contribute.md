@@ -22,8 +22,7 @@ All Py-Feat tutorial are made using [jupyter book](https://jupyterbook.org/intro
 
 You can check the build jupyter book by opening `notebooks/_build/html/index.html` in your browser.
 
-```{note}
-Our documentation building pipeline does **not** execute jupyter notebooks. It just renders their input and output as pages. So make sure you locally execute cells that you want output for **before** committing your changes
-```
+!!! note
+    Our documentation building pipeline does **not** execute jupyter notebooks. It just renders their input and output as pages. So make sure you locally execute cells that you want output for **before** committing your changes
 
 For instructions on how to add new detectors see [here](./modelContribution.md)

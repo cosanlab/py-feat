@@ -1,0 +1,40 @@
+{
+  "model": "pyafar",
+  "date": "2026-06-06T15:27:29.148807",
+  "host": "liquidswords2",
+  "dataset": "disfaplus",
+  "n_frames_scored": 57150,
+  "n_trials": 641,
+  "predicted_aus": [
+    "AU01",
+    "AU02",
+    "AU04",
+    "AU06",
+    "AU12",
+    "AU15",
+    "AU17"
+  ],
+  "missing_aus": [
+    "AU05",
+    "AU09",
+    "AU20",
+    "AU25",
+    "AU26"
+  ],
+  "per_au_f1": {
+    "AU01": 0.0031,
+    "AU02": 0.398,
+    "AU04": 0.0,
+    "AU06": 0.6067,
+    "AU12": 0.5483,
+    "AU15": 0.1257,
+    "AU17": 0.1364
+  },
+  "mean_f1_7au": 0.2597,
+  "occ_threshold": 0.5,
+  "occ_prob_inverted": false,
+  "occ_prob_gt_corr": 0.3533,
+  "truth_threshold": 2.0,
+  "license": "non-commercial (PyAFAR)",
+  "note": "PyAFAR adult occurrence on DISFA+ (held-out). Video-only API: aligned crops re-assembled into per-trial mp4s, PyAFAR's own MediaPipe+dlib pipeline. Only 7 of 12 DISFA AUs overlap PyAFAR's adult set. F1: occ prob >=0.5 vs truth intensity >=2."
+}
