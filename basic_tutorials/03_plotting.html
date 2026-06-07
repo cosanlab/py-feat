@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>3. Visualizing Facial Expressions &#8212; Py-Feat</title>
   
@@ -15,49 +15,52 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_tutorials/03_plotting';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -73,23 +76,28 @@
 
   
   
-  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
+
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -111,20 +119,12 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
-
-  <div class="pst-async-banner-revealer d-none">
-  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
-</div>
-
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
-    </header>
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
   
-
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
-      
-      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -140,8 +140,6 @@
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
-  
-    
   
 
 <a class="navbar-brand logo" href="../pages/intro.html">
@@ -160,18 +158,7 @@
   
   
 </a></div>
-        <div class="sidebar-primary-item">
-
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
-        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -186,7 +173,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">How to install Py-Feat</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/models.html">Included pre-trained detectors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/au_reference.html">Action Unit Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/faqs.html">FAQs, Tips &amp; Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/usage_guide.html">Tips, Community, and Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/faqs.html">FAQS</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="current nav bd-sidenav">
@@ -228,11 +216,6 @@
 
 
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../benchmarks/accuracy.html">Accuracy benchmarks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../benchmarks/throughput.html">Throughput benchmarks</a></li>
-</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../pages/contribute.html">General contributions guidelines</a></li>
@@ -263,7 +246,7 @@
 
       </div>
       
-      <main id="main-content" class="bd-main" role="main">
+      <main id="main-content" class="bd-main">
         
         
 
@@ -272,14 +255,14 @@
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article d-print-none">
+              <div class="bd-header-article">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</button></div>
+</label></div>
       
     </div>
   
@@ -304,14 +287,14 @@
       
       <li><a href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/basic_tutorials/03_plotting.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch on Binder"
+   title="Launch onBinder"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img alt="Binder logo" src="../_static/images/logo_binder.svg">
+    <img src="../_static/images/logo_binder.svg">
   </span>
 <span class="btn__text-container">Binder</span>
 </a>
@@ -322,14 +305,14 @@
       
       <li><a href="https://jhub.dartmouth.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/basic_tutorials/03_plotting.ipynb&branch=master" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch on JupyterHub"
+   title="Launch onJupyterHub"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img alt="JupyterHub logo" src="../_static/images/logo_jupyterhub.svg">
+    <img src="../_static/images/logo_jupyterhub.svg">
   </span>
 <span class="btn__text-container">JupyterHub</span>
 </a>
@@ -340,14 +323,14 @@
       
       <li><a href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/basic_tutorials/03_plotting.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch on Colab"
+   title="Launch onColab"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img alt="Colab logo" src="../_static/images/logo_colab.png">
+    <img src="../_static/images/logo_colab.png">
   </span>
 <span class="btn__text-container">Colab</span>
 </a>
@@ -471,10 +454,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
@@ -482,14 +465,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</button>
+</label>
 </div></div>
       
     </div>
@@ -514,22 +497,13 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-au-activations">3.2 Plotting AU activations</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-muscle-heatmaps-to-the-plot">Adding muscle heatmaps to the plot</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-gaze-vectors-to-the-plot">Adding gaze vectors to the plot</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-gaze-from-real-images-l2cs-model">Plotting gaze from real images (L2CS model)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-vectorfield-arrows-to-highlight-facial-movement">Adding vectorfield arrows to highlight facial movement</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animating-facial-expressions">3.3 Animating facial expressions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-complex-animations">More complex animations</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-2d-animation-with-plotly">Interactive 2D animation with Plotly</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-the-full-3d-mediapipe-facemesh-from-au-intensities">3.4 Visualizing the full 3D MediaPipe FaceMesh from AU intensities</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bridging-68-pt-landmarks-to-the-3d-mesh">3.5 Bridging 68-pt landmarks to the 3D mesh</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-3d-visualization-with-plotly">3.6 Interactive 3D visualization with Plotly</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-3d-gaze-arrow">Adding a 3D gaze arrow</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animating-the-3d-mediapipe-facemesh">3.7 Animating the 3D MediaPipe FaceMesh</a></li>
 </ul>
             </nav>
         </div>
@@ -539,12 +513,12 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article">
+                <article class="bd-article" role="main">
                   
   <section id="visualizing-facial-expressions">
 <h1>3. Visualizing Facial Expressions<a class="headerlink" href="#visualizing-facial-expressions" title="Permalink to this heading">#</a></h1>
 <p><em>written by Eshin Jolly</em></p>
-<p>In this tutorial we’ll explore plotting in Py-Feat using functions from the <code class="docutils literal notranslate"><span class="pre">feat.plotting</span></code> module along with plotting methods using the Fex data class. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/main/docs/basic_tutorials/03_plotting.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
+<p>In this tutorial we’ll explore plotting in Py-Feat using functions from the <code class="docutils literal notranslate"><span class="pre">feat.plotting</span></code> module along with plotting methods using the Fex data class. You can try it out interactively in Google Collab: <a class="reference external" href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/04_plotting.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>To help visualize facial expressions in a standardized way, Py-Feat includes a pre-trained partial-least-squares (PLS) model that can map between an array of AU intensities (between 0-N) and facial landmark coordinates. Just pass in a numpy array of AU intensities to the <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> function to visualize the resulting facial expression. In general we find that a 4 by 5 aspect ratio seems to work best when plotting faces (default in <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>).</p>
 <p>For more details on how this visualization model was trained and how to train your own see <a class="reference external" href="https://py-feat.org/extra_tutorials/trainAUvisModel.html">this advanced tutorial</a>.</p>
 <div class="cell docutils container">
@@ -565,7 +539,7 @@ document.write(`
 
 <span class="c1"># 20 dimensional vector of AU intensities</span>
 <span class="c1"># AUs ordered as:</span>
-<span class="c1"># 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43</span>
+<span class="c1"># 1, 2, 4, 5, 6, 7, 9, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43</span>
 <span class="n">neutral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Neutral&#39;</span><span class="p">)</span>
@@ -573,44 +547,36 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/lukechang/Github/py-feat/.venv/lib/python3.13/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-<img alt="../_images/464ba26b2836338bc29d28a071bcdae11b5e9fc9ab00f8b86b638c4b98024746.png" src="../_images/464ba26b2836338bc29d28a071bcdae11b5e9fc9ab00f8b86b638c4b98024746.png" />
+<img alt="../_images/7d8fa451e00601e89eec0c4697490ef6da3c4be467c97d314edf11e47603d62e.png" src="../_images/7d8fa451e00601e89eec0c4697490ef6da3c4be467c97d314edf11e47603d62e.png" />
 </div>
 </div>
 </section>
 <section id="plotting-au-activations">
 <h2>3.2 Plotting AU activations<a class="headerlink" href="#plotting-au-activations" title="Permalink to this heading">#</a></h2>
-<p>Plotting facial expressions from AU activity is just as a simple. Below we increase the intensity of AU1 (inner brow raiser) to 1 before passing it to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>.</p>
-<p>The default visualization model in py-feat 0.7+ (<code class="docutils literal notranslate"><span class="pre">PLSAULandmarkModel</span></code>, trained on ~350K CelebV-HQ frames) expects AU intensities on the <strong>[0, 1] scale that the <code class="docutils literal notranslate"><span class="pre">xgb</span></code> AU detector outputs</strong> — <code class="docutils literal notranslate"><span class="pre">0</span></code> = AU off, <code class="docutils literal notranslate"><span class="pre">1</span></code> = fully activated. Values larger than 1 push the model past its training distribution and produce cartoonish/exaggerated expressions. (The legacy v1 model used a [0, 5] FACS-style scale; if you load it explicitly with <code class="docutils literal notranslate"><span class="pre">load_viz_model('pyfeat_aus_to_landmarks')</span></code>, the old <code class="docutils literal notranslate"><span class="pre">AU=3</span></code> convention still applies there.)</p>
+<p>Plotting facial expressions from AU activity is just as a simple. Below we increase the intensity of AU1 (inner brow raiser) to 3 before passing it to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>.</p>
+<p>In general based on how our visualization model works, we don’t recommend AU intensities greater than 3 as more exaggerated intensities can produce distorted facial expressions</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">raised_inner_brow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
-<span class="c1"># Increase AU1 intensity: Inner brow raiser (1.0 = fully activated on xgb&#39;s scale)</span>
-<span class="n">raised_inner_brow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># Increase AU1 intensity: Inner brow raiser</span>
+<span class="n">raised_inner_brow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
 
 <span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">raised_inner_brow</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-<img alt="../_images/41ee61731433601ca08dc820b5b1bf746200cd54398017cf8e001f114de12c7e.png" src="../_images/41ee61731433601ca08dc820b5b1bf746200cd54398017cf8e001f114de12c7e.png" />
+<img alt="../_images/d57d6204afd3976aecd7b6342e5293527279325d608a07f84461f02af833499c.png" src="../_images/d57d6204afd3976aecd7b6342e5293527279325d608a07f84461f02af833499c.png" />
 </div>
 </div>
 <section id="adding-muscle-heatmaps-to-the-plot">
 <h3>Adding muscle heatmaps to the plot<a class="headerlink" href="#adding-muscle-heatmaps-to-the-plot" title="Permalink to this heading">#</a></h3>
-<p>We can also visualize how AU intensity affects the underlying facial muscle movement by passing in a dictionary of facial muscle names and colors (or the value <code class="docutils literal notranslate"><span class="pre">'heatmap'</span></code>) to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>.</p>
+<p>We can also visualize how AU intensity affects the underyling facial muscle movement by passing in a dictionary of facial muscle names and colors (or the value <code class="docutils literal notranslate"><span class="pre">'heatmap'</span></code>) to <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code>.</p>
 <p>Below we activate 2 AUs and use the key <code class="docutils literal notranslate"><span class="pre">'all'</span></code> with the value <code class="docutils literal notranslate"><span class="pre">'heatmap'</span></code> to overlay muscle movement intensities affected by these specific AUs:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Activate AUs (xgb [0, 1] scale: AU01 partially active, AU11 fully active)</span>
-<span class="n">smiling</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Activate AUs</span>
+<span class="n">smiling</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 
 <span class="c1"># Overlay muscles </span>
 <span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;heatmap&#39;</span><span class="p">}</span>
@@ -620,13 +586,10 @@ Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-<img alt="../_images/69c6c907bd76eed86011c7fcc30342b81cedaf86dd918366a03d07c2e07743aa.png" src="../_images/69c6c907bd76eed86011c7fcc30342b81cedaf86dd918366a03d07c2e07743aa.png" />
+<img alt="../_images/0e57b2512e1b13abaea9c0797a6a0a881d7eb286fd213a9e41931c32aa99a0b9.png" src="../_images/0e57b2512e1b13abaea9c0797a6a0a881d7eb286fd213a9e41931c32aa99a0b9.png" />
 </div>
 </div>
-<p>But it’s also possible to arbitrarily highlight any facial muscle by setting it to a color instead. This ignores the AU intensity and useful for highlighting specific facial muscles. Below we highlight two different muscles on a neutral face:</p>
+<p>But it’s also possibile to arbitrarily highlight any facial muscle by setting it to a color instead. This ignores the AU intensity and useful for highlighting specific facial muscles. Below we higlight two different muscles on a neutral face:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">muscles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;temporalis_r_rel&#39;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s1">&#39;pars_palp_l&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">}</span>
@@ -635,10 +598,7 @@ Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-<img alt="../_images/b246ea7af358699e8be37d881c2767772c07a851bc5d31124d255ff1885164db.png" src="../_images/b246ea7af358699e8be37d881c2767772c07a851bc5d31124d255ff1885164db.png" />
+<img alt="../_images/2faa2f712f4ebba684ef9facdd095700d40fe5d500b41114b7f43842901852e8.png" src="../_images/2faa2f712f4ebba684ef9facdd095700d40fe5d500b41114b7f43842901852e8.png" />
 </div>
 </div>
 </section>
@@ -656,58 +616,7 @@ Gaze vectors are length 4 <code class="docutils literal notranslate"><span class
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-<img alt="../_images/76c789575ea3eb4ed6848e7a0b15f89cfe65a9b63fffadeaa0948b3a80d523d1.png" src="../_images/76c789575ea3eb4ed6848e7a0b15f89cfe65a9b63fffadeaa0948b3a80d523d1.png" />
-</div>
-</div>
-</section>
-<section id="plotting-gaze-from-real-images-l2cs-model">
-<h3>Plotting gaze from real images (L2CS model)<a class="headerlink" href="#plotting-gaze-from-real-images-l2cs-model" title="Permalink to this heading">#</a></h3>
-<p>The synthetic-face example above takes a manually-specified gaze 4-vector.
-For real images, py-feat 0.7+ includes the <strong>L2CS</strong> gaze model
-(Abdelrahman et al. 2022, ResNet50) — the default <code class="docutils literal notranslate"><span class="pre">gaze_model</span></code> for both
-<code class="docutils literal notranslate"><span class="pre">Detector</span></code> and <code class="docutils literal notranslate"><span class="pre">MPDetector</span></code>. After running detection, the resulting <code class="docutils literal notranslate"><span class="pre">Fex</span></code>
-DataFrame has <code class="docutils literal notranslate"><span class="pre">gaze_pitch</span></code> and <code class="docutils literal notranslate"><span class="pre">gaze_yaw</span></code> columns (radians), and
-<code class="docutils literal notranslate"><span class="pre">Fex.plot_detections(gazes=True)</span></code> automatically draws a gaze arrow from each
-face’s bbox center in the predicted direction.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
-
-<span class="c1"># Run the Detector on a real image. gaze_model=&#39;l2cs&#39; is the default in v0.7.</span>
-<span class="n">gaze_detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s2">&quot;xgb&quot;</span><span class="p">,</span> <span class="n">emotion_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">identity_model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">fex_real</span> <span class="o">=</span> <span class="n">gaze_detector</span><span class="o">.</span><span class="n">detect</span><span class="p">([</span><span class="s2">&quot;../../feat/tests/data/multi_face.jpg&quot;</span><span class="p">])</span>
-
-<span class="c1"># fex_real has gaze_pitch / gaze_yaw columns (radians) for each detected face.</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gaze columns:&quot;</span><span class="p">,</span> <span class="n">fex_real</span><span class="o">.</span><span class="n">gaze_columns</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">fex_real</span><span class="p">[[</span><span class="s2">&quot;gaze_pitch&quot;</span><span class="p">,</span> <span class="s2">&quot;gaze_yaw&quot;</span><span class="p">]])</span>
-
-<span class="c1"># plot_detections renders a yellow gaze arrow from each face&#39;s bbox center</span>
-<span class="c1"># in the predicted direction, overlaid on the detected landmarks.</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">fex_real</span><span class="o">.</span><span class="n">plot_detections</span><span class="p">(</span><span class="n">faces</span><span class="o">=</span><span class="s2">&quot;landmarks&quot;</span><span class="p">,</span> <span class="n">gazes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">muscles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/t6/l70_tp4s3xx96772lc2504640000gn/T/ipykernel_37395/4027613082.py:4: UserWarning: face_model=&#39;retinaface&#39; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#39;t available. Use face_model=&#39;img2pose&#39; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
-  gaze_detector = Detector(au_model=&quot;xgb&quot;, emotion_model=None, identity_model=None)
-  0%|          | 0/1 [00:00&lt;?, ?it/s]
-  0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  1.96it/s]
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gaze columns: [&#39;gaze_pitch&#39;, &#39;gaze_yaw&#39;, &#39;gaze_angle&#39;]
-   gaze_pitch  gaze_yaw
-0   -0.114645 -0.372506
-1   -0.211284 -0.346252
-2   -0.488092  0.662024
-3   -0.599363  0.503887
-4   -0.054296 -0.051697
-</pre></div>
-</div>
-<img alt="../_images/6248137ef92fa782887c421d5556dcf3b22fd3c1d1eb74656b59b2812e76ce49.png" src="../_images/6248137ef92fa782887c421d5556dcf3b22fd3c1d1eb74656b59b2812e76ce49.png" />
+<img alt="../_images/669af2e3e79a2d2e1144e699b2ba8be533e14cb8e69bebcb088ef7578d96c3c6.png" src="../_images/669af2e3e79a2d2e1144e699b2ba8be533e14cb8e69bebcb088ef7578d96c3c6.png" />
 </div>
 </div>
 </section>
@@ -723,24 +632,21 @@ face’s bbox center in the predicted direction.</p>
 <span class="n">neutral_landmarks</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">neutral</span><span class="p">)</span>
 <span class="n">raised_inner_brow_landmarks</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">raised_inner_brow</span><span class="p">)</span>
 
-<span class="c1"># Vectorfield drawn on the *reference* face, pointing toward the *target* face.</span>
-<span class="c1"># Left panel: arrows start at neutral landmarks and tip at the raised-brow positions.</span>
-<span class="n">neutral_to_target</span> <span class="o">=</span> <span class="p">{</span>
+<span class="c1"># Provide target landmarks and other vector specifications</span>
+<span class="n">netural_to_target</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">raised_inner_brow_landmarks</span><span class="p">,</span>
     <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">neutral_landmarks</span><span class="p">,</span>
     <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
 <span class="p">}</span>
-<span class="c1"># Right panel: arrows start at raised-brow landmarks and tip back at the neutral</span>
-<span class="c1"># positions — i.e., the reverse of the left panel.</span>
 <span class="n">target_to_neutral</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">neutral_landmarks</span><span class="p">,</span>
-    <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">raised_inner_brow_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">raised_inner_brow_landmarks</span><span class="p">,</span>
+    <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">neutral_landmarks</span><span class="p">,</span>
     <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="c1"># Vectorfield goes from neutral -&gt; target on neutral face</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Neutral&quot;</span><span class="p">,</span> <span class="n">vectorfield</span><span class="o">=</span><span class="n">neutral_to_target</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">au</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Neutral&quot;</span><span class="p">,</span> <span class="n">vectorfield</span><span class="o">=</span><span class="n">netural_to_target</span><span class="p">)</span>
 <span class="c1"># Vectorfield goes target -&gt; neutral on target face</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">plot_face</span><span class="p">(</span>
     <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
@@ -752,11 +658,7 @@ face’s bbox center in the predicted direction.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
-Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-<img alt="../_images/a6b5489064508b9b927e607ea978d993d2b86ed9ba12bdacddf6eb60945391ec.png" src="../_images/a6b5489064508b9b927e607ea978d993d2b86ed9ba12bdacddf6eb60945391ec.png" />
+<img alt="../_images/ca5fcc2f45e37a16a7593627e9512fb9e93c0d82d404262094d799d06fceb62f.png" src="../_images/ca5fcc2f45e37a16a7593627e9512fb9e93c0d82d404262094d799d06fceb62f.png" />
 </div>
 </div>
 </section>
@@ -773,14 +675,8 @@ Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">animate_face</span>
 
-<span class="c1"># Just pass in a FACS AU id, in this case we pass in 1 which is the inner brow raiser.</span>
-<span class="c1"># end=1.0 = fully activated on the v2 model&#39;s xgb [0, 1] scale.</span>
-<span class="n">animate_face</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">AU</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="s2">&quot;AU1.gif&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+<span class="c1"># Just pass in a FACS AU id, in this case we pass in 1 which is the inner brow raiser</span>
+<span class="n">animate_face</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">AU</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Raised inner brow&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="s2">&quot;AU1.gif&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -801,11 +697,6 @@ Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-</div>
 </div>
 <p><img alt="" src="../_images/smiling.gif" /></p>
 <p>It’s also possible to animate gaze directions using the <code class="docutils literal notranslate"><span class="pre">gaze_start</span></code> and <code class="docutils literal notranslate"><span class="pre">gaze_end</span></code> arguments to <code class="docutils literal notranslate"><span class="pre">animate_face()</span></code>. Here we pass the same neutral expression to <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> so the only thing being animates is gaze direction:</p>
@@ -822,29 +713,22 @@ Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-</pre></div>
-</div>
-</div>
 </div>
 <p><img alt="" src="../_images/looking_up.gif" /></p>
 <section id="more-complex-animations">
 <h3>More complex animations<a class="headerlink" href="#more-complex-animations" title="Permalink to this heading">#</a></h3>
 <p>While <code class="docutils literal notranslate"><span class="pre">animate_face()</span></code> is useful for animating a single facial expression, sometimes you might want to make more complex multi-face animations. We can do that using <code class="docutils literal notranslate"><span class="pre">plot_face()</span></code> along with the <code class="docutils literal notranslate"><span class="pre">interpolate_aus()</span></code> helper function which will generate intermediate AU intensity values between two arrays in a manner that creates graceful animations (<a class="reference external" href="https://easings.net/">cubic bezier easing function</a>).</p>
-<p>We can easily make a grid of all 20 AUs and animate their intensity changes one at a time from a neutral facial expression. To generate the animation from matplotlib plots, we use the <a class="reference external" href="https://github.com/jwkvam/celluloid"><code class="docutils literal notranslate"><span class="pre">celluloid</span></code></a> library that makes it a bit easier to work with matplotlib animations. It’s also what <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> uses under the hood:</p>
+<p>We can easily make a grid of all 20 AUs and animate their intensity changes one at a time from a netural facial expression. To generate the animation from matplotlib plots, we use the <a class="reference external" href="https://github.com/jwkvam/celluloid"><code class="docutils literal notranslate"><span class="pre">celluloid</span></code></a> library that makes it a bit easier to work with matplotlib animations. It’s also what <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> uses under the hood:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate_aus</span><span class="p">,</span> <span class="n">load_viz_model</span>  <span class="c1"># cubic easing interpolation</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">RF_AU_presence</span>  <span class="c1"># AU ids</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate_aus</span>  <span class="c1"># cubic easing interpolation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">celluloid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Camera</span>
-
-<span class="c1"># 20 AU ids in the viz model&#39;s canonical order (replaces v0.6&#39;s feat.utils.RF_AU_presence)</span>
-<span class="n">au_ids</span> <span class="o">=</span> <span class="n">load_viz_model</span><span class="p">()</span><span class="o">.</span><span class="n">au_columns</span>
 
 <span class="c1"># Link AU ids to their descriptions; might be wrong? see:</span>
 <span class="n">au_name_map</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
     <span class="nb">zip</span><span class="p">(</span>
-        <span class="n">au_ids</span><span class="p">,</span>
+        <span class="n">RF_AU_presence</span><span class="p">,</span>
         <span class="p">[</span>
             <span class="s2">&quot;inner brow raiser&quot;</span><span class="p">,</span>
             <span class="s2">&quot;outer brow raiser&quot;</span><span class="p">,</span>
@@ -873,8 +757,8 @@ Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits
 <span class="c1"># Start all AUs at neutral</span>
 <span class="n">starting_intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
 
-<span class="c1"># And eventually get to 1 (full activation on xgb&#39;s [0, 1] scale)</span>
-<span class="n">ending_intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="c1"># And eventually get to 3</span>
+<span class="n">ending_intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
 
 <span class="c1"># Define some animation settings</span>
 <span class="n">fps</span> <span class="o">=</span> <span class="mi">15</span>
@@ -885,8 +769,13 @@ Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits
 <span class="c1"># Add some padding frames so when the animation loops it pauses on the endpoints</span>
 <span class="n">num_padding_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">fps</span> <span class="o">*</span> <span class="n">padding</span><span class="p">))</span>
 <span class="n">total_frames</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_frames</span> <span class="o">+</span> <span class="n">num_padding_frames</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-
-<span class="c1"># Loop over each frame of the animation, plot a 4 x 5 grid of faces</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop over each frame of the animation, plot a 4 x 5 grid of faces</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">))</span>
 <span class="n">camera</span> <span class="o">=</span> <span class="n">Camera</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 
@@ -910,263 +799,12 @@ Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits
 <span class="c1"># Create the animation</span>
 <span class="n">animation</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">animate</span><span class="p">()</span>
 <span class="n">animation</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;all.gif&quot;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
-<span class="c1"># Close the source figure — celluloid leaves the figure in an inconsistent</span>
-<span class="c1"># state after animate()+save() so the inline jupyter display renders as</span>
-<span class="c1"># empty axis boxes. The all.gif on disk is the working artifact; embed it</span>
-<span class="c1"># via the next cell&#39;s `![](../images/all.gif)` markdown reference.</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <p><img alt="" src="../_images/all.gif" /></p>
 </section>
-<section id="interactive-2d-animation-with-plotly">
-<h3>Interactive 2D animation with Plotly<a class="headerlink" href="#interactive-2d-animation-with-plotly" title="Permalink to this heading">#</a></h3>
-<p>The GIF-based animations above are great for embedding in static docs.
-For live notebook exploration there’s also <code class="docutils literal notranslate"><span class="pre">animate_face_plotly()</span></code>, which
-returns an interactive Plotly Figure with play/pause buttons and a
-per-frame slider — you can scrub through the animation by hand, zoom
-into a region, and the figure stays interactive throughout. Same
-<code class="docutils literal notranslate"><span class="pre">interpolate_aus</span></code> cubic easing as <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> under the hood.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">animate_face_plotly</span>
-
-<span class="c1"># Same smile activation as cell 7 — but as an interactive Plotly animation</span>
-<span class="c1"># you can pan/zoom and scrub frame-by-frame via the slider, no GIF on disk.</span>
-<span class="n">fig_2d_anim</span> <span class="o">=</span> <span class="n">animate_face_plotly</span><span class="p">(</span>
-    <span class="n">start</span><span class="o">=</span><span class="n">neutral</span><span class="p">,</span>
-    <span class="n">end</span><span class="o">=</span><span class="n">smiling</span><span class="p">,</span>
-    <span class="n">num_frames</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">fps</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">fig_2d_anim</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;Smiling (rest → peak → rest)&quot;</span><span class="p">)</span>
-<span class="n">fig_2d_anim</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/78c7cbbe8bbc0cdef8a7c4159eed84df01798eb023bfa9fce8e07cc220545ea7.png" src="../_images/78c7cbbe8bbc0cdef8a7c4159eed84df01798eb023bfa9fce8e07cc220545ea7.png" />
-</div>
-</div>
-</section>
-</section>
-<section id="visualizing-the-full-3d-mediapipe-facemesh-from-au-intensities">
-<h2>3.4 Visualizing the full 3D MediaPipe FaceMesh from AU intensities<a class="headerlink" href="#visualizing-the-full-3d-mediapipe-facemesh-from-au-intensities" title="Permalink to this heading">#</a></h2>
-<p>Beyond the 2D 68-pt landmark plot from <code class="docutils literal notranslate"><span class="pre">plot_face</span></code>, py-feat ships an opt-in 3D
-visualization of the full 478-vertex MediaPipe FaceMesh. Pass AU intensities
-to <code class="docutils literal notranslate"><span class="pre">plot_face_mesh()</span></code> and the model predicts a face-shaped mesh in a pose-canonical frame, then renders it as a 3D wireframe in matplotlib’s 3D backend.</p>
-<p>By default <code class="docutils literal notranslate"><span class="pre">plot_face_mesh()</span></code> draws the lighter canonical contours (lips, eyes,
-eyebrows, face oval — ~124 edges). Pass <code class="docutils literal notranslate"><span class="pre">mode='tesselation'</span></code> to draw the full
-MediaPipe tessellation (~2,556 edges), which reveals the nose, cheek, and
-internal-face structure and makes subtle AU activations easier to see. It
-matches the default in the interactive Plotly backend used in §3.6.</p>
-<p>This relies on the <code class="docutils literal notranslate"><span class="pre">au_to_mesh</span></code> PLS model on HuggingFace
-(<a class="reference external" href="https://huggingface.co/py-feat/au_to_mesh"><code class="docutils literal notranslate"><span class="pre">py-feat/au_to_mesh</span></code></a>) — downloaded
-on first use, then cached.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_face_mesh</span><span class="p">,</span> <span class="n">load_face_mesh_viz_model</span>
-
-<span class="c1"># Load the model once so we can index AU columns by name</span>
-<span class="n">mesh_model</span> <span class="o">=</span> <span class="n">load_face_mesh_viz_model</span><span class="p">()</span>
-<span class="n">au_columns</span> <span class="o">=</span> <span class="n">mesh_model</span><span class="o">.</span><span class="n">au_columns</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;AU columns the model expects:&quot;</span><span class="p">,</span> <span class="n">au_columns</span><span class="p">)</span>
-
-<span class="c1"># Build three AU vectors: rest, smile (AU12=3), brow lower (AU04=3)</span>
-<span class="n">rest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="n">smile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">);</span> <span class="n">smile</span><span class="p">[</span><span class="n">au_columns</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;AU12&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">3.0</span>
-<span class="n">brow</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">);</span> <span class="n">brow</span><span class="p">[</span><span class="n">au_columns</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;AU04&quot;</span><span class="p">)]</span>  <span class="o">=</span> <span class="mf">3.0</span>
-
-<span class="c1"># Three 3D panels side by side. mode=&#39;tesselation&#39; draws the full ~2,556-edge</span>
-<span class="c1"># MP tessellation (matches plot_face_mesh_plotly&#39;s default). Use the lighter</span>
-<span class="c1"># mode=&#39;contours&#39; (~124 edges) if you want a sparser line drawing.</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">au</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([(</span><span class="s2">&quot;Rest&quot;</span><span class="p">,</span> <span class="n">rest</span><span class="p">),</span>
-                                  <span class="p">(</span><span class="s2">&quot;AU12 smile&quot;</span><span class="p">,</span> <span class="n">smile</span><span class="p">),</span>
-                                  <span class="p">(</span><span class="s2">&quot;AU04 brow lower&quot;</span><span class="p">,</span> <span class="n">brow</span><span class="p">)]):</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
-    <span class="n">plot_face_mesh</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">au</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">mesh_model</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tesselation&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>AU columns the model expects: [&#39;AU01&#39;, &#39;AU02&#39;, &#39;AU04&#39;, &#39;AU05&#39;, &#39;AU06&#39;, &#39;AU07&#39;, &#39;AU09&#39;, &#39;AU10&#39;, &#39;AU11&#39;, &#39;AU12&#39;, &#39;AU14&#39;, &#39;AU15&#39;, &#39;AU17&#39;, &#39;AU20&#39;, &#39;AU23&#39;, &#39;AU24&#39;, &#39;AU25&#39;, &#39;AU26&#39;, &#39;AU28&#39;, &#39;AU43&#39;]
-</pre></div>
-</div>
-<img alt="../_images/51bac06a2bdbbe832e24c32f935bcf0fed62695fb39570b902114c0304f3cd5f.png" src="../_images/51bac06a2bdbbe832e24c32f935bcf0fed62695fb39570b902114c0304f3cd5f.png" />
-</div>
-</div>
-</section>
-<section id="bridging-68-pt-landmarks-to-the-3d-mesh">
-<h2>3.5 Bridging 68-pt landmarks to the 3D mesh<a class="headerlink" href="#bridging-68-pt-landmarks-to-the-3d-mesh" title="Permalink to this heading">#</a></h2>
-<p>If you already ran the standard <code class="docutils literal notranslate"><span class="pre">Detector</span></code> (img2pose + mobilefacenet 68-pt) on
-an image, you can convert those 2D landmarks into a 478-vertex 3D mesh using
-the <code class="docutils literal notranslate"><span class="pre">predict_mesh_from_dlib68</span></code> bridge. Internally, the function aligns your raw
-landmarks to a saved reference frame (Procrustes), applies a PCA-bottleneck
-linear regression, and reshapes the output into a <code class="docutils literal notranslate"><span class="pre">(478,</span> <span class="pre">3)</span></code> mesh in the same
-canonical-frame coordinates as the AU→mesh model.</p>
-<p>The bridge model lives at <a class="reference external" href="https://huggingface.co/py-feat/landmarks68_to_mesh478"><code class="docutils literal notranslate"><span class="pre">py-feat/landmarks68_to_mesh478</span></code></a>
-and achieves OOS R² ≈ 0.48 on held-out videos — substantially better than
-AU → mesh (R² ≈ 0.24) because dlib landmarks share spatial information with
-the MP mesh that 20 AU intensities cannot encode.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">predict_mesh_from_dlib68</span>
-
-<span class="c1"># Run the standard Detector on a test image</span>
-<span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s2">&quot;xgb&quot;</span><span class="p">,</span> <span class="n">emotion_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">identity_model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">fex</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">([</span><span class="s2">&quot;../../feat/tests/data/single_face.jpg&quot;</span><span class="p">])</span>
-
-<span class="c1"># Use the unified accessor to get dlib-68 landmarks (works on both Detector</span>
-<span class="c1"># and MPDetector Fex objects — see Fex.landmarks_dlib68_xy)</span>
-<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fex</span><span class="o">.</span><span class="n">landmarks_dlib68_xy</span><span class="p">()</span>
-<span class="n">landmarks_68</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>  <span class="c1"># shape (68, 2)</span>
-
-<span class="c1"># Bridge to the 3D mesh, then render via plot_face_mesh&#39;s mesh= path</span>
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">predict_mesh_from_dlib68</span><span class="p">(</span><span class="n">landmarks_68</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;predicted mesh shape:&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
-<span class="n">plot_face_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tesselation&quot;</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;3D mesh reconstructed from Detector 68-pt landmarks&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/t6/l70_tp4s3xx96772lc2504640000gn/T/ipykernel_37395/2733464272.py:5: UserWarning: face_model=&#39;retinaface&#39; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). PnP-DLT is used as a fallback when the MLP weights aren&#39;t available. Use face_model=&#39;img2pose&#39; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
-  detector = Detector(au_model=&quot;xgb&quot;, emotion_model=None, identity_model=None)
-  0%|          | 0/1 [00:00&lt;?, ?it/s]
-  0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  5.51it/s]
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>predicted mesh shape: (478, 3)
-</pre></div>
-</div>
-<img alt="../_images/8654886821ff54e6fca801ca8d996ecb05e975990279986d810c6f9c850a50ba.png" src="../_images/8654886821ff54e6fca801ca8d996ecb05e975990279986d810c6f9c850a50ba.png" />
-</div>
-</div>
-</section>
-<section id="interactive-3d-visualization-with-plotly">
-<h2>3.6 Interactive 3D visualization with Plotly<a class="headerlink" href="#interactive-3d-visualization-with-plotly" title="Permalink to this heading">#</a></h2>
-<p>For an interactive 3D viewport you can rotate, pan, and zoom (especially
-useful in Jupyter notebooks), <code class="docutils literal notranslate"><span class="pre">plot_face_mesh_plotly()</span></code> returns a
-<code class="docutils literal notranslate"><span class="pre">plotly.graph_objects.Figure</span></code> instead of a matplotlib axis. The <code class="docutils literal notranslate"><span class="pre">mode='tesselation'</span></code>
-default draws the full 2,556-edge MP tessellation for a dense 3D look; pass
-<code class="docutils literal notranslate"><span class="pre">mode='contours'</span></code> for the same canonical-features wireframe as the matplotlib
-version.</p>
-<p>The function takes the same <code class="docutils literal notranslate"><span class="pre">au=</span></code> / <code class="docutils literal notranslate"><span class="pre">mesh=</span></code> source dispatch as <code class="docutils literal notranslate"><span class="pre">plot_face_mesh</span></code>,
-so you can use it with either AU intensities or a precomputed mesh from the
-bridge.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_face_mesh_plotly</span>
-
-<span class="c1"># Same smile activation as 3.4</span>
-<span class="n">fig_plotly</span> <span class="o">=</span> <span class="n">plot_face_mesh_plotly</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">smile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tesselation&quot;</span><span class="p">)</span>
-<span class="n">fig_plotly</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<span class="n">fig_plotly</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/67ecada7201927088167dccd01b5b3221ad88eb7f6577cee0380b44c42a4d31a.png" src="../_images/67ecada7201927088167dccd01b5b3221ad88eb7f6577cee0380b44c42a4d31a.png" />
-</div>
-</div>
-<p>You can also persist the figure to standalone HTML for sharing or to
-PNG via Plotly’s <code class="docutils literal notranslate"><span class="pre">write_image()</span></code> method (which uses kaleido under the hood):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig_plotly</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="s2">&quot;/tmp/face_mesh.html&quot;</span><span class="p">)</span>
-<span class="n">fig_plotly</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;/tmp/face_mesh.png&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>For the lighter, contours-only view that matches <code class="docutils literal notranslate"><span class="pre">plot_face_mesh</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plot_face_mesh_plotly</span><span class="p">(</span><span class="n">au</span><span class="o">=</span><span class="n">smile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;contours&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<section id="adding-a-3d-gaze-arrow">
-<h3>Adding a 3D gaze arrow<a class="headerlink" href="#adding-a-3d-gaze-arrow" title="Permalink to this heading">#</a></h3>
-<p>Both <code class="docutils literal notranslate"><span class="pre">plot_face_mesh</span></code> and <code class="docutils literal notranslate"><span class="pre">plot_face_mesh_plotly</span></code> accept a <code class="docutils literal notranslate"><span class="pre">gaze=(pitch,</span> <span class="pre">yaw)</span></code>
-tuple of head-centric angles (radians), matching the format L2CS outputs in
-<code class="docutils literal notranslate"><span class="pre">fex.gaze_pitch</span></code> / <code class="docutils literal notranslate"><span class="pre">fex.gaze_yaw</span></code>. A yellow arrow is drawn from the
-outer-canthi midpoint in the mesh’s pose-canonical frame, scaled to
-<code class="docutils literal notranslate"><span class="pre">gaze_length_frac</span></code> (default 30%) of face height.</p>
-<p>Forward gaze (pitch=0, yaw=0) points along +Z (out of the face), so in
-the default front-on plotly camera it appears as a small point — drag to
-rotate the camera if you want to see it as an arrow.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_face_mesh_plotly</span>
-
-<span class="c1"># Pitch ~+15° (looking up), yaw ~+20° (eyes drift toward viewer&#39;s right).</span>
-<span class="c1"># Pass radians; L2CS detector output is already in radians so you can</span>
-<span class="c1"># plug fex.gaze_pitch / fex.gaze_yaw straight in. Tesselation mode shows</span>
-<span class="c1"># enough of the face (nose, cheeks, eyes) for the gaze arrow to read</span>
-<span class="c1"># anatomically — contours leaves too few landmarks for the eye to be</span>
-<span class="c1"># obvious.</span>
-<span class="n">fig_gaze</span> <span class="o">=</span> <span class="n">plot_face_mesh_plotly</span><span class="p">(</span>
-    <span class="n">au</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tesselation&quot;</span><span class="p">,</span>
-    <span class="n">gaze</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span>
-<span class="p">)</span>
-<span class="n">fig_gaze</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;Mesh + 3D gaze arrow&quot;</span><span class="p">)</span>
-<span class="n">fig_gaze</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/2372afbb15cf151131b79cbcee3f2905a00e5d15f8e90ed6f098b8f56b092fc3.png" src="../_images/2372afbb15cf151131b79cbcee3f2905a00e5d15f8e90ed6f098b8f56b092fc3.png" />
-</div>
-</div>
-</section>
-</section>
-<section id="animating-the-3d-mediapipe-facemesh">
-<h2>3.7 Animating the 3D MediaPipe FaceMesh<a class="headerlink" href="#animating-the-3d-mediapipe-facemesh" title="Permalink to this heading">#</a></h2>
-<p>The 2D <code class="docutils literal notranslate"><span class="pre">animate_face</span></code> from §3.3 saves a GIF; the 3D mesh equivalent is
-interactive — <code class="docutils literal notranslate"><span class="pre">animate_face_mesh_plotly()</span></code> returns a Plotly Figure with
-play/pause/loop buttons and a per-frame slider, and the camera stays
-rotatable <em>while</em> the animation is playing. So you can rotate to a
-profile view, hit play, and watch the expression morph from that vantage.</p>
-<p>It uses the same <code class="docutils literal notranslate"><span class="pre">interpolate_aus</span></code> cubic-easing helper as <code class="docutils literal notranslate"><span class="pre">animate_face</span></code>,
-and the same <code class="docutils literal notranslate"><span class="pre">mode='tesselation'</span></code> / <code class="docutils literal notranslate"><span class="pre">'contours'</span></code> knob as
-<code class="docutils literal notranslate"><span class="pre">plot_face_mesh_plotly</span></code>. By default it appends a reverse pass so the
-animation returns to the starting expression on each cycle.</p>
-<p>Below we animate a smile starting from rest in tesselation mode — the
-dense edge set shows the nose, cheek, and inner-face structure that
-makes the face recognizable. Pass <code class="docutils literal notranslate"><span class="pre">mode='contours'</span></code> if you need a
-smaller embedded HTML (~500 KB vs several MB for tesselation).</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">animate_face_mesh_plotly</span>
-
-<span class="c1"># Animate from rest → smile → rest. Tesselation mode (default) is much</span>
-<span class="c1"># more recognizable than contours — contours shows only a lips/eyelids/</span>
-<span class="c1"># brows/face oval, missing nose, cheeks, iris, etc. Tradeoff is HTML</span>
-<span class="c1"># output size (~5-10 MB for 24 frames vs ~500 KB for contours).</span>
-<span class="n">fig_anim</span> <span class="o">=</span> <span class="n">animate_face_mesh_plotly</span><span class="p">(</span>
-    <span class="n">start</span><span class="o">=</span><span class="n">rest</span><span class="p">,</span>
-    <span class="n">end</span><span class="o">=</span><span class="n">smile</span><span class="p">,</span>
-    <span class="n">num_frames</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-    <span class="n">fps</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;tesselation&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">fig_anim</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;AU12 smile (rest → peak → rest)&quot;</span><span class="p">)</span>
-<span class="n">fig_anim</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/196053c7e25330c4d64b615c2a1d8b25cd627901109634467dad20d04ec3442a.png" src="../_images/196053c7e25330c4d64b615c2a1d8b25cd627901109634467dad20d04ec3442a.png" />
-</div>
-</div>
 </section>
 </section>
 
@@ -1197,7 +835,7 @@ smaller embedded HTML (~500 KB vs several MB for tesselation).</p>
               
               
               
-                <footer class="prev-next-footer d-print-none">
+                <footer class="prev-next-footer">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -1227,7 +865,6 @@ smaller embedded HTML (~500 KB vs several MB for tesselation).</p>
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
@@ -1238,22 +875,13 @@ smaller embedded HTML (~500 KB vs several MB for tesselation).</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-au-activations">3.2 Plotting AU activations</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-muscle-heatmaps-to-the-plot">Adding muscle heatmaps to the plot</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-gaze-vectors-to-the-plot">Adding gaze vectors to the plot</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-gaze-from-real-images-l2cs-model">Plotting gaze from real images (L2CS model)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-vectorfield-arrows-to-highlight-facial-movement">Adding vectorfield arrows to highlight facial movement</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animating-facial-expressions">3.3 Animating facial expressions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-complex-animations">More complex animations</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-2d-animation-with-plotly">Interactive 2D animation with Plotly</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-the-full-3d-mediapipe-facemesh-from-au-intensities">3.4 Visualizing the full 3D MediaPipe FaceMesh from AU intensities</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bridging-68-pt-landmarks-to-the-3d-mesh">3.5 Bridging 68-pt landmarks to the 3D mesh</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-3d-visualization-with-plotly">3.6 Interactive 3D visualization with Plotly</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-3d-gaze-arrow">Adding a 3D gaze arrow</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animating-the-3d-mediapipe-facemesh">3.7 Animating the 3D MediaPipe FaceMesh</a></li>
 </ul>
   </nav></div>
 
@@ -1302,8 +930,8 @@ By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
 
   <footer class="bd-footer">
   </footer>
