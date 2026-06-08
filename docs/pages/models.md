@@ -71,7 +71,7 @@ All three landmark models use weights adapted from [`cunjian/pytorch_face_landma
   - **Face detection** is handled by **RetinaFace** (`Detectorv2` does not take a `face_model` kwarg — it hardcodes `'retinaface'`).
   - **Identity** is an optional branch: the default is `identity_model='arcface'`, and `identity_model='facenet'` is also supported (or `None` to skip identity embeddings). See the [Identity detection](#identity-detection) section above for the model cards and licenses. The ArcFace identity weights are non-commercial-research only.
 
-  Replacing v1's per-task model chain with one network makes `Detectorv2` substantially faster — especially on single frames — and adds valence/arousal + gaze that v1 does not produce. For up-to-date accuracy and speed comparisons against `Detector` (v1) and other toolkits, see the [accuracy](../benchmarks/accuracy.md) and [throughput](../benchmarks/throughput.md) benchmarks.
+  Replacing v1's per-task model chain with one network makes `Detectorv2` substantially faster — especially on single frames — and adds valence/arousal + gaze that v1 does not produce. For up-to-date accuracy and speed comparisons against `Detector` (v1) and other toolkits, see the [accuracy](../benchmarks/accuracy.md) and [speed](../benchmarks/Speed.md) benchmarks.
 
 ```python
 from feat import Detectorv2

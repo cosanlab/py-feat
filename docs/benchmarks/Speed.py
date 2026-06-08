@@ -14,13 +14,15 @@ def _():
 def _(mo):
     mo.md(
         r"""
-        # Live benchmarks
+        # Speed
 
-        py-feat's detector **throughput** and **accuracy**, tracked over releases.
-        Numbers come from `scripts/bench_detectors.py` (throughput) and
-        `feat.evaluation` (accuracy), are appended to the
+        py-feat's end-to-end detector **throughput** (frames/sec), tracked over
+        releases. Numbers come from `scripts/bench_detectors.py --json`, are
+        appended to the
         [`py-feat/benchmarks`](https://huggingface.co/datasets/py-feat/benchmarks)
-        dataset by a scheduled run, and this page re-renders whenever new data lands.
+        dataset by a scheduled run, and this page re-renders whenever new data
+        lands. Accuracy benchmarks are on the [Accuracy](accuracy.md) page;
+        methodology and the per-run archive are at the bottom.
         """
     )
     return
@@ -150,11 +152,31 @@ def _(throughput):
 def _(mo):
     mo.md(
         r"""
-        ## Accuracy
+        ## Methodology
 
-        *Coming in Phase 2* — per-AU F1, emotion accuracy, and valence/arousal CCC
-        on the held-out benchmark datasets (DISFA+, AffectNet, RAF-DB, AffWild2),
-        read from `accuracy.csv` in the same dataset and plotted over releases.
+        `scripts/bench_detectors.py` measures the **detection + landmark + AU +
+        emotion + identity** path on reproducible test fixtures from
+        `feat/tests/data/`:
+
+        - `single_face.mp4` (72 frames, 1 face/frame)
+        - `WolfgangLanger_Pexels.mp4` (472 frames, 1 face/frame)
+        - `multi_face.jpg` × 16 = 80 faces
+
+        Three configurations are timed head-to-head: `Detector` with the
+        `img2pose` and `retinaface` face models (both `au_model='xgb'`,
+        `emotion_model='resmasknet'`, `identity_model='arcface'`) and the v2
+        `Detectorv2` multitask network. Swept axes: `device × batch_size ×
+        num_workers`. Each run is produced by `bench_detectors.py --json` (or
+        `--markdown` for the archived reports) and ingested into the
+        `py-feat/benchmarks` dataset above.
+
+        ## Run history
+
+        Milestone reports are archived in
+        [`docs/benchmarks/`](https://github.com/cosanlab/py-feat/tree/main/docs/benchmarks):
+        [2026-05-14](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-14-c716340.md),
+        [2026-05-04](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-04-f44ccb1.md),
+        [2026-05-03](https://github.com/cosanlab/py-feat/blob/main/docs/benchmarks/2026-05-03-d71c0d7.md).
         """
     )
     return

@@ -62,7 +62,6 @@ def _(device):
     # 68-pt landmarks, and a 478-pt 3D FaceMesh. identity_model="arcface" adds a
     # face-identity embedding. device was selected above (cuda/mps/cpu).
     detector_v2 = Detectorv2(device=device, identity_model="arcface")
-    detector_v2
     return (detector_v2,)
 
 
@@ -85,7 +84,6 @@ def _(device):
     # The modular v1 Detector. Swap individual models via kwargs, e.g.
     # Detector(emotion_model='svm'). device was selected above (cuda/mps/cpu).
     detector = Detector(device=device)
-    detector
     return (detector,)
 
 

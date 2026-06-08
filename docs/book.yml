@@ -70,6 +70,7 @@ toc:
       - file: pages/installation.md
       - file: pages/models.md
       - file: pages/au_reference.md
+        title: AU Reference
       - file: pages/faqs.md
 
   # Tutorials — added incrementally as each notebook is rendered to _rendered/.
@@ -91,10 +92,9 @@ toc:
 
   - section: Benchmarks
     children:
-      - file: benchmarks/live.py
+      - file: benchmarks/Speed.py
         mode: cached
       - file: benchmarks/accuracy.md
-      - file: benchmarks/throughput.md
 
   - section: Contributing
     children:

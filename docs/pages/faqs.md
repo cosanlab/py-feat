@@ -32,7 +32,7 @@ You can control parallelization of data loading using the `num_workers` argument
 
 ### How fast is video processing?
 
-Py-Feat's original release prioritized correctness and a seamless out-of-the-box experience over raw speed, and was quite slow (roughly 1–3 fps). That is no longer the case: **`Detector` (v1) is now much faster, supports batching, and runs on the GPU (CUDA and MPS)**, and **`Detectorv2` is faster still** — it computes its whole multi-task output in a single forward pass. For current speed and accuracy numbers, see the [accuracy](../benchmarks/accuracy.md) and [throughput](../benchmarks/throughput.md) benchmarks.
+Py-Feat's original release prioritized correctness and a seamless out-of-the-box experience over raw speed, and was quite slow (roughly 1–3 fps). That is no longer the case: **`Detector` (v1) is now much faster, supports batching, and runs on the GPU (CUDA and MPS)**, and **`Detectorv2` is faster still** — it computes its whole multi-task output in a single forward pass. For current speed and accuracy numbers, see the [accuracy](../benchmarks/accuracy.md) and [speed](../benchmarks/Speed.md) benchmarks.
 
 To get the most throughput, run on a GPU (`device='cuda'` or `device='mps'`) and increase `batch_size` in `.detect()` (see the question above).
 

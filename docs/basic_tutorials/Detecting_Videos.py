@@ -55,8 +55,6 @@ def _(device):
     from feat import Detector
 
     detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
-
-    detector
     return (detector,)
 
 
