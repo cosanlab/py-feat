@@ -4,7 +4,7 @@ __generated_with = "0.23.8"
 app = marimo.App()
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     import marimo as mo
     return (mo,)
@@ -26,7 +26,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     import pandas as pd
     from pathlib import Path
@@ -108,7 +108,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(throughput):
     import plotly.express as px
 
@@ -134,9 +134,9 @@ def _(throughput):
     df["panel"] = "batch " + df["batch"].astype(str)
 
     fig = px.bar(
-        df.sort_values(["batch", "fps"]),
-        x="fps", y="detector", color="hardware",
-        orientation="h", barmode="group", facet_col="panel",
+        df.sort_values(["batch", "detector"]),
+        x="detector", y="fps", color="hardware",
+        orientation="v", barmode="group", facet_col="panel",
         labels={"fps": "frames / sec (long test video)", "detector": ""},
         title="End-to-end detector throughput — py-feat v0.7.0",
     )
