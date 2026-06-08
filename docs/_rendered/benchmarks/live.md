@@ -55,7 +55,7 @@ except Exception:
 is_sample = source == "placeholder"
 ```
 
-Showing committed benchmark data (`docs/benchmarks/throughput.csv`); the scheduled `py-feat/benchmarks` feed supersedes it once populated.
+Live data from `py-feat/benchmarks`, updated each scheduled run.
 
 ## Throughput by detector and hardware
 

@@ -2,9 +2,8 @@
 
 Here are a few general guidelines and common questions when using `py-feat`. We are always actively trying to improve the toolbox and make it easier to use — please help us out by contributing on GitHub!
 
-```{note}
-**Always spot-check your detections!** While we've done our best to thoroughly test, benchmark, and document all the [pre-trained models](models.md) included in Py-Feat, it's always possible that real-world images and videos reveal a quirk or limitation of an otherwise high-performing detector.
-```
+!!! note
+    **Always spot-check your detections!** While we've done our best to thoroughly test, benchmark, and document all the [pre-trained models](models.md) included in Py-Feat, it's always possible that real-world images and videos reveal a quirk or limitation of an otherwise high-performing detector.
 
 ## Common questions
 

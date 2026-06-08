@@ -2,13 +2,11 @@
 
 Below is a list of detectors included in Py-Feat and ready to use. The model names are in the titles followed by the reference publications. Bolded models are defaults.
 
-```{note}
-All py-feat models are hosted on the [**`py-feat` organization on HuggingFace**](https://huggingface.co/py-feat) and downloaded automatically to a local cache the first time they are used. Each model below links to its HuggingFace model card, where you can find the upstream code, reference paper, and full license terms. The project homepage is [py-feat.org](https://py-feat.org/).
-```
+!!! note
+    All py-feat models are hosted on the [**`py-feat` organization on HuggingFace**](https://huggingface.co/py-feat) and downloaded automatically to a local cache the first time they are used. Each model below links to its HuggingFace model card, where you can find the upstream code, reference paper, and full license terms. The project homepage is [py-feat.org](https://py-feat.org/).
 
-```{note}
-The face / landmark / AU / emotion / identity / gaze models in the sections below are the *swappable components of the modular* **`Detector` (v1)** (also importable as `Detectorv1`). **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [Py-Feat v2 overview](./intro.md#introducing-py-feat-v2).
-```
+!!! note
+    The face / landmark / AU / emotion / identity / gaze models in the sections below are the *swappable components of the modular* **`Detector` (v1)** (also importable as `Detectorv1`). **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [Py-Feat v2 overview](./intro.md#introducing-py-feat-v2).
 
 You can specify any of these models for use in the `Detector` class by passing in the name as a string, e.g.
 
@@ -18,22 +16,19 @@ from feat import Detector
 detector = Detector(emotion_model='svm')
 ```
 
-```{note}
-Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
-```
+!!! note
+    Models names are case-insensitive: `'resmasknet' == 'ResMaskNet'`
 
 ## Face detection
 
 - **`retinaface`: RetinaFace: Single-Shot Multi-Level Face Localisation in the Wild** ([Deng et al., 2019](https://arxiv.org/abs/1905.00641)). A single-shot detector (ResNet-34 backbone) that localizes faces and five facial keypoints in one pass. This is the default face detector as of v0.7. [Model card](https://huggingface.co/py-feat/retinaface_r34) · License: MIT.
 - `img2pose`: Face Alignment and Detection via 6DoF, Face Pose Estimation ([Albiero et al., 2020](https://arxiv.org/abs/2012.07791)). Performs simultaneous (one-shot) face detection **and** 6DoF head-pose estimation. [Model card](https://huggingface.co/py-feat/img2pose) · License: CC BY-NC 4.0 (non-commercial).
 
-```{note}
-The `face_model` kwarg accepts `'retinaface'` or `'img2pose'`. (`'retinaface_r34'`, a v0.6 alias, was removed in v0.7 — use `'retinaface'`. The HuggingFace repo keeps the backbone-tagged name `py-feat/retinaface_r34`.)
-```
+!!! note
+    The `face_model` kwarg accepts `'retinaface'` or `'img2pose'`. (`'retinaface_r34'`, a v0.6 alias, was removed in v0.7 — use `'retinaface'`. The HuggingFace repo keeps the backbone-tagged name `py-feat/retinaface_r34`.)
 
-```{note}
-`retinaface` detects faces only, so when it is selected py-feat estimates **6DoF head pose** from the detected facial landmarks using a small pose MLP ([`py-feat/pose_mlp_v2`](https://huggingface.co/py-feat/pose_mlp_v2)). `img2pose` instead returns head pose directly from its single forward pass.
-```
+!!! note
+    `retinaface` detects faces only, so when it is selected py-feat estimates **6DoF head pose** from the detected facial landmarks using a small pose MLP ([`py-feat/pose_mlp_v2`](https://huggingface.co/py-feat/pose_mlp_v2)). `img2pose` instead returns head pose directly from its single forward pass.
 
 All three landmark models use weights adapted from [`cunjian/pytorch_face_landmark`](https://github.com/cunjian/pytorch_face_landmark) and are redistributed under Py-Feat's [MIT license](https://github.com/cosanlab/py-feat/blob/master/LICENSE).
 
@@ -46,13 +41,11 @@ All three landmark models use weights adapted from [`cunjian/pytorch_face_landma
 - **`xgb`: XGBoost Classifier model trained on Histogram of Oriented Gradients\*** extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets. [Model card](https://huggingface.co/py-feat/xgb_au) · License: MIT.
 - `svm`: SVM model trained on Histogram of Oriented Gradients\*\* extracted from BP4D, DISFA, CK+, UNBC-McMaster shoulder pain, and AFF-Wild2 datasets. [Model card](https://huggingface.co/py-feat/svm_au) · License: MIT.
 
-```{note}
-\*For AU07, our `xbg` detector was trained with hinge-loss instead of cross-entropy loss like other AUs as this yielded substantially better detection performance given the labeled data available for this AU. This means that while it returns continuous probability predictions,  these are more likely to appear binary in practice (i.e. be 0 or 1) and should be interpreted as *proportion of decision-trees with a detection* rather than *average decision-tree confidence* like other AU values.
-```
+!!! note
+    \*For AU07, our `xbg` detector was trained with hinge-loss instead of cross-entropy loss like other AUs as this yielded substantially better detection performance given the labeled data available for this AU. This means that while it returns continuous probability predictions,  these are more likely to appear binary in practice (i.e. be 0 or 1) and should be interpreted as *proportion of decision-trees with a detection* rather than *average decision-tree confidence* like other AU values.
 
-```{note}
-\*\* Our `svm` detector uses the [`LinearSVC`](https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html#sklearn.svm.LinearSVC) implementation from `sklearn` and thus returns **binary values** for each AU rather than probabilities. If your use-case requires continuous-valued detections, we recommend the `xgb` detector instead.
-```
+!!! note
+    \*\* Our `svm` detector uses the [`LinearSVC`](https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html#sklearn.svm.LinearSVC) implementation from `sklearn` and thus returns **binary values** for each AU rather than probabilities. If your use-case requires continuous-valued detections, we recommend the `xgb` detector instead.
 
 ## Emotion detection
 
@@ -68,9 +61,8 @@ All three landmark models use weights adapted from [`cunjian/pytorch_face_landma
 
 - **`l2cs`: L2CS-Net: Fine-Grained Gaze Estimation in Unconstrained Environments** ([Abdelrahman et al., 2022](https://arxiv.org/abs/2203.03339)). A ResNet-based gaze regressor (trained on Gaze360 + MPIIFaceGaze) that predicts pitch/yaw gaze angles from a face crop. Default gaze model for both `Detector` and `MPDetector`. [Model card](https://huggingface.co/py-feat/l2cs) · License: MIT.
 
-```{note}
-`MPDetector` can alternatively compute a lightweight **geometric** gaze estimate directly from the MediaPipe iris landmarks (no extra model) via `gaze_model='geometric'`. `Detectorv2` produces gaze as one of the outputs of its single multi-task network — see below.
-```
+!!! note
+    `MPDetector` can alternatively compute a lightweight **geometric** gaze estimate directly from the MediaPipe iris landmarks (no extra model) via `gaze_model='geometric'`. `Detectorv2` produces gaze as one of the outputs of its single multi-task network — see below.
 
 ## Detectorv2: the multi-task model
 

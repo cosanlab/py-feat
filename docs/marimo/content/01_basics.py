@@ -16,17 +16,8 @@ def _(mo):
     mo.md(r"""
     # 1. Detecting facial expressions from images
 
-    *Written by Jin Hyun Cheong and Eshin Jolly*
-
     In this tutorial we'll explore the `Detector` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/02_detector_imgs.ipynb)
     """)
-    return
-
-
-@app.cell
-def _():
-    # Uncomment the line below and run this only if you're using Google Collab
-    # !pip install -q py-feat
     return
 
 
@@ -52,8 +43,7 @@ def _():
 
     # You can change which models you want during initialization, e.g.
     # detector = Detector(emotion_model='svm')
-    return (detector,)
-
+    return
 
 @app.cell(hide_code=True)
 def _(mo):
