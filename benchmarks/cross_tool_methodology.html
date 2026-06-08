@@ -1,0 +1,1341 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Cross-tool AU benchmark — methodology &amp; integration notes &#8212; Py-Feat</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'benchmarks/cross_tool_methodology';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../pages/intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/pyfeat_logo_small.png" class="logo__image only-light" alt="Py-Feat - Home"/>
+    <script>document.write(`<img src="../_static/pyfeat_logo_small.png" class="logo__image only-dark" alt="Py-Feat - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../pages/intro.html">
+                    Py-Feat: Python Facial Expression Analysis Toolbox
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">How to install Py-Feat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/models.html">Included pre-trained detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/au_reference.html">AU Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/faqs.html">FAQs, Tips &amp; Known Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/01_basics.html">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/03_plotting.html">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_tutorials/04_fex_analysis.html">4. Running a full analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/06_trainAUvisModel.html">6. Training an AU visualization model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/07_extract_labels_and_landmarks.html">7. Example labels and landmark dataset loading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/08_train_hogs.html">8. Training HOG-based AU detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/09_test_bbox.html">9. Benchmarking Bounding Box using data</a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/10_test_lands.html">10. Benchmarking Landmark models using data</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/11_test_Poseinfo.html">11. Benchmarking Pose detectors using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/12_test_aus.html">12. Benchmarking Action Unit detector using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../extra_tutorials/13_test_emos.html">13. Benchmarking pyfeat Emotion detection algorithms using data</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../pages/api.html">API Reference</a></li>
+
+
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="accuracy.html">Accuracy benchmarks</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../pages/contribute.html">General contributions guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/modelContribution.html">Contributing new detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/changelog.html">Change Log</a></li>
+
+
+
+
+
+
+
+
+
+<li class="toctree-l1"><a class="reference external" href="https://github.com/cosanlab/py-feat">GitHub Repository</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/cosanlab/py-feat" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fbenchmarks/cross_tool_methodology.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/benchmarks/cross_tool_methodology.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Cross-tool AU benchmark — methodology & integration notes</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-comparison">Feature comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accuracy-au-detection-on-disfa-held-out">Accuracy — AU detection on DISFA+ (held-out)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accuracy-beyond-au-emotion-valence-arousal-gaze">Accuracy — beyond AU: emotion, valence/arousal, gaze</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#emotion-7-class-top-1-accuracy-macro-f1">Emotion — 7-class, top-1 accuracy / macro-F1</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#valence-arousal-ccc-affectnet-val">Valence / arousal — CCC (AffectNet-val)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gaze-use-eyediap-the-rest-are-contaminated-or-frame-confounded">Gaze — use EYEDIAP; the rest are contaminated or frame-confounded</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speed">Speed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datasets-metric-protocol-and-why-disfa-not-disfa">Datasets &amp; metric protocol — and why <strong>DISFA+</strong>, not DISFA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#per-tool-integration-experience">Per-tool integration experience</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#py-feat-v1-v2">py-feat (v1 / v2)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#libreface-could-not-reproduce-published-numbers-locally">LibreFace — could <strong>not</strong> reproduce published numbers locally</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openface-3-0">OpenFace 3.0</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyafar-dependency-rot-api-coverage-mismatch">PyAFAR — dependency rot + API/coverage mismatch</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hardware-notes">Hardware notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license-caveats-research-benchmark-only">License caveats (research benchmark only)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducing">Reproducing</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cross-tool-au-benchmark-methodology-integration-notes">
+<h1>Cross-tool AU benchmark — methodology &amp; integration notes<a class="headerlink" href="#cross-tool-au-benchmark-methodology-integration-notes" title="Permalink to this heading">#</a></h1>
+<p>This documents how py-feat is compared against other open-source Python facial
+action-unit (AU) toolkits, and — just as importantly — <strong>what it took to run
+each competitor</strong>. The integration effort is itself a result: it shows the
+usability gap between py-feat (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">py-feat</span></code>, one <code class="docutils literal notranslate"><span class="pre">Detector</span></code> /
+<code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code> call, runs on any GPU) and the alternatives.</p>
+<section id="feature-comparison">
+<h2>Feature comparison<a class="headerlink" href="#feature-comparison" title="Permalink to this heading">#</a></h2>
+<p>Across the open-source Python facial-behavior toolkits. ✅ = supported,
+❌ = not supported, ⚠️ = supported with a caveat (see notes).</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="text-center head"><p><strong>py-feat</strong></p></th>
+<th class="text-center head"><p><strong>OpenFace 3.0</strong></p></th>
+<th class="text-center head"><p><strong>LibreFace</strong></p></th>
+<th class="text-center head"><p><strong>PyAFAR</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Install</strong></p></td>
+<td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">py-feat</span></code> ✅</p></td>
+<td class="text-center"><p>clone repo + checkpoints</p></td>
+<td class="text-center"><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">libreface</span></code> ⚠️¹</p></td>
+<td class="text-center"><p>❌ broken deps²</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Single images</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>❌ <strong>video only</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Video</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Action units</strong></p></td>
+<td class="text-center"><p>✅ 20</p></td>
+<td class="text-center"><p>✅ 8</p></td>
+<td class="text-center"><p>✅ 12 (+5 occ.)</p></td>
+<td class="text-center"><p>⚠️ 12 occ. / 5 int.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>AU intensity</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>❌ occ. only</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>⚠️ 5 AUs</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Emotion</strong></p></td>
+<td class="text-center"><p>✅ 7-class</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Valence / arousal</strong></p></td>
+<td class="text-center"><p>✅ (v2)</p></td>
+<td class="text-center"><p>❌</p></td>
+<td class="text-center"><p>❌</p></td>
+<td class="text-center"><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Gaze</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Head pose (6DoF)</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Landmarks</strong></p></td>
+<td class="text-center"><p>✅ 68 + 478 mesh</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅ 478 mesh</p></td>
+<td class="text-center"><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Identity / face ID</strong></p></td>
+<td class="text-center"><p>✅ ArcFace</p></td>
+<td class="text-center"><p>❌</p></td>
+<td class="text-center"><p>❌</p></td>
+<td class="text-center"><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>One-call API</strong></p></td>
+<td class="text-center"><p>✅ <code class="docutils literal notranslate"><span class="pre">Detector().detect()</span></code></p></td>
+<td class="text-center"><p>❌ custom scripts</p></td>
+<td class="text-center"><p>✅ ⚠️¹</p></td>
+<td class="text-center"><p>⚠️ video only</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Latest GPUs (Blackwell)</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>❌ pinned old torch³</p></td>
+<td class="text-center"><p>❌ dlib/CUDA³</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>License</strong></p></td>
+<td class="text-center"><p>permissive⁴</p></td>
+<td class="text-center"><p>academic</p></td>
+<td class="text-center"><p>USC research-only</p></td>
+<td class="text-center"><p>non-commercial</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>¹ The <code class="docutils literal notranslate"><span class="pre">pip</span></code> model is a distilled all-in-one net that <strong>underperforms its own
+paper</strong>; reproducing published AU numbers requires cloning the research repo +
+checkpoints (see LibreFace notes).
+² Release wheel pins <code class="docutils literal notranslate"><span class="pre">pysimplegui==4.60.5</span></code>, which was pulled from PyPI — install
+fails; needs <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> + hand-resolving TF/MediaPipe/dlib + <code class="docutils literal notranslate"><span class="pre">download_models</span></code>.
+³ LibreFace’s pinned PyTorch lacks Blackwell (sm_120) kernels (≤ Ampere only);
+PyAFAR’s dlib build fails compiling CUDA kernels.
+⁴ py-feat is permissively licensed; a few downloadable weights (e.g. ArcFace
+identity) are research-only and clearly flagged.</p>
+<p><strong>Takeaway:</strong> py-feat is the only one of the four that installs with a single
+<code class="docutils literal notranslate"><span class="pre">pip</span></code> command, takes both images and video, runs on current-generation GPUs, and
+covers the full feature set (AUs + intensity, emotion, valence/arousal, gaze,
+6DoF pose, 68/478 landmarks, identity) behind one API.</p>
+</section>
+<section id="accuracy-au-detection-on-disfa-held-out">
+<h2>Accuracy — AU detection on DISFA+ (held-out)<a class="headerlink" href="#accuracy-au-detection-on-disfa-held-out" title="Permalink to this heading">#</a></h2>
+<p>Mean per-AU <strong>F1</strong> on the DISFA+ benchmark (57,150 frames). <strong>Protocols are not
+yet fully harmonized</strong> across tools (AU subset + binarization differ — see the
+per-tool note); treat as indicative until a single-protocol recompute lands.</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="text-center head"><p>DISFA+ mean F1</p></th>
+<th class="text-center head"><p>AUs scored</p></th>
+<th class="head"><p>binarization</p></th>
+<th class="head"><p>source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>py-feat v2</strong> (<code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code>)</p></td>
+<td class="text-center"><p><strong>0.540</strong></p></td>
+<td class="text-center"><p>12</p></td>
+<td><p>truth ≥2, prob ≥0.5</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pyfeat_disfaplus_au.json</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>OpenFace 3.0</strong></p></td>
+<td class="text-center"><p>0.488</p></td>
+<td class="text-center"><p>8</p></td>
+<td><p>their <code class="docutils literal notranslate"><span class="pre">evaluation.py</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">openface3_disfaplus.json</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>LibreFace</strong> (research RepVGG)</p></td>
+<td class="text-center"><p>0.461</p></td>
+<td class="text-center"><p>12</p></td>
+<td><p>truth ≥2, intensity ≥2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">libreface_repvgg_disfaplus.json</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>py-feat v1</strong> (<code class="docutils literal notranslate"><span class="pre">Detector</span></code>, xgb)</p></td>
+<td class="text-center"><p>0.250</p></td>
+<td class="text-center"><p>12</p></td>
+<td><p>truth ≥2, prob ≥0.5</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pyfeat_disfaplus_au.json</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>PyAFAR</strong></p></td>
+<td class="text-center"><p>0.260</p></td>
+<td class="text-center"><p><strong>7 only</strong></p></td>
+<td><p>occ ≥0.5, truth ≥2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pyafar_accuracy_disfaplus.json</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>py-feat v2 (Detectorv2) leads</strong> the held-out DISFA+ AU benchmark (0.54), ahead
+of OpenFace 3.0 (0.49) and LibreFace (0.46) — and recall DISFA+ is held out for
+<em>all</em> tools, while DISFA (LibreFace’s/OF3’s training set) is excluded. py-feat
+v1’s xgb path is weaker here (0.25) on the strict 12-AU / ≥2 protocol; it’s the
+legacy modular detector, and v2 is the recommended path.</p>
+<p><strong>PyAFAR</strong> now runs (its conda env rebuilt to its own declared TF-2.12 stack;
+see notes) over all 57,150 frames, unmodified. It covers only <strong>7 of the 12
+DISFA AUs</strong> (it has no AU05/09/20/25/26), and mean F1 over those 7 is <strong>0.26</strong> —
+strong on the smile AUs (AU06 0.61, AU12 0.55) but failing AU01/AU04 (≈0). Its
+video-only API required re-assembling DISFA+ stills into per-trial clips. The
+0.26 is <strong>not comparable to the 12-AU numbers above</strong> (different, easier AU
+subset); it’s reported on PyAFAR’s own 7-AU overlap.</p>
+<p>LibreFace also gives mean intensity <strong>PCC = 0.73</strong> (its native DISFA metric).
+A follow-up will recompute all tools on one AU set + threshold for an
+apples-to-apples table.</p>
+</section>
+<section id="accuracy-beyond-au-emotion-valence-arousal-gaze">
+<h2>Accuracy — beyond AU: emotion, valence/arousal, gaze<a class="headerlink" href="#accuracy-beyond-au-emotion-valence-arousal-gaze" title="Permalink to this heading">#</a></h2>
+<p>AU is only one of the modalities these toolkits ship. We benchmark the rest on
+the datasets that carry the right labels, each tool run <strong>end-to-end as
+written</strong> (its own detector → its own model), on identical images/labels frozen
+from py-feat’s <code class="docutils literal notranslate"><span class="pre">feat.evaluation</span></code> loaders into shared manifests
+(<code class="docutils literal notranslate"><span class="pre">shared/export_emotion_gaze_manifest.py</span></code>). Per-tool sample counts (<code class="docutils literal notranslate"><span class="pre">n</span></code>) differ
+because each tool’s <em>own</em> face detector decides which faces it finds — that
+detection robustness is itself part of the comparison.</p>
+<p><strong>Strictly out-of-sample.</strong> Every number is on a held-out <strong>validation/test</strong>
+split — no tool is ever scored on images from its own training set:</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Dataset</p></th>
+<th class="head"><p>Split scored</p></th>
+<th class="head"><p>Held out for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>AffectNet</p></td>
+<td><p>official <strong>validation</strong> (<code class="docutils literal notranslate"><span class="pre">validation_aligned.csv</span></code>)</p></td>
+<td><p>all (tools train on AffectNet-train)</p></td>
+</tr>
+<tr class="row-odd"><td><p>RAF-DB</p></td>
+<td><p><strong>test</strong> split</p></td>
+<td><p>all (tools train on RAF-train)</p></td>
+</tr>
+<tr class="row-even"><td><p>DISFA+</p></td>
+<td><p>full posed-peak eval set</p></td>
+<td><p><strong>all</strong> — no tool trains on DISFA+ (we avoid DISFA, which several train on)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Columbia Gaze</p></td>
+<td><p>full eval set</p></td>
+<td><p>OF3, LibreFace only — ⚠️ <strong>py-feat trained on all of it</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>MPIIFaceGaze</p></td>
+<td><p>held-out subsample</p></td>
+<td><p>LibreFace only — ⚠️ <strong>py-feat and OF3 both trained on it</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>Gaze360</p></td>
+<td><p><strong><code class="docutils literal notranslate"><span class="pre">bench</span></code>/test</strong> split</p></td>
+<td><p>LibreFace; held-out-in-distribution for py-feat &amp; OF3 (both trained Gaze360-train)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>⚠️ Most gaze rows are contaminated (see the gaze section): py-feat trained on
+Columbia/MPIIFaceGaze/Gaze360. The clean, frame-matched gaze benchmark is
+<strong>EYEDIAP</strong> (out-of-sample for all, camera-frame). AU and emotion are genuinely
+held-out.</p>
+<section id="emotion-7-class-top-1-accuracy-macro-f1">
+<h3>Emotion — 7-class, top-1 accuracy / macro-F1<a class="headerlink" href="#emotion-7-class-top-1-accuracy-macro-f1" title="Permalink to this heading">#</a></h3>
+<p>Held-out <strong>AffectNet-val</strong> (994 imgs, classes 0–6) and <strong>RAF-DB test</strong> (3,068).
+All three emotion-capable tools argmax their own emotion head; OF3/LibreFace
+emit 8 classes (incl. Contempt) — scored on the shared 7, a Contempt prediction
+counts as wrong. (PyAFAR has no emotion head.)</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="text-center head"><p>AffectNet acc / F1</p></th>
+<th class="text-center head"><p>RAF-DB acc / F1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>py-feat v2</strong></p></td>
+<td class="text-center"><p>0.492 / <strong>0.479</strong></p></td>
+<td class="text-center"><p><strong>0.656 / 0.528</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>OpenFace 3.0</strong></p></td>
+<td class="text-center"><p><strong>0.493</strong> / <strong>0.520</strong></p></td>
+<td class="text-center"><p>0.513 / 0.469</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>LibreFace</strong></p></td>
+<td class="text-center"><p>0.455 / 0.403</p></td>
+<td class="text-center"><p>0.646 / 0.386</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>py-feat v2 and OF3 are neck-and-neck on AffectNet (0.49); on RAF-DB py-feat
+leads on both accuracy and the balanced macro-F1 (LibreFace’s 0.646 accuracy but
+0.386 macro-F1 is the majority-class/Happiness skew).</p>
+</section>
+<section id="valence-arousal-ccc-affectnet-val">
+<h3>Valence / arousal — CCC (AffectNet-val)<a class="headerlink" href="#valence-arousal-ccc-affectnet-val" title="Permalink to this heading">#</a></h3>
+<p><strong>py-feat v2 is the only tool of the four that predicts continuous valence and
+arousal at all</strong> — so this isn’t a head-to-head, it’s a capability the others
+lack. On AffectNet-val: <strong>valence CCC 0.535, arousal CCC 0.482</strong>.</p>
+</section>
+<section id="gaze-use-eyediap-the-rest-are-contaminated-or-frame-confounded">
+<h3>Gaze — use EYEDIAP; the rest are contaminated or frame-confounded<a class="headerlink" href="#gaze-use-eyediap-the-rest-are-contaminated-or-frame-confounded" title="Permalink to this heading">#</a></h3>
+<p>This is the subtlest comparison and took the most care. py-feat v2 trained on
+<strong>all four</strong> of Columbia / MPIIFaceGaze / MPIIGaze / Gaze360 (confirmed in its
+<code class="docutils literal notranslate"><span class="pre">au_deep</span></code> per-source training log), so those are in-distribution; ETH-XGaze is
+out-of-sample but in a <em>normalized frame</em> py-feat never trained for. The one
+benchmark that is <strong>both out-of-sample for every tool and frame-matched</strong> is
+<strong>EYEDIAP</strong> (camera-frame gaze, no normalization), so that is the column to read:</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="text-center head"><p><strong>EYEDIAP (clean)</strong></p></th>
+<th class="text-center head"><p>Columbia</p></th>
+<th class="text-center head"><p>MPIIFaceGaze</p></th>
+<th class="text-center head"><p>Gaze360 test</p></th>
+<th class="text-center head"><p>ETH-XGaze</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>py-feat v2</strong></p></td>
+<td class="text-center"><p><strong>20.0°</strong> ✅</p></td>
+<td class="text-center"><p>2.72° ❌over</p></td>
+<td class="text-center"><p>2.80° ❌over</p></td>
+<td class="text-center"><p>9.42° ⚠️in-dist</p></td>
+<td class="text-center"><p>44.6° ⚠️frame</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>OpenFace 3.0</strong></p></td>
+<td class="text-center"><p>21.3° ✅</p></td>
+<td class="text-center"><p>12.05°</p></td>
+<td class="text-center"><p>7.03° ❌over</p></td>
+<td class="text-center"><p>41.09° ❌over</p></td>
+<td class="text-center"><p>37.7° ⚠️frame</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>LibreFace</strong></p></td>
+<td class="text-center"><p>23.7° ✅</p></td>
+<td class="text-center"><p>15.40°</p></td>
+<td class="text-center"><p>19.49°</p></td>
+<td class="text-center"><p>32.08°</p></td>
+<td class="text-center"><p>40.5°</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>✅ out-of-sample &amp; frame-matched · ❌over = in-sample/overfit · ⚠️ = confounded</p>
+<p><strong>EYEDIAP is the one clean, fair gaze comparison</strong> — out-of-sample for all three
+<em>and</em> in the camera frame (no head-normalization warp, unlike ETH-XGaze). On it,
+the three tools are <strong>within ~4° of each other (py-feat 20.0° ≤ OF3 21.3° ≤
+LibreFace 23.7°)</strong> — py-feat marginally best, none dominant. That is the honest
+gaze result. The other four columns are each compromised:</p>
+<p><strong>Reported (within-dataset) gaze — what each method claims on its home turf.</strong>
+These are the standard normalized-protocol numbers from each paper / training
+repo (in-distribution: the model trained on that dataset’s train split). They
+are <em>not</em> directly comparable to our held-out cross-tool numbers above, but they
+show the models’ gaze is strong when evaluated the way the field reports it:</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="text-center head"><p>MPII(Gaze)</p></th>
+<th class="text-center head"><p>Gaze360</p></th>
+<th class="head"><p>source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>py-feat v2.4</strong></p></td>
+<td class="text-center"><p><strong>3.92°</strong></p></td>
+<td class="text-center"><p><strong>6.81°</strong></p></td>
+<td><p>au_deep v2.4 (deployed v24fix ckpt, weight-verified; in-distribution)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>OpenFace 3.0</strong></p></td>
+<td class="text-center"><p><strong>2.56°</strong></p></td>
+<td class="text-center"><p>10.6°</p></td>
+<td><p>OF3 paper (arXiv 2506.02891)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>L2CS-Net</strong> (py-feat’s gaze lineage)</p></td>
+<td class="text-center"><p>3.92°</p></td>
+<td class="text-center"><p>10.41°</p></td>
+<td><p>L2CS paper (arXiv 2203.03339)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>LibreFace 2.0</strong></p></td>
+<td class="text-center"><p>—</p></td>
+<td class="text-center"><p>14.68°</p></td>
+<td><p>landmark-MLP, “Is Geometry Enough?” (arXiv 2603.24724)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>py-feat v2.4’s gaze is <strong>competitive with the published appearance-based
+baselines on their own benchmarks</strong> — MPIIGaze 3.92° (matching L2CS, vs OF3
+2.56°) and Gaze360 6.81° (beating L2CS 10.41° and OF3 10.6°). LibreFace 2.0’s gaze is a
+<strong>MediaPipe-landmark MLP</strong> (not appearance-based), which it reports at 14.68° on
+Gaze360 — weaker by design, consistent with it being last in our harness. (One
+as-shipped detail, not a knock: the pip <code class="docutils literal notranslate"><span class="pre">get_facial_attributes</span></code>/<code class="docutils literal notranslate"><span class="pre">estimate_gaze</span></code>
+returns LibreFace’s <em>raw</em> gaze; the paper’s bias correction (~+6.5° yaw / +5°
+pitch) is <strong>not</strong> applied by the shipped API — so our end-to-end number reflects
+what the software actually outputs, while the published table to the left shows
+their corrected best case. This is the point of having both.)</p>
+<p>The two tables answer different questions. <strong>Reported (above):</strong> each model on
+its home dataset, normalized, best case — what it <em>can</em> do. <strong>Measured
+cross-tool (the main gaze table):</strong> every model run end-to-end as shipped on
+held-out data — what you <em>get</em>. The big measured numbers (20–44°) are the
+out-of-distribution + cross-frame penalty, not weak models: in-distribution,
+py-feat gaze is 4–7°. (As
+a cross-check, our harness re-evaluating OF3 <em>outside</em> its normalized protocol
+reproduced the same collapse — OF3 20.4° on MPIIGaze, 49.9° on Gaze360 vs its
+paper’s 2.56°/10.6°.)</p>
+<p>Why each of the other columns is compromised:</p>
+<ul class="simple">
+<li><p><strong>Columbia &amp; MPIIFaceGaze — py-feat overfit.</strong> py-feat trained on <em>all</em> images
+of both, so its 2.7–2.8° is fitting its own training set, not generalization.
+(OF3 also trained on MPIIFaceGaze; Columbia is OF3’s one out-of-sample set, at
+12°.) These cannot be read as a py-feat win.</p></li>
+<li><p><strong>Gaze360 — in-distribution for py-feat <em>and</em> OF3</strong> (both trained on
+Gaze360-train; we score the held-out <code class="docutils literal notranslate"><span class="pre">bench</span></code> split). OF3’s 41° is its shipped
+<code class="docutils literal notranslate"><span class="pre">detect→crop</span></code> not reproducing the normalized crop its head trained on (paper:
+10.6°) — a real pipeline limit, but it means the cell understates OF3’s model.</p></li>
+<li><p><strong>ETH-XGaze — frame-mismatched against py-feat.</strong> Its labels are in a
+head-<em>normalized</em> frame OF3 trained on (normalized MPII) but py-feat did not
+(Gaze360). Diagnostic: feeding py-feat’s gaze head the patch directly (no
+re-crop) still gives MAE ~44° with <strong>yaw correlation ≈0</strong> against GT — so it’s
+the frame, not the model. py-feat’s L2CS also saturates at ±~40° pitch vs
+ETH-XGaze’s ±75°. So 44.6° understates py-feat; the earlier “py-feat worse than
+OF3” read was withdrawn after this diagnostic.</p></li>
+<li><p>LibreFace gaze isn’t a documented trained model (its paper is AU + expression);
+its 15–40° across sets is consistent with a geometric/landmark estimate.</p></li>
+<li><p>The Columbia loader yaw-sign convention was fixed in <code class="docutils literal notranslate"><span class="pre">feat.evaluation</span></code> as part
+of this work (had reported 17.5° from a sign mismatch; now 2.72°).</p></li>
+</ul>
+<p><strong>Net:</strong> on the only clean, frame-matched, out-of-sample gaze benchmark
+(EYEDIAP), py-feat, OF3, and LibreFace are within ~4° (20.0/21.3/23.7°) — gaze is
+roughly a wash, py-feat slightly ahead. The headline 2.7° “win” was overfitting;
+the 44° “loss” was a frame artifact. The <code class="docutils literal notranslate"><span class="pre">train_status</span></code> column in <code class="docutils literal notranslate"><span class="pre">accuracy.csv</span></code>
+flags in-sample / held-out / out-of-sample for every cell so no number is read as
+clean when it isn’t.</p>
+<p><strong>How does ~20° compare to the literature?</strong></p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>EYEDIAP gaze</p></th>
+<th class="text-center head"><p>angular error</p></th>
+<th class="head"><p>who</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Published, <strong>within-dataset</strong></p></td>
+<td class="text-center"><p>~5–6°</p></td>
+<td><p>MAFI-Gaze 5.0°, RT-Gene 6.3° (gaze nets trained on EYEDIAP)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Published, <strong>cross-dataset</strong> (zero-shot)</p></td>
+<td class="text-center"><p>~8–10°</p></td>
+<td><p>GMMGaze 8.1°, GazeNet 9.6° (gaze nets, not our tools)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Our measured (end-to-end, held-out)</strong></p></td>
+<td class="text-center"><p><strong>20.0 / 21.3 / 23.7°</strong></p></td>
+<td><p>py-feat / OF3 / LibreFace</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>None of our three tools report EYEDIAP in their papers (they report MPII/Gaze360),
+so the published rows are general gaze-SOTA references. Our 20° is ~2× the
+cross-dataset reference, for
+three protocol reasons, not model failure: (1) we run <strong>end-to-end on raw
+camera frames with no gaze data-normalization</strong> (every literature number applies
+the Sugano/Zhang normalization — warp face to canonical pose/distance, predict
+normalized gaze); (2) the <strong>FT_S floating-target session</strong> sweeps ±49° yaw / ±44°
+pitch, wider than the screen-target sessions usually benchmarked; (3) these are
+general-purpose facial-analysis tools, not dedicated cross-dataset gaze nets.
+So the absolute number is higher than the normalized-protocol literature because
+we measure <strong>end-to-end as shipped</strong> — that’s the answer a user actually gets,
+not a failure; the relative ordering is what holds.</p>
+<p><strong>We ran the normalized-protocol pass too</strong> (Sugano/Zhang data-normalization:
+warp each face to a canonical virtual camera using EYEDIAP’s head pose +
+intrinsics, predict in the normalized frame — <code class="docutils literal notranslate"><span class="pre">shared/build_eyediap_normalized.py</span></code>).
+It barely moved the numbers:</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Protocol</p></th>
+<th class="text-center head"><p>py-feat v2</p></th>
+<th class="text-center head"><p>OpenFace 3.0</p></th>
+<th class="text-center head"><p>LibreFace</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>camera-frame (raw crop)</p></td>
+<td class="text-center"><p>20.0°</p></td>
+<td class="text-center"><p>21.3°</p></td>
+<td class="text-center"><p>23.7°</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>normalized</strong></p></td>
+<td class="text-center"><p><strong>19.4°</strong></p></td>
+<td class="text-center"><p>21.5°</p></td>
+<td class="text-center"><p>28.1°</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>py-feat stays marginally best under <strong>both</strong> protocols. Normalization didn’t
+help because <strong>FT_S is a static-head session</strong> — the head is already frontal, so
+the normalization warp is near-identity. (It slightly hurt LibreFace, whose
+landmark/geometric gaze dislikes the tight 448² crop.) So the ~20° is <strong>robust,
+not a frame artifact</strong> — it’s the genuine cross-dataset error of these
+general-purpose tools on a wide-range floating-target session, ~2× the
+gaze-specialist cross-dataset SOTA (~8–10°). The remaining gap would close with
+EYEDIAP’s screen-target (CS/DS) sessions (smaller gaze range) and dedicated
+gaze nets — but the relative ordering (the three within a few °, py-feat ahead)
+is stable across raw, normalized, and ETH-XGaze frames alike.</p>
+<blockquote>
+<div><p>Reproduce: <code class="docutils literal notranslate"><span class="pre">tools/&lt;tool&gt;/run_accuracy.py</span></code> (OF3/PyAFAR), <code class="docutils literal notranslate"><span class="pre">run_modalities.py</span></code>
+(LibreFace), <code class="docutils literal notranslate"><span class="pre">run_gaze.py</span></code> + <code class="docutils literal notranslate"><span class="pre">run_pyfeat_modalities.py</span></code> (py-feat). Consolidated
+by <code class="docutils literal notranslate"><span class="pre">ingest_accuracy.py</span></code> into <code class="docutils literal notranslate"><span class="pre">accuracy.csv</span></code>; published to the
+<code class="docutils literal notranslate"><span class="pre">py-feat/benchmarks</span></code> HF dataset.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="speed">
+<h2>Speed<a class="headerlink" href="#speed" title="Permalink to this heading">#</a></h2>
+<p>Throughput on the <strong>shared test fixtures</strong> (<code class="docutils literal notranslate"><span class="pre">single_face.mp4</span></code> video + a
+<code class="docutils literal notranslate"><span class="pre">multi_face.jpg</span></code> image batch — <em>not</em> the accuracy datasets), each tool timed
+end-to-end (detect → AU), across a hardware × batch matrix:</p>
+<p><strong>Hardware:</strong> CPU · RTX 3090 (sm_86) · RTX PRO 6000 Blackwell (sm_120) · Apple M5 (MPS)
+<strong>Batch:</strong> 1 (single frame) and 16</p>
+<p><strong>A blank cell is data.</strong> If a tool can’t run on a given device it gets <em>no
+number</em> — that absence documents the tool’s hardware reach. Expected coverage:</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="text-center head"><p>CPU</p></th>
+<th class="text-center head"><p>3090</p></th>
+<th class="text-center head"><p>Blackwell</p></th>
+<th class="text-center head"><p>M5 (MPS)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>py-feat</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>OpenFace 3.0</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>?</p></td>
+<td class="text-center"><p>?</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>LibreFace</strong></p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>✅</p></td>
+<td class="text-center"><p>❌ (no sm_120)</p></td>
+<td class="text-center"><p>? (cuda/cpu API)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>PyAFAR</strong></p></td>
+<td class="text-center"><p>✅?</p></td>
+<td class="text-center"><p>?</p></td>
+<td class="text-center"><p>❌ (dlib/CUDA)</p></td>
+<td class="text-center"><p>❌ (Ubuntu/WSL2 only)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>py-feat’s own CPU/3090/Blackwell numbers are in the <strong><a class="reference internal" href="#Speed.md"><span class="xref myst">Speed dashboard</span></a></strong>
+(e.g. Detectorv2 ≈ 285 fps on Blackwell batch 16); M5 is added from a Mac run.</p>
+<p><strong>Methodology</strong> (this matters — naive timing is misleading): every tool is timed
+<strong>end-to-end</strong> (decode → detect → AU, the full pipeline it ships), on the <strong>same
+video</strong> (<code class="docutils literal notranslate"><span class="pre">WolfgangLanger_Pexels.mp4</span></code>, 472 frames), with <strong>warmup + 3 repeats</strong>
+(median reported) and <code class="docutils literal notranslate"><span class="pre">torch.cuda.synchronize()</span></code> around GPU work. Crucially, the
+head-to-head is at <strong>batch 1</strong> — OpenFace 3.0 and LibreFace process per-frame
+(their APIs don’t expose batching), so comparing them to py-feat’s batched
+throughput would be apples-to-oranges.</p>
+<p><strong>Head-to-head — RTX 3090, end-to-end, batch 1:</strong></p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="text-center head"><p>fps</p></th>
+<th class="text-center head"><p>vs py-feat</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>py-feat Detectorv2</strong></p></td>
+<td class="text-center"><p><strong>38.4</strong></p></td>
+<td class="text-center"><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>OpenFace 3.0</strong></p></td>
+<td class="text-center"><p>18.3</p></td>
+<td class="text-center"><p>2.1× slower</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>LibreFace</strong></p></td>
+<td class="text-center"><p>4.7</p></td>
+<td class="text-center"><p>8.2× slower</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>PyAFAR</strong></p></td>
+<td class="text-center"><p>n/a</p></td>
+<td class="text-center"><p>—</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>py-feat’s batching is a separate advantage:</strong> its <code class="docutils literal notranslate"><span class="pre">detect()</span></code> natively batches,
+so Detectorv2 scales <strong>38 → 202 fps</strong> from batch 1 to 16 on the 3090. OF3 and
+LibreFace have no batch path in their APIs (their <em>models</em> can batch, but the
+shipped pipeline doesn’t), so they stay at the per-frame rate. LibreFace’s GPU
+barely helps it at all — its MediaPipe alignment is CPU-bound and dominates.</p>
+<p>The CPU / Blackwell / M5 cells need the same rigorous harness (folded into the
+suite’s <code class="docutils literal notranslate"><span class="pre">run_speed.py</span></code>); the earlier single-clip per-frame numbers there are
+<strong>not</strong> trustworthy and were withdrawn. Hardware reach is still data: <strong>OF3 runs
+on Blackwell; LibreFace and PyAFAR cannot</strong> (no sm_120 / dlib-CUDA).</p>
+<p>The point of the matrix is exactly the blanks: py-feat is the only toolkit that
+runs across CPU, current-gen GPUs, <em>and</em> Apple Silicon — and is one-to-two orders
+of magnitude faster where competitors do run.</p>
+</section>
+<section id="datasets-metric-protocol-and-why-disfa-not-disfa">
+<h2>Datasets &amp; metric protocol — and why <strong>DISFA+</strong>, not DISFA<a class="headerlink" href="#datasets-metric-protocol-and-why-disfa-not-disfa" title="Permalink to this heading">#</a></h2>
+<p>The cross-tool comparison runs on <strong>DISFA+</strong> (posed-peak, 12-AU intensity), the
+held-out benchmark py-feat reports against (Cheong et al. 2023) and the dataset
+our existing OpenFace 3.0 result already uses (<code class="docutils literal notranslate"><span class="pre">&quot;dataset&quot;:</span> <span class="pre">&quot;disfaplus&quot;</span></code>).</p>
+<p><strong>We deliberately do <em>not</em> evaluate on DISFA.</strong> DISFA is the <strong>training set</strong> for
+LibreFace (and is used by OpenFace 3.0), so scoring those tools on DISFA is
+in-distribution — a home-field advantage and effective train/test contamination.
+DISFA+ is held out for all tools, so it measures <strong>generalization</strong>: a tool that
+only does well on its own training distribution is exactly what a fair benchmark
+should expose. (We verified the in-distribution case as a <em>sanity check</em> — the
+LibreFace RepVGG model tracks AU intensity cleanly on DISFA — then evaluate the
+real comparison on DISFA+.)</p>
+<p>Metrics: per-AU <strong>PCC</strong> (intensity, threshold-free — LibreFace’s native metric)
+and binary <strong>F1</strong> at intensity <strong>≥ 2</strong> on both prediction and ground truth
+(matching <code class="docutils literal notranslate"><span class="pre">feat.evaluation.metrics</span></code>’ truth convention). Where a tool emits
+probabilities (py-feat, OF3) rather than intensities, its native binarization is
+noted per table so protocols are never silently mixed.</p>
+</section>
+<section id="per-tool-integration-experience">
+<h2>Per-tool integration experience<a class="headerlink" href="#per-tool-integration-experience" title="Permalink to this heading">#</a></h2>
+<section id="py-feat-v1-v2">
+<h3>py-feat (v1 / v2)<a class="headerlink" href="#py-feat-v1-v2" title="Permalink to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">py-feat</span></code>; one call returns AUs (+ emotion, pose, gaze, landmarks,
+identity). Runs on CPU, CUDA (incl. <strong>Blackwell / RTX PRO 6000</strong>, sm_120, on
+torch 2.11+cu128), and Apple MPS. No per-tool preprocessing to match.</p>
+</section>
+<section id="libreface-could-not-reproduce-published-numbers-locally">
+<h3>LibreFace — could <strong>not</strong> reproduce published numbers locally<a class="headerlink" href="#libreface-could-not-reproduce-published-numbers-locally" title="Permalink to this heading">#</a></h3>
+<p>A multi-day saga that is worth recording in full:</p>
+<ol class="arabic simple">
+<li><p><strong>The pip API (<code class="docutils literal notranslate"><span class="pre">libreface.get_facial_attributes</span></code>) collapses on this data.</strong>
+Its <code class="docutils literal notranslate"><span class="pre">au_intensities</span></code> are near the noise floor for clearly-active AUs — e.g.
+a DISFA+ frame labeled AU12 intensity 4 (a posed smile) returns
+<code class="docutils literal notranslate"><span class="pre">au_12</span> <span class="pre">≈</span> <span class="pre">0.015</span></code> (it correctly returns ~2.5 on a normal smiling photo).
+No threshold/normalization recovers a signal that isn’t there.</p></li>
+<li><p>The LibreFace <strong>paper</strong> reports DISFA AU <em>intensity</em> via <strong>PCC</strong> (0.63) from a
+<strong>separate research module</strong> (<code class="docutils literal notranslate"><span class="pre">AU_Recognition</span></code>, RepVGG checkpoint), not the
+distilled all-in-one pip model. So we cloned the repo and loaded
+<code class="docutils literal notranslate"><span class="pre">new_checkpoints_fm_repvgg/DISFA/all/repvgg.pt</span></code> (output <code class="docutils literal notranslate"><span class="pre">×5</span> <span class="pre">→</span> <span class="pre">[0,5]</span></code>).</p></li>
+<li><p><strong>The research checkpoint can’t run on Blackwell.</strong> LibreFace pins an old
+PyTorch built for <strong>sm_37…sm_86</strong>; Blackwell is <strong>sm_120</strong>. Weights copy to
+the GPU (“loaded”), then the first compute kernel aborts (no sm_120 binary).
+<strong>LibreFace is therefore restricted to ≤ Ampere GPUs</strong> — we benchmark it on
+the RTX 3090 (sm_86). py-feat runs on Blackwell unchanged.</p></li>
+<li><p><strong>It is fragile to out-of-distribution data and alignment.</strong> On <strong>DISFA+</strong>
+(posed-peak) the research checkpoint <em>also</em> collapsed (AU12 ramp 0→4 stayed
+~0.1–0.5, non-monotonic) — under both LibreFace’s own MediaPipe alignment and
+DISFA+ native <code class="docutils literal notranslate"><span class="pre">Aligned/</span></code> crops. It only works on <strong>DISFA itself</strong>, fed
+<strong>DISFA’s own aligned crops</strong> (<code class="docutils literal notranslate"><span class="pre">DISFA_/aligned/...</span></code>): there the AU12 ramp is
+clean and monotonic — GT 0→0.05, 1→~0.5, 2→~1.2, 3→~2.7, 4→~3.5, 5→~4.4.</p></li>
+</ol>
+<p><strong>Status:</strong> the research RepVGG checkpoint runs correctly. On the held-out
+<strong>DISFA+</strong> set (its own aligned crops, LibreFace’s test transform, 57,150 frames)
+it generalizes reasonably: <strong>mean F1 = 0.46, mean PCC = 0.73</strong> over 12 AUs
+(<code class="docutils literal notranslate"><span class="pre">run_libreface_repvgg_disfaplus.py</span></code> → <code class="docutils literal notranslate"><span class="pre">libreface_repvgg_disfaplus.json</span></code>).
+Strong on AU25 (F1 0.91), AU04/09 (0.75); weak on AU06 (0.11), AU15/17/20
+(~0.06). Note: earlier single-frame probes suggested a “collapse” — that was an
+artifact of unrepresentative frames and the broken <em>pip</em> model; the full-dataset
+research-model run is the truth, and it’s fine. (The lesson — over-concluding
+from a handful of frames — is why we report the whole-benchmark output.)</p>
+<p>Getting even this far required: discovering the pip model is a different
+(weaker) net than the paper’s, cloning the research repo + checkpoints, working
+around a Blackwell-incompatible torch (3090-only), and matching the alignment —
+vs. py-feat’s <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> + one call. The silent failure modes (pip-model
+collapse, out-of-distribution collapse) are themselves the usability story:
+without careful per-frame validation you’d ship wrong numbers.</p>
+</section>
+<section id="openface-3-0">
+<h3>OpenFace 3.0<a class="headerlink" href="#openface-3-0" title="Permalink to this heading">#</a></h3>
+<p>Cleaner to install than LibreFace/PyAFAR (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">openface-test</span></code> +
+<code class="docutils literal notranslate"><span class="pre">openface</span> <span class="pre">download</span></code>), but the shipped pip CLI has <strong>three blocking bugs</strong>:</p>
+<ol class="arabic simple">
+<li><p>A <strong>hardcoded developer path</strong> baked into the STAR landmark config
+(<code class="docutils literal notranslate"><span class="pre">ckpt_dir</span> <span class="pre">=</span> <span class="pre">'/work/jiewenh/openFace/OpenFace-3.0/STAR'</span></code>) → <code class="docutils literal notranslate"><span class="pre">Permission</span> <span class="pre">denied:</span> <span class="pre">'/work'</span></code> on any other machine until patched.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">openface</span> <span class="pre">detect-video</span></code> throws an <strong>OpenCV <code class="docutils literal notranslate"><span class="pre">imread</span></code> error</strong> (mishandles video
+frames) — video mode is unusable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">openface</span> <span class="pre">...</span> <span class="pre">-d</span> <span class="pre">cuda</span></code> always raises <em>“provide at least one valid device
+ID”</em> — the CLI never passes <code class="docutils literal notranslate"><span class="pre">device_ids</span></code>, so <strong>GPU mode is broken</strong> from the
+CLI.</p></li>
+</ol>
+<p>Critically, <strong>the CLI also hardcodes <code class="docutils literal notranslate"><span class="pre">device='cpu'</span></code></strong> inside <code class="docutils literal notranslate"><span class="pre">process_image</span></code>
+(line 23) — so <code class="docutils literal notranslate"><span class="pre">openface</span> <span class="pre">detect</span> <span class="pre">-d</span> <span class="pre">cuda</span></code> silently runs on CPU. The fix is to
+<strong>bypass the CLI</strong> and construct the pipeline objects directly with real device
+handling: <code class="docutils literal notranslate"><span class="pre">FaceDetector(device='cuda')</span></code>, <code class="docutils literal notranslate"><span class="pre">LandmarkDetector(device='cuda',</span> <span class="pre">device_ids=[0])</span></code>, <code class="docutils literal notranslate"><span class="pre">MultitaskPredictor(device='cuda')</span></code>. Done that way OF3 runs
+fine on GPU <strong>including Blackwell</strong> (modern torch).</p>
+<p>Once the CLI is bypassed, OF3 is solid: AU accuracy on DISFA+ <strong>0.488</strong> (8 AUs)
+and end-to-end speed <strong>18.3 fps</strong> on the 3090 (batch 1, rigorous harness —
+warmup + repeats, median). So OF3 is the <em>least</em> broken competitor — it just
+needs the CLI worked around. (The running, once set up, is reliable — the
+friction is all in packaging.) Note its <strong>MTL AU model batches fine</strong> (the model
+takes <code class="docutils literal notranslate"><span class="pre">[B,…]</span></code>; the shipped pipeline just feeds one face at a time), so OF3 <em>could</em>
+be sped up with a custom batched runner — its API simply doesn’t.</p>
+</section>
+<section id="pyafar-dependency-rot-api-coverage-mismatch">
+<h3>PyAFAR — dependency rot + API/coverage mismatch<a class="headerlink" href="#pyafar-dependency-rot-api-coverage-mismatch" title="Permalink to this heading">#</a></h3>
+<p>Another multi-obstacle integration (its own MediaPipe + TensorFlow env, kept
+away from the torch stack):</p>
+<ol class="arabic simple">
+<li><p><strong>Won’t <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>.</strong> The release wheel pins <code class="docutils literal notranslate"><span class="pre">pysimplegui==4.60.5</span></code>, a GUI
+library that PySimpleGUI <strong>pulled from PyPI</strong> (2024 licensing change), so the
+dependency is unsatisfiable — a GUI pin blocks a headless benchmark. Workaround:
+install the wheel <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> and hand-resolve the real runtime deps
+(<code class="docutils literal notranslate"><span class="pre">tqdm</span></code>, <code class="docutils literal notranslate"><span class="pre">scipy</span></code>, <code class="docutils literal notranslate"><span class="pre">h5py</span></code>, <code class="docutils literal notranslate"><span class="pre">tensorflow</span></code>, <code class="docutils literal notranslate"><span class="pre">mediapipe</span></code>, <code class="docutils literal notranslate"><span class="pre">opencv</span></code>, …) one ImportError
+at a time.</p></li>
+<li><p><strong>dlib won’t build.</strong> <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">dlib</span></code> compiles from source and fails on its
+<strong>CUDA</strong> kernels (same Blackwell sm_120 wall); the documented path is a <strong>conda</strong>
+env with conda-forge’s precompiled dlib.</p></li>
+<li><p><strong>Video-only API.</strong> <code class="docutils literal notranslate"><span class="pre">adult_afar(filename=&lt;video&gt;,</span> <span class="pre">…)</span></code> takes a video file —
+DISFA+ is per-frame stills, so frames must be re-assembled into per-trial
+videos to feed it.</p></li>
+<li><p><strong>Partial AU coverage.</strong> Its occurrence AUs {1,2,4,6,7,10,12,14,15,17,23,24}
+overlap DISFA’s 12 on only <strong>7</strong> (1,2,4,6,12,15,17); intensity on <strong>3</strong>
+(6,12,17). It cannot score the full DISFA AU set.</p></li>
+<li><p>Non-commercial license; GPU only on Ubuntu/WSL2.</p></li>
+</ol>
+<p>Contrast: py-feat is one <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>, works headless, takes images or video,
+and reports all 20 AUs.</p>
+<p><strong>Resolved (the friction was the result).</strong> We did get PyAFAR running: a conda
+env rebuilt to its <em>own</em> declared stack (<code class="docutils literal notranslate"><span class="pre">tensorflow==2.12</span></code>, a working
+<code class="docutils literal notranslate"><span class="pre">mediapipe.solutions</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy&lt;2</span></code>, matching protobuf/opencv — the shipped combo
+was internally inconsistent), <code class="docutils literal notranslate"><span class="pre">download_models</span></code>, plus a frame→per-trial-video
+adapter for its video-only API. Run unmodified over all 57,150 DISFA+ frames it
+scores <strong>mean F1 0.26 on its 7 overlapping AUs</strong> (AU06 0.61, AU12 0.55; AU01/04
+≈0), and cannot predict 5 of the 12 DISFA AUs at all. Every obstacle above had
+to be cleared just to get that partial number — the contrast with py-feat’s one
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> stands.</p>
+</section>
+</section>
+<section id="hardware-notes">
+<h2>Hardware notes<a class="headerlink" href="#hardware-notes" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>LibreFace can only be benchmarked on ≤ Ampere GPUs (e.g. RTX 3090, sm_86)</strong>
+because its pinned PyTorch lacks Blackwell (sm_120) kernels. All LibreFace
+numbers here are 3090 runs.</p></li>
+<li><p>py-feat and the competitor runs that use modern torch run on Blackwell
+(RTX PRO 6000) and the 3090 alike.</p></li>
+</ul>
+</section>
+<section id="license-caveats-research-benchmark-only">
+<h2>License caveats (research benchmark only)<a class="headerlink" href="#license-caveats-research-benchmark-only" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>LibreFace: USC research-only. PyAFAR: non-commercial. OpenFace 3.0: check its
+license. py-feat’s competitors are <strong>never</strong> added as py-feat dependencies —
+each runs in its own isolated env (<code class="docutils literal notranslate"><span class="pre">~/benchmark-envs/&lt;tool&gt;</span></code>), consuming a
+frozen DISFA manifest (<code class="docutils literal notranslate"><span class="pre">scripts/competitors/</span></code>) so the comparison shares
+identical frames/labels without coupling envs.</p></li>
+</ul>
+</section>
+<section id="reproducing">
+<h2>Reproducing<a class="headerlink" href="#reproducing" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Manifest (py-feat env): <code class="docutils literal notranslate"><span class="pre">scripts/competitors/export_disfaplus_manifest.py</span></code>
+(DISFA equivalent forthcoming).</p></li>
+<li><p>LibreFace research model: clone <code class="docutils literal notranslate"><span class="pre">ihp-lab/LibreFace</span></code>, use <code class="docutils literal notranslate"><span class="pre">AU_Recognition</span></code>
+RepVGG checkpoint, <strong>on a 3090</strong>.</p></li>
+<li><p>py-feat v1/v2 accuracy: <code class="docutils literal notranslate"><span class="pre">scripts/bench_accuracy.py</span> <span class="pre">--detector</span> <span class="pre">v1|v2</span></code>.</p></li>
+</ul>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./benchmarks"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-comparison">Feature comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accuracy-au-detection-on-disfa-held-out">Accuracy — AU detection on DISFA+ (held-out)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accuracy-beyond-au-emotion-valence-arousal-gaze">Accuracy — beyond AU: emotion, valence/arousal, gaze</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#emotion-7-class-top-1-accuracy-macro-f1">Emotion — 7-class, top-1 accuracy / macro-F1</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#valence-arousal-ccc-affectnet-val">Valence / arousal — CCC (AffectNet-val)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gaze-use-eyediap-the-rest-are-contaminated-or-frame-confounded">Gaze — use EYEDIAP; the rest are contaminated or frame-confounded</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speed">Speed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datasets-metric-protocol-and-why-disfa-not-disfa">Datasets &amp; metric protocol — and why <strong>DISFA+</strong>, not DISFA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#per-tool-integration-experience">Per-tool integration experience</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#py-feat-v1-v2">py-feat (v1 / v2)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#libreface-could-not-reproduce-published-numbers-locally">LibreFace — could <strong>not</strong> reproduce published numbers locally</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openface-3-0">OpenFace 3.0</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyafar-dependency-rot-api-coverage-mismatch">PyAFAR — dependency rot + API/coverage mismatch</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hardware-notes">Hardware notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license-caveats-research-benchmark-only">License caveats (research benchmark only)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducing">Reproducing</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
