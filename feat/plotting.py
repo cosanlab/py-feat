@@ -2088,6 +2088,12 @@ def plot_face_mesh_plotly(
             zaxis=dict(visible=False, range=[centers[2] - half, centers[2] + half]),
             aspectmode="cube",
             bgcolor=background,
+            # Default to a front-facing, upright view (eyes/nose/mouth toward
+            # the viewer). Without an explicit camera Plotly opens on its
+            # isometric 3/4 angle, which reads as a rotated profile. Still
+            # fully rotatable. (After the data→(x,z,y) swap, looking down -y
+            # with +z up faces the front of the mesh.)
+            camera=dict(eye=dict(x=0, y=-2.4, z=0), up=dict(x=0, y=0, z=1)),
         ),
         margin=dict(l=0, r=0, t=0, b=0),
         paper_bgcolor=background,
@@ -2322,8 +2328,8 @@ def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
     )
     updatemenus = [dict(
         type="buttons", direction="right", showactive=False,
-        y=-0.45, x=0.5, xanchor="center", yanchor="top",
-        pad=dict(t=10, r=10, b=10, l=10),
+        y=-0.30, x=0.5, xanchor="center", yanchor="top",
+        pad=dict(t=6, r=8, b=6, l=8),
         buttons=[
             dict(label="▶ Play", method="animate", args=[None, play_opts]),
             dict(label="❚❚ Pause", method="animate", args=[[None], pause_opts]),
@@ -2332,7 +2338,7 @@ def _plotly_animation_controls(n_frames, fps, loop_repeats=50):
         ],
     )]
     sliders = [dict(
-        active=0, y=-0.10, x=0.05, len=0.9, xanchor="left", yanchor="top",
+        active=0, y=-0.04, x=0.05, len=0.9, xanchor="left", yanchor="top",
         currentvalue=dict(prefix="frame ", visible=True, xanchor="right"),
         steps=[dict(
             method="animate", label=name,
@@ -2495,7 +2501,7 @@ def animate_face_plotly(
     fig.update_layout(
         xaxis=dict(visible=False, range=x_range, scaleanchor="y", scaleratio=1),
         yaxis=dict(visible=False, range=y_range),
-        margin=dict(l=0, r=0, t=30, b=200),
+        margin=dict(l=0, r=0, t=40, b=130),
         paper_bgcolor=background,
         plot_bgcolor=background,
         updatemenus=updatemenus,
@@ -2648,8 +2654,10 @@ def animate_face_mesh_plotly(
             zaxis=dict(visible=False, range=[centers[2] - half, centers[2] + half]),
             aspectmode="cube",
             bgcolor=background,
+            # Front-facing, upright default view (see plot_face_mesh_plotly).
+            camera=dict(eye=dict(x=0, y=-2.4, z=0), up=dict(x=0, y=0, z=1)),
         ),
-        margin=dict(l=0, r=0, t=30, b=200),
+        margin=dict(l=0, r=0, t=40, b=130),
         paper_bgcolor=background,
         updatemenus=updatemenus,
         sliders=sliders,
