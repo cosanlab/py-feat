@@ -132,7 +132,7 @@ def _(mo):
 def _(detector_v2, single_face_img_path):
     single_face_prediction = detector_v2.detect(single_face_img_path, data_type="image")
 
-    type(single_face_prediction)  # instace of a Fex class
+    type(single_face_prediction)  # instance of a Fex class
 
     # Show results
     single_face_prediction
@@ -249,7 +249,7 @@ def _():
 
     input_prediction = read_feat("output.csv")
 
-    # We we can quick access features like beofre
+    # We can quick access features like before
     input_prediction.aus
     return
 
@@ -453,7 +453,7 @@ def _(mixed_prediction):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    However, it's easy to use pandas slicing sytax to just grab predictions for the image you want. For example you can use `.loc` and chain it to `.plot_detections()`:
+    However, it's easy to use pandas slicing syntax to just grab predictions for the image you want. For example you can use `.loc` and chain it to `.plot_detections()`:
     """)
     return
 
