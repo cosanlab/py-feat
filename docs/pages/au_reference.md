@@ -88,7 +88,7 @@ a few blendshapes span multiple AUs). Blendshape names follow the
             [43, 'Eyes Closed', 'eyeBlinkLeft, eyeBlinkRight', 'Levator Palebrae Superioris (relaxation)', 'behavioral', '', 'svm, xgb, Py-Feat viz', ''],
             [44, 'Squint', 'eyeSquintLeft, eyeSquintRight', 'Corrugator Supercilii', 'behavioral', '', 'none', 'Different muscular strand than AU4'],
             [45, 'Blink', 'eyeBlinkLeft, eyeBlinkRight', 'Levator Palebrae Superioris (relaxation), Orbicularis Oculi (contraction)', 'behavioral','', 'none', 'Different muscular strand than AU4'],
-            [46, 'Wink', 'eyeBlinkLeft / eyeBlinkRight', 'Orbicularis Oculi', 'behavioral', '', 'none', ''],
+            [46, 'Wink', 'eyeBlinkLeft, eyeBlinkRight', 'Orbicularis Oculi', 'behavioral', '', 'none', ''],
             [51, 'Head turn left', '', '', 'head', '', 'none', ''],
             [52, 'Head turn right', '', '', 'head', '', 'none', ''],
             [53, 'Head up', '', '', 'head', '', 'none', ''],
