@@ -277,7 +277,7 @@ number* — that absence documents the tool's hardware reach. Expected coverage:
 | **LibreFace** | ✅ | ✅ | ❌ (no sm_120) | ? (cuda/cpu API) |
 | **PyAFAR** | ✅? | ? | ❌ (dlib/CUDA) | ❌ (Ubuntu/WSL2 only) |
 
-py-feat's own CPU/3090/Blackwell numbers are in the **[live dashboard](live.md)**
+py-feat's own CPU/3090/Blackwell numbers are in the **[Speed dashboard](Speed.md)**
 (e.g. Detectorv2 ≈ 285 fps on Blackwell batch 16); M5 is added from a Mac run.
 
 **Methodology** (this matters — naive timing is misleading): every tool is timed

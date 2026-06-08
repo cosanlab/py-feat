@@ -8,4 +8,8 @@ sphinx<6
 sphinx-rtd-theme
 sphinxcontrib-napoleon
 jupyter-book<2
+# marimo-book docs build. The [api] extra pulls mkdocstrings+griffe for the
+# auto-generated API reference (docs/book.yml `api_docs`). Needs the release
+# that ships cached-render mode + the api_docs import-alias fix.
+marimo-book[api]>=0.1.23
 plotly>=5.6.0

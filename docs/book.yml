@@ -34,6 +34,26 @@ dependencies:
 # Resolve [Heading text][] cross-page references (MyST {ref} analog).
 cross_references: true
 
+# Auto-generated API reference (Workstream E) from feat's Google-style
+# docstrings. Griffe reads source straight from the repo root (..), so the
+# build never imports feat (no torch load / model download). Curated to the
+# user-facing API; model-internal detector subpackages and the experimental,
+# soon-to-be-removed MPDetector are intentionally omitted. Appends an "API
+# Reference" nav section automatically — no toc entry needed. Requires
+# `pip install 'marimo-book[api]'`.
+api_docs:
+  enabled: true
+  docstring_style: google
+  paths: [".."]
+  packages:
+    - feat.detector
+    - feat.detector_v2
+    - feat.data
+    - feat.plotting
+    - feat.pretrained
+    - feat.utils
+    - feat.transforms
+
 # NOTE: Google Analytics (old UA-113777015-5) is Universal Analytics, which
 # Google retired. Wire a GA4 property here when one exists:
 #   analytics: { provider: google, property: G-XXXXXXXX }
@@ -50,34 +70,31 @@ toc:
       - file: pages/installation.md
       - file: pages/models.md
       - file: pages/au_reference.md
-      - file: pages/usage_guide.md
+        title: AU Reference
       - file: pages/faqs.md
 
   # Tutorials — added incrementally as each notebook is rendered to _rendered/.
   - section: Tutorials
     children:
-      - file: basic_tutorials/01_basics.py
+      - file: basic_tutorials/Detecting_Images.py
         mode: cached
-      - file: basic_tutorials/02_detector_vids.py
+      - file: basic_tutorials/Detecting_Videos.py
         mode: cached
-      - file: basic_tutorials/03_plotting.py
+      - file: basic_tutorials/Plotting.py
         mode: cached
-      - file: basic_tutorials/05_detectorv2.py
+      - file: basic_tutorials/Analysis.py
         mode: cached
-      - file: basic_tutorials/04_fex_analysis.py
-        mode: cached
-      - file: basic_tutorials/06_performance.py
+      - file: basic_tutorials/Performance.py
         mode: cached
 
-  # API reference deferred (Workstream E): MyST/marimo-book have no docstring
-  # autodoc; pages/api.md (Sphinx eval_rst) is omitted until that's resolved.
+  # API Reference is auto-generated from docstrings via the top-level
+  # `api_docs` block above and appended to the nav automatically.
 
   - section: Benchmarks
     children:
-      - file: benchmarks/live.py
+      - file: benchmarks/Speed.py
         mode: cached
       - file: benchmarks/accuracy.md
-      - file: benchmarks/throughput.md
 
   - section: Contributing
     children:

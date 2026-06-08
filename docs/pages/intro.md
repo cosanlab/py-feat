@@ -36,9 +36,9 @@ We still support our original version 1 of Py-FEAT that is described in [Cheong 
 | | `Detector` (v1) | `Detectorv2` (v2) |
 |---|---|---|
 | Architecture | modular, one model per task | single multi-task network |
-| Swap / disable models | ✅ yes | ❌ fixed set |
+| Swap / disable models | yes | fixed set |
 | Landmarks | 68-point (dlib-style) | 478-point 3D MediaPipe FaceMesh |
-| Valence/arousal, gaze | — | ✅ built-in |
+| Valence/arousal, gaze | — | built-in |
 | Single-frame speed | slower | **fast** |
 | Best for | specific models, 68-pt conventions, published Cheong et al. benchmarks | speed, video, 3D mesh, valence/arousal + gaze |
 

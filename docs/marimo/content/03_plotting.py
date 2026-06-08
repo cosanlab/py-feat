@@ -15,7 +15,6 @@ def _():
 def _(mo):
     mo.md(r"""
     # 3. Visualizing Facial Expressions
-    *written by Eshin Jolly*
 
     In this tutorial we'll explore plotting in Py-Feat using functions from the `feat.plotting` module along with plotting methods using the Fex data class. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/main/docs/basic_tutorials/03_plotting.ipynb)
 
