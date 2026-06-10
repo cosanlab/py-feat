@@ -1,7 +1,5 @@
 # 2. Detecting facial expressions from videos
 
-*Written by Jin Hyun Cheong and Eshin Jolly*
-
 In this tutorial we'll explore how to use the `Detector` class to process video files.
 
 ```python
@@ -19,7 +17,7 @@ from feat import Detector
 detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">/var/folders/t6/l70_tp4s3xx96772lc2504640000gn/T/marimo_47946/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). Pose stays NaN if the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
+<pre class="marimo-book-output-text marimo-stream-stderr">/var/folders/t6/l70_tp4s3xx96772lc2504640000gn/T/marimo_95956/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). Pose stays NaN if the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
   detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
 </pre>
 
@@ -64,7 +62,7 @@ video_prediction.head()
 
 <pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/3 [00:00&lt;?, ?it/s]
   0%|          | 0/3 [00:00&lt;?, ?it/s][A  0%|          | 0/3 [00:00&lt;?, ?it/s]
- 33%|███▎      | 1/3 [00:00&lt;00:01,  1.29it/s] 67%|██████▋   | 2/3 [00:00&lt;00:00,  2.33it/s]100%|██████████| 3/3 [00:01&lt;00:00,  2.19it/s]100%|██████████| 3/3 [00:01&lt;00:00,  2.07it/s]
+ 33%|███▎      | 1/3 [00:03&lt;00:07,  3.88s/it] 67%|██████▋   | 2/3 [00:04&lt;00:01,  1.71s/it]100%|██████████| 3/3 [00:05&lt;00:00,  1.56s/it]100%|██████████| 3/3 [00:05&lt;00:00,  1.82s/it]
 </pre>
 
 <div class="marimo-book-output">

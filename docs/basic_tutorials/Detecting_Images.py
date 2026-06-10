@@ -26,8 +26,6 @@ def _(mo):
     mo.md(r"""
     # 1. Detecting facial expressions from images
 
-    *Written by Jin Hyun Cheong and Eshin Jolly*
-
     In this tutorial we'll explore the `Detector` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images.
     """)
     return

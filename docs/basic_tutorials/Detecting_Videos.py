@@ -26,8 +26,6 @@ def _(mo):
     mo.md(r"""
     # 2. Detecting facial expressions from videos
 
-    *Written by Jin Hyun Cheong and Eshin Jolly*
-
     In this tutorial we'll explore how to use the `Detector` class to process video files.
     """)
     return
