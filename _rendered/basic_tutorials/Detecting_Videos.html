@@ -458,7 +458,6 @@ document.write(`
                   
   <section id="detecting-facial-expressions-from-videos">
 <h1>2. Detecting facial expressions from videos<a class="headerlink" href="#detecting-facial-expressions-from-videos" title="Permalink to this heading">#</a></h1>
-<p><em>Written by Jin Hyun Cheong and Eshin Jolly</em></p>
 <p>In this tutorial we’ll explore how to use the <code class="docutils literal notranslate"><span class="pre">Detector</span></code> class to process video files.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment the line below and run this only if you&#39;re using Google Collab</span>
 <span class="c1"># !pip install -q py-feat</span>
@@ -472,7 +471,7 @@ document.write(`
 <span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>  <span class="c1"># device selected above (cuda/mps/cpu)</span>
 </pre></div>
 </div>
-<pre class="marimo-book-output-text marimo-stream-stderr">/var/folders/t6/l70_tp4s3xx96772lc2504640000gn/T/marimo_47946/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). Pose stays NaN if the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
+<pre class="marimo-book-output-text marimo-stream-stderr">/var/folders/t6/l70_tp4s3xx96772lc2504640000gn/T/marimo_95956/__marimo__cell_lEQa_.py:3: UserWarning: face_model=&#x27;retinaface&#x27; does not regress 6DoF head pose. Pose columns are populated via the landmarks-to-pose MLP (distilled from img2pose on CelebV-HQ, ~5° avg MAE vs img2pose). Pose stays NaN if the MLP weights aren&#x27;t available. Use face_model=&#x27;img2pose&#x27; for the slowest, highest-accuracy path. See feat.utils.face_pose_mlp for details.
   detector = Detector(device=device)  # device selected above (cuda/mps/cpu)
 </pre>
 </section>
@@ -513,10 +512,10 @@ document.write(`
   0%|          | 0/3 [00:00&lt;?, ?it/s][A
   0%|          | 0/3 [00:00&lt;?, ?it/s]
 
- 33%|███▎      | 1/3 [00:00&lt;00:01,  1.29it/s]
- 67%|██████▋   | 2/3 [00:00&lt;00:00,  2.33it/s]
-100%|██████████| 3/3 [00:01&lt;00:00,  2.19it/s]
-100%|██████████| 3/3 [00:01&lt;00:00,  2.07it/s]
+ 33%|███▎      | 1/3 [00:03&lt;00:07,  3.88s/it]
+ 67%|██████▋   | 2/3 [00:04&lt;00:01,  1.71s/it]
+100%|██████████| 3/3 [00:05&lt;00:00,  1.56s/it]
+100%|██████████| 3/3 [00:05&lt;00:00,  1.82s/it]
 </pre>
 <div class="marimo-book-output">
 <table border="1" class="dataframe"><thead><tr style="text-align: right;"><th></th><th>FaceRectX</th><th>FaceRectY</th><th>FaceRectWidth</th><th>FaceRectHeight</th><th>FaceScore</th><th>x_0</th><th>x_1</th><th>x_2</th><th>x_3</th><th>x_4</th><th>...</th><th>Identity_512</th><th>gaze_pitch</th><th>gaze_yaw</th><th>gaze_angle</th><th>FrameHeight</th><th>FrameWidth</th><th>input</th><th>frame</th><th>approx_time</th><th>Identity</th></tr></thead><tbody><tr><th>0</th><td>306.0</td><td>13.0</td><td>254.0</td><td>347.0</td><td>0.999922</td><td>331.773804</td><td>334.851776</td><td>339.877258</td><td>347.555359</td><td>360.014832</td><td>...</td><td>-0.793301</td><td>-0.407661</td><td>0.435238</td><td>0.587263</td><td>360.0</td><td>640.0</td><td>/Users/lukechang/Github/py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4</td><td>0</td><td>00:00</td><td>Person_0</td></tr><tr><th>1</th><td>327.0</td><td>22.0</td><td>246.0</td><td>338.0</td><td>0.999949</td><td>348.356689</td><td>349.780579</td><td>353.567841</td><td>360.181152</td><td>371.711060</td><td>...</td><td>1.339556</td><td>-0.073729</td><td>0.728454</td><td>0.731494</td><td>360.0</td><td>640.0</td><td>/Users/lukechang/Github/py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4</td><td>24</td><td>00:01</td><td>Person_1</td></tr><tr><th>2</th><td>320.0</td><td>2.0</td><td>247.0</td><td>356.0</td><td>0.999944</td><td>341.021606</td><td>342.024506</td><td>344.763336</td><td>348.932037</td><td>358.283844</td><td>...</td><td>0.213563</td><td>0.305027</td><td>0.938508</td><td>0.971924</td><td>360.0</td><td>640.0</td><td>/Users/lukechang/Github/py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4</td><td>48</td><td>00:02</td><td>Person_2</td></tr><tr><th>3</th><td>298.0</td><td>28.0</td><td>247.0</td><td>332.0</td><td>0.999921</td><td>319.991394</td><td>319.668640</td><td>322.118347</td><td>328.161011</td><td>339.031555</td><td>...</td><td>-0.094727</td><td>-0.088332</td><td>0.471101</td><td>0.478698</td><td>360.0</td><td>640.0</td><td>/Users/lukechang/Github/py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4</td><td>72</td><td>00:03</td><td>Person_3</td></tr><tr><th>4</th><td>312.0</td><td>62.0</td><td>247.0</td><td>298.0</td><td>0.999909</td><td>339.691956</td><td>337.200348</td><td>337.248016</td><td>342.207245</td><td>353.044861</td><td>...</td><td>-0.286587</td><td>-0.659625</td><td>0.403407</td><td>0.757159</td><td>360.0</td><td>640.0</td><td>/Users/lukechang/Github/py-feat/feat/tests/data/WolfgangLanger_Pexels.mp4</td><td>96</td><td>00:04</td><td>Person_4</td></tr></tbody></table><p>5 rows × 695 columns</p>

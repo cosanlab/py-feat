@@ -503,13 +503,14 @@ second call:</p>
 </div>
 <pre class="marimo-book-output-text marimo-stream-stderr">
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  2.74it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  2.74it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  1.14it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  1.13it/s]
 
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00, 26.75it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  8.28it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  8.10it/s]
 </pre>
-<pre class="marimo-book-output-text marimo-stream-stdout">single-image detect: 0.038s on mps
+<pre class="marimo-book-output-text marimo-stream-stdout">single-image detect: 0.128s on mps
 </pre>
 </section>
 <section id="batch-images-and-video">
@@ -537,28 +538,34 @@ every frame.</p></li>
 </div>
 <pre class="marimo-book-output-text marimo-stream-stderr">
   0%|          | 0/8 [00:00&lt;?, ?it/s]
- 12%|█▎        | 1/8 [00:00&lt;00:02,  2.91it/s]
- 50%|█████     | 4/8 [00:00&lt;00:00,  9.59it/s]
- 88%|████████▊ | 7/8 [00:00&lt;00:00, 13.73it/s]
-100%|██████████| 8/8 [00:00&lt;00:00, 11.92it/s]
+ 12%|█▎        | 1/8 [00:00&lt;00:06,  1.09it/s]
+ 25%|██▌       | 2/8 [00:01&lt;00:02,  2.22it/s]
+ 50%|█████     | 4/8 [00:01&lt;00:00,  4.30it/s]
+ 75%|███████▌  | 6/8 [00:01&lt;00:00,  5.97it/s]
+100%|██████████| 8/8 [00:01&lt;00:00,  7.21it/s]
+100%|██████████| 8/8 [00:01&lt;00:00,  4.91it/s]
 
   0%|          | 0/8 [00:00&lt;?, ?it/s]
- 38%|███▊      | 3/8 [00:00&lt;00:00, 22.14it/s]
- 75%|███████▌  | 6/8 [00:00&lt;00:00, 22.05it/s]
-100%|██████████| 8/8 [00:00&lt;00:00, 22.05it/s]
+ 12%|█▎        | 1/8 [00:00&lt;00:00,  9.98it/s]
+ 25%|██▌       | 2/8 [00:00&lt;00:00,  9.88it/s]
+ 38%|███▊      | 3/8 [00:00&lt;00:00,  9.67it/s]
+ 62%|██████▎   | 5/8 [00:00&lt;00:00, 10.66it/s]
+ 88%|████████▊ | 7/8 [00:00&lt;00:00,  9.59it/s]
+100%|██████████| 8/8 [00:00&lt;00:00,  9.16it/s]
+100%|██████████| 8/8 [00:00&lt;00:00,  9.49it/s]
 </pre>
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.365s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.851s
 </pre>
 <pre class="marimo-book-output-text marimo-stream-stderr">
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  2.38it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  2.38it/s]
+100%|██████████| 1/1 [00:01&lt;00:00,  1.90s/it]
+100%|██████████| 1/1 [00:01&lt;00:00,  1.90s/it]
 
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  3.71it/s]
-100%|██████████| 1/1 [00:00&lt;00:00,  3.71it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  3.05it/s]
+100%|██████████| 1/1 [00:00&lt;00:00,  3.04it/s]
 </pre>
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.271s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.331s
 </pre>
 </section>
 <section id="leave-num-workers-0">
