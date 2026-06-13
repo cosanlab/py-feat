@@ -1655,11 +1655,12 @@ AU_COLUMNS_V3 = [
 _PLS_MESH_MODELS = {}      # version -> PLSAUMeshModel
 
 
-def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v4"):
+def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v5"):
     """Download (cached) and wrap the AU→mesh PLS NPZ from HuggingFace Hub.
 
-    model_version: "v4" (default; 20-AU Detectorv2 v2.4 space), "v2" (20-AU
-    original), or "v3" (24-AU Detectorv2 v2.3 space)."""
+    model_version: "v5" (default; 20-AU Detectorv2 v2.5 space — replaces v4),
+    "v4" (20-AU Detectorv2 v2.4 space), "v2" (20-AU original), or "v3"
+    (24-AU Detectorv2 v2.3 space)."""
     if model_version in _PLS_MESH_MODELS:
         return _PLS_MESH_MODELS[model_version]
 
@@ -1699,7 +1700,7 @@ def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v4"):
     return model
 
 
-def load_face_mesh_viz_model(verbose=False, model_version="v4"):
+def load_face_mesh_viz_model(verbose=False, model_version="v5"):
     """Load the AU + pose → 478-pt MediaPipe FaceMesh PLS visualization model.
 
     Returns a ``PLSAUMeshModel`` whose ``.predict(au)`` produces the 478-vertex
