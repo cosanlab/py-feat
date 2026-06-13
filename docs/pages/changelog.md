@@ -1,5 +1,9 @@
 # Change Log
 
+## Unreleased
+
+- **`Detectorv2` multitask model upgraded to v2.5 (`py-feat/face_multitask_v2`), replacing v2.4.** Same architecture + a new **BlendshapeHead**: every detection now includes **52 MediaPipe/ARKit blendshape coefficients** as a first-class feature group (`fex.blendshapes`, columns from `MP_BLENDSHAPE_NAMES`), alongside AUs, emotion, V/A, gaze, mesh, pose, and identity. v2.5 beats v2.4 on every accuracy benchmark — most notably AffectNet emotion (acc 0.35 → 0.62), Aff-Wild2 V/A (0.82/0.78 → 0.85/0.80), and DISFA+ AU (8-AU F1 → 0.74); gaze is now reported leave-subject-out held-out (the lower v2.4 gaze numbers came from a leaky split). Weights are distributed as a single **`.safetensors`** file (no pickle / `torch.load(weights_only=False)`), with the model config JSON-encoded in the file metadata. The loader still accepts a local `.pt` for development. *(no API change — `fex.blendshapes` is additive)*
+
 # 0.7.0
 
 ## Notes

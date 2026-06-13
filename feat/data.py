@@ -83,6 +83,7 @@ class FexSeries(Series):
         self.facepose_columns = kwargs.pop("facepose_columns", None)
         self.identity_columns = kwargs.pop("identity_columns", None)
         self.gaze_columns = kwargs.pop("gaze_columns", None)
+        self.blendshape_columns = kwargs.pop("blendshape_columns", None)
         self.time_columns = kwargs.pop(
             "time_columns", ["Timestamp", "MediaTime", "FrameNo", "FrameTime"]
         )
@@ -111,6 +112,7 @@ class FexSeries(Series):
         "facepose_columns",
         "identity_columns",
         "gaze_columns",
+        "blendshape_columns",
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -208,6 +210,19 @@ class FexSeries(Series):
                 "Detector may have been built with gaze_model=None."
             )
         return self[self.gaze_columns]
+
+    @property
+    def blendshapes(self):
+        """Returns the 52 MediaPipe/ARKit blendshape coefficients in [0, 1].
+
+        Raises AttributeError if no blendshape columns are registered (e.g. a
+        pre-v2.5 multitask model, or DetectorV1, which has no blendshape head)."""
+        if not self.blendshape_columns:
+            raise AttributeError(
+                "No blendshape columns are registered on this Fex. The active "
+                "model may predate v2.5 (no blendshape head)."
+            )
+        return self[self.blendshape_columns]
 
     # DEPRECATE
     @property
@@ -388,6 +403,7 @@ class Fex(DataFrame):
         "facepose_columns",
         "identity_columns",
         "gaze_columns",
+        "blendshape_columns",
         "time_columns",
         "design_columns",
         "fex_columns",
@@ -428,6 +444,7 @@ class Fex(DataFrame):
         self.facepose_columns = kwargs.pop("facepose_columns", None)
         self.identity_columns = kwargs.pop("identity_columns", None)
         self.gaze_columns = kwargs.pop("gaze_columns", None)
+        self.blendshape_columns = kwargs.pop("blendshape_columns", None)
         self.time_columns = kwargs.pop("time_columns", None)
         self.design_columns = kwargs.pop("design_columns", None)
 
@@ -594,6 +611,19 @@ class Fex(DataFrame):
                 "Detector may have been built with gaze_model=None."
             )
         return self[self.gaze_columns]
+
+    @property
+    def blendshapes(self):
+        """Returns the 52 MediaPipe/ARKit blendshape coefficients in [0, 1].
+
+        Raises AttributeError if no blendshape columns are registered (e.g. a
+        pre-v2.5 multitask model, or DetectorV1, which has no blendshape head)."""
+        if not self.blendshape_columns:
+            raise AttributeError(
+                "No blendshape columns are registered on this Fex. The active "
+                "model may predate v2.5 (no blendshape head)."
+            )
+        return self[self.blendshape_columns]
 
     # DEPRECATE
     @property
@@ -797,6 +827,7 @@ class Fex(DataFrame):
             "facebox_columns",
             "landmark_columns",
             "facepose_columns",
+            "blendshape_columns",  # [0,1] coefficients aggregate like AUs
             # "gaze_columns" intentionally excluded — gaze isn't summarized
             # the same way the other metric groups are (no aggregation
             # makes sense over pitch/yaw radians per session).

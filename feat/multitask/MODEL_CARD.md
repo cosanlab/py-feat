@@ -10,6 +10,7 @@ tags:
   - gaze-estimation
   - face-landmarks
   - head-pose
+  - blendshapes
   - multitask
 pipeline_tag: image-classification
 ---
@@ -19,12 +20,14 @@ pipeline_tag: image-classification
 A single multi-task convolutional model for facial behavior analysis, used by
 [py-feat](https://github.com/cosanlab/py-feat)'s `Detectorv2`. From one face crop
 it jointly predicts **action units, categorical emotion, valence/arousal,
-eye gaze, a 478-point face mesh, and 6-DoF head pose**.
+eye gaze, a 478-point face mesh, 6-DoF head pose, and 52 MediaPipe/ARKit
+blendshapes** (the v2.5 model; replaces v2.4).
 
 - **Backbone:** ConvNeXt-V2 Tiny (FCMAE + IN-22k/IN-1k pretrained)
-- **Heads:** ME-GraphAU AU graph (AFG/FGG/MEFL/SC) + unified-feature emotion/V-A
-  and gaze heads (v2.4 architecture) + landmark and pose regression heads
-- **Params:** ~30M · **Input:** 224×224 RGB (from a 256×256 face crop) · **File:** `face_multitask_v2.pt`
+- **Heads:** ME-GraphAU AU graph (AFG/FGG/SC) + unified-feature emotion/V-A and
+  gaze heads + landmark, pose, and **blendshape** regression heads
+- **Params:** ~30M · **Input:** 224×224 RGB (from a 256×256 face crop)
+- **File:** `face_multitask_v2.safetensors` (safetensors; `ModelV2Config` JSON in the file metadata)
 
 ## Outputs
 
@@ -37,23 +40,27 @@ eye gaze, a 478-point face mesh, and 6-DoF head pose**.
 | Face mesh | 478 × (x,y,z) | MediaPipe topology, chip-pixel coords (z = relative depth) |
 | Head pose | (yaw, pitch, roll, tx, ty, tz) | radians / pixels |
 | 68 landmarks | derived | dlib-68 subset sampled from the 478 mesh |
+| Blendshapes | 52 coefficients [0,1] | MediaPipe/ARKit standard names (browInnerUp, jawOpen, mouthSmileLeft, …) |
 
-## Benchmarks (held-out, file-verified — v2.4 deployed checkpoint)
+## Benchmarks (held-out, file-verified — v2.5 deployed checkpoint)
 
 | Task | Dataset | Metric | Score |
 |---|---|---|---|
-| AU | DISFA+ (12-AU, Cheong protocol) | macro-F1 | **0.674** |
-| Emotion | RAF-DB official test (7-cls) | acc / macro-F1 | **0.851 / 0.849** |
-| Emotion | AffectNet val (7-cls, drop Contempt) | acc / macro-F1 | 0.347 / 0.330 |
-| Valence/Arousal | Aff-Wild2 official validation | CCC (V / A) | **0.816 / 0.783** |
-| Gaze | MPIIGaze | mean angular err | **3.92°** |
-| Gaze | Gaze360 | mean angular err | **6.81°** |
+| AU | DISFA+ (12-AU, Cheong protocol) | macro-F1 | **0.693** |
+| AU | DISFA+ (8-AU subset) | macro-F1 | **0.740** |
+| Emotion | RAF-DB official test (7-cls) | acc / macro-F1 | **0.910 / 0.885** |
+| Emotion | AffectNet val (7-cls, drop Contempt) | acc / macro-F1 | **0.616 / 0.612** |
+| Valence/Arousal | Aff-Wild2 official validation | CCC (V / A) | **0.852 / 0.799** |
+| Gaze | MPIIGaze (leave-subject-out) | mean angular err | 7.05° |
+| Gaze | Gaze360 (held-out split) | mean angular err | 12.89° |
 
-Notes: v2.4 (20-AU / 7-emotion; Contempt dropped) improves on v2.3 across AU,
-emotion, and valence/arousal; gaze is ~1° behind v2.3 (3.33°/5.81°). Emotion is
-strong on RAF-DB / Aff-Wild2 but weaker on AffectNet (label noise + class
-imbalance); AffectNet-specific, not architectural. Numbers are from the deployed
-checkpoint (`v24fix_s3`, weight-verified against the published `face_multitask_v2.pt`).
+Notes: **v2.5 = v2.4 architecture + a blendshape head**, and it beats v2.4 on every
+accuracy benchmark — most dramatically AffectNet emotion (acc 0.35→0.62) and
+Aff-Wild2 V/A (0.82/0.78 → 0.85/0.80). **Gaze numbers are now leave-subject-out
+held-out** (honest generalization); the lower v2.4 figures (3.92°/6.81°) came from a
+leaky evaluation that included training subjects, so they are not comparable — the
+v2.5 numbers are the real ones. Numbers are from the deployed checkpoint
+(`v25c_release_ep14`), weight-verified against the published `.safetensors`.
 
 ## Usage
 

@@ -7,6 +7,7 @@ import contextlib
 import pandas as pd
 import feat
 from feat.utils import (
+    MP_BLENDSHAPE_NAMES,
     FEAT_EMOTION_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FEAT_TIME_COLUMNS,
@@ -101,6 +102,7 @@ def read_feat(fexfile):
     """
     d = pd.read_csv(fexfile)
     au_columns = [col for col in d.columns if "AU" in col]
+    blendshape_columns = [col for col in MP_BLENDSHAPE_NAMES if col in d.columns] or None
     fex = feat.Fex(
         d,
         filename=fexfile,
@@ -110,6 +112,7 @@ def read_feat(fexfile):
         landmark_columns=openface_2d_landmark_columns,
         facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
         identity_columns=FEAT_IDENTITY_COLUMNS[1:],
+        blendshape_columns=blendshape_columns,
         detector="Feat",
         time_columns=FEAT_TIME_COLUMNS,
     )

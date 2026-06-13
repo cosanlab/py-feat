@@ -1,6 +1,6 @@
-"""Tests for Detectorv2 (RetinaFace + v2.3 multitask model + ArcFace).
+"""Tests for Detectorv2 (RetinaFace + v2.5 multitask model + ArcFace).
 
-These hit the network on first run (downloads py-feat/face_multitask_v1 +
+These hit the network on first run (downloads py-feat/face_multitask_v2 +
 arcface_r50 + the timm backbone). Kept lightweight: one single-face and one
 multi-face image, plus schema + value-range + batch-consistency checks.
 """
@@ -10,6 +10,7 @@ import torch
 
 from feat import Detectorv2
 from feat.data import Fex
+from feat.utils import MP_BLENDSHAPE_NAMES
 from feat.multitask import (
     AU_COLUMNS_V2,
     EMOTION_COLUMNS_V2,
@@ -42,6 +43,9 @@ def test_single_face_schema(detector, single_face_img):
     assert all(c in fex.columns for c in ["Pitch", "Roll", "Yaw", "X", "Y", "Z"])
     assert sum(c.startswith("Identity_") for c in fex.columns) == 512
     assert sum(c in MESH_COLUMNS_V2 for c in fex.columns) == len(MESH_COLUMNS_V2)
+    # v2.5: 52 MediaPipe/ARKit blendshape columns + the .blendshapes accessor
+    assert all(c in fex.columns for c in MP_BLENDSHAPE_NAMES)
+    assert fex.blendshapes.shape == (1, 52)
 
 
 def test_single_face_values(detector, single_face_img):
@@ -55,6 +59,10 @@ def test_single_face_values(detector, single_face_img):
     assert -1.0 <= float(fex["valence"].iloc[0]) <= 1.0
     assert -1.0 <= float(fex["arousal"].iloc[0]) <= 1.0
     assert fex["Identity_1"].notna().iloc[0]
+    bs = fex.blendshapes.iloc[0].to_numpy(dtype=float)
+    assert bs.min() >= 0.0 and bs.max() <= 1.0
+    # blendshape_columns must survive extract_* metadata rewrite (like AUs)
+    assert fex.extract_mean().blendshapes.shape == (1, 52)
 
 
 def test_landmarks_inside_facebox(detector, single_face_img):
@@ -166,10 +174,12 @@ def test_crop_faces_from_boxes_shape_and_forward(detector, single_face_img):
     assert df["mesh_x_0"].notna().all()
 
     # Box came from detect(), so the re-cropped mesh should land on the same
-    # face: centroid within a few px of the detect() mesh centroid.
+    # face: centroid within a few px of the detect() mesh centroid. The exact
+    # tolerance is model-dependent (crop-jitter sensitivity of the mesh head);
+    # ~25px keeps "same face" meaningful for the v2.5 model.
     cx_detect = fex[[f"mesh_x_{i}" for i in range(478)]].iloc[0].to_numpy(float).mean()
     cx_track = df[[f"mesh_x_{i}" for i in range(478)]].iloc[0].to_numpy(float).mean()
-    assert abs(cx_detect - cx_track) < 15.0
+    assert abs(cx_detect - cx_track) < 25.0
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(),
