@@ -57,8 +57,8 @@ def stub_mesh_model(monkeypatch):
         mean_aligned_mesh=mean_mesh,
     )
     # Loader caches by version in a dict now; inject the stub under the default
-    # version ("v4") so the bare load_face_mesh_viz_model() returns it offline.
-    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {"v4": model})
+    # version ("v5") so the bare load_face_mesh_viz_model() returns it offline.
+    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {"v5": model})
     return model
 
 
