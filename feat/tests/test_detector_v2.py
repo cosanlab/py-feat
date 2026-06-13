@@ -67,11 +67,16 @@ def test_single_face_values(detector, single_face_img):
 
 def test_landmarks_inside_facebox(detector, single_face_img):
     """The dlib-68 block (derived from the 478 mesh) must land within the
-    detected facebox — guards the mesh->original-frame coordinate transform.
+    detected facebox AND fill it — guards the mesh->original-frame transform.
 
-    Tolerance is tight (strictly inside, +/-5% margin): a looser bound hid a
-    real axis-major/interleaved scramble bug that put landmarks ~48px off on
-    non-square crops while still landing inside a 1.3x-padded box.
+    Two bounds, both load-bearing:
+    * inside (+/-5% margin): a looser bound hid an axis-major/interleaved
+      scramble bug that put landmarks ~48px off on non-square crops.
+    * span (>=50% of box width, >=40% of box height): the v2.5 mesh head emits
+      NORMALIZED [0,1] coords; the legacy ``mesh/224 + 16/256`` decode collapsed
+      the whole mesh to ~0.06 of the box (a dot) which still passed the inside
+      bound. The span bound makes that collapse fail. dlib-68 covers ~85% of
+      width but only ~63% of height (it excludes the forehead the box includes).
     """
     fex = detector.detect(single_face_img, progress_bar=False)
     xs = fex[[f"x_{i}" for i in range(68)]].iloc[0].to_numpy(dtype=float)
@@ -85,6 +90,8 @@ def test_landmarks_inside_facebox(detector, single_face_img):
         & (ys >= y0 - 0.05 * h) & (ys <= y0 + 1.05 * h)
     )
     assert inside.mean() > 0.9
+    assert (xs.max() - xs.min()) >= 0.50 * w
+    assert (ys.max() - ys.min()) >= 0.40 * h
 
 
 def test_no_face_returns_nan_predictions(detector):
@@ -173,13 +180,14 @@ def test_crop_faces_from_boxes_shape_and_forward(detector, single_face_img):
     assert len(mesh_cols) == 478
     assert df["mesh_x_0"].notna().all()
 
-    # Box came from detect(), so the re-cropped mesh should land on the same
-    # face: centroid within a few px of the detect() mesh centroid. The exact
-    # tolerance is model-dependent (crop-jitter sensitivity of the mesh head);
-    # ~25px keeps "same face" meaningful for the v2.5 model.
+    # Box came from detect() with no padding, so the re-cropped mesh should land
+    # on essentially the same pixels: centroid within a couple px of the detect()
+    # mesh centroid (measured ~0.3px on the v2.5 model). The old 25px bound was
+    # loosened to hide the [0,1]-vs-224 decode mismatch; with the resize +
+    # normalized decode the two paths agree to sub-pixel.
     cx_detect = fex[[f"mesh_x_{i}" for i in range(478)]].iloc[0].to_numpy(float).mean()
     cx_track = df[[f"mesh_x_{i}" for i in range(478)]].iloc[0].to_numpy(float).mean()
-    assert abs(cx_detect - cx_track) < 25.0
+    assert abs(cx_detect - cx_track) < 5.0
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(),

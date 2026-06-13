@@ -10,10 +10,16 @@ code execution), with the ModelV2Config JSON-encoded in the file's metadata. A
 legacy ``.pt`` checkpoint (config+model dict) is still accepted for local paths.
 
 Preprocessing contract (must match training — deep/augment.py SyncedAugment,
-train=False): a 256x256 uint8 RGB chip -> /255 -> center-crop to 224 ->
+train=False): a 256x256 uint8 RGB chip -> /255 -> *resize* to 224 ->
 ImageNet normalize. The chip itself is produced upstream by
 ``extract_face_from_bbox_torch(frame_in_[0,1], bbox, face_size=256,
 expand_bbox=1.2)`` — the same py-feat helper training used.
+
+NB the 256->224 step is a RESIZE of the full chip, NOT a center-crop. v2.5
+training (deep/augment.py) resizes the chip and keeps the mesh target in
+NORMALIZED [0,1] over the chip; a center-crop would change the field of view
+the model sees and would not match the [0,1] mesh frame. See
+``Detectorv2._mesh_to_original_frame`` for the matching decode.
 """
 from __future__ import annotations
 
@@ -33,7 +39,7 @@ from feat.utils.blendshape_to_au import DLIB68_FROM_MP478
 
 # Chip geometry — fixed by how training chips were produced.
 CHIP_SIZE = 256          # extract_face_from_bbox_torch face_size
-MODEL_INPUT = 224        # model image_size (center-crop of the chip)
+MODEL_INPUT = 224        # model image_size (chip is resized to this)
 EXPAND_BBOX = 1.2        # bbox margin multiplier used at extraction
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
@@ -73,7 +79,7 @@ class MultitaskOutput:
     arousal: np.ndarray         # [N] in [-1, 1]
     gaze: np.ndarray            # [N, 2] (yaw, pitch) radians
     pose: np.ndarray            # [N, 6] (yaw, pitch, roll, tx, ty, tz)
-    mesh478: np.ndarray         # [N, 478, 3] chip-pixel coords (224 space)
+    mesh478: np.ndarray         # [N, 478, 3] normalized [0,1] over the chip
     landmarks68: np.ndarray     # [N, 68, 2] dlib-68 (x, y) sampled from mesh478
     blendshapes: np.ndarray     # [N, 52] MediaPipe/ARKit coefficients in [0, 1]
 
@@ -138,12 +144,16 @@ class MultitaskModel:
 
     def preprocess(self, chips):
         """chips: [N, 3, 256, 256] float in [0, 1] (RetinaFace crops).
-        Returns [N, 3, 224, 224] ImageNet-normalized model input."""
+        Returns [N, 3, 224, 224] ImageNet-normalized model input.
+
+        Resize (not center-crop) to match training (deep/augment.py resizes the
+        full chip to out_size); the mesh head is trained in [0,1] over the chip,
+        so the full chip must stay in view."""
         chips = chips.to(self.device)
         if chips.shape[-1] != CHIP_SIZE:
             chips = F.interpolate(chips, size=(CHIP_SIZE, CHIP_SIZE),
                                   mode="bilinear", align_corners=False)
-        chips = TF.center_crop(chips, [MODEL_INPUT, MODEL_INPUT])
+        chips = TF.resize(chips, [MODEL_INPUT, MODEL_INPUT], antialias=True)
         return (chips - self._mean) / self._std
 
     @torch.inference_mode()
@@ -158,7 +168,7 @@ class MultitaskModel:
 
         emotion = F.softmax(out["emotion_logits"], dim=-1)
         va = out["va"]
-        mesh = out["mesh"]                      # [N, 478, 3] in 224-px coords
+        mesh = out["mesh"]                      # [N, 478, 3] normalized [0,1] over chip
         lmk68 = mesh[:, self._idx68, :2]        # [N, 68, 2]
         bs = out.get("blendshapes")             # [N, 52] in [0, 1] or None (v2.4)
         n = out["p_au"].shape[0]
