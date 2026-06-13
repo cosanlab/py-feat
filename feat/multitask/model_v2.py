@@ -8,6 +8,9 @@ Key differences from v1 (model.py):
   - MEFL identity-init (FAM/ARM output projection zero) to eliminate v1's
     stage-3 transition shock
 
+v2.5 adds a BlendshapeHead (52 MediaPipe/ARKit coefficients from backbone-GAP ∥
+predicted-mesh), gated by cfg.n_blendshape (0 = off for pre-v2.5 checkpoints).
+
 All other modules (AFG, FGG, MEFL graph topology, LandmarkHead, PoseHead,
 SCHead, CooccurrenceHead) carry over from v1.
 """
@@ -76,6 +79,10 @@ class ModelV2Config:
     emotion_au_prob_detach: bool = True  # detach p_au before the emotion head so emotion
                                 #   gradients do NOT flow back into the AU head — protects
                                 #   the "maintain AU" goal. Set False to co-train.
+    # v2.5 flags — BlendshapeHead (52 MediaPipe/ARKit blendshape coefficients).
+    n_blendshape: int = 0       # 0 = head OFF (v2.4 ckpts); 52 = v2.5 blendshape head
+    bs_use_mesh: bool = True     # blendshape head reads (backbone GAP ∥ proj(mesh_xy))
+    mesh_normalized: bool = True  # predicted mesh xy already in [0,1] image coords
 
 
 # ============================ ANFL (unchanged from v1) ============================
@@ -306,6 +313,51 @@ class PoseHead(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.mlp(x.mean(dim=(-2, -1)))
+
+
+class BlendshapeHead(nn.Module):
+    """52 MediaPipe/ARKit blendshape coefficients in [0, 1] (sigmoid).
+
+    v2.5: input = (backbone GAP) ∥ (projected mesh x,y), mirroring UnifiedFeatures.
+    MediaPipe computes its ARKit blendshapes FROM the 478-vertex mesh, so handing the
+    head the predicted geometry directly (LayerNorm'd, alongside GAP appearance) gives
+    near-direct access to the target. The GAP path is retained so the blendshape loss
+    still trains the backbone. Set use_mesh=False for the GAP-only head.
+    """
+
+    def __init__(self, in_ch: int, n_blendshape: int = 52, hidden: int = 512,
+                 use_mesh: bool = True, lmk_dim: int = 256,
+                 image_size: int = 224, mesh_normalized: bool = True):
+        super().__init__()
+        self.use_mesh = use_mesh
+        self.mesh_normalized = mesh_normalized
+        self.image_size = float(image_size)
+        if use_mesh:
+            self.proj_lmk = nn.Linear(N_MESH * 2, lmk_dim)
+            self.norm_bb = nn.LayerNorm(in_ch)
+            self.norm_lmk = nn.LayerNorm(lmk_dim)
+            mlp_in = in_ch + lmk_dim
+        else:
+            mlp_in = in_ch
+        self.mlp = nn.Sequential(
+            nn.Linear(mlp_in, hidden), nn.GELU(),
+            nn.Linear(hidden, n_blendshape),
+        )
+
+    def forward(self, x: torch.Tensor, mesh: torch.Tensor = None) -> torch.Tensor:
+        gap = x.mean(dim=(-2, -1))                       # [B, in_ch]
+        if self.use_mesh:
+            if mesh is None:
+                raise ValueError("BlendshapeHead(use_mesh=True) requires mesh input")
+            B = mesh.shape[0]
+            mesh_xy = mesh[:, :, :2].reshape(B, N_MESH * 2)
+            if not self.mesh_normalized:
+                mesh_xy = mesh_xy / self.image_size
+            feat = torch.cat([self.norm_bb(gap),
+                              self.norm_lmk(self.proj_lmk(mesh_xy))], dim=-1)
+        else:
+            feat = gap
+        return torch.sigmoid(self.mlp(feat))
 
 
 class EmotionVAHead(nn.Module):
@@ -584,6 +636,14 @@ class MEGraphAUv2(nn.Module):
             self.cooccur = CooccurrenceHead(cfg.mefl_channels)
         self.lmk = LandmarkHead(cfg.afg_channels)
         self.pose = PoseHead(cfg.afg_channels)
+        # v2.5: blendshape head (None for v2.4 ckpts where n_blendshape == 0)
+        self.blendshape = (
+            BlendshapeHead(cfg.afg_channels, cfg.n_blendshape,
+                           use_mesh=getattr(cfg, "bs_use_mesh", True),
+                           image_size=cfg.image_size,
+                           mesh_normalized=getattr(cfg, "mesh_normalized", True))
+            if getattr(cfg, "n_blendshape", 0) > 0 else None
+        )
 
         # Head dispatch — v3 (v2.3) > v2 (v2.1) > v1 default
         if cfg.use_head_v3:
@@ -628,6 +688,8 @@ class MEGraphAUv2(nn.Module):
         self.log_var_emotion = nn.Parameter(torch.zeros(()))
         self.log_var_va = nn.Parameter(torch.zeros(()))
         self.log_var_gaze = nn.Parameter(torch.zeros(()))
+        if self.blendshape is not None:
+            self.log_var_blendshape = nn.Parameter(torch.zeros(()))
 
     def forward(self, x: torch.Tensor) -> dict:
         feats = self.backbone(x)[-1]                # [B, bb_ch, H, W]
@@ -642,6 +704,8 @@ class MEGraphAUv2(nn.Module):
         p_au = self.sc(h)                            # [B, N]
         mesh = self.lmk(X)                           # [B, 478, 3]
         pose = self.pose(X)                          # [B, 6]
+        blendshapes = (self.blendshape(X, mesh)      # [B, 52] in [0, 1]
+                       if self.blendshape is not None else None)
 
         # Head dispatch
         if self.cfg.use_head_v3:
@@ -671,6 +735,7 @@ class MEGraphAUv2(nn.Module):
             "emotion_logits": emotion_out["emotion_logits"],
             "va": emotion_out["va"],
             "gaze": gaze,
+            "blendshapes": blendshapes,
             "h": h,
             "e": e,
         }

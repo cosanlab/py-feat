@@ -34,6 +34,7 @@ from feat.utils import (
     FEAT_IDENTITY_COLUMNS,
     FEAT_FACEPOSE_COLUMNS_6D,
     FEAT_GAZE_COLUMNS,
+    MP_BLENDSHAPE_NAMES,
 )
 from feat.face_detectors.Retinaface.Retinaface_test import Retinaface
 from feat.identity_detectors.arcface.arcface_model import (
@@ -421,6 +422,9 @@ class Detectorv2(nn.Module):
             np.column_stack([gaze_pitch, gaze_yaw, gaze_angle]), columns=FEAT_GAZE_COLUMNS
         )
 
+        # ---- Blendshapes: 52 MediaPipe/ARKit coefficients in [0, 1] (v2.5) ----
+        feat_blendshapes = pd.DataFrame(out.blendshapes, columns=MP_BLENDSHAPE_NAMES)
+
         feat_frame_meta = pd.DataFrame({
             "FrameHeight": frame_h.cpu().detach().numpy().astype(np.float64),
             "FrameWidth": frame_w.cpu().detach().numpy().astype(np.float64),
@@ -433,12 +437,14 @@ class Detectorv2(nn.Module):
         no_det = np.isnan(new_bboxes.cpu().numpy()).any(axis=1)
         if no_det.any():
             for df in (feat_landmarks, feat_poses, feat_aus, feat_emotions,
-                       feat_va, feat_gaze, feat_identities, feat_mesh):
+                       feat_va, feat_gaze, feat_identities, feat_mesh,
+                       feat_blendshapes):
                 df.loc[no_det, :] = np.nan
 
         return pd.concat(
             [feat_faceboxes, feat_landmarks, feat_poses, feat_aus, feat_emotions,
-             feat_va, feat_gaze, feat_identities, feat_mesh, feat_frame_meta],
+             feat_va, feat_gaze, feat_identities, feat_mesh, feat_blendshapes,
+             feat_frame_meta],
             axis=1,
         )
 
@@ -533,6 +539,7 @@ class Detectorv2(nn.Module):
             facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
             gaze_columns=FEAT_GAZE_COLUMNS,
             identity_columns=FEAT_IDENTITY_COLUMNS[1:],
+            blendshape_columns=list(MP_BLENDSHAPE_NAMES),
             detector="Detectorv2",
             face_model=self.info["face_model"],
             identity_model=self.info["identity_model"],
