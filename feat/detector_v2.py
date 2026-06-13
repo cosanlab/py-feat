@@ -376,7 +376,7 @@ class Detectorv2(nn.Module):
             bboxes.cpu().detach().numpy(), columns=FEAT_FACEBOX_COLUMNS
         )
 
-        # ---- Mesh / landmarks: chip(224) -> [0,1] in 256 crop -> padded
+        # ---- Mesh / landmarks: [0,1] chip -> box -> padded frame -> original
         #      frame -> original frame. Applied to all 478 vertices; the
         #      dlib-68 block is a subset for Fex helpers. ----
         mesh = torch.as_tensor(out.mesh478, device=self.device)   # [N,478,3], [0,1] chip
