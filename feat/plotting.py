@@ -1639,7 +1639,8 @@ class PLSAUMeshModel:
 # This is the 478-vertex 3D MESH viz, for the MediaPipe-mesh detectors
 # (Detectorv2, MPDetector). Detector/v1 emits 68-pt landmarks, so its AU
 # visualization uses the 68-pt au_to_landmarks model (see plot_face), NOT this.
-# v4  = Detectorv2 v2.4 20-AU space (== AU_LANDMARK_MAP["Feat"]); the DEFAULT.
+# v5  = Detectorv2 v2.5 20-AU space (== AU_LANDMARK_MAP["Feat"]); the DEFAULT.
+# v4  = Detectorv2 v2.4 20-AU space (== AU_LANDMARK_MAP["Feat"]); prior default.
 #       standard AU+pose->absolute fit on the model's own mesh, frontalized to
 #       the canonical MediaPipe pose + aspect-corrected. Bundled in
 #       feat/resources and hosted at py-feat/au_to_mesh.
@@ -1655,11 +1656,12 @@ AU_COLUMNS_V3 = [
 _PLS_MESH_MODELS = {}      # version -> PLSAUMeshModel
 
 
-def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v4"):
+def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v5"):
     """Download (cached) and wrap the AU→mesh PLS NPZ from HuggingFace Hub.
 
-    model_version: "v4" (default; 20-AU Detectorv2 v2.4 space), "v2" (20-AU
-    original), or "v3" (24-AU Detectorv2 v2.3 space)."""
+    model_version: "v5" (default; 20-AU Detectorv2 v2.5 space — replaces v4),
+    "v4" (20-AU Detectorv2 v2.4 space), "v2" (20-AU original), or "v3"
+    (24-AU Detectorv2 v2.3 space)."""
     if model_version in _PLS_MESH_MODELS:
         return _PLS_MESH_MODELS[model_version]
 
@@ -1699,7 +1701,7 @@ def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v4"):
     return model
 
 
-def load_face_mesh_viz_model(verbose=False, model_version="v4"):
+def load_face_mesh_viz_model(verbose=False, model_version="v5"):
     """Load the AU + pose → 478-pt MediaPipe FaceMesh PLS visualization model.
 
     Returns a ``PLSAUMeshModel`` whose ``.predict(au)`` produces the 478-vertex
@@ -1709,11 +1711,12 @@ def load_face_mesh_viz_model(verbose=False, model_version="v4"):
 
     Args:
         verbose: print a status line when first downloading.
-        model_version: ``"v4"`` (default; 20-AU Detectorv2 v2.4 space —
-            ``AU_LANDMARK_MAP['Feat']`` order, fit on the model's own mesh,
-            frontal + aspect-corrected; the 478-mesh model for ``Detectorv2``
-            and ``MPDetector``), ``"v2"`` (the original 20-AU model), or
-            ``"v3"`` (24-AU Detectorv2 v2.3 space; pass a 24-length AU vector).
+        model_version: ``"v5"`` (default; 20-AU Detectorv2 v2.5 space —
+            ``AU_LANDMARK_MAP['Feat']`` order, fit on the v2.5 mesh, frontal +
+            aspect-corrected; the 478-mesh model for ``Detectorv2`` and
+            ``MPDetector``), ``"v4"`` (20-AU Detectorv2 v2.4 space), ``"v2"``
+            (the original 20-AU model), or ``"v3"`` (24-AU Detectorv2 v2.3
+            space; pass a 24-length AU vector).
             ``Detector`` (v1) emits 68-point landmarks — visualize its AUs with
             the 68-pt ``au_to_landmarks`` model via ``plot_face`` instead.
 

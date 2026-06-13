@@ -1,9 +1,13 @@
 """Inference wrapper for the multitask model inside py-feat.
 
 Loads the checkpoint from the HuggingFace hub (``py-feat/face_multitask_v2``,
-the v2.4 model: 20 AUs / 7 emotions), preprocesses RetinaFace face crops into
-model chips *exactly* as training did,
-runs a forward pass, and decodes the raw output dict into labelled arrays.
+the v2.5 model: 20 AUs / 7 emotions + 52 blendshapes), preprocesses RetinaFace
+face crops into model chips *exactly* as training did, runs a forward pass, and
+decodes the raw output dict into labelled arrays.
+
+Weights are distributed as a single ``.safetensors`` file (no pickle / arbitrary
+code execution), with the ModelV2Config JSON-encoded in the file's metadata. A
+legacy ``.pt`` checkpoint (config+model dict) is still accepted for local paths.
 
 Preprocessing contract (must match training — deep/augment.py SyncedAugment,
 train=False): a 256x256 uint8 RGB chip -> /255 -> center-crop to 224 ->
@@ -13,6 +17,7 @@ expand_bbox=1.2)`` — the same py-feat helper training used.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 
 import numpy as np
@@ -34,10 +39,27 @@ IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
 HF_REPO = "py-feat/face_multitask_v2"
-HF_WEIGHTS_FILE = "face_multitask_v2.pt"
+HF_WEIGHTS_FILE = "face_multitask_v2.safetensors"
 
 # dlib-68 vertex indices into the MediaPipe-478 mesh (py-feat canonical map).
 _DLIB68_IDX = torch.tensor(DLIB68_FROM_MP478, dtype=torch.long)
+
+
+def _load_multitask_weights(path):
+    """Return (config_dict, state_dict) from a .safetensors (config in metadata)
+    or a legacy .pt (config+model dict). safetensors is the distribution format;
+    .pt is accepted for local/dev checkpoints."""
+    path = str(path)
+    if path.endswith(".safetensors"):
+        from safetensors import safe_open
+        from safetensors.torch import load_file
+        with safe_open(path, framework="pt", device="cpu") as f:
+            meta = f.metadata() or {}
+        if "config" not in meta:
+            raise RuntimeError(f"{path}: safetensors metadata missing 'config'")
+        return json.loads(meta["config"]), load_file(path, device="cpu")
+    ckpt = torch.load(path, map_location="cpu", weights_only=False)
+    return ckpt["config"], ckpt["model"]
 
 
 @dataclass
@@ -53,6 +75,7 @@ class MultitaskOutput:
     pose: np.ndarray            # [N, 6] (yaw, pitch, roll, tx, ty, tz)
     mesh478: np.ndarray         # [N, 478, 3] chip-pixel coords (224 space)
     landmarks68: np.ndarray     # [N, 68, 2] dlib-68 (x, y) sampled from mesh478
+    blendshapes: np.ndarray     # [N, 52] MediaPipe/ARKit coefficients in [0, 1]
 
 
 class MultitaskModel:
@@ -73,21 +96,20 @@ class MultitaskModel:
         # default mode under bf16 autocast — not yet validated as safe. Enable
         # only for throughput jobs where that drift has been checked acceptable.
         self.compile = compile
-        ckpt = torch.load(self._resolve_weights(weights_path),
-                          map_location=self.device, weights_only=False)
-        saved_cfg = ckpt["config"]
+        saved_cfg, state_dict = _load_multitask_weights(
+            self._resolve_weights(weights_path))
         valid = set(ModelV2Config.__dataclass_fields__.keys())
         filtered = {k: v for k, v in saved_cfg.items()
                     if k in valid and k not in ("pretrained", "use_head_v2")}
         cfg = ModelV2Config(**filtered, pretrained=False,
                             use_head_v2=saved_cfg.get("use_head_v2", False))
         self.cfg = cfg
-        # AU / emotion names depend on the head dims (v2.4 = 20 AU / 7 emotion;
+        # AU / emotion names depend on the head dims (v2.4/v2.5 = 20 AU / 7 emotion;
         # v2.3 = 24 / 8). Derive from cfg so this loader handles both.
         self.au_names = AU_NAMES_V24 if cfg.n_au == 20 else list(AU_NAMES)
         self.emotion_names = EMOTION_NAMES_V24 if cfg.n_emotion == 7 else list(EMOTION_NAMES)
         model = MEGraphAUv2(cfg)
-        missing, unexpected = model.load_state_dict(ckpt["model"], strict=False)
+        missing, unexpected = model.load_state_dict(state_dict, strict=False)
         if missing or unexpected:
             raise RuntimeError(
                 f"multitask checkpoint mismatch: {len(missing)} missing, "
@@ -138,6 +160,10 @@ class MultitaskModel:
         va = out["va"]
         mesh = out["mesh"]                      # [N, 478, 3] in 224-px coords
         lmk68 = mesh[:, self._idx68, :2]        # [N, 68, 2]
+        bs = out.get("blendshapes")             # [N, 52] in [0, 1] or None (v2.4)
+        n = out["p_au"].shape[0]
+        blendshapes = (bs.float().cpu().numpy() if bs is not None
+                       else np.full((n, 52), np.nan, dtype=np.float32))
 
         return MultitaskOutput(
             au=out["p_au"].float().cpu().numpy(),
@@ -150,4 +176,5 @@ class MultitaskModel:
             pose=out["pose"].float().cpu().numpy(),
             mesh478=mesh.float().cpu().numpy(),
             landmarks68=lmk68.float().cpu().numpy(),
+            blendshapes=blendshapes,
         )
