@@ -19,7 +19,7 @@ RetinaFace → v2.3 model (AU/emotion/gaze/landmark/pose/VA) + ArcFace identity 
 Training used py-feat's OWN `extract_face_from_bbox_torch`:
 1. RetinaFace detect → bbox [x1,y1,x2,y2]
 2. `extract_face_from_bbox_torch(frame_in_[0,1], bbox, face_size=256, expand_bbox=1.2)` → 256×256
-3. SyncedAugment(train=False): center-crop 256→224, then ImageNet normalize
+3. SyncedAugment(train=False): resize 256→224, then ImageNet normalize
    (mean (0.485,0.456,0.406), std (0.229,0.224,0.225)). chip/255 first.
 4. model(chip[B,3,224,224]) → dict
 

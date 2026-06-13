@@ -72,7 +72,7 @@ fex = detector.detect("image.jpg")   # returns a py-feat Fex
 
 The model expects a face crop produced by RetinaFace + py-feat's
 `extract_face_from_bbox_torch(frame, bbox, face_size=256, expand_bbox=1.2)`,
-then center-cropped to 224 and ImageNet-normalized. `Detectorv2` handles this.
+then resized to 224 and ImageNet-normalized. `Detectorv2` handles this.
 
 ## License
 

@@ -50,13 +50,9 @@ from feat.multitask import (
 from feat.multitask.inference import (
     MultitaskModel,
     CHIP_SIZE,
-    MODEL_INPUT,
     EXPAND_BBOX,
     _DLIB68_IDX,
 )
-
-# Crop offset from the 256 chip to the 224 model input (centre crop).
-_CROP_OFFSET = (CHIP_SIZE - MODEL_INPUT) // 2  # 16
 
 
 class Detectorv2(nn.Module):
@@ -380,10 +376,10 @@ class Detectorv2(nn.Module):
             bboxes.cpu().detach().numpy(), columns=FEAT_FACEBOX_COLUMNS
         )
 
-        # ---- Mesh / landmarks: chip(224) -> [0,1] in 256 crop -> padded
+        # ---- Mesh / landmarks: [0,1] chip -> box -> padded frame -> original
         #      frame -> original frame. Applied to all 478 vertices; the
         #      dlib-68 block is a subset for Fex helpers. ----
-        mesh = torch.as_tensor(out.mesh478, device=self.device)   # [N,478,3], 224-px
+        mesh = torch.as_tensor(out.mesh478, device=self.device)   # [N,478,3], [0,1] chip
         mesh_orig = self._mesh_to_original_frame(
             mesh, new_bboxes, pad_left, pad_top, scale
         )                                                          # [N,478,3]
@@ -449,30 +445,27 @@ class Detectorv2(nn.Module):
         )
 
     def _mesh_to_original_frame(self, mesh, new_bboxes, pad_left, pad_top, scale):
-        """[N,478,3] mesh in MODEL_INPUT(224)-pixel coords -> original-frame coords.
+        """[N,478,3] mesh in normalized [0,1] chip coords -> original-frame coords.
 
-        The mesh head emits coords in MODEL_INPUT(224) pixel units (the model
-        sees the 224 center-crop of the 256 chip). Mapping back to box fractions
-        therefore needs TWO terms:
-          * scale: divide by MODEL_INPUT (224) — the units the mesh is in,
-          * offset: add ``_CROP_OFFSET / CHIP_SIZE`` (16/256) — the center-crop
-            boundary expressed as a fraction of the full 256 chip / box.
-        i.e. ``xy01 = mesh / MODEL_INPUT + _CROP_OFFSET / CHIP_SIZE``, then map
-        into new_bboxes.
+        The v2.5 mesh head is trained (deep/losses_v2, deep/augment) to emit
+        coordinates NORMALIZED to [0,1] over the chip — x over chip width, y over
+        chip height. The chip is the expanded (EXPAND_BBOX=1.2) RetinaFace box,
+        resized to the model input, so [0,1] maps directly onto ``new_bboxes``
+        with no extra scale or offset. We then invert the RetinaFace pad+rescale
+        to land in the original frame.
 
-        Previously this was ``(mesh + _CROP_OFFSET) / CHIP_SIZE``, which
-        normalised the mesh by CHIP_SIZE(256) instead of MODEL_INPUT(224) — a
-        0.875x shrink (plus the two errors partly masked each other) that left
-        the mesh too small and shifted, worst on small/angled faces. Validated
-        against MPDetector's MediaPipe mesh: same shape (Procrustes scale 1.000,
-        <1px residual) and now <0.5px centroid offset.
+        NB: the legacy decode here was ``mesh / MODEL_INPUT + _CROP_OFFSET /
+        CHIP_SIZE``, which assumed the head output was in 224-pixel units behind a
+        256->224 center-crop. v2.5 changed both: the preprocess is a resize (not a
+        crop) and the mesh target is normalized [0,1]. Applying the old /224 to a
+        [0,1] output collapses the whole mesh to ~0.063 of the box (a dot).
 
         NB: do the affine directly rather than via
         ``inverse_transform_landmarks_torch`` — that helper reshapes its input as
         interleaved (x0,y0,x1,y1,...) pairs, but our coords are axis-major, so
         feeding it here would scramble x/y scaling on non-square boxes.
         """
-        xy01 = mesh[:, :, :2] / float(MODEL_INPUT) + _CROP_OFFSET / float(CHIP_SIZE)
+        xy01 = mesh[:, :, :2]                                       # already [0,1] over chip
         left = new_bboxes[:, 0]                                     # [N]
         top = new_bboxes[:, 1]
         w = new_bboxes[:, 2] - left
