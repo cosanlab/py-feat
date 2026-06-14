@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Py-Feat: Python Facial Expression Analysis Toolbox &#8212; Py-Feat</title>
   
@@ -15,52 +15,49 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'pages/intro';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -75,28 +72,23 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -118,12 +110,22 @@ const thebe_selector_output = ".output, .cell_output"
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -139,6 +141,8 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="#">
@@ -157,7 +161,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -171,9 +186,8 @@ const thebe_selector_output = ".output, .cell_output"
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">How to install Py-Feat</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Included pre-trained detectors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="au_reference.html">Action Unit Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage_guide.html">Tips, Community, and Known Issues</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="au_reference.html">AU Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQs, Tips &amp; Known Issues</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -215,6 +229,10 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../benchmarks/accuracy.html">Accuracy benchmarks</a></li>
+</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">General contributions guidelines</a></li>
@@ -245,7 +263,7 @@ const thebe_selector_output = ".output, .cell_output"
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -254,14 +272,14 @@ const thebe_selector_output = ".output, .cell_output"
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -386,10 +404,10 @@ const thebe_selector_output = ".output, .cell_output"
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -397,14 +415,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -427,7 +445,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-you-should-use-py-feat">Why you should use Py-Feat</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#who-is-it-for">Who is it for?</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introducing-py-feat-v2">Introducing Py-FEAT v2</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-models">Available models</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributions">Contributions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
@@ -440,7 +458,7 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="py-feat-python-facial-expression-analysis-toolbox">
 <h1>Py-Feat: Python Facial Expression Analysis Toolbox<a class="headerlink" href="#py-feat-python-facial-expression-analysis-toolbox" title="Permalink to this heading">#</a></h1>
@@ -452,10 +470,10 @@ document.write(`
 <a class="reference external" href="https://github.com/cosanlab/py-feat/network"><img alt="GitHub forks" src="https://img.shields.io/github/forks/cosanlab/py-feat" /></a>
 <a class="reference external" href="https://github.com/cosanlab/py-feat/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/cosanlab/py-feat" /></a>
 <a class="reference external" href="https://zenodo.org/badge/latestdoi/118517740"><img alt="DOI" src="https://zenodo.org/badge/118517740.svg" /></a></p>
-<p>Py-Feat provides a comprehensive set of tools and models to easily detect facial expressions (Action Units, emotions, facial landmarks) from images and videos, preprocess &amp; analyze facial expression data, and visualize facial expression data.</p>
+<p>Py-Feat provides a comprehensive set of tools and models to detect, preprocess, analyze, and visualize facial expressions (Action Units, emotions, facial landmarks) from images and videos.</p>
 <section id="why-you-should-use-py-feat">
 <h2>Why you should use Py-Feat<a class="headerlink" href="#why-you-should-use-py-feat" title="Permalink to this heading">#</a></h2>
-<p>Facial expressions convey rich information about how a person is thinking, feeling, and what they are planning to do. Recent innovations in computer vision algorithms and deep learning algorithms have led to a flurry of models that can be used to extract facial landmarks, Action Units, and emotional facial expressions with great speed and accuracy. However, researchers seeking to use these algorithms or tools such as <a class="reference external" href="https://github.com/TadasBaltrusaitis/OpenFace">OpenFace</a>, <a class="reference external" href="https://imotions.com/">iMotions</a>-<a class="reference external" href="https://www.affectiva.com/science-resource/affdex-sdk-a-cross-platform-realtime-multi-face-expression-recognition-toolkit/">Affectiva</a>, or <a class="reference external" href="https://www.noldus.com/facereader/">Noldus FaceReacer</a> may find them difficult to install, use, or too expensive to purchase. It’s also difficult to use the latest model or know exactly how good the models are for proprietary tools. <strong>We developed Py-Feat to create a free, open-source, and easy to use tool for working with facial expressions data.</strong></p>
+<p>Facial expressions convey rich information about how a person is thinking, feeling, and what they are planning to do. Recent innovations in computer vision algorithms and deep learning algorithms have led to a flurry of models that can be used to extract facial landmarks, Action Units, and emotional facial expressions with great speed and accuracy. However, researchers seeking to use these algorithms or tools such as <a class="reference external" href="https://github.com/TadasBaltrusaitis/OpenFace">OpenFace</a>, <a class="reference external" href="https://boese0601.github.io/libreface/">LibreFace</a>, <a class="reference external" href="https://pyafar.org/">PyAFAR</a>, <a class="reference external" href="https://imotions.com/">iMotions</a>-<a class="reference external" href="https://www.affectiva.com/science-resource/affdex-sdk-a-cross-platform-realtime-multi-face-expression-recognition-toolkit/">Affectiva</a>, or <a class="reference external" href="https://www.noldus.com/facereader/">Noldus FaceReacer</a> may find them difficult to install, use, or too expensive to purchase. It’s also difficult to use the latest model or know exactly how good the models are for proprietary tools. <strong>We developed Py-Feat to create a free, open-source, and easy to use tool for working with facial expressions data.</strong></p>
 </section>
 <section id="who-is-it-for">
 <h2>Who is it for?<a class="headerlink" href="#who-is-it-for" title="Permalink to this heading">#</a></h2>
@@ -464,23 +482,66 @@ document.write(`
 <li><p><strong>Human behavior researchers</strong>: Extract facial expressions from face images or videos with a simple line of code and analyze your data with Feat.</p></li>
 <li><p><strong>Computer vision researchers</strong>: Develop &amp; share your latest model to a wide audience of users.</p></li>
 </ul>
-<p>and anyone else interested in analyzing facial expressions!</p>
 <p>Check out a recent presentation by one of the project leads <a class="reference external" href="https://eshinjolly.com/">Eshin Jolly, PhD</a> for a broad-overview and introduction:</p>
 <iframe src="https://ejolly-py-feat.surge.sh/" style="width: 100%; height: 500px"></iframe>
 </section>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
-<p>You can easily install the latest stable version from PyPi:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">py</span><span class="o">-</span><span class="n">feat</span>
+<section id="introducing-py-feat-v2">
+<h2>Introducing Py-FEAT v2<a class="headerlink" href="#introducing-py-feat-v2" title="Permalink to this heading">#</a></h2>
+<p>We have released version 2 of Py-Feat that includes a new multi-task face expression model, many bug fixes, performance optimizations, and a standalone app called <a class="reference external" href="https://github.com/cosanlab/pyfeat-live/">pyfeat-live</a>.
+We still support our original version 1 of Py-FEAT that is described in <a class="reference external" href="https://link.springer.com/article/10.1007/s42761-023-00191-4">Cheong et al., 2023</a> and there are advantages to both versions. You can access them as <code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code> and <code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code>. They return the same <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data structure, so downstream analysis and plotting code is largely shared, but they take different approaches. Both can run on CUDA and MPS gpus and support batching, which greatly accelerates detection.</p>
+<p><strong><code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code></strong> is a <em>modular pipeline</em>. You choose the model for each stage — face detection, facial landmarks, Action Units, emotions, gaze, and identity — and you can swap any of them or turn one off (pass <code class="docutils literal notranslate"><span class="pre">None</span></code>). It produces the classic <strong>68-point</strong> facial landmarks and runs separate models (e.g. an XGBoost AU classifier, ResMaskNet emotions) one after another. That flexibility comes at a cost: running several models in sequence makes it <strong>slower on a single frame</strong>.</p>
+<p><strong><code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code></strong> runs a single <strong>multi-task neural network</strong> that predicts Action Units, emotions, valence/arousal, gaze, head pose, and a <strong>478-point 3D MediaPipe FaceMesh</strong> in <em>one</em> forward pass (plus optional identity embeddings). Because one network replaces the per-task model chain, it is <strong>much faster — especially on single frames</strong>, has improved performance on action unit and gaze prediction — and adds continuous valence/arousal and gaze that v1 does not produce. The trade-off is that the model set is fixed: you don’t pick or disable individual components.</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code> (v1)</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code> (v2)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Architecture</p></td>
+<td><p>modular, one model per task</p></td>
+<td><p>single multi-task network</p></td>
+</tr>
+<tr class="row-odd"><td><p>Swap / disable models</p></td>
+<td><p>yes</p></td>
+<td><p>fixed set</p></td>
+</tr>
+<tr class="row-even"><td><p>Landmarks</p></td>
+<td><p>68-point (dlib-style)</p></td>
+<td><p>478-point 3D MediaPipe FaceMesh</p></td>
+</tr>
+<tr class="row-odd"><td><p>Valence/arousal, gaze</p></td>
+<td><p>—</p></td>
+<td><p>built-in</p></td>
+</tr>
+<tr class="row-even"><td><p>Single-frame speed</p></td>
+<td><p>slower</p></td>
+<td><p><strong>fast</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>Best for</p></td>
+<td><p>specific models, 68-pt conventions, published Cheong et al. benchmarks</p></td>
+<td><p>speed, video, 3D mesh, valence/arousal + gaze</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">feat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detectorv1</span><span class="p">,</span> <span class="n">Detectorv2</span>
+
+<span class="c1"># v1 — modular: pick or disable models, 68-point landmarks</span>
+<span class="n">detector_v1</span> <span class="o">=</span> <span class="n">Detectorv1</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s2">&quot;xgb&quot;</span><span class="p">,</span> <span class="n">emotion_model</span><span class="o">=</span><span class="s2">&quot;resmasknet&quot;</span><span class="p">,</span> <span class="n">identity_model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">fex</span> <span class="o">=</span> <span class="n">detector_v1</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;face.jpg&quot;</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+
+<span class="c1"># v2 — one fast multi-task model, 478-point 3D mesh + valence/arousal + gaze</span>
+<span class="n">detector_v2</span> <span class="o">=</span> <span class="n">Detectorv2</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>        <span class="c1"># or device=&quot;cpu&quot; / &quot;mps&quot;</span>
+<span class="n">fex</span> <span class="o">=</span> <span class="n">detector_v2</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;face.jpg&quot;</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For other installation methods (e.g. Google Collab, development) see the <a class="reference internal" href="installation.html"><span class="doc std std-doc">how to install page</span></a></p>
-<p>Check out our <a class="reference internal" href="faqs.html"><span class="doc std std-doc">FAQS</span></a> for common issues and solutions.</p>
 </section>
 <section id="available-models">
 <h2>Available models<a class="headerlink" href="#available-models" title="Permalink to this heading">#</a></h2>
 <p>Py-feat includes several <strong>pre-trained</strong> models for Action Unit detection, Emotion detection, Face detection, Facial Landmark detection, and Face/Head post estimation.</p>
-<p>You can check out the full list on the <a class="reference internal" href="models.html"><span class="doc std std-doc">pre-trained models page</span></a>.</p>
+<p>You can check out the full list on the <a class="reference internal" href="models.html"><span class="std std-doc">pre-trained models page</span></a>.</p>
 </section>
 <section id="contributions">
 <h2>Contributions<a class="headerlink" href="#contributions" title="Permalink to this heading">#</a></h2>
@@ -488,8 +549,10 @@ document.write(`
 </section>
 <section id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this heading">#</a></h2>
-<p>Py-FEAT is provided under the  <a class="reference external" href="https://github.com/cosanlab/py-feat/blob/master/LICENSE">MIT license</a>. You also need to cite and respect the licenses of each model you are using. Please see the LICENSE file for links to each model’s license information.</p>
+<p>Py-FEAT is provided under the  <a class="reference external" href="https://github.com/cosanlab/py-feat/blob/master/LICENSE">MIT license</a>. You also need to cite and respect the licenses of each model you are using. Note that several models have a non-commercial stipulation. Please see the LICENSE file for links to each model’s license information.</p>
 </section>
+<div class="toctree-wrapper compound">
+</div>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
@@ -529,7 +592,7 @@ document.write(`
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="right-next"
@@ -550,6 +613,7 @@ document.write(`
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
@@ -558,7 +622,7 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-you-should-use-py-feat">Why you should use Py-Feat</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#who-is-it-for">Who is it for?</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introducing-py-feat-v2">Introducing Py-FEAT v2</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-models">Available models</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributions">Contributions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
@@ -610,8 +674,8 @@ By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

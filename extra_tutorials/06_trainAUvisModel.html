@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>6. Training an AU visualization model &#8212; Py-Feat</title>
   
@@ -15,52 +15,49 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'extra_tutorials/06_trainAUvisModel';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -76,28 +73,23 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -119,12 +111,20 @@ const thebe_selector_output = ".output, .cell_output"
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -140,6 +140,8 @@ const thebe_selector_output = ".output, .cell_output"
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="../pages/intro.html">
@@ -158,7 +160,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -172,9 +185,8 @@ const thebe_selector_output = ".output, .cell_output"
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">How to install Py-Feat</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/models.html">Included pre-trained detectors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/au_reference.html">Action Unit Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/usage_guide.html">Tips, Community, and Known Issues</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/faqs.html">FAQS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/au_reference.html">AU Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/faqs.html">FAQs, Tips &amp; Known Issues</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -216,6 +228,10 @@ const thebe_selector_output = ".output, .cell_output"
 
 
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../benchmarks/accuracy.html">Accuracy benchmarks</a></li>
+</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../pages/contribute.html">General contributions guidelines</a></li>
@@ -246,7 +262,7 @@ const thebe_selector_output = ".output, .cell_output"
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -255,14 +271,14 @@ const thebe_selector_output = ".output, .cell_output"
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -287,14 +303,14 @@ const thebe_selector_output = ".output, .cell_output"
       
       <li><a href="https://mybinder.org/v2/gh/cosanlab/py-feat/master?urlpath=tree/notebooks/extra_tutorials/06_trainAUvisModel.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch onBinder"
+   title="Launch on Binder"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img src="../_static/images/logo_binder.svg">
+    <img alt="Binder logo" src="../_static/images/logo_binder.svg">
   </span>
 <span class="btn__text-container">Binder</span>
 </a>
@@ -305,14 +321,14 @@ const thebe_selector_output = ".output, .cell_output"
       
       <li><a href="https://jhub.dartmouth.edu/hub/user-redirect/git-pull?repo=https%3A//github.com/cosanlab/py-feat&urlpath=tree/py-feat/notebooks/extra_tutorials/06_trainAUvisModel.ipynb&branch=master" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch onJupyterHub"
+   title="Launch on JupyterHub"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img src="../_static/images/logo_jupyterhub.svg">
+    <img alt="JupyterHub logo" src="../_static/images/logo_jupyterhub.svg">
   </span>
 <span class="btn__text-container">JupyterHub</span>
 </a>
@@ -323,14 +339,14 @@ const thebe_selector_output = ".output, .cell_output"
       
       <li><a href="https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/extra_tutorials/06_trainAUvisModel.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
-   title="Launch onColab"
+   title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
 <span class="btn__icon-container">
   
-    <img src="../_static/images/logo_colab.png">
+    <img alt="Colab logo" src="../_static/images/logo_colab.png">
   </span>
 <span class="btn__text-container">Colab</span>
 </a>
@@ -454,10 +470,10 @@ const thebe_selector_output = ".output, .cell_output"
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -465,14 +481,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -495,7 +511,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#imports-and-paths">Imports and Paths</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-clean-and-aggregate-extracted-labels-and-landmarks">Load, clean, and aggregate extracted labels and landmarks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#balance-au-occurences-by-sub-sampling">Balance AU-occurences by sub-sampling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#balance-au-occurrences-by-sub-sampling">Balance AU-occurrences by sub-sampling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fit-plsregression-model">Fit PLSRegression model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-trained-model">Saving and loading trained model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-detections-using-model">Visualizing detections using model</a></li>
@@ -508,16 +524,16 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="training-an-au-visualization-model">
 <h1>6. Training an AU visualization model<a class="headerlink" href="#training-an-au-visualization-model" title="Permalink to this heading">#</a></h1>
 <p><em>written by Eshin Jolly</em></p>
 <p>This tutorial illustrates how we trained an AU visualization model in py-feat that can take a vector of AUs and output corresponding facial landmarks. This makes it possible to visualize facial expressions from AU detections by applying a learned transformation to a neutral template face.</p>
-<p>To train the model we aggregate AU label and landmark data from the EmotioNet, DISFA Plus, and BP4d datasets. Detailed code on how to do that can be found in the <a class="reference internal" href="07_extract_labels_and_landmarks.html"><span class="doc std std-doc">extracting labels and landmarks notebook</span></a>. You’ll need to run the extraction once for each dataset before you can train the AU visualization model with the code presented here.</p>
+<p>To train the model we aggregate AU label and landmark data from the EmotioNet, DISFA Plus, and BP4d datasets. Detailed code on how to do that can be found in the <a class="reference internal" href="07_extract_labels_and_landmarks.html"><span class="std std-doc">extracting labels and landmarks notebook</span></a>. You’ll need to run the extraction once for each dataset before you can train the AU visualization model with the code presented here.</p>
 <p>This tutorial assumes that the extracted csv files are in the <code class="docutils literal notranslate"><span class="pre">data/extracted_labels_landmarks</span></code> folder at the root of this repository. And that files are names as (lowercase) <code class="docutils literal notranslate"><span class="pre">[dataset]_labels.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">[dataset]_landmarks.csv</span></code></p>
 <p>If you’re adding new AU Detectors, it me useful to also include a visualization model for your specific detector, especially if the number or AU outputs differ from our included visualization model (20 AUs): 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43.</p>
-<p>In <span class="xref myst">this section</span> of the notebook you can see how we train a separate visualization model for the JAANET AU detector</p>
+<p>In <a class="reference internal" href="#jaanet-visualization-model"><span class="xref myst">this section</span></a> of the notebook you can see how we train a separate visualization model for the JAANET AU detector</p>
 <section id="imports-and-paths">
 <h2>Imports and Paths<a class="headerlink" href="#imports-and-paths" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
@@ -620,7 +636,7 @@ Aggregated labels: (226206, 20)
 </div>
 </div>
 </div>
-<p>We can examine the correlation between AU occurences across all the datasets to get a sense of what AU’s tend to co-occur:</p>
+<p>We can examine the correlation between AU occurrences across all the datasets to get a sense of what AU’s tend to co-occur:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -629,7 +645,7 @@ Aggregated labels: (226206, 20)
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/59e7cd986dffdaede1c01527eea36da35cca80c668a8aa919df2c0a988e906f3.png" src="../_images/59e7cd986dffdaede1c01527eea36da35cca80c668a8aa919df2c0a988e906f3.png" />
+<a class="reference internal image-reference" href="../_images/59e7cd986dffdaede1c01527eea36da35cca80c668a8aa919df2c0a988e906f3.png"><img alt="../_images/59e7cd986dffdaede1c01527eea36da35cca80c668a8aa919df2c0a988e906f3.png" src="../_images/59e7cd986dffdaede1c01527eea36da35cca80c668a8aa919df2c0a988e906f3.png" style="width: 549px; height: 454px;" /></a>
 </div>
 </div>
 <p>However, due to differences in the AUs included in each dataset, these correlations vary:</p>
@@ -646,18 +662,18 @@ Aggregated labels: (226206, 20)
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/b323feea97f847244d02f9e1b1712bd8f377d9a17709d7ea39cee63ee15e620d.png" src="../_images/b323feea97f847244d02f9e1b1712bd8f377d9a17709d7ea39cee63ee15e620d.png" />
-<img alt="../_images/b474193b9b3b625cbee341e7ad0ccc44650ca8643c32d4eae74e071f3eaabe3c.png" src="../_images/b474193b9b3b625cbee341e7ad0ccc44650ca8643c32d4eae74e071f3eaabe3c.png" />
-<img alt="../_images/fd9f4adfef9ec7a18a6293113f46bf13b4ca2c2dab5025fcf892d947b42eccbc.png" src="../_images/fd9f4adfef9ec7a18a6293113f46bf13b4ca2c2dab5025fcf892d947b42eccbc.png" />
+<a class="reference internal image-reference" href="../_images/b323feea97f847244d02f9e1b1712bd8f377d9a17709d7ea39cee63ee15e620d.png"><img alt="../_images/b323feea97f847244d02f9e1b1712bd8f377d9a17709d7ea39cee63ee15e620d.png" src="../_images/b323feea97f847244d02f9e1b1712bd8f377d9a17709d7ea39cee63ee15e620d.png" style="width: 549px; height: 454px;" /></a>
+<a class="reference internal image-reference" href="../_images/b474193b9b3b625cbee341e7ad0ccc44650ca8643c32d4eae74e071f3eaabe3c.png"><img alt="../_images/b474193b9b3b625cbee341e7ad0ccc44650ca8643c32d4eae74e071f3eaabe3c.png" src="../_images/b474193b9b3b625cbee341e7ad0ccc44650ca8643c32d4eae74e071f3eaabe3c.png" style="width: 549px; height: 454px;" /></a>
+<a class="reference internal image-reference" href="../_images/fd9f4adfef9ec7a18a6293113f46bf13b4ca2c2dab5025fcf892d947b42eccbc.png"><img alt="../_images/fd9f4adfef9ec7a18a6293113f46bf13b4ca2c2dab5025fcf892d947b42eccbc.png" src="../_images/fd9f4adfef9ec7a18a6293113f46bf13b4ca2c2dab5025fcf892d947b42eccbc.png" style="width: 549px; height: 454px;" /></a>
 </div>
 </div>
 </section>
-<section id="balance-au-occurences-by-sub-sampling">
-<h2>Balance AU-occurences by sub-sampling<a class="headerlink" href="#balance-au-occurences-by-sub-sampling" title="Permalink to this heading">#</a></h2>
-<p>Because datasets differ in which AUs they contain and because AUs differ greatly in their occurence across samples, we sub-sample the aggregated data to generate a new dataset that contains at least 650 occurences of each AU. This number was chosen because it is the largest number of positive samples (samples where the AU was present) for the AU with the fewest positive samples (AU43). This helps balance the features out a bit:</p>
+<section id="balance-au-occurrences-by-sub-sampling">
+<h2>Balance AU-occurrences by sub-sampling<a class="headerlink" href="#balance-au-occurrences-by-sub-sampling" title="Permalink to this heading">#</a></h2>
+<p>Because datasets differ in which AUs they contain and because AUs differ greatly in their occurrence across samples, we sub-sample the aggregated data to generate a new dataset that contains at least 650 occurrences of each AU. This number was chosen because it is the largest number of positive samples (samples where the AU was present) for the AU with the fewest positive samples (AU43). This helps balance the features out a bit:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">pseudo_balance_au_occurences</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">pseudo_balance_au_occurrences</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span> <span class="n">au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sub-sample the labels dataframe so for each AU at least min_pos_sample rows</span>
@@ -694,7 +710,7 @@ Aggregated labels: (226206, 20)
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Random-state for reproducibility</span>
-<span class="n">balX</span><span class="p">,</span> <span class="n">balY</span> <span class="o">=</span> <span class="n">pseudo_balance_au_occurences</span><span class="p">(</span>
+<span class="n">balX</span><span class="p">,</span> <span class="n">balY</span> <span class="o">=</span> <span class="n">pseudo_balance_au_occurrences</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span> <span class="n">au_cols</span><span class="p">,</span> <span class="n">min_pos_sample</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resampled dataset shape: </span><span class="si">{</span><span class="n">balX</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -708,7 +724,7 @@ Resampled dataset shape: (13000, 20)
 </div>
 </div>
 </div>
-<p>We can see that our resampled dataset contains signficantly higher proportions of each AU, which will make it a bit easier to train the model.</p>
+<p>We can see that our resampled dataset contains significantly higher proportions of each AU, which will make it a bit easier to train the model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">)</span>
@@ -722,7 +738,7 @@ Resampled dataset shape: (13000, 20)
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/728ed8c3e0b57567b2219cc13f11a824f35af16c8384d5b3d948dd069d6b795b.png" src="../_images/728ed8c3e0b57567b2219cc13f11a824f35af16c8384d5b3d948dd069d6b795b.png" />
+<a class="reference internal image-reference" href="../_images/728ed8c3e0b57567b2219cc13f11a824f35af16c8384d5b3d948dd069d6b795b.png"><img alt="../_images/728ed8c3e0b57567b2219cc13f11a824f35af16c8384d5b3d948dd069d6b795b.png" src="../_images/728ed8c3e0b57567b2219cc13f11a824f35af16c8384d5b3d948dd069d6b795b.png" style="width: 563px; height: 434px;" /></a>
 </div>
 </div>
 </section>
@@ -754,7 +770,7 @@ Resampled dataset shape: (13000, 20)
         <span class="n">_X</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">_X</span><span class="p">)</span>
 
     <span class="c1"># It can also be helpful to scale AUs within each sample such that they reflect</span>
-    <span class="c1"># z-scores relative to the mean/std AU occurences within that sample, rather than</span>
+    <span class="c1"># z-scores relative to the mean/std AU occurrences within that sample, rather than</span>
     <span class="c1"># values between 0-1. This can be helpful if you use a polynomial degree &gt; 1</span>
     <span class="c1"># But we don&#39;t do this by default</span>
     <span class="k">if</span> <span class="n">scale_across_features</span><span class="p">:</span>
@@ -945,7 +961,7 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:03&lt;00:00,  3.71s/it]
 </pre></div>
 </div>
-<img alt="../_images/02fec4486e91f8d0c94e35d8cb0ddf07ed695d5c64146ffcaaa2adf45550e6dd.png" src="../_images/02fec4486e91f8d0c94e35d8cb0ddf07ed695d5c64146ffcaaa2adf45550e6dd.png" />
+<a class="reference internal image-reference" href="../_images/02fec4486e91f8d0c94e35d8cb0ddf07ed695d5c64146ffcaaa2adf45550e6dd.png"><img alt="../_images/02fec4486e91f8d0c94e35d8cb0ddf07ed695d5c64146ffcaaa2adf45550e6dd.png" src="../_images/02fec4486e91f8d0c94e35d8cb0ddf07ed695d5c64146ffcaaa2adf45550e6dd.png" style="width: 1462px; height: 661px;" /></a>
 </div>
 </div>
 </section>
@@ -978,7 +994,7 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -1008,6 +1024,7 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
@@ -1016,7 +1033,7 @@ Test R^2 (3-fold): 0.12	Full R^2: 0.155
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#imports-and-paths">Imports and Paths</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-clean-and-aggregate-extracted-labels-and-landmarks">Load, clean, and aggregate extracted labels and landmarks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#balance-au-occurences-by-sub-sampling">Balance AU-occurences by sub-sampling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#balance-au-occurrences-by-sub-sampling">Balance AU-occurrences by sub-sampling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fit-plsregression-model">Fit PLSRegression model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-trained-model">Saving and loading trained model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-detections-using-model">Visualizing detections using model</a></li>
@@ -1068,8 +1085,8 @@ By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

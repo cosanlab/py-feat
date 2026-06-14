@@ -1,0 +1,982 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Detector / MPDetector Unification — Design &#8212; Py-Feat</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'superpowers/specs/2026-05-04-detector-unification-design';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../pages/intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/pyfeat_logo_small.png" class="logo__image only-light" alt="Py-Feat - Home"/>
+    <script>document.write(`<img src="../../_static/pyfeat_logo_small.png" class="logo__image only-dark" alt="Py-Feat - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../pages/intro.html">
+                    Py-Feat: Python Facial Expression Analysis Toolbox
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../pages/installation.html">How to install Py-Feat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/models.html">Included pre-trained detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/au_reference.html">AU Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/faqs.html">FAQs, Tips &amp; Known Issues</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../basic_tutorials/01_basics.html">1. Detecting facial expressions from images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_tutorials/02_detector_vids.html">2. Detecting facial expressions from videos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_tutorials/03_plotting.html">3. Visualizing Facial Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_tutorials/04_fex_analysis.html">4. Running a full analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/06_trainAUvisModel.html">6. Training an AU visualization model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/07_extract_labels_and_landmarks.html">7. Example labels and landmark dataset loading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/08_train_hogs.html">8. Training HOG-based AU detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/09_test_bbox.html">9. Benchmarking Bounding Box using data</a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/10_test_lands.html">10. Benchmarking Landmark models using data</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/11_test_Poseinfo.html">11. Benchmarking Pose detectors using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/12_test_aus.html">12. Benchmarking Action Unit detector using data</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../extra_tutorials/13_test_emos.html">13. Benchmarking pyfeat Emotion detection algorithms using data</a></li>
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../pages/api.html">API Reference</a></li>
+
+
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarks/accuracy.html">Accuracy benchmarks</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contributing</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../pages/contribute.html">General contributions guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/modelContribution.html">Contributing new detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/changelog.html">Change Log</a></li>
+
+
+
+
+
+
+
+
+
+<li class="toctree-l1"><a class="reference external" href="https://github.com/cosanlab/py-feat">GitHub Repository</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/cosanlab/py-feat" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/cosanlab/py-feat/issues/new?title=Issue%20on%20page%20%2Fsuperpowers/specs/2026-05-04-detector-unification-design.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/superpowers/specs/2026-05-04-detector-unification-design.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Detector / MPDetector Unification — Design</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem">Problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal">Goal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-goals">Non-goals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#proposed-structure">Proposed structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basedetector-responsibilities">BaseDetector responsibilities</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hook-signatures-and-stage-list">Hook signatures and stage list</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#differences-between-detector-and-mpdetector-at-each-stage">Differences between Detector and MPDetector at each stage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-lives-in-basedetector-vs-subclass">What lives in BaseDetector vs. subclass</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#migration-plan">Migration plan</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-preparation-lands-first-on-its-own">Step 1 — preparation (lands first, on its own)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-base-extraction-own-pr">Step 2 — base extraction (own PR)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-hoist-shared-hooks-own-pr">Step 3 — hoist shared hooks (own PR)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-relocate-to-new-module-optional-deferred-to-v0-8-if-step-3-isn-t-enough">Step 4 — relocate to new module (optional, deferred to v0.8 if Step 3 isn’t enough)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#risks-and-mitigations">Risks and mitigations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-questions">Open questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#out-of-scope-separate-workstreams">Out of scope (separate workstreams)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-unlocks">What this unlocks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estimated-effort">Estimated effort</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="detector-mpdetector-unification-design">
+<h1>Detector / MPDetector Unification — Design<a class="headerlink" href="#detector-mpdetector-unification-design" title="Permalink to this heading">#</a></h1>
+<p><strong>Status</strong>: draft, awaiting maintainer review.
+<strong>Target milestone</strong>: v0.8 (will not ship in v0.7).
+<strong>Approach chosen</strong>: Option A — template-method subclass.</p>
+<section id="problem">
+<h2>Problem<a class="headerlink" href="#problem" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">feat/detector.py::Detector</span></code> (966 lines) and <code class="docutils literal notranslate"><span class="pre">feat/MPDetector.py::MPDetector</span></code>
+(968 lines) are parallel implementations of the same multi-stage face
+analysis pipeline. They share:</p>
+<ul class="simple">
+<li><p>Identical <code class="docutils literal notranslate"><span class="pre">nn.Module</span> <span class="pre">+</span> <span class="pre">PyTorchModelHubMixin</span></code> parent classes.</p></li>
+<li><p>Near-identical <code class="docutils literal notranslate"><span class="pre">__init__</span></code> skeleton: validate args → build <code class="docutils literal notranslate"><span class="pre">info</span></code> dict →
+<code class="docutils literal notranslate"><span class="pre">set_torch_device</span></code> → cache <code class="docutils literal notranslate"><span class="pre">HOGLayer</span></code> → load face/landmark/au/emotion/
+identity detectors → register output column metadata.</p></li>
+<li><p>Near-identical <code class="docutils literal notranslate"><span class="pre">forward(faces_data,</span> <span class="pre">batch_data)</span></code> shape: extract face
+crops → run landmark detector → run AU detector → run emotion detector
+→ run identity detector → invert padding → assemble per-face DataFrame.</p></li>
+<li><p>95% identical <code class="docutils literal notranslate"><span class="pre">detect()</span></code> public method (only difference: <code class="docutils literal notranslate"><span class="pre">Detector</span></code>
+exposes <code class="docutils literal notranslate"><span class="pre">save=None</span></code>).</p></li>
+</ul>
+<p>The duplication has real costs:</p>
+<ol class="arabic simple">
+<li><p>Adding a new face detector or landmark model requires touching both
+classes and reasoning about whether the change applies to one or both
+pipelines.</p></li>
+<li><p>Bug fixes drift between classes (e.g., the <code class="docutils literal notranslate"><span class="pre">MPDetector(emotion_model='svm')</span></code>
+path was broken pre-PR #292; was caught and patched only in MPDetector
+while the equivalent codepath in Detector worked).</p></li>
+<li><p>Test surface doubles: <code class="docutils literal notranslate"><span class="pre">test_detector.py</span></code> + <code class="docutils literal notranslate"><span class="pre">test_mpdetector_retinaface.py</span></code>
+exercise overlapping ground.</p></li>
+<li><p>Refactors (e.g., PR #292’s HOG batching) need to land in two files for
+one logical change.</p></li>
+</ol>
+</section>
+<section id="goal">
+<h2>Goal<a class="headerlink" href="#goal" title="Permalink to this heading">#</a></h2>
+<p>A shared <code class="docutils literal notranslate"><span class="pre">BaseDetector</span></code> parent class that contains the common pipeline
+orchestration. <code class="docutils literal notranslate"><span class="pre">Detector</span></code> and <code class="docutils literal notranslate"><span class="pre">MPDetector</span></code> become thin subclasses that
+override only the stages where they differ, while the public API and
+import surface remain unchanged.</p>
+</section>
+<section id="non-goals">
+<h2>Non-goals<a class="headerlink" href="#non-goals" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>No public API breakage.</strong> <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">feat</span> <span class="pre">import</span> <span class="pre">Detector</span></code>, <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">feat.MPDetector</span> <span class="pre">import</span> <span class="pre">MPDetector</span></code>, and the <code class="docutils literal notranslate"><span class="pre">detect()</span></code> signature stay
+the same.</p></li>
+<li><p><strong>No model behavior change.</strong> Pipeline output is bit-identical to
+v0.7-dev for any input the existing classes support.</p></li>
+<li><p><strong>No new feature.</strong> This is purely structural.</p></li>
+<li><p><strong>Not bundling the <code class="docutils literal notranslate"><span class="pre">feat/data.py</span></code> split</strong> with this work. <code class="docutils literal notranslate"><span class="pre">data.py</span></code> is
+a separate refactor item.</p></li>
+<li><p><strong>Not bundling the <code class="docutils literal notranslate"><span class="pre">detect()</span></code> 11-param signature reduction</strong> (separate
+v0.8 item; the parameter list moves verbatim into <code class="docutils literal notranslate"><span class="pre">BaseDetector</span></code>).</p></li>
+</ul>
+</section>
+<section id="proposed-structure">
+<h2>Proposed structure<a class="headerlink" href="#proposed-structure" title="Permalink to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feat</span><span class="o">/</span>
+  <span class="n">detectors</span><span class="o">/</span>
+    <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>              <span class="c1"># re-exports Detector, MPDetector</span>
+    <span class="n">base</span><span class="o">.</span><span class="n">py</span>                  <span class="c1"># BaseDetector — orchestration + hooks</span>
+    <span class="n">classic</span><span class="o">.</span><span class="n">py</span>               <span class="c1"># Detector(BaseDetector) — img2pose/retinaface</span>
+                             <span class="c1"># + mobilefacenet/mobilenet + xgb/svm AU +</span>
+                             <span class="c1"># resmasknet/svm emotion + arcface/facenet</span>
+                             <span class="c1"># identity</span>
+    <span class="n">mediapipe</span><span class="o">.</span><span class="n">py</span>             <span class="c1"># MPDetector(BaseDetector) — retinaface +</span>
+                             <span class="c1"># mp_facemesh_v2 + mp_blendshapes + ...</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">feat/detector.py</span></code> and <code class="docutils literal notranslate"><span class="pre">feat/MPDetector.py</span></code> become 1-line shims that
+re-export from the new module so existing import paths continue to work
+(deprecated as locations but never removed in v0.x).</p>
+</section>
+<section id="basedetector-responsibilities">
+<h2>BaseDetector responsibilities<a class="headerlink" href="#basedetector-responsibilities" title="Permalink to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BaseDetector</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">PyTorchModelHubMixin</span><span class="p">):</span>
+    <span class="c1"># ---- structural attributes set by subclass __init__ ----</span>
+    <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span>                     <span class="c1"># face_model, landmark_model, etc.</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span>
+    <span class="n">face_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">face_detector</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">landmark_detector</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">au_detector</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">emotion_detector</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">identity_detector</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">facepose_detector</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">_hog_layer</span><span class="p">:</span> <span class="n">HOGLayer</span>            <span class="c1"># cached, may be unused depending on AU choice</span>
+
+    <span class="c1"># ---- shared concrete methods ----</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Fex</span><span class="p">:</span>
+        <span class="c1"># full public-API method, single implementation</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">faces_data</span><span class="p">,</span> <span class="n">batch_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="c1"># orchestrates the pipeline by calling hooks below</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_hog_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span>
+
+    <span class="c1"># ---- abstract / overridable hooks ----</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_landmarks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">faces_dev</span><span class="p">,</span> <span class="n">faces_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_aus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">faces_data</span><span class="p">,</span> <span class="n">landmarks</span><span class="p">,</span> <span class="n">faces_dev</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_emotions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">faces_data</span><span class="p">,</span> <span class="n">landmarks</span><span class="p">,</span> <span class="n">faces_dev</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_identities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">faces_dev</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_facepose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">faces_data</span><span class="p">,</span> <span class="n">landmarks</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_fex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Fex</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</pre></div>
+</div>
+</section>
+<section id="hook-signatures-and-stage-list">
+<h2>Hook signatures and stage list<a class="headerlink" href="#hook-signatures-and-stage-list" title="Permalink to this heading">#</a></h2>
+<p>Concrete stages, in order, with the data shape each receives and emits:</p>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Stage</p></th>
+<th class="head"><p>Input</p></th>
+<th class="head"><p>Output</p></th>
+<th class="head"><p>Differences across subclasses</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">_detect_landmarks</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">faces_dev:</span> <span class="pre">[N,</span> <span class="pre">C,</span> <span class="pre">fs,</span> <span class="pre">fs]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">n_lm</span> <span class="pre">*</span> <span class="pre">2]</span></code> (Detector) or <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">478,</span> <span class="pre">3]</span></code> (MPDetector)</p></td>
+<td><p>OpenFace 68 vs MediaPipe 478; mobilefacenet vs mp_facemesh_v2</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">_detect_aus</span></code></p></td>
+<td><p>crops + landmarks</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">n_aus]</span></code></p></td>
+<td><p>xgb/svm on HOG (Detector) vs mp_blendshapes on landmark subset (MPDetector)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">_detect_emotions</span></code></p></td>
+<td><p>crops + landmarks + faces_data</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">n_emotions]</span></code></p></td>
+<td><p>resmasknet/svm path uniform; emotion is fully shareable</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">_detect_identities</span></code></p></td>
+<td><p>crops</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">512]</span></code></p></td>
+<td><p>arcface or facenet (uniform); largely shareable</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">_detect_facepose</span></code></p></td>
+<td><p>landmarks (+ optional faces_data for img2pose’s regressed pose)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">6]</span></code> (6DoF)</p></td>
+<td><p>img2pose regresses; retinaface uses pnp_dlt; MPDetector uses mesh alignment via Umeyama</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">_build_fex</span></code></p></td>
+<td><p>per-stage outputs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code></p></td>
+<td><p>Different column sets (FEAT_FACEPOSE_COLUMNS_6D shared, but landmark column count differs and <code class="docutils literal notranslate"><span class="pre">gaze_columns</span></code> is MPDetector-only)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="differences-between-detector-and-mpdetector-at-each-stage">
+<h2>Differences between Detector and MPDetector at each stage<a class="headerlink" href="#differences-between-detector-and-mpdetector-at-each-stage" title="Permalink to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Stage</p></th>
+<th class="head"><p>Detector</p></th>
+<th class="head"><p>MPDetector</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Face detection</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">img2pose</span></code> or <code class="docutils literal notranslate"><span class="pre">retinaface</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">retinaface</span></code> only</p></td>
+</tr>
+<tr class="row-odd"><td><p>Landmark detection</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mobilefacenet</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">mobilenet</span></code> → 68 landmarks normalized [0, 1] flattened to <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">136]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mp_facemesh_v2</span></code> → 478 landmarks 3D in face-crop pixel space <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">478,</span> <span class="pre">3]</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Landmark scale buffer</p></td>
+<td><p>not needed</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">_landmark_scale:</span> <span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">2]</span></code> registered buffer (added in PR #292)</p></td>
+</tr>
+<tr class="row-odd"><td><p>AU classifier</p></td>
+<td><p>xgb or svm on HOG features (via <code class="docutils literal notranslate"><span class="pre">extract_hog_features_batched</span></code>)</p></td>
+<td><p>mp_blendshapes on a 146-landmark subset of mediapipe mesh</p></td>
+</tr>
+<tr class="row-even"><td><p>Emotion classifier</p></td>
+<td><p>resmasknet (default) or svm-on-HOG</p></td>
+<td><p>resmasknet (default), svm path is <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> per #294</p></td>
+</tr>
+<tr class="row-odd"><td><p>Identity classifier</p></td>
+<td><p>arcface (default) or facenet, returns 512-d embedding</p></td>
+<td><p>arcface (default), same</p></td>
+</tr>
+<tr class="row-even"><td><p>Facepose</p></td>
+<td><p>img2pose’s native head — or DLT-PnP from 68 landmarks for retinaface face_model</p></td>
+<td><p>Umeyama alignment of 478 landmarks against canonical face model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Output columns</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">openface_2d_landmark_columns</span></code> (136 columns)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MP_LANDMARK_COLUMNS</span></code> (1434 columns), plus <code class="docutils literal notranslate"><span class="pre">FEAT_GAZE_COLUMNS</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Output Fex <code class="docutils literal notranslate"><span class="pre">_metadata</span></code></p></td>
+<td><p>no <code class="docutils literal notranslate"><span class="pre">gaze_columns</span></code> set (None)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gaze_columns=FEAT_GAZE_COLUMNS</span></code> set</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="what-lives-in-basedetector-vs-subclass">
+<h2>What lives in BaseDetector vs. subclass<a class="headerlink" href="#what-lives-in-basedetector-vs-subclass" title="Permalink to this heading">#</a></h2>
+<p><strong>Concrete in BaseDetector</strong> (single implementation):</p>
+<ul class="simple">
+<li><p>Argument validation infrastructure (<code class="docutils literal notranslate"><span class="pre">_validate_face_model</span></code>, etc. as helpers).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">set_torch_device</span></code> + <code class="docutils literal notranslate"><span class="pre">_hog_layer</span></code> caching.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">forward()</span></code> orchestration (the call sequence + per-frame padding inversion).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detect()</span></code> end-to-end (data loader, batch loop, save/CSV path, identity threshold, frame skipping, progress bar).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_apply_padding_inversion</span></code> helper (already shared logic via <code class="docutils literal notranslate"><span class="pre">per_face_padding_inversion_terms</span></code>).</p></li>
+<li><p>Identity-clustering call after detection (<code class="docutils literal notranslate"><span class="pre">compute_identities</span></code>).</p></li>
+</ul>
+<p><strong>Hook overrides in subclass</strong> (where they differ):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_detect_landmarks</span></code> (different output shape + different model wrapper).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_detect_aus</span></code> (different model + different input requirements — HOG vs landmark subset).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_detect_facepose</span></code> (img2pose-native vs PnP vs Umeyama).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_build_fex</span></code> (different column sets).</p></li>
+</ul>
+<p><strong>Same in subclass but worth a default in base</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_detect_emotions</span></code> — identical resmasknet path; provide it in base, MPDetector doesn’t override.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_detect_identities</span></code> — identical arcface/facenet path; provide in base.</p></li>
+</ul>
+</section>
+<section id="migration-plan">
+<h2>Migration plan<a class="headerlink" href="#migration-plan" title="Permalink to this heading">#</a></h2>
+<section id="step-1-preparation-lands-first-on-its-own">
+<h3>Step 1 — preparation (lands first, on its own)<a class="headerlink" href="#step-1-preparation-lands-first-on-its-own" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Move <code class="docutils literal notranslate"><span class="pre">extract_hog_features_batched</span></code> consumers to a shared mixin or
+module-level helper, no API change. Already mostly done in PR #292.</p></li>
+<li><p>Lock down <code class="docutils literal notranslate"><span class="pre">feat/MPDetector.py::forward()</span></code> and <code class="docutils literal notranslate"><span class="pre">feat/detector.py::forward()</span></code>
+with end-to-end snapshot tests on <code class="docutils literal notranslate"><span class="pre">single_face.jpg</span></code> and
+<code class="docutils literal notranslate"><span class="pre">multi_face.jpg</span></code>. Inputs go in, output Fex columns + AU values + pose</p>
+<ul>
+<li><p>identity get pickled and committed as fixtures. Any post-unification
+forward() must reproduce these.</p></li>
+</ul>
+</li>
+<li><p>Adds confidence that the structural change doesn’t perturb numerics.</p></li>
+</ul>
+</section>
+<section id="step-2-base-extraction-own-pr">
+<h3>Step 2 — base extraction (own PR)<a class="headerlink" href="#step-2-base-extraction-own-pr" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Create <code class="docutils literal notranslate"><span class="pre">feat/detectors/base.py</span></code> with <code class="docutils literal notranslate"><span class="pre">BaseDetector</span></code> skeleton
+containing only the abstract hooks + <code class="docutils literal notranslate"><span class="pre">__init__</span></code> skeleton helpers +
+<code class="docutils literal notranslate"><span class="pre">detect()</span></code> (verbatim move from <code class="docutils literal notranslate"><span class="pre">Detector.detect()</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Detector</span></code> and <code class="docutils literal notranslate"><span class="pre">MPDetector</span></code> continue to live in their existing files
+but each becomes a <code class="docutils literal notranslate"><span class="pre">BaseDetector</span></code> subclass that overrides every hook
+with its current inline code (no logic change yet — just structural).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">forward()</span></code> becomes the orchestrator in <code class="docutils literal notranslate"><span class="pre">BaseDetector</span></code>; subclasses
+drop their custom <code class="docutils literal notranslate"><span class="pre">forward()</span></code>.</p></li>
+<li><p>Snapshot tests from Step 1 must pass unchanged.</p></li>
+</ul>
+</section>
+<section id="step-3-hoist-shared-hooks-own-pr">
+<h3>Step 3 — hoist shared hooks (own PR)<a class="headerlink" href="#step-3-hoist-shared-hooks-own-pr" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Identify hooks where Detector and MPDetector implementations are now
+identical (post-step-2 structural extraction): emotion, identity,
+Fex assembly minus column choice.</p></li>
+<li><p>Hoist those into <code class="docutils literal notranslate"><span class="pre">BaseDetector</span></code> as default impls.</p></li>
+<li><p>Subclasses override only the truly-different hooks.</p></li>
+</ul>
+</section>
+<section id="step-4-relocate-to-new-module-optional-deferred-to-v0-8-if-step-3-isn-t-enough">
+<h3>Step 4 — relocate to new module (optional, deferred to v0.8 if Step 3 isn’t enough)<a class="headerlink" href="#step-4-relocate-to-new-module-optional-deferred-to-v0-8-if-step-3-isn-t-enough" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Move <code class="docutils literal notranslate"><span class="pre">Detector</span></code> → <code class="docutils literal notranslate"><span class="pre">feat/detectors/classic.py</span></code> and <code class="docutils literal notranslate"><span class="pre">MPDetector</span></code> →
+<code class="docutils literal notranslate"><span class="pre">feat/detectors/mediapipe.py</span></code>; old paths become 1-line shims.</p></li>
+<li><p>Marks the cleanup as complete.</p></li>
+</ul>
+<p>Each step is a separately reviewable PR. If a step fails snapshot
+parity, it gets reverted without touching the others.</p>
+</section>
+</section>
+<section id="risks-and-mitigations">
+<h2>Risks and mitigations<a class="headerlink" href="#risks-and-mitigations" title="Permalink to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Risk</p></th>
+<th class="head"><p>Mitigation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Subtle numeric drift introduced by routing through new method dispatch</p></td>
+<td><p>Snapshot tests in Step 1 catch any output change; CI gate at Step 2/3</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PyTorchModelHubMixin</span></code> may not handle hierarchy cleanly</p></td>
+<td><p>Verify in Step 2 that <code class="docutils literal notranslate"><span class="pre">Detector.from_pretrained</span></code> still works; if not, register both subclasses with the mixin</p></td>
+</tr>
+<tr class="row-even"><td><p>Users subclassing <code class="docutils literal notranslate"><span class="pre">Detector</span></code> for custom pipelines</p></td>
+<td><p>Inheritance still works — subclasses can override the same hooks. Document the new extension story.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">_hog_layer</span></code> caching for MPDetector that doesn’t use HOG</p></td>
+<td><p>Already lazy-built in PR #292. Move construction to <code class="docutils literal notranslate"><span class="pre">BaseDetector.__init__</span></code> and let MPDetector hold a reference it never uses; or build it lazily on first AU call.</p></td>
+</tr>
+<tr class="row-even"><td><p>Tests in <code class="docutils literal notranslate"><span class="pre">test_detector.py</span></code> and <code class="docutils literal notranslate"><span class="pre">test_mpdetector_retinaface.py</span></code> overlap</p></td>
+<td><p>Keep both files; they exercise different model stacks. Consider a shared <code class="docutils literal notranslate"><span class="pre">test_base_detector.py</span></code> for the new base in v0.8.x.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="open-questions">
+<h2>Open questions<a class="headerlink" href="#open-questions" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Should <code class="docutils literal notranslate"><span class="pre">_detect_facepose</span></code> be a unified hook with three implementations
+(img2pose-native / pnp-dlt / mediapipe-umeyama), or live as separate
+subclass-specific helpers? Leaning unified — same return shape <code class="docutils literal notranslate"><span class="pre">[N,</span> <span class="pre">6]</span></code>,
+different math.</p></li>
+<li><p>Should <code class="docutils literal notranslate"><span class="pre">_build_fex</span></code> return a <code class="docutils literal notranslate"><span class="pre">dict</span></code> of per-stage tensors that
+<code class="docutils literal notranslate"><span class="pre">BaseDetector</span></code> assembles into a Fex, or directly return a Fex? Leaning
+the former — it lets BaseDetector centralize the column-binding logic
+and just take a <code class="docutils literal notranslate"><span class="pre">landmark_columns</span></code> kwarg from the subclass.</p></li>
+<li><p>Does <code class="docutils literal notranslate"><span class="pre">compute_identities</span></code> belong in <code class="docutils literal notranslate"><span class="pre">detect()</span></code> (where it currently is)
+or should it become a post-processing hook? Leaning leave-as-is; the
+identity threshold is a runtime parameter, not an architectural one.</p></li>
+<li><p>New module layout (<code class="docutils literal notranslate"><span class="pre">feat/detectors/</span></code>) vs keeping the existing
+<code class="docutils literal notranslate"><span class="pre">feat/detector.py</span></code> + <code class="docutils literal notranslate"><span class="pre">feat/MPDetector.py</span></code> filenames with shared code in
+a separate file (<code class="docutils literal notranslate"><span class="pre">feat/_detector_base.py</span></code>)? Leaning the new module —
+cleaner long-term — but adds a small amount of import-path churn that
+the v0.8 release notes need to call out.</p></li>
+</ol>
+</section>
+<section id="out-of-scope-separate-workstreams">
+<h2>Out of scope (separate workstreams)<a class="headerlink" href="#out-of-scope-separate-workstreams" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">feat/data.py</span></code> 2648-line split.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detect()</span></code> 11-parameter signature reduction (probably wrap in a
+<code class="docutils literal notranslate"><span class="pre">DetectConfig</span></code> dataclass; that’s a v0.8 deprecation cycle of its own).</p></li>
+<li><p>MediaPipe 478 → OpenFace 68 landmark translator (issue #294).</p></li>
+<li><p>Stage 2 of HOG (issue #293).</p></li>
+<li><p>Identity-clustering rewrite (separate roadmap doc).</p></li>
+</ul>
+</section>
+<section id="what-this-unlocks">
+<h2>What this unlocks<a class="headerlink" href="#what-this-unlocks" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Adding a new pipeline (e.g., a future <code class="docutils literal notranslate"><span class="pre">RealtimeDetector</span></code> for video
+streams) becomes one new subclass file overriding the hooks that
+differ from the closest existing subclass.</p></li>
+<li><p>Bug fixes land in one place when they apply to both pipelines.</p></li>
+<li><p>Test infrastructure for the orchestration logic can live in one place.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">detect()</span></code> signature reduction work becomes a one-file change.</p></li>
+</ul>
+</section>
+<section id="estimated-effort">
+<h2>Estimated effort<a class="headerlink" href="#estimated-effort" title="Permalink to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Step</p></th>
+<th class="head"><p>Estimate</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1 — snapshot tests</p></td>
+<td><p>half day</p></td>
+</tr>
+<tr class="row-odd"><td><p>2 — base extraction (no logic change)</p></td>
+<td><p>full day</p></td>
+</tr>
+<tr class="row-even"><td><p>3 — hoist shared hooks</p></td>
+<td><p>half day</p></td>
+</tr>
+<tr class="row-odd"><td><p>4 — relocate (optional)</p></td>
+<td><p>quarter day</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>2–3 days of focused work, spread across 4 PRs</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./superpowers/specs"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem">Problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal">Goal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-goals">Non-goals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#proposed-structure">Proposed structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basedetector-responsibilities">BaseDetector responsibilities</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hook-signatures-and-stage-list">Hook signatures and stage list</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#differences-between-detector-and-mpdetector-at-each-stage">Differences between Detector and MPDetector at each stage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-lives-in-basedetector-vs-subclass">What lives in BaseDetector vs. subclass</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#migration-plan">Migration plan</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-preparation-lands-first-on-its-own">Step 1 — preparation (lands first, on its own)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-base-extraction-own-pr">Step 2 — base extraction (own PR)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-hoist-shared-hooks-own-pr">Step 3 — hoist shared hooks (own PR)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-relocate-to-new-module-optional-deferred-to-v0-8-if-step-3-isn-t-enough">Step 4 — relocate to new module (optional, deferred to v0.8 if Step 3 isn’t enough)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#risks-and-mitigations">Risks and mitigations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-questions">Open questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#out-of-scope-separate-workstreams">Out of scope (separate workstreams)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-unlocks">What this unlocks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estimated-effort">Estimated effort</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Eshin Jolly, Jin Hyun Cheong, Tiankang Xie, Luke J. Chang
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

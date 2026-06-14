@@ -1,43 +1,53 @@
 # How to install Py-Feat
 
+Py-Feat requires **Python 3.11+** (3.11, 3.12, and 3.13 are tested).
+
 ## Basic setup
-You can either install the latest stable version from Pypi using:
+
+We recommend [**uv**](https://docs.astral.sh/uv/) — a fast, modern Python
+package manager. Create an environment and install the latest stable release
+from PyPI:
 
 ```
-pip install py-feat
+uv venv --python 3.13        # creates .venv on Python 3.13 (3.11+ supported)
+uv pip install py-feat
 ```
 
-Or get the latest development version by installing directly from github:
+Then either activate the environment (`source .venv/bin/activate`) or run
+commands through it with `uv run`, e.g. `uv run python my_script.py`.
+
+To get the latest development version instead, install directly from GitHub:
 
 ```
-pip install git+https://github.com/cosanlab/py-feat.git
+uv pip install "git+https://github.com/cosanlab/py-feat.git"
 ```
 
-```{note}
-Py-Feat currently supports both CPU and GPU processing on NVIDIA cards. We have **experimental** support for GPUs on macOS which you can try with `device='auto'`. However, we currently advise using the default (`cpu`) on macOS until PyTorch support stabilizes.
-```
+!!! note
+    Prefer plain `pip`? Every command above works by dropping `uv`:
+    `pip install py-feat` or `pip install "git+https://github.com/cosanlab/py-feat.git"`.
 
-## Installation issues on arm-based macOS (e.g. m1, m2 etc)
+!!! note
+    Py-Feat supports CPU and NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon
+    GPUs via Metal (MPS). Pass `device='auto'` (or `device='mps'` / `device='cuda'`)
+    when constructing a `Detectorv1` to use the GPU; the default is `cpu`.
 
-If you're running into issues on arm-based macOS (e.g. m1, m2) you should install pytables using one of the methods below *before* installing py-feat:
-
-`pip install git+https://github.com/PyTables/PyTables.git`  
-OR  
-`conda install pytables`
-
-## Using Google Colab
-On any page in these docs, you can you can simply click on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() badges you see to open that page in [Google Colab](http://colab.research.google.com/).
-```{note}
-Make sure to add and run `!pip install py-feat` as the **first** cell into the Colab notebook before running any other code! 
-```
+## Running tutorials online (molab)
+Every tutorial page has an **Open in molab** button at the top that opens the
+notebook in [molab](https://molab.marimo.io), marimo's free hosted runtime — run
+the tutorials in your browser with no local install required.
 
 ## Development setup
 
-If you plan on contributing to py-feat then you might want to install an editable version so that any changes you make to source files are automatically reflected:
+To contribute to py-feat, install an editable copy so your source changes are
+picked up immediately:
 
 ```
-git clone https://github.com/cosanlab/py-feat.git  
-cd py-feat 
-pip install -e .
-pip install -r requirements-dev.txt
+git clone https://github.com/cosanlab/py-feat.git
+cd py-feat
+uv venv
+uv pip install -e .
+uv pip install -r requirements-dev.txt
 ```
+
+Run the test suite with `uv run pytest` (use `-m "not network"` to skip tests
+that download models from the HuggingFace Hub).
