@@ -363,7 +363,7 @@ def _(mo):
     mo.md(r"""
     You can also *animate* this expression to emphasize what's changing — pass the
     same classifier-weight vector as `end` (and a neutral face as `start`) to
-    `animate_face`. See [tutorial 3](03_plotting.md) for animation examples.
+    `animate_face`. See [tutorial 3](Plotting.md) for animation examples.
     """)
     return
 

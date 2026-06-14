@@ -59,7 +59,7 @@ fex = detector_v2.detect("face.jpg", data_type="image")
 ## Available models
 Py-feat includes several **pre-trained** models for Action Unit detection, Emotion detection, Face detection, Facial Landmark detection, and Face/Head post estimation. 
 
-You can check out the full list on the [pre-trained models page](./models.md).
+You can check out the full list on the [pre-trained models page](pages/models.md).
 
 ## Contributions 
 We are excited for people to add new models and features to Py-Feat. Please see the [contribution guides](https://cosanlab.github.io/feat/content/contribute.html). 
