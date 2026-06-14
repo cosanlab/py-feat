@@ -70,7 +70,7 @@ def _(mo):
 
     Before `Detectorv2`, Py-Feat used **`Detectorv1`** — a *modular* pipeline that glues together a **separate pre-trained model per sub-task** (face, landmarks, Action Units, emotion, head pose, identity). Reach for it when you want to **swap or disable a specific model** (e.g. `Detectorv1(emotion_model='svm')`) or need the classic modular behavior. It exposes the **same `.detect()` API** and returns the same kind of `Fex` object, so everything below works with either detector.
 
-    `Detectorv2` is the recommended default for new work; see the [two-detector overview](/intro.md#two-detectors-detector-and-detectorv2) for a full comparison.
+    `Detectorv2` is the recommended default for new work; see the [two-detector overview](/#two-detectors-detectorv1-and-detectorv2) for a full comparison.
     """)
     return
 

@@ -11,8 +11,8 @@
       "body_path": "basic_tutorials/Detecting_Images.md",
       "body_sig": "sha256:4c4e305045e2aef53fcf26acab085af375017c16874eb9d61dbf75bca9615973",
       "marimo_book_version": "0.1.23",
-      "rendered_at": "2026-06-14T03:37:50+00:00",
-      "src_hash": "3b811c40dbfd20dc0f8301cafdcb3c9b7630e494b5d707f00b2185a10e68379c"
+      "rendered_at": "2026-06-14T03:55:19+00:00",
+      "src_hash": "19a50069ab326f8fc52fa310b8c5c30683eca8f0ba1167082ca55b9d24d46e7b"
     },
     "basic_tutorials/Detecting_Videos.py": {
       "body_path": "basic_tutorials/Detecting_Videos.md",
