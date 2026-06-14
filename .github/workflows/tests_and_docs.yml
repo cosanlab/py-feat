@@ -65,7 +65,14 @@ jobs:
           fi
 
       - name: Install Dependencies
-        run: uv pip install --system . -r requirements-dev.txt
+        run: |
+          # uv won't install into a uv-managed Python with --system ("No system
+          # Python installation found"), so create an explicit venv and put it on
+          # PATH for later steps (.venv/bin on Linux/macOS, .venv/Scripts on Windows).
+          uv venv --python ${{ matrix.python-version }}
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          echo "$PWD/.venv/Scripts" >> "$GITHUB_PATH"
+          uv pip install . -r requirements-dev.txt
 
       # Persist HF model downloads across runs. Without this every matrix job
       # pulls retinaface/xgb/resmasknet from the Hub at test-collection time on
