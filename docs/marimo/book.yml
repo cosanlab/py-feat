@@ -15,6 +15,14 @@ launch_buttons:
 dependencies:
   mode: env
 
+# Auto-generated Py-feat Live changelog (see content/pyfeatlive_changelog.md).
+# Regenerate with `marimo-book sync-releases` — keep it current via a
+# repository_dispatch from pyfeat-live's release workflow. Drafts excluded.
+release_notes:
+  repo: cosanlab/pyfeat-live
+  output: content/pyfeatlive_changelog.md
+  title: "Py-feat Live — Changelog"
+
 toc:
   - file: content/intro.md
   - file: content/01_basics.py
@@ -25,3 +33,7 @@ toc:
   # and commit the cached output, then enable it here as `mode: cached`.
   # - file: content/04_fex_analysis.py
   #   mode: cached
+  - section: Py-feat Live
+    children:
+      - file: content/pyfeat_live.md
+      - file: content/pyfeatlive_changelog.md

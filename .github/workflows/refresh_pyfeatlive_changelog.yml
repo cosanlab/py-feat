@@ -1,0 +1,58 @@
+name: Refresh Py-feat Live changelog
+
+# Regenerates docs/marimo/content/pyfeatlive_changelog.md from the pyfeat-live
+# GitHub Releases and opens a PR when it changes. Triggers:
+#   - schedule: a daily catch-all (works with no extra setup)
+#   - workflow_dispatch: run it manually
+#   - repository_dispatch (type: pyfeatlive-release): fired by pyfeat-live's
+#     release workflow for an instant update on each release (needs the sender
+#     step + a PAT secret in pyfeat-live; the daily run covers it until then)
+#
+# `sync-releases` only fetches releases + writes Markdown, so this job installs
+# just marimo-book (no torch / feat) and runs in seconds.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 7 * * *"
+  repository_dispatch:
+    types: [pyfeatlive-release]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    name: Regenerate changelog and open a PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install marimo-book
+        run: python3 -m pip install "marimo-book[api]>=0.1.24"
+
+      - name: Regenerate changelog
+        env:
+          # The default token can read PUBLIC repos' releases. If pyfeat-live
+          # is private, add a PAT secret with read access and use it here.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: marimo-book sync-releases -b docs/marimo/book.yml
+
+      - name: Open a PR if the changelog changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          add-paths: docs/marimo/content/pyfeatlive_changelog.md
+          branch: bot/refresh-pyfeatlive-changelog
+          delete-branch: true
+          title: "docs: refresh Py-feat Live changelog"
+          commit-message: "docs: refresh Py-feat Live changelog from GitHub Releases"
+          body: |
+            Automated refresh of the Py-feat Live changelog from the
+            [pyfeat-live](https://github.com/cosanlab/pyfeat-live/releases)
+            GitHub Releases, via `marimo-book sync-releases`.
