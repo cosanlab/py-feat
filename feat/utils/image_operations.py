@@ -1161,11 +1161,20 @@ def extract_face_from_bbox_torch(
     width = (x2 - x1) * expand_bbox
     height = (y2 - y1) * expand_bbox
 
-    # Calculate expanded bounding box coordinates
-    new_x1 = (center_x - width / 2).clamp(min=0)
-    new_y1 = (center_y - height / 2).clamp(min=0)
-    new_x2 = (center_x + width / 2).clamp(max=W)
-    new_y2 = (center_y + height / 2).clamp(max=H)
+    # Expanded bounding box coordinates. Do NOT clamp these to the frame.
+    # Clamping a partially-off-frame box changes the *crop framing* — the
+    # face fills more of the square and sits off-center — which pushes the
+    # landmark/mesh head out of its training distribution and shifts/
+    # compresses the predicted landmarks (e.g. the mesh rides high when the
+    # forehead clips the top edge). Keeping the full expanded box preserves
+    # consistent framing; `grid_sample(..., padding_mode="zeros")` below
+    # renders the off-frame region black, and the same unclamped box is used
+    # by `inverse_transform_landmarks_torch`, so coordinates map back
+    # correctly regardless of frame edges.
+    new_x1 = center_x - width / 2
+    new_y1 = center_y - height / 2
+    new_x2 = center_x + width / 2
+    new_y2 = center_y + height / 2
 
     # Cast the bounding box coordinates to long for indexing. Round (not
     # truncate): plain .long() floors, so a sub-pixel-jittering box snaps
@@ -1210,8 +1219,12 @@ def extract_face_from_bbox_torch(
         face_indices = frame_idx.to(device=device, dtype=torch.long)
     frame_expanded = frame[face_indices]  # Select corresponding frame for each face
 
-    # Use grid_sample to extract and resize faces
-    cropped_faces = F.grid_sample(frame_expanded, grid, align_corners=False)
+    # Use grid_sample to extract and resize faces. padding_mode="zeros"
+    # (the default, made explicit) renders any off-frame region of the
+    # unclamped expanded box as black, keeping the crop framing consistent.
+    cropped_faces = F.grid_sample(
+        frame_expanded, grid, align_corners=False, padding_mode="zeros"
+    )
 
     # The output shape should be (N, C, face_size, face_size)
     return cropped_faces, new_bboxes
