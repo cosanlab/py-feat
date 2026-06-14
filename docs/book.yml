@@ -53,6 +53,14 @@ api_docs:
     - feat.pretrained
     - feat.utils
     - feat.transforms
+  # feat's docstrings are Google-style with wrapped (under-indented) parameter
+  # descriptions and few signature type annotations, so griffe emits hundreds of
+  # non-fatal parse warnings (missing types, wrapped lines mis-read as params).
+  # The rendered API reference is unaffected, so silence the docstring parser
+  # rather than churn every docstring. Re-enable if the docstrings are normalized.
+  options:
+    docstring_options:
+      warnings: false
 
 # NOTE: Google Analytics (old UA-113777015-5) is Universal Analytics, which
 # Google retired. Wire a GA4 property here when one exists:

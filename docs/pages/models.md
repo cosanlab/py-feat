@@ -6,7 +6,7 @@ Below is a list of detectors included in Py-Feat and ready to use. The model nam
     All py-feat models are hosted on the [**`py-feat` organization on HuggingFace**](https://huggingface.co/py-feat) and downloaded automatically to a local cache the first time they are used. Each model below links to its HuggingFace model card, where you can find the upstream code, reference paper, and full license terms. The project homepage is [py-feat.org](https://py-feat.org/).
 
 !!! note
-    The face / landmark / AU / emotion / identity / gaze models in the sections below are the *swappable components of the modular* **`Detectorv1` (v1)**. **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [Py-Feat v2 overview](./intro.md#introducing-py-feat-v2).
+    The face / landmark / AU / emotion / identity / gaze models in the sections below are the *swappable components of the modular* **`Detectorv1` (v1)**. **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [Py-Feat v2 overview](../index.md#introducing-py-feat-v2).
 
 You can specify any of these models for use in the `Detectorv1` class by passing in the name as a string, e.g.
 

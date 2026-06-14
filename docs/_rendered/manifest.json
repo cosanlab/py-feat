@@ -4,15 +4,15 @@
       "body_path": "basic_tutorials/Analysis.md",
       "body_sig": "sha256:4c4e305045e2aef53fcf26acab085af375017c16874eb9d61dbf75bca9615973",
       "marimo_book_version": "0.1.23",
-      "rendered_at": "2026-06-14T03:38:46+00:00",
-      "src_hash": "40a3c0b9f16fe1c0cabd485ba030cffc63e89dca18c63a3a691d880d126a16dc"
+      "rendered_at": "2026-06-14T04:13:56+00:00",
+      "src_hash": "a050d1e465f25270bbb0f4f12c402879ee371e6165e4c8a6e3a4de210afeeed9"
     },
     "basic_tutorials/Detecting_Images.py": {
       "body_path": "basic_tutorials/Detecting_Images.md",
       "body_sig": "sha256:4c4e305045e2aef53fcf26acab085af375017c16874eb9d61dbf75bca9615973",
       "marimo_book_version": "0.1.23",
-      "rendered_at": "2026-06-14T03:55:19+00:00",
-      "src_hash": "19a50069ab326f8fc52fa310b8c5c30683eca8f0ba1167082ca55b9d24d46e7b"
+      "rendered_at": "2026-06-14T04:13:00+00:00",
+      "src_hash": "a21648b35228f325696663d89849f8fafda530aef9c44492f082c008a1dfba0d"
     },
     "basic_tutorials/Detecting_Videos.py": {
       "body_path": "basic_tutorials/Detecting_Videos.md",
