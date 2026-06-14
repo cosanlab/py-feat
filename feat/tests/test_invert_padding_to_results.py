@@ -1,6 +1,6 @@
 """Parity test for the vectorized invert_padding_to_results helper.
 
-Replaces a per-frame loop in `Detector.detect()` and `MPDetector.detect()` that
+Replaces a per-frame loop in `Detectorv1.detect()` and `MPDetector.detect()` that
 recomputed `compute_original_image_size`, extracted Padding/Scale numpy arrays,
 and rewrote ~140 columns *per frame* via `df.loc[mask, col]`. The helper does
 the same work in O(rows + landmarks) by hoisting the once-per-batch lookups

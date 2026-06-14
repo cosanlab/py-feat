@@ -45,7 +45,7 @@ feat/
     - `__init__.py` (this can be empty)
     - `mynewmodel_model.py` (this should end in `_model`)
     - `mynewmodel_test.py` (this should end in `_test`)
-3. Your model should be a class that has the appropriate method that a `Detector` can call. For example, Emotion detectors should have the method `mynewmodel.detect_emotions()` that can be called: 
+3. Your model should be a class that has the appropriate method that a `Detectorv1` can call. For example, Emotion detectors should have the method `mynewmodel.detect_emotions()` that can be called: 
     ```
     class myNewModel(): 
         ## code to init and load model

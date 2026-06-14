@@ -92,7 +92,7 @@ def download_url(*args, **kwargs):
 
 
 def read_feat(fexfile):
-    """This function reads files extracted using the Detector from the Feat package.
+    """This function reads files extracted using the Detectorv1 from the Feat package.
 
     Args:
         fexfile: Path to facial expression file.

@@ -26,16 +26,16 @@ verbatim as the README on the HuggingFace repo
 ## Usage
 
 ```python
-from feat import Detector
+from feat import Detectorv1
 
 # Default in v0.7+
-detector = Detector()
+detector = Detectorv1()
 
 # Or explicit:
-detector = Detector(identity_model="arcface")
+detector = Detectorv1(identity_model="arcface")
 
 # To pin the prior FaceNet for backwards compatibility:
-detector = Detector(identity_model="facenet")
+detector = Detectorv1(identity_model="facenet")
 ```
 
 ## License at a glance

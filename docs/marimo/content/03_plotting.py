@@ -141,7 +141,7 @@ def _(mo):
     The synthetic-face example above takes a manually-specified gaze 4-vector.
     For real images, py-feat 0.7+ includes the **L2CS** gaze model
     (Abdelrahman et al. 2022, ResNet50) — the default `gaze_model` for both
-    `Detector` and `MPDetector`. After running detection, the resulting `Fex`
+    `Detectorv1` and `MPDetector`. After running detection, the resulting `Fex`
     DataFrame has `gaze_pitch` and `gaze_yaw` columns (radians), and
     `Fex.plot_detections(gazes=True)` automatically draws a gaze arrow from each
     face's bbox center in the predicted direction.
@@ -151,12 +151,12 @@ def _(mo):
 
 @app.cell
 def _():
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
     from feat.utils.io import get_test_data_path as _gtdp
     import os as _os
 
-    # Run the Detector on a real image. gaze_model='l2cs' is the default in v0.7.
-    gaze_detector = Detector(au_model="xgb", emotion_model=None, identity_model=None)
+    # Run the Detectorv1 on a real image. gaze_model='l2cs' is the default in v0.7.
+    gaze_detector = Detectorv1(au_model="xgb", emotion_model=None, identity_model=None)
     fex_real = gaze_detector.detect([_os.path.join(_gtdp(), "multi_face.jpg")])
 
     # fex_real has gaze_pitch / gaze_yaw columns (radians) for each detected face.
@@ -166,7 +166,7 @@ def _():
     # plot_detections renders a yellow gaze arrow from each face's bbox center
     # in the predicted direction, overlaid on the detected landmarks.
     fex_real.plot_detections(faces="landmarks", gazes=True, muscles=False)
-    return (Detector,)
+    return (Detectorv1,)
 
 
 @app.cell(hide_code=True)
@@ -401,7 +401,7 @@ def _(mo):
     mo.md(r"""
     ## 3.5 Bridging 68-pt landmarks to the 3D mesh
 
-    If you already ran the standard `Detector` (img2pose + mobilefacenet 68-pt) on
+    If you already ran the standard `Detectorv1` (img2pose + mobilefacenet 68-pt) on
     an image, you can convert those 2D landmarks into a 478-vertex 3D mesh using
     the `predict_mesh_from_dlib68` bridge. Internally, the function aligns your raw
     landmarks to a saved reference frame (Procrustes), applies a PCA-bottleneck
@@ -417,11 +417,11 @@ def _(mo):
 
 
 @app.cell
-def _(Detector, np, plot_face_mesh, plt):
+def _(Detectorv1, np, plot_face_mesh, plt):
     from feat.plotting import predict_mesh_from_dlib68
     from feat.utils.io import get_test_data_path as _gtdp
     import os as _os
-    detector = Detector(au_model='xgb', emotion_model=None, identity_model=None)
+    detector = Detectorv1(au_model='xgb', emotion_model=None, identity_model=None)
     fex = detector.detect([_os.path.join(_gtdp(), 'single_face.jpg')])
     x, y = fex.landmarks_dlib68_xy()
     landmarks_68 = np.column_stack([x[0], y[0]])
@@ -430,7 +430,7 @@ def _(Detector, np, plot_face_mesh, plt):
     _fig = plt.figure(figsize=(5, 5))
     _ax = _fig.add_subplot(111, projection='3d')
     plot_face_mesh(mesh=mesh, ax=_ax, mode='tesselation')
-    _ax.set_title('3D mesh reconstructed from Detector 68-pt landmarks')
+    _ax.set_title('3D mesh reconstructed from Detectorv1 68-pt landmarks')
     _fig
     return
 

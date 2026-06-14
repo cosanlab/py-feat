@@ -1,14 +1,14 @@
-"""Tests for the RetinaFace-R34 port + Detector integration.
+"""Tests for the RetinaFace-R34 port + Detectorv1 integration.
 
 Pins three layers of contract:
 
 1. **Model**: ``RetinaFace`` constructs cleanly and produces the right
    tensor shapes for a batched input.
-2. **Wrapper**: ``Retinaface`` (the ``__call__`` interface used by Detector
+2. **Wrapper**: ``Retinaface`` (the ``__call__`` interface used by Detectorv1
    and pretrained.py) does its postprocess on-device, accepts batches,
    and produces equivalent per-image output for both batched and serial
    calls.
-3. **Detector integration**: ``Detector(face_model='retinaface')``
+3. **Detectorv1 integration**: ``Detectorv1(face_model='retinaface')``
    builds, detects faces in a real test image, and propagates NaN-filled
    pose columns (since R34 has no head-pose regression).
 
@@ -88,39 +88,39 @@ def test_retinaface_model_rejects_non_resnet34_cfg():
         RetinaFace(bad_cfg)
 
 
-# -------------------- Detector / MPDetector face_model validation -------
+# -------------------- Detectorv1 / MPDetector face_model validation -------
 
 
 def test_detector_supports_retinaface():
-    """`face_model='retinaface'` must be a recognized value on `Detector`,
+    """`face_model='retinaface'` must be a recognized value on `Detectorv1`,
     same as on `MPDetector`. The shorter name is the canonical kwarg
     across both classes; the underlying HF repo retains the
     backbone-tagged `py-feat/retinaface_r34` filename."""
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
 
-    assert "retinaface" in Detector._SUPPORTED_FACE_MODELS
-    assert "img2pose" in Detector._SUPPORTED_FACE_MODELS
+    assert "retinaface" in Detectorv1._SUPPORTED_FACE_MODELS
+    assert "img2pose" in Detectorv1._SUPPORTED_FACE_MODELS
     # Sanity: the tagged-backbone alias from earlier v0.7-dev iterations
     # is no longer accepted - users must move to the unified spelling.
-    assert "retinaface_r34" not in Detector._SUPPORTED_FACE_MODELS
+    assert "retinaface_r34" not in Detectorv1._SUPPORTED_FACE_MODELS
 
 
 def test_detector_rejects_unknown_face_model():
     """Validation must surface a clear error before any weight download."""
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
 
     with pytest.raises(ValueError, match="face_model must be one of"):
-        Detector(face_model="not_a_real_model")
+        Detectorv1(face_model="not_a_real_model")
 
 
 def test_detector_rejects_legacy_retinaface_r34_kwarg():
     """The `'retinaface_r34'` alias was dropped in v0.7.0 in favor of
     the shorter `'retinaface'`. Users on `v0.7-dev` who were already
     passing the old name must update."""
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
 
     with pytest.raises(ValueError, match="face_model must be one of"):
-        Detector(face_model="retinaface_r34")
+        Detectorv1(face_model="retinaface_r34")
 
 
 # -------------------- wrapper-level (needs weights) ----------------------
@@ -205,12 +205,12 @@ def test_wrapper_batched_matches_serial():
         )
 
 
-# -------------------- Detector integration -------------------------------
+# -------------------- Detectorv1 integration -------------------------------
 
 
 @pytest.mark.skipif(not _have_weights(), reason="local R34 safetensors not present")
 def test_detector_with_retinaface_detects_multi_face():
-    """End-to-end: Detector(face_model='retinaface') -> detect() -> Fex.
+    """End-to-end: Detectorv1(face_model='retinaface') -> detect() -> Fex.
     Verifies the dispatch in detect_faces, the per-frame extraction path,
     and that pose columns end up NaN."""
     # Stub the HF download to point at the local safetensors so the test
@@ -228,9 +228,9 @@ def test_detector_with_retinaface_detects_multi_face():
 
     _utils.hf_hub_download_with_fallback = _local_download
     try:
-        from feat.detector import Detector
+        from feat.detector import Detectorv1
 
-        det = Detector(face_model="retinaface", device="cpu", au_model="svm")
+        det = Detectorv1(face_model="retinaface", device="cpu", au_model="svm")
         assert det.info["face_model"] == "retinaface"
         # facepose_model = 'pose_mlp' indicates pose came from the Pose-MLP
         # (distilled from img2pose) rather than img2pose's native regression.

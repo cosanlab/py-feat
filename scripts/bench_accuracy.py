@@ -116,9 +116,9 @@ def _build_detector(which: str, device: str):
         from feat.detector_v2 import Detectorv2
 
         return Detectorv2(device=device, identity_model=None), "py-feat-v2"
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
 
-    return Detector(device=device), "py-feat-v1"
+    return Detectorv1(device=device), "py-feat-v1"
 
 
 def _discover_splits():

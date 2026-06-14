@@ -47,12 +47,8 @@ __email__ = "jcheong0428@gmail.com, eshin.jolly@gmail.com, luke.j.chang@dartmout
 __all__ = ["detector", "data", "utils", "plotting", "transforms", "__version__", "detector_capabilities"]
 
 from .data import Fex  # noqa: F401, E402
-from .detector import Detector  # noqa: F401, E402
+from .detector import Detectorv1  # noqa: F401, E402
 from .detector_v2 import Detectorv2  # noqa: F401, E402
 from .pretrained import detector_capabilities  # noqa: F401, E402
-
-# Explicit version alias: Detectorv1 == the original Detector (XGB/SVM AU +
-# ResMaskNet emotion + L2CS gaze). Detector is kept for backward compat.
-Detectorv1 = Detector
 
 from .version import __version__  # noqa: E402

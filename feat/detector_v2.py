@@ -108,7 +108,7 @@ class Detectorv2(nn.Module):
     def detect_faces(self, images, face_detection_threshold=0.5):
         """RetinaFace detection + 256 crops. Returns per-frame dicts.
 
-        Mirrors Detector.detect_faces' batched-crop strategy: one grid_sample
+        Mirrors Detectorv1.detect_faces' batched-crop strategy: one grid_sample
         call across all faces in the batch, with no-detection frames carrying a
         single NaN-bbox placeholder so forward() sees >= 1 row per frame.
         """
@@ -398,7 +398,7 @@ class Detectorv2(nn.Module):
         # ---- Pose: multitask head -> canonical Fex [Pitch,Roll,Yaw,X,Y,Z].
         # Empirically the head's index 0 responds to PITCH and index 1 to YAW
         # (the inference docstring's [yaw,pitch,...] order is mislabeled).
-        # Map to the canonical convention used by the classic Detector (v1):
+        # Map to the canonical convention used by the classic Detectorv1 (v1):
         # +pitch=up, +yaw=turn to subject's right, +roll=tilt to subject's right.
         #   Pitch = +head[0]   Roll = -head[2]   Yaw = +head[1]
         # Pitch is NOT negated: on-camera, pitching UP gave a negative Pitch with

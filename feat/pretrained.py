@@ -30,11 +30,11 @@ __all__ = ["get_pretrained_models", "fetch_model", "load_model_weights", "detect
 def detector_capabilities():
     """Per-detector supported models, the single source of truth for what each
     detector class accepts. JSON-serializable (None stays None -> null)."""
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
     from feat.detector_v2 import Detectorv2
     from feat.MPDetector import MPDetector
     return {
-        "Detector": Detector.SUPPORTED_MODELS,
+        "Detectorv1": Detectorv1.SUPPORTED_MODELS,
         "Detectorv2": Detectorv2.SUPPORTED_MODELS,
         "MPDetector": MPDetector.SUPPORTED_MODELS,
     }

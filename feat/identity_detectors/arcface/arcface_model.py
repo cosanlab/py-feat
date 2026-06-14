@@ -3,7 +3,7 @@
 Loads InsightFace's ArcFace ResNet50 (the ``buffalo_l`` pack's
 ``w600k_r50.onnx`` converted to PyTorch ``.safetensors``) and exposes a
 ``forward(face_crops) -> [N, 512]`` interface compatible with the
-existing identity-detector contract in ``feat.detector.Detector`` and
+existing identity-detector contract in ``feat.detector.Detectorv1`` and
 ``feat.MPDetector.MPDetector``.
 
 Why ArcFace is now the default
@@ -118,7 +118,7 @@ def load_arcface_identity_detector(device, backbone: str = "r50"):
     """Build an ArcFace detector with the trained w600k_r50 weights loaded.
 
     ``ArcFace.__init__`` only constructs the architecture (random init), so the
-    embeddings are meaningless until the checkpoint is loaded. Both Detector and
+    embeddings are meaningless until the checkpoint is loaded. Both Detectorv1 and
     Detectorv2 need that load; keep it here as the single source of truth.
 
     strict=False because BatchNorm's ``num_batches_tracked`` buffer isn't in the

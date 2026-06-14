@@ -23,7 +23,7 @@ def _(mo):
     In this tutorial we'll show how easily it is to not only reproduce their decoding analysis with py-feat, but just as easily perform additional analyses. Specifically we'll:
 
     1. Download 20 of the first subject's videos (the full dataset is available on [OSF](https://osf.io/6tbwj/)
-    2. Extract facial features using the `Detector`
+    2. Extract facial features using the `Detectorv1`
     3. Aggregate and summarize detections per video using `Fex`
     2. Train and test a decoder to classify *good* vs *bad* news using extracted emotions, AUs, and poses
     3. Run a fMRI style "mass-univariate" comparison across all AUs between conditions
@@ -44,7 +44,7 @@ def _(mo):
     mo.md(r"""
     ## 4.1 The data
 
-    We'll analyze 20 short clips from the [Watson & Johnston (2020)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335) "good news vs bad news" dataset — 10 of each. To keep this tutorial fast and offline, the per-frame `Detector` outputs are **pre-computed and bundled with the docs** under `docs/data/news_sample/`, so we load them directly instead of downloading videos and re-running detection. The full dataset is on [OSF](https://osf.io/6tbwj/).
+    We'll analyze 20 short clips from the [Watson & Johnston (2020)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335) "good news vs bad news" dataset — 10 of each. To keep this tutorial fast and offline, the per-frame `Detectorv1` outputs are **pre-computed and bundled with the docs** under `docs/data/news_sample/`, so we load them directly instead of downloading videos and re-running detection. The full dataset is on [OSF](https://osf.io/6tbwj/).
     """)
     return
 
@@ -61,7 +61,7 @@ def _():
 
     sns.set_context("talk")
 
-    # Pre-computed per-frame Detector outputs (xgb AUs + resmasknet emotions +
+    # Pre-computed per-frame Detectorv1 outputs (xgb AUs + resmasknet emotions +
     # head pose) for the 20 bundled clips. Generated once with
     # `detector.detect(video, data_type="video", skip_frames=2)` and committed
     # under docs/data/news_sample/ so this tutorial runs offline.
@@ -87,12 +87,12 @@ def _(mo):
     mo.md(r"""
     ## 4.2 How the detections were generated
 
-    The bundled CSVs were produced by running the `Detector` over each clip and saving its per-frame output. You don't need to run this — we load the saved CSVs in the next section — but here's the code that made them:
+    The bundled CSVs were produced by running the `Detectorv1` over each clip and saving its per-frame output. You don't need to run this — we load the saved CSVs in the next section — but here's the code that made them:
 
     ```python
-    from feat import Detector
+    from feat import Detectorv1
 
-    detector = Detector(
+    detector = Detectorv1(
         au_model="xgb", emotion_model="resmasknet", identity_model=None, device="auto"
     )
     for video in videos:

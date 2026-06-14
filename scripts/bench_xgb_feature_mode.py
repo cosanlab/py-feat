@@ -6,7 +6,7 @@ pcas, and classifiers as joblib + a ``feature_mode.json`` describing
 which PCAs were fit and how to compose features.
 
 This script loads those artifacts, swaps a custom inference path into
-the Detector's AU detector slot, and runs the standard DISFA+ eval.
+the Detectorv1's AU detector slot, and runs the standard DISFA+ eval.
 
 Usage:
     python scripts/bench_xgb_feature_mode.py \\
@@ -143,10 +143,10 @@ def main():
     print(f"    feature mode: {mode_info['feature_mode']} "
           f"(regions: {mode_info['regions_used']})")
 
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
     from feat.evaluation import datasets, runner
 
-    det = Detector(
+    det = Detectorv1(
         face_model=args.face_model,
         landmark_model=args.landmark_model,
         au_model="xgb",

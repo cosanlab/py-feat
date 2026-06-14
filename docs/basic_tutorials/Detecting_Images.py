@@ -10,7 +10,7 @@ def _():
     import torch
 
     # Use the best available device: CUDA (NVIDIA) > MPS (Apple Silicon) > CPU.
-    # Pass this to Detector(device=...) so the tutorial uses your GPU when present.
+    # Pass this to Detectorv1(device=...) so the tutorial uses your GPU when present.
     device = (
         "cuda"
         if torch.cuda.is_available()
@@ -26,7 +26,7 @@ def _(mo):
     mo.md(r"""
     # 1. Detecting facial expressions from images
 
-    In this tutorial we'll explore the `Detector` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images.
+    In this tutorial we'll explore the `Detectorv1` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images.
     """)
     return
 
@@ -47,7 +47,7 @@ def _(mo):
 
     The first time you initialize a detector, Py-Feat downloads the required pretrained weights from [our HuggingFace Repository](https://huggingface.co/py-feat) and caches them to disk; subsequent runs reuse the cached weights.
 
-    You can find a list of default models [on this page](/models.md). For the older modular detector, see the [legacy `Detector` (v1)](#legacy-the-modular-detector-v1) section just below.
+    You can find a list of default models [on this page](/models.md). For the older modular detector, see the [legacy `Detectorv1` (v1)](#legacy-the-modular-detectorv1-v1) section just below.
     """)
     return
 
@@ -66,9 +66,9 @@ def _(device):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Legacy: the modular `Detector` (v1)
+    ## Legacy: the modular `Detectorv1` (v1)
 
-    Before `Detectorv2`, Py-Feat used **`Detector`** — a *modular* pipeline that glues together a **separate pre-trained model per sub-task** (face, landmarks, Action Units, emotion, head pose, identity). Reach for it when you want to **swap or disable a specific model** (e.g. `Detector(emotion_model='svm')`) or need the classic modular behavior. It exposes the **same `.detect()` API** and returns the same kind of `Fex` object, so everything below works with either detector.
+    Before `Detectorv2`, Py-Feat used **`Detectorv1`** — a *modular* pipeline that glues together a **separate pre-trained model per sub-task** (face, landmarks, Action Units, emotion, head pose, identity). Reach for it when you want to **swap or disable a specific model** (e.g. `Detectorv1(emotion_model='svm')`) or need the classic modular behavior. It exposes the **same `.detect()` API** and returns the same kind of `Fex` object, so everything below works with either detector.
 
     `Detectorv2` is the recommended default for new work; see the [two-detector overview](/intro.md#two-detectors-detector-and-detectorv2) for a full comparison.
     """)
@@ -77,11 +77,11 @@ def _(mo):
 
 @app.cell
 def _(device):
-    from feat import Detector
+    from feat import Detectorv1
 
-    # The modular v1 Detector. Swap individual models via kwargs, e.g.
-    # Detector(emotion_model='svm'). device was selected above (cuda/mps/cpu).
-    detector = Detector(device=device)
+    # The modular Detectorv1. Swap individual models via kwargs, e.g.
+    # Detectorv1(emotion_model='svm'). device was selected above (cuda/mps/cpu).
+    detector = Detectorv1(device=device)
     return (detector,)
 
 
@@ -194,7 +194,7 @@ def _(mo):
     mo.md(r"""
     `Detectorv2` also predicts continuous **valence** (unpleasant → pleasant) and
     **arousal** (calm → excited) — the two affective dimensions the modular v1
-    `Detector` does not produce. They're plain `Fex` columns:
+    `Detectorv1` does not produce. They're plain `Fex` columns:
     """)
     return
 
@@ -313,7 +313,7 @@ def _(mo):
 
 @app.cell
 def _(detector, single_face_img_path):
-    # AU-projection visualization (faces='aus') uses the v1 Detector's named xgb
+    # AU-projection visualization (faces='aus') uses Detectorv1's named xgb
     # AU model and its trained landmark viz model; Detectorv2's AUs have no
     # projection model, so we use the legacy detector here. See tutorial 03 for
     # more on AU visualization.
@@ -376,7 +376,7 @@ def _(mo):
     mo.md(r"""
     ## 1.6 Detecting multiple faces from a single image
 
-    A `Detector` will automatically find multiple faces in a single image and will create 1 row per detected face in the `Fex` object it outputs.
+    A `Detectorv1` will automatically find multiple faces in a single image and will create 1 row per detected face in the `Fex` object it outputs.
 
     Notice how `image_prediction` is now a `Fex` instance with 5 rows, one for each detected face. We can confirm this by plotting our detection results like before:
     """)
@@ -405,7 +405,7 @@ def _(mo):
     mo.md(r"""
     ## 1.7 Working with multiple images
 
-    `Detector` is also flexible enough to process multiple image files if `.detect()` is passed a list of images. By default images will be processed serially, but you can set `batch_size > 1` to process multiple images in a *batch* and speed up processing. **NOTE: All images in a batch must have the same dimensions for batch processing.** This is because behind the scenes, `Detector` is assembling a *tensor* by stacking images together. You can ask `Detector` to rescale images by padding and preserving proportions using the `output_size` in conjunction with `batch_size`. For example, the following would process a list of images in batches of 5 images at a time resizing each so one axis is 512:
+    `Detectorv1` is also flexible enough to process multiple image files if `.detect()` is passed a list of images. By default images will be processed serially, but you can set `batch_size > 1` to process multiple images in a *batch* and speed up processing. **NOTE: All images in a batch must have the same dimensions for batch processing.** This is because behind the scenes, `Detectorv1` is assembling a *tensor* by stacking images together. You can ask `Detectorv1` to rescale images by padding and preserving proportions using the `output_size` in conjunction with `batch_size`. For example, the following would process a list of images in batches of 5 images at a time resizing each so one axis is 512:
 
     `detector_v2.detect(img_list, batch_size=5, output_size=512) # without output_size this would raise an error if image sizes differ!`
 

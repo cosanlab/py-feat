@@ -137,10 +137,10 @@ def test_mpdetector_l2cs_gaze_smoke():
     reason="py-feat/l2cs weights not on HF yet",
 )
 def test_detector_l2cs_gaze_smoke():
-    """L2CS gaze path on classic Detector: columns exist, values finite."""
-    from feat.detector import Detector
+    """L2CS gaze path on classic Detectorv1: columns exist, values finite."""
+    from feat.detector import Detectorv1
 
-    det = Detector(
+    det = Detectorv1(
         face_model="img2pose",
         landmark_model="mobilefacenet",
         au_model=None,

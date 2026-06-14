@@ -1,4 +1,4 @@
-"""Batched-vs-singleton parity tests for Detector.detect_faces.
+"""Batched-vs-singleton parity tests for Detectorv1.detect_faces.
 
 The current detect_faces runs img2pose one frame at a time inside a
 ``for i in range(frames.size(0))`` loop. Phase 1.3 of the speedup spec
@@ -25,7 +25,7 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from feat.detector import Detector
+from feat.detector import Detectorv1
 from feat.utils.io import get_test_data_path
 
 
@@ -33,7 +33,7 @@ from feat.utils.io import get_test_data_path
 # is intermittent; falling back to svm here makes the suite runnable).
 @pytest.fixture(scope="module")
 def detector():
-    return Detector(device="cpu", au_model="svm")
+    return Detectorv1(device="cpu", au_model="svm")
 
 
 @pytest.fixture(scope="module")

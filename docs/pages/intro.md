@@ -33,7 +33,7 @@ We still support our original version 1 of Py-FEAT that is described in [Cheong 
 
 **`Detectorv2`** runs a single **multi-task neural network** that predicts Action Units, emotions, valence/arousal, gaze, head pose, and a **478-point 3D MediaPipe FaceMesh** in *one* forward pass (plus optional identity embeddings). Because one network replaces the per-task model chain, it is **much faster — especially on single frames**, has improved performance on action unit and gaze prediction — and adds continuous valence/arousal and gaze that v1 does not produce. The trade-off is that the model set is fixed: you don't pick or disable individual components.
 
-| | `Detector` (v1) | `Detectorv2` (v2) |
+| | `Detectorv1` (v1) | `Detectorv2` (v2) |
 |---|---|---|
 | Architecture | modular, one model per task | single multi-task network |
 | Swap / disable models | yes | fixed set |

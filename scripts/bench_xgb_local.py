@@ -1,6 +1,6 @@
 """A/B bench a locally-trained xgb AU classifier against DISFA+ (or DISFA).
 
-Loads a Detector with the v2 xgb baseline, optionally swaps the AU detector
+Loads a Detectorv1 with the v2 xgb baseline, optionally swaps the AU detector
 with a local ``.skops`` file (so we don't have to upload to HF before
 testing), and runs the same regression metrics ``bench_regression.py``
 emits — but writes results into a dedicated ``bench-results/au_local/``
@@ -77,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--subset-size", type=int, default=4500)
     p.add_argument("--device", default=_device_default())
     p.add_argument("--batch-size", type=int, default=32,
-                   help="Detector forward-pass batch (retinaface bench was ~2 it/s at "
+                   help="Detectorv1 forward-pass batch (retinaface bench was ~2 it/s at "
                         "batch=4; batch=32+num_workers=8 brings it to ~10+ it/s).")
     p.add_argument("--num-workers", type=int, default=8,
                    help="DataLoader workers for image loading from disk/NAS.")
@@ -95,13 +95,13 @@ def main(argv: list[str] | None = None) -> int:
                         "v3.x benchmarks that bypassed face detection on the test set.")
     args = p.parse_args(argv)
 
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
     from feat.evaluation import datasets, runner
 
     print(f"=== bench [{args.label}] on {args.dataset} ({args.device}) ===")
     print(f"    au-skops: {args.au_skops or '(default v2 from HF)'}")
 
-    det = Detector(
+    det = Detectorv1(
         face_model=args.face_model,
         landmark_model=args.landmark_model,
         au_model="xgb",  # default; we'll swap if --au-skops provided

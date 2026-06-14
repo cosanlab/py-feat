@@ -1637,7 +1637,7 @@ class PLSAUMeshModel:
 
 
 # This is the 478-vertex 3D MESH viz, for the MediaPipe-mesh detectors
-# (Detectorv2, MPDetector). Detector/v1 emits 68-pt landmarks, so its AU
+# (Detectorv2, MPDetector). Detectorv1/v1 emits 68-pt landmarks, so its AU
 # visualization uses the 68-pt au_to_landmarks model (see plot_face), NOT this.
 # v5  = Detectorv2 v2.5 20-AU space (== AU_LANDMARK_MAP["Feat"]); the DEFAULT.
 # v4  = Detectorv2 v2.4 20-AU space (== AU_LANDMARK_MAP["Feat"]); prior default.
@@ -1717,7 +1717,7 @@ def load_face_mesh_viz_model(verbose=False, model_version="v5"):
             ``MPDetector``), ``"v4"`` (20-AU Detectorv2 v2.4 space), ``"v2"``
             (the original 20-AU model), or ``"v3"`` (24-AU Detectorv2 v2.3
             space; pass a 24-length AU vector).
-            ``Detector`` (v1) emits 68-point landmarks — visualize its AUs with
+            ``Detectorv1`` (v1) emits 68-point landmarks — visualize its AUs with
             the 68-pt ``au_to_landmarks`` model via ``plot_face`` instead.
 
     Returns:
@@ -1784,7 +1784,7 @@ def plot_face_mesh(
     selected by what the caller passes:
 
     - ``mesh`` given: draw that mesh directly (e.g., output of
-      ``predict_mesh_from_dlib68`` for a Detector Fex).
+      ``predict_mesh_from_dlib68`` for a Detectorv1 Fex).
     - ``au`` given: predict via the AU→mesh PLS model (PR #304).
     - neither: draw the population-mean rest mesh.
 
@@ -2670,7 +2670,7 @@ def animate_face_mesh_plotly(
 
 # ---------------------------------------------------------------------
 # 68-pt dlib landmarks → 478-vertex MediaPipe FaceMesh bridge.
-# Lets users with a Detector Fex (mobilefacenet 68-pt) reconstruct an
+# Lets users with a Detectorv1 Fex (mobilefacenet 68-pt) reconstruct an
 # approximate MP mesh, opening up plot_face_mesh + downstream 3D consumers
 # without a separate MPDetector pass. PCA-bottleneck linear regression
 # trained on 340K paired (dlib-68, MP-478) frames; OOS R² ≈ 0.48.
@@ -2799,8 +2799,8 @@ def load_landmarks68_to_mesh478_model(verbose=False):
 def predict_mesh_from_dlib68(landmarks_68, model=None):
     """Reconstruct a 478-vertex MP mesh from raw 68-pt dlib landmarks.
 
-    Bridges Detector output (mobilefacenet 68-pt landmarks in image-space
-    pixels) to the MediaPipe FaceMesh frame, so users with a Detector Fex
+    Bridges Detectorv1 output (mobilefacenet 68-pt landmarks in image-space
+    pixels) to the MediaPipe FaceMesh frame, so users with a Detectorv1 Fex
     can feed ``plot_face_mesh()`` or other 3D consumers without running
     MPDetector.
 

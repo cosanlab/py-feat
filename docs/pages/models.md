@@ -6,14 +6,14 @@ Below is a list of detectors included in Py-Feat and ready to use. The model nam
     All py-feat models are hosted on the [**`py-feat` organization on HuggingFace**](https://huggingface.co/py-feat) and downloaded automatically to a local cache the first time they are used. Each model below links to its HuggingFace model card, where you can find the upstream code, reference paper, and full license terms. The project homepage is [py-feat.org](https://py-feat.org/).
 
 !!! note
-    The face / landmark / AU / emotion / identity / gaze models in the sections below are the *swappable components of the modular* **`Detector` (v1)** (also importable as `Detectorv1`). **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [Py-Feat v2 overview](./intro.md#introducing-py-feat-v2).
+    The face / landmark / AU / emotion / identity / gaze models in the sections below are the *swappable components of the modular* **`Detectorv1` (v1)**. **`Detectorv2` (v2)** instead bundles a single multi-task network — see [Detectorv2: the multi-task model](#detectorv2-the-multi-task-model) below and the [Py-Feat v2 overview](./intro.md#introducing-py-feat-v2).
 
-You can specify any of these models for use in the `Detector` class by passing in the name as a string, e.g.
+You can specify any of these models for use in the `Detectorv1` class by passing in the name as a string, e.g.
 
 ```
-from feat import Detector
+from feat import Detectorv1
 
-detector = Detector(emotion_model='svm')
+detector = Detectorv1(emotion_model='svm')
 ```
 
 !!! note
@@ -59,7 +59,7 @@ All three landmark models use weights adapted from [`cunjian/pytorch_face_landma
 
 ## Gaze estimation
 
-- **`l2cs`: L2CS-Net: Fine-Grained Gaze Estimation in Unconstrained Environments** ([Abdelrahman et al., 2022](https://arxiv.org/abs/2203.03339)). A ResNet-based gaze regressor (trained on Gaze360 + MPIIFaceGaze) that predicts pitch/yaw gaze angles from a face crop. Default gaze model for both `Detector` and `MPDetector`. [Model card](https://huggingface.co/py-feat/l2cs) · License: MIT.
+- **`l2cs`: L2CS-Net: Fine-Grained Gaze Estimation in Unconstrained Environments** ([Abdelrahman et al., 2022](https://arxiv.org/abs/2203.03339)). A ResNet-based gaze regressor (trained on Gaze360 + MPIIFaceGaze) that predicts pitch/yaw gaze angles from a face crop. Default gaze model for both `Detectorv1` and `MPDetector`. [Model card](https://huggingface.co/py-feat/l2cs) · License: MIT.
 
 !!! note
     `MPDetector` can alternatively compute a lightweight **geometric** gaze estimate directly from the MediaPipe iris landmarks (no extra model) via `gaze_model='geometric'`. `Detectorv2` produces gaze as one of the outputs of its single multi-task network — see below.
@@ -71,7 +71,7 @@ All three landmark models use weights adapted from [`cunjian/pytorch_face_landma
   - **Face detection** is handled by **RetinaFace** (`Detectorv2` does not take a `face_model` kwarg — it hardcodes `'retinaface'`).
   - **Identity** is an optional branch: the default is `identity_model='arcface'`, and `identity_model='facenet'` is also supported (or `None` to skip identity embeddings). See the [Identity detection](#identity-detection) section above for the model cards and licenses. The ArcFace identity weights are non-commercial-research only.
 
-  Replacing v1's per-task model chain with one network makes `Detectorv2` substantially faster — especially on single frames — and adds valence/arousal + gaze that v1 does not produce. For up-to-date accuracy and speed comparisons against `Detector` (v1) and other toolkits, see the [accuracy](../benchmarks/accuracy.md) and [speed](../benchmarks/Speed.md) benchmarks.
+  Replacing v1's per-task model chain with one network makes `Detectorv2` substantially faster — especially on single frames — and adds valence/arousal + gaze that v1 does not produce. For up-to-date accuracy and speed comparisons against `Detectorv1` (v1) and other toolkits, see the [accuracy](../benchmarks/accuracy.md) and [speed](../benchmarks/Speed.md) benchmarks.
 
 ```python
 from feat import Detectorv2
@@ -87,9 +87,9 @@ These linear PLS / PCA models translate between the different feature spaces py-
 
 - **`au_to_landmarks`** ([`py-feat/au_to_landmarks`](https://huggingface.co/py-feat/au_to_landmarks)). PLS regression for the AU → 68-pt dlib-style landmark visualization (`feat.plotting.plot_face`, `feat.plotting.predict`). The repo hosts both the v2 model (default, trained on ~10K CelebV-HQ wild-celebrity videos with pose covariates; OOS R² = 0.794) and the legacy v1 model for backwards-compatible loading via `load_viz_model("pyfeat_aus_to_landmarks")`.
 
-- **`au_to_mesh`** ([`py-feat/au_to_mesh`](https://huggingface.co/py-feat/au_to_mesh)). PLS regression for AU → 478-vertex MediaPipe FaceMesh, consumed by `plot_face_mesh` and `predict_face_mesh`. This is the **478-mesh** visualization for the MediaPipe-mesh detectors — **`Detectorv2` and `MPDetector`**. (`Detector` (v1) emits 68-point landmarks, so its AU visualization uses the 68-point **`au_to_landmarks`** model above, *not* this mesh model.) Output lives in a pose-canonical, Procrustes-aligned, frontalized frame. The **default is `v4`** (`model_version="v4"`), fit from `Detectorv2`'s own predicted mesh on ~733K CelebV-HQ frames in the 20-AU `AU_LANDMARK_MAP['Feat']` space; the neutral mesh is aligned to the canonical MediaPipe face (frontal) and aspect-corrected to natural proportions. Earlier `v2` (original 20-AU) and `v3` (Detectorv2 24-AU) models remain available via `model_version=`.
+- **`au_to_mesh`** ([`py-feat/au_to_mesh`](https://huggingface.co/py-feat/au_to_mesh)). PLS regression for AU → 478-vertex MediaPipe FaceMesh, consumed by `plot_face_mesh` and `predict_face_mesh`. This is the **478-mesh** visualization for the MediaPipe-mesh detectors — **`Detectorv2` and `MPDetector`**. (`Detectorv1` (v1) emits 68-point landmarks, so its AU visualization uses the 68-point **`au_to_landmarks`** model above, *not* this mesh model.) Output lives in a pose-canonical, Procrustes-aligned, frontalized frame. The **default is `v4`** (`model_version="v4"`), fit from `Detectorv2`'s own predicted mesh on ~733K CelebV-HQ frames in the 20-AU `AU_LANDMARK_MAP['Feat']` space; the neutral mesh is aligned to the canonical MediaPipe face (frontal) and aspect-corrected to natural proportions. Earlier `v2` (original 20-AU) and `v3` (Detectorv2 24-AU) models remain available via `model_version=`.
 
-- **`landmarks68_to_mesh478`** ([`py-feat/landmarks68_to_mesh478`](https://huggingface.co/py-feat/landmarks68_to_mesh478)). PCA-bottleneck linear regression mapping 68-pt dlib landmarks (`Detector` output) to the 478-vertex MP mesh. Used by `predict_mesh_from_dlib68` so users with a `Detector` Fex can render the 3D mesh without a separate `MPDetector` pass. Trained on ~340K paired frames; OOS R² = 0.479 — substantially higher than the AU → mesh model because dlib landmarks share rich spatial information with the MP mesh that 20 AU intensities can't encode.
+- **`landmarks68_to_mesh478`** ([`py-feat/landmarks68_to_mesh478`](https://huggingface.co/py-feat/landmarks68_to_mesh478)). PCA-bottleneck linear regression mapping 68-pt dlib landmarks (`Detectorv1` output) to the 478-vertex MP mesh. Used by `predict_mesh_from_dlib68` so users with a `Detectorv1` Fex can render the 3D mesh without a separate `MPDetector` pass. Trained on ~340K paired frames; OOS R² = 0.479 — substantially higher than the AU → mesh model because dlib landmarks share rich spatial information with the MP mesh that 20 AU intensities can't encode.
 
 ## Model licenses
 

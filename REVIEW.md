@@ -43,7 +43,7 @@ maintainer runs the merge.
   expected vs. actual. Don't interrogate; one friendly ask.
 - **Check before treating as new.** Many v0.6-era requests are already handled
   in v0.7 (HuggingFace model hosting, disabling sub-models via
-  `Detector(identity_model=None)`, batched HOG, etc.). Cross-check `CLAUDE.md`
+  `Detectorv1(identity_model=None)`, batched HOG, etc.). Cross-check `CLAUDE.md`
   and recent closed issues; if resolved, say so and point to where.
 - **Roadmap awareness:** identity/tracking and real-time work is v0.8
   (`docs/superpowers/specs/2026-05-02-identity-detection-roadmap.md`);

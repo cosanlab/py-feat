@@ -29,7 +29,7 @@ uv pip install "git+https://github.com/cosanlab/py-feat.git"
 !!! note
     Py-Feat supports CPU and NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon
     GPUs via Metal (MPS). Pass `device='auto'` (or `device='mps'` / `device='cuda'`)
-    when constructing a `Detector` to use the GPU; the default is `cpu`.
+    when constructing a `Detectorv1` to use the GPU; the default is `cpu`.
 
 ## Running tutorials online (molab)
 Every tutorial page has an **Open in molab** button at the top that opens the

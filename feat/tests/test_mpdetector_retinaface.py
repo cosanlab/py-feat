@@ -3,11 +3,11 @@
 Before this PR landed, MPDetector(face_model='retinaface') raised a
 NotImplementedError because the v0.7 RetinaFace rebuild left MPDetector's
 face-detection path pointing at the deleted MobileNet0.25 class. Now it
-uses the same ResNet34 wrapper that Detector(face_model='retinaface')
+uses the same ResNet34 wrapper that Detectorv1(face_model='retinaface')
 uses, so end-to-end MPDetector with retinaface works again.
 
 Pin the contract:
-1. Construction succeeds with face_model='retinaface' on both Detector
+1. Construction succeeds with face_model='retinaface' on both Detectorv1
    and MPDetector. The same kwarg works in both classes (no alias
    table — the v0.7-dev `'retinaface_r34'` spelling has been dropped).
 2. detect() on multi_face.jpg returns a Fex with one row per detected face,

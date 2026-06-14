@@ -1,7 +1,7 @@
 """Tests for ``Fex.landmarks_dlib68_xy``.
 
 Pins the dispatch contract for the unified dlib-68 landmark accessor that
-makes ``plot_detections(faces='landmarks')`` work on both Detector (136-d)
+makes ``plot_detections(faces='landmarks')`` work on both Detectorv1 (136-d)
 and MPDetector (1434-d) Fex objects.
 
 All tests are offline — synthetic Fex objects with known landmark values
@@ -23,7 +23,7 @@ from feat.utils.blendshape_to_au import DLIB68_FROM_MP478
 # ---------------------------------------------------------------------
 
 def _make_dlib68_fex(n_rows: int = 3) -> Fex:
-    """Detector-style Fex: 136 landmark columns in axis-major layout
+    """Detectorv1-style Fex: 136 landmark columns in axis-major layout
     [x_0..x_67, y_0..y_67]. Encodes ``x_i = i`` and ``y_i = 100 + i`` per row
     so tests can verify positional indexing is correct."""
     data = {}
@@ -49,7 +49,7 @@ def _make_mp478_fex(n_rows: int = 3) -> Fex:
 
 
 # ---------------------------------------------------------------------
-# Detector path (136-d, axis-major)
+# Detectorv1 path (136-d, axis-major)
 # ---------------------------------------------------------------------
 
 class TestDlib68Path:
@@ -60,7 +60,7 @@ class TestDlib68Path:
         assert y.shape == (4, 68)
 
     def test_dataframe_form_values_axis_major_split(self):
-        """x[:, i] == i and y[:, i] == 100 + i for the canonical Detector layout."""
+        """x[:, i] == i and y[:, i] == 100 + i for the canonical Detectorv1 layout."""
         fex = _make_dlib68_fex(n_rows=2)
         x, y = fex.landmarks_dlib68_xy()
         for i in range(68):
