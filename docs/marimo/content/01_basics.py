@@ -52,7 +52,7 @@ def _(mo):
 
     Py-Feat also ships **`Detectorv2`**, which runs a single **multi-task neural network** instead of the modular pipeline above. In one forward pass it predicts Action Units, emotions, valence/arousal, gaze, head pose, and a **478-point 3D MediaPipe FaceMesh** — so it is **much faster, especially on single frames**, and adds valence/arousal + gaze that `Detectorv1` does not produce.
 
-    Use **`Detectorv1` (v1)** when you want to pick or disable specific models or need the classic 68-point landmarks; use **`Detectorv2` (v2)** when you want speed, the 478-point 3D mesh, or valence/arousal + gaze. Both return the same kind of `Fex` object, so the rest of this tutorial applies to either. See the [two-detector overview](/intro.md#two-detectors-detector-and-detectorv2) for a full comparison.
+    Use **`Detectorv1` (v1)** when you want to pick or disable specific models or need the classic 68-point landmarks; use **`Detectorv2` (v2)** when you want speed, the 478-point 3D mesh, or valence/arousal + gaze. Both return the same kind of `Fex` object, so the rest of this tutorial applies to either. See the [two-detector overview](/#two-detectors-detectorv1-and-detectorv2) for a full comparison.
     """)
     return
 
