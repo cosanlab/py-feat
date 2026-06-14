@@ -26,8 +26,9 @@ We benchmark each model on a standard datasets used in the field. We employ an h
 
 Adding a new model to the Py-FEAT toolbox is easy if you are familiar with Python, Github, package development, and follow the steps below.
 
-!!! note
-    It can be helpful to install Py-Feat in development mode so that changes to source files are immediately reflected in any scripts or notebooks that import Py-Feat. To do so, after cloning the code base, install Py-Feat using: `pip install -e .` For more details see the [general contribution guidelines](./contribute.md)
+```{note}
+It can be helpful to install Py-Feat in development mode so that changes to source files are immediately reflected in any scripts or notebooks that import Py-Feat. To do so, after cloning the code base, install Py-Feat using: `pip install -e .` For more details see the [general contribution guidelines](./contribute.md)
+```
 
 Pre-trained models in Py-Feat are organized into sub-folders in the source code based on the detector type:
 
@@ -55,12 +56,13 @@ feat/
         
             return [array with probabilities for 7 emotions]
     ```
-4. In `feat/pretrained.py`, add your model to the `PRETRAINED_MODELS` dictionary. If you're adding a new AU detector and it only supports specific AUs make sure to also add it to the `AU_LANDMARK_MAP`. You may also want to train a new `PLS` visualization model and save it as `.h5` file. See [this tutorial](https://github.com/cosanlab/py-feat/blob/main/docs/extra_tutorials/06_trainAUvisModel.ipynb) for details.
+4. In `feat/pretrained.py`, add your model to the `PRETRAINED_MODELS` dictionary. If you're adding a new AU detector and it only supports specific AUs make sure to also add it to the `AU_LANDMARK_MAP`. You may also want to train a new `PLS` visualization model and save it as `.h5` file. See [this tutorial](../extra_tutorials/trainAUvisModel.ipynb) for details.
 5. Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to `feat/resources/model_list.json`. 
 6. Follow the [general contribution guidelines](./contribute.md) to add tests and format your code
 7. When your tests pass create a pull-request against the `master`/`main` branch on github!
 
-!!! note
-    If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don't require you to restart the kernel:   
-    `%load_ext autoreload`  
-    `%autoreload 2`
+```{note}
+If you enjoy developing/testing in jupyter notebooks, it can be helpful to add the following lines of code into a cell at the top of yoru notebook so that source code changes don't require you to restart the kernel:   
+`%load_ext autoreload`  
+`%autoreload 2`
+```
