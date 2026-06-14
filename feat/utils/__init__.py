@@ -44,7 +44,7 @@ FEAT_IDENTITY_COLUMNS = ["Identity"] + [
 ]  # could add identity embeddings too (512)
 
 # Landmark counts. The "68" is the OpenFace / mobilefacenet 2D layout used
-# by the legacy Detector path; the "478" is the MediaPipe FaceMesh layout
+# by the legacy Detectorv1 path; the "478" is the MediaPipe FaceMesh layout
 # used by MPDetector. Spell them out so reshape() arithmetic and NaN-fill
 # shapes don't read as bare integers in hot-path code.
 N_OPENFACE_LANDMARKS = 68

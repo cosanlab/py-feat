@@ -131,7 +131,7 @@ def test_pickle_drops_cached_decoder():
 
 def test_dataloader_multi_worker_iterates_full_video():
     """Regression test for the multi-worker decoder pickling crash.
-    `Detector.detect_video(num_workers>0)` is a public path; if VideoDataset
+    `Detectorv1.detect_video(num_workers>0)` is a public path; if VideoDataset
     can't survive a fork, every multi-worker video call dies with
     'validateActiveStream … stream index=0 was not previously added'."""
     ds = VideoDataset(VIDEO)

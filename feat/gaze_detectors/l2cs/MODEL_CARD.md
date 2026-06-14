@@ -64,7 +64,7 @@ benchmark numbers are credited to the original authors. The py-feat
 project provides only:
 - A PyTorch port of the inference code at `feat/gaze_detectors/l2cs/l2cs_model.py`
 - This re-packaged `.safetensors` artifact for downstream safety
-- Integration with `feat.Detector` and `feat.MPDetector`'s pipelines
+- Integration with `feat.Detectorv1` and `feat.MPDetector`'s pipelines
 
 Training data are credited to:
 - Gaze360 — Kellnhofer, Recasens, Stent, Matusik, Torralba (MIT)

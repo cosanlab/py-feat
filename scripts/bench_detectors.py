@@ -1,4 +1,4 @@
-"""Apples-to-apples benchmark for Detector + MPDetector.
+"""Apples-to-apples benchmark for Detectorv1 + MPDetector.
 
 Sweeps face_model x device x batch_size (and optionally num_workers) on
 a fixed real video and a fixed image set. Prints per-frame ms and
@@ -31,10 +31,10 @@ Usage:
 
 What it covers (all three configurations process the same input with
 full-pipeline emotion + identity enabled, matching default user setup):
-    1. Detector(face_model='img2pose', au_model='xgb',
+    1. Detectorv1(face_model='img2pose', au_model='xgb',
                 emotion_model='resmasknet', identity_model='arcface')
                                                               (default path)
-    2. Detector(face_model='retinaface', au_model='xgb',
+    2. Detectorv1(face_model='retinaface', au_model='xgb',
                 emotion_model='resmasknet', identity_model='arcface')
                                                               (fast face-detect path)
     3. MPDetector(face_model='retinaface',
@@ -125,11 +125,11 @@ def banner(s: str) -> None:
 
 
 def _build_d_img2pose(device):
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
     # Default-style config: xgb AU (the public default), resmasknet
     # emotion, arcface identity, img2pose facepose. This matches what
     # most users run in production.
-    return Detector(
+    return Detectorv1(
         face_model="img2pose",
         au_model="xgb",
         emotion_model="resmasknet",
@@ -139,10 +139,10 @@ def _build_d_img2pose(device):
 
 
 def _build_d_retinaface(device):
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
     # Same full-config, swapped face model. Facepose falls back to
     # pnp_dlt automatically when face_model='retinaface'.
-    return Detector(
+    return Detectorv1(
         face_model="retinaface",
         au_model="xgb",
         emotion_model="resmasknet",

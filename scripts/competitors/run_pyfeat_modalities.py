@@ -53,9 +53,9 @@ def _build(which, device):
         from feat.detector_v2 import Detectorv2
 
         return Detectorv2(device=device, identity_model=None)
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
 
-    return Detector(device=device)
+    return Detectorv1(device=device)
 
 
 def _predict(detector, paths, batch_size):

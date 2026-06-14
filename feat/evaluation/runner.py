@@ -1,4 +1,4 @@
-"""Glue between a Detector instance and ground-truth labels.
+"""Glue between a Detectorv1 instance and ground-truth labels.
 
 ``evaluate_dataset(detector, dataset_split)`` runs the detector over the
 images in a :class:`DatasetSplit`, aligns the per-image top face back to
@@ -63,7 +63,7 @@ def _detect(
 def _top_face_per_frame(fex: pd.DataFrame) -> pd.DataFrame:
     """Keep only the highest-scoring face per ``frame`` row.
 
-    ``Detector.detect`` returns one row per detected face. For aligned-crop
+    ``Detectorv1.detect`` returns one row per detected face. For aligned-crop
     eval we expect one face per image and want a per-image row to align
     against the ground-truth DataFrame. Sort by FaceScore desc, then drop
     duplicate frames. Frames with zero detections will simply be absent
@@ -117,7 +117,7 @@ def evaluate_dataset(
 # Identity evaluation — bypasses face detection.
 #
 # CALFW / CPLFW / TinyFace crops are already face-aligned (224x224 RGB or
-# tiny surveillance crops). Running them through Detector.detect would
+# tiny surveillance crops). Running them through Detectorv1.detect would
 # waste cycles on a redundant retinaface pass *and* conflate face-detection
 # changes with identity-model changes. We load ArcFace directly and feed
 # the aligned crops in. The ArcFace wrapper auto-resizes to 112x112 and
@@ -126,7 +126,7 @@ def evaluate_dataset(
 
 
 def _load_arcface_direct(device: str = "cpu"):
-    """Load ArcFace and its weights without spinning up the full Detector."""
+    """Load ArcFace and its weights without spinning up the full Detectorv1."""
     from huggingface_hub import hf_hub_download
     from safetensors.torch import load_file
 

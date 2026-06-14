@@ -319,7 +319,7 @@ class InceptionResnetV1(nn.Module, PyTorchModelHubMixin):
         return x
 
 
-# FaceNet was trained on 160x160 chips, but py-feat's Detector (v1) has always
+# FaceNet was trained on 160x160 chips, but py-feat's Detectorv1 (v1) has always
 # fed it the same 112x112 [0,1] crops it uses everywhere else. Detectorv2 carries
 # faces at 256, so this wrapper resizes to 112 to keep v2's facenet embeddings
 # identical to v1's. Mirrors the ArcFace wrapper's resize-then-run contract so
@@ -360,7 +360,7 @@ class FaceNet(nn.Module):
 def load_facenet_identity_detector(device):
     """Build a FaceNet detector with the VGGFace2 weights loaded.
 
-    The single source of truth for the FaceNet load shared by Detector and
+    The single source of truth for the FaceNet load shared by Detectorv1 and
     Detectorv2 (parallels ``load_arcface_identity_detector``)."""
     from huggingface_hub import hf_hub_download
 

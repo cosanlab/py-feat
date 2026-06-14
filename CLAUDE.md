@@ -26,7 +26,7 @@ This block is REQUIRED on Python 3.13 + macOS. xgboost and torch link
 against different `libomp`/`libiomp5` dylibs on PyPI; both get `dlopen`'d at
 different addresses, their thread-pool TLS state diverges, and one runtime
 segfaults inside `__kmp_*` routines once both are exercised. The symptom is
-`Detector(au_model='xgb')` exiting 139 with no Python traceback.
+`Detectorv1(au_model='xgb')` exiting 139 with no Python traceback.
 
 Setting `OMP_NUM_THREADS=1` (only when not already set) sidesteps the
 divergent state. Performance impact is minor (xgboost AU classifiers are
@@ -40,7 +40,7 @@ independently). Bibliography:
 `KMP_DUPLICATE_LIB_OK=TRUE` was tried — it does NOT fix the segfault
 (only suppresses a startup check; PyTorch warns it can corrupt results).
 
-If you remove the OMP block, verify `Detector(au_model='xgb').detect(...)`
+If you remove the OMP block, verify `Detectorv1(au_model='xgb').detect(...)`
 runs end-to-end on Python 3.13 + macOS before merging.
 
 ### `_patch_xgboost_setstate_for_skops` in `feat/detector.py`
@@ -61,7 +61,7 @@ it's a 1000× speedup on construction.
 ### `face_model` kwarg
 
 `'retinaface_r34'` was dropped in v0.7.0. Only `'retinaface'` is accepted.
-`Detector` / `MPDetector` validate the `face_model` kwarg; `Detectorv2` takes
+`Detectorv1` / `MPDetector` validate the `face_model` kwarg; `Detectorv2` takes
 no `face_model` kwarg at all (it hardcodes `'retinaface'`). The HuggingFace repo
 is still named `py-feat/retinaface_r34` (we kept the backbone-tagged storage
 name) — the two are intentionally different.
@@ -131,7 +131,7 @@ the subject's right, +roll = tilt to the subject's right**, in **radians** (Fex
 columns are radians everywhere — img2pose dofs, Pose-MLP, mesh Umeyama, OpenFace
 imports). Consumers convert to degrees for display only.
 
-- **Classic `Detector`** (img2pose + Pose-MLP, which share img2pose's frame):
+- **Classic `Detectorv1`** (img2pose + Pose-MLP, which share img2pose's frame):
   normalized at the `feat_poses` assembly — `Pitch=-Pitch_raw, Yaw=+Roll_raw,
   Roll=-Yaw_raw`.
 - **`Detectorv2`** (multitask head): mapped at the Fex assembly —

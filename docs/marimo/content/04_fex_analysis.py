@@ -23,7 +23,7 @@ def _(mo):
     In this tutorial we'll show how easily it is to not only reproduce their decoding analysis with py-feat, but just as easily perform additional analyses. Specifically we'll:
 
     1. Download 20 of the first subject's videos (the full dataset is available on [OSF](https://osf.io/6tbwj/)
-    2. Extract facial features using the `Detector`
+    2. Extract facial features using the `Detectorv1`
     3. Aggregate and summarize detections per video using `Fex`
     2. Train and test a decoder to classify *good* vs *bad* news using extracted emotions, AUs, and poses
     3. Run a fMRI style "mass-univariate" comparison across all AUs between conditions
@@ -106,19 +106,19 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4.2 Extract facial features using `Detector`
+    ## 4.2 Extract facial features using `Detectorv1`
 
-    Now we'll initialize a new `Detector`, process each frame of each video using `.detect_video()`, and save the results to csv files named after the video.
+    Now we'll initialize a new `Detectorv1`, process each frame of each video using `.detect_video()`, and save the results to csv files named after the video.
     """)
     return
 
 
 @app.cell
 def _(os, tqdm, videos):
-    from feat import Detector
+    from feat import Detectorv1
 
     # Initialize the default detector
-    detector = Detector()
+    detector = Detectorv1()
 
     # Loop over and process each video and save results to csv
     for video in tqdm(videos):

@@ -32,7 +32,7 @@ uv pip install -r requirements-dev.txt
 
 Py-Feat runs on CPU, NVIDIA (CUDA) GPUs, and — since v0.7 — Apple Silicon GPUs
 via Metal (MPS). Pass `device='auto'` (or `'cuda'` / `'mps'`) when constructing a
-`Detector`; the default is `cpu`.
+`Detectorv1`; the default is `cpu`.
 
 ## Contributing
 

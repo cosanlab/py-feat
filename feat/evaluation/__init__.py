@@ -1,6 +1,6 @@
 """Regression / accuracy benchmarking for py-feat detectors.
 
-Compares Detector outputs against held-out labeled benchmarks (DISFA,
+Compares Detectorv1 outputs against held-out labeled benchmarks (DISFA,
 AffectNet, ...) and emits a metrics dict suitable for time-series tracking
 across py-feat versions. Throughput numbers live in
 ``scripts/bench_detectors.py``; this module is the accuracy counterpart.

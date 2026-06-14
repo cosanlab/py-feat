@@ -498,7 +498,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
             elif identity_model in ("arcface", "arcface_r50"):
                 # ArcFace ResNet50 (InsightFace buffalo_l). See
                 # feat.identity_detectors.arcface.arcface_model and the
-                # equivalent branch in feat.detector.Detector for rationale
+                # equivalent branch in feat.detector.Detectorv1 for rationale
                 # and license notes.
                 self.identity_detector = ArcFace(backbone="r50")
                 arcface_path = os.environ.get("FEAT_ARCFACE_R50_PATH")
@@ -508,7 +508,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                         filename="arcface_r50.safetensors",
                         cache_dir=get_resource_path(),
                     )
-                # See the equivalent branch in feat.detector.Detector for
+                # See the equivalent branch in feat.detector.Detectorv1 for
                 # the strict-vs-validation rationale.
                 missing, unexpected = self.identity_detector.net.load_state_dict(
                     load_file(arcface_path), strict=False
@@ -594,7 +594,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                     image_dets, dtype=torch.float32, device=self.device
                 )
                 # Drop detections below the score threshold (was ignored — every
-                # detection was kept regardless of confidence). Mirrors Detector
+                # detection was kept regardless of confidence). Mirrors Detectorv1
                 # / Detectorv2; the placeholder branch then treats a frame whose
                 # detections are all sub-threshold as a no-detection frame.
                 arr = arr[arr[:, 4] >= face_detection_threshold]
@@ -757,12 +757,12 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
                 # DLIB68_FROM_MP478 subsample is dlib-layout but not validated
                 # for HOG alignment, and MPDetector already surfaces AUs via the
                 # blendshape->AU model and supports 3D mesh visualization, so we
-                # don't wire SVM emotion here. Use Detector(emotion_model='svm')
+                # don't wire SVM emotion here. Use Detectorv1(emotion_model='svm')
                 # for the HOG/SVM path, or MPDetector(emotion_model='resmasknet').
                 raise NotImplementedError(
                     "MPDetector(emotion_model='svm') is not supported: the SVM "
                     "emotion classifier needs 68 OpenFace-layout landmarks at "
-                    "HOG-alignment quality. Use Detector(emotion_model='svm') "
+                    "HOG-alignment quality. Use Detectorv1(emotion_model='svm') "
                     "instead, or MPDetector(emotion_model='resmasknet')."
                 )
         else:
@@ -847,7 +847,7 @@ class MPDetector(nn.Module, PyTorchModelHubMixin):
 
         # Predict 20 FACS AU intensities from the 52 blendshapes via the
         # Cheong-style PLS regressor (py-feat/bs_to_au on HuggingFace). This
-        # gives MPDetector an AU-column output stream comparable to Detector's
+        # gives MPDetector an AU-column output stream comparable to Detectorv1's
         # xgb output, while retaining the blendshape columns alongside. The
         # one-time assertion guards against a future re-trained npz with a
         # shuffled au_columns order that would silently mislabel AU columns.

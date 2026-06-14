@@ -16,7 +16,7 @@ def _(mo):
     mo.md(r"""
     # 1. Detecting facial expressions from images
 
-    In this tutorial we'll explore the `Detector` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/02_detector_imgs.ipynb)
+    In this tutorial we'll explore the `Detectorv1` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/02_detector_imgs.ipynb)
     """)
     return
 
@@ -24,11 +24,11 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1.1 Downloading models from HuggingFace and setting up a `Detector`
+    ## 1.1 Downloading models from HuggingFace and setting up a `Detectorv1`
 
-    A `Detector` is a swiss-army-knife class that "glues" together a combination of *pre-trained* Face, Emotion, Pose, etc detection models into a single Python object. This allows us to provide a very easy-to-use high-level API, e.g. `detector.detect('my_image.jpg',data_type='image')`, which will automatically make use of the correct underlying model to solve the sub-tasks of identifying face locations, getting landmarks, extracting action units, etc.
+    A `Detectorv1` is a swiss-army-knife class that "glues" together a combination of *pre-trained* Face, Emotion, Pose, etc detection models into a single Python object. This allows us to provide a very easy-to-use high-level API, e.g. `detector.detect('my_image.jpg',data_type='image')`, which will automatically make use of the correct underlying model to solve the sub-tasks of identifying face locations, getting landmarks, extracting action units, etc.
 
-    The first time you initialize a `Detector` instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you from [our HuggingFace Repository](https://huggingface.co/py-feat) and save them to disk. Every time after that it will use existing model weights.
+    The first time you initialize a `Detectorv1` instance on your computer will take a moment as Py-Feat will automatically download required pretrained model weights for you from [our HuggingFace Repository](https://huggingface.co/py-feat) and save them to disk. Every time after that it will use existing model weights.
 
     You can find a list of default models [on this page](/models.md).
     """)
@@ -37,12 +37,12 @@ def _(mo):
 
 @app.cell
 def _():
-    from feat import Detector
+    from feat import Detectorv1
 
-    detector = Detector()
+    detector = Detectorv1()
 
     # You can change which models you want during initialization, e.g.
-    # detector = Detector(emotion_model='svm')
+    # detector = Detectorv1(emotion_model='svm')
     return
 
 @app.cell(hide_code=True)
@@ -50,9 +50,9 @@ def _(mo):
     mo.md(r"""
     ## 1.1b A faster alternative: `Detectorv2`
 
-    Py-Feat also ships **`Detectorv2`**, which runs a single **multi-task neural network** instead of the modular pipeline above. In one forward pass it predicts Action Units, emotions, valence/arousal, gaze, head pose, and a **478-point 3D MediaPipe FaceMesh** — so it is **much faster, especially on single frames**, and adds valence/arousal + gaze that `Detector` does not produce.
+    Py-Feat also ships **`Detectorv2`**, which runs a single **multi-task neural network** instead of the modular pipeline above. In one forward pass it predicts Action Units, emotions, valence/arousal, gaze, head pose, and a **478-point 3D MediaPipe FaceMesh** — so it is **much faster, especially on single frames**, and adds valence/arousal + gaze that `Detectorv1` does not produce.
 
-    Use **`Detector` (v1)** when you want to pick or disable specific models or need the classic 68-point landmarks; use **`Detectorv2` (v2)** when you want speed, the 478-point 3D mesh, or valence/arousal + gaze. Both return the same kind of `Fex` object, so the rest of this tutorial applies to either. See the [two-detector overview](/intro.md#two-detectors-detector-and-detectorv2) for a full comparison.
+    Use **`Detectorv1` (v1)** when you want to pick or disable specific models or need the classic 68-point landmarks; use **`Detectorv2` (v2)** when you want speed, the 478-point 3D mesh, or valence/arousal + gaze. Both return the same kind of `Fex` object, so the rest of this tutorial applies to either. See the [two-detector overview](/intro.md#two-detectors-detector-and-detectorv2) for a full comparison.
     """)
     return
 
@@ -64,7 +64,7 @@ def _():
     # One multi-task model: AUs, emotions, valence/arousal, gaze, 478-pt 3D mesh, head pose
     detector_v2 = Detectorv2(device="cpu")  # use device="cuda" or "mps" if available
 
-    # Detect exactly like the v1 Detector — same Fex output:
+    # Detect exactly like Detectorv1 — same Fex output:
     # fex = detector_v2.detect(single_face_img_path, data_type="image")
     return
 
@@ -333,7 +333,7 @@ def _(mo):
     mo.md(r"""
     ## 1.6 Detecting multiple faces from a single image
 
-    A `Detector` will automatically find multiple faces in a single image and will create 1 row per detected face in the `Fex` object it outputs.
+    A `Detectorv1` will automatically find multiple faces in a single image and will create 1 row per detected face in the `Fex` object it outputs.
 
     Notice how `image_prediction` is now a `Fex` instance with 5 rows, one for each detected face. We can confirm this by plotting our detection results like before:
     """)
@@ -361,7 +361,7 @@ def _(mo):
     mo.md(r"""
     ## 1.7 Working with multiple images
 
-    `Detector` is also flexible enough to process multiple image files if `.detect()` is passed a list of images. By default images will be processed serially, but you can set `batch_size > 1` to process multiple images in a *batch* and speed up processing. **NOTE: All images in a batch must have the same dimensions for batch processing.** This is because behind the scenes, `Detector` is assembling a *tensor* by stacking images together. You can ask `Detector` to rescale images by padding and preserving proportions using the `output_size` in conjunction with `batch_size`. For example, the following would process a list of images in batches of 5 images at a time resizing each so one axis is 512:
+    `Detectorv1` is also flexible enough to process multiple image files if `.detect()` is passed a list of images. By default images will be processed serially, but you can set `batch_size > 1` to process multiple images in a *batch* and speed up processing. **NOTE: All images in a batch must have the same dimensions for batch processing.** This is because behind the scenes, `Detectorv1` is assembling a *tensor* by stacking images together. You can ask `Detectorv1` to rescale images by padding and preserving proportions using the `output_size` in conjunction with `batch_size`. For example, the following would process a list of images in batches of 5 images at a time resizing each so one axis is 512:
 
     `detector.detect(img_list, batch_size=5, output_size=512) # without output_size this would raise an error if image sizes differ!`
 

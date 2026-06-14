@@ -285,7 +285,7 @@ def extract_hog_features_batched(
         extracted_faces: ``[N, C, face_size, face_size]`` face crops.
         landmarks: ``[N, 136]`` flattened normalized 68-landmark coords.
         hog_layer: optional pre-built ``HOGLayer`` (cached one from
-            ``Detector._hog_layer``). If None, builds one fresh.
+            ``Detectorv1._hog_layer``). If None, builds one fresh.
 
     Returns:
         hog_features: numpy array of shape ``[N, n_features]``.

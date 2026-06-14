@@ -1,4 +1,4 @@
-from feat.detector import Detector
+from feat.detector import Detectorv1
 from feat.data import Fex
 import pytest
 import numpy as np
@@ -34,7 +34,7 @@ def test_detector_combos(
     conftest.py"""
 
     # Test init and basic detection
-    detector = Detector(
+    detector = Detectorv1(
         face_model=face_model,
         landmark_model=landmark_model,
         au_model=au_model,
@@ -197,7 +197,7 @@ class Test_Facepose_Models:
 
         # Test DOF kwarg
         facepose_model_kwargs = {"RETURN_DIM": 6}
-        new_detector = Detector(facepose_model_kwargs=facepose_model_kwargs)
+        new_detector = Detectorv1(facepose_model_kwargs=facepose_model_kwargs)
         assert new_detector.facepose_detector.RETURN_DIM == 6
 
         # Run as full detection

@@ -117,7 +117,7 @@ def test_extract_hog_features_empty_input():
 def test_extract_hog_features_cached_layer_matches_uncached():
     """Passing a pre-built HOGLayer must produce identical output.
 
-    Detector/MPDetector cache a single HOGLayer instance instead of
+    Detectorv1/MPDetector cache a single HOGLayer instance instead of
     rebuilding it on every detect() call. The cached path must be
     bitwise-identical to the un-cached path; otherwise we silently
     drift the trained classifier inputs.

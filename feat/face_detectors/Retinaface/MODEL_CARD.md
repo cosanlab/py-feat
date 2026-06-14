@@ -10,7 +10,7 @@ license: mit
 # RetinaFace ResNet34
 
 ## Model Description
-RetinaFace is a single-shot face detector that jointly predicts bounding boxes, 5-keypoint landmarks (eyes, nose, mouth corners), and a face/no-face score per anchor. This py-feat distribution uses a ResNet34 backbone trained on WIDERFACE, reaching 88.9% AP on WIDERFACE-Hard versus img2pose's 55.5% (per Cheong et al., Affective Science 2023). Postprocessing (priors, decode, NMS) runs fully batched on-device via `torchvision.ops.batched_nms`. Available in py-feat ≥ 0.7 as `Detector(face_model='retinaface_r34')` and `MPDetector(face_model='retinaface')`.
+RetinaFace is a single-shot face detector that jointly predicts bounding boxes, 5-keypoint landmarks (eyes, nose, mouth corners), and a face/no-face score per anchor. This py-feat distribution uses a ResNet34 backbone trained on WIDERFACE, reaching 88.9% AP on WIDERFACE-Hard versus img2pose's 55.5% (per Cheong et al., Affective Science 2023). Postprocessing (priors, decode, NMS) runs fully batched on-device via `torchvision.ops.batched_nms`. Available in py-feat ≥ 0.7 as `Detectorv1(face_model='retinaface_r34')` and `MPDetector(face_model='retinaface')`.
 
 ## Model Details
 - **Model Type**: Convolutional Neural Network (CNN), single-shot face detector

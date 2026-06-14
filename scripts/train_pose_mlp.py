@@ -59,7 +59,7 @@ def gather_clip_files() -> list[Path]:
             seen.setdefault(p.name, p)
     return list(seen.values())
 
-# Landmark column names produced by py-feat's Detector (68 dlib points).
+# Landmark column names produced by py-feat's Detectorv1 (68 dlib points).
 LANDMARK_COLS = (
     [f"x_{i}" for i in range(68)] + [f"y_{i}" for i in range(68)]
 )

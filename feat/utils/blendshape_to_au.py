@@ -1,7 +1,7 @@
 """Map MediaPipe / ARKit blendshapes to FACS Action Unit intensities.
 
 Provides a learned PLS regression (``pls_predict_batch``) trained on paired
-Detector (xgb AUs) + MPDetector (52 blendshapes) outputs from ~10K CelebV-HQ
+Detectorv1 (xgb AUs) + MPDetector (52 blendshapes) outputs from ~10K CelebV-HQ
 celebrity videos (~350K frames). Cheong / Py-Feat-tutorial-06 style: linear
 features only, no pairwise interactions, no clipping at training. 3-fold
 GroupKFold (by video_id) OOS variance-weighted R² = 0.236 ± 0.008.

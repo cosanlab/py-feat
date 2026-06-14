@@ -1,4 +1,4 @@
-"""Smoke tests for Detector pose output (both img2pose and retinaface paths).
+"""Smoke tests for Detectorv1 pose output (both img2pose and retinaface paths).
 
 img2pose: pose comes from the regression head built into the face detector.
 retinaface: pose comes from the landmarks-MLP (``feat.utils.face_pose_mlp``)
@@ -26,10 +26,10 @@ def _have_test_image() -> bool:
 
 @pytest.mark.skipif(not _have_test_image(), reason="multi_face.jpg fixture missing")
 def test_detector_img2pose_pose_columns_populated():
-    """Detector(face_model='img2pose') emits sane pose values on multi_face.jpg."""
-    from feat.detector import Detector
+    """Detectorv1(face_model='img2pose') emits sane pose values on multi_face.jpg."""
+    from feat.detector import Detectorv1
 
-    det = Detector(
+    det = Detectorv1(
         face_model="img2pose",
         au_model=None,
         emotion_model=None,
@@ -56,17 +56,17 @@ def test_detector_img2pose_pose_columns_populated():
 @pytest.mark.skipif(not _have_test_image(), reason="multi_face.jpg fixture missing")
 def test_detector_retinaface_pose_agrees_with_img2pose():
     """retinaface pose path (Pose-MLP) should agree with img2pose to ~10°."""
-    from feat.detector import Detector
+    from feat.detector import Detectorv1
 
     img = os.path.join(get_test_data_path(), "multi_face.jpg")
 
-    det = Detector(
+    det = Detectorv1(
         face_model="img2pose", au_model=None, emotion_model=None,
         identity_model=None, device="cpu",
     )
     fex_ref = det.detect(img, data_type="image", batch_size=1, progress_bar=False)
 
-    det = Detector(
+    det = Detectorv1(
         face_model="retinaface", au_model=None, emotion_model=None,
         identity_model=None, device="cpu",
     )

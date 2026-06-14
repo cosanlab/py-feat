@@ -202,12 +202,12 @@ class FexSeries(Series):
         Returns:
             DataFrame: gaze data populated by the active gaze model
             (L2CS by default in v0.7+). Raises AttributeError if the
-            Detector was built with gaze_model=None.
+            Detectorv1 was built with gaze_model=None.
         """
         if not self.gaze_columns:
             raise AttributeError(
                 "No gaze columns are registered on this Fex. The active "
-                "Detector may have been built with gaze_model=None."
+                "Detectorv1 may have been built with gaze_model=None."
             )
         return self[self.gaze_columns]
 
@@ -549,7 +549,7 @@ class Fex(DataFrame):
         Provides a uniform 2D-landmark interface across detectors so plotting
         and downstream consumers don't have to branch on the underlying topology:
 
-        - **Detector** (``Detector(landmark_model="mobilefacenet")``) outputs
+        - **Detectorv1** (``Detectorv1(landmark_model="mobilefacenet")``) outputs
           136-d ``[x_0..x_67, y_0..y_67]`` (axis-major) — returned as-is.
         - **MPDetector** outputs the 478-vertex MediaPipe FaceMesh as 1434
           named columns ``x_i / y_i / z_i`` (i in 0..477), in image-space
@@ -603,12 +603,12 @@ class Fex(DataFrame):
         Returns:
             DataFrame: gaze data populated by the active gaze model
             (L2CS by default in v0.7+). Raises AttributeError if the
-            Detector was built with gaze_model=None.
+            Detectorv1 was built with gaze_model=None.
         """
         if not self.gaze_columns:
             raise AttributeError(
                 "No gaze columns are registered on this Fex. The active "
-                "Detector may have been built with gaze_model=None."
+                "Detectorv1 may have been built with gaze_model=None."
             )
         return self[self.gaze_columns]
 
@@ -769,7 +769,7 @@ class Fex(DataFrame):
         Returns:
             DataFrame: identity data
         """
-        # Detector populates identity_columns with the 512 embedding cols
+        # Detectorv1 populates identity_columns with the 512 embedding cols
         # (FEAT_IDENTITY_COLUMNS[1:] — the 'Identity' string-label column is
         # already stripped upstream in detector.py), so don't slice again.
         # The prior [1:] silently dropped Identity_1 and caused
@@ -908,7 +908,7 @@ class Fex(DataFrame):
 
     ###   Class Methods   ###
     def read_feat(self, filename=None, *args, **kwargs):
-        """Reads facial expression detection results from Feat Detector
+        """Reads facial expression detection results from Feat Detectorv1
 
         Args:
             filename (string, optional): Path to file. Defaults to None.

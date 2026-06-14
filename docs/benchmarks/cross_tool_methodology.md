@@ -3,7 +3,7 @@
 This documents how py-feat is compared against other open-source Python facial
 action-unit (AU) toolkits, and — just as importantly — **what it took to run
 each competitor**. The integration effort is itself a result: it shows the
-usability gap between py-feat (`pip install py-feat`, one `Detector` /
+usability gap between py-feat (`pip install py-feat`, one `Detectorv1` /
 `Detectorv2` call, runs on any GPU) and the alternatives.
 
 ## Feature comparison
@@ -24,7 +24,7 @@ Across the open-source Python facial-behavior toolkits. ✅ = supported,
 | **Head pose (6DoF)** | ✅ | ✅ | ✅ | ❌ |
 | **Landmarks** | ✅ 68 + 478 mesh | ✅ | ✅ 478 mesh | ❌ |
 | **Identity / face ID** | ✅ ArcFace | ❌ | ❌ | ❌ |
-| **One-call API** | ✅ `Detector().detect()` | ❌ custom scripts | ✅ ⚠️¹ | ⚠️ video only |
+| **One-call API** | ✅ `Detectorv1().detect()` | ❌ custom scripts | ✅ ⚠️¹ | ⚠️ video only |
 | **Latest GPUs (Blackwell)** | ✅ | ✅ | ❌ pinned old torch³ | ❌ dlib/CUDA³ |
 | **License** | permissive⁴ | academic | USC research-only | non-commercial |
 
@@ -54,7 +54,7 @@ per-tool note); treat as indicative until a single-protocol recompute lands.
 | **py-feat v2** (`Detectorv2`) | **0.540** | 12 | truth ≥2, prob ≥0.5 | `pyfeat_disfaplus_au.json` |
 | **OpenFace 3.0** | 0.488 | 8 | their `evaluation.py` | `openface3_disfaplus.json` |
 | **LibreFace** (research RepVGG) | 0.461 | 12 | truth ≥2, intensity ≥2 | `libreface_repvgg_disfaplus.json` |
-| **py-feat v1** (`Detector`, xgb) | 0.250 | 12 | truth ≥2, prob ≥0.5 | `pyfeat_disfaplus_au.json` |
+| **py-feat v1** (`Detectorv1`, xgb) | 0.250 | 12 | truth ≥2, prob ≥0.5 | `pyfeat_disfaplus_au.json` |
 | **PyAFAR** | 0.260 | **7 only** | occ ≥0.5, truth ≥2 | `pyafar_accuracy_disfaplus.json` |
 
 **py-feat v2 (Detectorv2) leads** the held-out DISFA+ AU benchmark (0.54), ahead

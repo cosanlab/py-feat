@@ -108,7 +108,7 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="torch")
 warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 
 
-class Detector(nn.Module, PyTorchModelHubMixin):
+class Detectorv1(nn.Module, PyTorchModelHubMixin):
     _SUPPORTED_FACE_MODELS = ("img2pose", "retinaface")
 
     SUPPORTED_MODELS = {
@@ -161,7 +161,7 @@ class Detector(nn.Module, PyTorchModelHubMixin):
         )
         self.device = set_torch_device(device)
 
-        # Cache one HOGLayer per Detector instance. Building it allocates
+        # Cache one HOGLayer per Detectorv1 instance. Building it allocates
         # the Sobel buffers and the AvgPool2d module; doing it inside the
         # HOG-feature extractor means paying that cost twice per detect()
         # call (once for emotion=svm, once for au=xgb). The layer carries
@@ -466,14 +466,14 @@ class Detector(nn.Module, PyTorchModelHubMixin):
             self.gaze_detector = load_l2cs_from_hf(device=self.device)
         else:
             raise ValueError(
-                f"gaze_model must be 'l2cs' or None for Detector; got {gaze_model!r}. "
+                f"gaze_model must be 'l2cs' or None for Detectorv1; got {gaze_model!r}. "
                 f"The geometric path requires MediaPipe iris landmarks and is "
                 f"only available on MPDetector."
             )
 
     def __repr__(self):
         return (
-            f"Detector(face_model={self.info['face_model']}, "
+            f"Detectorv1(face_model={self.info['face_model']}, "
             f"landmark_model={self.info['landmark_model']}, "
             f"au_model={self.info['au_model']}, "
             f"emotion_model={self.info['emotion_model']}, "

@@ -1449,7 +1449,7 @@ def extract_hog_features(extracted_faces, landmarks, hog_layer=None):
         landmarks: [N, n_landmarks*2] flattened (x, y) landmark coordinates
             in image space.
         hog_layer: optional pre-built HOGLayer to reuse across calls.
-            Detector and MPDetector cache one in __init__ so repeated
+            Detectorv1 and MPDetector cache one in __init__ so repeated
             detect() calls don't pay the per-call construction cost.
             If None, a fresh layer is built (backward-compat for direct
             external callers).

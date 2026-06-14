@@ -1,5 +1,5 @@
 import pytest
-from feat.detector import Detector
+from feat.detector import Detectorv1
 from feat.data import Fex
 from huggingface_hub import PyTorchModelHubMixin
 import numpy as np
@@ -29,7 +29,7 @@ EXPECTED_FEX_WIDTH = 694
 class Test_Detector:
     """Test new single model detector"""
 
-    detector = Detector(device="cpu")
+    detector = Detectorv1(device="cpu")
 
     def test_init(self):
         assert isinstance(self.detector, PyTorchModelHubMixin)
@@ -129,7 +129,7 @@ class Test_Detector:
     def test_fast_init_with_wrongmodelname(self):
         """Should fail with unsupported model name"""
         with pytest.raises(ValueError):
-            _ = Detector(emotion_model="badmodelname")
+            _ = Detectorv1(emotion_model="badmodelname")
 
     def test_fast_nofile(self):
         """Should fail with missing data"""

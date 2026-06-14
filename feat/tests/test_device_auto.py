@@ -1,6 +1,6 @@
 """Regression test: detectors accept ``device='auto'``.
 
-Bug: when loading the emotion / identity / AU sub-models, ``Detector`` (v1) and
+Bug: when loading the emotion / identity / AU sub-models, ``Detectorv1`` (v1) and
 ``MPDetector`` called ``torch.load`` with ``map_location=device`` — the *raw*
 constructor argument — instead of ``self.device`` (which ``set_torch_device``
 resolves). With ``device='auto'`` that passed the literal string ``"auto"`` to
@@ -15,14 +15,14 @@ but is covered here so it stays that way.
 import pytest
 import torch
 
-from feat.detector import Detector
+from feat.detector import Detectorv1
 from feat.detector_v2 import Detectorv2
 from feat.MPDetector import MPDetector
 
 
 @pytest.mark.network
 def test_detector_device_auto_constructs():
-    det = Detector(device="auto")
+    det = Detectorv1(device="auto")
     assert isinstance(det.device, torch.device)
     assert det.device.type in {"cuda", "mps", "cpu"}
 

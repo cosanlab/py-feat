@@ -304,7 +304,7 @@ def test_video_to_tensor(single_face_mov):
 def test_fex_preserves_model_identity_metadata():
     """Fex output of detect() carries model identity in _metadata.
 
-    Detector and MPDetector both pass model names into the Fex
+    Detectorv1 and MPDetector both pass model names into the Fex
     constructor (face_model, landmark_model, au_model, emotion_model,
     facepose_model, identity_model). _metadata is the propagation
     contract: anything listed there must survive copy / slice / concat

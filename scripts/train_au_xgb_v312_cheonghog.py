@@ -21,7 +21,7 @@ Methodology mirrors v3.11 (full Cheong replication):
   - Per-source binarization (ordinal sources at >=2, binary at >=1)
   - Narrow HP space, n_estimators=120
 
-Bench: predict on Cheong's stored DISFA+ HOGs (NOT through Detector pipeline),
+Bench: predict on Cheong's stored DISFA+ HOGs (NOT through Detectorv1 pipeline),
 score F1 vs binarized DISFA+ labels for the 12 AUs DISFA+ ships.
 """
 from __future__ import annotations

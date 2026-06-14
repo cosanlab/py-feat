@@ -101,7 +101,7 @@ def _(mo):
         r"""
         ## Throughput by detector and hardware
 
-        End-to-end frames per second for the **v1 `Detector`** (img2pose and
+        End-to-end frames per second for the **v1 `Detectorv1`** (img2pose and
         retinaface face models) and **v2 `Detectorv2`**, on the shared test video.
         Left panel is single-frame (batch 1); right is batch 16. Bars are grouped
         by hardware — fps is only comparable within the same device.
@@ -114,10 +114,10 @@ def _(mo):
 def _(throughput):
     import plotly.express as px
 
-    # v1 Detector (two face models) + v2 Detectorv2; MPDetector excluded.
+    # Detectorv1 (two face models) + v2 Detectorv2; MPDetector excluded.
     _RELABEL = {
-        "img2pose": "Detector · img2pose",
-        "retinaface": "Detector · retinaface",
+        "img2pose": "Detectorv1 · img2pose",
+        "retinaface": "Detectorv1 · retinaface",
         "Detectorv2 multitask": "Detectorv2",
     }
     df = throughput.copy()
@@ -162,7 +162,7 @@ def _(mo):
         - `WolfgangLanger_Pexels.mp4` (472 frames, 1 face/frame)
         - `multi_face.jpg` × 16 = 80 faces
 
-        Three configurations are timed head-to-head: `Detector` with the
+        Three configurations are timed head-to-head: `Detectorv1` with the
         `img2pose` and `retinaface` face models (both `au_model='xgb'`,
         `emotion_model='resmasknet'`, `identity_model='arcface'`) and the v2
         `Detectorv2` multitask network. Swept axes: `device × batch_size ×

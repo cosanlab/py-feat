@@ -15,7 +15,7 @@ def _():
 def _(mo):
     mo.md(r"""
     # 2. Detecting facial expressions from videos
-    In this tutorial we'll explore how to use the `Detector` class to process video files. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/03_detector_vids.ipynb)
+    In this tutorial we'll explore how to use the `Detectorv1` class to process video files. You can try it out interactively in Google Collab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cosanlab/py-feat/blob/master/notebooks/content/03_detector_vids.ipynb)
     """)
     return
 
@@ -30,18 +30,18 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2.1 Setting up the Detector
+    ## 2.1 Setting up the Detectorv1
 
-    We'll begin by creating a new `Detector` instance just like the previous tutorial and using the defaults:
+    We'll begin by creating a new `Detectorv1` instance just like the previous tutorial and using the defaults:
     """)
     return
 
 
 @app.cell
 def _():
-    from feat import Detector
+    from feat import Detectorv1
 
-    detector = Detector()
+    detector = Detectorv1()
     return 
 
 
