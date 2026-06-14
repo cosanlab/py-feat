@@ -16,9 +16,8 @@ jobs:
     # Determines whether the entire workflow should pass/fail based on parallel jobs
     continue-on-error: ${{ matrix.experimental }}
     defaults:
-      # This ensures each step gets properly configured bash shell for conda commands to work
       run:
-        shell: bash -l {0}
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -41,27 +40,30 @@ jobs:
             python-version: "3.13"
             experimental: true
     steps:
-      # Step up miniconda
-      - name: Download and setup Miniconda
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          miniconda-version: "latest"
-          python-version: ${{ matrix.python-version }}
-
-      # Check out latest code on github
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      # Install common sci-py packages via conda as well as testing packages and requirements
-      - name: Install Dependencies
+      - name: Install uv + Python
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      # torchcodec dlopen's FFmpeg's libav* at import time, and the pip xgboost
+      # wheel dlopen's libomp.dylib on macOS. conda used to supply both; with uv
+      # we install them from each runner's OS package manager instead.
+      - name: Install system libraries (FFmpeg, OpenMP)
         run: |
-          conda activate test
-          conda env list
-          # torchcodec dlopen's FFmpeg's libav* at import time; the pip
-          # xgboost wheel dlopen's libomp.dylib on macOS. Install both into
-          # the conda env so the test suite can be collected on all platforms.
-          conda install -c conda-forge -y "ffmpeg<8" llvm-openmp
-          pip install . -r requirements-dev.txt
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y ffmpeg
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            brew install ffmpeg libomp
+          elif [ "$RUNNER_OS" = "Windows" ]; then
+            choco install ffmpeg -y
+          fi
+
+      - name: Install Dependencies
+        run: uv pip install --system . -r requirements-dev.txt
 
       # Persist HF model downloads across runs. Without this every matrix job
       # pulls retinaface/xgb/resmasknet from the Hub at test-collection time on
@@ -81,8 +83,6 @@ jobs:
           # (anonymous) if the secret isn't set.
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          conda activate test
-          conda env list
           ruff check --ignore=W292,E402,E501,E731,E741 feat
           pytest --cov=feat -rs
 
