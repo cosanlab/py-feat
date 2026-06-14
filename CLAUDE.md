@@ -145,21 +145,30 @@ imports). Consumers convert to degrees for display only.
   an overlay against a selfie-mirrored video (the mirror flips left/right and
   will send you in circles).
 
-### v2 pitch is compressed — anisotropic chip is the root cause
+### v2 chip geometry — RESOLVED for v2.5 (isotropic square-pad, inference fix)
 
-`Detectorv2`'s pitch reads ~0.4–0.6× of img2pose, and its 478-mesh z axis is
-mis-scaled. Both come from **`extract_face_from_bbox_torch`** squashing the
-rectangular RetinaFace box into a *square* chip with independent x/y scales (plus
-an edge `clamp` instead of pad). This is invisible to v1 (2D landmarks un-squish
-exactly) but destroys v2's chip-space 3D/angle inference. **ConvNeXt V2 is
-size-agnostic** (GAP before every head in `model_v2.py`, ÷32 stride) so the
-square chip is a convention, not a requirement. The interim `[-head0,…]` pose
-map and any "scale z by w/MODEL_INPUT" mesh patch are stopgaps. The real fix —
-an isotropic aspect-preserving (square+pad) chip, used identically for training
-re-extraction and inference, with a full v2 retrain from the IN22k backbone — is
-specced at `docs/superpowers/specs/2026-06-06-v2-chip-extraction-redesign-design.md`.
-Do NOT just tweak signs/scales to paper over the pitch compression; it needs the
-chip fix + retrain.
+History (kept because it explains the code): early `Detectorv2` pitch read
+~0.4–0.6× of img2pose and its 478-mesh z was mis-scaled, because
+**`extract_face_from_bbox_torch`** squashes the rectangular RetinaFace box into a
+*square* chip with independent x/y scales (plus an edge `clamp` instead of pad).
+That's invisible to v1 (2D landmarks un-squish exactly) but corrupts v2's
+chip-space 3D/angle inference. Design spec:
+`docs/superpowers/specs/2026-06-06-v2-chip-extraction-redesign-design.md`.
+
+**This is now fixed.** The shipped v2.5 weights (`py-feat/face_multitask_v2`)
+were already **trained on the isotropic square-pad chip** (au_deep
+`extract_chips_unified.py --v25` → `extract_face_square_pad_torch`,
+`side=max(W,H)·1.2`, reflection-pad, no clamp; mesh targets `[0,1]` over that
+square chip). So no retrain is needed — only the inference path had to match. As
+of the v25-square-pad inference fix, `Detectorv2.detect_faces` /
+`crop_faces_from_boxes` use `extract_face_square_pad_torch` and store the square
+crop region as `new_boxes`, so `_mesh_to_original_frame`'s `[0,1]→box` decode is
+isotropic (`w==h==side`). This removed the 2D mesh-overlay shift (eyes-high /
+mouth-low) and the pitch compression in one change.
+
+`extract_face_from_bbox_torch` is unchanged and **still used by `Detectorv1` and
+`MPDetector`** — their landmark heads invert that squish exactly, so do NOT
+switch them to square-pad. The square-pad crop is v2-only.
 
 ## Repo-specific gotchas
 

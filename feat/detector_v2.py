@@ -7,9 +7,12 @@ Outputs a native-v2 :class:`~feat.data.Fex` whose landmark block is
 the dlib-68 subset derived from the 478 mesh (so Fex helpers expecting 68
 points keep working), with the full 478 mesh available in ``mesh_*`` columns.
 
-The model consumes a 256x256 RetinaFace crop (expand_bbox=1.2), exactly as its
-training chips were produced; preprocessing to the 224 model input is handled by
-:class:`~feat.multitask.inference.MultitaskModel`.
+The model consumes a 256x256 RetinaFace crop, produced with the **isotropic
+square-pad** crop (``extract_face_square_pad_torch``, expand_bbox=1.2) — exactly
+the geometry the v2.5 chips were trained on. (v1 ``Detectorv1`` and ``MPDetector``
+keep the legacy anisotropic ``extract_face_from_bbox_torch``; their landmark
+heads invert that squish exactly, so they must not switch.) Preprocessing to the
+224 model input is handled by :class:`~feat.multitask.inference.MultitaskModel`.
 """
 from __future__ import annotations
 
@@ -23,7 +26,7 @@ from torch.utils.data import DataLoader
 from feat.data import Fex, ImageDataset, TensorDataset, VideoDataset
 from feat.utils import set_torch_device
 from feat.utils.image_operations import (
-    extract_face_from_bbox_torch,
+    extract_face_square_pad_torch,
     convert_image_to_tensor,
     convert_bbox_output,
     per_face_padding_inversion_terms,
@@ -53,6 +56,21 @@ from feat.multitask.inference import (
     EXPAND_BBOX,
     _DLIB68_IDX,
 )
+
+
+def _crop_affine_to_box(crop_affine):
+    """``crop_affine`` ``[N,3]`` ``(origin_x, origin_y, side)`` -> square ``[N,4]``
+    ``(x1, y1, x2, y2)``.
+
+    The v2.5 model is trained on the isotropic square-pad chip, so its predicted
+    mesh is normalized [0,1] over a *square* region bounded by
+    ``[origin, origin+side]``. Storing that square as ``new_boxes`` makes the
+    [0,1]->box decode in :meth:`Detectorv2._mesh_to_original_frame` isotropic
+    (``w == h == side``) — the exact inverse of the crop, with no x/y stretch.
+    May extend off-frame (the crop reflection-pads); that is intended.
+    """
+    ox, oy, side = crop_affine[:, 0], crop_affine[:, 1], crop_affine[:, 2]
+    return torch.stack([ox, oy, ox + side, oy + side], dim=-1)
 
 
 class Detectorv2(nn.Module):
@@ -160,12 +178,12 @@ class Detectorv2(nn.Module):
         all_bboxes = self._smooth_bboxes(all_bboxes)
 
         bboxes_for_extract = torch.nan_to_num(all_bboxes, nan=0.0)
-        all_faces, all_new_bboxes = extract_face_from_bbox_torch(
+        all_faces, crop_affine = extract_face_square_pad_torch(
             frames_unit, bboxes_for_extract,
             face_size=self.face_size, expand_bbox=EXPAND_BBOX,
             frame_idx=all_frame_idx,
         )
-        all_new_bboxes = all_new_bboxes.to(torch.float32)
+        all_new_bboxes = _crop_affine_to_box(crop_affine).to(torch.float32)
 
         no_det = torch.isnan(all_bboxes).any(dim=1)
         if no_det.any():
@@ -256,12 +274,12 @@ class Detectorv2(nn.Module):
             torch.arange(B, device=self.device), n_per_frame_t
         )
 
-        all_faces, all_new_bboxes = extract_face_from_bbox_torch(
+        all_faces, crop_affine = extract_face_square_pad_torch(
             frames_unit, all_boxes,
             face_size=self.face_size, expand_bbox=EXPAND_BBOX,
             frame_idx=all_frame_idx,
         )
-        all_new_bboxes = all_new_bboxes.to(torch.float32)
+        all_new_bboxes = _crop_affine_to_box(crop_affine).to(torch.float32)
         all_scores = torch.ones(all_boxes.shape[0], device=self.device)
 
         results, cursor = [], 0
@@ -451,17 +469,19 @@ class Detectorv2(nn.Module):
         """[N,478,3] mesh in normalized [0,1] chip coords -> original-frame coords.
 
         The v2.5 mesh head is trained (deep/losses_v2, deep/augment) to emit
-        coordinates NORMALIZED to [0,1] over the chip — x over chip width, y over
-        chip height. The chip is the expanded (EXPAND_BBOX=1.2) RetinaFace box,
-        resized to the model input, so [0,1] maps directly onto ``new_bboxes``
-        with no extra scale or offset. We then invert the RetinaFace pad+rescale
-        to land in the original frame.
+        coordinates NORMALIZED to [0,1] over the chip. The chip is the **isotropic
+        square-pad** crop (``extract_face_square_pad_torch``), so ``new_bboxes`` is
+        the *square* crop region ``[origin, origin+side]`` (see
+        ``_crop_affine_to_box``). With ``w == h == side`` the [0,1]->box map below
+        is isotropic — the exact inverse of the crop, no x/y stretch — and then we
+        invert the RetinaFace pad+rescale to land in the original frame.
 
-        NB: the legacy decode here was ``mesh / MODEL_INPUT + _CROP_OFFSET /
-        CHIP_SIZE``, which assumed the head output was in 224-pixel units behind a
-        256->224 center-crop. v2.5 changed both: the preprocess is a resize (not a
-        crop) and the mesh target is normalized [0,1]. Applying the old /224 to a
-        [0,1] output collapses the whole mesh to ~0.063 of the box (a dot).
+        This is the deferred v2.5 inference fix: the shipped weights were trained
+        on square-pad chips, but inference had still been feeding the legacy
+        anisotropic ``extract_face_from_bbox_torch`` crop and decoding [0,1] over a
+        rectangular box (independent w/h). That train/inference mismatch shifted
+        the 2D overlay (eyes high / mouth low) and compressed pitch; the square-pad
+        crop + isotropic decode removes both, no retrain.
 
         NB: do the affine directly rather than via
         ``inverse_transform_landmarks_torch`` — that helper reshapes its input as
