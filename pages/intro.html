@@ -445,7 +445,10 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-you-should-use-py-feat">Why you should use Py-Feat</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#who-is-it-for">Who is it for?</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introducing-py-feat-v2">Introducing Py-FEAT v2</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introducing-py-feat-v2">Introducing Py-FEAT v2</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#two-detectors-detectorv1-and-detectorv2">Two detectors: <code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code> and <code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-models">Available models</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributions">Contributions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
@@ -489,6 +492,8 @@ document.write(`
 <h2>Introducing Py-FEAT v2<a class="headerlink" href="#introducing-py-feat-v2" title="Permalink to this heading">#</a></h2>
 <p>We have released version 2 of Py-Feat that includes a new multi-task face expression model, many bug fixes, performance optimizations, and a standalone app called <a class="reference external" href="https://github.com/cosanlab/pyfeat-live/">pyfeat-live</a>.
 We still support our original version 1 of Py-FEAT that is described in <a class="reference external" href="https://link.springer.com/article/10.1007/s42761-023-00191-4">Cheong et al., 2023</a> and there are advantages to both versions. You can access them as <code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code> and <code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code>. They return the same <code class="docutils literal notranslate"><span class="pre">Fex</span></code> data structure, so downstream analysis and plotting code is largely shared, but they take different approaches. Both can run on CUDA and MPS gpus and support batching, which greatly accelerates detection.</p>
+<section id="two-detectors-detectorv1-and-detectorv2">
+<h3>Two detectors: <code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code> and <code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code><a class="headerlink" href="#two-detectors-detectorv1-and-detectorv2" title="Permalink to this heading">#</a></h3>
 <p><strong><code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code></strong> is a <em>modular pipeline</em>. You choose the model for each stage — face detection, facial landmarks, Action Units, emotions, gaze, and identity — and you can swap any of them or turn one off (pass <code class="docutils literal notranslate"><span class="pre">None</span></code>). It produces the classic <strong>68-point</strong> facial landmarks and runs separate models (e.g. an XGBoost AU classifier, ResMaskNet emotions) one after another. That flexibility comes at a cost: running several models in sequence makes it <strong>slower on a single frame</strong>.</p>
 <p><strong><code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code></strong> runs a single <strong>multi-task neural network</strong> that predicts Action Units, emotions, valence/arousal, gaze, head pose, and a <strong>478-point 3D MediaPipe FaceMesh</strong> in <em>one</em> forward pass (plus optional identity embeddings). Because one network replaces the per-task model chain, it is <strong>much faster — especially on single frames</strong>, has improved performance on action unit and gaze prediction — and adds continuous valence/arousal and gaze that v1 does not produce. The trade-off is that the model set is fixed: you don’t pick or disable individual components.</p>
 <div class="pst-scrollable-table-container"><table class="colwidths-auto table">
@@ -537,6 +542,7 @@ We still support our original version 1 of Py-FEAT that is described in <a class
 <span class="n">fex</span> <span class="o">=</span> <span class="n">detector_v2</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;face.jpg&quot;</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="available-models">
 <h2>Available models<a class="headerlink" href="#available-models" title="Permalink to this heading">#</a></h2>
@@ -622,7 +628,10 @@ We still support our original version 1 of Py-FEAT that is described in <a class
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-you-should-use-py-feat">Why you should use Py-Feat</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#who-is-it-for">Who is it for?</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introducing-py-feat-v2">Introducing Py-FEAT v2</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introducing-py-feat-v2">Introducing Py-FEAT v2</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#two-detectors-detectorv1-and-detectorv2">Two detectors: <code class="docutils literal notranslate"><span class="pre">Detectorv1</span></code> and <code class="docutils literal notranslate"><span class="pre">Detectorv2</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-models">Available models</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributions">Contributions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
