@@ -1,6 +1,17 @@
 # Change Log
 
-## Unreleased
+# 2.0.0
+
+## Notes
+
+The first public PyPI release of the modernized py-feat line. It ships everything
+developed on `v0.7-dev` — the structural overhaul and breaking changes documented
+under the **0.7.0** section below, plus the additional changes listed here — under
+a single major version. 2.0.0 supersedes the `v0.7.0` pre-release tag that was
+shared with testers via `pip install git+...@v0.7.0`; read the **0.7.0** section
+below as part of these release notes (migration guide included).
+
+## Changes since the 0.7.0 pre-release
 
 - **BREAKING: the modular `Detector` class is renamed to `Detectorv1`, and the old `Detector` name is removed (no alias).** Update imports: `from feat import Detector` → `from feat import Detectorv1`, and `from feat.detector import Detector` → `from feat.detector import Detectorv1` (the module file is still `feat/detector.py`). `Detectorv1` was previously available as an alias; it is now the canonical name, matching `Detectorv2`. The `detector_capabilities()` dict key for the modular detector is likewise `"Detectorv1"` (was `"Detector"`). The class API is otherwise unchanged.
 - **`Detectorv2` multitask model upgraded to v2.5 (`py-feat/face_multitask_v2`), replacing v2.4.** Same architecture + a new **BlendshapeHead**: every detection now includes **52 MediaPipe/ARKit blendshape coefficients** as a first-class feature group (`fex.blendshapes`, columns from `MP_BLENDSHAPE_NAMES`), alongside AUs, emotion, V/A, gaze, mesh, pose, and identity. v2.5 beats v2.4 on every accuracy benchmark — most notably AffectNet emotion (acc 0.35 → 0.62), Aff-Wild2 V/A (0.82/0.78 → 0.85/0.80), and DISFA+ AU (8-AU F1 → 0.74); gaze is now reported leave-subject-out held-out (the lower v2.4 gaze numbers came from a leaky split). Weights are distributed as a single **`.safetensors`** file (no pickle / `torch.load(weights_only=False)`), with the model config JSON-encoded in the file metadata. The loader still accepts a local `.pt` for development. *(no API change — `fex.blendshapes` is additive)*

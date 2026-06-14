@@ -169,3 +169,16 @@ weights_libreface/
 /tmp/
 scripts/competitors/*manifest*.csv
 /weights/
+
+# Stray gifs animate_face writes when run from the repo root (the real ones
+# live in docs/images/; mirrors the /docs/*.gif rule above)
+/*.gif
+
+# Local Claude Code session/agent state
+/.claude/
+
+# Code-review tooling scratch artifacts
+/.review_*
+
+# Stray detector output written by ad-hoc/example runs
+/output.csv
