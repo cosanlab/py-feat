@@ -70,6 +70,14 @@ api_docs:
 # with a GPU via `marimo-book render`, committed to _rendered/, then reused on
 # CI without executing. defaults.mode stays static for the prose pages.
 
+# Auto-generated Py-feat Live changelog (pages/pyfeatlive_changelog.md).
+# Regenerate with `marimo-book sync-releases`; kept current via a
+# repository_dispatch from pyfeat-live's release workflow (drafts excluded).
+release_notes:
+  repo: cosanlab/pyfeat-live
+  output: pages/pyfeatlive_changelog.md
+  title: "Py-feat Live — Changelog"
+
 toc:
   - file: pages/intro.md
 
@@ -94,6 +102,11 @@ toc:
         mode: cached
       - file: basic_tutorials/Performance.py
         mode: cached
+
+  - section: Py-feat Live
+    children:
+      - file: pages/pyfeat_live.md
+      - file: pages/pyfeatlive_changelog.md
 
   # API Reference is auto-generated from docstrings via the top-level
   # `api_docs` block above and appended to the nav automatically.
