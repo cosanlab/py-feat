@@ -36,7 +36,6 @@ MODEL_REPOS = [
     ("py-feat/pfld", None),
     ("py-feat/l2cs", None),
     ("py-feat/pose_mlp_v2", None),
-    ("py-feat/pose_mlp_v1", None),  # legacy fallback
     ("py-feat/mp_blendshapes", None),
     ("py-feat/bs_to_au", None),
     ("py-feat/au_to_landmarks", None),

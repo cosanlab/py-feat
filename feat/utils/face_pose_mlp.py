@@ -11,8 +11,8 @@ trained on 2.78M frames / 35K clips with a 512→256→128 hidden + LayerNorm
 roll 2.34°, yaw 1.58° — comparable to img2pose's reported ~4° avg MAE
 on BIWI (different dataset; smaller is better).
 
-Weights: ``models/pose_mlp_v2.safetensors`` locally (v1 supported as
-fallback for legacy), HuggingFace ``py-feat/pose_mlp_v2``.
+Weights: ``models/pose_mlp_v2.safetensors`` locally, HuggingFace
+``py-feat/pose_mlp_v2``.
 """
 from __future__ import annotations
 
@@ -62,20 +62,17 @@ def _resolve_weights_path() -> Path | None:
 
     Lookup order:
       1. ``FEAT_POSE_MLP_PATH`` env var (full path to .safetensors)
-      2. ``models/pose_mlp_v2.safetensors`` relative to repo root (preferred)
-      3. ``models/pose_mlp_v1.safetensors`` relative to repo root (legacy)
-      4. HuggingFace ``py-feat/pose_mlp_v2`` (handled by _load_pose_mlp)
+      2. ``models/pose_mlp_v2.safetensors`` relative to repo root
+      3. HuggingFace ``py-feat/pose_mlp_v2`` (handled by _load_pose_mlp)
     """
     env = os.environ.get("FEAT_POSE_MLP_PATH")
     if env and Path(env).exists():
         return Path(env)
-    # Repo-relative — prefer v2, fall back to v1 for older checkouts
     here = Path(__file__).resolve()
     repo_root = here.parents[2]
-    for fname in ("pose_mlp_v2.safetensors", "pose_mlp_v1.safetensors"):
-        local = repo_root / "models" / fname
-        if local.exists():
-            return local
+    local = repo_root / "models" / "pose_mlp_v2.safetensors"
+    if local.exists():
+        return local
     # HuggingFace fallback (handled by caller)
     return None
 
@@ -92,32 +89,28 @@ def _load_pose_mlp(device: str = "cpu") -> tuple[PoseMLP, np.ndarray, np.ndarray
         meta_path = weights_path.with_suffix(".json")
 
     if weights_path is None or not meta_path.exists():
-        # Try HuggingFace — prefer v2, fall back to v1 if v2 unavailable.
+        # HuggingFace: py-feat/pose_mlp_v2 is the only published pose-MLP repo.
         from feat.utils.io import get_resource_path
         try:
             from huggingface_hub import hf_hub_download
         except Exception:
             return None
-        for version in ("v2", "v1"):
-            try:
-                weights_path = Path(
-                    hf_hub_download(
-                        repo_id=f"py-feat/pose_mlp_{version}",
-                        filename=f"pose_mlp_{version}.safetensors",
-                        cache_dir=get_resource_path(),
-                    )
+        try:
+            weights_path = Path(
+                hf_hub_download(
+                    repo_id="py-feat/pose_mlp_v2",
+                    filename="pose_mlp_v2.safetensors",
+                    cache_dir=get_resource_path(),
                 )
-                meta_path = Path(
-                    hf_hub_download(
-                        repo_id=f"py-feat/pose_mlp_{version}",
-                        filename=f"pose_mlp_{version}.json",
-                        cache_dir=get_resource_path(),
-                    )
+            )
+            meta_path = Path(
+                hf_hub_download(
+                    repo_id="py-feat/pose_mlp_v2",
+                    filename="pose_mlp_v2.json",
+                    cache_dir=get_resource_path(),
                 )
-                break
-            except Exception:
-                continue
-        else:
+            )
+        except Exception:
             return None
 
     if weights_path is None or meta_path is None or not meta_path.exists():
