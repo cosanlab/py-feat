@@ -397,16 +397,19 @@ class Detectorv2(nn.Module):
 
         # ---- Pose: multitask head -> canonical Fex [Pitch,Roll,Yaw,X,Y,Z].
         # Empirically the head's index 0 responds to PITCH and index 1 to YAW
-        # (the inference docstring's [yaw,pitch,...] order is mislabeled),
-        # verified on-camera against the classic Detector (img2pose / Pose-MLP).
-        # Map to the canonical convention (+pitch=up, +yaw=turn to subject's
-        # right, +roll=tilt to subject's right) with sign flips on pitch/roll:
-        #   Pitch = -head[0]   Roll = -head[2]   Yaw = +head[1]
+        # (the inference docstring's [yaw,pitch,...] order is mislabeled).
+        # Map to the canonical convention used by the classic Detector (v1):
+        # +pitch=up, +yaw=turn to subject's right, +roll=tilt to subject's right.
+        #   Pitch = +head[0]   Roll = -head[2]   Yaw = +head[1]
+        # Pitch is NOT negated: on-camera, pitching UP gave a negative Pitch with
+        # the old ``-head[0]`` — the head's index 0 already reads +up, so the
+        # negation inverted it relative to v1. (The near-frontal still images that
+        # earlier seemed to agree have pitch ≈ noise, so they can't fix the sign.)
         # NOTE: the head under-predicts pitch magnitude (a fit limitation, not
         # a labeling bug) — pitch reads smaller than img2pose for the same nod.
         p = out.pose
         feat_poses = pd.DataFrame(
-            np.column_stack([-p[:, 0], -p[:, 2], p[:, 1], p[:, 3], p[:, 4], p[:, 5]]),
+            np.column_stack([p[:, 0], -p[:, 2], p[:, 1], p[:, 3], p[:, 4], p[:, 5]]),
             columns=FEAT_FACEPOSE_COLUMNS_6D,
         )
 
