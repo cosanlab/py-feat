@@ -379,7 +379,7 @@ class Detectorv1(nn.Module, PyTorchModelHubMixin):
                     )
                 else:
                     raise ValueError(
-                        "Landmark Detector is required for Emotion Detection with {emotion_model}."
+                        f"Landmark Detector is required for Emotion Detection with {emotion_model}."
                     )
 
             else:
