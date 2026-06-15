@@ -9,6 +9,7 @@ import feat
 from feat.utils import (
     MP_BLENDSHAPE_NAMES,
     FEAT_EMOTION_COLUMNS,
+    FEAT_GAZE_COLUMNS,
     FEAT_FACEBOX_COLUMNS,
     FEAT_TIME_COLUMNS,
     OPENFACE_ORIG_COLUMNS,
@@ -92,17 +93,48 @@ def download_url(*args, **kwargs):
 
 
 def read_feat(fexfile):
-    """This function reads files extracted using the Detectorv1 from the Feat package.
+    """Read a CSV saved from a Py-Feat detector back into a ``Fex``.
+
+    Auto-detects whether the file came from ``Detectorv1`` or ``Detectorv2`` and
+    restores the matching column-group metadata so the ``.aus`` / ``.emotions`` /
+    ``.poses`` / ``.gaze`` accessors work. ``Detectorv2`` is identified by its
+    valence/arousal + 478-vertex mesh columns, which ``Detectorv1`` never emits;
+    its emotion columns are also capitalized (``Happy``/``Neutral``/...) rather
+    than the lowercase v1 set.
 
     Args:
-        fexfile: Path to facial expression file.
+        fexfile: Path to a facial-expression CSV.
 
     Returns:
         Fex of processed facial expressions
     """
+    from feat.multitask import EMOTION_COLUMNS_V2
+
     d = pd.read_csv(fexfile)
     au_columns = [col for col in d.columns if "AU" in col]
     blendshape_columns = [col for col in MP_BLENDSHAPE_NAMES if col in d.columns] or None
+    gaze_columns = [col for col in FEAT_GAZE_COLUMNS if col in d.columns] or None
+
+    is_v2 = {"valence", "arousal"}.issubset(d.columns) or any(
+        col.startswith("mesh_x_") for col in d.columns
+    )
+    if is_v2:
+        return feat.Fex(
+            d,
+            filename=fexfile,
+            au_columns=au_columns,
+            emotion_columns=[c for c in EMOTION_COLUMNS_V2 if c in d.columns],
+            facebox_columns=FEAT_FACEBOX_COLUMNS,
+            landmark_columns=openface_2d_landmark_columns,
+            facepose_columns=FEAT_FACEPOSE_COLUMNS_6D,
+            gaze_columns=gaze_columns,
+            identity_columns=[c for c in FEAT_IDENTITY_COLUMNS[1:] if c in d.columns]
+            or None,
+            blendshape_columns=blendshape_columns,
+            detector="Detectorv2",
+            time_columns=FEAT_TIME_COLUMNS,
+        )
+
     fex = feat.Fex(
         d,
         filename=fexfile,
