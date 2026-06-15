@@ -1,0 +1,301 @@
+clipN,class,phraseN,phrase_txt
+001,gn,1,your loan has been approved
+002,gn,2,you've got the job
+003,gn,3,the vendor has accepted your offer
+004,gn,4,your tests have come back clear
+005,gn,5,your application has been accepted
+006,gn,6,your promotion has been agreed
+007,gn,7,we won the match
+008,gn,8,the operation went well
+009,gn,9,your car passed its MOT
+010,gn,10,your bid has been successful
+011,ists,1,you haven't got the job
+012,ists,2,we can't do anything for you
+013,ists,3,we've sold out
+014,ists,4,the operation didn't go well
+015,ists,5,we can't extend you the loan
+016,ists,6,we've found some serious structural problems
+017,ists,7,your application was denied
+018,ists,8,we're going to have to let you go
+019,ists,9,a break in has been reported at your house
+020,ists,10,someone has been accessing your account
+021,gn,1,your loan has been approved
+022,gn,2,you've got the job
+023,gn,3,the vendor has accepted your offer
+024,gn,4,your tests have come back clear
+025,gn,5,your application has been accepted
+026,gn,6,your promotion has been agreed
+027,gn,7,we won the match
+028,gn,8,the operation went well
+029,gn,9,your car passed its MOT
+030,gn,10,your bid has been successful
+031,ists,1,you haven't got the job
+032,ists,2,we can't do anything for you
+033,ists,3,we've sold out
+034,ists,4,the operation didn't go well
+035,ists,5,we can't extend you the loan
+036,ists,6,we've found some serious structural problems
+037,ists,7,your application was denied
+038,ists,8,we're going to have to let you go
+039,ists,9,a break in has been reported at your house
+040,ists,10,someone has been accessing your account
+041,gn,1,your loan has been approved
+042,gn,2,you've got the job
+043,gn,3,the vendor has accepted your offer
+044,gn,4,your tests have come back clear
+045,gn,5,your application has been accepted
+046,gn,6,your promotion has been agreed
+047,gn,7,we won the match
+048,gn,8,the operation went well
+049,gn,9,your car passed its MOT
+050,gn,10,your bid has been successful
+051,ists,1,you haven't got the job
+052,ists,2,we can't do anything for you
+053,ists,3,we've sold out
+054,ists,4,the operation didn't go well
+055,ists,5,we can't extend you the loan
+056,ists,6,we've found some serious structural problems
+057,ists,7,your application was denied
+058,ists,8,we're going to have to let you go
+059,ists,9,a break in has been reported at your house
+060,ists,10,someone has been accessing your account
+061,gn,1,your loan has been approved
+062,gn,2,you've got the job
+063,gn,3,the vendor has accepted your offer
+064,gn,4,your tests have come back clear
+065,gn,5,your application has been accepted
+066,gn,6,your promotion has been agreed
+067,gn,7,we won the match
+068,gn,8,the operation went well
+069,gn,9,your car passed its MOT
+070,gn,10,your bid has been successful
+071,ists,1,you haven't got the job
+072,ists,2,we can't do anything for you
+073,ists,3,we've sold out
+074,ists,4,the operation didn't go well
+075,ists,5,we can't extend you the loan
+076,ists,6,we've found some serious structural problems
+077,ists,7,your application was denied
+078,ists,8,we're going to have to let you go
+079,ists,9,a break in has been reported at your house
+080,ists,10,someone has been accessing your account
+081,gn,1,your loan has been approved
+082,gn,2,you've got the job
+083,gn,3,the vendor has accepted your offer
+084,gn,4,your tests have come back clear
+085,gn,5,your application has been accepted
+086,gn,6,your promotion has been agreed
+087,gn,7,we won the match
+088,gn,8,the operation went well
+089,gn,9,your car passed its MOT
+090,gn,10,your bid has been successful
+091,ists,1,you haven't got the job
+092,ists,2,we can't do anything for you
+093,ists,3,we've sold out
+094,ists,4,the operation didn't go well
+095,ists,5,we can't extend you the loan
+096,ists,6,we've found some serious structural problems
+097,ists,7,your application was denied
+098,ists,8,we're going to have to let you go
+099,ists,9,a break in has been reported at your house
+100,ists,10,someone has been accessing your account
+101,gn,1,your loan has been approved
+102,gn,2,you've got the job
+103,gn,3,the vendor has accepted your offer
+104,gn,4,your tests have come back clear
+105,gn,5,your application has been accepted
+106,gn,6,your promotion has been agreed
+107,gn,7,we won the match
+108,gn,8,the operation went well
+109,gn,9,your car passed its MOT
+110,gn,10,your bid has been successful
+111,ists,1,you haven't got the job
+112,ists,2,we can't do anything for you
+113,ists,3,we've sold out
+114,ists,4,the operation didn't go well
+115,ists,5,we can't extend you the loan
+116,ists,6,we've found some serious structural problems
+117,ists,7,your application was denied
+118,ists,8,we're going to have to let you go
+119,ists,9,a break in has been reported at your house
+120,ists,10,someone has been accessing your account
+121,gn,1,your loan has been approved
+122,gn,2,you've got the job
+123,gn,3,the vendor has accepted your offer
+124,gn,4,your tests have come back clear
+125,gn,5,your application has been accepted
+126,gn,6,your promotion has been agreed
+127,gn,7,we won the match
+128,gn,8,the operation went well
+129,gn,9,your car passed its MOT
+130,gn,10,your bid has been successful
+131,ists,1,you haven't got the job
+132,ists,2,we can't do anything for you
+133,ists,3,we've sold out
+134,ists,4,the operation didn't go well
+135,ists,5,we can't extend you the loan
+136,ists,6,we've found some serious structural problems
+137,ists,7,your application was denied
+138,ists,8,we're going to have to let you go
+139,ists,9,a break in has been reported at your house
+140,ists,10,someone has been accessing your account
+141,gn,1,your loan has been approved
+142,gn,2,you've got the job
+143,gn,3,the vendor has accepted your offer
+144,gn,4,your tests have come back clear
+145,gn,5,your application has been accepted
+146,gn,6,your promotion has been agreed
+147,gn,7,we won the match
+148,gn,8,the operation went well
+149,gn,9,your car passed its MOT
+150,gn,10,your bid has been successful
+151,ists,1,you haven't got the job
+152,ists,2,we can't do anything for you
+153,ists,3,we've sold out
+154,ists,4,the operation didn't go well
+155,ists,5,we can't extend you the loan
+156,ists,6,we've found some serious structural problems
+157,ists,7,your application was denied
+158,ists,8,we're going to have to let you go
+159,ists,9,a break in has been reported at your house
+160,ists,10,someone has been accessing your account
+161,gn,1,your loan has been approved
+162,gn,2,you've got the job
+163,gn,3,the vendor has accepted your offer
+164,gn,4,your tests have come back clear
+165,gn,5,your application has been accepted
+166,gn,6,your promotion has been agreed
+167,gn,7,we won the match
+168,gn,8,the operation went well
+169,gn,9,your car passed its MOT
+170,gn,10,your bid has been successful
+171,ists,1,you haven't got the job
+172,ists,2,we can't do anything for you
+173,ists,3,we've sold out
+174,ists,4,the operation didn't go well
+175,ists,5,we can't extend you the loan
+176,ists,6,we've found some serious structural problems
+177,ists,7,your application was denied
+178,ists,8,we're going to have to let you go
+179,ists,9,a break in has been reported at your house
+180,ists,10,someone has been accessing your account
+181,gn,1,your loan has been approved
+182,gn,2,you've got the job
+183,gn,3,the vendor has accepted your offer
+184,gn,4,your tests have come back clear
+185,gn,5,your application has been accepted
+186,gn,6,your promotion has been agreed
+187,gn,7,we won the match
+188,gn,8,the operation went well
+189,gn,9,your car passed its MOT
+190,gn,10,your bid has been successful
+191,ists,1,you haven't got the job
+192,ists,2,we can't do anything for you
+193,ists,3,we've sold out
+194,ists,4,the operation didn't go well
+195,ists,5,we can't extend you the loan
+196,ists,6,we've found some serious structural problems
+197,ists,7,your application was denied
+198,ists,8,we're going to have to let you go
+199,ists,9,a break in has been reported at your house
+200,ists,10,someone has been accessing your account
+201,gn,1,your loan has been approved
+202,gn,2,you've got the job
+203,gn,3,the vendor has accepted your offer
+204,gn,4,your tests have come back clear
+205,gn,5,your application has been accepted
+206,gn,6,your promotion has been agreed
+207,gn,7,we won the match
+208,gn,8,the operation went well
+209,gn,9,your car passed its MOT
+210,gn,10,your bid has been successful
+211,ists,1,you haven't got the job
+212,ists,2,we can't do anything for you
+213,ists,3,we've sold out
+214,ists,4,the operation didn't go well
+215,ists,5,we can't extend you the loan
+216,ists,6,we've found some serious structural problems
+217,ists,7,your application was denied
+218,ists,8,we're going to have to let you go
+219,ists,9,a break in has been reported at your house
+220,ists,10,someone has been accessing your account
+221,gn,1,your loan has been approved
+222,gn,2,you've got the job
+223,gn,3,the vendor has accepted your offer
+224,gn,4,your tests have come back clear
+225,gn,5,your application has been accepted
+226,gn,6,your promotion has been agreed
+227,gn,7,we won the match
+228,gn,8,the operation went well
+229,gn,9,your car passed its MOT
+230,gn,10,your bid has been successful
+231,ists,1,you haven't got the job
+232,ists,2,we can't do anything for you
+233,ists,3,we've sold out
+234,ists,4,the operation didn't go well
+235,ists,5,we can't extend you the loan
+236,ists,6,we've found some serious structural problems
+237,ists,7,your application was denied
+238,ists,8,we're going to have to let you go
+239,ists,9,a break in has been reported at your house
+240,ists,10,someone has been accessing your account
+241,gn,1,your loan has been approved
+242,gn,2,you've got the job
+243,gn,3,the vendor has accepted your offer
+244,gn,4,your tests have come back clear
+245,gn,5,your application has been accepted
+246,gn,6,your promotion has been agreed
+247,gn,7,we won the match
+248,gn,8,the operation went well
+249,gn,9,your car passed its MOT
+250,gn,10,your bid has been successful
+251,ists,1,you haven't got the job
+252,ists,2,we can't do anything for you
+253,ists,3,we've sold out
+254,ists,4,the operation didn't go well
+255,ists,5,we can't extend you the loan
+256,ists,6,we've found some serious structural problems
+257,ists,7,your application was denied
+258,ists,8,we're going to have to let you go
+259,ists,9,a break in has been reported at your house
+260,ists,10,someone has been accessing your account
+261,gn,1,your loan has been approved
+262,gn,2,you've got the job
+263,gn,3,the vendor has accepted your offer
+264,gn,4,your tests have come back clear
+265,gn,5,your application has been accepted
+266,gn,6,your promotion has been agreed
+267,gn,7,we won the match
+268,gn,8,the operation went well
+269,gn,9,your car passed its MOT
+270,gn,10,your bid has been successful
+271,ists,1,you haven't got the job
+272,ists,2,we can't do anything for you
+273,ists,3,we've sold out
+274,ists,4,the operation didn't go well
+275,ists,5,we can't extend you the loan
+276,ists,6,we've found some serious structural problems
+277,ists,7,your application was denied
+278,ists,8,we're going to have to let you go
+279,ists,9,a break in has been reported at your house
+280,ists,10,someone has been accessing your account
+281,gn,1,your loan has been approved
+282,gn,2,you've got the job
+283,gn,3,the vendor has accepted your offer
+284,gn,4,your tests have come back clear
+285,gn,5,your application has been accepted
+286,gn,6,your promotion has been agreed
+287,gn,7,we won the match
+288,gn,8,the operation went well
+289,gn,9,your car passed its MOT
+290,gn,10,your bid has been successful
+291,ists,1,you haven't got the job
+292,ists,2,we can't do anything for you
+293,ists,3,we've sold out
+294,ists,4,the operation didn't go well
+295,ists,5,we can't extend you the loan
+296,ists,6,we've found some serious structural problems
+297,ists,7,your application was denied
+298,ists,8,we're going to have to let you go
+299,ists,9,a break in has been reported at your house
+300,ists,10,someone has been accessing your account
