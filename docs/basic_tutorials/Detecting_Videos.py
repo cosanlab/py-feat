@@ -10,7 +10,7 @@ def _():
     import torch
 
     # Use the best available device: CUDA (NVIDIA) > MPS (Apple Silicon) > CPU.
-    # Pass this to Detectorv1(device=...) so the tutorial uses your GPU when present.
+    # Pass this to Detectorv2(device=...) so the tutorial uses your GPU when present.
     device = (
         "cuda"
         if torch.cuda.is_available()
@@ -26,42 +26,35 @@ def _(mo):
     mo.md(r"""
     # 2. Detecting facial expressions from videos
 
-    In this tutorial we'll explore how to use the `Detectorv1` class to process video files.
+    In this tutorial we'll use **`Detectorv2`** — Py-Feat's single multi-task model — to process a video file, first one frame at a time and then in batches to speed things up on a GPU.
     """)
-    return
-
-
-@app.cell
-def _():
-    # Uncomment the line below and run this only if you're using Google Collab
-    # !pip install -q py-feat
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2.1 Setting up the Detectorv1
+    ## 2.1 Setting up the detector
 
-    We'll begin by creating a new `Detectorv1` instance just like the previous tutorial and using the defaults:
+    We create a `Detectorv2` instance just like in the previous tutorial. One network predicts Action Units, emotions, valence/arousal, gaze, head pose, a 478-point 3D FaceMesh, and blendshapes in a single forward pass.
     """)
     return
 
 
 @app.cell
 def _(device):
-    from feat import Detectorv1
+    from feat import Detectorv2
 
-    detector = Detectorv1(device=device)  # device selected above (cuda/mps/cpu)
+    detector = Detectorv2(device=device)  # device selected above (cuda/mps/cpu)
     return (detector,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2.2 Processing videos
+    ## 2.2 Processing a video
 
-    Detecting facial expressions in videos is easy to do using the `.detect()` method with `data_type="video"`. This sample video included in Py-Feat is by [Wolfgang Langer](https://www.pexels.com/@wolfgang-langer-1415383?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels) from [Pexels](https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/).
+    Detecting facial expressions in a video uses the same `.detect()` method with `data_type="video"`. This sample video included in Py-Feat is by [Wolfgang Langer](https://www.pexels.com/@wolfgang-langer-1415383?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels) from [Pexels](https://www.pexels.com/video/a-woman-exhibits-different-emotions-through-facial-expressions-3063838/).
     """)
     return
 
@@ -83,23 +76,19 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Just like before we can call the `.detect()` method, but this time we tell Py-feat that `data_type='video'`.
+    We pass `skip_frames=24` to process only every 24th frame for speed, and `face_detection_threshold=0.95` to be conservative about what counts as a face — we know this clip is a continuous front-on shot of one person, so raising it from the default `0.5` avoids spurious extra detections.
 
-    Here we also set `skip_frames=24` which tells the detector to process only every 24th frame for the sake of speed.
-
-    We also pass `batch_size=8` so frames are processed in batches rather than one at a time — this is much faster on a GPU. Combined with `device="auto"` above (which selects CUDA/MPS when available), this is the recommended way to process video.
-
-    We also set `face_detection_threshold=0.95` which tells the detector to be extremely conservative in what it considers a face. Since we already know that this video is a continuous front-on shot of one person, raising this value from the default of 0.5 will result in a much fewer false positive detections of more than one face per frame.
+    By default `.detect()` processes **one frame at a time** (`batch_size=1`):
     """)
     return
 
 
 @app.cell
 def _(detector, test_video_path):
+    # Without batching: one frame at a time (batch_size=1, the default).
     video_prediction = detector.detect(
         test_video_path,
         data_type="video",
-        batch_size=8,
         skip_frames=24,
         face_detection_threshold=0.95,
     )
@@ -110,7 +99,7 @@ def _(detector, test_video_path):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    We can see that our 20s long video, recorded at 24 frames-per-second, produces 20 predictions because we set `skip_frames=24`:
+    Our 20-second clip recorded at 24 fps yields 20 predictions because of `skip_frames=24`:
     """)
     return
 
@@ -124,24 +113,43 @@ def _(video_prediction):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2.3 Visualizing predictions
+    ## 2.3 Speeding things up with batching
+
+    Passing `batch_size > 1` runs several frames through the network in a single forward pass instead of one at a time. This is **much faster on a GPU** (CUDA or MPS) and is the recommended way to process video. On CUDA you can squeeze out a bit more by also passing `pin_memory=True`, which page-locks host memory for faster CPU→GPU transfers. The predictions are identical — only throughput changes:
     """)
+    return
+
+
+@app.cell
+def _(detector, test_video_path):
+    # With batching: 8 frames per forward pass — much faster on a GPU.
+    # On CUDA, pin_memory=True further speeds host->device transfers.
+    video_prediction_batched = detector.detect(
+        test_video_path,
+        data_type="video",
+        batch_size=8,
+        skip_frames=24,
+        face_detection_threshold=0.95,
+    )
+    video_prediction_batched.shape
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    You can also plot the detection results from a video. The frames are not extracted from the video (that will result in thousands of images) so the visualization only shows the detected face without the underlying image.
+    ## 2.4 Visualizing predictions
 
-    The video has 24 fps and the actress show sadness around the 0:02, and happiness at 0:14 seconds.
+    You can plot detection results from a video. The frames aren't extracted from the video (that would produce thousands of images), so the visualization shows the detected face geometry without the underlying image.
+
+    The clip runs at 24 fps; the actress shows sadness around 0:02 and happiness around 0:14.
     """)
     return
 
 
 @app.cell
 def _(mo, video_prediction):
-    # Frame 48 = ~0:02 (sadness), Frame 408 = ~0:14 (happiness)
+    # Frame 48 ~ 0:02 (sadness), Frame 408 ~ 0:14 (happiness)
     _figs = video_prediction.query("frame in [48, 408]").plot_detections(
         faceboxes=False, add_titles=False
     )
@@ -152,7 +160,7 @@ def _(mo, video_prediction):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    We can also leverage existing pandas plotting functions to show how emotions unfold over time. We can clearly see how her emotions change from sadness to happiness.
+    We can also use pandas plotting to show how emotions unfold over time — the shift from sadness to happiness is clearly visible:
     """)
     return
 

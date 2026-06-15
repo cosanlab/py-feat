@@ -18,11 +18,31 @@ a few blendshapes span multiple AUs). Blendshape names follow the
 !!! note
     Emotion expressions (e.g. *sadness*) are often characterized by patterns of AUs (AU1 + AU4 + AU15), but **individuals vary** in the way the exact ways that they emote. For this reason, some AUs may not be observed on some faces for the same expression and some expressions may consists of *additional* AUs.
 
-<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <div id="wrapper"></div>
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 
-<script defer>
+<script>
+function _renderAuReferenceGrid() {
+    const _wrapper = document.getElementById('wrapper');
+    if (!_wrapper || _wrapper.dataset.gridRendered) return;
+    // Instant (SPA) navigation may not re-inject the page's <link>/<script>, so
+    // ensure Grid.js's CSS + library are present before building.
+    if (!document.getElementById('gridjs-css')) {
+        const _l = document.createElement('link');
+        _l.id = 'gridjs-css'; _l.rel = 'stylesheet';
+        _l.href = 'https://unpkg.com/gridjs/dist/theme/mermaid.min.css';
+        document.head.appendChild(_l);
+    }
+    if (typeof gridjs === 'undefined') {
+        if (!document.getElementById('gridjs-lib')) {
+            const _s = document.createElement('script');
+            _s.id = 'gridjs-lib';
+            _s.src = 'https://unpkg.com/gridjs/dist/gridjs.umd.js';
+            _s.onload = _renderAuReferenceGrid;
+            document.head.appendChild(_s);
+        }
+        return;
+    }
+    _wrapper.dataset.gridRendered = '1';
     const grid = new gridjs.Grid({
         search: true,
         sort: true,
@@ -103,7 +123,16 @@ a few blendshapes span multiple AUs). Blendshape names follow the
             [66, 'Cross-eyed', '', 'Medial Rectus', 'eyes', '', 'none', ''],
         ]
     });
-    grid.render(document.getElementById('wrapper'))
+    grid.render(_wrapper);
+}
+// Material for MkDocs instant navigation re-fires document$ on every page load
+// (including SPA-style nav). Without this the Grid.js table only appears after a
+// hard refresh. Fall back to DOMContentLoaded when Material's hook is absent.
+if (window.document$ && typeof window.document$.subscribe === 'function') {
+    window.document$.subscribe(_renderAuReferenceGrid);
+} else {
+    document.addEventListener('DOMContentLoaded', _renderAuReferenceGrid);
+}
 </script>
 
 <style>

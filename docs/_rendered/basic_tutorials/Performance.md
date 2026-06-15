@@ -47,11 +47,11 @@ detector.detect(img_path, data_type="image")
 print(f"single-image detect: {time.perf_counter() - _t0:.3f}s on {device}")
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:02&lt;00:00,  2.44s/it]100%|██████████| 1/1 [00:02&lt;00:00,  2.44s/it]
-  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 36.06it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:02&lt;00:00,  2.62s/it]100%|██████████| 1/1 [00:02&lt;00:00,  2.62s/it]
+  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 37.88it/s]
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stdout">single-image detect: 0.030s on cuda
+<pre class="marimo-book-output-text marimo-stream-stdout">single-image detect: 0.029s on cuda
 </pre>
 
 ## 6.3 Batch images and video
@@ -78,18 +78,18 @@ for _bs in (1, 8):
     print(f"8 images, batch_size={_bs}: {time.perf_counter() - _t0:.3f}s")
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/8 [00:00&lt;?, ?it/s] 12%|█▎        | 1/8 [00:01&lt;00:11,  1.61s/it] 62%|██████▎   | 5/8 [00:01&lt;00:00,  3.76it/s]100%|██████████| 8/8 [00:01&lt;00:00,  4.38it/s]
-  0%|          | 0/8 [00:00&lt;?, ?it/s] 50%|█████     | 4/8 [00:00&lt;00:00, 31.98it/s]100%|██████████| 8/8 [00:00&lt;00:00, 31.81it/s]100%|██████████| 8/8 [00:00&lt;00:00, 31.79it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/8 [00:00&lt;?, ?it/s] 12%|█▎        | 1/8 [00:01&lt;00:10,  1.56s/it] 62%|██████▎   | 5/8 [00:01&lt;00:00,  3.86it/s]100%|██████████| 8/8 [00:01&lt;00:00,  4.50it/s]
+  0%|          | 0/8 [00:00&lt;?, ?it/s] 50%|█████     | 4/8 [00:00&lt;00:00, 32.94it/s]100%|██████████| 8/8 [00:00&lt;00:00, 32.94it/s]100%|██████████| 8/8 [00:00&lt;00:00, 32.89it/s]
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.257s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.248s
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:03&lt;00:00,  3.98s/it]100%|██████████| 1/1 [00:03&lt;00:00,  3.98s/it]
-  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 10.39it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:03&lt;00:00,  3.80s/it]100%|██████████| 1/1 [00:03&lt;00:00,  3.80s/it]
+  0%|          | 0/1 [00:00&lt;?, ?it/s]100%|██████████| 1/1 [00:00&lt;00:00, 11.09it/s]
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.099s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.093s
 </pre>
 
 ## 6.4 Leave `num_workers=0`
