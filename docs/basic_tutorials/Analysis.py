@@ -334,19 +334,21 @@ def _(mo):
 
 
 @app.cell
-def _(models, plt, sns):
-    from feat.plotting import plot_face
+def _(models, np, plt):
+    from feat.plotting import plot_face_mesh
 
-    _ax = plot_face(
-        au=models['aus'][1].coef_.squeeze(), # the LDA coefs from the AUs pipeline model
-        feature_range=(0, 1),
-        muscles={"all": "heatmap"},
-        title="Expression reconstructed from\nAU classifier weights",
-        title_kwargs={'wrap':False}
-    )
-    sns.despine(left=True,bottom=True);
+    # The 'aus' pipeline's LDA coefficients are signed weights over the 20 AUs.
+    # Min-max scale them into a positive AU-intensity range, then render the
+    # predicted 478-vertex mesh so we can "see" the (good-news-leaning) expression
+    # the classifier learned — the Detectorv2 analog of the 68-pt plot_face.
+    _coef = models['aus'][1].coef_.squeeze()
+    _au = (_coef - _coef.min()) / (np.ptp(_coef) + 1e-12) * 2.0
 
-    _ax.figure
+    _fig = plt.figure(figsize=(5, 5))
+    _ax = _fig.add_subplot(111, projection="3d")
+    plot_face_mesh(au=_au, ax=_ax, mode="tesselation")
+    _ax.set_title("Expression reconstructed from\nAU classifier weights")
+    _fig
     return
 
 
@@ -354,8 +356,9 @@ def _(models, plt, sns):
 def _(mo):
     mo.md(r"""
     You can also *animate* this expression to emphasize what's changing — pass the
-    same classifier-weight vector as `end` (and a neutral face as `start`) to
-    `animate_face`. See [tutorial 3](Plotting.md) for animation examples.
+    same scaled AU-weight vector as `end` (and a neutral `np.zeros(20)` as `start`)
+    to `animate_face_mesh_plotly` for an interactive 3D morph. See
+    [tutorial 3](Plotting.md) for animation examples.
     """)
     return
 
