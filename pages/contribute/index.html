@@ -1948,11 +1948,11 @@
 <li>When your tests pass create a pull-request against the <code>master</code>/<code>main</code> branch on github!</li>
 </ol>
 <h2 id="tutorial-contribution-guidelines">Tutorial contribution guidelines<a class="headerlink" href="#tutorial-contribution-guidelines" title="Permanent link">&para;</a></h2>
-<p>All Py-Feat tutorial are made using <a href="https://jupyterbook.org/intro.html">jupyter book</a>. To add a new tutorial or page takes just 3 steps:
-1. Add a jupyter notebook or markdown file to <code>docs/</code>
-2. Add an entry for your file to the table-of-contents in <code>docs/_toc.yml</code>
-3. Run <code>jupyter-book build docs</code> to render the documentation</p>
-<p>You can check the build jupyter book by opening <code>notebooks/_build/html/index.html</code> in your browser.</p>
+<p>Py-Feat's docs are built with <strong>marimo-book</strong> (Material for MkDocs under the hood). To add a new tutorial or page:
+1. Add a marimo notebook (<code>.py</code>) or a Markdown file under <code>docs/</code> — tutorials live in <code>docs/basic_tutorials/</code>, prose pages in <code>docs/pages/</code>.
+2. Add an entry for your file to the table of contents in <code>docs/book.yml</code>.
+3. Run <code>cd docs &amp;&amp; marimo-book build</code> to render the site (output in <code>docs/_site/</code>).</p>
+<p>For executable tutorials marked <code>mode: cached</code>, run <code>marimo-book render</code> on a machine with the models/data, then commit the refreshed <code>docs/_rendered/</code> so CI can build the page without executing it.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Our documentation building pipeline does <strong>not</strong> execute jupyter notebooks. It just renders their input and output as pages. So make sure you locally execute cells that you want output for <strong>before</strong> committing your changes</p>

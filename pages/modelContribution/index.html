@@ -2027,7 +2027,7 @@
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        return [array with probabilities for 7 emotions]
 </span></code></pre></div></li>
-<li>In <code>feat/pretrained.py</code>, add your model to the <code>PRETRAINED_MODELS</code> dictionary. If you're adding a new AU detector and it only supports specific AUs make sure to also add it to the <code>AU_LANDMARK_MAP</code>. You may also want to train a new <code>PLS</code> visualization model and save it as <code>.h5</code> file. See <a href="https://github.com/cosanlab/py-feat/blob/main/docs/extra_tutorials/06_trainAUvisModel.ipynb">this tutorial</a> for details.</li>
+<li>In <code>feat/pretrained.py</code>, add your model to the <code>PRETRAINED_MODELS</code> dictionary. If you're adding a new AU detector and it only supports specific AUs make sure to also add it to the <code>AU_LANDMARK_MAP</code>. If you're adding an AU detector, you may also want to train a new <code>PLS</code> AU→landmark/mesh visualization model; see the model-fitting scripts under <code>scripts/</code> in the repo.</li>
 <li>Upload your trained model weights to an accessible locations (e.g. Google Drive) and add it to <code>feat/resources/model_list.json</code>. </li>
 <li>Follow the <a href="../contribute/">general contribution guidelines</a> to add tests and format your code</li>
 <li>When your tests pass create a pull-request against the <code>master</code>/<code>main</code> branch on github!</li>
