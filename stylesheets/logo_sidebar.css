@@ -1,0 +1,71 @@
+/* Sidebar logo placement (book.yml: logo_placement: sidebar)
+ * ----------------------------------------------------------------------------
+ * Mirrors Jupyter Book's chrome: a large logo at the top of the left nav,
+ * acting as the primary visual anchor instead of the small Material header
+ * icon. Activated by emitting this stylesheet only when the user opts in;
+ * if absent, Material's default header-logo behaviour is unchanged. */
+
+/* Desktop only — leave the small header logo visible on mobile, since the
+ * sidebar collapses into a drawer there and Material's default rendering
+ * already promotes the logo into the drawer header. */
+@media screen and (min-width: 76.25em) {
+
+  /* Hide the duplicate small logo in the header bar. */
+  .md-header__button.md-logo {
+    display: none;
+  }
+
+  /* Promote the nav drawer header (which holds the logo) into a visible
+   * banner above the primary sidebar nav. Material hides this on desktop
+   * by default; we restore it as a centered container that shows only
+   * the logo image (the site name is already in the header bar — no
+   * point in repeating it here).
+   *
+   * background-color matches the sidebar background because the title
+   * stays sticky (Material default); without an opaque bg the chapter
+   * list scrolls *behind* the logo and you see them through it. */
+  .md-sidebar--primary .md-nav--primary > .md-nav__title {
+    display: flex;
+    align-items: center;
+    /* Left-align the logo: the header site-title and all nav items are
+     * left-aligned, so a centered logo reads as shoved to the right. The
+     * left padding matches Material's nav-link text inset so the logo's
+     * left edge lines up with the chapter list below it. */
+    justify-content: flex-start;
+    padding: 1rem 0.6rem 0.75rem 0.75rem;
+    height: auto;
+    background-color: var(--md-default-bg-color);
+    box-shadow: none;
+    cursor: default;
+    line-height: 1;
+    z-index: 1;
+    /* Collapse any direct text node (the site-name label that lives
+     * inside the <label> alongside the logo <a>) by zeroing the font;
+     * the logo image opts back in via its own font-size below. */
+    font-size: 0;
+  }
+
+  /* Hide the drawer-only "back to top" / hamburger label children. */
+  .md-sidebar--primary .md-nav--primary > .md-nav__title > [for] {
+    display: none;
+  }
+
+  /* The logo itself: hyperlink to the home page, sized to fit. */
+  .md-sidebar--primary .md-nav--primary > .md-nav__title .md-nav__button.md-logo {
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    flex-shrink: 0;
+  }
+  .md-sidebar--primary .md-nav--primary > .md-nav__title .md-nav__button.md-logo img,
+  .md-sidebar--primary .md-nav--primary > .md-nav__title .md-nav__button.md-logo svg {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 96px;
+    margin: 0;
+  }
+}
