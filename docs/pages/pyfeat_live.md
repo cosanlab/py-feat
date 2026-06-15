@@ -21,7 +21,6 @@ The button always points at the [latest release](https://github.com/cosanlab/pyf
 | --- | --- |
 | **Detectorv2** (default) | The v2.5 multitask model — 20 AUs, 7 emotions, valence/arousal, a 478-point face mesh, 6-DoF head pose, gaze, 52 ARKit/MediaPipe blendshapes, and ArcFace/FaceNet identity, all from a single forward pass. |
 | **Detectorv1** | The classic Py-Feat detector (RetinaFace / img2pose face + landmark / AU / emotion models). |
-| **MPDetector** | MediaPipe FaceMesh-based detection. |
 
 ## Live
 

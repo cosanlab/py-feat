@@ -37,27 +37,30 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install uv + Python
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.13"
+          enable-cache: true
 
-      - name: Upgrade pip
+      # The marimo book builds from committed _rendered/ (mode: cached) + griffe
+      # reading source for the API reference, so only marimo-book is needed — no
+      # feat, torch, or model downloads. Re-run `marimo-book render` + commit
+      # _rendered/ when a cached tutorial's source changes.
+      - name: Install marimo-book
         run: |
-          # install pip=>20.1 to use "pip cache dir"
-          python3 -m pip install --upgrade pip
-
-      - name: Install deps
-        run: |
-          python3 -m pip install . -r requirements-dev.txt
+          uv venv --python 3.13
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          uv pip install "marimo-book[api]>=0.1.24"
 
       - name: Build book
         run: |
-          jupyter-book build docs
-          echo 'py-feat.org' > ./docs/_build/html/CNAME
+          cd docs
+          marimo-book build
+          echo 'py-feat.org' > _site/CNAME
 
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_build/html
+          publish_dir: ./docs/_site

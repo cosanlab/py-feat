@@ -10,7 +10,7 @@ def _():
     import torch
 
     # Use the best available device: CUDA (NVIDIA) > MPS (Apple Silicon) > CPU.
-    # Pass this to Detectorv1(device=...) so the tutorial uses your GPU when present.
+    # Pass this to a detector (device=...) so the tutorial uses your GPU when present.
     device = (
         "cuda"
         if torch.cuda.is_available()
@@ -25,53 +25,220 @@ def _():
 def _(mo):
     mo.md(r"""
     # 3. Visualizing Facial Expressions
-    *written by Eshin Jolly*
 
     In this tutorial we'll explore plotting in Py-Feat using functions from the `feat.plotting` module along with plotting methods using the Fex data class.
 
-    To help visualize facial expressions in a standardized way, Py-Feat includes a pre-trained partial-least-squares (PLS) model that can map between an array of AU intensities (between 0-N) and facial landmark coordinates. Just pass in a numpy array of AU intensities to the `plot_face()` function to visualize the resulting facial expression. In general we find that a 4 by 5 aspect ratio seems to work best when plotting faces (default in `plot_face()`).
+    Py-Feat's `Detectorv2` produces a dense **478-vertex 3D MediaPipe FaceMesh**, and the plotting module can render that mesh directly — in matplotlib 3D or in an interactive Plotly viewport — driven either by AU intensities or by a precomputed mesh. We'll lead with those Detectorv2-style mesh visualizations, then cover the 2D AU→landmark plots, muscle heatmaps, gaze, and animation helpers. A short **Legacy: Detectorv1 plots** section at the end covers visualizations that depend specifically on the modular `Detectorv1` (the xgb AU model and the 68-pt dlib landmark path).
 
-    For more details on how this visualization model was trained and how to train your own see [this advanced tutorial](https://py-feat.org/extra_tutorials/trainAUvisModel.html).
+    To help visualize facial expressions in a standardized way, Py-Feat includes pre-trained partial-least-squares (PLS) models that map between an array of AU intensities and facial geometry — either the full 478-vertex mesh or the classic 68-pt landmark set.
     """)
-    return
-
-
-@app.cell
-def _():
-    # Uncomment the line below and run this only if you're using Google Collab
-    # !pip install -q py-feat
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.1 Plotting a neutral (default) face
+    ## 3.1 Visualizing the full 3D MediaPipe FaceMesh from AU intensities
 
-    To plot a neutral facial expression just pass in an array of 0s to `plot_face()` which always returns a matplotlib axis handle:
+    `Detectorv2` predicts a dense 478-vertex MediaPipe FaceMesh, and py-feat ships
+    a matching visualization of that geometry. Pass AU intensities to
+    `plot_face_mesh()` and the model predicts a face-shaped mesh in a pose-canonical
+    frame, then renders it as a 3D wireframe in matplotlib's 3D backend.
+
+    By default `plot_face_mesh()` draws the lighter canonical contours (lips, eyes,
+    eyebrows, face oval — ~124 edges). Pass `mode='tesselation'` to draw the full
+    MediaPipe tessellation (~2,556 edges), which reveals the nose, cheek, and
+    internal-face structure and makes subtle AU activations easier to see. It
+    matches the default in the interactive Plotly backend used in §3.3.
+
+    This relies on the `au_to_mesh` PLS model on HuggingFace
+    ([`py-feat/au_to_mesh`](https://huggingface.co/py-feat/au_to_mesh)) — downloaded
+    on first use, then cached.
     """)
     return
 
 
 @app.cell
 def _():
-    from feat.plotting import plot_face
     import numpy as np
+    import matplotlib.pyplot as plt
+    from feat.plotting import plot_face_mesh, load_face_mesh_viz_model
+    mesh_model = load_face_mesh_viz_model()
+    au_columns = mesh_model.au_columns
+    print('AU columns the model expects:', au_columns)
+    rest = np.zeros(20, dtype=np.float32)
+    smile = np.zeros(20, dtype=np.float32)
+    smile[au_columns.index('AU12')] = 3.0
+    brow = np.zeros(20, dtype=np.float32)
+    brow[au_columns.index('AU04')] = 3.0
+    _fig = plt.figure(figsize=(15, 5))
+    for _i, (label, au) in enumerate([('Rest', rest), ('AU12 smile', smile), ('AU04 brow lower', brow)]):
+        _ax = _fig.add_subplot(1, 3, _i + 1, projection='3d')
+        plot_face_mesh(au=au, ax=_ax, model=mesh_model, mode='tesselation')
+        _ax.set_title(label)
+    plt.tight_layout()
+    _fig
+    return np, plot_face_mesh, plt, rest, smile
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3.2 Interactive 3D visualization with Plotly
+
+    For an interactive 3D viewport you can rotate, pan, and zoom (especially
+    useful in Jupyter notebooks), `plot_face_mesh_plotly()` returns a
+    `plotly.graph_objects.Figure` instead of a matplotlib axis. The `mode='tesselation'`
+    default draws the full 2,556-edge MP tessellation for a dense 3D look; pass
+    `mode='contours'` for the same canonical-features wireframe as the matplotlib
+    version.
+
+    The function takes the same `au=` / `mesh=` source dispatch as `plot_face_mesh`,
+    so you can use it with either AU intensities or a precomputed mesh.
+    """)
+    return
+
+
+@app.cell
+def _(smile):
+    from feat.plotting import plot_face_mesh_plotly
+
+    # Same smile activation as 3.1
+    fig_plotly = plot_face_mesh_plotly(au=smile, mode="tesselation")
+    fig_plotly.update_layout(width=500, height=500)
+    fig_plotly
+    return (plot_face_mesh_plotly,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    You can also persist the figure to standalone HTML for sharing or to
+    PNG via Plotly's `write_image()` method (which uses kaleido under the hood):
+
+    ```python
+    fig_plotly.write_html("/tmp/face_mesh.html")
+    fig_plotly.write_image("/tmp/face_mesh.png")
+    ```
+
+    For the lighter, contours-only view that matches `plot_face_mesh`:
+
+    ```python
+    plot_face_mesh_plotly(au=smile, mode="contours")
+    ```
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Adding a 3D gaze arrow
+
+    Both `plot_face_mesh` and `plot_face_mesh_plotly` accept a `gaze=(pitch, yaw)`
+    tuple of head-centric angles (radians), matching the format the gaze model outputs in
+    `fex.gaze_pitch` / `fex.gaze_yaw`. A yellow arrow is drawn from the
+    outer-canthi midpoint in the mesh's pose-canonical frame, scaled to
+    `gaze_length_frac` (default 30%) of face height.
+
+    Forward gaze (pitch=0, yaw=0) points along +Z (out of the face), so in
+    the default front-on plotly camera it appears as a small point — drag to
+    rotate the camera if you want to see it as an arrow.
+    """)
+    return
+
+
+@app.cell
+def _(np, plot_face_mesh_plotly):
+    fig_gaze = plot_face_mesh_plotly(au=None, mode='tesselation', gaze=(np.deg2rad(15), np.deg2rad(20)))
+    fig_gaze.update_layout(width=500, height=500, title_text='Mesh + 3D gaze arrow')
+    # Pitch ~+15° (looking up), yaw ~+20° (eyes drift toward viewer's right).
+    # Pass radians; the gaze detector output is already in radians so you can
+    # plug fex.gaze_pitch / fex.gaze_yaw straight in. Tesselation mode shows
+    # enough of the face (nose, cheeks, eyes) for the gaze arrow to read
+    # anatomically — contours leaves too few landmarks for the eye to be
+    # obvious.
+    fig_gaze
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3.3 Animating the 3D MediaPipe FaceMesh
+
+    `animate_face_mesh_plotly()` returns a Plotly Figure with
+    play/pause/loop buttons and a per-frame slider, and the camera stays
+    rotatable *while* the animation is playing. So you can rotate to a
+    profile view, hit play, and watch the expression morph from that vantage.
+
+    It uses the same `interpolate_aus` cubic-easing helper as the 2D
+    `animate_face`, and the same `mode='tesselation'` / `'contours'` knob as
+    `plot_face_mesh_plotly`. By default it appends a reverse pass so the
+    animation returns to the starting expression on each cycle.
+
+    Below we animate a smile starting from rest in tesselation mode — the
+    dense edge set shows the nose, cheek, and inner-face structure that
+    makes the face recognizable. Pass `mode='contours'` if you need a
+    smaller embedded HTML (~500 KB vs several MB for tesselation).
+    """)
+    return
+
+
+@app.cell
+def _(rest, smile):
+    from feat.plotting import animate_face_mesh_plotly
+
+    # Animate from rest → smile → rest. Tesselation mode (default) is much
+    # more recognizable than contours — contours shows only a lips/eyelids/
+    # brows/face oval, missing nose, cheeks, iris, etc. Tradeoff is HTML
+    # output size (~5-10 MB for 24 frames vs ~500 KB for contours).
+    fig_anim = animate_face_mesh_plotly(
+        start=rest,
+        end=smile,
+        num_frames=12,
+        fps=15,
+        mode="tesselation",
+    )
+    fig_anim.update_layout(width=500, height=600, title_text="AU12 smile (rest → peak → rest)")
+    fig_anim
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3.4 Plotting a neutral (default) face with 2D landmarks
+
+    Alongside the 3D mesh, py-feat includes a pre-trained PLS model that maps an
+    array of AU intensities to the classic 68-pt facial landmark set. Just pass a
+    numpy array of AU intensities to `plot_face()` to visualize the resulting facial
+    expression; it always returns a matplotlib axis handle. In general we find that a
+    4 by 5 aspect ratio works best when plotting faces (default in `plot_face()`).
+
+    To plot a neutral facial expression just pass in an array of 0s to `plot_face()`:
+    """)
+    return
+
+
+@app.cell
+def _(np):
+    from feat.plotting import plot_face
     neutral = np.zeros(20)
     # 20 dimensional vector of AU intensities
     # AUs ordered as:
     # 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 17, 20, 23, 24, 25, 26, 28, 43
     _ax = plot_face(au=neutral, title='Neutral')
     _ax.figure
-    return neutral, np, plot_face
+    return neutral, plot_face
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.2 Plotting AU activations
+    ## 3.5 Plotting AU activations
 
-    Plotting facial expressions from AU activity is just as a simple. Below we increase the intensity of AU1 (inner brow raiser) to 1 before passing it to `plot_face()`.
+    Plotting facial expressions from AU activity is just as simple. Below we increase the intensity of AU1 (inner brow raiser) to 1 before passing it to `plot_face()`.
 
     The default visualization model in py-feat 0.7+ (`PLSAULandmarkModel`, trained on ~350K CelebV-HQ frames) expects AU intensities on the **[0, 1] scale that the `xgb` AU detector outputs** — `0` = AU off, `1` = fully activated. Values larger than 1 push the model past its training distribution and produce cartoonish/exaggerated expressions. (The legacy v1 model used a [0, 5] FACS-style scale; if you load it explicitly with `load_viz_model('pyfeat_aus_to_landmarks')`, the old `AU=3` convention still applies there.)
     """)
@@ -106,7 +273,7 @@ def _(np, plot_face):
     # Activate AUs (xgb [0, 1] scale: AU01 partially active, AU11 fully active)
     smiling = np.array([0.5, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     _muscles = {'all': 'heatmap'}
-    # Overlay muscles 
+    # Overlay muscles
     _ax = plot_face(au=smiling, muscles=_muscles, title='Smiling')
     _ax.figure
     return (smiling,)
@@ -152,45 +319,6 @@ def _(neutral, plot_face):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### Plotting gaze from real images (L2CS model)
-
-    The synthetic-face example above takes a manually-specified gaze 4-vector.
-    For real images, py-feat 0.7+ includes the **L2CS** gaze model
-    (Abdelrahman et al. 2022, ResNet50) — the default `gaze_model` for both
-    `Detectorv1` and `MPDetector`. After running detection, the resulting `Fex`
-    DataFrame has `gaze_pitch` and `gaze_yaw` columns (radians), and
-    `Fex.plot_detections(gazes=True)` automatically draws a gaze arrow from each
-    face's bbox center in the predicted direction.
-    """)
-    return
-
-
-@app.cell
-def _(device):
-    import os as _os
-    from feat.detector import Detectorv1
-    from feat.utils.io import get_test_data_path as _gtdp
-
-    # Run the Detectorv1 on a real image. gaze_model='l2cs' is the default in v0.7.
-    gaze_detector = Detectorv1(
-        au_model="xgb", emotion_model=None, identity_model=None, device=device
-    )
-    fex_real = gaze_detector.detect([_os.path.join(_gtdp(), "multi_face.jpg")])
-
-    # fex_real has gaze_pitch / gaze_yaw columns (radians) for each detected face.
-    print("gaze columns:", fex_real.gaze_columns)
-    print(fex_real[["gaze_pitch", "gaze_yaw"]])
-
-    # plot_detections renders a yellow gaze arrow from each face's bbox center
-    # in the predicted direction, overlaid on the detected landmarks.
-    _figs = fex_real.plot_detections(faces="landmarks", gazes=True, muscles=False)
-    _figs[0]
-    return (Detectorv1,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
     ### Adding vectorfield arrows to highlight facial movement
 
     One way we can highlight how a faces change between two expressions is by overlaying a vectorfield of arrows for each facial landmark pointing in the direction of movement from one face to another. To do so, we use the `predict()` function to get landmark data for each array of AU intensities we want to plot and generate a `vectors` dictionary with keys for the `'target'` and `'reference'` faces. Then we can pass this dictionary to the `vectorfield` argument of `plot_face()`:
@@ -199,9 +327,8 @@ def _(mo):
 
 
 @app.cell
-def _(neutral, plot_face, raised_inner_brow):
+def _(neutral, plot_face, plt, raised_inner_brow):
     from feat.plotting import predict
-    import matplotlib.pyplot as plt
     neutral_landmarks = predict(neutral)
     # Get landmarks
     raised_inner_brow_landmarks = predict(raised_inner_brow)
@@ -217,13 +344,13 @@ def _(neutral, plot_face, raised_inner_brow):
     # Vectorfield goes target -> neutral on target face
     _ = plot_face(ax=axes[1], au=raised_inner_brow, title='Raised inner brow', vectorfield=target_to_neutral)
     _fig
-    return (plt,)
+    return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.3 Animating facial expressions
+    ## 3.6 Animating facial expressions
 
     Py-Feat includes an `animate_face()` function which makes it easy to "morph" one facial expression into another by interpolating between AU intensities. This function generates a GIF specified by the `save` argument. You can use this function in two ways:
     1. Using the `AU` keyword argument and a single scalar value for `start` and `end`
@@ -390,7 +517,7 @@ def _(mo):
 def _(neutral, smiling):
     from feat.plotting import animate_face_plotly
 
-    # Same smile activation as cell 7 — but as an interactive Plotly animation
+    # Same smile activation as above — but as an interactive Plotly animation
     # you can pan/zoom and scrub frame-by-frame via the slider, no GIF on disk.
     fig_2d_anim = animate_face_plotly(
         start=neutral,
@@ -406,50 +533,59 @@ def _(neutral, smiling):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.4 Visualizing the full 3D MediaPipe FaceMesh from AU intensities
+    ## 3.7 Legacy: Detectorv1 plots
 
-    Beyond the 2D 68-pt landmark plot from `plot_face`, py-feat ships an opt-in 3D
-    visualization of the full 478-vertex MediaPipe FaceMesh. Pass AU intensities
-    to `plot_face_mesh()` and the model predicts a face-shaped mesh in a pose-canonical frame, then renders it as a 3D wireframe in matplotlib's 3D backend.
-
-    By default `plot_face_mesh()` draws the lighter canonical contours (lips, eyes,
-    eyebrows, face oval — ~124 edges). Pass `mode='tesselation'` to draw the full
-    MediaPipe tessellation (~2,556 edges), which reveals the nose, cheek, and
-    internal-face structure and makes subtle AU activations easier to see. It
-    matches the default in the interactive Plotly backend used in §3.6.
-
-    This relies on the `au_to_mesh` PLS model on HuggingFace
-    ([`py-feat/au_to_mesh`](https://huggingface.co/py-feat/au_to_mesh)) — downloaded
-    on first use, then cached.
+    The visualizations below depend specifically on the modular `Detectorv1`
+    pipeline (the `xgb` AU model and the 68-pt dlib landmark path) rather than
+    `Detectorv2`'s mesh output. They remain supported, but `Detectorv2` is the
+    recommended detector for new work.
     """)
     return
-
-
-@app.cell
-def _(np, plt):
-    from feat.plotting import plot_face_mesh, load_face_mesh_viz_model
-    mesh_model = load_face_mesh_viz_model()
-    au_columns = mesh_model.au_columns
-    print('AU columns the model expects:', au_columns)
-    rest = np.zeros(20, dtype=np.float32)
-    smile = np.zeros(20, dtype=np.float32)
-    smile[au_columns.index('AU12')] = 3.0
-    brow = np.zeros(20, dtype=np.float32)
-    brow[au_columns.index('AU04')] = 3.0
-    _fig = plt.figure(figsize=(15, 5))
-    for _i, (label, au) in enumerate([('Rest', rest), ('AU12 smile', smile), ('AU04 brow lower', brow)]):
-        _ax = _fig.add_subplot(1, 3, _i + 1, projection='3d')
-        plot_face_mesh(au=au, ax=_ax, model=mesh_model, mode='tesselation')
-        _ax.set_title(label)
-    plt.tight_layout()
-    _fig
-    return plot_face_mesh, rest, smile
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.5 Bridging 68-pt landmarks to the 3D mesh
+    ### Plotting gaze from real images (L2CS model)
+
+    The synthetic-face examples above take manually-specified or AU-derived gaze.
+    For real images, py-feat 0.7+ includes the **L2CS** gaze model
+    (Abdelrahman et al. 2022, ResNet50) — the default `gaze_model` for
+    `Detectorv1`. After running detection, the resulting `Fex`
+    DataFrame has `gaze_pitch` and `gaze_yaw` columns (radians), and
+    `Fex.plot_detections(gazes=True)` automatically draws a gaze arrow from each
+    face's bbox center in the predicted direction.
+    """)
+    return
+
+
+@app.cell
+def _(device):
+    import os as _os
+    from feat.detector import Detectorv1
+    from feat.utils.io import get_test_data_path as _gtdp
+
+    # Run the Detectorv1 on a real image. gaze_model='l2cs' is the default in v0.7.
+    gaze_detector = Detectorv1(
+        au_model="xgb", emotion_model=None, identity_model=None, device=device
+    )
+    fex_real = gaze_detector.detect([_os.path.join(_gtdp(), "multi_face.jpg")])
+
+    # fex_real has gaze_pitch / gaze_yaw columns (radians) for each detected face.
+    print("gaze columns:", fex_real.gaze_columns)
+    print(fex_real[["gaze_pitch", "gaze_yaw"]])
+
+    # plot_detections renders a yellow gaze arrow from each face's bbox center
+    # in the predicted direction, overlaid on the detected landmarks.
+    _figs = fex_real.plot_detections(faces="landmarks", gazes=True, muscles=False)
+    _figs[0]
+    return (Detectorv1,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Bridging 68-pt landmarks to the 3D mesh
 
     If you already ran the standard `Detectorv1` (img2pose + mobilefacenet 68-pt) on
     an image, you can convert those 2D landmarks into a 478-vertex 3D mesh using
@@ -484,132 +620,6 @@ def _(Detectorv1, device, np, plot_face_mesh, plt):
     plot_face_mesh(mesh=mesh, ax=_ax, mode='tesselation')
     _ = _ax.set_title('3D mesh reconstructed from Detectorv1 68-pt landmarks')
     _fig
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 3.6 Interactive 3D visualization with Plotly
-
-    For an interactive 3D viewport you can rotate, pan, and zoom (especially
-    useful in Jupyter notebooks), `plot_face_mesh_plotly()` returns a
-    `plotly.graph_objects.Figure` instead of a matplotlib axis. The `mode='tesselation'`
-    default draws the full 2,556-edge MP tessellation for a dense 3D look; pass
-    `mode='contours'` for the same canonical-features wireframe as the matplotlib
-    version.
-
-    The function takes the same `au=` / `mesh=` source dispatch as `plot_face_mesh`,
-    so you can use it with either AU intensities or a precomputed mesh from the
-    bridge.
-    """)
-    return
-
-
-@app.cell
-def _(smile):
-    from feat.plotting import plot_face_mesh_plotly
-
-    # Same smile activation as 3.4
-    fig_plotly = plot_face_mesh_plotly(au=smile, mode="tesselation")
-    fig_plotly.update_layout(width=500, height=500)
-    fig_plotly
-    return (plot_face_mesh_plotly,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    You can also persist the figure to standalone HTML for sharing or to
-    PNG via Plotly's `write_image()` method (which uses kaleido under the hood):
-
-    ```python
-    fig_plotly.write_html("/tmp/face_mesh.html")
-    fig_plotly.write_image("/tmp/face_mesh.png")
-    ```
-
-    For the lighter, contours-only view that matches `plot_face_mesh`:
-
-    ```python
-    plot_face_mesh_plotly(au=smile, mode="contours")
-    ```
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ### Adding a 3D gaze arrow
-
-    Both `plot_face_mesh` and `plot_face_mesh_plotly` accept a `gaze=(pitch, yaw)`
-    tuple of head-centric angles (radians), matching the format L2CS outputs in
-    `fex.gaze_pitch` / `fex.gaze_yaw`. A yellow arrow is drawn from the
-    outer-canthi midpoint in the mesh's pose-canonical frame, scaled to
-    `gaze_length_frac` (default 30%) of face height.
-
-    Forward gaze (pitch=0, yaw=0) points along +Z (out of the face), so in
-    the default front-on plotly camera it appears as a small point — drag to
-    rotate the camera if you want to see it as an arrow.
-    """)
-    return
-
-
-@app.cell
-def _(np, plot_face_mesh_plotly):
-    fig_gaze = plot_face_mesh_plotly(au=None, mode='tesselation', gaze=(np.deg2rad(15), np.deg2rad(20)))
-    fig_gaze.update_layout(width=500, height=500, title_text='Mesh + 3D gaze arrow')
-    # Pitch ~+15° (looking up), yaw ~+20° (eyes drift toward viewer's right).
-    # Pass radians; L2CS detector output is already in radians so you can
-    # plug fex.gaze_pitch / fex.gaze_yaw straight in. Tesselation mode shows
-    # enough of the face (nose, cheeks, eyes) for the gaze arrow to read
-    # anatomically — contours leaves too few landmarks for the eye to be
-    # obvious.
-    fig_gaze
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 3.7 Animating the 3D MediaPipe FaceMesh
-
-    The 2D `animate_face` from §3.3 saves a GIF; the 3D mesh equivalent is
-    interactive — `animate_face_mesh_plotly()` returns a Plotly Figure with
-    play/pause/loop buttons and a per-frame slider, and the camera stays
-    rotatable *while* the animation is playing. So you can rotate to a
-    profile view, hit play, and watch the expression morph from that vantage.
-
-    It uses the same `interpolate_aus` cubic-easing helper as `animate_face`,
-    and the same `mode='tesselation'` / `'contours'` knob as
-    `plot_face_mesh_plotly`. By default it appends a reverse pass so the
-    animation returns to the starting expression on each cycle.
-
-    Below we animate a smile starting from rest in tesselation mode — the
-    dense edge set shows the nose, cheek, and inner-face structure that
-    makes the face recognizable. Pass `mode='contours'` if you need a
-    smaller embedded HTML (~500 KB vs several MB for tesselation).
-    """)
-    return
-
-
-@app.cell
-def _(rest, smile):
-    from feat.plotting import animate_face_mesh_plotly
-
-    # Animate from rest → smile → rest. Tesselation mode (default) is much
-    # more recognizable than contours — contours shows only a lips/eyelids/
-    # brows/face oval, missing nose, cheeks, iris, etc. Tradeoff is HTML
-    # output size (~5-10 MB for 24 frames vs ~500 KB for contours).
-    fig_anim = animate_face_mesh_plotly(
-        start=rest,
-        end=smile,
-        num_frames=12,
-        fps=15,
-        mode="tesselation",
-    )
-    fig_anim.update_layout(width=500, height=600, title_text="AU12 smile (rest → peak → rest)")
-    fig_anim
     return
 
 

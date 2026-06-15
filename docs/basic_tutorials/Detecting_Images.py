@@ -26,15 +26,8 @@ def _(mo):
     mo.md(r"""
     # 1. Detecting facial expressions from images
 
-    In this tutorial we'll explore the `Detectorv1` class in more depth, demonstrating how to detect faces, facial landmarks, action units, and emotions from images.
+    In this tutorial we'll use **`Detectorv2`** — Py-Feat's single multi-task model — to detect faces, landmarks, action units, emotions, valence/arousal, gaze, and more from images, and to visualize the results. At the end we'll cover the modular `Detectorv1` for when you want to swap or disable individual models.
     """)
-    return
-
-
-@app.cell
-def _():
-    # Uncomment the line below and run this only if you're using Google Collab
-    # !pip install -q py-feat
     return
 
 
@@ -47,7 +40,7 @@ def _(mo):
 
     The first time you initialize a detector, Py-Feat downloads the required pretrained weights from [our HuggingFace Repository](https://huggingface.co/py-feat) and caches them to disk; subsequent runs reuse the cached weights.
 
-    You can find a list of default models [on this page](../pages/models.md). For the older modular detector, see the [legacy `Detectorv1` (v1)](#legacy-the-modular-detectorv1-v1) section just below.
+    You can find a list of default models [on this page](../pages/models.md). For the older modular detector, see the [Using the modular `Detectorv1`](#using-the-modular-detectorv1) section at the end of this tutorial.
     """)
     return
 
@@ -61,28 +54,6 @@ def _(device):
     # face-identity embedding. device was selected above (cuda/mps/cpu).
     detector_v2 = Detectorv2(device=device, identity_model="arcface")
     return (detector_v2,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Legacy: the modular `Detectorv1` (v1)
-
-    Before `Detectorv2`, Py-Feat used **`Detectorv1`** — a *modular* pipeline that glues together a **separate pre-trained model per sub-task** (face, landmarks, Action Units, emotion, head pose, identity). Reach for it when you want to **swap or disable a specific model** (e.g. `Detectorv1(emotion_model='svm')`) or need the classic modular behavior. It exposes the **same `.detect()` API** and returns the same kind of `Fex` object, so everything below works with either detector.
-
-    `Detectorv2` is the recommended default for new work; see the [two-detector overview](/#two-detectors-detectorv1-and-detectorv2) for a full comparison.
-    """)
-    return
-
-
-@app.cell
-def _(device):
-    from feat import Detectorv1
-
-    # The modular Detectorv1. Swap individual models via kwargs, e.g.
-    # Detectorv1(emotion_model='svm'). device was selected above (cuda/mps/cpu).
-    detector = Detectorv1(device=device)
-    return (detector,)
 
 
 @app.cell(hide_code=True)
@@ -306,26 +277,6 @@ def _(single_face_prediction):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    By default `.plot_detections()` will overlay facial lines on top of the input image. However, it's also possible to visualize a face using Py-Feat's standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You can control this by setting `faces='aus'` instead of the default `faces='landmarks'`. For more details about this kind of visualization see the [visualizing facial expressions](Plotting.md) tutorial:
-    """)
-    return
-
-
-@app.cell
-def _(detector, single_face_img_path):
-    # AU-projection visualization (faces='aus') uses Detectorv1's named xgb
-    # AU model and its trained landmark viz model; Detectorv2's AUs have no
-    # projection model, so we use the legacy detector here. See tutorial 03 for
-    # more on AU visualization.
-    _v1_fex = detector.detect(single_face_img_path, data_type="image")
-    _figs = _v1_fex.plot_detections(faces='aus', muscles=True)
-    _figs[0]
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
     ### Overlaying gaze direction
 
     `plot_detections(gazes=True)` overlays a yellow arrow on each detected
@@ -334,9 +285,7 @@ def _(mo):
     active — in v0.7+ the default is **L2CS** (Abdelrahman et al. 2022, a
     ResNet50 trained on Gaze360 + MPIIGaze). Angles are in radians,
     head-centric: positive pitch = looking up, positive yaw = subject's
-    gaze drifts toward the viewer's right. Pass `gaze_model='geometric'`
-    to `MPDetector` for a lightweight landmark-only fallback that doesn't
-    need the ResNet50 download.
+    gaze drifts toward the viewer's right.
     """)
     return
 
@@ -349,25 +298,6 @@ def _(single_face_prediction):
     print(single_face_prediction[['gaze_pitch', 'gaze_yaw']])
     _figs = single_face_prediction.plot_detections(faces='landmarks', gazes=True, muscles=False)
     _figs[0]
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ### Interactive Plotting
-
-    You can also use the `.iplot_detections()` method to generate an interactive plotly figure that lets you interactively enable/disable various detector outputs:
-    """)
-    return
-
-
-@app.cell
-def _(detector, single_face_img_path):
-    # Interactive plotting uses the v1 detector here: Detectorv2's emotion
-    # columns (Neutral/Happy/...) aren't yet wired into iplot_detections.
-    _v1_fex = detector.detect(single_face_img_path, data_type="image")
-    _v1_fex.iplot_detections(bounding_boxes=True, emotions=True)
     return
 
 
@@ -478,6 +408,69 @@ def _(mixed_prediction):
     img_name = mixed_prediction["input"].unique()[1]
     axes = mixed_prediction.query("input == @img_name").plot_detections()
     axes[0]
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Using the modular `Detectorv1`
+
+    Before `Detectorv2`, Py-Feat used **`Detectorv1`** — a *modular* pipeline that glues together a **separate pre-trained model per sub-task** (face, landmarks, Action Units, emotion, head pose, identity). Reach for it when you want to **swap or disable a specific model** (e.g. `Detectorv1(emotion_model='svm')`) or need the classic modular behavior. It exposes the **same `.detect()` API** and returns the same kind of `Fex` object, so everything above works with either detector.
+
+    `Detectorv2` is the recommended default for new work; see the [two-detector overview](/#two-detectors-detectorv1-and-detectorv2) for a full comparison.
+    """)
+    return
+
+
+@app.cell
+def _(device):
+    from feat import Detectorv1
+
+    # The modular Detectorv1. Swap individual models via kwargs, e.g.
+    # Detectorv1(emotion_model='svm'). device was selected above (cuda/mps/cpu).
+    detector = Detectorv1(device=device)
+    return (detector,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### AU-projection visualization
+
+    By default `.plot_detections()` will overlay facial lines on top of the input image. However, it's also possible to visualize a face using Py-Feat's standardized AU landmark model, which takes the detected AUs and projects them onto a template face. You can control this by setting `faces='aus'` instead of the default `faces='landmarks'`. For more details about this kind of visualization see the [visualizing facial expressions](Plotting.md) tutorial:
+    """)
+    return
+
+
+@app.cell
+def _(detector, single_face_img_path):
+    # AU-projection visualization (faces='aus') uses Detectorv1's named xgb
+    # AU model and its trained landmark viz model; Detectorv2's AUs have no
+    # projection model, so we use the legacy detector here. See tutorial 03 for
+    # more on AU visualization.
+    _v1_fex = detector.detect(single_face_img_path, data_type="image")
+    _figs = _v1_fex.plot_detections(faces='aus', muscles=True)
+    _figs[0]
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Interactive Plotting
+
+    You can also use the `.iplot_detections()` method to generate an interactive plotly figure that lets you interactively enable/disable various detector outputs:
+    """)
+    return
+
+
+@app.cell
+def _(detector, single_face_img_path):
+    # Interactive plotting uses the v1 detector here: Detectorv2's emotion
+    # columns (Neutral/Happy/...) aren't yet wired into iplot_detections.
+    _v1_fex = detector.detect(single_face_img_path, data_type="image")
+    _v1_fex.iplot_detections(bounding_boxes=True, emotions=True)
     return
 
 

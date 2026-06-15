@@ -33,7 +33,7 @@ We still support our original version 1 of Py-FEAT that is described in [Cheong 
 
 **`Detectorv1`** is a *modular pipeline*. You choose the model for each stage — face detection, facial landmarks, Action Units, emotions, gaze, and identity — and you can swap any of them or turn one off (pass `None`). It produces the classic **68-point** facial landmarks and runs separate models (e.g. an XGBoost AU classifier, ResMaskNet emotions) one after another. That flexibility comes at a cost: running several models in sequence makes it **slower on a single frame**.
 
-**`Detectorv2`** runs a single **multi-task neural network** that predicts Action Units, emotions, valence/arousal, gaze, head pose, and a **478-point 3D MediaPipe FaceMesh** in *one* forward pass (plus optional identity embeddings). Because one network replaces the per-task model chain, it is **much faster — especially on single frames**, has improved performance on action unit and gaze prediction — and adds continuous valence/arousal and gaze that v1 does not produce. The trade-off is that the model set is fixed: you don't pick or disable individual components.
+**`Detectorv2`** runs a single **multi-task neural network** that predicts Action Units, emotions, valence/arousal, gaze, head pose, a **478-point 3D MediaPipe FaceMesh**, and **52 MediaPipe/ARKit blendshapes** in *one* forward pass (plus optional identity embeddings). Because one network replaces the per-task model chain, it is **much faster — especially on single frames**, has improved performance on action unit and gaze prediction — and adds continuous valence/arousal and gaze that v1 does not produce. The trade-off is that the model set is fixed: you don't pick or disable individual components.
 
 | | `Detectorv1` (v1) | `Detectorv2` (v2) |
 |---|---|---|
@@ -41,6 +41,7 @@ We still support our original version 1 of Py-FEAT that is described in [Cheong 
 | Swap / disable models | yes | fixed set |
 | Landmarks | 68-point (dlib-style) | 478-point 3D MediaPipe FaceMesh |
 | Valence/arousal, gaze | — | built-in |
+| Blendshapes | — | 52 MediaPipe/ARKit |
 | Single-frame speed | slower | **fast** |
 | Best for | specific models, 68-pt conventions, published Cheong et al. benchmarks | speed, video, 3D mesh, valence/arousal + gaze |
 
@@ -55,11 +56,6 @@ fex = detector_v1.detect("face.jpg", data_type="image")
 detector_v2 = Detectorv2(device="cuda")        # or device="cpu" / "mps"
 fex = detector_v2.detect("face.jpg", data_type="image")
 ```
-
-## Available models
-Py-feat includes several **pre-trained** models for Action Unit detection, Emotion detection, Face detection, Facial Landmark detection, and Face/Head post estimation. 
-
-You can check out the full list on the [pre-trained models page](pages/models.md).
 
 ## Contributions 
 We are excited for people to add new models and features to Py-Feat. Please see the [contribution guides](https://cosanlab.github.io/feat/content/contribute.html). 
