@@ -1,0 +1,659 @@
+/* marimo-book default stylesheet — Material-for-MkDocs overrides. */
+
+/* --- Mono + violet-ink: modernized Material defaults --------------------- */
+/* Neutrals (zinc scale), typography, spacing, and a deep-black dark scheme.
+   Palette primary/accent still come from book.yml via preprocessor injection
+   at :root {}; this block tunes everything else plus per-scheme contrast. */
+
+:root {
+  --md-default-bg-color:              #ffffff;
+  --md-default-bg-color--light:       #fafafa;
+  --md-default-fg-color:              #09090b;  /* zinc 950 */
+  --md-default-fg-color--light:       #3f3f46;  /* zinc 700 */
+  --md-default-fg-color--lighter:     #a1a1aa;  /* zinc 400 */
+  --md-default-fg-color--lightest:    #e4e4e7;  /* zinc 200 — hairline borders */
+  --md-code-bg-color:                 #f4f4f5;  /* zinc 100 */
+  --md-code-fg-color:                 #18181b;
+  --md-accent-fg-color--transparent:  rgba(99, 102, 241, 0.08);
+  --md-typeset-a-color:               var(--md-primary-fg-color);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color:              #0a0a0a;
+  --md-default-bg-color--light:       #111113;
+  --md-default-bg-color--lighter:     #17171a;
+  --md-default-fg-color:              #fafafa;
+  --md-default-fg-color--light:       #d4d4d8;
+  --md-default-fg-color--lighter:     #71717a;
+  --md-default-fg-color--lightest:    #27272a;  /* zinc 800 */
+  --md-code-bg-color:                 #111113;
+  --md-code-fg-color:                 #e4e4e7;
+  /* Default primary/accent for the marimo-book brand. No !important
+   * here — the preprocessor's `_inject_palette` writes the user's
+   * book.yml palette into both schemes with !important, and we want
+   * that to win. Authors who don't set a palette get this indigo. */
+  --md-primary-fg-color:              #818cf8;
+  --md-accent-fg-color:               #818cf8;
+  --md-accent-fg-color--transparent:  rgba(129, 140, 248, 0.12);
+  --md-typeset-color:                 #e4e4e7;
+  --md-typeset-a-color:               #a5b4fc;
+}
+
+/* --- Typography: lighter headers, generous line-height ------------------- */
+.md-typeset {
+  font-size: 0.82rem;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* h1: large but light — size carries the hierarchy, weight stays sleek.
+   Violet ink for the page title; everything below stays grayscale. */
+.md-typeset h1 {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 2.4rem;
+  line-height: 1.1;
+  margin-bottom: 1.6rem;
+  color: var(--md-primary-fg-color);
+}
+
+/* h2: section heading. Lighter weight, no top border (was too heavy). */
+.md-typeset h2 {
+  font-weight: 550;
+  letter-spacing: -0.018em;
+  font-size: 1.45rem;
+  margin-top: 2.4em;
+  color: var(--md-default-fg-color);
+}
+.md-typeset h3 {
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: var(--md-default-fg-color);
+}
+
+/* Wider content column — Material's default ~61rem feels cramped. */
+/* `padding-inline` keeps a gutter so the layout never hugs the window edge:
+   the 68rem grid only centers above ~1360px, so without this the sidebar and
+   TOC sit flush against the viewport in the 1220–1360px band (and below). */
+.md-grid { max-width: 68rem; padding-inline: 1rem; }
+
+/* --- Sidebar hierarchy: distinguish sections from leaf links ------------- */
+/* Material renders top-level section labels as `<label class="md-nav__link">`
+   inside `.md-nav__item--section` when `navigation.sections` is on. We
+   target both the link form and the label form for safety. */
+.md-nav--primary .md-nav__item--section > .md-nav__link,
+.md-nav--primary .md-nav__item--section > label.md-nav__link {
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--md-default-fg-color--lighter);
+  margin-top: 1.5rem;
+  margin-bottom: 0.25rem;
+  cursor: default;
+}
+.md-nav--primary .md-nav__item--section:first-of-type > .md-nav__link,
+.md-nav--primary .md-nav__item--section:first-of-type > label.md-nav__link {
+  margin-top: 0.4rem;
+}
+/* Indent leaf chapter links under their section header. */
+.md-nav--primary .md-nav__item--section .md-nav__list .md-nav__item .md-nav__link {
+  padding-left: 0.9rem;
+  font-size: 0.74rem;
+  font-weight: 400;
+}
+/* Top-level (no-section) leaf links: keep flush. */
+.md-nav--primary > .md-nav__list > .md-nav__item:not(.md-nav__item--section) > .md-nav__link {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+/* A collapsible item (e.g. an API package like `feat.utils`) wraps its link in
+   a `.md-nav__container` that already carries the leaf indent; the inner link
+   must not add it again, or the parent label ends up indented *further* than
+   its own nested children. Zero the inner padding so only the container's
+   indent applies. The selector mirrors the leaf-indent rule above plus
+   `.md-nav__container` (6 classes) so it outspecifies it and actually wins. */
+.md-nav--primary .md-nav__item--section .md-nav__list .md-nav__item .md-nav__container > .md-nav__link {
+  padding-left: 0;
+}
+
+/* --- Footer: airy light mode, blended dark mode -------------------------- */
+/* Material's default footer is a heavy dark bar in both schemes — fights
+   the minimal aesthetic. Make it match the page bg with a hairline border,
+   and bump text contrast so the prev/next nav and copyright actually read. */
+.md-footer {
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+.md-footer__link {
+  opacity: 1;
+}
+.md-footer__link:hover {
+  opacity: 1;
+}
+.md-footer__title {
+  color: var(--md-default-fg-color);
+  font-weight: 500;
+}
+.md-footer__direction {
+  color: var(--md-default-fg-color--lighter);
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  opacity: 1;
+}
+.md-footer__button {
+  color: var(--md-default-fg-color--light);
+}
+.md-footer-meta {
+  background: var(--md-default-bg-color--light);
+  color: var(--md-default-fg-color--light);
+}
+.md-footer-meta.md-typeset a {
+  color: var(--md-default-fg-color--light);
+}
+.md-footer-meta.md-typeset a:hover {
+  color: var(--md-primary-fg-color);
+}
+.md-copyright {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.72rem;
+}
+.md-copyright__highlight {
+  color: var(--md-default-fg-color);
+}
+
+/* --- Right-side TOC: mirror the left sidebar treatment ------------------- */
+/* "Table of contents" header: uppercase, tracked, muted — same vocab as
+   the section labels in the left sidebar. */
+.md-nav--secondary .md-nav__title {
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--md-default-fg-color--lighter);
+  padding: 0 0 0.4rem 0;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  background: transparent;
+  box-shadow: none;
+}
+/* TOC entries: smaller, lighter, with the same indent feel as left sidebar. */
+.md-nav--secondary .md-nav__link {
+  font-size: 0.74rem;
+  font-weight: 400;
+  padding-left: 0.9rem;
+  margin: 0.05rem 0;
+  border-left: 1px solid transparent;
+  transition: color 0.1s, border-color 0.1s;
+}
+/* Nested TOC entries (h3 inside h2) get an extra indent. */
+.md-nav--secondary .md-nav__list .md-nav__list .md-nav__link {
+  padding-left: 1.5rem;
+  font-size: 0.7rem;
+}
+/* Active heading (toc.follow): violet text + matching left stripe. */
+.md-nav--secondary .md-nav__link--active {
+  color: var(--md-primary-fg-color);
+  font-weight: 500;
+  border-left-color: var(--md-primary-fg-color);
+}
+
+/* --- Links: hairline underline, accent only on hover --------------------- */
+.md-typeset a:not(.md-button):not(.headerlink) {
+  color: var(--md-default-fg-color);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: var(--md-default-fg-color--lighter);
+  transition: color 0.12s, text-decoration-color 0.12s;
+}
+.md-typeset a:not(.md-button):not(.headerlink):hover,
+.md-typeset a:not(.md-button):not(.headerlink):focus,
+.md-typeset a:not(.md-button):not(.headerlink):active {
+  color: var(--md-primary-fg-color);
+  text-decoration-color: var(--md-primary-fg-color);
+}
+/* Pin every interactive state to a visible color. Without explicit
+   focus/active/visited rules a *clicked* link could briefly render with an
+   unset/near-invisible color (Material's base accent handling), so the text
+   vanished on click. */
+.md-typeset a:not(.md-button):not(.headerlink):visited {
+  color: var(--md-default-fg-color);
+}
+.md-footer-meta.md-typeset a:focus,
+.md-footer-meta.md-typeset a:visited {
+  color: var(--md-default-fg-color--light);
+}
+.md-footer-meta.md-typeset a:active {
+  color: var(--md-primary-fg-color);
+}
+
+/* --- Code: sharp corners, hairline border (not chunky) ------------------- */
+.md-typeset pre > code,
+.md-typeset .highlight > pre {
+  border-radius: 4px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+.md-typeset :not(pre) > code {
+  border-radius: 3px;
+  padding: 0.1em 0.38em;
+  font-size: 0.86em;
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* --- Navigation: minimal, color-only active state ------------------------ */
+.md-nav__link { transition: color 0.1s; }
+.md-nav__link--active,
+.md-nav__link[aria-current="page"] {
+  color: var(--md-primary-fg-color);
+  font-weight: 500;
+}
+
+/* --- Header: hairline bottom, no shadow ---------------------------------- */
+.md-header {
+  box-shadow: none;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+}
+.md-header__title { font-weight: 600; }
+/* Site title in the header bar — match the violet h1 treatment so the
+   accent reads consistently across page titles and chrome. */
+.md-header__topic .md-ellipsis,
+.md-header__topic > .md-header__button + .md-ellipsis {
+  color: var(--md-primary-fg-color);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* --- Admonitions: thin left stripe, no heavy fill ------------------------ */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 4px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-left-width: 3px;
+  box-shadow: none;
+}
+
+/* --- Tables: hairlines, sharp corners ------------------------------------ */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 0.78rem;
+}
+.md-typeset table:not([class]) th {
+  background: var(--md-default-bg-color--light);
+  font-weight: 600;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Pandas/marimo cell output tables. The :not([class]) rule above misses
+ * these because pandas attaches class="dataframe", and marimo-book wraps
+ * cell outputs in <div class="marimo-book-output">. Mirror the prose-table
+ * styling so DataFrames look at home in the book. */
+.md-typeset .marimo-book-output table,
+.md-typeset table.dataframe {
+  border-collapse: collapse;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 0.78rem;
+  margin: 0.5rem 0;
+}
+.md-typeset .marimo-book-output th,
+.md-typeset table.dataframe th {
+  background: var(--md-default-bg-color--light);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  border-right: 0;
+}
+.md-typeset .marimo-book-output td,
+.md-typeset table.dataframe td {
+  padding: 0.35rem 0.7rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  border-right: 0;
+}
+.md-typeset .marimo-book-output tr:nth-child(even) td,
+.md-typeset table.dataframe tbody tr:nth-child(even) td {
+  background: var(--md-default-bg-color--light);
+}
+/* Pandas emits an empty <th></th> for the index column header; keep it
+ * subtle rather than forcing it bold-and-bordered. */
+.md-typeset .marimo-book-output th:empty,
+.md-typeset table.dataframe th:empty {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+/* Numeric index column reads better right-aligned. Pandas writes it as
+ * <th> in <tbody>, so target both possibilities. */
+.md-typeset .marimo-book-output tbody th,
+.md-typeset table.dataframe tbody th {
+  background: transparent;
+  font-weight: 500;
+  color: var(--md-default-fg-color--light);
+  text-align: right;
+  padding: 0.35rem 0.7rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* --- marimo-book-specific elements (preserved) --------------------------- */
+
+/* Launch buttons. Two layouts:
+ *   data-placement="page"   → row above each chapter title (legacy)
+ *   data-placement="header" → cloned by marimo_book.js into Material's
+ *                              header bar; original row is hidden. */
+.marimo-book-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem 0;
+}
+
+/* In header mode the original row is hidden; the JS shim mounts a
+ * cloned copy as a child of `.md-header__inner` with the modifier
+ * class `marimo-book-buttons--header`. */
+.marimo-book-buttons[data-placement="header"] {
+  display: none;
+}
+.marimo-book-buttons--header {
+  display: flex !important;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.marimo-book-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--md-default-fg-color);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.marimo-book-button:hover {
+  background: transparent;
+  border-color: var(--md-primary-fg-color);
+  color: var(--md-primary-fg-color);
+  text-decoration: none;
+}
+
+/* The icon SVGs ride inside each button. Sized to match label. */
+.marimo-book-button-icon {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* Header-mode buttons: icon-only (label hidden), tighter padding,
+ * lighter border so they don't compete with the search bar.
+ * Uses --md-default-fg-color so the icons stay readable on the
+ * light/dark header background regardless of the primary palette. */
+.marimo-book-buttons--header .marimo-book-button {
+  padding: 0.35rem;
+  border-color: transparent;
+  color: var(--md-default-fg-color--light);
+  background: transparent;
+}
+.marimo-book-buttons--header .marimo-book-button-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.marimo-book-buttons--header .marimo-book-button-label {
+  /* Visually hide but keep accessible to screen readers. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.marimo-book-buttons--header .marimo-book-button:hover {
+  background: var(--md-default-fg-color--lightest);
+  color: var(--md-primary-fg-color);
+  border-color: transparent;
+}
+
+/* Hide Material's GitHub source widget (the version + stars + forks
+ * card it auto-renders next to repo_url). With our own GitHub icon
+ * in the header it'd be visual duplication; the widget's stats also
+ * lag behind reality and can mislead. We keep `repo_url` set in
+ * mkdocs.yml so per-page "Edit on GitHub" links still work. */
+.md-header__source {
+  display: none;
+}
+
+[data-md-color-scheme="slate"] .marimo-book-button {
+  background: transparent;
+  border-color: var(--md-default-fg-color--lightest);
+  color: var(--md-default-fg-color--light);
+}
+[data-md-color-scheme="slate"] .marimo-book-button:hover {
+  background: transparent;
+  border-color: var(--md-primary-fg-color);
+  color: var(--md-primary-fg-color);
+}
+
+/* Marimo cell output containers. */
+.marimo-book-output {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+.marimo-book-output img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Plotly mount. The marimo_book.js shim hydrates Plotly.js into this
+ * container; before hydration the div is empty (no flash of escaped
+ * data-figure JSON) thanks to the Material default code-block escaping. */
+.marimo-book-plotly {
+  width: 100%;
+  margin: 0.75rem 0;
+  min-height: 320px;  /* reserve space so layout doesn't jump on hydrate */
+}
+
+/* Marimo plain text / stream outputs rendered as <pre>. */
+pre.marimo-book-output-text {
+  background: var(--md-code-bg-color, #f5f5f5);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+pre.marimo-stream-stderr,
+pre.marimo-error {
+  border-left: 3px solid var(--md-warning-fg-color, #e67e22);
+  background: rgba(230, 126, 34, 0.05);
+}
+
+/* Marimo callouts come through as .admonition with an extra marker class;
+   no overrides needed — Material styles them. */
+
+/* --- WASM (marimo islands) integration ----------------------------------- */
+/* Override marimo's island runtime styling so it matches the book theme.
+   Marimo ships its own font stack (Lora / PT Sans / Fira Mono) and color
+   tokens; we override with our Geist + zinc palette via the `.marimo`
+   namespace. Pixel-perfect match isn't the goal; "doesn't look alien" is. */
+
+.marimo,
+marimo-island,
+marimo-cell-output {
+  font-family: var(--md-text-font), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.marimo code,
+.marimo pre,
+marimo-cell-output code,
+marimo-cell-output pre {
+  font-family: var(--md-code-font), ui-monospace, "SF Mono", Menlo, monospace;
+}
+/* Marimo's per-cell wrappers shouldn't add their own borders/padding
+   inside our content area. */
+marimo-island {
+  display: block;
+  margin: 0.75rem 0;
+}
+/* Hide marimo's loading spinner cell — it lives in the page until the
+   runtime boots, then disappears. Our cells are already visible by
+   default (server-rendered placeholder text), so the spinner is noise. */
+marimo-island[data-cell-id]:first-of-type marimo-cell-output svg.animate-spin {
+  display: none;
+}
+
+/* --- Static reactivity (precompute) -------------------------------------- */
+/* Renders for the input control + the cell-swap target. Kept minimal; sits
+   inline in the page just above the first reactive cell. */
+
+.marimo-book-precompute-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  margin: 0 0 1.25rem 0;
+  border-radius: 4px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-default-bg-color--light);
+  font-size: 0.78rem;
+}
+.marimo-book-precompute-control:empty {
+  display: none;
+}
+.marimo-book-precompute-control::before {
+  content: "Adjust:";
+  font-weight: 600;
+  color: var(--md-default-fg-color--lighter);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+}
+
+.marimo-book-precompute-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+.marimo-book-precompute-input--slider input[type="range"] {
+  flex: 1;
+  accent-color: var(--md-primary-fg-color);
+  height: 1.25rem;
+}
+.marimo-book-precompute-input--select select {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 3px;
+  padding: 0.2rem 0.4rem;
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font-family: inherit;
+  font-size: 0.78rem;
+}
+.marimo-book-precompute-input--checkbox input[type="checkbox"] {
+  accent-color: var(--md-primary-fg-color);
+  margin: 0;
+}
+.marimo-book-precompute-label {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--md-primary-fg-color);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.marimo-book-precompute-cell {
+  /* Reactive cell wrapper — invisible chrome, just a swap target. */
+  display: block;
+}
+
+/* --- Release-download component ------------------------------------------ */
+/* Hydrated client-side from a repo's latest GitHub release (see
+   marimo_book.js / release_download.py). Uses the Material color variables
+   above so light/dark both work without per-scheme rules. */
+.marimo-book-release-download {
+  margin: 1.25rem 0;
+}
+.marimo-book-release-download__head {
+  margin-bottom: 0.6rem;
+}
+.marimo-book-release-download__version {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--md-default-fg-color--light);
+  background: var(--md-default-bg-color--light);
+  font-variant-numeric: tabular-nums;
+}
+.marimo-book-release-download__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.6rem;
+}
+.marimo-book-release-download__grid--single {
+  grid-template-columns: minmax(190px, 320px);
+}
+.marimo-book-release-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  background: var(--md-default-bg-color--light);
+  text-decoration: none !important;
+  transition: border-color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+}
+.marimo-book-release-card:hover {
+  border-color: var(--md-primary-fg-color);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+.marimo-book-release-card:active {
+  transform: translateY(1px);
+}
+.marimo-book-release-card--recommended {
+  border-color: var(--md-primary-fg-color);
+  box-shadow: 0 0 0 1px var(--md-primary-fg-color) inset;
+}
+.marimo-book-release-card__rec {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--md-primary-fg-color);
+}
+.marimo-book-release-card__plat {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--md-default-fg-color);
+}
+.marimo-book-release-card__meta {
+  font-size: 0.72rem;
+  color: var(--md-default-fg-color--lighter);
+  font-variant-numeric: tabular-nums;
+}
+.marimo-book-release-download__loading,
+.marimo-book-release-download__fallback {
+  font-size: 0.82rem;
+  color: var(--md-default-fg-color--lighter);
+}
