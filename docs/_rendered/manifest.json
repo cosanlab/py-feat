@@ -25,8 +25,8 @@
       "body_path": "basic_tutorials/Performance.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-15T02:37:51+00:00",
-      "src_hash": "dc8e25a161d8d6bbbaa4e57976c45a8880256af9b7e020cc03ea958bdf81104c"
+      "rendered_at": "2026-06-15T03:32:00+00:00",
+      "src_hash": "426604bc32e2edacfc3ae29dd6594898ffdcd2d98aa06a5c58ffde32cfba1cc1"
     },
     "basic_tutorials/Plotting.py": {
       "body_path": "basic_tutorials/Plotting.md",
