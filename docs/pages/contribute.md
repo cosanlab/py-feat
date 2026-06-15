@@ -15,12 +15,12 @@ We always welcome contributions to Py-Feat and recommend you follow these basic 
 
 ## Tutorial contribution guidelines
 
-All Py-Feat tutorial are made using [jupyter book](https://jupyterbook.org/intro.html). To add a new tutorial or page takes just 3 steps:
-1. Add a jupyter notebook or markdown file to `docs/`
-2. Add an entry for your file to the table-of-contents in `docs/_toc.yml`
-3. Run `jupyter-book build docs` to render the documentation
+Py-Feat's docs are built with **marimo-book** (Material for MkDocs under the hood). To add a new tutorial or page:
+1. Add a marimo notebook (`.py`) or a Markdown file under `docs/` — tutorials live in `docs/basic_tutorials/`, prose pages in `docs/pages/`.
+2. Add an entry for your file to the table of contents in `docs/book.yml`.
+3. Run `cd docs && marimo-book build` to render the site (output in `docs/_site/`).
 
-You can check the build jupyter book by opening `notebooks/_build/html/index.html` in your browser.
+For executable tutorials marked `mode: cached`, run `marimo-book render` on a machine with the models/data, then commit the refreshed `docs/_rendered/` so CI can build the page without executing it.
 
 !!! note
     Our documentation building pipeline does **not** execute jupyter notebooks. It just renders their input and output as pages. So make sure you locally execute cells that you want output for **before** committing your changes
