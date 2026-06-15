@@ -5,3 +5,9 @@ recursive-include tutorials *.ipynb
 recursive-include feat *
 global-exclude *.pth *.tar *.yaml *.zip *.npy *.xml *fer_* *.joblib
 global-exclude */.ipynb_checkpoints/* *.py[co] __pycache__ .DS_Store
+# Never ship the lazily-downloaded HuggingFace model cache (models are fetched
+# to feat/resources/ at runtime). Without this, building an sdist from a
+# checkout that has already run a detector produces a multi-GB tarball that
+# PyPI rejects.
+prune feat/resources/models--*
+prune feat/resources/.locks
