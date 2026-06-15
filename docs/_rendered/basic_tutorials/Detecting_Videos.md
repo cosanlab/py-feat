@@ -47,7 +47,7 @@ video_prediction = detector.detect(
 video_prediction.head()
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/20 [00:00&lt;?, ?it/s]  5%|▌         | 1/20 [00:02&lt;00:50,  2.67s/it] 20%|██        | 4/20 [00:02&lt;00:08,  1.87it/s] 35%|███▌      | 7/20 [00:02&lt;00:03,  3.75it/s] 50%|█████     | 10/20 [00:02&lt;00:01,  6.04it/s] 65%|██████▌   | 13/20 [00:03&lt;00:00,  8.66it/s] 80%|████████  | 16/20 [00:03&lt;00:00, 11.47it/s] 95%|█████████▌| 19/20 [00:03&lt;00:00, 14.31it/s]100%|██████████| 20/20 [00:03&lt;00:00,  5.98it/s]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/20 [00:00&lt;?, ?it/s]  5%|▌         | 1/20 [00:02&lt;00:49,  2.63s/it] 20%|██        | 4/20 [00:02&lt;00:08,  1.90it/s] 35%|███▌      | 7/20 [00:02&lt;00:03,  3.80it/s] 50%|█████     | 10/20 [00:02&lt;00:01,  6.11it/s] 65%|██████▌   | 13/20 [00:03&lt;00:00,  8.74it/s] 80%|████████  | 16/20 [00:03&lt;00:00, 11.56it/s] 95%|█████████▌| 19/20 [00:03&lt;00:00, 14.44it/s]100%|██████████| 20/20 [00:03&lt;00:00,  6.06it/s]
 </pre>
 
 <div class="marimo-book-output">
@@ -77,7 +77,7 @@ video_prediction_batched = detector.detect(
 video_prediction_batched.shape
 ```
 
-<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/3 [00:00&lt;?, ?it/s] 33%|███▎      | 1/3 [00:03&lt;00:07,  3.83s/it] 67%|██████▋   | 2/3 [00:03&lt;00:01,  1.64s/it]100%|██████████| 3/3 [00:05&lt;00:00,  1.60s/it]100%|██████████| 3/3 [00:05&lt;00:00,  1.83s/it]
+<pre class="marimo-book-output-text marimo-stream-stderr">  0%|          | 0/3 [00:00&lt;?, ?it/s] 33%|███▎      | 1/3 [00:03&lt;00:07,  3.82s/it] 67%|██████▋   | 2/3 [00:03&lt;00:01,  1.63s/it]100%|██████████| 3/3 [00:05&lt;00:00,  1.61s/it]100%|██████████| 3/3 [00:05&lt;00:00,  1.83s/it]
 </pre>
 
 ## 2.4 Visualizing predictions

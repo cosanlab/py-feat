@@ -4,42 +4,42 @@
       "body_path": "basic_tutorials/Analysis.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-15T01:55:23+00:00",
+      "rendered_at": "2026-06-15T02:37:33+00:00",
       "src_hash": "a050d1e465f25270bbb0f4f12c402879ee371e6165e4c8a6e3a4de210afeeed9"
     },
     "basic_tutorials/Detecting_Images.py": {
       "body_path": "basic_tutorials/Detecting_Images.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-15T01:54:21+00:00",
+      "rendered_at": "2026-06-15T02:36:31+00:00",
       "src_hash": "7dc1e1e169b53874cf0144457c53954991e265c99d921b33024dcb68536c7e1b"
     },
     "basic_tutorials/Detecting_Videos.py": {
       "body_path": "basic_tutorials/Detecting_Videos.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-15T01:54:42+00:00",
+      "rendered_at": "2026-06-15T02:36:51+00:00",
       "src_hash": "3eab59d5d642f94b864eedc7937a3856fb4226c544bff3e953269e2f3412431b"
     },
     "basic_tutorials/Performance.py": {
       "body_path": "basic_tutorials/Performance.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-15T01:55:41+00:00",
+      "rendered_at": "2026-06-15T02:37:51+00:00",
       "src_hash": "dc8e25a161d8d6bbbaa4e57976c45a8880256af9b7e020cc03ea958bdf81104c"
     },
     "basic_tutorials/Plotting.py": {
       "body_path": "basic_tutorials/Plotting.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-15T01:55:12+00:00",
+      "rendered_at": "2026-06-15T02:37:21+00:00",
       "src_hash": "9d1ba719e4ea3dce1a43629594fc8cd74ba2891cb4b64e6ffd59e38e04f9a575"
     },
     "benchmarks/Speed.py": {
       "body_path": "benchmarks/Speed.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-15T01:55:43+00:00",
+      "rendered_at": "2026-06-15T02:37:52+00:00",
       "src_hash": "76d1b6b5a8eab8475b4c9c78971afc6789b256062862f915317bdc3c0e67e63d"
     }
   },
