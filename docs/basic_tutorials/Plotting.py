@@ -78,7 +78,7 @@ def _():
         _ax.set_title(label)
     plt.tight_layout()
     _fig
-    return np, plot_face_mesh, plt, rest, smile
+    return mesh_model, np, plot_face_mesh, plt, rest, smile
 
 
 @app.cell(hide_code=True)
@@ -208,7 +208,207 @@ def _(rest, smile):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.4 Plotting a neutral (default) face with 2D landmarks
+    ## 3.4 The AU atlas: all 20 AUs as mesh panels
+
+    A quick way to build intuition for what each Action Unit does to the face is to
+    drive the `au_to_mesh` model with one AU at a time and render the whole atlas as
+    a grid. Below we activate each of the 20 AUs to intensity `1.5` and draw the
+    resulting mesh (colored by per-vertex displacement from neutral, plasma
+    colormap) on top of the faint neutral mesh (gray). Brighter regions move more.
+
+    The mesh comes out in a pose-canonical 3D frame; here we take a simple front
+    projection (x lateral, y vertical) and flip the vertical axis when needed so the
+    forehead sits above the chin.
+    """)
+    return
+
+
+@app.cell
+def _(mesh_model, np):
+    from matplotlib.collections import LineCollection
+    from feat.plotting import predict_face_mesh
+    from feat.utils.mp_plotting import FaceLandmarksConnections
+
+    mesh_au_cols = list(mesh_model.au_columns)
+    mesh_edges = np.array(
+        [[c.start, c.end] for c in FaceLandmarksConnections.FACE_LANDMARKS_TESSELATION]
+    )
+
+    def project_mesh_2d(mesh):
+        # Front view; flip vertical so forehead (vertex 10) is above chin (152).
+        xy = mesh[:, :2].copy()
+        if xy[10, 1] < xy[152, 1]:
+            xy[:, 1] = -xy[:, 1]
+        return xy
+
+    mesh_neutral2d = project_mesh_2d(
+        predict_face_mesh(np.zeros(len(mesh_au_cols), np.float32), mesh_model)
+    )
+    return (
+        LineCollection,
+        mesh_au_cols,
+        mesh_edges,
+        mesh_neutral2d,
+        predict_face_mesh,
+        project_mesh_2d,
+    )
+
+
+@app.cell
+def _(
+    LineCollection,
+    mesh_au_cols,
+    mesh_edges,
+    mesh_model,
+    mesh_neutral2d,
+    np,
+    plt,
+    predict_face_mesh,
+    project_mesh_2d,
+):
+    _n = len(mesh_au_cols)
+    _ncol = 5
+    _nrow = (_n + _ncol - 1) // _ncol
+    _fig, _axes = plt.subplots(_nrow, _ncol, figsize=(3 * _ncol, 3 * _nrow))
+    for _i, _au in enumerate(mesh_au_cols):
+        _v = np.zeros(_n, np.float32)
+        _v[_i] = 1.5
+        _p2 = project_mesh_2d(predict_face_mesh(_v, mesh_model))
+        _mag = np.linalg.norm(_p2 - mesh_neutral2d, axis=1)
+        _ax = _axes.flat[_i]
+        _ax.add_collection(
+            LineCollection(mesh_neutral2d[mesh_edges], colors="lightgray", lw=0.25, alpha=0.5)
+        )
+        _ax.add_collection(
+            LineCollection(
+                _p2[mesh_edges], array=_mag[mesh_edges].mean(1), cmap="plasma", lw=0.5, alpha=0.9
+            )
+        )
+        _ax.autoscale()
+        _ax.set_aspect("equal")
+        _ax.axis("off")
+        _ax.set_title(_au, fontsize=9)
+    for _j in range(_n, _nrow * _ncol):
+        _axes.flat[_j].axis("off")
+    _fig.suptitle("au_to_mesh — each AU @1.5 (neutral gray, activated colored by displacement)")
+    _fig.tight_layout()
+    _fig
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3.5 Effect maps: where each AU moves the face
+
+    The atlas above shows the *shape* each AU produces. To see the **direction** and
+    **magnitude** of motion, draw a quiver field: an arrow at every vertex that moves
+    appreciably (here, the top-quartile movers for each AU at intensity `1.0`),
+    pointing from its neutral position toward its activated position and colored by
+    displacement. This makes the action of each muscle group read at a glance — e.g.
+    AU12 (lip corner puller) fans the mouth corners up and out; AU04 (brow lowerer)
+    pulls the inner brows down and together.
+    """)
+    return
+
+
+@app.cell
+def _(
+    LineCollection,
+    mesh_au_cols,
+    mesh_edges,
+    mesh_model,
+    mesh_neutral2d,
+    np,
+    plt,
+    predict_face_mesh,
+    project_mesh_2d,
+):
+    _n = len(mesh_au_cols)
+    _ncol = 5
+    _nrow = (_n + _ncol - 1) // _ncol
+    _fig, _axes = plt.subplots(_nrow, _ncol, figsize=(4 * _ncol, 4 * _nrow))
+    for _i, _au in enumerate(mesh_au_cols):
+        _v = np.zeros(_n, np.float32)
+        _v[_i] = 1.0
+        _p2 = project_mesh_2d(predict_face_mesh(_v, mesh_model))
+        _d = _p2 - mesh_neutral2d
+        _mag = np.linalg.norm(_d, axis=1)
+        _ax = _axes.flat[_i]
+        _ax.add_collection(
+            LineCollection(mesh_neutral2d[mesh_edges], colors="lightgray", lw=0.25, alpha=0.5)
+        )
+        _mv = _mag > max(np.percentile(_mag, 75), 1e-6)
+        if _mv.any():
+            _ax.quiver(
+                mesh_neutral2d[_mv, 0],
+                mesh_neutral2d[_mv, 1],
+                _d[_mv, 0],
+                _d[_mv, 1],
+                _mag[_mv],
+                cmap="plasma",
+                scale_units="xy",
+                scale=0.5,
+                width=0.004,
+                headwidth=4,
+                headlength=4,
+                alpha=0.9,
+            )
+        _ax.autoscale()
+        _ax.set_aspect("equal")
+        _ax.axis("off")
+        _ax.set_title(_au, fontsize=9)
+    for _j in range(_n, _nrow * _ncol):
+        _axes.flat[_j].axis("off")
+    _fig.suptitle("Effect maps — AU @1.0, top-quartile movers (arrow = neutral → activated)")
+    _fig.tight_layout()
+    _fig
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3.6 Overlaying the predicted 478-mesh on the source image
+
+    Everything above renders a *synthetic* mesh from AU intensities. `Detectorv2`
+    also predicts the dense 478-vertex MediaPipe FaceMesh directly from a real image,
+    and the result lands in the `Fex` DataFrame as `mesh_x_{0..477}` / `mesh_y_{0..477}`
+    columns in **image-pixel coordinates**. That means you can draw the predicted mesh
+    straight back onto the original photo — the v2 analog of the classic `Detectorv1`
+    68-point landmark overlay, but with two orders of magnitude more vertices.
+    """)
+    return
+
+
+@app.cell
+def _(LineCollection, device, mesh_edges, np, plt):
+    import os as _os
+    from PIL import Image as _Image
+    from feat import Detectorv2
+    from feat.utils.io import get_test_data_path as _gtdp
+
+    _detector = Detectorv2(device=device)
+    _img_path = _os.path.join(_gtdp(), "single_face.jpg")
+    _fex = _detector.detect(_img_path, data_type="image")
+
+    _mx = _fex[[f"mesh_x_{_i}" for _i in range(478)]].iloc[0].to_numpy(float)
+    _my = _fex[[f"mesh_y_{_i}" for _i in range(478)]].iloc[0].to_numpy(float)
+    _mxy = np.column_stack([_mx, _my])
+
+    _fig, _ax = plt.subplots(figsize=(6, 6))
+    _ax.imshow(_Image.open(_img_path))
+    _ax.add_collection(LineCollection(_mxy[mesh_edges], colors="lime", lw=0.4, alpha=0.6))
+    _ax.axis("off")
+    _ax.set_title("Detectorv2 478-vertex mesh overlaid on the source image")
+    _fig
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3.7 Plotting a neutral (default) face with 2D landmarks
 
     Alongside the 3D mesh, py-feat includes a pre-trained PLS model that maps an
     array of AU intensities to the classic 68-pt facial landmark set. Just pass a
@@ -236,7 +436,7 @@ def _(np):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.5 Plotting AU activations
+    ## 3.8 Plotting AU activations
 
     Plotting facial expressions from AU activity is just as simple. Below we increase the intensity of AU1 (inner brow raiser) to 1 before passing it to `plot_face()`.
 
@@ -350,7 +550,7 @@ def _(neutral, plot_face, plt, raised_inner_brow):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.6 Animating facial expressions
+    ## 3.9 Animating facial expressions
 
     Py-Feat includes an `animate_face()` function which makes it easy to "morph" one facial expression into another by interpolating between AU intensities. This function generates a GIF specified by the `save` argument. You can use this function in two ways:
     1. Using the `AU` keyword argument and a single scalar value for `start` and `end`
@@ -533,7 +733,7 @@ def _(neutral, smiling):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.7 Legacy: Detectorv1 plots
+    ## 3.10 Legacy: Detectorv1 plots
 
     The visualizations below depend specifically on the modular `Detectorv1`
     pipeline (the `xgb` AU model and the 68-pt dlib landmark path) rather than
