@@ -57,8 +57,13 @@ detector_v2 = Detectorv2(device="cuda")        # or device="cpu" / "mps"
 fex = detector_v2.detect("face.jpg", data_type="image")
 ```
 
-## Contributions 
-We are excited for people to add new models and features to Py-Feat. Please see the [contribution guides](https://cosanlab.github.io/feat/content/contribute.html). 
+## Py-feat Live
+
+Prefer a graphical app to writing code? [**Py-feat Live**](pyfeat_live.md) is a
+native desktop app (macOS, Windows, and Linux) that runs the full Py-Feat
+pipeline — including a **real-time webcam demo** — with no code. It wraps the same
+`Detectorv1` and `Detectorv2` models, so you get the same `Fex` outputs you can
+analyze in Python. [Learn more →](pyfeat_live.md)
 
 ## License 
 Py-FEAT is provided under the  [MIT license](https://github.com/cosanlab/py-feat/blob/master/LICENSE). You also need to cite and respect the licenses of each model you are using. Note that several models have a non-commercial stipulation. Please see the LICENSE file for links to each model's license information. 
