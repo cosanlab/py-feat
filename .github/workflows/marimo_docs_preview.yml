@@ -1,15 +1,15 @@
 name: Marimo Docs Preview
 
-# Parallel/preview build of the new marimo-book documentation site (docs/book.yml).
-# This is the in-progress replacement for the jupyter-book site and does NOT touch
-# the live py-feat.org deploy — that stays on auto_deploy_on_release.yml /
-# manual_docs.yml (jupyter-book) until the v2.x cutover.
+# Manual preview build of the marimo-book documentation site (docs/book.yml)
+# with a strict link-check. The live py-feat.org deploy is fully automatic —
+# tests_and_docs.yml (on push) and auto_deploy_on_release.yml (on release) build
+# and publish it — so this workflow does NOT touch the live root site.
 #
-# Manual (workflow_dispatch) only for now: the marimo-book build is still being
-# stabilized in CI, so it must not gate ordinary docs PRs. Re-add a
-# `pull_request` trigger once the build is reliably green. With deploy=true it
-# publishes to the py-feat.org/preview/ gh-pages subpath without disturbing the
-# live root site; otherwise it just uploads the rendered site as an artifact.
+# workflow_dispatch only: this build installs py-feat and runs `marimo-book build
+# --strict` (heavier than the cached build used on PRs), so it's kept manual to
+# avoid gating ordinary docs PRs. With deploy=true it publishes to the
+# py-feat.org/preview/ gh-pages subpath without disturbing the live root site;
+# otherwise it just uploads the rendered site as an artifact.
 #
 # The heavy detector tutorials are `mode: cached` in docs/book.yml (pre-rendered
 # to docs/_rendered/ via `marimo-book render` on a GPU box), so this build does
@@ -80,4 +80,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_site
           destination_dir: preview
-          keep_files: true # preserve the live jupyter-book site at the gh-pages root
+          keep_files: true # preserve the live marimo site at the gh-pages root
