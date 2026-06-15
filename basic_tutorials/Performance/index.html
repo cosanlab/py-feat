@@ -753,10 +753,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#64-leave-num_workers0" class="md-nav__link">
+  <a href="#64-pin-memory-for-faster-cuda-transfers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.4 Leave num_workers=0
+        6.4 Pin memory for faster CUDA transfers
       
     </span>
   </a>
@@ -764,10 +764,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#65-large-datasets" class="md-nav__link">
+  <a href="#65-leave-num_workers0" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.5 Large datasets
+        6.5 Leave num_workers=0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#66-large-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Large datasets
       
     </span>
   </a>
@@ -1928,10 +1939,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#64-leave-num_workers0" class="md-nav__link">
+  <a href="#64-pin-memory-for-faster-cuda-transfers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.4 Leave num_workers=0
+        6.4 Pin memory for faster CUDA transfers
       
     </span>
   </a>
@@ -1939,10 +1950,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#65-large-datasets" class="md-nav__link">
+  <a href="#65-leave-num_workers0" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.5 Large datasets
+        6.5 Leave num_workers=0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#66-large-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Large datasets
       
     </span>
   </a>
@@ -2062,72 +2084,146 @@ second call:</p>
 </span></code></pre></div>
 <pre class="marimo-book-output-text marimo-stream-stderr">
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:02&lt;00:00,  2.67s/it]
-100%|██████████| 1/1 [00:02&lt;00:00,  2.67s/it]
+100%|██████████| 1/1 [00:02&lt;00:00,  2.64s/it]
+100%|██████████| 1/1 [00:02&lt;00:00,  2.64s/it]
 
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00, 37.41it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 37.09it/s]
 </pre>
 
 <pre class="marimo-book-output-text marimo-stream-stdout">single-image detect: 0.029s on cuda
 </pre>
 
 <h2 id="63-batch-images-and-video">6.3 Batch images and video<a class="headerlink" href="#63-batch-images-and-video" title="Permanent link">&para;</a></h2>
-<p>Processing inputs one at a time leaves the GPU idle between calls. Pass
-<code>batch_size &gt; 1</code> to stack inputs into a single tensor — a large speedup on
-a GPU.</p>
+<p>Batching is the single biggest lever on GPU throughput. Processing inputs
+one at a time leaves the GPU idle between calls; passing <code>batch_size &gt; 1</code>
+stacks inputs into one tensor so the network runs them in parallel. The
+sweep below shows throughput (images/second) climbing with batch size —
+<strong>pick the largest batch that fits in VRAM</strong> (drop it back down if you hit
+an out-of-memory error).</p>
 <ul>
 <li><strong>Images:</strong> <code>detector.detect(img_list, batch_size=8)</code>. All images in a
-  batch must share dimensions; pass <code>output_size=...</code> to pad/resize
-  mismatched images.</li>
+  batch must share dimensions; pass <code>output_size=(H, W)</code> to pad/resize
+  mismatched images so they stack.</li>
 <li><strong>Video:</strong> <code>detector.detect(video, data_type="video", batch_size=8)</code>.
   Add <code>skip_frames=N</code> to process every <em>N</em>-th frame when you don't need
-  every frame.</li>
+  every frame — see the <em>Detecting Videos</em> tutorial for a full example.</li>
 </ul>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">multi</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_data_path</span><span class="p">(),</span> <span class="s2">&quot;multi_face.jpg&quot;</span><span class="p">)</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">img_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">multi</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">for</span> <span class="n">_bs</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">for</span> <span class="n">_bs</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">img_list</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">_bs</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>  <span class="c1"># warmup</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">_t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">img_list</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">_bs</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;8 images, batch_size=</span><span class="si">{</span><span class="n">_bs</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">_t0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">_dt</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">_t0</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;8 images, batch_size=</span><span class="si">{</span><span class="n">_bs</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">_dt</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s (</span><span class="si">{</span><span class="mi">8</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">_dt</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> img/s)&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <pre class="marimo-book-output-text marimo-stream-stderr">
   0%|          | 0/8 [00:00&lt;?, ?it/s]
- 12%|█▎        | 1/8 [00:01&lt;00:10,  1.57s/it]
- 62%|██████▎   | 5/8 [00:01&lt;00:00,  3.85it/s]
-100%|██████████| 8/8 [00:01&lt;00:00,  4.49it/s]
+ 12%|█▎        | 1/8 [00:01&lt;00:10,  1.56s/it]
+ 62%|██████▎   | 5/8 [00:01&lt;00:00,  3.86it/s]
+100%|██████████| 8/8 [00:01&lt;00:00,  4.50it/s]
 
   0%|          | 0/8 [00:00&lt;?, ?it/s]
- 50%|█████     | 4/8 [00:00&lt;00:00, 32.10it/s]
-100%|██████████| 8/8 [00:00&lt;00:00, 32.39it/s]
-100%|██████████| 8/8 [00:00&lt;00:00, 32.30it/s]
+ 50%|█████     | 4/8 [00:00&lt;00:00, 32.47it/s]
+100%|██████████| 8/8 [00:00&lt;00:00, 32.31it/s]
+100%|██████████| 8/8 [00:00&lt;00:00, 32.29it/s]
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.253s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=1: 0.252s (31.7 img/s)
+</pre>
+
+<pre class="marimo-book-output-text marimo-stream-stderr">
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+ 25%|██▌       | 1/4 [00:03&lt;00:11,  3.76s/it]
+100%|██████████| 4/4 [00:03&lt;00:00,  1.35it/s]
+100%|██████████| 4/4 [00:03&lt;00:00,  1.03it/s]
+
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+ 75%|███████▌  | 3/4 [00:00&lt;00:00, 26.89it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 26.78it/s]
+</pre>
+
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=2: 0.153s (52.3 img/s)
+</pre>
+
+<pre class="marimo-book-output-text marimo-stream-stderr">
+  0%|          | 0/2 [00:00&lt;?, ?it/s]
+ 50%|█████     | 1/2 [00:03&lt;00:03,  3.76s/it]
+100%|██████████| 2/2 [00:03&lt;00:00,  1.90s/it]
+
+  0%|          | 0/2 [00:00&lt;?, ?it/s]
+100%|██████████| 2/2 [00:00&lt;00:00, 19.48it/s]
+100%|██████████| 2/2 [00:00&lt;00:00, 19.41it/s]
+</pre>
+
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=4: 0.107s (75.1 img/s)
 </pre>
 
 <pre class="marimo-book-output-text marimo-stream-stderr">
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:03&lt;00:00,  3.81s/it]
-100%|██████████| 1/1 [00:03&lt;00:00,  3.81s/it]
+100%|██████████| 1/1 [00:03&lt;00:00,  3.78s/it]
+100%|██████████| 1/1 [00:03&lt;00:00,  3.78s/it]
 
   0%|          | 0/1 [00:00&lt;?, ?it/s]
-100%|██████████| 1/1 [00:00&lt;00:00, 10.44it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 10.46it/s]
 </pre>
 
-<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.098s
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8: 0.098s (81.3 img/s)
 </pre>
 
-<h2 id="64-leave-num_workers0">6.4 Leave <code>num_workers=0</code><a class="headerlink" href="#64-leave-num_workers0" title="Permanent link">&para;</a></h2>
+<h2 id="64-pin-memory-for-faster-cuda-transfers">6.4 Pin memory for faster CUDA transfers<a class="headerlink" href="#64-pin-memory-for-faster-cuda-transfers" title="Permanent link">&para;</a></h2>
+<p>Every batch is copied from host (CPU) RAM into GPU memory before the
+network runs. On <strong>CUDA</strong>, passing <code>pin_memory=True</code> allocates that batch
+in <em>page-locked</em> host memory, which lets the copy overlap with computation
+— Py-Feat already issues the host→device transfer with <code>non_blocking=True</code>,
+so the two halves pair up for a small, free win on GPU-bound batches.</p>
+<p><code>pin_memory</code> has no effect on <strong>MPS</strong> or <strong>CPU</strong> (there's no pinned-memory
+fast path), so only set it when <code>device="cuda"</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">&quot;cuda&quot;</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="k">for</span> <span class="n">_pin</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>            <span class="n">img_list</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="n">_pin</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="p">)</span>  <span class="c1"># warmup</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">_t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>            <span class="n">img_list</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="n">_pin</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="p">)</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;8 images, batch_size=8, pin_memory=</span><span class="si">{</span><span class="n">_pin</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">_t0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="k">else</span><span class="p">:</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pin_memory only affects CUDA; current device is </span><span class="si">{</span><span class="n">device</span><span class="si">!r}</span><span class="s2"> — skipping.&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<pre class="marimo-book-output-text marimo-stream-stderr">
+  0%|          | 0/1 [00:00&lt;?, ?it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 11.18it/s]
+
+  0%|          | 0/1 [00:00&lt;?, ?it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 11.38it/s]
+</pre>
+
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8, pin_memory=False: 0.090s
+</pre>
+
+<pre class="marimo-book-output-text marimo-stream-stderr">
+  0%|          | 0/1 [00:00&lt;?, ?it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 10.13it/s]
+
+  0%|          | 0/1 [00:00&lt;?, ?it/s]
+100%|██████████| 1/1 [00:00&lt;00:00, 11.42it/s]
+</pre>
+
+<pre class="marimo-book-output-text marimo-stream-stdout">8 images, batch_size=8, pin_memory=True: 0.090s
+</pre>
+
+<h2 id="65-leave-num_workers0">6.5 Leave <code>num_workers=0</code><a class="headerlink" href="#65-leave-num_workers0" title="Permanent link">&para;</a></h2>
 <p><code>detect()</code> accepts a DataLoader <code>num_workers</code> argument. <strong>Keep the default
 <code>num_workers=0</code>.</strong> On Apple Silicon + Python 3.13 with Py-Feat's
 <code>OMP_NUM_THREADS=1</code> default, <code>num_workers &gt; 0</code> is consistently <em>slower</em>
 (worst case ~33× for image batches) because worker processes contend for
 the same single-threaded BLAS/OMP pool. If a DataLoader feels slow, this
 is usually why.</p>
-<h2 id="65-large-datasets">6.5 Large datasets<a class="headerlink" href="#65-large-datasets" title="Permanent link">&para;</a></h2>
+<h2 id="66-large-datasets">6.6 Large datasets<a class="headerlink" href="#66-large-datasets" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Pass <code>save="out.csv"</code> to write results incrementally instead of holding
   every frame in memory.</li>
