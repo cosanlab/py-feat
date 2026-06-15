@@ -93,7 +93,7 @@ jobs:
           ruff check --ignore=W292,E402,E501,E731,E741 feat
           pytest --cov=feat -rs
 
-  # Job (3): Just build jupyter book but don't deploy it.
+  # Job (3): Just build the marimo book but don't deploy it.
   docs:
     name: Build docs only
     runs-on: ubuntu-latest
@@ -101,23 +101,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
+      - name: Install uv + Python
+        uses: astral-sh/setup-uv@v7
         with:
-          # 3.12, not 3.13: jupyter-book 1.x pulls sphinx<6 whose epub3
-          # builder imports the stdlib `imghdr` module, removed in 3.13.
-          python-version: "3.12"
+          python-version: "3.13"
+          enable-cache: true
 
-      - name: Upgrade pip
+      # The marimo book builds from committed _rendered/ (mode: cached) + griffe
+      # reading source for the API reference, so only marimo-book is needed — no
+      # feat, torch, or model downloads.
+      - name: Install marimo-book
         run: |
-          # install pip=>20.1 to use "pip cache dir"
-          python3 -m pip install --upgrade pip
-
-      - name: Install deps
-        run: |
-          python3 -m pip install . -r requirements.txt
-          python3 -m pip install -r ./requirements-dev.txt
+          uv venv --python 3.13
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          uv pip install "marimo-book[api]>=0.1.24"
 
       - name: Build book
         run: |
-          jupyter-book build docs
+          cd docs
+          marimo-book build
