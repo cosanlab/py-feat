@@ -23,7 +23,7 @@ def _(mo):
     In this tutorial we'll show how easily it is to not only reproduce their decoding analysis with py-feat, but just as easily perform additional analyses. Specifically we'll:
 
     1. Download 20 of the first subject's videos (the full dataset is available on [OSF](https://osf.io/6tbwj/)
-    2. Extract facial features using the `Detectorv1`
+    2. Extract facial features using the `Detectorv2`
     3. Aggregate and summarize detections per video using `Fex`
     2. Train and test a decoder to classify *good* vs *bad* news using extracted emotions, AUs, and poses
     3. Run a fMRI style "mass-univariate" comparison across all AUs between conditions
@@ -32,19 +32,12 @@ def _(mo):
     return
 
 
-@app.cell
-def _():
-    # Uncomment the line below and run this only if you're using Google Collab
-    # !pip install -q py-feat
-    return
-
-
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## 4.1 The data
 
-    We'll analyze 20 short clips from the [Watson & Johnston (2020)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335) "good news vs bad news" dataset — 10 of each. To keep this tutorial fast and offline, the per-frame `Detectorv1` outputs are **pre-computed and bundled with the docs** under `docs/data/news_sample/`, so we load them directly instead of downloading videos and re-running detection. The full dataset is on [OSF](https://osf.io/6tbwj/).
+    We'll analyze 20 short clips from the [Watson & Johnston (2020)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008335) "good news vs bad news" dataset — 10 of each. To keep this tutorial fast and offline, the per-frame `Detectorv2` outputs are **pre-computed and bundled with the docs** under `docs/data/news_sample/`, so we load them directly instead of downloading videos and re-running detection. The full dataset is on [OSF](https://osf.io/6tbwj/).
     """)
     return
 
@@ -61,10 +54,10 @@ def _():
 
     sns.set_context("talk")
 
-    # Pre-computed per-frame Detectorv1 outputs (xgb AUs + resmasknet emotions +
-    # head pose) for the 20 bundled clips. Generated once with
-    # `detector.detect(video, data_type="video", skip_frames=2)` and committed
-    # under docs/data/news_sample/ so this tutorial runs offline.
+    # Pre-computed per-frame Detectorv2 outputs (20 AUs + 7 emotions + valence/
+    # arousal + head pose + gaze + the 478-vertex mesh landmarks + 52 blendshapes)
+    # for the 20 bundled clips, generated with skip_frames=2 and committed under
+    # docs/data/news_sample/ so this tutorial runs offline.
     data_dir = Path(__file__).resolve().parent.parent / "data" / "news_sample"
     videos = [Path(c).stem + ".mp4" for c in sorted(glob(str(data_dir / "0*.csv")))]
 
@@ -87,20 +80,20 @@ def _(mo):
     mo.md(r"""
     ## 4.2 How the detections were generated
 
-    The bundled CSVs were produced by running the `Detectorv1` over each clip and saving its per-frame output. You don't need to run this — we load the saved CSVs in the next section — but here's the code that made them:
+    The bundled CSVs were produced by running the `Detectorv2` over each clip and saving its per-frame output. You don't need to run this — we load the saved CSVs in the next section — but here's the code that made them:
 
     ```python
-    from feat import Detectorv1
+    from feat import Detectorv2
 
-    detector = Detectorv1(
-        au_model="xgb", emotion_model="resmasknet", identity_model=None, device="auto"
-    )
+    detector = Detectorv2(device="cuda")  # or "mps" / "cpu"
     for video in videos:
-        detector.detect(
-            video, data_type="video", batch_size=8, skip_frames=2,
-            save=video.replace(".mp4", ".csv"),
-        )
+        fex = detector.detect(video, data_type="video", batch_size=8, skip_frames=2)
+        fex.to_csv(video.replace(".mp4", ".csv"), index=False)
     ```
+
+    `read_feat` recognizes these as `Detectorv2` output (from their valence/arousal
+    and 478-vertex mesh columns) and restores the matching `.aus` / `.emotions` /
+    `.poses` / `.gazes` accessors.
     """)
     return
 
@@ -181,7 +174,6 @@ def _(mo):
 def _(sns, video_means):
     # Grab the aus just for video 1
     video001_aus = video_means.aus.loc['001.mp4']
-    # video001_aus = video_means.aus.loc['001.csv'] # if loading pre-computed csv
     _ax = video001_aus.plot(kind='bar', title='Video 001 AU detection')
     # Plot them
     _ax.set(ylabel='Average Probability')
@@ -382,8 +374,9 @@ def _(mo):
 
 @app.cell
 def _(fex_1):
-    # ISC returns a video x video pearson correlation matrix
-    isc = fex_1.isc(col='happiness', method='pearson')
+    # ISC returns a video x video pearson correlation matrix.
+    # Detectorv2 emotion columns are capitalized ('Happy', not 'happiness').
+    isc = fex_1.isc(col='Happy', method='pearson')
     return (isc,)
 
 

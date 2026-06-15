@@ -15,6 +15,40 @@ from feat import Fex
 def test_read_feat():
     fex = read_feat(join(get_test_data_path(), "Feat_Test.csv"))
     assert isinstance(fex, Fex)
+    # A v1/legacy file reads back as the "Feat" detector with lowercase emotions
+    assert fex.detector == "Feat"
+    assert "happiness" in fex.emotion_columns
+
+
+def test_read_feat_v2(tmp_path):
+    """read_feat auto-detects Detectorv2 CSVs and restores v2 column groups."""
+    import pandas as pd
+    from feat.multitask import EMOTION_COLUMNS_V2
+
+    d = pd.DataFrame(
+        {
+            "AU01": [0.1], "AU12": [0.9],
+            **{e: [1.0 / len(EMOTION_COLUMNS_V2)] for e in EMOTION_COLUMNS_V2},
+            "valence": [0.3], "arousal": [0.2],
+            "gaze_pitch": [0.0], "gaze_yaw": [0.0], "gaze_angle": [0.0],
+            "Pitch": [0.0], "Roll": [0.0], "Yaw": [0.0],
+            "X": [0.0], "Y": [0.0], "Z": [0.0],
+            "mesh_x_0": [0.5], "mesh_y_0": [0.5], "mesh_z_0": [0.0],
+            "input": ["clip.mp4"], "frame": [0],
+        }
+    )
+    path = tmp_path / "v2.csv"
+    d.to_csv(path, index=False)
+
+    fex = read_feat(str(path))
+    assert isinstance(fex, Fex)
+    assert fex.detector == "Detectorv2"
+    # Capitalized v2 emotion names, not the lowercase v1 set
+    assert list(fex.emotion_columns) == list(EMOTION_COLUMNS_V2)
+    assert "Happy" in fex.emotion_columns
+    # Gaze is restored (the v1 path leaves it unset)
+    assert list(fex.gaze_columns) == ["gaze_pitch", "gaze_yaw", "gaze_angle"]
+    assert "AU12" in fex.au_columns
 
 
 def test_utils():
