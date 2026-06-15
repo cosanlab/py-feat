@@ -20,11 +20,6 @@ Py-Feat was created for two primary audiences in mind:
 - **Human behavior researchers**: Extract facial expressions from face images or videos with a simple line of code and analyze your data with Feat. 
 - **Computer vision researchers**: Develop & share your latest model to a wide audience of users. 
 
-Check out a recent presentation by one of the project leads [Eshin Jolly, PhD](https://eshinjolly.com/) for a broad-overview and introduction:
-
-<iframe src="https://ejolly-py-feat.surge.sh/" style="width: 100%; height: 500px"></iframe>
-
-
 ## Introducing Py-FEAT v2
 We have released version 2 of Py-Feat that includes a new multi-task face expression model, many bug fixes, performance optimizations, and a standalone app called [pyfeat-live](https://github.com/cosanlab/pyfeat-live/).
 We still support our original version 1 of Py-FEAT that is described in [Cheong et al., 2023](https://link.springer.com/article/10.1007/s42761-023-00191-4) and there are advantages to both versions. You can access them as `Detectorv1` and `Detectorv2`. They return the same `Fex` data structure, so downstream analysis and plotting code is largely shared, but they take different approaches. Both can run on CUDA and MPS gpus and support batching, which greatly accelerates detection.
