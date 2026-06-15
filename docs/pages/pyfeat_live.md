@@ -1,10 +1,19 @@
 # Py-feat Live
 
-[Py-feat Live](https://github.com/cosanlab/pyfeat-live) puts Py-Feat behind a
-graphical interface — run facial expression analysis on your webcam in real
-time, batch-process recorded videos, and scrub the results frame by frame, with
-no code. It wraps the same `Detector` models you use from Python, including the
-new **Detectorv2 (v2.5)** multitask model.
+[Py-feat Live](https://github.com/cosanlab/pyfeat-live) is a **native desktop app**
+that puts the full power of Py-Feat behind a graphical interface — **no code
+required**. Built with [Tauri](https://tauri.app/), it runs natively on **macOS,
+Windows, and Linux**, and bundles the same models you'd use from Python (both
+`Detectorv1` and the new **`Detectorv2` (v2.5)** multitask model), so you get the
+complete Py-Feat feature set in one app:
+
+- **Live** — a real-time demo straight from your webcam: facial expression
+  analysis with the mesh / AU / emotion / gaze overlays locked to the exact frame
+  detection ran on.
+- **Analyze** — batch-process recorded videos and images, writing a full
+  native-schema `Fex` CSV per job.
+- **Viewer** — scrub detections frame by frame and inspect per-face emotions,
+  valence/arousal, and head pose.
 
 > **Note:** add screenshots/GIFs for the Live, Analyze, and Viewer sections
 > before publishing (the app is GUI-first and reads much better with visuals).
