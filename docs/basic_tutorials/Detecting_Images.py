@@ -47,7 +47,7 @@ def _(mo):
 
     The first time you initialize a detector, Py-Feat downloads the required pretrained weights from [our HuggingFace Repository](https://huggingface.co/py-feat) and caches them to disk; subsequent runs reuse the cached weights.
 
-    You can find a list of default models [on this page](/models.md). For the older modular detector, see the [legacy `Detectorv1` (v1)](#legacy-the-modular-detectorv1-v1) section just below.
+    You can find a list of default models [on this page](../pages/models.md). For the older modular detector, see the [legacy `Detectorv1` (v1)](#legacy-the-modular-detectorv1-v1) section just below.
     """)
     return
 
