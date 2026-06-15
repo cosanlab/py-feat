@@ -2229,15 +2229,15 @@ def _iris_mesh_traces_plotly(verts, iris_color="#b08868", pupil_color="black",
         # Iris (full-size disk).
         traces.append(_disk_mesh3d_trace(center, ring, color=iris_color))
         # Pupil (smaller dark disk centered on iris center, optionally
-        # shifted in the gaze direction). Pupil is pushed forward (+Z)
-        # by 15% of iris radius — enough to consistently disambiguate
-        # plotly's depth test (8% wasn't enough; static views still
-        # showed the interlaced z-fight pattern on some camera angles).
-        # Still small enough that the pupil reads as flush with the iris.
+        # shifted in the gaze direction). Pupil is pushed toward the camera
+        # (-Z, out of the face) by 15% of iris radius so it renders ON TOP of
+        # the iris in the default front view — matching the matplotlib path
+        # (_add_iris_pupil_polys_mpl). NB: a previous +Z pushed it the wrong way
+        # (behind the iris) so the pupil was occluded; -Z is correct.
         pupil_center = center.copy()
         if pupil_shift is not None:
             pupil_center = pupil_center + pupil_shift[eye_i]
-        pupil_center[2] += ring_radius * 0.15
+        pupil_center[2] -= ring_radius * 0.15
         pupil_ring = pupil_center + (ring - center) * pupil_size_frac
         traces.append(_disk_mesh3d_trace(pupil_center, pupil_ring, color=pupil_color))
     return traces
