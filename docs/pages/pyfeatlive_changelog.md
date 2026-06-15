@@ -78,14 +78,3 @@ _Released 2026-06-03_ · [`v0.8.3`](https://github.com/cosanlab/pyfeat-live/rele
 ## Py-feat Live v0.8.2
 
 _Released 2026-06-03_ · [`v0.8.2`](https://github.com/cosanlab/pyfeat-live/releases/tag/v0.8.2)
-
-## Installation
-
-Requires macOS on Apple Silicon (M-series).
-
-- macOS Apple Silicon: `Py-feat.Live_*_aarch64.dmg`
-
-First launch downloads ~1.5GB of Python dependencies and
-~1GB of model weights into your user data directory.
-Plan for ~10 minutes on a typical broadband connection.
-Subsequent launches are instant.
