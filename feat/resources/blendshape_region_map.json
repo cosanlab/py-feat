@@ -1,0 +1,678 @@
+{
+  "_meta": {
+    "description": "Non-overlapping blendshape region overlay on the MediaPipe-478 mesh. Winner-take-all geodesic-Voronoi partition of the bundled canonical mesh, walled off by the eye/mouth aperture rings.",
+    "kind": "blendshape",
+    "n_regions": 33,
+    "tightness": 0.1,
+    "mesh": "feat/resources/canonical_face_model.pt (468 verts)",
+    "generator": "scripts/build_region_maps.py",
+    "sources": [
+      "FACS (Ekman & Friesen)",
+      "melindaozel.com/arkit-to-facs-cheat-sheet",
+      "pooyadeperson.com ARKit-52 anatomy guide"
+    ]
+  },
+  "regions": {
+    "browInnerUp": {
+      "au": "AU01",
+      "muscle": "frontalis_medial",
+      "side": "C",
+      "mp478_vertices": [
+        10,
+        67,
+        69,
+        108,
+        109,
+        151,
+        297,
+        299,
+        337,
+        338
+      ],
+      "n_vertices": 10
+    },
+    "browOuterUpRight": {
+      "au": "AU02",
+      "muscle": "frontalis_lateral",
+      "side": "R",
+      "mp478_vertices": [
+        21,
+        46,
+        52,
+        53,
+        54,
+        63,
+        68,
+        70,
+        71,
+        103,
+        104,
+        105,
+        139,
+        156,
+        162
+      ],
+      "n_vertices": 15
+    },
+    "browOuterUpLeft": {
+      "au": "AU02",
+      "muscle": "frontalis_lateral",
+      "side": "L",
+      "mp478_vertices": [
+        251,
+        276,
+        282,
+        283,
+        284,
+        293,
+        298,
+        300,
+        301,
+        332,
+        333,
+        334,
+        368,
+        383,
+        389
+      ],
+      "n_vertices": 15
+    },
+    "browDownRight": {
+      "au": "AU04",
+      "muscle": "corrugator+procerus",
+      "side": "R",
+      "mp478_vertices": [
+        55,
+        65,
+        66,
+        107
+      ],
+      "n_vertices": 4
+    },
+    "browDownLeft": {
+      "au": "AU04",
+      "muscle": "corrugator+procerus",
+      "side": "L",
+      "mp478_vertices": [
+        285,
+        295,
+        296,
+        336
+      ],
+      "n_vertices": 4
+    },
+    "eyeWideRight": {
+      "au": "AU05",
+      "muscle": "levator_palpebrae",
+      "side": "R",
+      "mp478_vertices": [
+        122,
+        188,
+        189,
+        193,
+        196,
+        221,
+        222,
+        223,
+        244,
+        245
+      ],
+      "n_vertices": 10
+    },
+    "eyeWideLeft": {
+      "au": "AU05",
+      "muscle": "levator_palpebrae",
+      "side": "L",
+      "mp478_vertices": [
+        351,
+        412,
+        413,
+        417,
+        419,
+        441,
+        442,
+        443,
+        464,
+        465
+      ],
+      "n_vertices": 10
+    },
+    "cheekSquintRight": {
+      "au": "AU06",
+      "muscle": "orb_oculi_orbital",
+      "side": "R",
+      "mp478_vertices": [
+        50,
+        101,
+        111,
+        116,
+        117,
+        118,
+        119,
+        120,
+        123,
+        227
+      ],
+      "n_vertices": 10
+    },
+    "cheekSquintLeft": {
+      "au": "AU06",
+      "muscle": "orb_oculi_orbital",
+      "side": "L",
+      "mp478_vertices": [
+        280,
+        330,
+        340,
+        345,
+        346,
+        347,
+        348,
+        349,
+        352,
+        447
+      ],
+      "n_vertices": 10
+    },
+    "eyeSquintRight": {
+      "au": "AU07",
+      "muscle": "orb_oculi_palpebral",
+      "side": "R",
+      "mp478_vertices": [
+        23,
+        24,
+        25,
+        31,
+        34,
+        35,
+        110,
+        124,
+        143,
+        226,
+        228,
+        229,
+        230
+      ],
+      "n_vertices": 13
+    },
+    "eyeSquintLeft": {
+      "au": "AU07",
+      "muscle": "orb_oculi_palpebral",
+      "side": "L",
+      "mp478_vertices": [
+        253,
+        254,
+        255,
+        261,
+        264,
+        265,
+        339,
+        353,
+        372,
+        446,
+        448,
+        449,
+        450
+      ],
+      "n_vertices": 13
+    },
+    "eyeBlinkRight": {
+      "au": "AU45",
+      "muscle": "orb_oculi_palpebral",
+      "side": "R",
+      "mp478_vertices": [
+        22,
+        26,
+        27,
+        28,
+        29,
+        30,
+        47,
+        56,
+        112,
+        113,
+        114,
+        121,
+        128,
+        130,
+        174,
+        190,
+        224,
+        225,
+        231,
+        232,
+        233,
+        243,
+        247
+      ],
+      "n_vertices": 23
+    },
+    "eyeBlinkLeft": {
+      "au": "AU45",
+      "muscle": "orb_oculi_palpebral",
+      "side": "L",
+      "mp478_vertices": [
+        252,
+        256,
+        257,
+        258,
+        259,
+        260,
+        277,
+        286,
+        341,
+        342,
+        343,
+        350,
+        357,
+        359,
+        399,
+        414,
+        444,
+        445,
+        451,
+        452,
+        453,
+        463,
+        467
+      ],
+      "n_vertices": 23
+    },
+    "noseSneerRight": {
+      "au": "AU09",
+      "muscle": "llsan",
+      "side": "R",
+      "mp478_vertices": [
+        3,
+        20,
+        44,
+        45,
+        48,
+        49,
+        51,
+        59,
+        60,
+        64,
+        75,
+        79,
+        98,
+        102,
+        115,
+        129,
+        131,
+        134,
+        166,
+        198,
+        203,
+        209,
+        218,
+        219,
+        220,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241
+      ],
+      "n_vertices": 32
+    },
+    "noseSneerLeft": {
+      "au": "AU09",
+      "muscle": "llsan",
+      "side": "L",
+      "mp478_vertices": [
+        248,
+        250,
+        274,
+        275,
+        278,
+        279,
+        281,
+        289,
+        290,
+        294,
+        305,
+        309,
+        327,
+        331,
+        344,
+        358,
+        360,
+        363,
+        392,
+        420,
+        423,
+        429,
+        438,
+        439,
+        440,
+        455,
+        456,
+        457,
+        458,
+        459,
+        460,
+        461
+      ],
+      "n_vertices": 32
+    },
+    "mouthUpperUpRight": {
+      "au": "AU10",
+      "muscle": "levator_labii",
+      "side": "R",
+      "mp478_vertices": [
+        36,
+        39,
+        41,
+        73,
+        100,
+        126,
+        142,
+        217
+      ],
+      "n_vertices": 8
+    },
+    "mouthUpperUpLeft": {
+      "au": "AU10",
+      "muscle": "levator_labii",
+      "side": "L",
+      "mp478_vertices": [
+        266,
+        269,
+        271,
+        303,
+        329,
+        355,
+        371,
+        437
+      ],
+      "n_vertices": 8
+    },
+    "mouthSmileRight": {
+      "au": "AU12",
+      "muscle": "zygomaticus_major",
+      "side": "R",
+      "mp478_vertices": [
+        147,
+        177,
+        187,
+        192,
+        205,
+        206,
+        207
+      ],
+      "n_vertices": 7
+    },
+    "mouthSmileLeft": {
+      "au": "AU12",
+      "muscle": "zygomaticus_major",
+      "side": "L",
+      "mp478_vertices": [
+        376,
+        401,
+        411,
+        416,
+        425,
+        426,
+        427
+      ],
+      "n_vertices": 7
+    },
+    "mouthDimpleRight": {
+      "au": "AU14",
+      "muscle": "buccinator",
+      "side": "R",
+      "mp478_vertices": [
+        43,
+        106
+      ],
+      "n_vertices": 2
+    },
+    "mouthDimpleLeft": {
+      "au": "AU14",
+      "muscle": "buccinator",
+      "side": "L",
+      "mp478_vertices": [
+        273,
+        335
+      ],
+      "n_vertices": 2
+    },
+    "mouthStretchRight": {
+      "au": "AU20",
+      "muscle": "risorius",
+      "side": "R",
+      "mp478_vertices": [
+        140,
+        149,
+        150,
+        169,
+        170
+      ],
+      "n_vertices": 5
+    },
+    "mouthStretchLeft": {
+      "au": "AU20",
+      "muscle": "risorius",
+      "side": "L",
+      "mp478_vertices": [
+        369,
+        378,
+        379,
+        394,
+        395
+      ],
+      "n_vertices": 5
+    },
+    "mouthFrownRight": {
+      "au": "AU15",
+      "muscle": "depressor_anguli_oris",
+      "side": "R",
+      "mp478_vertices": [
+        32,
+        135,
+        136,
+        138,
+        194,
+        204,
+        210,
+        211
+      ],
+      "n_vertices": 8
+    },
+    "mouthFrownLeft": {
+      "au": "AU15",
+      "muscle": "depressor_anguli_oris",
+      "side": "L",
+      "mp478_vertices": [
+        262,
+        364,
+        365,
+        367,
+        418,
+        424,
+        430,
+        431
+      ],
+      "n_vertices": 8
+    },
+    "mouthLowerDownRight": {
+      "au": "AU16",
+      "muscle": "depressor_labii",
+      "side": "R",
+      "mp478_vertices": [
+        77,
+        84,
+        85,
+        86,
+        96,
+        146,
+        179,
+        180,
+        181,
+        182
+      ],
+      "n_vertices": 10
+    },
+    "mouthLowerDownLeft": {
+      "au": "AU16",
+      "muscle": "depressor_labii",
+      "side": "L",
+      "mp478_vertices": [
+        307,
+        314,
+        315,
+        316,
+        325,
+        375,
+        403,
+        404,
+        405,
+        406
+      ],
+      "n_vertices": 10
+    },
+    "mouthShrugLower": {
+      "au": "AU17",
+      "muscle": "mentalis",
+      "side": "C",
+      "mp478_vertices": [
+        18,
+        83,
+        201,
+        313,
+        421
+      ],
+      "n_vertices": 5
+    },
+    "mouthShrugUpper": {
+      "au": "AU17",
+      "muscle": "mentalis_upper",
+      "side": "C",
+      "mp478_vertices": [
+        2,
+        19,
+        92,
+        94,
+        97,
+        99,
+        125,
+        141,
+        164,
+        165,
+        167,
+        242,
+        322,
+        326,
+        328,
+        354,
+        370,
+        391,
+        393,
+        462
+      ],
+      "n_vertices": 20
+    },
+    "mouthPucker": {
+      "au": "AU18",
+      "muscle": "orbicularis_oris",
+      "side": "C",
+      "mp478_vertices": [
+        0,
+        11,
+        12,
+        15,
+        16,
+        17,
+        37,
+        38,
+        72,
+        267,
+        268,
+        302
+      ],
+      "n_vertices": 12
+    },
+    "mouthFunnel": {
+      "au": "AU22",
+      "muscle": "orbicularis_oris",
+      "side": "C",
+      "mp478_vertices": [
+        40,
+        42,
+        61,
+        62,
+        74,
+        76,
+        89,
+        90,
+        91,
+        183,
+        184,
+        185,
+        270,
+        272,
+        291,
+        292,
+        304,
+        306,
+        319,
+        320,
+        321,
+        407,
+        408,
+        409
+      ],
+      "n_vertices": 24
+    },
+    "cheekPuff": {
+      "au": "AD34",
+      "muscle": "buccinator",
+      "side": "C",
+      "mp478_vertices": [
+        57,
+        186,
+        202,
+        212,
+        214,
+        216,
+        287,
+        410,
+        422,
+        432,
+        434,
+        436
+      ],
+      "n_vertices": 12
+    },
+    "jawOpen": {
+      "au": "AU26",
+      "muscle": "masseter+pterygoid",
+      "side": "C",
+      "mp478_vertices": [
+        58,
+        132,
+        148,
+        152,
+        171,
+        172,
+        175,
+        199,
+        200,
+        208,
+        213,
+        215,
+        288,
+        361,
+        377,
+        396,
+        397,
+        428,
+        433,
+        435
+      ],
+      "n_vertices": 20
+    }
+  }
+}
