@@ -147,6 +147,19 @@ def test_plot_detections(default_detector, single_face_img, multi_face_img):
     with pytest.raises(NotImplementedError):
         multi_image_mix_prediction.plot_detections(faces="aus")
 
+    # AU region overlay (dense-mesh, coloured by detected AU intensities)
+    figs = single_image_single_face_prediction.plot_detections(
+        faces="au_regions", au_barplot=False, emotion_barplot=False
+    )
+    assert len(figs) == 1
+    plt.close("all")
+    # like faces='aus', region overlays are single-face only
+    with pytest.raises(NotImplementedError):
+        single_image_multi_face_prediction.plot_detections(faces="au_regions")
+    # blendshape overlay needs blendshape detections (Detectorv2 / MPDetector)
+    with pytest.raises(ValueError):
+        single_image_single_face_prediction.plot_detections(faces="blendshape_regions")
+
 
 def test_animate_face():
     # Start with neutral face
