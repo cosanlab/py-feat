@@ -1377,6 +1377,12 @@ def plot_face_regions(
         base_xy = np.asarray(landmarks, dtype=np.float64)[:, :2]
         if len(base_xy) < n_base:
             raise ValueError(f"landmarks must have >= {n_base} vertices")
+        # The subdivision topology (parents/tris) is built on the n_base-vertex
+        # canonical mesh, with midpoint indices starting at n_base. A detected
+        # MediaPipe mesh has 478 verts (the trailing 10 are iris, unused by the
+        # regions), so trim to n_base — otherwise dense_positions seeds with the
+        # iris rows and every midpoint index is shifted, scrambling the overlay.
+        base_xy = base_xy[:n_base]
     xy = rm.dense_positions(base_xy, parents)
 
     # normalize `values` -> {region: intensity}
