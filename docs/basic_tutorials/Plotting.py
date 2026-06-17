@@ -408,7 +408,41 @@ def _(LineCollection, device, mesh_edges, np, plt):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.7 Plotting a neutral (default) face with 2D landmarks
+    ## 3.7 AU & blendshape region overlays (`plot_face_regions`)
+
+    `plot_face_regions()` shades the **non-overlapping** AU or ARKit-blendshape
+    regions of the 478-mesh — the dense-mesh successor to the dlib-68 muscle
+    heatmap shown later. With no `values` it draws a "key" (every region a
+    distinct color); pass a `{region: intensity}` dict (or a 1-D array) to shade
+    each region by activation as a monochrome heatmap. `kind='au'` merges
+    left/right per AU; `kind='blendshape'` keeps the ARKit blendshapes split
+    independently Left/Right at the facial midline. It renders on the canonical
+    mesh (a legend) or, via `landmarks=`, on a detected 478-mesh (a live overlay).
+    """)
+    return
+
+
+@app.cell
+def _(plt):
+    from feat.plotting import plot_face_regions
+
+    _fig, _axes = plt.subplots(1, 3, figsize=(13, 5))
+    plot_face_regions(kind="au", ax=_axes[0], title="AU regions (L+R merged)")
+    plot_face_regions(kind="blendshape", ax=_axes[1], title="Blendshape regions (L/R split)")
+    # intensity overlay: a smile — AU12 (lip corner puller) + AU06 (cheek raiser)
+    plot_face_regions(
+        values={"AU12": 1.0, "AU06": 0.6, "AU07": 0.4}, kind="au",
+        ax=_axes[2], cmap="Reds", title="AU activation: smile",
+    )
+    _fig.tight_layout()
+    _fig
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3.8 Plotting a neutral (default) face with 2D landmarks
 
     Alongside the 3D mesh, py-feat includes a pre-trained PLS model that maps an
     array of AU intensities to the classic 68-pt facial landmark set. Just pass a
@@ -436,7 +470,7 @@ def _(np):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.8 Plotting AU activations
+    ## 3.9 Plotting AU activations
 
     Plotting facial expressions from AU activity is just as simple. Below we increase the intensity of AU1 (inner brow raiser) to 1 before passing it to `plot_face()`.
 
@@ -550,7 +584,7 @@ def _(neutral, plot_face, plt, raised_inner_brow):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.9 Animating facial expressions
+    ## 3.10 Animating facial expressions
 
     Py-Feat includes an `animate_face()` function which makes it easy to "morph" one facial expression into another by interpolating between AU intensities. This function generates a GIF specified by the `save` argument. You can use this function in two ways:
     1. Using the `AU` keyword argument and a single scalar value for `start` and `end`
@@ -733,7 +767,7 @@ def _(neutral, smiling):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3.10 Legacy: Detectorv1 plots
+    ## 3.11 Legacy: Detectorv1 plots
 
     The visualizations below depend specifically on the modular `Detectorv1`
     pipeline (the `xgb` AU model and the 68-pt dlib landmark path) rather than
