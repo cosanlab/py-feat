@@ -6,13 +6,11 @@
 
 _Released 2026-06-17_ · [`v0.8.13`](https://github.com/cosanlab/pyfeat-live/releases/tag/v0.8.13)
 
-#### Py-feat Live v0.8.13
-
-##### Facial-region overlays (Detectorv2)
+### Facial-region overlays (Detectorv2)
 - **New ARKit-blendshape mesh overlay** — toggle **Blendshapes** in both Live and the Viewer to shade the 478-mesh by the 52 ARKit blendshape coefficients (monochrome heatmap, Left/Right split at the facial midline).
 - **AU mesh overlay upgraded** to py-feat's non-overlapping AU region map (each vertex belongs to a single AU — cleaner, no muddy overlap).
 
-##### Dependencies
+### Dependencies
 - Pinned **py-feat 2.0.1** (adds `feat.utils.region_maps`), including the hash-locked sidecar runtime.
 
 ## Py-feat Live v0.8.12
@@ -21,7 +19,7 @@ _Released 2026-06-16_ · [`v0.8.12`](https://github.com/cosanlab/pyfeat-live/rel
 
 Live and Viewer fixes, plus a Detectorv2 head-pose yaw correction.
 
-#### Live
+## Live
 - **Overlay alignment** — the mesh, landmarks, box, and gaze now line up with the video. Fixed a vertical stretch that pushed the overlay up off the face ("eyes too high") on both detectors.
 - **Facebox** — no longer drawn too long around Detectorv2 faces.
 - **Detector switch** — switching Detectorv1 ↔ Detectorv2 keeps the right landmark style (mesh for v2, contour lines for v1) instead of getting stuck on lines.
@@ -30,13 +28,13 @@ Live and Viewer fixes, plus a Detectorv2 head-pose yaw correction.
 - **Stop** — stopping the camera now reliably clears the overlay (no frozen facebox/mesh).
 - **Recording frame rate** — recording no longer drops fps as severely; the recorder's frame conversion was moved off the detection path.
 
-#### Viewer
+## Viewer
 - **Overlay/video sync** — overlays now track the video for the full clip on variable-rate live recordings (mapped by the video's real per-frame timestamps instead of a fixed fps). Fixes overlays freezing partway through while the video kept playing.
 - **First frame** — fixed a mangled first-frame overlay and wrong identity thumbnail on live recordings.
 - **Valence/Arousal** toggle added to the overlay toolbar.
 - **Session details** — click the info icon on a session for metadata and a "Reveal in Finder" action.
 
-#### App
+## App
 - **Logs** button now works on every tab (Live, Extract, Viewer), not just Live.
 - Dragging a video that misses the Extract dropzone no longer replaces the app with a bare video player.
 - Logo and title moved into the header so they stay visible on every tab.
@@ -52,7 +50,7 @@ _Released 2026-06-15_ · [`v0.8.11`](https://github.com/cosanlab/pyfeat-live/rel
 
 _Released 2026-06-14_ · [`v0.8.10`](https://github.com/cosanlab/pyfeat-live/releases/tag/v0.8.10)
 
-#### Installation
+## Installation
 
 Requires macOS on Apple Silicon (M-series).
 
@@ -67,7 +65,7 @@ Subsequent launches are instant.
 
 _Released 2026-06-14_ · [`v0.8.9`](https://github.com/cosanlab/pyfeat-live/releases/tag/v0.8.9)
 
-#### Installation
+## Installation
 
 Requires macOS on Apple Silicon (M-series).
 
@@ -84,16 +82,16 @@ _Released 2026-06-14_ · [Release notes](https://github.com/cosanlab/pyfeat-live
 
 Stability + robustness release ahead of going public.
 
-##### Detectors
+### Detectors
 - Tracks py-feat `v0.7-dev` (`3855e07`): the modular detector is now **Detectorv1** (renamed from `Detector`); old sessions/presets that recorded `"Detector"` still work via a compatibility alias.
 
-##### Fixes (from the pre-public review)
+### Fixes (from the pre-public review)
 - **Analyze**: a detection/decode error no longer leaks the recorder (writer thread + CSV handle) or orphans a session dir; a corrupt `video.mp4` is no longer left behind; one bad frame no longer fails a whole job.
 - **Analyze WebSocket**: guarded JSON parsing + auto-reconnect (the queue no longer silently freezes on a dropped connection).
 - **Serving**: session video/CSV stream instead of buffering the whole file into memory; malformed Analyze input returns 422 (not 500); uploaded files are cleaned up on "clear done".
 - **Viewer / Live**: resilient session load + update-check (no unhandled rejections); overlay guards; the timeseries last-frame off-by-one is fixed.
 
-##### Cleanup
+### Cleanup
 - Removed dead Streamlit-era files/config/env and stale references.
 
 This is also the first release to verify the corrected `Info.plist` (no longer requests local-network access).
@@ -106,7 +104,7 @@ _Released 2026-06-14_ · [Release notes](https://github.com/cosanlab/pyfeat-live
 
 Same app features as v0.8.5/v0.8.6 (Detectorv2 v2.5, adaptive Live overlay, Viewer panels, grouped timeseries, Detectorv2-default extraction).
 
-##### Fixed
+### Fixed
 - A label-less window in `tauri.conf.json` defaulted to the `main` label and collided with the window the app builds in code, crashing launch. Removed the duplicate.
 
 ## v0.8.6
@@ -115,7 +113,7 @@ _Released 2026-06-14_ · [Release notes](https://github.com/cosanlab/pyfeat-live
 
 Hotfix release. Same app features as v0.8.5 (Detectorv2 v2.5, adaptive Live overlay, Viewer panels, grouped timeseries, Detectorv2-default extraction) — this corrects the release pipeline so the auto-updater manifest (`latest.json`) publishes.
 
-##### Fixed
+### Fixed
 - The macOS updater-signature step searched a tripled bundle path (`target/<triple>/release/bundle/macos`) while the native build outputs to `target/release/bundle/macos`, which failed the deploy and skipped the `latest.json` publish in v0.8.5. Corrected.
 
 ## v0.8.5
@@ -124,13 +122,13 @@ _Released 2026-06-14_ · [Release notes](https://github.com/cosanlab/pyfeat-live
 
 Upgrades to **Detectorv2 v2.5** and brings the Viewer in line with Live.
 
-##### Highlights
+### Highlights
 - **Detectorv2 v2.5** — 52 MediaPipe/ARKit blendshape coefficients, safetensors weights, corrected 478-mesh decode, and head-pose pitch now reads **+up** (matching the classic Detector / Detectorv1).
 - **Live** — the overlay pipeline is resolution/aspect-adaptive; it tracks correctly on any camera (no more mesh/overlay distortion on non-16:9 webcams).
 - **Viewer** — emotion, valence/arousal, and pose panels now match Live and sit beside each face; the timeseries variable picker is grouped into collapsible sets (Emotions, V/A, Pose, Gaze, AUs, Blendshapes).
 - **Analyze** — extraction defaults to **Detectorv2 · standard**; the classic detector is relabeled **Detectorv1**.
 
-##### Fixes
+### Fixes
 - Mesh overlay no longer collapses/distorts under the v2.5 model.
 - Head-pose pitch sign corrected to the canonical +up convention.
 - `index.html` served with `no-store` to prevent stale app bundles.
@@ -139,7 +137,7 @@ Upgrades to **Detectorv2 v2.5** and brings the Viewer in line with Live.
 
 _Released 2026-06-04_ · [`v0.8.4`](https://github.com/cosanlab/pyfeat-live/releases/tag/v0.8.4)
 
-#### Installation
+## Installation
 
 Requires macOS on Apple Silicon (M-series).
 
@@ -154,7 +152,7 @@ Subsequent launches are instant.
 
 _Released 2026-06-03_ · [`v0.8.3`](https://github.com/cosanlab/pyfeat-live/releases/tag/v0.8.3)
 
-#### Installation
+## Installation
 
 Requires macOS on Apple Silicon (M-series).
 
@@ -169,7 +167,7 @@ Subsequent launches are instant.
 
 _Released 2026-06-03_ · [`v0.8.2`](https://github.com/cosanlab/pyfeat-live/releases/tag/v0.8.2)
 
-#### Installation
+## Installation
 
 Requires macOS on Apple Silicon (M-series).
 
