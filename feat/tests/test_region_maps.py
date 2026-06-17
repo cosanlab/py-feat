@@ -147,7 +147,7 @@ class TestPlot:
         plt.close(ax.figure)
 
     def test_overlay_on_detected_mesh(self):
-        """Passing a deformed 478-mesh in image coords overlays on a host axis."""
+        """Passing a deformed mesh in image coords overlays on a host axis."""
         from feat.plotting import plot_face_regions
 
         V, _ = rm._canonical_geometry()
@@ -157,6 +157,32 @@ class TestPlot:
         out = plot_face_regions(values={"AU12": 1.0}, kind="au", landmarks=mesh, ax=ax)
         assert out is ax
         plt.close(ax.figure)
+
+    def test_overlay_on_478_mesh_matches_468(self):
+        """A real 478-vertex MediaPipe mesh (10 trailing iris verts) must render
+        the same overlay as its 468-vertex face slice — the subdivision topology
+        is 468-based, so the extra iris rows must be trimmed, not shift the
+        midpoint indices (regression for the dense_positions index shift)."""
+        from feat.plotting import plot_face_regions
+        from matplotlib.collections import PolyCollection
+
+        V, _ = rm._canonical_geometry()
+        mesh468 = V[:, :2] * 100 + 200
+        mesh478 = np.vstack([mesh468, mesh468[:10] + 1234.0])  # bogus iris rows
+
+        def polys(mesh):
+            _, ax = plt.subplots()
+            plot_face_regions(values={"AU12": 1.0, "AU06": 0.6}, kind="au",
+                              landmarks=mesh, ax=ax)
+            out = [p for c in ax.collections
+                   if isinstance(c, PolyCollection) for p in c.get_paths()]
+            plt.close(ax.figure)
+            return out
+
+        p468, p478 = polys(mesh468), polys(mesh478)
+        assert len(p468) == len(p478) and len(p468) > 0
+        for a, b in zip(p468, p478):
+            assert np.allclose(a.vertices, b.vertices)
 
     def test_bad_inputs(self, au_map):
         from feat.plotting import plot_face_regions
