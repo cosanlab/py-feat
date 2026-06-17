@@ -10,6 +10,7 @@ import numpy as np
 from sklearn.cross_decomposition import PLSRegression
 from sklearn import __version__ as skversion
 import matplotlib.pyplot as plt
+from matplotlib.collections import PolyCollection, LineCollection
 from feat.pretrained import AU_LANDMARK_MAP
 from feat.utils.io import get_resource_path, download_url
 from feat.utils.image_operations import (
@@ -37,6 +38,7 @@ from torchvision.utils import draw_keypoints, draw_bounding_boxes, make_grid
 __all__ = [
     "draw_lineface",
     "plot_face",
+    "plot_face_regions",
     "draw_vectorfield",
     "draw_muscles",
     "get_heat",
@@ -1292,6 +1294,171 @@ def imshow(obj, figsize=(3, 3), aspect="equal"):
     _, ax = plt.subplots(figsize=figsize)
     _ = ax.imshow(obj, aspect=aspect)
     _ = ax.axis("off")
+    return ax
+
+
+def _region_map_colors(kind, regions):
+    """Distinct per-region colors for the 'map view' (no intensities). AU regions
+    get one hue each; blendshape regions share their AU's hue with Left lighter /
+    Right darker / center mid, so the independent L/R footprints read clearly."""
+    from feat.utils import region_maps as rm
+
+    if kind == "au":
+        cm = plt.get_cmap("tab20").resampled(max(len(regions), 1))
+        return {r: cm(i) for i, r in enumerate(sorted(regions))}
+    aus = sorted({rm.BLENDSHAPE_SEEDS[r][0] for r in regions if r in rm.BLENDSHAPE_SEEDS})
+    cm = plt.get_cmap("tab20").resampled(max(len(aus), 1))
+    hue = {au: cm(i)[:3] for i, au in enumerate(aus)}
+    out = {}
+    for r in regions:
+        au, _muscle, side, _seeds = rm.BLENDSHAPE_SEEDS.get(r, ("", "", "C", []))
+        h, _s, _v = colors.rgb_to_hsv(hue.get(au, (0.5, 0.5, 0.5)))
+        val = {"L": 0.95, "R": 0.6}.get(side, 0.78)
+        out[r] = (*colors.hsv_to_rgb([h, _s, val]), 1.0)
+    return out
+
+
+def plot_face_regions(
+    values=None,
+    kind="au",
+    landmarks=None,
+    ax=None,
+    cmap="Reds",
+    alpha=0.9,
+    region_colors=None,
+    mesh=True,
+    title=None,
+    figsize=(5, 6),
+):
+    """Overlay AU or ARKit-blendshape regions on the MediaPipe-478 mesh.
+
+    The dense-mesh, non-overlapping successor to ``plot_face(muscles=True)``.
+    Regions come from ``feat.utils.region_maps`` (a non-overlapping geodesic-
+    Voronoi partition of the mesh) and are filled as smooth per-triangle patches
+    on a subdivided mesh. Works on the canonical mesh (a legend/key) or on a
+    detected 478-mesh (a live overlay).
+
+    Args:
+        values: ``None`` → map view (every region a distinct color). Otherwise a
+            ``{region_name: intensity}`` dict or a 1-D array aligned to the map's
+            region order; intensities are clipped to ``[0, 1]`` and drive the
+            colormap. Regions with intensity ``<= 0`` are not drawn.
+        kind: ``"au"`` (AUs, L+R merged) or ``"blendshape"`` (L/R independent);
+            both are non-overlapping partitions.
+        landmarks: optional detected mesh ``(>=468, 2|3)`` in image coords to
+            overlay on; default uses the upright canonical mesh.
+        ax: matplotlib axis; created if ``None``.
+        cmap: colormap used when ``values`` is given.
+        region_colors: optional ``{region: color}`` override for the map view.
+        mesh: draw the faint mesh wireframe behind the regions (canonical view only).
+
+    Returns:
+        ax: the matplotlib axis.
+    """
+    from feat.utils import region_maps as rm
+
+    if kind == "au":
+        region_map = rm.load_au_region_map()
+    elif kind == "blendshape":
+        region_map = rm.load_blendshape_region_map()
+    else:
+        raise ValueError(f"kind must be 'au' or 'blendshape', got {kind!r}")
+    order = list(region_map.keys())
+
+    assets = rm.render_assets(kind)
+    parents, tris, region_verts = assets["parents"], assets["tris"], assets["region_verts"]
+    n_base = assets["n_base"]
+
+    on_canonical = landmarks is None
+    if on_canonical:
+        V, _ = rm._canonical_geometry()
+        base_xy = rm.project_xy(V)
+    else:
+        base_xy = np.asarray(landmarks, dtype=np.float64)[:, :2]
+        if len(base_xy) < n_base:
+            raise ValueError(f"landmarks must have >= {n_base} vertices")
+        # The subdivision topology (parents/tris) is built on the n_base-vertex
+        # canonical mesh, with midpoint indices starting at n_base. A detected
+        # MediaPipe mesh has 478 verts (the trailing 10 are iris, unused by the
+        # regions), so trim to n_base — otherwise dense_positions seeds with the
+        # iris rows and every midpoint index is shifted, scrambling the overlay.
+        base_xy = base_xy[:n_base]
+    xy = rm.dense_positions(base_xy, parents)
+
+    # normalize `values` -> {region: intensity}
+    if values is None:
+        vals = {r: 1.0 for r in order}
+        colmap = region_colors or _region_map_colors(kind, order)
+    else:
+        if isinstance(values, dict):
+            vals = {r: float(values.get(r, 0.0)) for r in order}
+        else:
+            v = np.asarray(values, dtype=np.float64).ravel()
+            if len(v) != len(order):
+                raise ValueError(f"values length {len(v)} != {len(order)} regions")
+            vals = dict(zip(order, v))
+        cm = plt.get_cmap(cmap)
+        colmap = {r: cm(float(np.clip(vals[r], 0, 1))) for r in order}
+
+    if ax is None:
+        ax = _create_empty_figure(figsize=figsize, xlim=None, ylim=None)
+        host_had_data = False
+    else:
+        host_had_data = ax.has_data()
+
+    if mesh and on_canonical:
+        edges = np.array(sorted({tuple(sorted((int(a), int(b))))
+                                 for t in tris for a, b in
+                                 ((t[0], t[1]), (t[1], t[2]), (t[0], t[2]))}))
+        ax.add_collection(LineCollection(xy[edges], colors="0.85", linewidths=0.2,
+                                         zorder=1))
+
+    # For blendshapes the region_verts are keyed by FEATURE (L/R merged); a
+    # sided blendshape fills only the triangles of its feature whose centroid
+    # falls on its side of the midline — dividing L/R cleanly down the middle.
+    axis = assets["axis"]
+    cx = xy[tris].mean(axis=1)[:, 0] if kind == "blendshape" else None
+
+    for region in sorted(order, key=lambda r: vals[r]):
+        if vals[region] <= 0:
+            continue
+        if kind == "blendshape":
+            verts = region_verts.get(rm._feature_of(region), set())
+            side = rm.BLENDSHAPE_SEEDS[region][2]
+        else:
+            verts, side = region_verts.get(region, set()), "C"
+        if not verts:
+            continue
+        polys = []
+        for i, tri in enumerate(tris):
+            if sum(v in verts for v in tri) < 2:
+                continue
+            if side == "L" and cx[i] <= axis:      # subject-left = x > midline
+                continue
+            if side == "R" and cx[i] >= axis:
+                continue
+            polys.append(xy[tri])
+        if polys:
+            ax.add_collection(PolyCollection(polys, facecolors=colmap[region],
+                                             edgecolors="none", alpha=alpha, zorder=3))
+
+    if not host_had_data:
+        xmin, ymin = xy.min(0)
+        xmax, ymax = xy.max(0)
+        px, py = (xmax - xmin) * 0.06, (ymax - ymin) * 0.06
+        ax.set_xlim(xmin - px, xmax + px)
+        # project_xy already orients the canonical mesh upright (forehead at
+        # large y), so use ascending limits. A detected mesh handed in is in
+        # image coords (y grows downward) — invert so it isn't upside-down.
+        if on_canonical:
+            ax.set_ylim(ymin - py, ymax + py)
+        else:
+            ax.set_ylim(ymax + py, ymin - py)
+        ax.set_aspect("equal", adjustable="box")
+    ax.axes.get_xaxis().set_visible(False)
+    ax.axes.get_yaxis().set_visible(False)
+    if title is not None:
+        ax.set_title(title)
     return ax
 
 

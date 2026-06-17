@@ -32,6 +32,7 @@ from feat.utils import flatten_list
 from feat.utils.io import read_feat, read_openface, load_pil_img
 from feat.plotting import (
     plot_face,
+    plot_face_regions,
     draw_lineface,
     draw_facepose,
     draw_facegaze,
@@ -1810,9 +1811,13 @@ class Fex(DataFrame):
 
 
         Args:
-            faces (str, optional): 'landmarks' to draw detected landmarks or 'aus' to
-            generate a face from AU detections using Py-Feat's AU landmark model.
-            Defaults to 'landmarks'.
+            faces (str, optional): 'landmarks' to draw detected landmarks on the
+            image; 'aus' to generate a synthetic face from AU detections using
+            Py-Feat's AU landmark model; 'au_regions' / 'blendshape_regions' to
+            shade the dense-mesh AU / ARKit-blendshape regions
+            (feat.plotting.plot_face_regions) by this frame's detected
+            intensities. ('blendshape_regions' needs a Detectorv2 / MPDetector
+            detection.) Defaults to 'landmarks'.
             faceboxes (bool, optional): Whether to draw the bounding box around detected
             faces. Only applies if faces='landmarks'. Defaults to True.
             muscles (bool, optional): Whether to draw muscles from AU activity. Only
@@ -1873,7 +1878,12 @@ class Fex(DataFrame):
                 if face_ax is not None:
                     facebox = row[self.facebox_columns].values
 
-                    if not faces == "aus" and plot_original_image:
+                    # 'aus' + the region overlays draw a synthetic face in their
+                    # own coord system, so (like 'aus') they skip the original
+                    # image and the bbox/pose/gaze overlays anchored to it.
+                    synthetic_mode = faces in ("aus", "au_regions", "blendshape_regions")
+
+                    if not synthetic_mode and plot_original_image:
                         file_extension = os.path.basename(row["input"]).split(".")[-1]
                         if file_extension.lower() in [
                             "jpg",
@@ -1898,8 +1908,9 @@ class Fex(DataFrame):
                     # gaze overlays don't align with it and just confuse
                     # the picture. Skip them in aus mode — gaze is still
                     # rendered on the synthetic face via plot_face's
-                    # gaze= kwarg (handled by _prepare_plot_aus).
-                    aus_mode = faces == "aus"
+                    # gaze= kwarg (handled by _prepare_plot_aus). The region
+                    # overlays are synthetic too, so they share this skip.
+                    aus_mode = synthetic_mode
 
                     if faceboxes and not aus_mode:
                         rect = Rectangle(
@@ -1976,9 +1987,45 @@ class Fex(DataFrame):
                             muscles=muscles,
                             title=None,
                         )
+
+                    elif faces in ("au_regions", "blendshape_regions"):
+                        # Dense-mesh region overlay (feat.plotting.plot_face_regions)
+                        # coloured by this row's detected intensities, drawn on the
+                        # canonical mesh. (For an on-image / live-video overlay on a
+                        # detected 478-mesh, call plot_face_regions(landmarks=...).)
+                        if any(self.groupby("frame").size() > 1):
+                            raise NotImplementedError(
+                                "Region overlays are not currently supported for "
+                                "detections that contain multiple faces"
+                            )
+                        from feat.utils.region_maps import (
+                            load_au_region_map,
+                            load_blendshape_region_map,
+                        )
+
+                        if faces == "au_regions":
+                            kind = "au"
+                            region_names = load_au_region_map().keys()
+                        else:
+                            kind = "blendshape"
+                            if not self.blendshape_columns:
+                                raise ValueError(
+                                    "faces='blendshape_regions' requires blendshape "
+                                    "detections (Detectorv2 / MPDetector)."
+                                )
+                            region_names = load_blendshape_region_map().keys()
+                        values = {
+                            name: float(row[name])
+                            for name in region_names
+                            if name in row.index
+                        }
+                        face_ax = plot_face_regions(
+                            values=values, kind=kind, ax=face_ax
+                        )
                     else:
                         raise ValueError(
-                            f"faces={type(faces)} is not currently supported try ['False','landmarks','aus']."
+                            f"faces={type(faces)} is not currently supported try "
+                            "['False','landmarks','aus','au_regions','blendshape_regions']."
                         )
 
                     if add_titles:
