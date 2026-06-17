@@ -125,6 +125,10 @@ jobs:
   docs:
     name: Build & deploy docs
     runs-on: ubuntu-latest
+    # Deploy py-feat.org from main only. Tests above still run on both main and
+    # v0.7-dev, but publishing from both into the same gh-pages root made the
+    # live site flip-flop between branch states (last push wins).
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
