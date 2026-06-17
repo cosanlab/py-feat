@@ -1,0 +1,602 @@
+{
+  "_meta": {
+    "description": "Non-overlapping AU region overlay on the MediaPipe-478 mesh. Winner-take-all geodesic-Voronoi partition of the bundled canonical mesh, walled off by the eye/mouth aperture rings.",
+    "kind": "AU",
+    "n_regions": 19,
+    "tightness": 0.1,
+    "mesh": "feat/resources/canonical_face_model.pt (468 verts)",
+    "generator": "scripts/build_region_maps.py",
+    "sources": [
+      "FACS (Ekman & Friesen)",
+      "melindaozel.com/arkit-to-facs-cheat-sheet",
+      "pooyadeperson.com ARKit-52 anatomy guide"
+    ]
+  },
+  "regions": {
+    "AU01": {
+      "muscles": [
+        "frontalis_inner_L",
+        "frontalis_inner_R"
+      ],
+      "mp478_vertices": [
+        52,
+        66,
+        67,
+        69,
+        105,
+        108,
+        109,
+        282,
+        296,
+        297,
+        299,
+        334,
+        337,
+        338
+      ],
+      "n_vertices": 14
+    },
+    "AU02": {
+      "muscles": [
+        "frontalis_outer_L",
+        "frontalis_outer_R"
+      ],
+      "mp478_vertices": [
+        21,
+        46,
+        53,
+        54,
+        63,
+        68,
+        70,
+        71,
+        103,
+        104,
+        139,
+        156,
+        162,
+        251,
+        276,
+        283,
+        284,
+        293,
+        298,
+        300,
+        301,
+        332,
+        333,
+        368,
+        383,
+        389
+      ],
+      "n_vertices": 26
+    },
+    "AU04": {
+      "muscles": [
+        "corrugator_L",
+        "corrugator_R",
+        "procerus"
+      ],
+      "mp478_vertices": [
+        3,
+        6,
+        8,
+        9,
+        55,
+        65,
+        107,
+        122,
+        151,
+        168,
+        174,
+        188,
+        195,
+        196,
+        197,
+        248,
+        285,
+        295,
+        336,
+        351,
+        399,
+        412,
+        419
+      ],
+      "n_vertices": 23
+    },
+    "AU05": {
+      "muscles": [
+        "levator_palpebrae_L",
+        "levator_palpebrae_R"
+      ],
+      "mp478_vertices": [
+        27,
+        28,
+        29,
+        30,
+        56,
+        189,
+        193,
+        221,
+        222,
+        223,
+        224,
+        244,
+        245,
+        257,
+        258,
+        259,
+        260,
+        286,
+        413,
+        417,
+        441,
+        442,
+        443,
+        444,
+        464,
+        465
+      ],
+      "n_vertices": 26
+    },
+    "AU06": {
+      "muscles": [
+        "orb_oculi_orbital_L",
+        "orb_oculi_orbital_R"
+      ],
+      "mp478_vertices": [
+        31,
+        47,
+        50,
+        100,
+        111,
+        117,
+        118,
+        119,
+        120,
+        143,
+        217,
+        228,
+        261,
+        277,
+        280,
+        329,
+        340,
+        346,
+        347,
+        348,
+        349,
+        372,
+        437,
+        448
+      ],
+      "n_vertices": 24
+    },
+    "AU07": {
+      "muscles": [
+        "orb_oculi_palpebral_L",
+        "orb_oculi_palpebral_R"
+      ],
+      "mp478_vertices": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        35,
+        110,
+        112,
+        113,
+        114,
+        121,
+        124,
+        128,
+        130,
+        190,
+        225,
+        226,
+        229,
+        230,
+        231,
+        232,
+        233,
+        243,
+        247,
+        252,
+        253,
+        254,
+        255,
+        256,
+        265,
+        339,
+        341,
+        342,
+        343,
+        350,
+        353,
+        357,
+        359,
+        414,
+        445,
+        446,
+        449,
+        450,
+        451,
+        452,
+        453,
+        463,
+        467
+      ],
+      "n_vertices": 48
+    },
+    "AU09": {
+      "muscles": [
+        "llsan_L",
+        "llsan_R"
+      ],
+      "mp478_vertices": [
+        1,
+        4,
+        5,
+        44,
+        45,
+        48,
+        49,
+        51,
+        59,
+        64,
+        79,
+        102,
+        115,
+        129,
+        131,
+        134,
+        166,
+        198,
+        209,
+        218,
+        219,
+        220,
+        235,
+        236,
+        237,
+        239,
+        274,
+        275,
+        278,
+        279,
+        281,
+        289,
+        294,
+        309,
+        331,
+        344,
+        358,
+        360,
+        363,
+        392,
+        420,
+        429,
+        438,
+        439,
+        440,
+        455,
+        456,
+        457,
+        459
+      ],
+      "n_vertices": 49
+    },
+    "AU10": {
+      "muscles": [
+        "levator_labii_L",
+        "levator_labii_R"
+      ],
+      "mp478_vertices": [
+        36,
+        126,
+        142,
+        266,
+        355,
+        371
+      ],
+      "n_vertices": 6
+    },
+    "AU11": {
+      "muscles": [
+        "zygomaticus_minor_L",
+        "zygomaticus_minor_R"
+      ],
+      "mp478_vertices": [
+        34,
+        93,
+        116,
+        123,
+        127,
+        137,
+        227,
+        234,
+        264,
+        323,
+        345,
+        352,
+        356,
+        366,
+        447,
+        454
+      ],
+      "n_vertices": 16
+    },
+    "AU12": {
+      "muscles": [
+        "zygomaticus_major_L",
+        "zygomaticus_major_R"
+      ],
+      "mp478_vertices": [
+        101,
+        147,
+        187,
+        330,
+        376,
+        411
+      ],
+      "n_vertices": 6
+    },
+    "AU13": {
+      "muscles": [
+        "levator_anguli_oris_L",
+        "levator_anguli_oris_R"
+      ],
+      "mp478_vertices": [
+        203,
+        205,
+        206,
+        423,
+        425,
+        426
+      ],
+      "n_vertices": 6
+    },
+    "AU14": {
+      "muscles": [
+        "buccinator_L",
+        "buccinator_R"
+      ],
+      "mp478_vertices": [
+        32,
+        43,
+        57,
+        106,
+        194,
+        202,
+        204,
+        207,
+        211,
+        212,
+        214,
+        216,
+        262,
+        273,
+        287,
+        335,
+        418,
+        422,
+        424,
+        427,
+        431,
+        432,
+        434,
+        436
+      ],
+      "n_vertices": 24
+    },
+    "AU15": {
+      "muscles": [
+        "depressor_anguli_oris_L",
+        "depressor_anguli_oris_R"
+      ],
+      "mp478_vertices": [
+        61,
+        76,
+        135,
+        169,
+        170,
+        210,
+        291,
+        306,
+        364,
+        394,
+        395,
+        430
+      ],
+      "n_vertices": 12
+    },
+    "AU16": {
+      "muscles": [
+        "depressor_labii_L",
+        "depressor_labii_R"
+      ],
+      "mp478_vertices": [
+        62,
+        77,
+        84,
+        85,
+        86,
+        89,
+        90,
+        91,
+        96,
+        146,
+        179,
+        180,
+        181,
+        182,
+        292,
+        307,
+        314,
+        315,
+        316,
+        319,
+        320,
+        321,
+        325,
+        375,
+        403,
+        404,
+        405,
+        406
+      ],
+      "n_vertices": 28
+    },
+    "AU17": {
+      "muscles": [
+        "mentalis"
+      ],
+      "mp478_vertices": [
+        18,
+        83,
+        140,
+        148,
+        152,
+        171,
+        175,
+        176,
+        199,
+        200,
+        201,
+        208,
+        313,
+        369,
+        377,
+        396,
+        400,
+        421,
+        428
+      ],
+      "n_vertices": 19
+    },
+    "AU20": {
+      "muscles": [
+        "risorius_L",
+        "risorius_R"
+      ],
+      "mp478_vertices": [
+        149,
+        150,
+        378,
+        379
+      ],
+      "n_vertices": 4
+    },
+    "AU24": {
+      "muscles": [
+        "orbicularis_oris"
+      ],
+      "mp478_vertices": [
+        0,
+        2,
+        11,
+        12,
+        15,
+        16,
+        17,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        72,
+        73,
+        74,
+        92,
+        164,
+        165,
+        167,
+        183,
+        184,
+        185,
+        186,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        302,
+        303,
+        304,
+        322,
+        391,
+        393,
+        407,
+        408,
+        409,
+        410
+      ],
+      "n_vertices": 40
+    },
+    "AU26": {
+      "muscles": [
+        "masseter_L",
+        "masseter_R"
+      ],
+      "mp478_vertices": [
+        58,
+        132,
+        136,
+        138,
+        172,
+        177,
+        192,
+        213,
+        215,
+        288,
+        361,
+        365,
+        367,
+        397,
+        401,
+        416,
+        433,
+        435
+      ],
+      "n_vertices": 18
+    },
+    "AU38": {
+      "muscles": [
+        "nasalis_L",
+        "nasalis_R"
+      ],
+      "mp478_vertices": [
+        19,
+        20,
+        60,
+        75,
+        94,
+        97,
+        98,
+        99,
+        125,
+        141,
+        238,
+        240,
+        241,
+        242,
+        250,
+        290,
+        305,
+        326,
+        327,
+        328,
+        354,
+        370,
+        458,
+        460,
+        461,
+        462
+      ],
+      "n_vertices": 26
+    }
+  }
+}
