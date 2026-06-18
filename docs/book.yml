@@ -68,6 +68,15 @@ api_docs:
 # Heavy detector tutorials render with `mode: cached`: executed once locally
 # with a GPU via `marimo-book render`, committed to _rendered/, then reused on
 # CI without executing. defaults.mode stays static for the prose pages.
+#
+# GOTCHA: cached-page staleness is keyed to the NOTEBOOK SOURCE, not to feat's
+# behaviour. `marimo-book render --check` will NOT flag a page when a feat code
+# change alters a figure but the .py source is untouched (it reports "up to
+# date"), and CI never executes cached pages — so the site silently ships the
+# old figure. Re-run `marimo-book render` and commit _rendered/ whenever a
+# cached tutorial's source OR the feat code it exercises changes. To re-render
+# just one page (skip the slow video/perf benches), flip the others to
+# `mode: static` here, render, then restore.
 
 # Auto-generated Py-feat Live changelog (pages/pyfeatlive_changelog.md).
 # Regenerate with `marimo-book sync-releases`; kept current via a
