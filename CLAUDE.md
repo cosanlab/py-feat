@@ -192,6 +192,17 @@ switch them to square-pad. The square-pad crop is v2-only.
   still v0.6-era. Roadmap at
   `docs/superpowers/specs/2026-05-02-identity-detection-roadmap.md`
   (HDBSCAN, gallery-aware, tracker-based).
+- **Docs render cache (`docs/_rendered/`)**: the tutorials/benchmarks are
+  `mode: cached` in `docs/book.yml` — `marimo-book build` reuses the committed
+  `docs/_rendered/*.md` (+ `manifest.json`) and does NOT execute them, so the
+  CI deploy runs without feat/torch/GPU. **If a cached `.py` source changes,
+  re-run `marimo-book render` on a feat-equipped box and commit `_rendered/`**,
+  or the build falls back to executing (which fails in CI and ships
+  tracebacks). The `--strict` flag in the docs jobs turns a stale cache into a
+  hard failure; the PR `docs` job (`marimo-book build --strict`) is the gate.
+  Requires marimo-book >=0.1.26 — earlier versions stamped the render cache key
+  with the package *version*, so every marimo-book release silently invalidated
+  the whole cache (this is what broke py-feat.org's Plotting page).
 
 ## Roadmap (post-v0.7.0)
 

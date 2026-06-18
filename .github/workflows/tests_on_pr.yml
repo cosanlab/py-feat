@@ -93,7 +93,13 @@ jobs:
           ruff check --ignore=W292,E402,E501,E731,E741 feat
           pytest --cov=feat -rs
 
-  # Job (3): Just build jupyter book but don't deploy it.
+  # Job (3): Build the marimo book (no deploy) to catch broken docs and a stale
+  # _rendered/ cache on PRs. Feat-free — cached pages build from committed
+  # _rendered/, so no torch/model downloads. `--strict` fails the check when a
+  # cached page is stale (source changed, or marimo-book bumped its
+  # _RENDER_OUTPUT_VERSION, without a committed `marimo-book render`) instead of
+  # letting tracebacks slip through to the deploy job. (`marimo-book render
+  # --check` is the narrower staleness-only gate if you don't want a full build.)
   docs:
     name: Build docs only
     runs-on: ubuntu-latest
@@ -101,23 +107,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install uv + Python
+        uses: astral-sh/setup-uv@v6
         with:
-          # 3.12, not 3.13: jupyter-book 1.x pulls sphinx<6 whose epub3
-          # builder imports the stdlib `imghdr` module, removed in 3.13.
-          python-version: "3.12"
+          python-version: "3.13"
+          enable-cache: true
 
-      - name: Upgrade pip
+      - name: Install marimo-book
         run: |
-          # install pip=>20.1 to use "pip cache dir"
-          python3 -m pip install --upgrade pip
+          uv venv --python 3.13
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          uv pip install "marimo-book[api]>=0.1.26"
 
-      - name: Install deps
+      - name: Build book (strict)
         run: |
-          python3 -m pip install . -r requirements.txt
-          python3 -m pip install -r ./requirements-dev.txt
-
-      - name: Build book
-        run: |
-          jupyter-book build docs
+          cd docs
+          marimo-book build --strict
