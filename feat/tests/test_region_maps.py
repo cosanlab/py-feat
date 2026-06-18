@@ -2,10 +2,13 @@
 the non-overlapping AU / ARKit-blendshape region overlays on the MP-478 mesh
 shipped at ``feat/resources/{au,blendshape}_region_map.json``.
 
-Validates structural invariants (vertex range, aperture exclusion, AU
-non-overlap, L/R mirror symmetry), that both maps regenerate byte-identically
-from their seed tables (so the shipped files can't drift from source), and that
-the plotting API renders map + activation views without error.
+The maps are a **per-triangle** partition of the bundled canonical tessellation
+(geodesic-Voronoi seed partition, cleaned with boundary-length descent + L/R
+symmetrization + speck removal). Validates structural invariants (vertex range,
+aperture-hole exclusion, triangle non-overlap, L/R mirror symmetry), that both
+maps regenerate byte-identically from their seed tables (so the shipped files
+can't drift from source), and that the plotting API renders map + activation
+views without error.
 """
 
 from __future__ import annotations
@@ -36,17 +39,26 @@ def canonical():
     return V
 
 
+@pytest.fixture(scope="module")
+def holes():
+    V, tris = rm._canonical_geometry()
+    aperture = {a for a in rm.APERTURE if a < len(V)}
+    return rm.aperture_triangles(tris, aperture)
+
+
 class TestLoad:
     def test_returns_independent_copies(self):
         a = rm.load_au_region_map()
         b = rm.load_au_region_map()
         assert a == b and a is not b
-        a["AU12"]["mp478_vertices"].append(99999)
-        assert 99999 not in rm.load_au_region_map()["AU12"]["mp478_vertices"]
+        a["AU12"]["triangles"].append(99999)
+        assert 99999 not in rm.load_au_region_map()["AU12"]["triangles"]
 
     def test_au_schema(self, au_map):
         for au, spec in au_map.items():
             assert au.startswith("AU")
+            assert spec["triangles"] == sorted(set(spec["triangles"]))
+            assert spec["n_triangles"] == len(spec["triangles"]) > 0
             assert spec["mp478_vertices"] == sorted(set(spec["mp478_vertices"]))
             assert spec["n_vertices"] == len(spec["mp478_vertices"]) > 0
             assert spec["muscles"] and all(isinstance(m, str) for m in spec["muscles"])
@@ -55,6 +67,7 @@ class TestLoad:
         for bs, spec in bs_map.items():
             assert spec["au"].startswith(("AU", "AD"))
             assert spec["side"] in ("L", "R", "C")
+            assert spec["n_triangles"] == len(spec["triangles"]) > 0
             assert spec["n_vertices"] == len(spec["mp478_vertices"]) > 0
 
 
@@ -64,33 +77,43 @@ class TestInvariants:
             for spec in m.values():
                 assert all(0 <= v < 468 for v in spec["mp478_vertices"])
 
-    def test_no_aperture_leak(self, au_map, bs_map):
+    def test_triangles_in_range(self, au_map, bs_map):
+        _, tris = rm._canonical_geometry()
+        for m in (au_map, bs_map):
+            for spec in m.values():
+                assert all(0 <= t < len(tris) for t in spec["triangles"])
+
+    def test_no_aperture_hole_coverage(self, au_map, bs_map, holes):
+        """No region may cover an eye/mouth *opening* (a triangle whose 3 verts
+        are all on an aperture ring). Boundary triangles touching a ring are
+        fine; only the holes are forbidden."""
         for name, m in (("au", au_map), ("bs", bs_map)):
             for region, spec in m.items():
-                leak = set(spec["mp478_vertices"]) & rm.APERTURE
-                assert not leak, f"{name}:{region} covers aperture {sorted(leak)}"
+                leak = set(spec["triangles"]) & holes
+                assert not leak, f"{name}:{region} covers aperture hole {sorted(leak)}"
 
     @pytest.mark.parametrize("which", ["au", "bs"])
     def test_regions_are_non_overlapping(self, which, au_map, bs_map):
-        """Both maps are strict partitions — each vertex in at most one region.
-        (Blendshape L/R divide exactly at the midline, so no shared seam.)"""
+        """Both maps are strict per-triangle partitions — each tessellation
+        triangle belongs to at most one region. (Boundary *vertices* are shared
+        between adjacent regions; the triangles are not.)"""
         m = au_map if which == "au" else bs_map
         seen: dict[int, str] = {}
         for region, spec in m.items():
-            for v in spec["mp478_vertices"]:
-                assert v not in seen, f"{which}: vertex {v} in {seen.get(v)} & {region}"
-                seen[v] = region
+            for t in spec["triangles"]:
+                assert t not in seen, f"{which}: triangle {t} in {seen.get(t)} & {region}"
+                seen[t] = region
 
     def test_blendshape_left_right_mirror(self, bs_map, canonical):
         """``...Left`` and ``...Right`` regions are exact mirrors across the
-        midline — the partition is symmetrized (``_symmetrize_partition``), so
-        winner-take-all boundary noise can't make paired regions asymmetric."""
+        midline — the per-triangle partition is symmetrized, so winner-take-all
+        boundary noise can't make paired regions asymmetric."""
         for name, spec in bs_map.items():
             if not name.endswith("Left"):
                 continue
             right = name[:-4] + "Right"
             assert right in bs_map, f"missing {right}"
-            assert spec["n_vertices"] == bs_map[right]["n_vertices"]
+            assert spec["n_triangles"] == bs_map[right]["n_triangles"]
             cl = canonical[spec["mp478_vertices"]].mean(0)
             cr = canonical[bs_map[right]["mp478_vertices"]].mean(0)
             assert abs(cl[0] + cr[0]) < 0.05, f"{name}: not mirrored in x"
@@ -106,21 +129,20 @@ class TestRegenerationMatchesShipped:
 
 
 class TestRenderAssets:
-    def test_au_assets_disjoint(self):
+    def test_au_assets_triangles_disjoint(self):
         a = rm.render_assets("au")
-        assert {"parents", "tris", "region_verts", "n_base"} <= a.keys()
+        assert {"tris", "region_tris", "n_base"} <= a.keys()
         seen: set[int] = set()
-        for verts in a["region_verts"].values():
-            assert not (verts & seen)
-            seen |= verts
+        for idx in a["region_tris"].values():
+            s = set(idx)
+            assert not (s & seen)
+            seen |= s
 
-    def test_dense_positions_match_subdivision(self):
-        """``dense_positions`` on the canonical base reproduces the subdivided
-        canonical vertices the assets were built from."""
-        a = rm.render_assets("au")
-        V, _ = rm._canonical_geometry()
-        dense = rm.dense_positions(rm.project_xy(V), a["parents"])
-        assert len(dense) == a["n_base"] + len(a["parents"])
+    def test_assets_match_loaded_map(self):
+        a = rm.render_assets("blendshape")
+        m = rm.load_blendshape_region_map()
+        for region, spec in m.items():
+            assert sorted(a["region_tris"].get(region, [])) == spec["triangles"]
 
     def test_bad_kind_raises(self):
         with pytest.raises(ValueError):
@@ -160,9 +182,9 @@ class TestPlot:
 
     def test_overlay_on_478_mesh_matches_468(self):
         """A real 478-vertex MediaPipe mesh (10 trailing iris verts) must render
-        the same overlay as its 468-vertex face slice — the subdivision topology
-        is 468-based, so the extra iris rows must be trimmed, not shift the
-        midpoint indices (regression for the dense_positions index shift)."""
+        the same overlay as its 468-vertex face slice — the tessellation indexes
+        the 468 face verts, so the extra iris rows must be trimmed, not shift the
+        triangle vertex lookups."""
         from feat.plotting import plot_face_regions
         from matplotlib.collections import PolyCollection
 

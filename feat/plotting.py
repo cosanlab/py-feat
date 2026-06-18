@@ -1334,9 +1334,9 @@ def plot_face_regions(
 
     The dense-mesh, non-overlapping successor to ``plot_face(muscles=True)``.
     Regions come from ``feat.utils.region_maps`` (a non-overlapping geodesic-
-    Voronoi partition of the mesh) and are filled as smooth per-triangle patches
-    on a subdivided mesh. Works on the canonical mesh (a legend/key) or on a
-    detected 478-mesh (a live overlay).
+    Voronoi partition of the mesh, cleaned to whole per-triangle silhouettes) and
+    are filled as flat patches over the raw 478-mesh triangles. Works on the
+    canonical mesh (a legend/key) or on a detected 478-mesh (a live overlay).
 
     Args:
         values: ``None`` → map view (every region a distinct color). Otherwise a
@@ -1366,24 +1366,21 @@ def plot_face_regions(
     order = list(region_map.keys())
 
     assets = rm.render_assets(kind)
-    parents, tris, region_verts = assets["parents"], assets["tris"], assets["region_verts"]
+    tris, region_tris = assets["tris"], assets["region_tris"]
     n_base = assets["n_base"]
 
     on_canonical = landmarks is None
     if on_canonical:
         V, _ = rm._canonical_geometry()
-        base_xy = rm.project_xy(V)
+        xy = rm.project_xy(V)
     else:
-        base_xy = np.asarray(landmarks, dtype=np.float64)[:, :2]
-        if len(base_xy) < n_base:
+        xy = np.asarray(landmarks, dtype=np.float64)[:, :2]
+        if len(xy) < n_base:
             raise ValueError(f"landmarks must have >= {n_base} vertices")
-        # The subdivision topology (parents/tris) is built on the n_base-vertex
-        # canonical mesh, with midpoint indices starting at n_base. A detected
+        # The tessellation indexes the n_base canonical verts. A detected
         # MediaPipe mesh has 478 verts (the trailing 10 are iris, unused by the
-        # regions), so trim to n_base — otherwise dense_positions seeds with the
-        # iris rows and every midpoint index is shifted, scrambling the overlay.
-        base_xy = base_xy[:n_base]
-    xy = rm.dense_positions(base_xy, parents)
+        # regions), so trim to n_base so triangle indices stay aligned.
+        xy = xy[:n_base]
 
     # normalize `values` -> {region: intensity}
     if values is None:
@@ -1413,34 +1410,16 @@ def plot_face_regions(
         ax.add_collection(LineCollection(xy[edges], colors="0.85", linewidths=0.2,
                                          zorder=1))
 
-    # For blendshapes the region_verts are keyed by FEATURE (L/R merged); a
-    # sided blendshape fills only the triangles of its feature whose centroid
-    # falls on its side of the midline — dividing L/R cleanly down the middle.
-    axis = assets["axis"]
-    cx = xy[tris].mean(axis=1)[:, 0] if kind == "blendshape" else None
-
+    # Each region owns a fixed set of tessellation triangles (the cleaned
+    # per-triangle partition); fill them at the region's color/intensity.
     for region in sorted(order, key=lambda r: vals[r]):
         if vals[region] <= 0:
             continue
-        if kind == "blendshape":
-            verts = region_verts.get(rm._feature_of(region), set())
-            side = rm.BLENDSHAPE_SEEDS[region][2]
-        else:
-            verts, side = region_verts.get(region, set()), "C"
-        if not verts:
+        idx = region_tris.get(region)
+        if not idx:
             continue
-        polys = []
-        for i, tri in enumerate(tris):
-            if sum(v in verts for v in tri) < 2:
-                continue
-            if side == "L" and cx[i] <= axis:      # subject-left = x > midline
-                continue
-            if side == "R" and cx[i] >= axis:
-                continue
-            polys.append(xy[tri])
-        if polys:
-            ax.add_collection(PolyCollection(polys, facecolors=colmap[region],
-                                             edgecolors="none", alpha=alpha, zorder=3))
+        ax.add_collection(PolyCollection(xy[tris[idx]], facecolors=colmap[region],
+                                         edgecolors="none", alpha=alpha, zorder=3))
 
     if not host_had_data:
         xmin, ymin = xy.min(0)

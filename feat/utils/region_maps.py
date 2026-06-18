@@ -12,19 +12,32 @@ Both are built by a **winner-take-all geodesic-Voronoi partition** of the mesh:
 each vertex is assigned to the single nearest region seed by walking the mesh
 surface (Dijkstra over the triangle-edge graph, capped at ``TIGHTNESS`` of the
 face span), with the eye/mouth aperture rings walling growth off. The partition
-is non-overlapping *by construction*, which fixes the heavy region overlap of
-the geodesic-grow muscle map (where 323/394 covered verts sat in >=2 muscles).
+is non-overlapping *by construction*.
+
+The per-vertex partition is then resolved to a **per-triangle** assignment and
+cleaned so the region silhouettes are whole rather than ragged, while staying
+strictly on the 478-mesh triangle edges (no subdivision, no curve fitting — the
+boundaries never become smoother than the mesh itself):
+
+1. each triangle takes the region of its majority vertex (the eye/mouth aperture
+   triangles are permanent holes);
+2. **boundary-length (perimeter) descent** flips boundary triangles to shorten
+   the zigzag region↔region edges, bounded so no region's area drifts past
+   ``CAP`` and tiny regions (<= ``SMALL_REGION`` triangles) are frozen;
+3. the partition is **L/R symmetrized** with a geometric (triangle-centroid)
+   mirror map;
+4. small disconnected specks are removed symmetrically (each speck and its mirror
+   reassigned together), killing stray "flipped" triangles.
+
+The per-triangle assignment is fixed in index space (triangle indices into the
+bundled canonical tessellation), so the same map overlays a live detected
+478-mesh — only the vertex *positions* change per frame. See
+``feat.plotting.plot_face_regions``.
 
 The AU <-> muscle <-> blendshape correspondence is grounded in:
 * FACS (Ekman & Friesen) — AU -> muscle.
 * Melinda Ozel's ARKit-to-FACS cheat sheet (melindaozel.com/arkit-to-facs-cheat-sheet).
 * pooyadeperson's "Ultimate Guide to ARKit's 52 Facial Blendshapes" (anatomy refs).
-
-Rendering smooths the coarse 468-vertex mesh by midpoint-subdividing it
-``SUBDIV_LEVELS`` times before filling triangles. The subdivision topology and
-the dense per-vertex region labels are fixed in index space, so the same assets
-overlay a live detected 478-mesh — only the dense vertex *positions* are
-recomputed per frame (``dense_positions``). See ``feat.plotting.plot_face_regions``.
 """
 
 from __future__ import annotations
@@ -33,7 +46,7 @@ import copy
 import heapq
 import json
 import os
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -41,9 +54,11 @@ from scipy.spatial import cKDTree
 from feat.utils.io import get_resource_path
 from feat.utils.mp_plotting import FaceLandmarksConnections as _F
 
-# --- partition / render tuning (the user-approved look) ---
-TIGHTNESS = 0.10      # max geodesic reach of a seed, as a fraction of face span
-SUBDIV_LEVELS = 2     # midpoint subdivisions applied before rendering (smoothing)
+# --- partition / cleanup tuning (the user-approved look) ---
+TIGHTNESS = 0.10       # max geodesic reach of a seed, as a fraction of face span
+CAP = 0.40             # max fractional triangle-count change per region in cleanup
+SMALL_REGION = 6       # regions with <= this many triangles are frozen (no erosion)
+ISLAND_MAX = 4         # disconnected specks <= this many triangles are reassigned
 
 AU_MAP_FILENAME = "au_region_map.json"
 BLENDSHAPE_MAP_FILENAME = "blendshape_region_map.json"
@@ -191,6 +206,7 @@ def project_xy(V: np.ndarray) -> np.ndarray:
 
 
 def build_adjacency(tris: np.ndarray, n: int) -> dict[int, list[int]]:
+    """Vertex adjacency over the triangle-edge graph."""
     adj: dict[int, set] = defaultdict(set)
     for a, b, c in tris:
         for u, w in ((a, b), (b, c), (a, c)):
@@ -230,7 +246,7 @@ def geodesic_voronoi(seeds_by_region, adj, xy, aperture, max_geo):
     return label
 
 
-# vertices on the facial midline (define the mirror axis; stay put when mirrored)
+# vertices on the facial midline (define the mirror axis)
 _MIDLINE_SEEDS = [1, 168, 9, 8, 0, 17, 152, 10, 151, 175, 199, 200, 164, 18, 6, 4]
 
 
@@ -255,118 +271,9 @@ def _mirror_map(V):
     return {int(v): int(M[v]) for v in range(len(V))}, midline, axis
 
 
-def _symmetrize_partition(label, V):
-    """Force exact L/R mirror symmetry on a partition: keep the subject-right
-    half's assignment and mirror it onto the left (``Left``↔``Right`` swapped),
-    so winner-take-all boundary noise can't make paired regions asymmetric.
-    Center (unsided) regions are mirrored about the midline too.
-
-    Returns ``{vertex: {region, ...}}``. Almost every vertex maps to a single
-    region; a midline-seam vertex on a SIDED region is shared by both mirror
-    partners (e.g. the nose-bridge column joins noseSneerLeft+Right) so the two
-    halves stay contiguous instead of leaving an unassigned gap. ``label``/``V``
-    use final region names + the same vertex set."""
-    V = np.asarray(V, dtype=np.float64)
-    M, midline, axis = _mirror_map(V)
-    # primary half = the side a known subject-right seed (v107) sits on
-    primary_neg = bool((V[107, 0] - axis) < 0) if len(V) > 107 else True
-    out: dict[int, set] = defaultdict(set)
-    for v, name in label.items():
-        if v in midline:
-            # center region keeps the seam vertex; a sided region shares it with
-            # its mirror partner so L/R meet at the midline (no gap).
-            out[v].add(name)
-            out[v].add(_mirror_name(name))
-        elif bool((V[v, 0] - axis) < 0) == primary_neg:
-            out[v].add(name)
-            out[M[v]].add(_mirror_name(name))
-    return out
-
-
-def subdivide(V, tris, aperture, levels):
-    """``levels`` rounds of 1-to-4 midpoint subdivision. Original vertices keep
-    their indices (so seeds and stored vertex ids stay valid). Returns
-    ``(V_dense, tris_dense, aperture_dense, parents)`` where ``parents`` lists,
-    in creation order, the ``(a, b)`` parent pair of each appended midpoint — so
-    a deformed mesh's dense positions can be rebuilt with ``dense_positions``.
-    A midpoint inherits aperture status only if BOTH parents are aperture."""
-    V = [np.asarray(p, dtype=np.float64) for p in V]
-    ap = set(aperture)
-    parents: list[tuple[int, int]] = []
-    for _ in range(levels):
-        cache: dict[tuple[int, int], int] = {}
-        new_tris = []
-
-        def mid(a, b):
-            k = (a, b) if a < b else (b, a)
-            idx = cache.get(k)
-            if idx is None:
-                idx = len(V)
-                cache[k] = idx
-                V.append((V[a] + V[b]) / 2.0)
-                parents.append((a, b))
-                if a in ap and b in ap:
-                    ap.add(idx)
-            return idx
-
-        for a, b, c in tris:
-            a, b, c = int(a), int(b), int(c)
-            ab, bc, ca = mid(a, b), mid(b, c), mid(c, a)
-            new_tris += [(a, ab, ca), (ab, b, bc), (ca, bc, c), (ab, bc, ca)]
-        tris = np.array(new_tris, dtype=int)
-    return np.array(V), tris, ap, parents
-
-
-def dense_positions(V, parents):
-    """Rebuild subdivided vertex positions for an arbitrary base mesh ``V``
-    (e.g. a detected 478-mesh) given the ``parents`` list from ``subdivide``.
-    ``V`` supplies the original vertices; midpoints are filled by averaging."""
-    pos = [np.asarray(p, dtype=np.float64) for p in V]
-    for a, b in parents:
-        pos.append((pos[a] + pos[b]) / 2.0)
-    return np.array(pos)
-
-
-# ---------------------------------------------------------------------------
-# map construction (used by scripts/build_region_maps.py + the loaders' fallback)
-# ---------------------------------------------------------------------------
-def _build_partition_labels(seeds_by_region, V=None, tris=None):
-    """Run the geodesic-Voronoi partition on the (original) canonical mesh.
-    Returns ``(label, V, tris)``."""
-    if V is None or tris is None:
-        V, tris = _canonical_geometry()
-    xy = project_xy(V)
-    adj = build_adjacency(tris, len(V))
-    face = float(np.linalg.norm(xy.max(0) - xy.min(0)))
-    aperture = {a for a in APERTURE if a < len(V)}
-    label = geodesic_voronoi(seeds_by_region, adj, xy, aperture, face * TIGHTNESS)
-    label = _symmetrize_partition(label, V)
-    return label, V, tris
-
-
-def build_au_region_map():
-    """``{AU: {muscles, mp478_vertices, n_vertices}}`` — muscle partition merged
-    to AU (left+right share an AU)."""
-    seeds = {m: s for m, (au, s) in MUSCLE_SEEDS.items()}
-    label, _, _ = _build_partition_labels(seeds)
-    muscle_au = {m: au for m, (au, s) in MUSCLE_SEEDS.items()}
-    by_au: dict[str, set] = defaultdict(set)
-    muscles_by_au: dict[str, set] = defaultdict(set)
-    for v, muscles in label.items():
-        for muscle in muscles:
-            by_au[muscle_au[muscle]].add(v)
-            muscles_by_au[muscle_au[muscle]].add(muscle)
-    out = {}
-    for au in sorted(by_au):
-        verts = sorted(by_au[au])
-        out[au] = dict(muscles=sorted(muscles_by_au[au]),
-                       mp478_vertices=verts, n_vertices=len(verts))
-    return out
-
-
 def _feature_of(blendshape: str) -> str:
     """``noseSneerLeft`` -> ``noseSneer``; center shapes unchanged. The L/R
-    pair share one symmetric mesh FEATURE, split by the midline at the end."""
+    pair share one symmetric mesh FEATURE before the partition splits them."""
     for suf in ("Left", "Right"):
         if blendshape.endswith(suf):
             return blendshape[: -len(suf)]
@@ -380,32 +287,308 @@ def _feature_seeds() -> dict:
     return dict(feat)
 
 
-def build_blendshape_region_map():
-    """``{blendshape: {au, muscle, side, mp478_vertices, n_vertices}}``.
+# ---------------------------------------------------------------------------
+# triangle graph + per-triangle cleanup
+# ---------------------------------------------------------------------------
+def triangle_adjacency(tris):
+    """``{triangle_index: [neighbour triangle indices]}`` — triangles sharing an
+    edge (two vertices)."""
+    edge_tris: dict[tuple[int, int], list[int]] = defaultdict(list)
+    for ti, t in enumerate(tris):
+        a, b, c = int(t[0]), int(t[1]), int(t[2])
+        for u, w in ((a, b), (b, c), (a, c)):
+            edge_tris[(u, w) if u < w else (w, u)].append(ti)
+    nb: dict[int, set] = defaultdict(set)
+    for ts in edge_tris.values():
+        for i in ts:
+            for j in ts:
+                if i != j:
+                    nb[i].add(j)
+    return {k: sorted(v) for k, v in nb.items()}
 
-    L/R pairs share one symmetric mesh FEATURE (their seeds merged) grown by the
-    geodesic-Voronoi partition; each sided blendshape is then the half of that
-    feature on its side of the facial midline (center shapes keep the whole,
-    bilateral feature). So L/R divide cleanly down the middle — no winner-take-
-    all asymmetry, no shared midline seam. Non-overlapping by construction."""
-    label, V, _ = _build_partition_labels(_feature_seeds())
-    feat_verts: dict[str, set] = defaultdict(set)
-    for v, names in label.items():
-        for f in names:
-            feat_verts[f].add(v)
-    _, _, axis = _mirror_map(np.asarray(V, dtype=np.float64))
+
+def aperture_triangles(tris, aperture):
+    """Triangles wholly inside an eye/mouth aperture (all 3 verts on a ring) —
+    the OPENINGS. They stay permanent holes (never gap-filled or relabeled)."""
+    return {ti for ti, t in enumerate(tris) if all(int(v) in aperture for v in t)}
+
+
+def _per_triangle_labels(tris, vertex_label):
+    """Region of each triangle's majority vertex (>=2 of 3), else None."""
+    treg: list = [None] * len(tris)
+    for ti, t in enumerate(tris):
+        labs = [vertex_label.get(int(v)) for v in t]
+        real = [x for x in labs if x is not None]
+        if not real:
+            continue
+        win, cnt = Counter(real).most_common(1)[0]
+        if cnt >= 2:
+            treg[ti] = win
+    return treg
+
+
+def _gap_fill(treg, tri_adj, holes, max_iter=50):
+    """Assign unlabeled triangles to the majority region of their labeled
+    neighbours; iterate to convergence. Aperture-hole triangles stay None."""
+    treg = list(treg)
+    for _ in range(max_iter):
+        changed = False
+        for ti in range(len(treg)):
+            if treg[ti] is not None or ti in holes:
+                continue
+            votes = Counter(treg[j] for j in tri_adj.get(ti, []) if treg[j] is not None)
+            if votes:
+                treg[ti] = votes.most_common(1)[0][0]
+                changed = True
+        if not changed:
+            break
+    return treg
+
+
+def _perimeter_descent(treg, tri_adj, holes, cap=CAP, small=SMALL_REGION, max_iter=80):
+    """Boundary-LENGTH (perimeter) descent: greedily flip each triangle to a
+    neighbour's region when it strictly reduces the number of bi-colored edges
+    around it. Shortens zigzag region↔region boundaries directly (an Ising /
+    graph-cut energy), unlike majority vote which leaves sawtooth edges stable.
+
+    Bounded so whole-triangle transfers can't push a region past ``cap`` of its
+    starting triangle count, and regions of <= ``small`` triangles are frozen."""
+    treg = list(treg)
+    base = Counter(t for t in treg if t is not None)
+    lo = {r: (c if c <= small else int(np.floor(c * (1 - cap)))) for r, c in base.items()}
+    hi = {r: int(np.ceil(c * (1 + cap))) for r, c in base.items()}
+    cur = Counter(treg)
+    for _ in range(max_iter):
+        changed = 0
+        for ti in range(len(treg)):
+            creg = treg[ti]
+            if creg is None or ti in holes:
+                continue
+            nbrs = [treg[j] for j in tri_adj.get(ti, []) if treg[j] is not None]
+            if not nbrs:
+                continue
+            cur_cost = sum(1 for x in nbrs if x != creg)
+            best, best_cost = creg, cur_cost
+            for cand in set(nbrs):
+                if cand == creg:
+                    continue
+                cost = sum(1 for x in nbrs if x != cand)
+                if cost < best_cost:
+                    best, best_cost = cand, cost
+            if best == creg:
+                continue
+            if cur[creg] - 1 < lo.get(creg, 0) or cur[best] + 1 > hi.get(best, len(treg)):
+                continue
+            treg[ti] = best
+            cur[creg] -= 1
+            cur[best] += 1
+            changed += 1
+        if not changed:
+            break
+    return treg
+
+
+def _triangle_mirror_match(tris, xy, axis):
+    """For each triangle, the index of the triangle physically across the
+    midline (nearest mirrored centroid). A geometric mirror — never lands a
+    triangle in a disconnected spot, so it can't manufacture island specks."""
+    cen = np.array([xy[t].mean(0) for t in tris])
+    mir = cen.copy()
+    mir[:, 0] = 2 * axis - mir[:, 0]
+    return cKDTree(cen).query(mir)[1], cen
+
+
+def _symmetrize(treg, tris, xy, axis):
+    """Force exact L/R symmetry: stamp the primary (subject-right) half's
+    triangle labels onto the mirror half with ``Left``<->``Right`` swapped."""
+    match, cen = _triangle_mirror_match(tris, xy, axis)
+    primary_neg = bool(xy[107, 0] < axis) if len(xy) > 107 else True
+    out = list(treg)
+    for i in range(len(tris)):
+        if bool(cen[i, 0] < axis) == primary_neg and treg[i] is not None:
+            out[match[i]] = _mirror_name(treg[i])
+        elif bool(cen[i, 0] < axis) == primary_neg:
+            out[match[i]] = None
+    return out
+
+
+def _remove_islands(treg, tris, tri_adj, xy, axis, max_island=ISLAND_MAX, max_iter=10):
+    """Reassign small DISCONNECTED specks of a region (a component of
+    <= ``max_island`` triangles, dwarfed by a dominant main body) to the
+    surrounding region, doing each speck and its mirror partner together so L/R
+    symmetry is preserved. Run AFTER ``_symmetrize`` — symmetrization can
+    manufacture mirror specks where the canonical triangulation differs slightly
+    L/R (e.g. the noseSneer nose speck the geodesic frontier never produced)."""
+    match, _ = _triangle_mirror_match(tris, xy, axis)
+    treg = list(treg)
+    for _ in range(max_iter):
+        region_tris: dict[str, list] = defaultdict(list)
+        for ti, r in enumerate(treg):
+            if r is not None:
+                region_tris[r].append(ti)
+        changed = False
+        for r, members in region_tris.items():
+            seen, comps = set(), []
+            for s in members:
+                if s in seen:
+                    continue
+                stack, comp = [s], []
+                while stack:
+                    u = stack.pop()
+                    if u in seen:
+                        continue
+                    seen.add(u)
+                    comp.append(u)
+                    for v in tri_adj.get(u, []):
+                        if treg[v] == r and v not in seen:
+                            stack.append(v)
+                comps.append(comp)
+            if len(comps) <= 1:
+                continue
+            comps.sort(key=len, reverse=True)
+            largest = len(comps[0])
+            for comp in comps[1:]:
+                # only a true speck: small AND dwarfed by a dominant main body
+                # (protects genuinely small regions from being erased)
+                if len(comp) > max_island or largest < 3 * len(comp):
+                    continue
+                mirror_r = _mirror_name(r)
+                for ti in comp:
+                    votes = Counter(treg[j] for j in tri_adj.get(ti, [])
+                                    if treg[j] is not None and treg[j] != r)
+                    if not votes:
+                        continue
+                    x = votes.most_common(1)[0][0]
+                    treg[ti] = x
+                    # Mirror the fix, but only onto the genuine mirror speck (a
+                    # triangle still holding this region's mirror): match[] is a
+                    # geometric nearest-neighbour, not a strict bijection, so an
+                    # unguarded write could clobber a hole or an adjacent region.
+                    mj = match[ti]
+                    if treg[mj] == mirror_r:
+                        treg[mj] = _mirror_name(x)
+                    changed = True
+        if not changed:
+            break
+    return treg
+
+
+# ---------------------------------------------------------------------------
+# per-vertex seed labels (AU merges L/R; blendshape splits a feature L/R)
+# ---------------------------------------------------------------------------
+def _au_vertex_labels(adj, xy, aperture, max_geo):
+    seeds = {m: s for m, (au, s) in MUSCLE_SEEDS.items()}
+    muscle_au = {m: au for m, (au, s) in MUSCLE_SEEDS.items()}
+    raw = geodesic_voronoi(seeds, adj, xy, aperture, max_geo)
+    return {v: muscle_au[m] for v, m in raw.items()}
+
+
+def _blendshape_vertex_labels(adj, xy, aperture, max_geo, V, axis):
+    """Per-vertex FEATURE partition, then split each *sided* feature into
+    ``...Left`` / ``...Right`` by which side of the midline the vertex is on.
+    Center features keep the whole bilateral footprint. Midline-seam vertices
+    are left unlabeled; gap-fill + symmetrize close the seam cleanly."""
+    feat_label = geodesic_voronoi(_feature_seeds(), adj, xy, aperture, max_geo)
+    sided = {_feature_of(bs) for bs in BLENDSHAPE_SEEDS if _feature_of(bs) != bs}
     eps = 0.01 * float(V[:, 0].max() - V[:, 0].min())
     out = {}
+    for v, f in feat_label.items():
+        if f not in sided:
+            out[v] = f
+        elif V[v, 0] > axis + eps:      # subject-left half (x > midline)
+            out[v] = f + "Left"
+        elif V[v, 0] < axis - eps:      # subject-right half (x < midline)
+            out[v] = f + "Right"
+    return out
+
+
+# ---------------------------------------------------------------------------
+# canonical partition — computed once, shared by build_* and render_assets
+# ---------------------------------------------------------------------------
+_PARTITION: dict[str, dict] = {}
+
+
+def _triangle_partition(kind: str) -> dict:
+    """Cleaned per-triangle region assignment on the canonical mesh for ``kind``
+    in {"au", "blendshape"}. Returns ``{"treg": [region|None per triangle],
+    "tris": int[M,3], "n_base": 468}``. The full cleanup pipeline (majority ->
+    gap-fill -> perimeter descent -> symmetrize -> island removal)."""
+    if kind not in ("au", "blendshape"):
+        raise ValueError(f"kind must be 'au' or 'blendshape', got {kind!r}")
+    if kind not in _PARTITION:
+        V, tris = _canonical_geometry()
+        xy = project_xy(V)
+        adj = build_adjacency(tris, len(V))
+        aperture = {a for a in APERTURE if a < len(V)}
+        face = float(np.linalg.norm(xy.max(0) - xy.min(0)))
+        max_geo = face * TIGHTNESS
+        _, _, axis = _mirror_map(V)
+
+        if kind == "au":
+            vertex_label = _au_vertex_labels(adj, xy, aperture, max_geo)
+        else:
+            vertex_label = _blendshape_vertex_labels(adj, xy, aperture, max_geo, V, axis)
+
+        tri_adj = triangle_adjacency(tris)
+        holes = aperture_triangles(tris, aperture)
+        treg = _per_triangle_labels(tris, vertex_label)
+        treg = _gap_fill(treg, tri_adj, holes)
+        treg = _perimeter_descent(treg, tri_adj, holes)
+        treg = _symmetrize(treg, tris, xy, axis)
+        treg = _remove_islands(treg, tris, tri_adj, xy, axis)
+        _PARTITION[kind] = {"treg": treg, "tris": tris, "n_base": len(V)}
+    p = _PARTITION[kind]
+    return {"treg": list(p["treg"]), "tris": p["tris"], "n_base": p["n_base"]}
+
+
+def _region_triangles(treg) -> dict[str, list[int]]:
+    out: dict[str, list[int]] = defaultdict(list)
+    for ti, r in enumerate(treg):
+        if r is not None:
+            out[r].append(ti)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# map construction (used by scripts/build_region_maps.py + the loaders' fallback)
+# ---------------------------------------------------------------------------
+def build_au_region_map():
+    """``{AU: {muscles, triangles, mp478_vertices, n_triangles, n_vertices}}`` —
+    muscle partition merged to AU (left+right share an AU)."""
+    p = _triangle_partition("au")
+    treg, tris = p["treg"], p["tris"]
+    region_tris = _region_triangles(treg)
+    muscles_by_au: dict[str, set] = defaultdict(set)
+    for muscle, (au, _seeds) in MUSCLE_SEEDS.items():
+        muscles_by_au[au].add(muscle)
+    out = {}
+    for au in sorted(region_tris):
+        ti = sorted(region_tris[au])
+        verts = sorted({int(v) for t in ti for v in tris[t]})
+        out[au] = dict(muscles=sorted(muscles_by_au[au]),
+                       triangles=ti, mp478_vertices=verts,
+                       n_triangles=len(ti), n_vertices=len(verts))
+    return out
+
+
+def build_blendshape_region_map():
+    """``{blendshape: {au, muscle, side, triangles, mp478_vertices,
+    n_triangles, n_vertices}}``.
+
+    L/R pairs share one symmetric mesh FEATURE (their seeds merged) grown by the
+    geodesic-Voronoi partition; the per-triangle cleanup divides each sided pair
+    cleanly down the midline and forces exact L/R symmetry. Center shapes keep
+    the whole bilateral feature. Non-overlapping by construction."""
+    p = _triangle_partition("blendshape")
+    treg, tris = p["treg"], p["tris"]
+    region_tris = _region_triangles(treg)
+    out = {}
     for bs, (au, muscle, side, _seeds) in BLENDSHAPE_SEEDS.items():
-        fv = feat_verts[_feature_of(bs)]
-        if side == "L":          # subject-left half (x > midline)
-            verts = sorted(v for v in fv if V[v, 0] > axis + eps)
-        elif side == "R":        # subject-right half (x < midline)
-            verts = sorted(v for v in fv if V[v, 0] < axis - eps)
-        else:                    # center: whole bilateral feature
-            verts = sorted(fv)
+        ti = sorted(region_tris.get(bs, []))
+        verts = sorted({int(v) for t in ti for v in tris[t]})
         out[bs] = dict(au=au, muscle=muscle, side=side,
-                       mp478_vertices=verts, n_vertices=len(verts))
+                       triangles=ti, mp478_vertices=verts,
+                       n_triangles=len(ti), n_vertices=len(verts))
     return out
 
 
@@ -425,19 +608,21 @@ def _load(filename: str) -> dict:
 
 def load_au_region_map() -> dict:
     """Bundled non-overlapping AU region map (20 AUs, L+R merged). Each value:
-    ``{"muscles": [...], "mp478_vertices": [...], "n_vertices": int}``."""
+    ``{"muscles", "triangles", "mp478_vertices", "n_triangles", "n_vertices"}``."""
     return _load(AU_MAP_FILENAME)
 
 
 def load_blendshape_region_map() -> dict:
     """Bundled non-overlapping blendshape region map (L/R independent). Each
-    value: ``{"au", "muscle", "side", "mp478_vertices", "n_vertices"}``."""
+    value: ``{"au", "muscle", "side", "triangles", "mp478_vertices",
+    "n_triangles", "n_vertices"}``."""
     return _load(BLENDSHAPE_MAP_FILENAME)
 
 
 # ---------------------------------------------------------------------------
-# render assets — subdivided topology + dense per-vertex labels, computed once
-# on the canonical mesh and cached. Reused for any 478-mesh (canonical or live).
+# render assets — raw tessellation + per-triangle region labels, computed once
+# on the canonical mesh and cached. Reused for any 478-mesh (canonical or live):
+# the triangle indices are fixed, only the vertex positions change per frame.
 # ---------------------------------------------------------------------------
 _RENDER_ASSETS: dict[str, dict] = {}
 
@@ -445,45 +630,20 @@ _RENDER_ASSETS: dict[str, dict] = {}
 def render_assets(kind: str = "au") -> dict:
     """Cached rendering assets for ``kind`` in {"au", "blendshape"}:
 
-    ``{"parents": [(a,b)...], "tris": dense_tris[K,3],
-       "region_verts": {region: set(dense vert ids)}, "axis": float, "n_base": 468}``
+    ``{"tris": int[M,3], "region_tris": {region: [triangle indices]},
+       "n_base": 468}``
 
-    Regions are resolved on the SUBDIVIDED canonical mesh (smooth boundaries),
-    keyed by AU for ``"au"`` and by FEATURE (L/R merged) for ``"blendshape"`` —
-    the renderer splits a feature into Left/Right by the midline ``axis`` using
-    triangle centroids. ``parents``/``tris``/``region_verts`` are fixed in index
-    space, so a deformed 478-mesh just needs ``dense_positions(mesh, parents)``.
-    """
+    ``tris`` is the bundled canonical tessellation; ``region_tris`` maps each
+    final region name (an AU, or a sided/center blendshape) to the triangle
+    indices it owns after the cleanup pipeline. Fixed in index space, so a
+    deformed 478-mesh just supplies new vertex positions. See
+    ``feat.plotting.plot_face_regions``."""
     if kind not in _RENDER_ASSETS:
-        if kind not in ("au", "blendshape"):
-            raise ValueError(f"kind must be 'au' or 'blendshape', got {kind!r}")
-
-        V, tris = _canonical_geometry()
-        n_base = len(V)
-        aperture = {a for a in APERTURE if a < n_base}
-        Vd, tris_d, ap_d, parents = subdivide(V, tris, aperture, SUBDIV_LEVELS)
-        xy = project_xy(Vd)
-        adj = build_adjacency(tris_d, len(Vd))
-        face = float(np.linalg.norm(xy.max(0) - xy.min(0)))
-        max_geo = face * TIGHTNESS
-
-        if kind == "au":
-            seeds = {m: s for m, (au, s) in MUSCLE_SEEDS.items()}
-            muscle_au = {m: au for m, (au, s) in MUSCLE_SEEDS.items()}
-            raw = geodesic_voronoi(seeds, adj, xy, ap_d, max_geo)
-            label = {v: muscle_au[m] for v, m in raw.items()}
-        else:
-            label = geodesic_voronoi(_feature_seeds(), adj, xy, ap_d, max_geo)
-        label = _symmetrize_partition(label, Vd)
-        region_verts: dict[str, set] = defaultdict(set)
-        for v, names in label.items():
-            for name in names:
-                region_verts[name].add(v)
-
-        _RENDER_ASSETS[kind] = dict(parents=parents, tris=tris_d,
-                                    region_verts=dict(region_verts),
-                                    axis=float(_mirror_map(Vd)[2]), n_base=n_base)
+        p = _triangle_partition(kind)
+        _RENDER_ASSETS[kind] = {"tris": p["tris"],
+                                "region_tris": _region_triangles(p["treg"]),
+                                "n_base": p["n_base"]}
     a = _RENDER_ASSETS[kind]
-    return dict(parents=list(a["parents"]), tris=a["tris"],
-                region_verts={k: set(v) for k, v in a["region_verts"].items()},
-                axis=a["axis"], n_base=a["n_base"])
+    return {"tris": a["tris"].copy(),
+            "region_tris": {k: list(v) for k, v in a["region_tris"].items()},
+            "n_base": a["n_base"]}
