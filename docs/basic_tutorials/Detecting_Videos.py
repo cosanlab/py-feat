@@ -84,14 +84,19 @@ def _(mo):
 
 
 @app.cell
-def _(detector, test_video_path):
+def _(detector, mo, test_video_path):
     # Without batching: one frame at a time (batch_size=1, the default).
-    video_prediction = detector.detect(
-        test_video_path,
-        data_type="video",
-        skip_frames=24,
-        face_detection_threshold=0.95,
-    )
+    # `mo.persistent_cache` memoizes the (slow) video detect to disk keyed on
+    # this block's code + inputs, so a later `marimo-book render` skips the GPU
+    # pass entirely instead of re-processing the clip. Independent of the
+    # marimo-book version, so it survives tool upgrades.
+    with mo.persistent_cache(name="video_prediction"):
+        video_prediction = detector.detect(
+            test_video_path,
+            data_type="video",
+            skip_frames=24,
+            face_detection_threshold=0.95,
+        )
     video_prediction.head()
     return (video_prediction,)
 
@@ -121,16 +126,19 @@ def _(mo):
 
 
 @app.cell
-def _(detector, test_video_path):
+def _(detector, mo, test_video_path):
     # With batching: 8 frames per forward pass — much faster on a GPU.
     # On CUDA, pin_memory=True further speeds host->device transfers.
-    video_prediction_batched = detector.detect(
-        test_video_path,
-        data_type="video",
-        batch_size=8,
-        skip_frames=24,
-        face_detection_threshold=0.95,
-    )
+    # Cached the same way as the unbatched detect above, so a re-render reuses
+    # the result instead of re-processing the clip.
+    with mo.persistent_cache(name="video_prediction_batched"):
+        video_prediction_batched = detector.detect(
+            test_video_path,
+            data_type="video",
+            batch_size=8,
+            skip_frames=24,
+            face_detection_threshold=0.95,
+        )
     video_prediction_batched.shape
     return
 

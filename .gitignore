@@ -100,6 +100,9 @@ docs/_build/
 docs/_site/
 docs/_site_src/
 docs/.marimo_book_cache/
+# mo.persistent_cache scratch — a local re-render accelerator, not a shared
+# artifact (keys embed machine-specific values); _rendered/ is the cross-machine layer.
+docs/**/__marimo__/
 
 # PyBuilder
 target/
