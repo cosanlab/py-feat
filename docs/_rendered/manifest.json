@@ -32,7 +32,7 @@
       "body_path": "basic_tutorials/Plotting.md",
       "body_sig": "sha256:c6812638222d8b66c96ef47cde540314fe869cc5f61f95e72f9a72ae90c53b2c",
       "marimo_book_version": "0.1.24",
-      "rendered_at": "2026-06-17T02:40:37+00:00",
+      "rendered_at": "2026-06-18T11:14:33+00:00",
       "src_hash": "cf05fb708539a0f8aeac48d85b0719cbbc340c948725d6a31c344fe6716e8b93"
     },
     "benchmarks/Speed.py": {
