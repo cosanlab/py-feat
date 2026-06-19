@@ -46,17 +46,21 @@ jobs:
       # The marimo book builds from committed _rendered/ (mode: cached) + griffe
       # reading source for the API reference, so only marimo-book is needed — no
       # feat, torch, or model downloads. Re-run `marimo-book render` + commit
-      # _rendered/ when a cached tutorial's source changes.
+      # _rendered/ when a cached tutorial's source changes (or marimo-book bumps
+      # its _RENDER_OUTPUT_VERSION). `--strict` makes a stale cache a hard build
+      # failure instead of silently executing here, where feat is absent —
+      # which would otherwise publish tracebacks. Needs marimo-book >=0.1.26,
+      # where the render signature no longer tracks the package version.
       - name: Install marimo-book
         run: |
           uv venv --python 3.13
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-          uv pip install "marimo-book[api]>=0.1.24"
+          uv pip install "marimo-book[api]>=0.1.26"
 
       - name: Build book
         run: |
           cd docs
-          marimo-book build
+          marimo-book build --strict
           echo 'py-feat.org' > _site/CNAME
 
       - name: Deploy docs
