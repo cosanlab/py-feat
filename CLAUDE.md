@@ -5,18 +5,17 @@ the README. Read this before starting work in the repo. Update it when you
 discover something durable; don't repeat what's already in `README.md` or
 `docs/`.
 
-## Branch state (as of v0.7.0 prep)
+## Branch state (as of v2.0.x)
 
-- **`main`** intentionally points at the **v0.6.x state** (`c4f6364`). Do NOT
-  push v0.7-era changes to main; we hold main back so existing users on
-  `pip install py-feat` don't get the breaking changes until we explicitly
-  ship to PyPI.
-- **`v0.7-dev`** is the active dev branch. Open PRs against `v0.7-dev`.
-- **`v0.7.0` tag** exists at `b8ac8b6` (the merge commit produced when
-  v0.7-dev was briefly merged to main during pre-release testing, then
-  rolled back). The tag stays in place so testers can use
-  `pip install git+https://github.com/cosanlab/py-feat.git@v0.7.0`.
-  **Do NOT re-tag v0.7.0** — it would break those testers' URLs.
+- **`main`** is the live release line. The `v0.7-dev` work has been merged and
+  shipped — `feat/version.py` is now **`2.0.2`** (the project went straight from
+  the 0.7 dev series to the **2.0** release branding; there is no 0.8/0.9/1.x
+  line). Branch off `main` and **open PRs against `main`**.
+- **`v0.7-dev`** is retired — it's been merged into `main`. Don't start new work
+  there.
+- **`v0.7.0` tag** (historical) exists at `b8ac8b6` from the pre-release testing
+  window. Leave it in place so any
+  `pip install git+...@v0.7.0` URLs keep resolving; **do NOT re-tag it.**
 
 ## Load-bearing things you'd be tempted to remove
 
