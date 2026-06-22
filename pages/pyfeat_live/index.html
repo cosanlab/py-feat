@@ -103,7 +103,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="Py-Feat" class="md-header__button md-logo" aria-label="Py-Feat" data-md-component="logo">
       
-  <img src="../../images/logo/pyfeat_logo_small.png" alt="logo">
+  <img src="../../images/logo/pyfeat_logo_green.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -245,7 +245,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="Py-Feat" class="md-nav__button md-logo" aria-label="Py-Feat" data-md-component="logo">
       
-  <img src="../../images/logo/pyfeat_logo_small.png" alt="logo">
+  <img src="../../images/logo/pyfeat_logo_green.svg" alt="logo">
 
     </a>
     Py-Feat
@@ -2151,7 +2151,7 @@ complete Py-Feat feature set in one app. It has three workspaces:</p>
 on the <strong>exact frame detection ran on</strong>, so the landmarks and mesh never lag the
 video. <strong>Pause</strong> freezes detection while the camera stays on; <strong>Stop</strong> releases
 the camera.</p>
-<p><img src="/images/pyfeat-live/live-overlay.png" alt="Py-feat Live webcam view with the 478-point mesh, gaze arrow, per-face emotion bars, and a head-pose readout" width="320"></p>
+<p><img src="/images/pyfeat-live/live-mesh.png" alt="Py-feat Live running Detectorv2 on the webcam, with the 478-point face mesh and detection box locked to the current frame" width="700"></p>
 <p>Each detected face gets its own overlay panels:</p>
 <ul>
 <li><strong>Emotion bars</strong> — one bar per emotion (neutral, happiness, sadness, anger,
@@ -2161,7 +2161,7 @@ the camera.</p>
 <li><strong>Pose</strong> — a small cube plus a <strong>Pitch / Yaw / Roll</strong> readout in degrees that
   tracks the head as it turns (the <code>P · Y · R</code> numbers under the face).</li>
 </ul>
-<p><img src="/images/pyfeat-live/live-pose.png" alt="Py-feat Live tracking head pose as the subject looks up and to the side" width="320"></p>
+<p><img src="/images/pyfeat-live/live-overlay.png" alt="Py-feat Live webcam view with every overlay on — 478-point mesh, gaze arrow, per-face emotion bars, valence/arousal plot, and a Pitch / Yaw / Roll head-pose readout" width="700"></p>
 <p>A row of <strong>overlay chips</strong> toggles each layer on or off — Faceboxes, Landmarks,
 Pose, Gaze, AUs, Emotions, and Valence/Arousal. A chip is greyed out when its
 model is disabled in the current config. Status badges show <strong>LIVE / PAUSED</strong>
@@ -2209,6 +2209,7 @@ Detectorv2. Open a file's config to set:</p>
 <strong>compute device</strong> (CPU / MPS / CUDA) and <strong>batch size</strong> (1–64) in the footer,
 then <strong>Run queue</strong>; <strong>Pause</strong> holds the queue and <strong>Stop</strong> cancels the current
 job. Each row shows queued / running / done / failed status and a progress bar.</p>
+<p><img src="/images/pyfeat-live/analyze-queue.png" alt="Py-feat Live Analyze workspace — a video queued with the Detectorv2 standard preset, with compute device and batch size set in the footer, ready to run" width="700"></p>
 <p>Every finished job writes a session folder containing a full native-schema
 <code>fex.csv</code>, the source <code>video.mp4</code>, and a <code>metadata.json</code>. Click <strong>Open in
 Viewer</strong> on a completed row to inspect it.</p>
@@ -2217,6 +2218,7 @@ Viewer</strong> on a completed row to inspect it.</p>
 left pane lists sessions (with search) and annotations; the same overlays as Live
 render over the video, and an eye icon switches to an <strong>overlays-only</strong> view that
 hides the video underneath.</p>
+<p><img src="/images/pyfeat-live/viewer.png" alt="Py-feat Live Viewer — a recorded session with the face-mesh overlay, the session list and identity panel, and a timeseries plot of a detected variable below the scrub bar" width="700"></p>
 <p><strong>Scrub bar.</strong> Click or drag the track to seek; the readout shows <code>mm:ss · frame</code>.
 An annotation lane above the track shows <strong>exclude</strong> ranges (red), <strong>event</strong>
 markers (blue), and <strong>custom</strong> markers (purple). <strong>Shift-drag</strong> the track to
