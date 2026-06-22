@@ -35,7 +35,7 @@ on the **exact frame detection ran on**, so the landmarks and mesh never lag the
 video. **Pause** freezes detection while the camera stays on; **Stop** releases
 the camera.
 
-<img src="/images/pyfeat-live/live-overlay.png" alt="Py-feat Live webcam view with the 478-point mesh, gaze arrow, per-face emotion bars, and a head-pose readout" width="320">
+<img src="/images/pyfeat-live/live-mesh.png" alt="Py-feat Live running Detectorv2 on the webcam, with the 478-point face mesh and detection box locked to the current frame" width="700">
 
 Each detected face gets its own overlay panels:
 
@@ -46,7 +46,7 @@ Each detected face gets its own overlay panels:
 - **Pose** — a small cube plus a **Pitch / Yaw / Roll** readout in degrees that
   tracks the head as it turns (the `P · Y · R` numbers under the face).
 
-<img src="/images/pyfeat-live/live-pose.png" alt="Py-feat Live tracking head pose as the subject looks up and to the side" width="320">
+<img src="/images/pyfeat-live/live-overlay.png" alt="Py-feat Live webcam view with every overlay on — 478-point mesh, gaze arrow, per-face emotion bars, valence/arousal plot, and a Pitch / Yaw / Roll head-pose readout" width="700">
 
 A row of **overlay chips** toggles each layer on or off — Faceboxes, Landmarks,
 Pose, Gaze, AUs, Emotions, and Valence/Arousal. A chip is greyed out when its
@@ -101,6 +101,8 @@ You can **Apply** changes to one file or to every queued file at once. Set the
 then **Run queue**; **Pause** holds the queue and **Stop** cancels the current
 job. Each row shows queued / running / done / failed status and a progress bar.
 
+<img src="/images/pyfeat-live/analyze-queue.png" alt="Py-feat Live Analyze workspace — a video queued with the Detectorv2 standard preset, with compute device and batch size set in the footer, ready to run" width="700">
+
 Every finished job writes a session folder containing a full native-schema
 `fex.csv`, the source `video.mp4`, and a `metadata.json`. Click **Open in
 Viewer** on a completed row to inspect it.
@@ -111,6 +113,8 @@ Open a recorded session (from Live or Analyze) and scrub it frame by frame. The
 left pane lists sessions (with search) and annotations; the same overlays as Live
 render over the video, and an eye icon switches to an **overlays-only** view that
 hides the video underneath.
+
+<img src="/images/pyfeat-live/viewer.png" alt="Py-feat Live Viewer — a recorded session with the face-mesh overlay, the session list and identity panel, and a timeseries plot of a detected variable below the scrub bar" width="700">
 
 **Scrub bar.** Click or drag the track to seek; the readout shows `mm:ss · frame`.
 An annotation lane above the track shows **exclude** ranges (red), **event**

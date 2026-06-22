@@ -16,7 +16,7 @@ repo: https://github.com/cosanlab/py-feat
 # molab / "edit this page" / download links resolve against this branch.
 branch: main
 url: https://py-feat.org/
-logo: images/logo/pyfeat_logo_small.png
+logo: images/logo/pyfeat_logo_green.svg
 favicon: images/logo/favicon.ico
 # Large logo above the left nav, matching the previous jupyter-book site.
 logo_placement: sidebar
