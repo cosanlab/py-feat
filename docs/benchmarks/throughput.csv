@@ -15,14 +15,14 @@ feat_version,date,host,gpu,config,device,batch,section_kind,section_label,fps
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,video,long,141.8
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,video,long,37.6
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,video,long,355.5
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,7.3
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,16.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,16.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,32.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,19.8
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,11.8
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,31.1
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA RTX PRO 6000 Blackwell Workstation Edition",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,90.9
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,video,short,14.2
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,video,short,30.0
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,video,short,21.0
@@ -39,14 +39,14 @@ feat_version,date,host,gpu,config,device,batch,section_kind,section_label,fps
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,video,long,88.1
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,video,long,37.9
 0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,video,long,202.5
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,80.0
-0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,80.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,8.4
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",img2pose,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,12.5
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,13.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,19.6
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,15.8
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",MPDetector retinaface,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,10.7
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,1,images,Images: 16 x multi_face.jpg = 80 faces,27.0
+0.7.0,2026-06-05,liquidswords2,"CUDA 12.8, NVIDIA GeForce RTX 3090",Detectorv2 multitask,cuda,16,images,Images: 16 x multi_face.jpg = 80 faces,52.1
 0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,1,video,short,1.6
 0.7.0,2026-06-05,liquidswords2,CPU,img2pose,cpu,16,video,short,1.8
 0.7.0,2026-06-05,liquidswords2,CPU,retinaface,cpu,1,video,short,4.3
@@ -63,3 +63,54 @@ feat_version,date,host,gpu,config,device,batch,section_kind,section_label,fps
 0.7.0,2026-06-05,liquidswords2,CPU,MPDetector retinaface,cpu,16,video,long,14.0
 0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,1,video,long,8.9
 0.7.0,2026-06-05,liquidswords2,CPU,Detectorv2 multitask,cpu,16,video,long,17.6
+2.0.2,2026-06-22,m5max,CPU,img2pose,cpu,1,video,short,2.6
+2.0.2,2026-06-22,m5max,CPU,img2pose,cpu,4,video,short,2.7
+2.0.2,2026-06-22,m5max,CPU,img2pose,cpu,16,video,short,0.7
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,1,video,short,9.1
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,4,video,short,12.8
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,16,video,short,13.5
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,1,video,short,5.2
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,4,video,short,5.4
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,16,video,short,1.0
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,1,video,short,19.3
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,4,video,short,47.6
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,16,video,short,71.9
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,1,video,short,2.3
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,4,video,short,2.4
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,16,video,short,2.0
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,1,video,short,32.5
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,4,video,short,93.5
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,16,video,short,134.3
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,1,video,long,7.8
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,4,video,long,10.6
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,16,video,long,11.2
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,1,video,long,5.3
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,4,video,long,5.5
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,16,video,long,0.9
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,1,video,long,19.1
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,4,video,long,44.5
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,16,video,long,73.2
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,1,video,long,2.3
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,4,video,long,2.4
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,16,video,long,2.0
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,1,video,long,30.1
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,4,video,long,86.7
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,16,video,long,128.5
+2.0.2,2026-06-22,m5max,CPU,img2pose,cpu,1,images,Images: 16 x multi_face.jpg = 80 faces,1.2
+2.0.2,2026-06-22,m5max,CPU,img2pose,cpu,4,images,Images: 16 x multi_face.jpg = 80 faces,0.2
+2.0.2,2026-06-22,m5max,CPU,img2pose,cpu,16,images,Images: 16 x multi_face.jpg = 80 faces,0.2
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,1,images,Images: 16 x multi_face.jpg = 80 faces,5.8
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,4,images,Images: 16 x multi_face.jpg = 80 faces,7.3
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),img2pose,mps,16,images,Images: 16 x multi_face.jpg = 80 faces,6.9
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,1,images,Images: 16 x multi_face.jpg = 80 faces,1.3
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,4,images,Images: 16 x multi_face.jpg = 80 faces,0.2
+2.0.2,2026-06-22,m5max,CPU,retinaface,cpu,16,images,Images: 16 x multi_face.jpg = 80 faces,0.2
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,1,images,Images: 16 x multi_face.jpg = 80 faces,11.9
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,4,images,Images: 16 x multi_face.jpg = 80 faces,18.7
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),retinaface,mps,16,images,Images: 16 x multi_face.jpg = 80 faces,16.6
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,1,images,Images: 16 x multi_face.jpg = 80 faces,0.5
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,4,images,Images: 16 x multi_face.jpg = 80 faces,0.9
+2.0.2,2026-06-22,m5max,CPU,Detectorv2 multitask,cpu,16,images,Images: 16 x multi_face.jpg = 80 faces,0.7
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,1,images,Images: 16 x multi_face.jpg = 80 faces,21.4
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,4,images,Images: 16 x multi_face.jpg = 80 faces,31.3
+2.0.2,2026-06-22,m5max,Apple M5 Max (MPS),Detectorv2 multitask,mps,16,images,Images: 16 x multi_face.jpg = 80 faces,31.1

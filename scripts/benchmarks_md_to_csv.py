@@ -68,13 +68,16 @@ def parse_file(path):
             config = KNOWN_CONFIGS.get(line[4:].strip())
         elif line.startswith("|") and kind and config:
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            # expect: device | batch | sec | ms/frame | fps
+            # video: device | batch | sec | ms/frame | fps
+            # images: device | batch | sec | ms/img | rows  (no fps column;
+            #         the last cell is a face count, so derive images/sec
+            #         from the ms/img column instead).
             if len(cells) < 5 or cells[0] not in DEVICES:
                 continue
             try:
                 batch = int(cells[1])
-                fps = float(cells[-1])
-            except ValueError:
+                fps = float(cells[-1]) if kind == "video" else round(1000.0 / float(cells[3]), 1)
+            except (ValueError, ZeroDivisionError):
                 continue
             device = cells[0]
             # The GPU metadata names the *visible* device; CPU rows aren't on it.
