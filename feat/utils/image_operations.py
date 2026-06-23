@@ -1314,9 +1314,12 @@ def extract_face_square_pad_torch(
 
     # reflection padding: off-frame square regions sample mirrored interior pixels
     # (vs the legacy default 'zeros'), so the GAP-pooled chip isn't diluted by
-    # black borders at frame edges.
+    # black borders at frame edges. MPS has no grid_sample reflection kernel, so
+    # use 'border' there — identical for in-frame crops, edge-replicate vs mirror
+    # only where the bbox runs off-frame.
+    pad_mode = "border" if frame_expanded.device.type == "mps" else "reflection"
     cropped_faces = F.grid_sample(
-        frame_expanded, grid, padding_mode="reflection", align_corners=False
+        frame_expanded, grid, padding_mode=pad_mode, align_corners=False
     )
     return cropped_faces, crop_affine
 
