@@ -2,146 +2,146 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://py-feat.org/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/data/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/detector/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/detector_v2/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/plotting/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/pretrained/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/transforms/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/blendshape_to_au/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/face_gaze/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/face_mask/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/face_pose/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/face_pose_mlp/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/geometry/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/image_operations/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/io/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/mp_plotting/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/muscle_to_landmark/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/region_maps/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/api/feat/utils/stats/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/basic_tutorials/Analysis/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/basic_tutorials/Detecting_Images/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/basic_tutorials/Detecting_Videos/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/basic_tutorials/Performance/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/basic_tutorials/Plotting/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/benchmarks/Speed/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/benchmarks/accuracy/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/au_reference/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/changelog/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/contribute/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/faqs/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/installation/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/modelContribution/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/models/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/pyfeat_live/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
     <url>
          <loc>https://py-feat.org/pages/pyfeatlive_changelog/</loc>
-         <lastmod>2026-06-23</lastmod>
+         <lastmod>2026-06-24</lastmod>
     </url>
 </urlset>
