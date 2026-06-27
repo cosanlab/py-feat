@@ -1876,6 +1876,13 @@ def load_face_mesh_viz_model(verbose=False, model_version="v5"):
                                             model_version=model_version)
 
 
+def _flat_to_mesh(flat, is_single):
+    """Reshape (n, 1434) axis-major [x|y|z] flat coords to (n, 478, 3), or
+    (478, 3) when ``is_single``."""
+    mesh = np.stack([flat[:, :478], flat[:, 478:956], flat[:, 956:]], axis=-1)
+    return mesh[0] if is_single else mesh
+
+
 def predict_face_mesh(au, model=None):
     """Predict the 3D MediaPipe FaceMesh from AU intensities.
 
@@ -1905,11 +1912,7 @@ def predict_face_mesh(au, model=None):
             f"au vector must be length {model.n_components}; got {au_arr.shape[1]}."
         )
     flat = model.predict(au_arr)  # (n, 1434), axis-major [x | y | z]
-    xs = flat[:, :478]
-    ys = flat[:, 478:956]
-    zs = flat[:, 956:]
-    mesh = np.stack([xs, ys, zs], axis=-1)  # (n, 478, 3)
-    return mesh[0] if is_single else mesh
+    return _flat_to_mesh(flat, is_single)
 
 
 # ---------------------------------------------------------------------
@@ -1952,14 +1955,15 @@ class PLSFeatMeshModel:
         x_in = np.asarray(feats, dtype=np.float32)
         if x_in.ndim == 1:
             x_in = x_in.reshape(1, -1)
-        if x_in.shape[1] != self.n_components:
+        if x_in.ndim != 2 or x_in.shape[1] != self.n_components:
             raise ValueError(
-                f"{self.feature_name} vector must have {self.n_components} columns "
-                f"(matching {self.feature_columns}); got {x_in.shape[1]}."
+                f"{self.feature_name} input must be a length-{self.n_components} "
+                f"vector or (n, {self.n_components}) batch (matching "
+                f"{self.feature_columns}); got shape {x_in.shape}."
             )
-        x = np.zeros((x_in.shape[0], self._coef.shape[0]), dtype=np.float32)
-        x[:, : x_in.shape[1]] = x_in  # pose channels stay zero
-        return x @ self._coef + self._intercept
+        # pose channels are implicit-zero, so only the leading feature rows of
+        # the deployed coef contribute — slice instead of zero-padding.
+        return x_in @ self._coef[: self.n_components] + self._intercept
 
     def __repr__(self):
         return (
@@ -2043,12 +2047,11 @@ def predict_face_mesh_from_features(feats, model):
             "or load_blendshape_face_mesh_model())"
         )
     arr = np.asarray(feats)
-    is_single = arr.ndim == 1
+    is_single = arr.ndim <= 1
     if is_single:
         arr = arr.reshape(1, -1)
     flat = model.predict(arr)
-    mesh = np.stack([flat[:, :478], flat[:, 478:956], flat[:, 956:]], axis=-1)
-    return mesh[0] if is_single else mesh
+    return _flat_to_mesh(flat, is_single)
 
 
 def plot_face_mesh(
@@ -2130,6 +2133,9 @@ def plot_face_mesh(
         )
         if model is None:
             model = _load_pls_feat_to_mesh_from_hub(feature)
+        feats = np.asarray(feats)
+        if feats.ndim == 2 and feats.shape[0] == 1:
+            feats = feats[0]                       # accept a single-face (1, n) row
         verts = predict_face_mesh_from_features(feats, model=model)
         if verts.ndim != 2:
             raise ValueError(
