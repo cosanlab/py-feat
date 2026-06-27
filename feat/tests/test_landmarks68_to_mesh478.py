@@ -172,7 +172,7 @@ class TestPlotFaceMeshWithMesh:
 
     def test_rejects_both_au_and_mesh(self, stub_bridge_model):
         mesh = stub_bridge_model.mean_predicted_mesh
-        with pytest.raises(ValueError, match=r"either `au` or `mesh`"):
+        with pytest.raises(ValueError, match=r"at most one of"):
             plot_face_mesh(au=np.zeros(20), mesh=mesh)
 
     def test_rejects_wrong_mesh_shape(self):
