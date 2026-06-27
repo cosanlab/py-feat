@@ -68,8 +68,13 @@ class TestPLSFeatMeshModel:
         assert stub_emotion_model.predict(np.zeros(7)).shape == (1, 1434)
 
     def test_wrong_width_raises(self, stub_emotion_model):
-        with pytest.raises(ValueError, match="7 columns"):
+        with pytest.raises(ValueError, match="length-7 vector or"):
             stub_emotion_model.predict(np.zeros((2, 5)))
+
+    def test_scalar_input_raises_clear_error(self, stub_emotion_model):
+        # 0-d / scalar must give a clear ValueError, not a cryptic IndexError
+        with pytest.raises(ValueError, match="length-7 vector"):
+            stub_emotion_model.predict(np.float32(0.5))
 
     def test_pose_is_implicit_zero(self, stub_emotion_model):
         # deployed coef has nfeat + 3 rows; predict pads the pose channels to 0
@@ -85,6 +90,11 @@ class TestPredictFromFeatures:
     def test_batch_returns_n478x3(self, stub_blendshape_model):
         mesh = predict_face_mesh_from_features(np.zeros((5, 52)), model=stub_blendshape_model)
         assert mesh.shape == (5, 478, 3)
+
+    def test_single_face_2d_row_kept_as_batch(self, stub_emotion_model):
+        # (1, 7) is a batch of one -> (1, 478, 3) from the predict helper
+        mesh = predict_face_mesh_from_features(np.zeros((1, 7)), model=stub_emotion_model)
+        assert mesh.shape == (1, 478, 3)
 
     def test_axis_major_reshape(self, stub_emotion_model):
         flat = stub_emotion_model.predict(np.zeros(7))[0]
@@ -107,6 +117,11 @@ class TestPlotFaceMeshFeatures:
     def test_plot_blendshapes(self, stub_blendshape_model):
         bs = np.zeros(52); bs[MP_BLENDSHAPE_NAMES.index("jawOpen")] = 1.0
         ax = plot_face_mesh(blendshapes=bs)
+        assert ax is not None
+
+    def test_plot_accepts_single_face_2d_row(self, stub_emotion_model):
+        # plot_face_mesh should accept a (1, 7) single-face row, not reject it
+        ax = plot_face_mesh(emotion=np.zeros((1, 7)))
         assert ax is not None
 
     def test_mutually_exclusive_inputs(self, stub_emotion_model):
