@@ -110,12 +110,14 @@ class TestPredictFromFeatures:
 
 class TestPlotFaceMeshFeatures:
     def test_plot_emotion(self, stub_emotion_model):
-        emo = np.zeros(7); emo[FEAT_EMOTION_COLUMNS.index("happiness")] = 1.0
+        emo = np.zeros(7)
+        emo[FEAT_EMOTION_COLUMNS.index("happiness")] = 1.0
         ax = plot_face_mesh(emotion=emo)
         assert ax is not None
 
     def test_plot_blendshapes(self, stub_blendshape_model):
-        bs = np.zeros(52); bs[MP_BLENDSHAPE_NAMES.index("jawOpen")] = 1.0
+        bs = np.zeros(52)
+        bs[MP_BLENDSHAPE_NAMES.index("jawOpen")] = 1.0
         ax = plot_face_mesh(blendshapes=bs)
         assert ax is not None
 
@@ -143,8 +145,10 @@ def test_real_emotion_model_from_hub():
     mesh = predict_face_mesh_from_features(np.zeros(7), model=m)
     assert mesh.shape == (478, 3)
     # happiness should move the mesh away from neutral
-    neu = np.zeros(7); neu[FEAT_EMOTION_COLUMNS.index("neutral")] = 1.0
-    hap = np.zeros(7); hap[FEAT_EMOTION_COLUMNS.index("happiness")] = 1.0
+    neu = np.zeros(7)
+    neu[FEAT_EMOTION_COLUMNS.index("neutral")] = 1.0
+    hap = np.zeros(7)
+    hap[FEAT_EMOTION_COLUMNS.index("happiness")] = 1.0
     d = predict_face_mesh_from_features(hap, model=m) - predict_face_mesh_from_features(neu, model=m)
     assert np.abs(d).max() > 1.0  # pixel-frame units
 
