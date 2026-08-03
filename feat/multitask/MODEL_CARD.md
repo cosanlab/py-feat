@@ -21,13 +21,16 @@ A single multi-task convolutional model for facial behavior analysis, used by
 [py-feat](https://github.com/cosanlab/py-feat)'s `Detectorv2`. From one face crop
 it jointly predicts **action units, categorical emotion, valence/arousal,
 eye gaze, a 478-point face mesh, 6-DoF head pose, and 52 MediaPipe/ARKit
-blendshapes** (the v2.5 model; replaces v2.4).
+blendshapes** (the v2.6 model; replaces v2.5).
 
 - **Backbone:** ConvNeXt-V2 Tiny (FCMAE + IN-22k/IN-1k pretrained)
-- **Heads:** ME-GraphAU AU graph (AFG/FGG/SC) + unified-feature emotion/V-A and
-  gaze heads + landmark, pose, and **blendshape** regression heads
-- **Params:** ~30M · **Input:** 224×224 RGB (from a 256×256 face crop)
-- **File:** `face_multitask_v2.safetensors` (safetensors; `ModelV2Config` JSON in the file metadata)
+- **Heads:** ME-GraphAU AU graph (AFG/FGG/SC) + unified-feature emotion/V-A heads
+  + landmark, pose, and **blendshape** regression heads + the v2.6 **eye-aware
+  gaze head**: RoI-pooled eye features (localized by the predicted mesh),
+  conditioned on predicted head pose (6D), with an L2CS-style binned prediction
+  over the full ±180° range
+- **Params:** ~41M · **Input:** 224×224 RGB (from a 256×256 face crop)
+- **File:** `face_multitask_v26.safetensors` (safetensors; `ModelV2Config` JSON in the file metadata)
 
 ## Outputs
 
@@ -42,25 +45,32 @@ blendshapes** (the v2.5 model; replaces v2.4).
 | 68 landmarks | derived | dlib-68 subset sampled from the 478 mesh |
 | Blendshapes | 52 coefficients [0,1] | MediaPipe/ARKit standard names (browInnerUp, jawOpen, mouthSmileLeft, …) |
 
-## Benchmarks (held-out, file-verified — v2.5 deployed checkpoint)
+## Benchmarks (held-out, file-verified — v2.6 deployed checkpoint)
 
-| Task | Dataset | Metric | Score |
-|---|---|---|---|
-| AU | DISFA+ (12-AU, Cheong protocol) | macro-F1 | **0.693** |
-| AU | DISFA+ (8-AU subset) | macro-F1 | **0.740** |
-| Emotion | RAF-DB official test (7-cls) | acc / macro-F1 | **0.910 / 0.885** |
-| Emotion | AffectNet val (7-cls, drop Contempt) | acc / macro-F1 | **0.616 / 0.612** |
-| Valence/Arousal | Aff-Wild2 official validation | CCC (V / A) | **0.852 / 0.799** |
-| Gaze | MPIIGaze (leave-subject-out) | mean angular err | 7.05° |
-| Gaze | Gaze360 (held-out split) | mean angular err | 12.89° |
+All gaze splits are identity-disjoint from training (held-out subjects), and
+EYEDIAP is never trained on by any py-feat model.
 
-Notes: **v2.5 = v2.4 architecture + a blendshape head**, and it beats v2.4 on every
-accuracy benchmark — most dramatically AffectNet emotion (acc 0.35→0.62) and
-Aff-Wild2 V/A (0.82/0.78 → 0.85/0.80). **Gaze numbers are now leave-subject-out
-held-out** (honest generalization); the lower v2.4 figures (3.92°/6.81°) came from a
-leaky evaluation that included training subjects, so they are not comparable — the
-v2.5 numbers are the real ones. Numbers are from the deployed checkpoint
-(`v25c_release_ep14`), weight-verified against the published `.safetensors`.
+| Task | Dataset | Metric | v2.6 | v2.5 |
+|---|---|---|---|---|
+| AU | DISFA+ (12-AU, Cheong protocol) | macro-F1 | **0.696** | 0.693 |
+| AU | DISFA+ (8-AU subset) | macro-F1 | 0.738 | **0.740** |
+| Emotion | AffectNet val (7-cls, drop Contempt) | acc / macro-F1 | 0.615 / 0.610 | **0.616 / 0.612** |
+| Valence/Arousal | AffectNet val | CCC (V / A) | 0.775 / **0.653** | **0.780** / 0.646 |
+| Gaze | ETH-XGaze (held-out subjects) | mean angular err | **5.0°** | 43.2° |
+| Gaze | EYEDIAP (never-train, 15.2K frames) | mean angular err | **13.4°** | 15.3° |
+| Gaze | Gaze360 (held-out split) | mean angular err | 13.0° | **12.9°** |
+| Gaze | MPIIGaze (leave-subject-out) | mean angular err | 7.4° | **7.0°** |
+| Gaze | Columbia (held-out subjects) | mean angular err | **5.4°** | — (trained) |
+
+Notes: **v2.6 = v2.5 + an eye-aware gaze head** (eye RoI features, head-pose
+conditioning, binned ±180° prediction) trained with ETH-XGaze added to the gaze
+pool. It transforms extreme-head-pose gaze (ETH-XGaze 43°→5°) and
+out-of-distribution gaze (EYEDIAP −2°), decouples eye gaze from head pose
+(v2.5's gaze tracked the head; v2.6 tracks the eyes), and holds AU / emotion /
+valence-arousal at v2.5 levels within noise. The small MPII / Gaze360 deltas
+(+0.1–0.4°) are the cost of the pose-robust training mix. Numbers are from the
+deployed checkpoint (v2.6 stage-3 `v24_best`, ep07), weight-verified against
+the published `.safetensors`.
 
 ## Usage
 

@@ -45,11 +45,15 @@ class UnifiedFeatures(nn.Module):
       unified: [B, bb_ch + lmk_dim]
     """
 
-    def __init__(self, bb_ch: int = 768, lmk_dim: int = 256, image_size: int = 224):
+    def __init__(self, bb_ch: int = 768, lmk_dim: int = 256, image_size: int = 224,
+                 mesh_normalized: bool = False):
         super().__init__()
         self.bb_ch = bb_ch
         self.lmk_dim = lmk_dim
         self.out_dim = bb_ch + lmk_dim
+        # v2.5: when mesh is already normalized [0,1] we skip the /image_size divide
+        # (dividing a [0,1] coord by 224 would shrink it ~224x and starve proj_lmk).
+        self.mesh_normalized = mesh_normalized
         self.image_size = float(image_size)
         # 478 landmarks × 2 (x,y) = 956 input dims
         self.proj_lmk = nn.Linear(N_MESH * 2, lmk_dim)
@@ -64,7 +68,9 @@ class UnifiedFeatures(nn.Module):
         bb_gap = X_bb.mean(dim=(-2, -1))
         # Mesh x,y — [B, 478, 3] -> [B, 956]. Normalize pixel coords to ~[0,1].
         B = mesh.shape[0]
-        mesh_xy = mesh[:, :, :2].reshape(B, N_MESH * 2) / self.image_size
+        mesh_xy = mesh[:, :, :2].reshape(B, N_MESH * 2)
+        if not self.mesh_normalized:
+            mesh_xy = mesh_xy / self.image_size
         lmk_feat = self.proj_lmk(mesh_xy)
         # LayerNorm each component so neither dominates the unified vector
         return torch.cat([self.norm_bb(bb_gap), self.norm_lmk(lmk_feat)], dim=-1)
