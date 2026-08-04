@@ -40,9 +40,9 @@ blendshapes** (the v2.7 model; replaces v2.6).
 | Action Units | 20 probabilities [0,1] | AU01,02,04,05,06,07,09,10,11,12,14,15,17,20,23,24,25,26,28,43 |
 | Emotion | 7-class softmax | Neutral, Happy, Sad, Surprise, Fear, Disgust, Anger |
 | Valence / Arousal | 2 × [−1,1] | tanh |
-| Gaze | (yaw, pitch) radians | head-centric; yaw+ = right, pitch+ = up |
+| Gaze | (yaw, pitch) radians | RAW convention is y-down: yaw+ = subject's right (image-left), pitch+ = looking DOWN. `Detectorv2` negates pitch so Fex columns are canonical +up (since py-feat 2.1.1) |
 | Face mesh | 478 × (x,y,z) | MediaPipe topology, chip-pixel coords (z = relative depth) |
-| Head pose | (yaw, pitch, roll, tx, ty, tz) | radians / pixels |
+| Head pose | (pitch, yaw, roll, tx, ty, tz) | radians / pixels; RAW pitch+ = down (img2pose teacher frame); `Detectorv2` outputs canonical +up (since py-feat 2.1.1) |
 | 68 landmarks | derived | dlib-68 subset sampled from the 478 mesh |
 | Blendshapes | 52 coefficients [0,1] | MediaPipe/ARKit standard names (browInnerUp, jawOpen, mouthSmileLeft, …) |
 
