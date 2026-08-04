@@ -8,9 +8,6 @@ Key differences from v1 (model.py):
   - MEFL identity-init (FAM/ARM output projection zero) to eliminate v1's
     stage-3 transition shock
 
-v2.5 adds a BlendshapeHead (52 MediaPipe/ARKit coefficients from backbone-GAP ∥
-predicted-mesh), gated by cfg.n_blendshape (0 = off for pre-v2.5 checkpoints).
-
 All other modules (AFG, FGG, MEFL graph topology, LandmarkHead, PoseHead,
 SCHead, CooccurrenceHead) carry over from v1.
 """
@@ -52,6 +49,13 @@ class ModelV2Config:
     n_au: int = N_AU
     n_mesh: int = N_MESH
     n_emotion: int = N_EMOTION
+    # v2.5: facial-muscle head + normalized-coord mesh convention
+    n_blendshape: int = 0          # 0 = head OFF (v2.4 ckpts); v2.5 = 52 (MediaPipe)
+    mesh_normalized: bool = False  # v2.5: mesh targets/preds are [0,1] (not px) ->
+                                   #   UnifiedFeatures skips the /image_size divide
+    bs_use_mesh: bool = True       # v2.5: feed (GAP ∥ proj mesh_xy) into BlendshapeHead.
+                                   #   MP derives blendshapes FROM the mesh, so geometry
+                                   #   is near-sufficient; GAP kept so bs loss still trains bb.
     knn_k: int = 4
     afg_channels: int = 512
     mefl_channels: int = 512
@@ -79,10 +83,28 @@ class ModelV2Config:
     emotion_au_prob_detach: bool = True  # detach p_au before the emotion head so emotion
                                 #   gradients do NOT flow back into the AU head — protects
                                 #   the "maintain AU" goal. Set False to co-train.
-    # v2.5 flags — BlendshapeHead (52 MediaPipe/ARKit blendshape coefficients).
-    n_blendshape: int = 0       # 0 = head OFF (v2.4 ckpts); 52 = v2.5 blendshape head
-    bs_use_mesh: bool = True     # blendshape head reads (backbone GAP ∥ proj(mesh_xy))
-    mesh_normalized: bool = True  # predicted mesh xy already in [0,1] image coords
+
+    # ---- v2.6 gaze flags (notes/gaze_v26_plan.md) ----
+    # ALL default off: with every flag false the model is numerically identical to
+    # v2.5c, which is what makes the gaze work non-destructive to the AU / emotion
+    # / V-A / mesh / pose results. test_gaze_head_v26.py asserts it.
+    gaze_eye_roi: bool = False       # tap the stride-16 stage and roi_align a window
+                                #   around each eye. v2.5c's gaze head only ever saw
+                                #   GAP(stride-32), which averages the eyes away
+                                #   entirely (each eye < 1 cell of a 7x7 map).
+    gaze_eye_dim: int = 256      # per-eye feature width
+    gaze_eye_roi_size: int = 4   # roi_align output grid
+    gaze_eye_box_frac: float = 0.18   # eye box side as a fraction of the chip
+    gaze_pose_6d: bool = False   # feed the predicted head rotation as a 6D repr
+    gaze_pose_detach: bool = True      # keep gaze gradients out of the pose head
+    gaze_head_frame: bool = False      # predict eye-in-head, compose with R_head
+    gaze_hidden: int = 0         # >0 makes each per-eye branch an MLP
+    gaze_bins: int = 0           # >0 = L2CS-style per-axis binned prediction; the
+                                #   [B,2] output becomes the softmax expectation,
+                                #   so inference and py-feat are unaffected.
+                                #   Mutually exclusive with gaze_head_frame.
+    gaze_bin_lo_deg: float = -180.0    # bin range; must cover Gaze360's +-140 deg
+    gaze_bin_hi_deg: float = 180.0
 
 
 # ============================ ANFL (unchanged from v1) ============================
@@ -316,13 +338,18 @@ class PoseHead(nn.Module):
 
 
 class BlendshapeHead(nn.Module):
-    """52 MediaPipe/ARKit blendshape coefficients in [0, 1] (sigmoid).
+    """52 MediaPipe blendshape coefficients in [0,1] (sigmoid).
+
+    A facial-muscle target that, like the mesh/pose heads, trains the backbone in
+    stage 1 — blendshapes are a dense continuous expression code, so distilling
+    them tunes the backbone toward AU/emotion-relevant muscle activations.
 
     v2.5: input = (backbone GAP) ∥ (projected mesh x,y), mirroring UnifiedFeatures.
-    MediaPipe computes its ARKit blendshapes FROM the 478-vertex mesh, so handing the
-    head the predicted geometry directly (LayerNorm'd, alongside GAP appearance) gives
-    near-direct access to the target. The GAP path is retained so the blendshape loss
-    still trains the backbone. Set use_mesh=False for the GAP-only head.
+    MediaPipe computes its ARKit blendshapes FROM the 478-vertex mesh, so handing
+    the head the predicted geometry directly (LayerNorm'd, alongside GAP appearance)
+    gives near-direct access to the target. The GAP path is retained so the
+    blendshape loss still trains the backbone — the head's whole purpose in stage 1.
+    Set use_mesh=False to recover the pre-v2.5 GAP-only head.
     """
 
     def __init__(self, in_ch: int, n_blendshape: int = 52, hidden: int = 512,
@@ -334,6 +361,8 @@ class BlendshapeHead(nn.Module):
         self.image_size = float(image_size)
         if use_mesh:
             self.proj_lmk = nn.Linear(N_MESH * 2, lmk_dim)
+            # LayerNorm each component so neither dominates (same rationale as
+            # UnifiedFeatures: raw GAP std can be ~8, raw mesh_xy ~O(1)).
             self.norm_bb = nn.LayerNorm(in_ch)
             self.norm_lmk = nn.LayerNorm(lmk_dim)
             mlp_in = in_ch + lmk_dim
@@ -344,7 +373,7 @@ class BlendshapeHead(nn.Module):
             nn.Linear(hidden, n_blendshape),
         )
 
-    def forward(self, x: torch.Tensor, mesh: torch.Tensor = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, mesh: torch.Tensor | None = None) -> torch.Tensor:
         gap = x.mean(dim=(-2, -1))                       # [B, in_ch]
         if self.use_mesh:
             if mesh is None:
@@ -608,11 +637,17 @@ class MEGraphAUv2(nn.Module):
         super().__init__()
         self.cfg = cfg
 
+        # v2.6: when the gaze head wants eye-ROI features we ALSO keep the
+        # stride-16 stage. It is already computed either way — v2.5c simply threw
+        # it away. Everything else still reads feats[-1], so nothing downstream
+        # changes.
+        self.gaze_eye_roi = bool(getattr(cfg, "gaze_eye_roi", False))
+        out_indices = [-2, -1] if self.gaze_eye_roi else [-1]
         self.backbone = timm.create_model(
             cfg.backbone,
             pretrained=cfg.pretrained,
             features_only=True,
-            out_indices=[-1],
+            out_indices=out_indices,
             drop_path_rate=cfg.drop_path_rate,
         )
         in_ch = self.backbone.feature_info.channels()[-1]
@@ -636,29 +671,51 @@ class MEGraphAUv2(nn.Module):
             self.cooccur = CooccurrenceHead(cfg.mefl_channels)
         self.lmk = LandmarkHead(cfg.afg_channels)
         self.pose = PoseHead(cfg.afg_channels)
-        # v2.5: blendshape head (None for v2.4 ckpts where n_blendshape == 0)
-        self.blendshape = (
-            BlendshapeHead(cfg.afg_channels, cfg.n_blendshape,
-                           use_mesh=getattr(cfg, "bs_use_mesh", True),
-                           image_size=cfg.image_size,
-                           mesh_normalized=getattr(cfg, "mesh_normalized", True))
-            if getattr(cfg, "n_blendshape", 0) > 0 else None
-        )
+        # v2.5: blendshape head (off when n_blendshape == 0, e.g. v2.4 ckpts).
+        self.blendshape = (BlendshapeHead(cfg.afg_channels, cfg.n_blendshape,
+                                          use_mesh=getattr(cfg, "bs_use_mesh", True),
+                                          image_size=cfg.image_size,
+                                          mesh_normalized=cfg.mesh_normalized)
+                           if getattr(cfg, "n_blendshape", 0) > 0 else None)
 
         # Head dispatch — v3 (v2.3) > v2 (v2.1) > v1 default
         if cfg.use_head_v3:
             from feat.multitask.heads_v3 import (
                 UnifiedFeatures, GazeHeadV3, EmotionVAHeadV3,
             )
+            from feat.multitask.heads_v26 import EyeROIEncoder, GazeHeadV26
             self.unified = UnifiedFeatures(bb_ch=in_ch, lmk_dim=cfg.unified_lmk_dim,
-                                            image_size=cfg.image_size)
+                                            image_size=cfg.image_size,
+                                            mesh_normalized=getattr(cfg, "mesh_normalized", False))
             self.emotion = EmotionVAHeadV3(
                 in_dim=self.unified.out_dim,
                 n_classes=cfg.n_emotion,
                 dropout=cfg.emotion_head_dropout,
                 n_au_prob=(cfg.n_au if getattr(cfg, "emotion_use_au_prob", False) else 0),
             )
-            self.gaze = GazeHeadV3(in_dim=self.unified.out_dim)
+            # v2.6: GazeHeadV26 with all flags off is numerically GazeHeadV3
+            # (same four scalar FCs on the same input), so v2.5c checkpoints load
+            # and reproduce exactly. Only the extra branches are new parameters.
+            self.gaze_eye_enc = None
+            if self.gaze_eye_roi:
+                c4_ch = self.backbone.feature_info.channels()[0]
+                c4_stride = self.backbone.feature_info.reduction()[0]
+                self.gaze_eye_enc = EyeROIEncoder(
+                    in_ch=c4_ch, out_dim=cfg.gaze_eye_dim,
+                    roi_size=cfg.gaze_eye_roi_size,
+                    box_frac=cfg.gaze_eye_box_frac,
+                    image_size=cfg.image_size, feat_stride=c4_stride,
+                )
+            self.gaze = GazeHeadV26(
+                in_dim=self.unified.out_dim,
+                eye_dim=(cfg.gaze_eye_dim if self.gaze_eye_roi else 0),
+                pose_dim=(6 if getattr(cfg, "gaze_pose_6d", False) else 0),
+                head_frame=bool(getattr(cfg, "gaze_head_frame", False)),
+                hidden=int(getattr(cfg, "gaze_hidden", 0) or 0),
+                n_bins=int(getattr(cfg, "gaze_bins", 0) or 0),
+                bin_lo_deg=float(getattr(cfg, "gaze_bin_lo_deg", -180.0)),
+                bin_hi_deg=float(getattr(cfg, "gaze_bin_hi_deg", 180.0)),
+            )
         elif cfg.use_head_v2:
             self.emotion = EmotionVAHeadV2(
                 mefl_ch=cfg.mefl_channels, bb_ch=in_ch,
@@ -682,30 +739,72 @@ class MEGraphAUv2(nn.Module):
         self.log_var_au = nn.Parameter(torch.zeros(cfg.n_au))
         self.log_var_mesh = nn.Parameter(torch.zeros(()))
         self.log_var_pose = nn.Parameter(torch.zeros(()))
+        if getattr(cfg, "n_blendshape", 0) > 0:
+            self.log_var_blendshape = nn.Parameter(torch.zeros(()))
         # log_var_cooccur only when cooccur loss is active
         if not cfg.use_head_v3:
             self.log_var_cooccur = nn.Parameter(torch.zeros(()))
         self.log_var_emotion = nn.Parameter(torch.zeros(()))
         self.log_var_va = nn.Parameter(torch.zeros(()))
         self.log_var_gaze = nn.Parameter(torch.zeros(()))
-        if self.blendshape is not None:
-            self.log_var_blendshape = nn.Parameter(torch.zeros(()))
 
-    def forward(self, x: torch.Tensor) -> dict:
-        feats = self.backbone(x)[-1]                # [B, bb_ch, H, W]
+    @staticmethod
+    def _v26_gaze_helpers():
+        from feat.multitask.heads_v26 import pose_to_6d, rodrigues
+        return pose_to_6d, rodrigues
+
+    def _gaze_forward(self, unified: torch.Tensor, feats_all, mesh: torch.Tensor,
+                      pose: torch.Tensor) -> torch.Tensor:
+        """Assemble whichever v2.6 gaze inputs are enabled. All flags off -> this
+        is exactly `self.gaze(unified)`, i.e. v2.5c."""
+        cfg = self.cfg
+        eye_l = eye_r = pose_6d = R_head = None
+
+        if self.gaze_eye_enc is not None:
+            # Eye box centres come from the PREDICTED mesh, used purely for
+            # localization. Detached: gaze must not train the landmark head via
+            # the crop coordinates (a shortcut that would move eyes to wherever
+            # is convenient rather than where they are).
+            mesh_xy = mesh[:, :, :2].detach()
+            if getattr(cfg, "mesh_normalized", False):
+                mesh_xy = mesh_xy * float(cfg.image_size)
+            eye_l, eye_r = self.gaze_eye_enc(feats_all[0], mesh_xy)
+
+        need_pose = (getattr(cfg, "gaze_pose_6d", False)
+                     or getattr(cfg, "gaze_head_frame", False))
+        if need_pose:
+            pose_to_6d, rodrigues = self._v26_gaze_helpers()
+            p = pose.detach() if getattr(cfg, "gaze_pose_detach", True) else pose
+            if getattr(cfg, "gaze_pose_6d", False):
+                pose_6d = pose_to_6d(p)
+            if getattr(cfg, "gaze_head_frame", False):
+                R_head = rodrigues(p[:, :3])
+
+        return self.gaze(unified, eye_l=eye_l, eye_r=eye_r,
+                         pose_6d=pose_6d, R_head=R_head)
+
+    def forward(self, x: torch.Tensor, distill_only: bool = False) -> dict:
+        feats_all = self.backbone(x)                 # [-1] = stride 32; [-2] = stride 16 if gaze_eye_roi
+        feats = feats_all[-1]                        # [B, bb_ch, H, W]
         X = self.proj(feats)                         # [B, afg_ch, H, W]
+        mesh = self.lmk(X)                           # [B, 478, 3]
+        pose = self.pose(X)                          # [B, 6]
+        blendshapes = self.blendshape(X, mesh) if self.blendshape is not None else None  # [B,52]|None
+        if distill_only:
+            # Stage-1 distillation path: skip the AFG/FGG/SC/MEFL/emotion/gaze heads
+            # (otherwise computed every step and discarded — only mesh/pose/blendshape
+            # are supervised in stage 1). ~2x faster; identical trained params, so the
+            # stage-2 warm-load (backbone/proj/lmk/pose/blendshape) is unchanged.
+            return {"mesh": mesh, "pose": pose, "blendshapes": blendshapes}
+
+        gaze_logits = None                           # [B,2,n_bins] iff gaze_bins>0
         U, v = self.afg(X)                           # [B, N, C, H, W], [B, N, C]
         v_fgg = self.fgg(v)                          # [B, N, C]
         if self.drop_mefl:
             h, e = v_fgg, None                       # v2.4: SC reads FGG output
         else:
             h, e = self.mefl(U, X, v_fgg)            # [B, N, C], [B, N, N, C]
-
         p_au = self.sc(h)                            # [B, N]
-        mesh = self.lmk(X)                           # [B, 478, 3]
-        pose = self.pose(X)                          # [B, 6]
-        blendshapes = (self.blendshape(X, mesh)      # [B, 52] in [0, 1]
-                       if self.blendshape is not None else None)
 
         # Head dispatch
         if self.cfg.use_head_v3:
@@ -716,7 +815,11 @@ class MEGraphAUv2(nn.Module):
                 emotion_out = self.emotion(unified, ap)
             else:
                 emotion_out = self.emotion(unified)
-            gaze = self.gaze(unified)
+            gaze = self._gaze_forward(unified, feats_all, mesh, pose)
+            # v2.6 binned head returns (gaze, logits); every other path returns
+            # [B,2]. Unpack here so "gaze" means the same thing to every consumer.
+            if isinstance(gaze, tuple):
+                gaze, gaze_logits = gaze
             cooc_logits = None
         else:
             # v2 / v2.1: heads use h (AU node features) + raw backbone feats
@@ -731,11 +834,12 @@ class MEGraphAUv2(nn.Module):
             "p_au": p_au,
             "mesh": mesh,
             "pose": pose,
+            "blendshapes": blendshapes,
             "cooccur": cooc_logits,
             "emotion_logits": emotion_out["emotion_logits"],
             "va": emotion_out["va"],
             "gaze": gaze,
-            "blendshapes": blendshapes,
+            "gaze_logits": gaze_logits,
             "h": h,
             "e": e,
         }
