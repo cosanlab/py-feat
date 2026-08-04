@@ -414,25 +414,29 @@ class Detectorv2(nn.Module):
         )
 
         # ---- Pose: multitask head -> canonical Fex [Pitch,Roll,Yaw,X,Y,Z].
-        # Empirically the head's index 0 responds to PITCH and index 1 to YAW
-        # (the inference docstring's [yaw,pitch,...] order is mislabeled).
-        # Map to the canonical convention used by the classic Detectorv1 (v1):
-        # +pitch=up, +yaw=turn to subject's right, +roll=tilt to subject's right.
-        #   Pitch = +head[0]   Roll = -head[2]   Yaw = +head[1]
-        # Pitch is NOT negated: on-camera, pitching UP gave a negative Pitch with
-        # the old ``-head[0]`` — the head's index 0 already reads +up, so the
-        # negation inverted it relative to v1. (The near-frontal still images that
-        # earlier seemed to agree have pitch ≈ noise, so they can't fix the sign.)
-        # NOTE: the head under-predicts pitch magnitude (a fit limitation, not
-        # a labeling bug) — pitch reads smaller than img2pose for the same nod.
+        # The head's index 0 responds to PITCH and index 1 to YAW. The model's
+        # raw pitch is in the img2pose teacher's y-DOWN camera frame: POSITIVE
+        # = pitching DOWN. Canonical Fex convention (Detectorv1-compatible) is
+        # +pitch=up, +yaw=turn to subject's right, +roll=tilt to subject's
+        # right, so pitch is NEGATED here:
+        #   Pitch = -head[0]   Roll = -head[2]   Yaw = +head[1]
+        # History: pre-2.1 models predicted near-zero pitch (a training-time
+        # hflip label bug scrambled pitch supervision), so the sign could not
+        # be established from their outputs and 2.1.0 shipped Pitch=+head[0].
+        # The 2.1.x models predict real pitch (EYEDIAP r~0.7) and live webcam
+        # tests pin the raw convention: head down -> head[0] positive.
         p = out.pose
         feat_poses = pd.DataFrame(
-            np.column_stack([p[:, 0], -p[:, 2], p[:, 1], p[:, 3], p[:, 4], p[:, 5]]),
+            np.column_stack([-p[:, 0], -p[:, 2], p[:, 1], p[:, 3], p[:, 4], p[:, 5]]),
             columns=FEAT_FACEPOSE_COLUMNS_6D,
         )
 
         # ---- Gaze: model [yaw,pitch] rad -> [gaze_pitch,gaze_yaw,gaze_angle] ----
-        gaze_yaw, gaze_pitch = out.gaze[:, 0], out.gaze[:, 1]
+        # Raw model gaze pitch is y-DOWN (positive = looking down), matching
+        # its training corpora. Fex's documented convention (shared with the
+        # v1/L2CS gaze) is positive = looking UP, so pitch is negated. Yaw
+        # already matches (positive = subject's right / image-left).
+        gaze_yaw, gaze_pitch = out.gaze[:, 0], -out.gaze[:, 1]
         cos_angle = np.clip(np.cos(gaze_pitch) * np.cos(gaze_yaw), -1.0, 1.0)
         gaze_angle = np.arccos(cos_angle)
         feat_gaze = pd.DataFrame(
