@@ -28,7 +28,7 @@ Current default: **`face_multitask_v28.safetensors`**.
 - **Backbone:** ConvNeXt-V2 Tiny (FCMAE + IN-22k/IN-1k pretrained)
 - **Heads:** ME-GraphAU AU graph (AFG/FGG/SC) + unified-feature emotion/V-A and
   gaze heads + landmark, pose, and blendshape regression heads
-- **Params:** ~30M · **Input:** 224×224 RGB (from a 256×256 face crop)
+- **Params:** 41.7M (41,694,779 across 373 tensors; the ConvNeXt-V2-Tiny backbone alone is 27.9M) · **Input:** 224×224 RGB (from a 256×256 face crop)
 - **Format:** safetensors, with the `ModelV2Config` JSON in the file metadata
 - **Weights:** uniform weight average ("model soup") of three training epochs
 
