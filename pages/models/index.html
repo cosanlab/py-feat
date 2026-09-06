@@ -24,7 +24,7 @@
       
       
       <link rel="icon" href="../../images/logo/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -32,7 +32,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2158,14 +2158,14 @@
 <p><strong><code>face_multitask_v2</code></strong> (<a href="https://huggingface.co/py-feat/face_multitask_v2"><code>py-feat/face_multitask_v2</code></a>) is the network behind it: a ConvNeXt V2-Tiny backbone with lightweight task heads that, from one forward pass, jointly predicts <strong>20 Action Units</strong>, <strong>7-class emotion</strong> (Neutral, Happy, Sad, Surprise, Fear, Disgust, Anger), continuous <strong>valence / arousal</strong>, <strong>gaze</strong>, a <strong>478-point 3D MediaPipe FaceMesh</strong>, <strong>6-DoF head pose</strong>, and <strong>52 MediaPipe/ARKit blendshapes</strong> (<code>fex.blendshapes</code>). It takes a 256×256 aligned face crop (resized to 224, ImageNet-normalized) and ships as a single <code>.safetensors</code> file with the model config in the file metadata. <a href="https://huggingface.co/py-feat/face_multitask_v2">Model card</a> · License: <strong>non-commercial research only</strong>.</p>
 <p>Face detection is handled by <strong>RetinaFace</strong> — <code>Detectorv2</code> hardcodes it and takes no <code>face_model</code> kwarg. Identity is an optional branch: the default is <code>identity_model='arcface'</code>, with <code>identity_model='facenet'</code> also supported, or <code>None</code> to skip identity embeddings (see <a href="#identity-detection">Identity detection</a> below for those model cards). Folding v1's per-task chain into one network makes <code>Detectorv2</code> substantially faster — especially on single frames — and adds valence/arousal and gaze that v1 doesn't produce. For accuracy and speed comparisons against <code>Detectorv1</code>, see the <a href="../../benchmarks/accuracy/">accuracy</a> and <a href="../../benchmarks/Speed/">speed</a> benchmarks.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">feat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detectorv2</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">Detectorv2</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>          <span class="c1"># downloads face_multitask_v2 on first use</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">fex</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;face.jpg&quot;</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">Detectorv2</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>          <span class="c1"># downloads face_multitask_v2 on first use</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">fex</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"face.jpg"</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">"image"</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="detectorv1-modular-components">Detectorv1: modular components<a class="headerlink" href="#detectorv1-modular-components" title="Permanent link">&para;</a></h2>
 <p><code>Detectorv1</code> is the classic <em>modular</em> pipeline: it runs a separate model for each stage — face detection, facial landmarks, Action Units, emotion, identity, and gaze — and you can swap any of them or turn one off by passing <code>None</code>. Select a model by name:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">feat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detectorv1</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">Detectorv1</span><span class="p">(</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">Detectorv1</span><span class="p">(</span><span class="n">emotion_model</span><span class="o">=</span><span class="s1">'svm'</span><span class="p">)</span>
 </span></code></pre></div>
 <p>The sections below are those swappable components.</p>
 <h3 id="face-detection">Face detection<a class="headerlink" href="#face-detection" title="Permanent link">&para;</a></h3>
@@ -2349,7 +2349,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.path", "navigation.footer", "navigation.instant", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "toc.follow", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

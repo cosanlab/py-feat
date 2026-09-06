@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="images/logo/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -30,7 +30,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2114,12 +2114,12 @@ We still support our original version 1 of Py-FEAT that is described in <a href=
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">feat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detectorv1</span><span class="p">,</span> <span class="n">Detectorv2</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># v1 — modular: pick or disable models, 68-point landmarks</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">detector_v1</span> <span class="o">=</span> <span class="n">Detectorv1</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s2">&quot;xgb&quot;</span><span class="p">,</span> <span class="n">emotion_model</span><span class="o">=</span><span class="s2">&quot;resmasknet&quot;</span><span class="p">,</span> <span class="n">identity_model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">fex</span> <span class="o">=</span> <span class="n">detector_v1</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;face.jpg&quot;</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">detector_v1</span> <span class="o">=</span> <span class="n">Detectorv1</span><span class="p">(</span><span class="n">au_model</span><span class="o">=</span><span class="s2">"xgb"</span><span class="p">,</span> <span class="n">emotion_model</span><span class="o">=</span><span class="s2">"resmasknet"</span><span class="p">,</span> <span class="n">identity_model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">fex</span> <span class="o">=</span> <span class="n">detector_v1</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"face.jpg"</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">"image"</span><span class="p">)</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># v2 — one fast multi-task model, 478-point 3D mesh + valence/arousal + gaze</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">detector_v2</span> <span class="o">=</span> <span class="n">Detectorv2</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>        <span class="c1"># or device=&quot;cpu&quot; / &quot;mps&quot;</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">fex</span> <span class="o">=</span> <span class="n">detector_v2</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;face.jpg&quot;</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">detector_v2</span> <span class="o">=</span> <span class="n">Detectorv2</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>        <span class="c1"># or device="cpu" / "mps"</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">fex</span> <span class="o">=</span> <span class="n">detector_v2</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"face.jpg"</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s2">"image"</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="py-feat-live">Py-feat Live<a class="headerlink" href="#py-feat-live" title="Permanent link">&para;</a></h2>
 <p>Prefer a graphical app to writing code? <a href="/pages/pyfeat_live/"><strong>Py-feat Live</strong></a> is a
@@ -2204,7 +2204,7 @@ analyze in Python. <a href="/pages/pyfeat_live/">Learn more →</a></p>
       <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.sections", "navigation.expand", "navigation.path", "navigation.footer", "navigation.instant", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "toc.follow", "navigation.indexes"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
