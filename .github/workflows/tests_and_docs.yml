@@ -74,6 +74,26 @@ jobs:
           echo "$PWD/.venv/Scripts" >> "$GITHUB_PATH"
           uv pip install . -r requirements-dev.txt
 
+      # torchcodec's macOS dylibs reference FFmpeg as @rpath/libav*.dylib but are
+      # built with no LC_RPATH, so dlopen fails with "no LC_RPATH's found" —
+      # Homebrew keeps libav* in $(brew --prefix ffmpeg)/lib, which is not on the
+      # default dyld search path. Linux is unaffected because apt installs libav*
+      # into a standard loader path. DYLD_FALLBACK_LIBRARY_PATH is not a fix here:
+      # SIP strips DYLD_* when /bin/bash spawns a child, so patch the rpath in.
+      - name: Point torchcodec at Homebrew FFmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          FFMPEG_LIB="$(brew --prefix ffmpeg)/lib"
+          echo "linking torchcodec against $FFMPEG_LIB"
+          shopt -s nullglob
+          for dylib in .venv/lib/python*/site-packages/torchcodec/libtorchcodec_*.dylib; do
+            otool -l "$dylib" | grep -q "$FFMPEG_LIB" && continue
+            install_name_tool -add_rpath "$FFMPEG_LIB" "$dylib" || true
+            # install_name_tool invalidates the arm64 signature; re-sign ad hoc.
+            codesign --force --sign - "$dylib" 2>/dev/null || true
+          done
+          python -c "from torchcodec.decoders import VideoDecoder; print('torchcodec imports OK')"
+
       # Persist HF model downloads across runs. Without this every matrix job
       # pulls retinaface/xgb/resmasknet from the Hub at test-collection time on
       # a cold cache, and the parallel jobs intermittently trip HTTP 429
@@ -151,7 +171,12 @@ jobs:
         run: |
           uv venv --python 3.13
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-          uv pip install "marimo-book[api]>=0.1.26"
+          # Pinned, not floating: the book builds from the committed docs/_rendered/
+          # cache and --strict rejects it when the renderer's signature changes.
+          # 0.1.26 is what rendered it (see docs/_rendered/manifest.json); 0.1.27+
+          # changed the signature and broke every build. Bump this and re-render
+          # together, never separately.
+          uv pip install "marimo-book[api]==0.1.26"
 
       - name: Build book
         run: |
