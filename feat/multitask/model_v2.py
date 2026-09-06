@@ -681,7 +681,7 @@ class MEGraphAUv2(nn.Module):
         # Head dispatch — v3 (v2.3) > v2 (v2.1) > v1 default
         if cfg.use_head_v3:
             from feat.multitask.heads_v3 import (
-                UnifiedFeatures, GazeHeadV3, EmotionVAHeadV3,
+                UnifiedFeatures, EmotionVAHeadV3,
             )
             from feat.multitask.heads_v26 import EyeROIEncoder, GazeHeadV26
             self.unified = UnifiedFeatures(bb_ch=in_ch, lmk_dim=cfg.unified_lmk_dim,

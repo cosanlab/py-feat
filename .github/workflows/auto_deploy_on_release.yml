@@ -55,7 +55,9 @@ jobs:
         run: |
           uv venv --python 3.13
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-          uv pip install "marimo-book[api]>=0.1.26"
+          # Pinned to the version that rendered docs/_rendered/ (manifest.json).
+          # --strict fails on a signature change; bump + re-render together.
+          uv pip install "marimo-book[api]==0.1.26"
 
       - name: Build book
         run: |
