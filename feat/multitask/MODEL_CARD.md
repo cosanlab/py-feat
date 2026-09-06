@@ -21,17 +21,20 @@ A single multi-task convolutional model for facial behavior analysis, used by
 [py-feat](https://github.com/cosanlab/py-feat)'s `Detectorv2`. From one face crop
 it jointly predicts **action units, categorical emotion, valence/arousal,
 eye gaze, a 478-point face mesh, 6-DoF head pose, and 52 MediaPipe/ARKit
-blendshapes** (the v2.7 model; replaces v2.6).
+blendshapes**.
+
+Current default: **`face_multitask_v28.safetensors`**.
 
 - **Backbone:** ConvNeXt-V2 Tiny (FCMAE + IN-22k/IN-1k pretrained)
-- **Heads:** ME-GraphAU AU graph (AFG/FGG/SC) + unified-feature emotion/V-A heads
-  + landmark, pose, and **blendshape** regression heads + the v2.6 **eye-aware
-  gaze head**: RoI-pooled eye features (localized by the predicted mesh),
-  conditioned on predicted head pose (6D), with an L2CS-style binned prediction
-  over the full ±180° range (v2.7: 2° bins)
-- **Params:** ~42M · **Input:** 224×224 RGB (from a 256×256 face crop)
-- **File:** `face_multitask_v27.safetensors` (safetensors; `ModelV2Config` JSON in the file metadata)
-- **Weights:** soup (equal average) of five consecutive fine-tuning checkpoints
+- **Heads:** ME-GraphAU AU graph (AFG/FGG/SC) + unified-feature emotion/V-A and
+  gaze heads + landmark, pose, and blendshape regression heads
+- **Params:** ~30M · **Input:** 224×224 RGB (from a 256×256 face crop)
+- **Format:** safetensors, with the `ModelV2Config` JSON in the file metadata
+- **Weights:** uniform weight average ("model soup") of three training epochs
+
+Older files in this repo (`face_multitask_v2`, `_v26`, `_v27`) are retained so
+existing installs keep working. Each py-feat release pins the filename it was
+built against — older code cannot construct newer architectures.
 
 ## Outputs
 
@@ -40,47 +43,89 @@ blendshapes** (the v2.7 model; replaces v2.6).
 | Action Units | 20 probabilities [0,1] | AU01,02,04,05,06,07,09,10,11,12,14,15,17,20,23,24,25,26,28,43 |
 | Emotion | 7-class softmax | Neutral, Happy, Sad, Surprise, Fear, Disgust, Anger |
 | Valence / Arousal | 2 × [−1,1] | tanh |
-| Gaze | (yaw, pitch) radians | RAW convention is y-down: yaw+ = subject's right (image-left), pitch+ = looking DOWN. `Detectorv2` negates pitch so Fex columns are canonical +up (since py-feat 2.1.1) |
+| Gaze | (yaw, pitch) radians | **RAW convention is y-down**: yaw+ = subject's right (image-left), pitch+ = looking DOWN. `Detectorv2` negates pitch so Fex columns are canonical +up (since py-feat 2.1.1) |
 | Face mesh | 478 × (x,y,z) | MediaPipe topology, chip-pixel coords (z = relative depth) |
 | Head pose | (pitch, yaw, roll, tx, ty, tz) | radians / pixels; RAW pitch+ = down (img2pose teacher frame); `Detectorv2` outputs canonical +up (since py-feat 2.1.1) |
 | 68 landmarks | derived | dlib-68 subset sampled from the 478 mesh |
-| Blendshapes | 52 coefficients [0,1] | MediaPipe/ARKit standard names (browInnerUp, jawOpen, mouthSmileLeft, …) |
+| Blendshapes | 52 coefficients [0,1] | MediaPipe/ARKit standard names |
 
-## Benchmarks (held-out, file-verified — v2.7 deployed checkpoint)
+## Evaluation protocol
 
-All gaze splits are identity-disjoint from training (held-out subjects), and
-EYEDIAP is never trained on by any py-feat model.
+Every benchmark below is **held out from training at the split level**, and
+DISFA+ additionally at the **identity** level. The training run reserves 16
+splits: `affectnet:val`, `raf_db:test`, `ferplus:{test,val}`,
+`meld:{bench,val}`, `afew_va:val`, `aff_wild2:bench`, `aff_wild2_va:val`,
+`gaze360:{bench,val}`, `mpii_gaze:test`, `mpii_facegaze:test`,
+`columbia_gaze:test`, `ethxgaze:test`, `eyediap:test`. The `disfaplus` and
+`mpii_facegaze` sources are excluded outright, and DISFA+ identities appearing
+in other corpora are excluded as well.
 
-| Task | Dataset | Metric | v2.7 | v2.6 | v2.5 |
-|---|---|---|---|---|---|
-| AU | DISFA+ (12-AU, Cheong protocol) | macro-F1 | 0.686 | **0.696** | 0.693 |
-| AU | DISFA+ (8-AU subset) | macro-F1 | **0.740** | 0.738 | **0.740** |
-| Emotion | AffectNet val (7-cls, drop Contempt) | acc / macro-F1 | 0.612 / 0.607 | 0.615 / 0.610 | **0.616 / 0.612** |
-| Emotion | RAF-DB test | acc / macro-F1 | 0.876 / 0.817 | 0.873 / 0.818 | **0.910 / 0.885** |
-| Valence/Arousal | AffectNet val | CCC (V / A) | 0.773 / 0.647 | 0.775 / **0.653** | **0.780** / 0.646 |
-| Valence/Arousal | AFEW-VA | CCC (V / A) | 0.711 / 0.480 | 0.718 / 0.411 | **0.833 / 0.863** |
-| Valence/Arousal | Aff-Wild2 val | CCC (V / A) | 0.331 / 0.418 | 0.397 / 0.458 | **0.852 / 0.799** |
-| Gaze | ETH-XGaze (held-out subjects) | mean angular err | 5.1° | **5.0°** | 43.2° |
-| Gaze | EYEDIAP (never-train, 15.2K frames) | mean angular err | **12.6°** | 13.4° | 15.3° |
-| Gaze | Gaze360 (held-out split) | mean angular err | 13.0° | 13.0° | **12.9°** |
-| Gaze | MPIIGaze (leave-subject-out) | mean angular err | 8.0° | 7.4° | **7.0°** |
-| Gaze | Columbia (held-out subjects) | mean angular err | **4.1°** | 5.4° | — (trained) |
-| Blendshapes | FacePlace (teacher agreement) | mean active-ch. r | **0.761** | 0.748 | 0.756 |
+## Benchmarks
 
-Notes: **v2.7 = the v2.6 architecture retrained** with a rescaled gaze loss,
-a rebalanced within-gaze data mix, per-source augmentation, 2° gaze bins, and
-a head-pose label fix. Vs v2.6 it improves out-of-distribution gaze (EYEDIAP
-−0.7°, Columbia −1.3°), RAF-DB macro-F1 end-to-end (+2.7), AFEW-VA arousal,
-blendshape fidelity (best of any release), and occlusion robustness, at the
-cost of ~0.6° on frontal MPIIGaze and 0.01 on the 12-AU set.
+Chip-protocol inference on held-out splits.
 
-**Known limitation (v2.6 and v2.7):** continuous valence/arousal on
-*video-frame* corpora (Aff-Wild2, AFEW-VA) is substantially below v2.5
-(e.g. Aff-Wild2 CCC-V 0.85 → 0.33). AffectNet (still-image) V/A is unaffected.
-If frame-wise continuous V/A on video is your primary measure, prefer the v2.5
-weights (`face_multitask_v2.safetensors`, still published in this repo). A fix
-is under investigation. Numbers are from the deployed checkpoint (v2.7
-stage-3 soup ep05-09), weight-verified against the published `.safetensors`.
+| Task | Dataset | Metric | Score |
+|---|---|---|---|
+| AU | DISFA+ (12-AU, Cheong protocol) | macro-F1 | **0.682** |
+| AU | DISFA+ (common-8 subset) | macro-F1 | **0.772** |
+| Emotion | AffectNet val (7-cls, drop Contempt) | acc / macro-F1 | **0.628 / 0.625** |
+| Emotion | RAF-DB official test (7-cls) | acc / macro-F1 | **0.869 / 0.806** |
+| Valence/Arousal | AffectNet val | CCC (V / A) | **0.773 / 0.650** |
+| Valence/Arousal | Aff-Wild2 official validation | CCC (V / A) | **0.376 / 0.477** |
+| Valence/Arousal | AFEW-VA validation | CCC (V / A) | **0.687 / 0.548** |
+| Gaze | Gaze360 (held-out split) | mean angular err | **13.04°** |
+| Gaze | MPIIGaze (leave-subject-out) | mean angular err | **8.26°** |
+| Gaze | ETH-XGaze (test) | mean angular err | **4.76°** |
+| Gaze | Columbia (test) | mean angular err | **3.76°** |
+| Gaze | EYEDIAP (test, never trained on) | mean angular err | **10.61°** |
+
+### Cross-tool, end-to-end
+
+Full shipped pipeline (detect → align → predict) on raw frames, scored on the
+images all tools processed. AU presence = DISFA+ intensity ≥ 2, prediction ≥ 0.5.
+
+| Benchmark | This model | OpenFace 3.0 | LibreFace |
+|---|---:|---:|---:|
+| DISFA+ AU, common-8 macro-F1 | **0.774** | 0.732 | 0.492 |
+| DISFA+ AU, 12-AU macro-F1 | **0.671** | — (8 AUs only) | 0.397 |
+| AffectNet-7 accuracy | **0.632** | 0.587 | 0.458 |
+| AffectNet-7 macro-F1 | **0.632** | 0.587 | 0.410 |
+| RAF-DB-7 accuracy | **0.880** | 0.673 | 0.746 |
+| RAF-DB-7 macro-F1 | **0.815** | 0.586 | 0.580 |
+
+### AU robustness — perturbed DISFA+ (Cheong 2023 protocol)
+
+Same 57,150 aligned DISFA+ crops as the main AU benchmark, with black-bar
+occlusion and luminance shifts. The 8-AU column uses the cross-tool common set
+(AU01/02/04/06/09/12/25/26).
+
+| Perturbation | 12-AU macro-F1 | common-8 macro-F1 |
+|---|---:|---:|
+| none (baseline) | 0.685 | 0.774 |
+| eyes occluded | 0.542 | 0.667 |
+| mouth occluded | 0.538 | 0.632 |
+| nose occluded | 0.678 | 0.785 |
+| brightened | 0.593 | 0.684 |
+| darkened | 0.675 | 0.765 |
+
+Mouth occlusion is the worst case (−0.147 on 12-AU vs baseline).
+
+## Known limitations
+
+- **AU20 is effectively non-functional** (per-AU F1 **0.057** against a 0.682
+  macro). AU15 (0.479) and AU06 (0.526) are also well below the macro average.
+  Do not rely on lip-stretch (AU20) predictions; treat AU15/AU06 with caution.
+- **Gaze pitch is uneven across domains.** Per-axis pitch MAE is 3.06° on
+  ETH-XGaze and 7.05° on EYEDIAP, but 5.21° on MPIIGaze with a lower
+  prediction/ground-truth correlation (r = 0.755) — frontal, screen-directed
+  gaze has the narrowest pitch range and is the weakest case. Yaw is
+  consistently stronger than pitch on all three. Validate before depending on
+  absolute gaze pitch in a frontal-camera setting.
+- **Landmarks are a secondary output.** The 68 points are sampled from the 478
+  mesh rather than predicted by a dedicated landmark head, and 300W NME is
+  correspondingly weaker than tools with a native 68-point head.
+- Trained on posed and in-the-wild adult face imagery; performance on children,
+  heavy occlusion, or extreme pose is not characterized.
 
 ## Usage
 
@@ -90,13 +135,20 @@ detector = Detectorv2(device="cuda")
 fex = detector.detect("image.jpg")   # returns a py-feat Fex
 ```
 
+To pin a specific checkpoint (e.g. an older published file):
+
+```python
+detector = Detectorv2(device="cuda",
+                      multitask_weights="/path/to/face_multitask_v28.safetensors")
+```
+
 The model expects a face crop produced by RetinaFace + py-feat's
 `extract_face_from_bbox_torch(frame, bbox, face_size=256, expand_bbox=1.2)`,
-then resized to 224 and ImageNet-normalized. `Detectorv2` handles this.
+then center-cropped to 224 and ImageNet-normalized. `Detectorv2` handles this.
 
 ## License
 
 **Research / non-commercial use only.** Trained on datasets (AffectNet, DISFA+,
-RAF-DB, Aff-Wild2, BP4D, etc.) whose licenses restrict use to academic research.
-The ConvNeXt-V2 backbone is MIT-licensed. Confirm each constituent dataset's
-terms before any non-research use.
+RAF-DB, Aff-Wild2, AFEW-VA, BP4D, ETH-XGaze, EYEDIAP, etc.) whose licenses
+restrict use to academic research. The ConvNeXt-V2 backbone is MIT-licensed.
+Confirm each constituent dataset's terms before any non-research use.

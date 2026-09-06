@@ -45,7 +45,7 @@ IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
 HF_REPO = "py-feat/face_multitask_v2"
-HF_WEIGHTS_FILE = "face_multitask_v27.safetensors"
+HF_WEIGHTS_FILE = "face_multitask_v28.safetensors"
 
 # dlib-68 vertex indices into the MediaPipe-478 mesh (py-feat canonical map).
 _DLIB68_IDX = torch.tensor(DLIB68_FROM_MP478, dtype=torch.long)
