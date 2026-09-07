@@ -6,6 +6,7 @@ model. One ``@pytest.mark.network`` test loads the real npz from HF Hub.
 """
 from __future__ import annotations
 
+import inspect
 import numpy as np
 import pytest
 
@@ -56,9 +57,14 @@ def stub_mesh_model(monkeypatch):
         au_columns=au_cols, pose_columns=pose_cols,
         mean_aligned_mesh=mean_mesh,
     )
-    # Loader caches by version in a dict now; inject the stub under the default
-    # version ("v5") so the bare load_face_mesh_viz_model() returns it offline.
-    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {"v5": model})
+    # Loader caches by version in a dict now; inject the stub under whatever the
+    # current default version is, so the bare load_face_mesh_viz_model() returns
+    # it offline. Read the default off the signature rather than hardcoding it,
+    # so bumping the shipped PLS version doesn't silently break this fixture.
+    default_version = inspect.signature(
+        plt_mod.load_face_mesh_viz_model
+    ).parameters["model_version"].default
+    monkeypatch.setattr(plt_mod, "_PLS_MESH_MODELS", {default_version: model})
     return model
 
 

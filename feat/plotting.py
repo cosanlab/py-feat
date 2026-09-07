@@ -1802,12 +1802,12 @@ AU_COLUMNS_V3 = [
 _PLS_MESH_MODELS = {}      # version -> PLSAUMeshModel
 
 
-def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v5"):
+def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v6"):
     """Download (cached) and wrap the AU→mesh PLS NPZ from HuggingFace Hub.
 
-    model_version: "v5" (default; 20-AU Detectorv2 v2.5 space — replaces v4),
-    "v4" (20-AU Detectorv2 v2.4 space), "v2" (20-AU original), or "v3"
-    (24-AU Detectorv2 v2.3 space)."""
+    model_version: "v6" (default; 20-AU Detectorv2 v2.8 space — replaces v5),
+    "v5" (20-AU Detectorv2 v2.5 space), "v4" (20-AU Detectorv2 v2.4 space),
+    "v2" (20-AU original), or "v3" (24-AU Detectorv2 v2.3 space)."""
     if model_version in _PLS_MESH_MODELS:
         return _PLS_MESH_MODELS[model_version]
 
@@ -1847,7 +1847,7 @@ def _load_pls_au_to_mesh_v2_from_hub(verbose=False, model_version="v5"):
     return model
 
 
-def load_face_mesh_viz_model(verbose=False, model_version="v5"):
+def load_face_mesh_viz_model(verbose=False, model_version="v6"):
     """Load the AU + pose → 478-pt MediaPipe FaceMesh PLS visualization model.
 
     Returns a ``PLSAUMeshModel`` whose ``.predict(au)`` produces the 478-vertex
@@ -1857,12 +1857,14 @@ def load_face_mesh_viz_model(verbose=False, model_version="v5"):
 
     Args:
         verbose: print a status line when first downloading.
-        model_version: ``"v5"`` (default; 20-AU Detectorv2 v2.5 space —
-            ``AU_LANDMARK_MAP['Feat']`` order, fit on the v2.5 mesh, frontal +
+        model_version: ``"v6"`` (default; 20-AU Detectorv2 v2.8 space —
+            ``AU_LANDMARK_MAP['Feat']`` order, fit on the v2.8 mesh, frontal +
             aspect-corrected; the 478-mesh model for ``Detectorv2`` and
-            ``MPDetector``), ``"v4"`` (20-AU Detectorv2 v2.4 space), ``"v2"``
-            (the original 20-AU model), or ``"v3"`` (24-AU Detectorv2 v2.3
-            space; pass a 24-length AU vector).
+            ``MPDetector``. Match the PLS version to the detector weights:
+            v6 pairs with the v2.8 multitask model shipped from py-feat 2.1.2),
+            ``"v5"`` (20-AU Detectorv2 v2.5 space), ``"v4"`` (20-AU Detectorv2
+            v2.4 space), ``"v2"`` (the original 20-AU model), or ``"v3"``
+            (24-AU Detectorv2 v2.3 space; pass a 24-length AU vector).
             ``Detectorv1`` (v1) emits 68-point landmarks — visualize its AUs with
             the 68-pt ``au_to_landmarks`` model via ``plot_face`` instead.
 
