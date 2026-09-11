@@ -297,6 +297,21 @@ class FexSeries(Series):
         y_cols = [col for col in self.landmark_columns if "y" in col]
         return self[y_cols]
 
+    @property
+    def landmark_asymmetry(self):
+        """Per-frame facial landmark asymmetry score (MediaPipe-478 only).
+
+        Returns:
+            Series: one score per frame, normalised by interocular
+            distance. 0 = symmetric
+        """
+        from feat.utils.landmark_symmetry import landmark_asymmetry as _asym
+
+        x = self.landmarks_x.values
+        y = self.landmarks_y.values
+        scores = [_asym(x[i], y[i]) for i in range(len(x))]
+        return pd.Series(scores, index=self.index, name="landmark_asymmetry")
+
     # DEPRECATE
     @property
     def landmark_y(self):
