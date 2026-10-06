@@ -1920,9 +1920,14 @@ def predict_face_mesh(au, model=None):
 # ---------------------------------------------------------------------
 # Emotion / blendshape → 478-vertex MediaPipe FaceMesh.
 # Companions to the AU→mesh model above, trained on the same CelebV-HQ
-# Detectorv2/MPDetector predictions and aligned into the SAME pose-canonical
-# frame (au_to_mesh v5 anchors), so all three render coherently. Weights live
-# in the py-feat/emotion_to_mesh and py-feat/bs_to_mesh HF Hub repos.
+# Detectorv2 predictions and canonicalized into the SAME frontal frame as the
+# AU→mesh model, so all three render coherently. v6 (default) is fit on
+# Detectorv2 v2.8 outputs and meshes (same CelebV-HQ frames as au_to_mesh v6).
+# Weights live in the py-feat/emotion_to_mesh and py-feat/bs_to_mesh HF repos.
+#
+# NOTE: emotion_to_mesh_pls_v5 has permuted column labels (its columns hold the
+# network's Neutral, Happy, Sad, Surprise, Fear, Disgust, Anger outputs but are
+# labelled in FEAT_EMOTION_COLUMNS order). Do not use v5 for emotion.
 # ---------------------------------------------------------------------
 
 _FEAT_MESH_SPECS = {
@@ -1930,6 +1935,13 @@ _FEAT_MESH_SPECS = {
     "blendshape": ("py-feat/bs_to_mesh", "bs_to_mesh_pls", MP_BLENDSHAPE_NAMES),
 }
 _PLS_FEAT_MESH_MODELS = {}      # (feature, version) -> PLSFeatMeshModel
+_FEAT_MESH_DEFAULT_VERSION = "v6"
+# Detectorv2 / Fex emotion column names -> FEAT_EMOTION_COLUMNS names.
+_EMOTION_ALIASES = {
+    "neutral": "neutral", "happy": "happiness", "happiness": "happiness",
+    "sad": "sadness", "sadness": "sadness", "surprise": "surprise",
+    "fear": "fear", "disgust": "disgust", "anger": "anger", "angry": "anger",
+}
 
 
 class PLSFeatMeshModel:
@@ -1943,7 +1955,16 @@ class PLSFeatMeshModel:
     """
 
     def __init__(self, coef, intercept, feature_columns, pose_columns,
-                 mean_aligned_mesh, feature_name, model_name):
+                 mean_aligned_mesh, feature_name, model_name,
+                 feature_max=None, unsupported_features=(), mean_neutral_mesh=None):
+        # feature_max: per-feature upper clip (v6 blendshapes: 99th percentile of
+        # the Detectorv2 v2.8 outputs it was fit on). unsupported_features: inputs
+        # the detector never expresses, whose coefficients are unconstrained.
+        self.feature_max = (None if feature_max is None
+                            else np.asarray(feature_max, dtype=np.float32))
+        self.unsupported_features = [str(f) for f in unsupported_features]
+        self.mean_neutral_mesh = (None if mean_neutral_mesh is None
+                                  else np.asarray(mean_neutral_mesh, dtype=np.float32))
         self._coef = np.asarray(coef, dtype=np.float32)
         self._intercept = np.asarray(intercept, dtype=np.float32)
         self.feature_columns = list(feature_columns)
@@ -1975,7 +1996,8 @@ class PLSFeatMeshModel:
         )
 
 
-def _load_pls_feat_to_mesh_from_hub(feature, verbose=False, model_version="v5"):
+def _load_pls_feat_to_mesh_from_hub(feature, verbose=False,
+                                    model_version=_FEAT_MESH_DEFAULT_VERSION):
     if feature not in _FEAT_MESH_SPECS:
         raise ValueError(
             f"feature must be one of {list(_FEAT_MESH_SPECS)}; got {feature!r}."
@@ -1997,47 +2019,122 @@ def _load_pls_feat_to_mesh_from_hub(feature, verbose=False, model_version="v5"):
             f"{feature}→mesh PLS feature_columns drifted. "
             f"NPZ: {feature_columns}; expected: {list(expected)}."
         )
+    if feature == "emotion" and model_version == "v5":
+        warnings.warn(
+            "emotion_to_mesh_pls_v5 has permuted column labels; use v6.", UserWarning
+        )
     model = PLSFeatMeshModel(
         coef=z["coef"], intercept=z["intercept"], feature_columns=feature_columns,
         pose_columns=[str(s) for s in z["pose_columns"]],
         mean_aligned_mesh=z["mean_aligned_mesh"], feature_name=feature,
         model_name=f"{stem}_{model_version}",
+        feature_max=z["feature_p99"] if "feature_p99" in z.files else None,
+        unsupported_features=(z["unsupported_features"]
+                              if "unsupported_features" in z.files else ()),
+        mean_neutral_mesh=(z["mean_neutral_mesh"]
+                           if "mean_neutral_mesh" in z.files else None),
     )
     _PLS_FEAT_MESH_MODELS[key] = model
     return model
 
 
-def load_emotion_face_mesh_model(verbose=False, model_version="v5"):
+def load_emotion_face_mesh_model(verbose=False,
+                                 model_version=_FEAT_MESH_DEFAULT_VERSION):
     """Load the emotion + pose → 478-pt MediaPipe FaceMesh PLS model.
 
     ``.predict(emotion)`` takes a length-7 vector (or ``(n, 7)`` batch) in
-    ``FEAT_EMOTION_COLUMNS`` order and returns the 478-vertex mesh (flattened
-    1434-d, axis-major) in the same pose-canonical frame as the AU→mesh model.
-    Underlying weights live in the ``py-feat/emotion_to_mesh`` HF Hub repo.
+    ``FEAT_EMOTION_COLUMNS`` order (anger, disgust, fear, happiness, sadness,
+    surprise, neutral) and returns the 478-vertex mesh (flattened 1434-d,
+    axis-major) in the same frame as the AU→mesh model. Note that Detectorv2's
+    Fex emits emotions in a DIFFERENT order (Neutral, Happy, ...); pass a
+    Series/DataFrame/dict to ``predict_face_mesh_from_features`` /
+    ``plot_face_mesh(emotion=...)`` and columns are matched by name.
+
+    ``model_version="v6"`` (default) is fit on Detectorv2 v2.8 outputs. ``"v5"``
+    is retained for reproducibility only: its column labels are permuted.
+    Weights live in the ``py-feat/emotion_to_mesh`` HF Hub repo.
     """
     return _load_pls_feat_to_mesh_from_hub("emotion", verbose, model_version)
 
 
-def load_blendshape_face_mesh_model(verbose=False, model_version="v5"):
+def load_blendshape_face_mesh_model(verbose=False,
+                                    model_version=_FEAT_MESH_DEFAULT_VERSION):
     """Load the blendshape + pose → 478-pt MediaPipe FaceMesh PLS model.
 
     ``.predict(blendshapes)`` takes a length-52 vector (or ``(n, 52)`` batch) in
-    ``MP_BLENDSHAPE_NAMES`` order (MPDetector output order) and returns the
-    478-vertex mesh (flattened 1434-d, axis-major) in the same pose-canonical
-    frame as the AU→mesh model. Weights live in the ``py-feat/bs_to_mesh`` HF
-    Hub repo.
+    ``MP_BLENDSHAPE_NAMES`` order (the Detectorv2 / MPDetector output order) and
+    returns the 478-vertex mesh (flattened 1434-d, axis-major) in the same frame
+    as the AU→mesh model.
+
+    ``model_version="v6"`` (default) is fit on Detectorv2 v2.8 blendshapes and
+    meshes; it carries ``feature_max`` (99th percentile of the v2.8 outputs) and
+    ``unsupported_features`` (shapes the detector never expresses), which
+    ``predict_face_mesh_from_features`` uses to clip inputs. ``"v5"`` was fit on
+    MediaPipe's own blendshapes. Weights live in the ``py-feat/bs_to_mesh`` repo.
     """
     return _load_pls_feat_to_mesh_from_hub("blendshape", verbose, model_version)
 
 
-def predict_face_mesh_from_features(feats, model):
+def _coerce_feature_input(feats, model):
+    """Return ``(array (n, k) in model.feature_columns order, is_single)``.
+
+    Named inputs (dict, pandas Series, DataFrame such as ``fex.emotions`` or
+    ``fex.blendshapes``) are matched by column name, so Detectorv2's emotion
+    order/naming (Neutral, Happy, ...) is handled and unrelated columns are
+    ignored. Dicts may be partial (missing features = 0); Series/DataFrames must
+    name every feature. Dicts and Series are single faces; DataFrames are
+    batches. Plain arrays are taken to be in ``model.feature_columns`` order
+    (1-D = single face, 2-D = batch).
+    """
+    import pandas as pd
+
+    cols = model.feature_columns
+
+    def norm(name):
+        n = str(name)
+        if model.feature_name == "emotion":
+            key = _EMOTION_ALIASES.get(n.lower())
+            if key is None:
+                raise ValueError(f"unknown emotion column {name!r}; expected {cols}")
+            return key
+        if n not in cols:
+            raise ValueError(f"unknown blendshape column {name!r}")
+        return n
+
+    if isinstance(feats, dict):
+        arr = np.zeros((1, len(cols)), dtype=np.float32)
+        for k, v in feats.items():
+            arr[0, cols.index(norm(k))] = float(v)
+        return arr, True
+    if isinstance(feats, (pd.Series, pd.DataFrame)):
+        df = feats.to_frame().T if isinstance(feats, pd.Series) else feats
+        is_single = isinstance(feats, pd.Series)
+        keep = ((lambda c: str(c).lower() in _EMOTION_ALIASES)
+                if model.feature_name == "emotion" else (lambda c: str(c) in cols))
+        renamed = {c: norm(c) for c in df.columns if keep(c)}
+        df = df[list(renamed)].rename(columns=renamed)
+        missing = [c for c in cols if c not in df.columns]
+        if missing:
+            raise ValueError(f"{model.feature_name} input is missing columns {missing}")
+        return df[cols].to_numpy(dtype=np.float32), is_single
+    arr = np.asarray(feats, dtype=np.float32)
+    is_single = arr.ndim <= 1
+    return arr.reshape(1, -1) if is_single else arr, is_single
+
+
+def predict_face_mesh_from_features(feats, model, clip=True):
     """Predict the 3D MediaPipe FaceMesh from an emotion or blendshape vector.
 
     Args:
         feats: feature vector or batch — ``(7,)``/``(n, 7)`` for emotion,
-            ``(52,)``/``(n, 52)`` for blendshapes, matching ``model``.
+            ``(52,)``/``(n, 52)`` for blendshapes, in ``model.feature_columns``
+            order; or a dict / pandas Series / DataFrame keyed by feature name
+            (e.g. ``fex.emotions``), matched by name.
         model: a ``PLSFeatMeshModel`` from ``load_emotion_face_mesh_model()`` or
             ``load_blendshape_face_mesh_model()``.
+        clip: clip inputs to ``[0, model.feature_max]`` when the model provides
+            it (v6 blendshapes). The linear map is only trustworthy within the
+            range of detector outputs it was fit on.
 
     Returns:
         ``(478, 3)`` for a 1-D input, ``(n, 478, 3)`` for a batch, in the
@@ -2048,10 +2145,18 @@ def predict_face_mesh_from_features(feats, model):
             "model must be a PLSFeatMeshModel (from load_emotion_face_mesh_model() "
             "or load_blendshape_face_mesh_model())"
         )
-    arr = np.asarray(feats)
-    is_single = arr.ndim <= 1
-    if is_single:
-        arr = arr.reshape(1, -1)
+    arr, is_single = _coerce_feature_input(feats, model)
+    if model.unsupported_features:
+        idx = [model.feature_columns.index(f) for f in model.unsupported_features
+               if f in model.feature_columns]
+        if idx and np.any(arr[:, idx] > 0.02):
+            warnings.warn(
+                f"{model.model_name_}: {model.unsupported_features} are never "
+                "expressed by the detector the model was fit on; their mesh "
+                "effects are unconstrained.", UserWarning,
+            )
+    if clip and model.feature_max is not None:
+        arr = np.clip(arr, 0.0, model.feature_max[None, :])
     flat = model.predict(arr)
     return _flat_to_mesh(flat, is_single)
 
@@ -2135,10 +2240,9 @@ def plot_face_mesh(
         )
         if model is None:
             model = _load_pls_feat_to_mesh_from_hub(feature)
-        feats = np.asarray(feats)
-        if feats.ndim == 2 and feats.shape[0] == 1:
-            feats = feats[0]                       # accept a single-face (1, n) row
         verts = predict_face_mesh_from_features(feats, model=model)
+        if verts.ndim == 3 and verts.shape[0] == 1:
+            verts = verts[0]                       # accept a single-face (1, n) row
         if verts.ndim != 2:
             raise ValueError(
                 f"plot_face_mesh expects a single {feature} vector; pass one face "
