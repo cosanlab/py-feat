@@ -18,7 +18,7 @@ from feat.utils.image_operations import (
     mask_image,
     procrustes_align_2d_batched,
 )
-from feat.utils import flatten_list
+from feat.utils import flatten_list, FEAT_EMOTION_COLUMNS, MP_BLENDSHAPE_NAMES
 from huggingface_hub import hf_hub_download
 from math import sin, cos
 import warnings
@@ -55,6 +55,9 @@ __all__ = [
     "emotion_annotation_position",
     "load_face_mesh_viz_model",
     "predict_face_mesh",
+    "load_emotion_face_mesh_model",
+    "load_blendshape_face_mesh_model",
+    "predict_face_mesh_from_features",
     "plot_face_mesh",
     "plot_face_mesh_plotly",
 ]
@@ -1875,6 +1878,13 @@ def load_face_mesh_viz_model(verbose=False, model_version="v6"):
                                             model_version=model_version)
 
 
+def _flat_to_mesh(flat, is_single):
+    """Reshape (n, 1434) axis-major [x|y|z] flat coords to (n, 478, 3), or
+    (478, 3) when ``is_single``."""
+    mesh = np.stack([flat[:, :478], flat[:, 478:956], flat[:, 956:]], axis=-1)
+    return mesh[0] if is_single else mesh
+
+
 def predict_face_mesh(au, model=None):
     """Predict the 3D MediaPipe FaceMesh from AU intensities.
 
@@ -1904,11 +1914,251 @@ def predict_face_mesh(au, model=None):
             f"au vector must be length {model.n_components}; got {au_arr.shape[1]}."
         )
     flat = model.predict(au_arr)  # (n, 1434), axis-major [x | y | z]
-    xs = flat[:, :478]
-    ys = flat[:, 478:956]
-    zs = flat[:, 956:]
-    mesh = np.stack([xs, ys, zs], axis=-1)  # (n, 478, 3)
-    return mesh[0] if is_single else mesh
+    return _flat_to_mesh(flat, is_single)
+
+
+# ---------------------------------------------------------------------
+# Emotion / blendshape → 478-vertex MediaPipe FaceMesh.
+# Companions to the AU→mesh model above, trained on the same CelebV-HQ
+# Detectorv2 predictions and canonicalized into the SAME frontal frame as the
+# AU→mesh model, so all three render coherently. v6 (default) is fit on
+# Detectorv2 v2.8 outputs and meshes (same CelebV-HQ frames as au_to_mesh v6).
+# Weights live in the py-feat/emotion_to_mesh and py-feat/bs_to_mesh HF repos.
+#
+# NOTE: emotion_to_mesh_pls_v5 has permuted column labels (its columns hold the
+# network's Neutral, Happy, Sad, Surprise, Fear, Disgust, Anger outputs but are
+# labelled in FEAT_EMOTION_COLUMNS order). Do not use v5 for emotion.
+# ---------------------------------------------------------------------
+
+_FEAT_MESH_SPECS = {
+    "emotion": ("py-feat/emotion_to_mesh", "emotion_to_mesh_pls", FEAT_EMOTION_COLUMNS),
+    "blendshape": ("py-feat/bs_to_mesh", "bs_to_mesh_pls", MP_BLENDSHAPE_NAMES),
+}
+_PLS_FEAT_MESH_MODELS = {}      # (feature, version) -> PLSFeatMeshModel
+_FEAT_MESH_DEFAULT_VERSION = "v6"
+# Detectorv2 / Fex emotion column names -> FEAT_EMOTION_COLUMNS names.
+_EMOTION_ALIASES = {
+    "neutral": "neutral", "happy": "happiness", "happiness": "happiness",
+    "sad": "sadness", "sadness": "sadness", "surprise": "surprise",
+    "fear": "fear", "disgust": "disgust", "anger": "anger", "angry": "anger",
+}
+
+
+class PLSFeatMeshModel:
+    """Wrapper around a {feature} + pose → 478-vertex MP mesh PLS (full rank).
+
+    Like ``PLSAUMeshModel`` but for a generic input feature family — 7 emotion
+    probabilities or 52 MediaPipe blendshapes. Pose is held implicit-zero at
+    inference (the absorbed feature×pose interaction terms drop out), so
+    ``predict(x)`` is a single matmul to (n, 1434) axis-major mesh coords in the
+    shared pose-canonical frame.
+    """
+
+    def __init__(self, coef, intercept, feature_columns, pose_columns,
+                 mean_aligned_mesh, feature_name, model_name,
+                 feature_max=None, unsupported_features=(), mean_neutral_mesh=None):
+        # feature_max: per-feature upper clip (v6 blendshapes: 99th percentile of
+        # the Detectorv2 v2.8 outputs it was fit on). unsupported_features: inputs
+        # the detector never expresses, whose coefficients are unconstrained.
+        self.feature_max = (None if feature_max is None
+                            else np.asarray(feature_max, dtype=np.float32))
+        self.unsupported_features = [str(f) for f in unsupported_features]
+        self.mean_neutral_mesh = (None if mean_neutral_mesh is None
+                                  else np.asarray(mean_neutral_mesh, dtype=np.float32))
+        self._coef = np.asarray(coef, dtype=np.float32)
+        self._intercept = np.asarray(intercept, dtype=np.float32)
+        self.feature_columns = list(feature_columns)
+        self.pose_columns = list(pose_columns)
+        self.feature_name = feature_name
+        self.n_components = len(self.feature_columns)
+        self.mean_aligned_mesh = np.asarray(mean_aligned_mesh, dtype=np.float32)
+        self.model_name_ = model_name
+
+    def predict(self, feats):
+        x_in = np.asarray(feats, dtype=np.float32)
+        if x_in.ndim == 1:
+            x_in = x_in.reshape(1, -1)
+        if x_in.ndim != 2 or x_in.shape[1] != self.n_components:
+            raise ValueError(
+                f"{self.feature_name} input must be a length-{self.n_components} "
+                f"vector or (n, {self.n_components}) batch (matching "
+                f"{self.feature_columns}); got shape {x_in.shape}."
+            )
+        # pose channels are implicit-zero, so only the leading feature rows of
+        # the deployed coef contribute — slice instead of zero-padding.
+        return x_in @ self._coef[: self.n_components] + self._intercept
+
+    def __repr__(self):
+        return (
+            f"PLSFeatMeshModel(model_name='{self.model_name_}', "
+            f"feature='{self.feature_name}', n_components={self.n_components}, "
+            f"output_shape=(n_samples, 478, 3))"
+        )
+
+
+def _load_pls_feat_to_mesh_from_hub(feature, verbose=False,
+                                    model_version=_FEAT_MESH_DEFAULT_VERSION):
+    if feature not in _FEAT_MESH_SPECS:
+        raise ValueError(
+            f"feature must be one of {list(_FEAT_MESH_SPECS)}; got {feature!r}."
+        )
+    key = (feature, model_version)
+    if key in _PLS_FEAT_MESH_MODELS:
+        return _PLS_FEAT_MESH_MODELS[key]
+    repo_id, stem, expected = _FEAT_MESH_SPECS[feature]
+    fname = f"{stem}_{model_version}.npz"
+    if verbose:
+        print(f"Loading {feature}→mesh PLS ({model_version}) from HuggingFace Hub")
+    path = hf_hub_download(
+        repo_id=repo_id, filename=fname, cache_dir=get_resource_path(),
+    )
+    z = np.load(path, allow_pickle=False)
+    feature_columns = [str(s) for s in z["feature_columns"]]
+    if feature_columns != list(expected):
+        raise RuntimeError(
+            f"{feature}→mesh PLS feature_columns drifted. "
+            f"NPZ: {feature_columns}; expected: {list(expected)}."
+        )
+    if feature == "emotion" and model_version == "v5":
+        warnings.warn(
+            "emotion_to_mesh_pls_v5 has permuted column labels; use v6.", UserWarning
+        )
+    model = PLSFeatMeshModel(
+        coef=z["coef"], intercept=z["intercept"], feature_columns=feature_columns,
+        pose_columns=[str(s) for s in z["pose_columns"]],
+        mean_aligned_mesh=z["mean_aligned_mesh"], feature_name=feature,
+        model_name=f"{stem}_{model_version}",
+        feature_max=z["feature_p99"] if "feature_p99" in z.files else None,
+        unsupported_features=(z["unsupported_features"]
+                              if "unsupported_features" in z.files else ()),
+        mean_neutral_mesh=(z["mean_neutral_mesh"]
+                           if "mean_neutral_mesh" in z.files else None),
+    )
+    _PLS_FEAT_MESH_MODELS[key] = model
+    return model
+
+
+def load_emotion_face_mesh_model(verbose=False,
+                                 model_version=_FEAT_MESH_DEFAULT_VERSION):
+    """Load the emotion + pose → 478-pt MediaPipe FaceMesh PLS model.
+
+    ``.predict(emotion)`` takes a length-7 vector (or ``(n, 7)`` batch) in
+    ``FEAT_EMOTION_COLUMNS`` order (anger, disgust, fear, happiness, sadness,
+    surprise, neutral) and returns the 478-vertex mesh (flattened 1434-d,
+    axis-major) in the same frame as the AU→mesh model. Note that Detectorv2's
+    Fex emits emotions in a DIFFERENT order (Neutral, Happy, ...); pass a
+    Series/DataFrame/dict to ``predict_face_mesh_from_features`` /
+    ``plot_face_mesh(emotion=...)`` and columns are matched by name.
+
+    ``model_version="v6"`` (default) is fit on Detectorv2 v2.8 outputs. ``"v5"``
+    is retained for reproducibility only: its column labels are permuted.
+    Weights live in the ``py-feat/emotion_to_mesh`` HF Hub repo.
+    """
+    return _load_pls_feat_to_mesh_from_hub("emotion", verbose, model_version)
+
+
+def load_blendshape_face_mesh_model(verbose=False,
+                                    model_version=_FEAT_MESH_DEFAULT_VERSION):
+    """Load the blendshape + pose → 478-pt MediaPipe FaceMesh PLS model.
+
+    ``.predict(blendshapes)`` takes a length-52 vector (or ``(n, 52)`` batch) in
+    ``MP_BLENDSHAPE_NAMES`` order (the Detectorv2 / MPDetector output order) and
+    returns the 478-vertex mesh (flattened 1434-d, axis-major) in the same frame
+    as the AU→mesh model.
+
+    ``model_version="v6"`` (default) is fit on Detectorv2 v2.8 blendshapes and
+    meshes; it carries ``feature_max`` (99th percentile of the v2.8 outputs) and
+    ``unsupported_features`` (shapes the detector never expresses), which
+    ``predict_face_mesh_from_features`` uses to clip inputs. ``"v5"`` was fit on
+    MediaPipe's own blendshapes. Weights live in the ``py-feat/bs_to_mesh`` repo.
+    """
+    return _load_pls_feat_to_mesh_from_hub("blendshape", verbose, model_version)
+
+
+def _coerce_feature_input(feats, model):
+    """Return ``(array (n, k) in model.feature_columns order, is_single)``.
+
+    Named inputs (dict, pandas Series, DataFrame such as ``fex.emotions`` or
+    ``fex.blendshapes``) are matched by column name, so Detectorv2's emotion
+    order/naming (Neutral, Happy, ...) is handled and unrelated columns are
+    ignored. Dicts may be partial (missing features = 0); Series/DataFrames must
+    name every feature. Dicts and Series are single faces; DataFrames are
+    batches. Plain arrays are taken to be in ``model.feature_columns`` order
+    (1-D = single face, 2-D = batch).
+    """
+    import pandas as pd
+
+    cols = model.feature_columns
+
+    def norm(name):
+        n = str(name)
+        if model.feature_name == "emotion":
+            key = _EMOTION_ALIASES.get(n.lower())
+            if key is None:
+                raise ValueError(f"unknown emotion column {name!r}; expected {cols}")
+            return key
+        if n not in cols:
+            raise ValueError(f"unknown blendshape column {name!r}")
+        return n
+
+    if isinstance(feats, dict):
+        arr = np.zeros((1, len(cols)), dtype=np.float32)
+        for k, v in feats.items():
+            arr[0, cols.index(norm(k))] = float(v)
+        return arr, True
+    if isinstance(feats, (pd.Series, pd.DataFrame)):
+        df = feats.to_frame().T if isinstance(feats, pd.Series) else feats
+        is_single = isinstance(feats, pd.Series)
+        keep = ((lambda c: str(c).lower() in _EMOTION_ALIASES)
+                if model.feature_name == "emotion" else (lambda c: str(c) in cols))
+        renamed = {c: norm(c) for c in df.columns if keep(c)}
+        df = df[list(renamed)].rename(columns=renamed)
+        missing = [c for c in cols if c not in df.columns]
+        if missing:
+            raise ValueError(f"{model.feature_name} input is missing columns {missing}")
+        return df[cols].to_numpy(dtype=np.float32), is_single
+    arr = np.asarray(feats, dtype=np.float32)
+    is_single = arr.ndim <= 1
+    return arr.reshape(1, -1) if is_single else arr, is_single
+
+
+def predict_face_mesh_from_features(feats, model, clip=True):
+    """Predict the 3D MediaPipe FaceMesh from an emotion or blendshape vector.
+
+    Args:
+        feats: feature vector or batch — ``(7,)``/``(n, 7)`` for emotion,
+            ``(52,)``/``(n, 52)`` for blendshapes, in ``model.feature_columns``
+            order; or a dict / pandas Series / DataFrame keyed by feature name
+            (e.g. ``fex.emotions``), matched by name.
+        model: a ``PLSFeatMeshModel`` from ``load_emotion_face_mesh_model()`` or
+            ``load_blendshape_face_mesh_model()``.
+        clip: clip inputs to ``[0, model.feature_max]`` when the model provides
+            it (v6 blendshapes). The linear map is only trustworthy within the
+            range of detector outputs it was fit on.
+
+    Returns:
+        ``(478, 3)`` for a 1-D input, ``(n, 478, 3)`` for a batch, in the
+        pose-canonical frame shared with the AU→mesh model.
+    """
+    if not isinstance(model, PLSFeatMeshModel):
+        raise ValueError(
+            "model must be a PLSFeatMeshModel (from load_emotion_face_mesh_model() "
+            "or load_blendshape_face_mesh_model())"
+        )
+    arr, is_single = _coerce_feature_input(feats, model)
+    if model.unsupported_features:
+        idx = [model.feature_columns.index(f) for f in model.unsupported_features
+               if f in model.feature_columns]
+        if idx and np.any(arr[:, idx] > 0.02):
+            warnings.warn(
+                f"{model.model_name_}: {model.unsupported_features} are never "
+                "expressed by the detector the model was fit on; their mesh "
+                "effects are unconstrained.", UserWarning,
+            )
+    if clip and model.feature_max is not None:
+        arr = np.clip(arr, 0.0, model.feature_max[None, :])
+    flat = model.predict(arr)
+    return _flat_to_mesh(flat, is_single)
 
 
 def plot_face_mesh(
@@ -1920,6 +2170,8 @@ def plot_face_mesh(
     alpha=0.9,
     view_init=(0, -90),
     *,
+    emotion=None,
+    blendshapes=None,
     mesh=None,
     mode="contours",
     gaze=None,
@@ -1934,7 +2186,11 @@ def plot_face_mesh(
     - ``mesh`` given: draw that mesh directly (e.g., output of
       ``predict_mesh_from_dlib68`` for a Detectorv1 Fex).
     - ``au`` given: predict via the AU→mesh PLS model (PR #304).
-    - neither: draw the population-mean rest mesh.
+    - ``emotion`` / ``blendshapes`` given: predict via the emotion→mesh or
+      blendshape→mesh PLS model (see ``predict_face_mesh_from_features``).
+    - none of these: draw the population-mean rest mesh.
+
+    Pass at most one of ``au``, ``emotion``, ``blendshapes``, or ``mesh``.
 
     Edge density is controlled by ``mode``:
 
@@ -1954,9 +2210,16 @@ def plot_face_mesh(
 
     Args:
         au: AU intensity vector ``(20,)`` in ``AU_LANDMARK_MAP['Feat']`` order.
+        emotion: single-face emotion vector. A dict / Series / 1-row DataFrame
+            is matched by column name (Detectorv2's ``Neutral``/``Happy``/...
+            names are accepted); a raw array must be length 7 in
+            ``FEAT_EMOTION_COLUMNS`` order.
+        blendshapes: single-face blendshape vector, matched by name like
+            ``emotion``; a raw array must be length 52 in
+            ``MP_BLENDSHAPE_NAMES`` order. Clipped to the model's fitted range.
         mesh: precomputed ``(478, 3)`` mesh array, in the canonical frame.
-        model: optional ``PLSAUMeshModel`` for the ``au`` path; defaults to
-            the cached v2 model.
+        model: optional PLS model for the ``au`` / ``emotion`` /
+            ``blendshapes`` path; defaults to the matching v6 model.
         ax: optional matplotlib 3D axis. If ``None``, a new figure is created.
         color, linewidth, alpha: line styling.
         view_init: ``(elev, azim)`` matplotlib view angles. Default frames
@@ -1969,8 +2232,11 @@ def plot_face_mesh(
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
     from feat.utils.mp_plotting import FaceLandmarksConnections
 
-    if mesh is not None and au is not None:
-        raise ValueError("pass either `au` or `mesh`, not both")
+    n_given = sum(x is not None for x in (au, emotion, blendshapes, mesh))
+    if n_given > 1:
+        raise ValueError(
+            "pass at most one of `au`, `emotion`, `blendshapes`, or `mesh`"
+        )
 
     if mesh is not None:
         verts = np.asarray(mesh, dtype=np.float32)
@@ -1978,6 +2244,20 @@ def plot_face_mesh(
             raise ValueError(
                 f"mesh must have shape (478, 3); got {verts.shape}. "
                 "For batched predictions, plot one face at a time."
+            )
+    elif emotion is not None or blendshapes is not None:
+        feature, feats = (
+            ("emotion", emotion) if emotion is not None else ("blendshape", blendshapes)
+        )
+        if model is None:
+            model = _load_pls_feat_to_mesh_from_hub(feature)
+        verts = predict_face_mesh_from_features(feats, model=model)
+        if verts.ndim == 3 and verts.shape[0] == 1:
+            verts = verts[0]                       # accept a single-face (1, n) row
+        if verts.ndim != 2:
+            raise ValueError(
+                f"plot_face_mesh expects a single {feature} vector; pass one face "
+                "at a time. For batches use predict_face_mesh_from_features()."
             )
     elif au is None:
         if model is None:
