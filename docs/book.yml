@@ -97,6 +97,15 @@ toc:
         title: AU Reference
       - file: pages/faqs.md
 
+  - section: Licenses
+    children:
+      - file: pages/licensing.md
+      - file: pages/licensing_v1.md
+      - file: pages/licensing_v2.md
+      - file: pages/licensing_live.md
+      - file: pages/licensing_datasets.md
+      - file: pages/licensing_commercial.md
+
   # Tutorials — added incrementally as each notebook is rendered to _rendered/.
   - section: Tutorials
     children:

@@ -1,4 +1,5 @@
 include LICENSE
+recursive-include LICENSES *.md
 include README.md
 include requirements.txt
 recursive-include tutorials *.ipynb

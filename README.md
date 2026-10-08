@@ -61,4 +61,4 @@ As of version 0.7.0, all model weights are hosted on the [Py-feat HuggingFace Hu
 For prior versions, model weights are stored on Github static assets in release tagged `v0.1`. They will automatically download as needed.
 
 ## Licenses
-Py-FEAT is provided under the MIT license. You also need to respect the licenses of each model you are using. Please see the LICENSE file for links to each model's license information. 
+Py-Feat's original code and documentation are provided under the [MIT License](LICENSE), including commercial use. Pretrained weights, third-party code, and research datasets have separate terms. See the notices for [classic Py-Feat v1.0](LICENSES/PYFEAT-V1.md), [multitask Py-Feat v2.0](LICENSES/PYFEAT-V2.md), and [PyFeat-Live](LICENSES/PYFEAT-LIVE.md), plus the [dataset provenance and permission register](LICENSES/DATASETS.md). These notices distinguish training from evaluation and identify permissions that remain unresolved; they do not grant additional rights in third-party assets.
