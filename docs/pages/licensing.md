@@ -30,3 +30,18 @@ The [repository MIT License](https://github.com/cosanlab/py-feat/blob/main/LICEN
 and third-party notices should be preserved in distributions. Signed data
 agreements and private correspondence are retained outside the public
 repository. This page was reviewed October 8, 2026.
+
+## Commercial-use inquiries
+
+The current multitask weights are not offered as commercially cleared
+weights. Py-Feat does not broker third-party permissions or issue a
+commercial sublicense that overrides another provider's restrictions.
+This does not revoke valid existing grants or restrict MIT-licensed code.
+
+Commercial users can use independently cleared weights, or assess the
+exact checkpoint and contact the relevant rights holders directly for any
+necessary permissions. The [v2 notice](licensing_v2.md) explains the scope;
+the [dataset register](licensing_datasets.md) links provider sources.
+A routine dataset access approval is not necessarily commercial checkpoint
+permission. User-obtained permissions also do not automatically resolve
+the distributor's separate obligations.

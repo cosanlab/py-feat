@@ -54,6 +54,27 @@ parameter sets and algorithms. Their applicability and any necessary
 permission must be resolved for the particular checkpoint. This notice
 does not grant rights beyond those available from the relevant holders.
 
+## Commercial-use inquiries
+
+The current multitask checkpoints are not offered as commercially cleared
+weights. Py-Feat does not broker third-party permissions or offer an
+additional commercial sublicense that overrides upstream restrictions.
+The MIT software grant and existing valid component licenses are unchanged.
+
+Users seeking commercial use must assess the exact assets and applicable
+terms, and obtain any necessary permissions directly from the relevant
+rights holders. The [dataset register](licensing_datasets.md) links provider sources;
+the backbone and teacher sources are listed above. A dataset download
+approval is not necessarily permission for commercial use of an already
+trained checkpoint. Py-Feat cannot certify that independently obtained
+permissions resolve every applicable right.
+
+Alternatively, use independently cleared weights with the MIT software.
+The [commercial retraining table](licensing_commercial.md) identifies the
+remaining work for a future release. Downstream permissions do not by
+themselves resolve the distributor's own agreement obligations or weight
+sharing authority.
+
 ## Current checkpoint's dataset roles
 
 The current manuscript's training tables distinguish these sources:
