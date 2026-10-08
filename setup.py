@@ -21,6 +21,7 @@ setup(
     package_data={"feat": ["resources/*", "tests/*", "tests/data/*"]},
     install_requires=requirements,
     license="MIT license",
+    license_files=["LICENSE", "LICENSES/*.md"],
     zip_safe=False,
     keywords=["feat", "face", "facial expression", "emotion"],
     python_requires=">=3.11",

@@ -154,3 +154,7 @@ timeseries plot above.
 ---
 
 *Py-feat Live is open source: [cosanlab/pyfeat-live](https://github.com/cosanlab/pyfeat-live).*
+
+## License
+
+The application code is MIT-licensed. Downloaded detectors and optional model assets have separate terms. See the [PyFeat-Live licensing notice](licensing_live.md) and the [v1/v2 model and dataset guide](licensing.md).

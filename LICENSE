@@ -9,7 +9,30 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-We also link to applicable licenses from models/code used in Py-Feat:
+Scope and third-party notices
+=============================
+
+The MIT grant above covers Py-Feat's original software and documentation.
+Third-party source code retains its own notices. Downloaded pretrained
+weights, fitted statistical parameters, datasets, and example media have
+separate provenance and terms; this file does not grant rights held by
+their providers or revoke existing valid grants.
+
+Separate model-family notices and dataset evidence:
+
+- Classic Py-Feat v1.0 / Detectorv1: LICENSES/PYFEAT-V1.md
+- Multitask Py-Feat v2.0 / Detectorv2: LICENSES/PYFEAT-V2.md
+- PyFeat-Live application: LICENSES/PYFEAT-LIVE.md
+- Training and evaluation datasets: LICENSES/DATASETS.md
+
+An MIT implementation license does not establish every checkpoint's
+commercial-use or redistribution permissions. Nor does a dataset's
+research-only designation automatically license all resulting weights.
+The model-family notices identify explicit restrictions and unresolved
+permission scope, including cases where a research-only label is not
+sufficient to authorize public distribution.
+
+Upstream references (their scope must be read in the linked materials):
 
 - RetinaFace: https://github.com/biubug6/Pytorch_Retinaface/blob/master/LICENSE.MIT
 - FaceBoxes: https://github.com/cleardusk/3DDFA_V2/blob/master/LICENSE
@@ -18,7 +41,7 @@ We also link to applicable licenses from models/code used in Py-Feat:
 - Mobilenet: https://github.com/cunjian/pytorch_face_landmark (basenet)
 - MobileFaceNet: https://github.com/cunjian/pytorch_face_landmark (mobilefacenet)
 - PFLD: https://github.com/cunjian/pytorch_face_landmark (pfld_compressed)
-- Residual Masking Network: https://github.com/phamquiluan/ResidualMaskingNetwork/issues/18
+- Residual Masking Network: https://github.com/phamquiluan/ResidualMaskingNetwork/blob/master/LICENSE
 - Facenet: https://github.com/timesler/facenet-pytorch/blob/master/LICENSE.md
 - ArcFace / InsightFace (code): https://github.com/deepinsight/insightface/blob/master/LICENSE (MIT)
 - ArcFace ResNet50 pretrained weights (`buffalo_l`'s `w600k_r50.onnx`,

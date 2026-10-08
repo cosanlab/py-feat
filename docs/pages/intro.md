@@ -61,4 +61,4 @@ pipeline — including a **real-time webcam demo** — with no code. It wraps th
 analyze in Python. [Learn more →](/pages/pyfeat_live/)
 
 ## License 
-Py-FEAT is provided under the  [MIT license](https://github.com/cosanlab/py-feat/blob/master/LICENSE). You also need to cite and respect the licenses of each model you are using. Note that several models have a non-commercial stipulation. Please see the LICENSE file for links to each model's license information. 
+Py-Feat's original code and documentation are [MIT-licensed](https://github.com/cosanlab/py-feat/blob/main/LICENSE), including commercial use. Pretrained weights and research datasets have separate terms. See the [licensing guide](pages/licensing.md) for separate v1, v2, and PyFeat-Live notices and the training/evaluation dataset register.

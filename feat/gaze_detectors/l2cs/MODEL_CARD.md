@@ -3,7 +3,9 @@ library_name: py-feat
 pipeline_tag: image-classification
 tags:
 - gaze-estimation
-license: mit
+license: other
+license_name: mit-code-with-gaze360-research-terms
+license_link: https://github.com/cosanlab/py-feat/blob/main/LICENSES/PYFEAT-V1.md
 ---
 
 # L2CS-Net (Gaze Estimation)
@@ -41,8 +43,10 @@ These are state-of-the-art numbers for gaze-from-face-crop estimation
   with screen-targeted gaze ground truth. ~213k images.
 
 The upstream maintainer trains separate checkpoints for each dataset.
-Py-Feat exposes the **Gaze360** weights as the default since they
-generalize better to in-the-wild input.
+The checkpoint shipped by Py-Feat is **Gaze360-trained**:
+`l2cs_gaze360_resnet50.safetensors`, converted from
+`L2CSNet_gaze360.pkl`. MPIIFaceGaze is a separate upstream training and
+evaluation configuration, not a second training corpus for this checkpoint.
 
 ## Model Sources
 
@@ -66,9 +70,11 @@ project provides only:
 - This re-packaged `.safetensors` artifact for downstream safety
 - Integration with `feat.Detectorv1` and `feat.MPDetector`'s pipelines
 
-Training data are credited to:
+The shipped checkpoint's training data are credited to:
 - Gaze360 — Kellnhofer, Recasens, Stent, Matusik, Torralba (MIT)
-- MPIIFaceGaze — Zhang, Sugano, Fritz, Bulling (MPI Saarbrücken)
+
+The separate MPIIFaceGaze configuration uses data from Zhang, Sugano,
+Fritz, and Bulling (MPI Saarbrücken).
 
 ## Citation
 
@@ -84,7 +90,24 @@ Training data are credited to:
 
 ## License
 
-MIT — both the original implementation and the converted weights. See
-[upstream LICENSE](https://github.com/Ahmednull/L2CS-Net/blob/main/LICENSE).
-Training data licenses (Gaze360, MPIIFaceGaze) are research-use only;
-commercial deployment may require separate validation.
+The original implementation is [MIT-licensed](https://github.com/Ahmednull/L2CS-Net/blob/main/LICENSE).
+The historical model-card designation was MIT. The current `other` label
+links this scope notice to distinguish MIT code from the separate Gaze360
+research terms; it is not a new combined license or a revocation of existing
+valid grants. Conversion to safetensors does not create additional rights.
+
+The shipped checkpoint's [Gaze360 source license](https://github.com/erkil1452/gaze360/blob/master/LICENSE.md)
+expressly excludes commercial applications of models trained on the dataset.
+Its restrictions on use and distribution require separate assessment of
+public weight sharing. The MIT implementation license does not waive these
+express conditions, and this clarification does not revoke
+existing valid grants.
+
+See the [v1 component notice](https://github.com/cosanlab/py-feat/blob/main/LICENSES/PYFEAT-V1.md)
+and [dataset register](https://github.com/cosanlab/py-feat/blob/main/LICENSES/DATASETS.md)
+for checkpoint provenance and the outstanding permission review. Terms for
+the separate MPIIFaceGaze models must be assessed for those checkpoints.
+
+The applicable acquisition terms and any separate permissions must be
+checked for the exact checkpoint; today's source notice does not establish
+the history of every upstream grant.
