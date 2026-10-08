@@ -40,7 +40,23 @@ J. Deng, J. Guo, E. Ververas, I. Kotsia, S. Zafeiriou. RetinaFace: Single-Shot M
 ```
 
 ## Acknowledgements
-We thank Yakhyokhuja Valikhujaev for the ResNet34-backbone PyTorch implementation, biubug6 for the original PyTorch reference, and the WIDERFACE authors (Yang, Luo, Loy, Tang) for the training data — all distributed under permissive terms.
+We thank Yakhyokhuja Valikhujaev for the ResNet34-backbone PyTorch implementation, biubug6 for the original PyTorch reference, and the WIDERFACE authors (Yang, Luo, Loy, Tang) for the training data.
+
+## License and provenance
+
+The [upstream implementation](https://github.com/yakhyo/retinaface-pytorch/blob/main/LICENSE)
+is MIT-licensed, and this distribution retains its existing `license: mit`
+metadata. The [WIDER FACE dataset](https://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/)
+has separate CC BY-NC-ND terms. Those data terms must not be described as
+permissive merely because the detector implementation is MIT.
+
+The software license and model-card metadata do not establish all rights
+in the training data or all permissions for the resulting checkpoint.
+Conversely, this notice does not assert that dataset terms automatically
+relicense trained weights or revoke existing valid grants. See the
+[v1 component notice](https://github.com/cosanlab/py-feat/blob/main/LICENSES/PYFEAT-V1.md)
+and [dataset register](https://github.com/cosanlab/py-feat/blob/main/LICENSES/DATASETS.md)
+for the evidence and remaining permission questions.
 
 ## Example Usage
 

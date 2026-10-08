@@ -1,7 +1,7 @@
 ---
 license: other
 license_name: research-only
-license_link: LICENSE
+license_link: https://github.com/cosanlab/py-feat/blob/main/LICENSES/PYFEAT-V2.md
 library_name: py-feat
 tags:
   - facial-expression-analysis
@@ -148,7 +148,24 @@ then center-cropped to 224 and ImageNet-normalized. `Detectorv2` handles this.
 
 ## License
 
-**Research / non-commercial use only.** Trained on datasets (AffectNet, DISFA+,
-RAF-DB, Aff-Wild2, AFEW-VA, BP4D, ETH-XGaze, EYEDIAP, etc.) whose licenses
-restrict use to academic research. The ConvNeXt-V2 backbone is MIT-licensed.
-Confirm each constituent dataset's terms before any non-research use.
+The weights have been designated for **noncommercial research**. Py-Feat's
+original implementation is MIT, but the initialized
+[`convnextv2_tiny.fcmae_ft_in22k_in1k` weights](https://huggingface.co/timm/convnextv2_tiny.fcmae_ft_in22k_in1k)
+are **CC BY-NC 4.0**, distinct from the backbone's MIT source code.
+
+For `face_multitask_v28.safetensors`, DISFA+ and EYEDIAP are excluded from
+gradient training; their benchmark scores were used in checkpoint selection.
+DISFA (without +) is training data. Training also includes BP4D, BP4D+, CK+,
+UNBC-McMaster PAIN, EmotioNet, AM-FED, Aff-Wild2, AffectNet, RAF-DB, FER+,
+ExpW, MELD, AFEW-VA, ETH-XGaze, Gaze360, MPIIGaze, Columbia Gaze, and
+CelebV-HQ across the training stages. Older checkpoints have different
+provenance and must be assessed separately.
+
+See the [v2 licensing notice](https://github.com/cosanlab/py-feat/blob/main/LICENSES/PYFEAT-V2.md)
+and [dataset register](https://github.com/cosanlab/py-feat/blob/main/LICENSES/DATASETS.md).
+The research designation does not establish unrestricted public redistribution:
+the relevant dataset agreements, chronology, and any required permissions
+must be resolved for each checkpoint. This notice does not grant third-party
+rights or assume that all dataset or teacher terms automatically attach to
+every trained artifact. The optional ArcFace identity branch has its own
+terms and is not the basis for this network's licensing restrictions.
