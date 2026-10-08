@@ -2186,7 +2186,11 @@ def plot_face_mesh(
     - ``mesh`` given: draw that mesh directly (e.g., output of
       ``predict_mesh_from_dlib68`` for a Detectorv1 Fex).
     - ``au`` given: predict via the AU→mesh PLS model (PR #304).
-    - neither: draw the population-mean rest mesh.
+    - ``emotion`` / ``blendshapes`` given: predict via the emotion→mesh or
+      blendshape→mesh PLS model (see ``predict_face_mesh_from_features``).
+    - none of these: draw the population-mean rest mesh.
+
+    Pass at most one of ``au``, ``emotion``, ``blendshapes``, or ``mesh``.
 
     Edge density is controlled by ``mode``:
 
@@ -2206,9 +2210,16 @@ def plot_face_mesh(
 
     Args:
         au: AU intensity vector ``(20,)`` in ``AU_LANDMARK_MAP['Feat']`` order.
+        emotion: single-face emotion vector. A dict / Series / 1-row DataFrame
+            is matched by column name (Detectorv2's ``Neutral``/``Happy``/...
+            names are accepted); a raw array must be length 7 in
+            ``FEAT_EMOTION_COLUMNS`` order.
+        blendshapes: single-face blendshape vector, matched by name like
+            ``emotion``; a raw array must be length 52 in
+            ``MP_BLENDSHAPE_NAMES`` order. Clipped to the model's fitted range.
         mesh: precomputed ``(478, 3)`` mesh array, in the canonical frame.
-        model: optional ``PLSAUMeshModel`` for the ``au`` path; defaults to
-            the cached v2 model.
+        model: optional PLS model for the ``au`` / ``emotion`` /
+            ``blendshapes`` path; defaults to the matching v6 model.
         ax: optional matplotlib 3D axis. If ``None``, a new figure is created.
         color, linewidth, alpha: line styling.
         view_init: ``(elev, azim)`` matplotlib view angles. Default frames
