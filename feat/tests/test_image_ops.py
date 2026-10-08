@@ -4,7 +4,11 @@ import torch
 from skimage.feature import hog as skimage_hog
 from torchvision.io import read_image
 from feat.transforms import Rescale
-from feat.utils.image_operations import HOGLayer, extract_face_from_bbox_torch
+from feat.utils.image_operations import (
+    HOGLayer,
+    extract_face_from_bbox_torch,
+    extract_face_square_pad_torch,
+)
 from torchvision.transforms import Compose
 from feat.data import ImageDataset
 
@@ -446,3 +450,22 @@ def test_extract_face_legacy_modulo_indexing_warned():
     expected = torch.tensor([1.0, 2.0, 3.0, 1.0, 2.0, 3.0])
     actual = crops.mean(dim=(1, 2, 3))
     assert torch.allclose(actual, expected)
+
+
+@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="requires MPS")
+def test_square_pad_off_frame_crop_matches_cpu_on_mps():
+    image = torch.rand((1, 3, 120, 160), generator=torch.Generator().manual_seed(0))
+    box = torch.tensor([[40.0, -30.0, 120.0, 60.0]])  # runs off the top of the frame
+    frame_idx = torch.zeros(1, dtype=torch.long)
+
+    def crop(device):
+        faces, _ = extract_face_square_pad_torch(
+            image.to(device),
+            box.to(device),
+            face_size=64,
+            expand_bbox=1.2,
+            frame_idx=frame_idx.to(device),
+        )
+        return faces.cpu()
+
+    torch.testing.assert_close(crop("mps"), crop("cpu"), atol=1e-4, rtol=0)
